@@ -24,7 +24,6 @@ import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
-import '../features/wallet/providers/wallet_provider.dart';
 import 'my_wallet_screen.dart';
 
 class PedometerData {

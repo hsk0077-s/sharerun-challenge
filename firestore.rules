@@ -1,0 +1,451 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function onlyAllowedUserProfileFields() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly([
+        'uid',
+        'watchType',
+        'watchTypeUpdatedAt',
+        'sensitiveDataConsent',
+        'sensitiveDataConsentUpdatedAt',
+        'updatedAt'
+      ]);
+    }
+
+    function validTermsAcceptanceUpdate(uid) {
+      return isOwner(uid)
+        && resource.data.termsAccepted == false
+        && request.resource.data.termsAccepted == true
+        && request.resource.data.uid == uid
+        && request.resource.data.pushNotificationsEnabled is bool
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'uid',
+          'termsAccepted',
+          'termsAcceptedAt',
+          'pushNotificationsEnabled',
+          'pushNotificationsUpdatedAt',
+          'updatedAt'
+        ]);
+    }
+
+    function validPushSettingsUpdate(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.pushNotificationsEnabled is bool
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'uid',
+          'pushNotificationsEnabled',
+          'pushNotificationsUpdatedAt',
+          'fcmToken',
+          'fcmTokenUpdatedAt',
+          'updatedAt'
+        ])
+        && (
+          !request.resource.data.diff(resource.data).changedKeys().hasAny(['fcmToken'])
+          || request.resource.data.fcmToken is string
+        );
+    }
+
+    function validWatchType() {
+      return request.resource.data.watchType in [
+        'none',
+        'apple_watch',
+        'galaxy_watch',
+        'garmin'
+      ];
+    }
+
+    // Keep in sync with Flutter `PG_BASE_URL` / PaymentConstants.pgBaseUrl host.
+    function pgHostPattern() {
+      return 'pg\\.example\\.com';
+    }
+
+    function validShareTopUpPgUrl(url) {
+      return url.matches('^https://' + pgHostPattern() + '/share-top-up\\?.+');
+    }
+
+    function validSponsorPgUrl(url) {
+      return url.matches('^https://' + pgHostPattern() + '/sponsor\\?.+');
+    }
+
+    function validUserProfileUpdate(uid) {
+      return isOwner(uid)
+        && onlyAllowedUserProfileFields()
+        && request.resource.data.uid == uid
+        && validWatchType()
+        && request.resource.data.sensitiveDataConsent is bool;
+    }
+
+    function validWatchApiTokenUpdate(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'watch_api_token',
+          'watchApiToken',
+          'watchLinkPendingType',
+          'isDeviceConnected',
+          'watchApiTokenUpdatedAt',
+          'updatedAt'
+        ])
+        && request.resource.data.watch_api_token is string
+        && request.resource.data.watchApiToken is string
+        && request.resource.data.watchLinkPendingType in [
+          'apple_watch',
+          'galaxy_watch',
+          'garmin',
+          'coros',
+          'suunto'
+        ]
+        && request.resource.data.isDeviceConnected == true;
+    }
+
+    function validUserSettingsUpdate(uid) {
+      return validUserProfileUpdate(uid)
+        || validTermsAcceptanceUpdate(uid)
+        || validPushSettingsUpdate(uid)
+        || validWatchApiTokenUpdate(uid)
+        || validClientEconomyUpdate(uid);
+    }
+
+    function validClientEconomyUpdate(uid) {
+      return isOwner(uid)
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'hasCPR',
+          'isSponsored',
+          'wallet',
+          'shareBalance',
+          'todayHarvestedShare',
+          'nickname',
+          'nicknameUpdatedAt',
+          'nicknameSetAt',
+          'donationCount',
+          'cumulativeDonationAmount',
+          'angelTierCode',
+          'lastDonationAmountWon',
+          'lastDonatedAt',
+          'gender',
+          'genderUpdatedAt',
+          'updatedAt'
+        ])
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['hasCPR'])
+          || request.resource.data.hasCPR is bool
+        )
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['isSponsored'])
+          || request.resource.data.isSponsored is bool
+        )
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['wallet'])
+          || request.resource.data.wallet is map
+        );
+    }
+
+    function validInitialWallet() {
+      return request.resource.data.wallet is map
+        && request.resource.data.wallet.keys().hasOnly([
+          'shareBalance',
+          'diamondBalance',
+          'valueTokenBalance',
+          'totalDonationValue'
+        ])
+        && request.resource.data.wallet.shareBalance == 0
+        && request.resource.data.wallet.diamondBalance == 0
+        && request.resource.data.wallet.valueTokenBalance == 0
+        && request.resource.data.wallet.totalDonationValue == 0;
+    }
+
+    function validUserCreate(uid) {
+      return isOwner(uid)
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'watchType',
+          'tier',
+          'sensitiveDataConsent',
+          'termsAccepted',
+          'pushNotificationsEnabled',
+          'wallet',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.watchType == 'none'
+        && request.resource.data.tier == 1
+        && request.resource.data.sensitiveDataConsent == false
+        && request.resource.data.termsAccepted == false
+        && request.resource.data.pushNotificationsEnabled == false
+        && validInitialWallet();
+    }
+
+    function validClientWalletTransactionCreate() {
+      return request.resource.data.keys().hasOnly([
+          'id',
+          'title',
+          'amount',
+          'assetType',
+          'timestamp'
+        ])
+        && request.resource.data.id is string
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() < 200
+        && request.resource.data.amount is int
+        && request.resource.data.assetType in ['SHARE', 'DIA', 'VALUE']
+        && request.resource.data.timestamp is timestamp;
+    }
+
+    function validClientNotificationCreate() {
+      return request.resource.data.keys().hasOnly([
+          'title',
+          'body',
+          'code',
+          'timestamp'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() < 200
+        && request.resource.data.body is string
+        && request.resource.data.body.size() < 1000
+        && request.resource.data.code is string
+        && request.resource.data.timestamp is timestamp;
+    }
+
+    function validRetentionPushCreate() {
+      return request.resource.data.keys().hasOnly([
+          'code',
+          'title',
+          'body',
+          'routeName',
+          'extra',
+          'delivered',
+          'createdAt'
+        ])
+        && request.resource.data.code is string
+        && request.resource.data.title is string
+        && request.resource.data.body is string
+        && request.resource.data.delivered == false
+        && request.resource.data.createdAt is timestamp;
+    }
+
+    function validShareTopUpIntentCreate() {
+      return request.resource.data.keys().hasOnly([
+          'uid',
+          'type',
+          'amountKrw',
+          'status',
+          'pgUrl',
+          'createdAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.type == 'share_top_up'
+        && request.resource.data.amountKrw is int
+        && request.resource.data.amountKrw == 10000
+        && request.resource.data.status == 'created'
+        && request.resource.data.pgUrl is string
+        && validShareTopUpPgUrl(request.resource.data.pgUrl);
+    }
+
+    function validSponsorPaymentIntentCreate() {
+      return request.resource.data.keys().hasOnly([
+          'uid',
+          'sponsorId',
+          'tournamentId',
+          'type',
+          'amountShare',
+          'option',
+          'status',
+          'pgUrl',
+          'createdAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.sponsorId == request.auth.uid
+        && request.resource.data.tournamentId is string
+        && request.resource.data.type == 'sponsor_payment'
+        && request.resource.data.amountShare is int
+        && request.resource.data.amountShare in [1000, 3000, 5000]
+        && request.resource.data.option in [
+          'direct_prize_support',
+          'winner_named_unicef_donation'
+        ]
+        && request.resource.data.status == 'created'
+        && request.resource.data.pgUrl is string
+        && validSponsorPgUrl(request.resource.data.pgUrl);
+    }
+
+    function isOwnPaymentCreate() {
+      return signedIn()
+        && (
+          validShareTopUpIntentCreate()
+          || validSponsorPaymentIntentCreate()
+        );
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.admin == true
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        || request.auth.token.email in [
+          'admin@share-run-challenge.app',
+          'ops@share-run-challenge.app'
+        ]
+      );
+    }
+
+    // SRC Admin console — status / VALUE 핀셋 갱신만 허용
+    function isAdminUserOpsUpdate() {
+      return isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'adminStatus', 'wallet', 'updatedAt']);
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /users/{uid} {
+      allow get: if isOwner(uid) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if validUserCreate(uid);
+      allow update: if validUserSettingsUpdate(uid) || isAdminUserOpsUpdate();
+      allow delete: if false;
+
+      match /collectedDiamondBoxes/{boxId} {
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+      }
+
+      match /daily_metrics/{dayKey} {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['steps', 'km', 'updatedAt'])
+          && request.resource.data.steps is int
+          && request.resource.data.km is number;
+        allow delete: if false;
+      }
+
+      match /wallet_transactions/{txId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validClientWalletTransactionCreate();
+        allow update, delete: if false;
+      }
+
+      match /notifications/{noticeId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validClientNotificationCreate();
+        allow update, delete: if false;
+      }
+
+      match /retentionPushes/{pushId} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) && validRetentionPushCreate();
+        allow update, delete: if false;
+      }
+    }
+
+    function isOwnWatchLinkHandoff(activityId) {
+      return signedIn()
+        && activityId == ('watch-link-' + request.auth.uid)
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'userId',
+          'watch_api_token',
+          'watchApiToken',
+          'watchType',
+          'jenaPipelineReady',
+          'updatedAt'
+        ])
+        && request.resource.data.watch_api_token is string
+        && request.resource.data.watchType in [
+          'apple_watch',
+          'galaxy_watch',
+          'garmin',
+          'coros',
+          'suunto'
+        ]
+        && request.resource.data.jenaPipelineReady == true;
+    }
+
+    match /appeals/{appealId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.activityId is string
+        && request.resource.data.proofImageUri is string
+        && request.resource.data.status == 'under_review'
+        && request.resource.data.ttlDays == 14;
+      allow update, delete: if isAdmin();
+    }
+
+    function isOwnJenaActivityWrite() {
+      return signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.activityStatus in ['passed', 'pending', 'failed'];
+    }
+
+    match /activities/{activityId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create, update: if isOwnWatchLinkHandoff(activityId)
+        || isOwnJenaActivityWrite();
+      allow delete: if false;
+    }
+
+    match /tournaments/{tournamentId} {
+      allow read: if true;
+      allow create, update, delete: if false;
+
+      match /participants/{uid} {
+        allow read: if signedIn() || isAdmin();
+        allow create, update, delete: if false;
+      }
+    }
+
+    match /diamondBoxes/{boxId} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    match /crewRankings/{crewId} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    match /paymentIntents/{intentId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if isOwnPaymentCreate();
+      allow update, delete: if false;
+    }
+
+    match /purchases/{purchaseId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'PENDING_VERIFY'
+        && request.resource.data.productId is string
+        && request.resource.data.purchaseID is string;
+      allow update, delete: if isAdmin();
+    }
+
+    match /walletTransactions/{txId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update, delete: if false;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+# Secrets and local env
+.env
+backend/jena_ai/.env
+android/app/google-services.json
+**/GoogleService-Info.plist
+
+# Local toolchains (Flutter SDK installer)
+tools/flutter/
+flutter_windows_3.44.3-stable/
+
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+ios/Flutter/ephemeral/
+
+# Admin web
+admin/node_modules/
+admin/dist/
+
+# Node
+**/node_modules/
+
+# Python
+backend/jena_ai/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Temp restore / local scratch
+_restore_*.json
+*.jks
+*.keystore
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

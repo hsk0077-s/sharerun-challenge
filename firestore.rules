@@ -17,6 +17,8 @@ service cloud.firestore {
         'watchTypeUpdatedAt',
         'sensitiveDataConsent',
         'sensitiveDataConsentUpdatedAt',
+        'healthDataConsent',
+        'healthDataConsentUpdatedAt',
         'updatedAt'
       ]);
     }
@@ -113,44 +115,72 @@ service cloud.firestore {
         || validTermsAcceptanceUpdate(uid)
         || validPushSettingsUpdate(uid)
         || validWatchApiTokenUpdate(uid)
-        || validClientEconomyUpdate(uid);
+        || validNonMoneyProfileUpdate(uid)
+        || validOnboardingConsentsUpdate(uid)
+        || validDeviceOnboardingUpdate(uid);
     }
 
-    function validClientEconomyUpdate(uid) {
+    // Nickname / gender only — never wallet, share, or economy maps.
+    function validNonMoneyProfileUpdate(uid) {
       return isOwner(uid)
+        && request.resource.data.uid == uid
         && request.resource.data.diff(resource.data).changedKeys().hasOnly([
-          'hasCPR',
-          'isSponsored',
-          'wallet',
-          'shareBalance',
-          'todayHarvestedShare',
+          'uid',
           'nickname',
           'nicknameUpdatedAt',
           'nicknameSetAt',
-          'donationCount',
-          'cumulativeDonationAmount',
-          'angelTierCode',
-          'lastDonationAmountWon',
-          'lastDonatedAt',
           'gender',
           'genderUpdatedAt',
           'updatedAt'
         ])
         && (
           !request.resource.data.diff(resource.data).changedKeys()
-              .hasAny(['hasCPR'])
-          || request.resource.data.hasCPR is bool
+              .hasAny(['nickname'])
+          || request.resource.data.nickname is string
         )
         && (
           !request.resource.data.diff(resource.data).changedKeys()
-              .hasAny(['isSponsored'])
-          || request.resource.data.isSponsored is bool
-        )
-        && (
-          !request.resource.data.diff(resource.data).changedKeys()
-              .hasAny(['wallet'])
-          || request.resource.data.wallet is map
+              .hasAny(['gender'])
+          || request.resource.data.gender in ['male', 'female']
         );
+    }
+
+    function validOnboardingConsentsUpdate(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'uid',
+          'termsAccepted',
+          'termsAcceptedAt',
+          'sensitiveDataConsent',
+          'sensitiveDataConsentUpdatedAt',
+          'healthDataConsent',
+          'healthDataConsentUpdatedAt',
+          'updatedAt'
+        ])
+        && request.resource.data.termsAccepted is bool
+        && request.resource.data.sensitiveDataConsent is bool;
+    }
+
+    function validDeviceOnboardingUpdate(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          'uid',
+          'isOnboardingCompleted',
+          'isDeviceConnected',
+          'connectedDeviceType',
+          'watchType',
+          'watchTypeUpdatedAt',
+          'healthDataConsent',
+          'healthDataConsentUpdatedAt',
+          'sensitiveDataConsent',
+          'sensitiveDataConsentUpdatedAt',
+          'updatedAt'
+        ])
+        && request.resource.data.isOnboardingCompleted is bool
+        && request.resource.data.isDeviceConnected is bool
+        && validWatchType();
     }
 
     function validInitialWallet() {
@@ -390,17 +420,10 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    function isOwnJenaActivityWrite() {
-      return signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.activityStatus in ['passed', 'pending', 'failed'];
-    }
-
     match /activities/{activityId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create, update: if isOwnWatchLinkHandoff(activityId)
-        || isOwnJenaActivityWrite();
+      allow create, update: if isOwnWatchLinkHandoff(activityId);
       allow delete: if false;
     }
 

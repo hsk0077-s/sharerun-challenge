@@ -16,22 +16,10 @@ class WalletRepository {
   final FirestoreService _firestoreService;
   final SecuredActionApiClient _securedActionApiClient;
 
-  /// GCP 대시보드 싱크용 SHARE 증감 (클라이언트 optimistic; 서버 웹훅과 병행).
+  /// SHARE 증감은 웹훅 / secured actions 전용. 클라이언트는 원장을 쓰지 않는다.
   Future<void> applyShareDelta(String uid, int delta) async {
-    if (delta == 0) return;
-    await _firestoreService.doc(FirestorePaths.user(uid)).set(
-      {
-        'wallet': {
-          'shareBalance': FieldValue.increment(delta),
-        },
-      },
-      SetOptions(merge: true),
-    );
-    await logClientWalletTransaction(
-      uid: uid,
-      title: delta > 0 ? 'SHARE 충전 💳' : 'SHARE 차감',
-      amount: delta,
-      assetType: 'SHARE',
+    debugPrint(
+      'applyShareDelta skipped (server-owned wallet): uid=$uid delta=$delta',
     );
   }
 

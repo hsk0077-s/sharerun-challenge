@@ -24,7 +24,6 @@ import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
-import '../features/wallet/providers/wallet_provider.dart';
 import 'my_wallet_screen.dart';
 
 class PedometerData {
@@ -931,7 +930,6 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _claimedSteps = liveSteps;
     });
     ref.read(walkingPendingShareProvider.notifier).state = 0.0;
-    ref.read(walletProvider.notifier).chargeShare(toClaim);
     await prefs.setInt('${todayKey}_claimed_steps', _claimedSteps);
     await prefs.setDouble('collected_share_coins', _collectedShareCoins);
     try {
@@ -942,28 +940,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     } catch (_) {}
     unawaited(_syncForegroundNotification(liveSteps));
     if (uid.isEmpty) return;
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'shareBalance': FieldValue.increment(toClaim),
-        'todayHarvestedShare': FieldValue.increment(toClaim),
-        'wallet.shareBalance': FieldValue.increment(toClaim),
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('wallet_transactions')
-          .add({
-        'id': 'TX_HARVEST_${DateTime.now().millisecondsSinceEpoch}',
-        'title': '워킹챌린지 걸음 수 셰어 수집 🪙',
-        'amount': toClaim,
-        'assetType': 'SHARE',
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      debugPrint('[HARVEST SUCCESS] 로컬 및 클라우드 동기화 완료: +$toClaim SHARE');
-    } catch (e) {
-      debugPrint('[HARVEST FIRESTORE ERROR] 클라우드 동기화 실패: $e');
-    }
+    debugPrint(
+      '[HARVEST] local coin UI +$toClaim SHARE (wallet ledger is server-owned)',
+    );
   }
 
   Future<void> _setBenefitNotifEnabled(bool enabled) async {

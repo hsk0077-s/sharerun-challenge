@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +15,6 @@ import 'firebase_options.dart';
 import 'app/app.dart';
 import 'app/app_config.dart';
 import 'app/providers/app_providers.dart';
-import 'app/router/route_names.dart';
 import 'core/auth/auth_session_bootstrap.dart';
 import 'core/config/app_env.dart';
 import 'core/notifications/notification_service.dart';
@@ -45,10 +45,10 @@ Future<void> main() async {
   final bootstrap = await AuthSessionBootstrap.run();
   AppConfig.initialRoute = bootstrap.initialRoute;
 
-  // TODO: PM TEST INITIALIZATION
-  // PM QA용 1회성 강제 초기화. 테스트 환경 세팅이 끝나면 이 호출을 주석 처리하거나 삭제하세요.
-  // (플래그 pm_qa_test_init_v1_done 이 있으면 재실행되지 않습니다. 다시 돌리려면 해당 키를 지우세요.)
-  await _runPmTestInitializationOnce();
+  // TODO: PM TEST INITIALIZATION — debug only. Release must not seed balances.
+  if (kDebugMode) {
+    await _runPmTestInitializationOnce();
+  }
 
   runApp(
     ProviderScope(
@@ -76,6 +76,9 @@ Future<void> main() async {
 // 재실행이 필요하면 SharedPreferences 키 `pm_qa_test_init_v1_done` 을 제거하세요.
 // ---------------------------------------------------------------------------
 Future<void> _runPmTestInitializationOnce() async {
+  if (!kDebugMode) {
+    return;
+  }
   const doneKey = 'pm_qa_test_init_v1_done';
   try {
     final prefs = await SharedPreferences.getInstance();

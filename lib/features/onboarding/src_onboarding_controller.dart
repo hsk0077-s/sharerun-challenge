@@ -1207,9 +1207,6 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
     try {
       final uid = _requireUid();
       if (!state.signupRewardApplied) {
-        ref
-            .read(walletProvider.notifier)
-            .chargeShare(EconomyConstants.signupRewardSrv);
         await ref.read(userRepositoryProvider).applySignupReward(
               uid: uid,
               shareAmount: EconomyConstants.signupRewardSrv,

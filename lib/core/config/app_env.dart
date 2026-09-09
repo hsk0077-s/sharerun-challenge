@@ -12,15 +12,23 @@ abstract final class AppEnv {
       return;
     }
     try {
-      await dotenv.load(fileName: '.env');
+      await dotenv.load(fileName: '.env', isOptional: true);
     } catch (_) {
-      // Asset missing in release or tests — fall back to defaults / dart-define.
+      // Asset missing in CI/release — fall back to defaults / dart-define.
+    }
+    if (!dotenv.isInitialized) {
+      try {
+        dotenv.loadFromString(envString: 'APP_ENV_LOADED=1');
+      } catch (_) {
+        // Getter still guards with isInitialized.
+      }
     }
     _loaded = true;
   }
 
   static String _get(String key, {required String defaultValue}) {
-    final fromDotenv = dotenv.maybeGet(key);
+    final fromDotenv =
+        dotenv.isInitialized ? dotenv.maybeGet(key) : null;
     if (fromDotenv != null && fromDotenv.isNotEmpty) {
       return fromDotenv;
     }

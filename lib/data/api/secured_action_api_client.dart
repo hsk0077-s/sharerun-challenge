@@ -100,6 +100,17 @@ class SecuredActionApiClient {
     await _post('/actions/account/delete', const {});
   }
 
+  Future<void> claimSignupReward() async {
+    await _post('/actions/onboarding/claim-signup', const {});
+  }
+
+  Future<void> applyReferralCode(String referralCode) async {
+    await _post(
+      '/actions/referrals/apply',
+      {'referral_code': referralCode},
+    );
+  }
+
   Future<Map<String, dynamic>> _post(
     String path,
     Map<String, dynamic> body,

@@ -15,7 +15,6 @@ import 'firebase_options.dart';
 import 'app/app.dart';
 import 'app/app_config.dart';
 import 'app/providers/app_providers.dart';
-import 'app/router/route_names.dart';
 import 'core/auth/auth_session_bootstrap.dart';
 import 'core/config/app_env.dart';
 import 'core/notifications/notification_service.dart';

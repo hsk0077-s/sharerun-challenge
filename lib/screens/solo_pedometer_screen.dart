@@ -213,6 +213,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   var _hasReceivedMilestone3 = false;
   var _hasReceivedBonus = false;
   var _rewardGrantInFlight = false;
+  var _harvestInFlight = false;
   Timer? _goldenPushDebounce;
 
   UserTier get _tier =>
@@ -386,7 +387,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   void _ensureDailyRollover({required int sensorTotal}) {
-    final todayIso = DateTime.now().toIso8601String().split('T')[0];
+    final todayIso = PedometerKstClock.dateKey();
     if (_lastSavedDate == todayIso) return;
     if (_lastSavedDate.isEmpty) {
       _lastSavedDate = todayIso;
@@ -449,6 +450,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       await prefs.setBool('$prefix.hasReceivedBonus', false);
       await prefs.setDouble('$prefix.collectedShare', 0);
       await prefs.setInt('$prefix.claimedSteps', 0);
+      await prefs.setInt('${_lastSavedDate}_claimed_steps', 0);
       await prefs.setInt('$prefix.steps', _steps);
       await prefs.setDouble('$prefix.km', _km);
       final ymd = PedometerKstClock.dateKey();
@@ -557,6 +559,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
+      _ensureDailyRollover(
+        sensorTotal: math.max(_steps, 0) + _stepOffset,
+      );
       unawaited(_pullLiveStepsFromService());
       unawaited(syncBackgroundSteps());
       if (_isNotificationEnabled) {
@@ -671,15 +676,23 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         _updatePendingAmount();
         return;
       }
-      await prefs.remove('${todayKey}_step_offset');
+      if (_lastSavedDate.isEmpty) {
+        _lastSavedDate = prefs.getString('lastSavedDate') ?? '';
+      }
+      _ensureDailyRollover(
+        sensorTotal: math.max(_steps, 0) + _stepOffset,
+      );
       if (!mounted) return;
+      final sameKstDay = _lastSavedDate == todayKey;
       setState(() {
-        _stepOffset = 0;
         _isOffsetCaptured = true;
-        _claimedSteps = prefs.getInt('${todayKey}_claimed_steps') ?? 0;
-        _collectedShareCoins =
-            prefs.getDouble('collected_share_coins') ?? 0.0;
         _isClaimedDataLoaded = true;
+        if (sameKstDay) {
+          _claimedSteps = prefs.getInt('${todayKey}_claimed_steps') ??
+              _claimedSteps;
+          _collectedShareCoins =
+              prefs.getDouble('collected_share_coins') ?? _collectedShareCoins;
+        }
       });
       _updatePendingAmount();
     } catch (e) {
@@ -908,11 +921,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   Future<void> _onHarvestCoins() async {
+    if (_harvestInFlight) return;
     final pedometerState = ref.read(pedometerStateProvider);
     final liveSteps = math.max(pedometerState.steps, _steps);
     final diffSteps = liveSteps - _claimedSteps;
     final int toClaim = (diffSteps * 0.01).floor();
     if (toClaim <= 0) return;
+    _harvestInFlight = true;
+    final previousClaimed = _claimedSteps;
+    final previousCollected = _collectedShareCoins;
     try {
       HapticFeedback.heavyImpact();
     } on PlatformException catch (e, st) {
@@ -920,8 +937,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     } catch (e, st) {
       debugPrint('harvest haptic: $e\n$st');
     }
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
+    if (!mounted) {
+      _harvestInFlight = false;
+      return;
+    }
     final todayKey = _getTodayKey();
     final userProfile = ref.read(userProfileProvider);
     final uid = userProfile.uid;
@@ -930,19 +949,35 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _claimedSteps = liveSteps;
     });
     ref.read(walkingPendingShareProvider.notifier).state = 0.0;
-    await prefs.setInt('${todayKey}_claimed_steps', _claimedSteps);
-    await prefs.setDouble('collected_share_coins', _collectedShareCoins);
-    try {
-      final prefix = await _prefPrefix();
-      await prefs.setInt('$prefix.claimedSteps', _claimedSteps);
-      await prefs.setDouble('$prefix.pendingShare', 0.0);
-      await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
-    } catch (_) {}
     unawaited(_syncForegroundNotification(liveSteps));
-    if (uid.isEmpty) return;
-    debugPrint(
-      '[HARVEST] local coin UI +$toClaim SHARE (wallet ledger is server-owned)',
-    );
+    try {
+      if (uid.isNotEmpty) {
+        await ref.read(walletRepositoryProvider).harvestPedometerShare(
+              claimedSteps: liveSteps,
+            );
+      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('${todayKey}_claimed_steps', _claimedSteps);
+      await prefs.setDouble('collected_share_coins', _collectedShareCoins);
+      try {
+        final prefix = await _prefPrefix();
+        await prefs.setInt('$prefix.claimedSteps', _claimedSteps);
+        await prefs.setDouble('$prefix.pendingShare', 0.0);
+        await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
+      } catch (_) {}
+      debugPrint('[HARVEST SUCCESS] +$toClaim SHARE claimedSteps=$liveSteps');
+    } catch (e) {
+      debugPrint('[HARVEST] secured credit failed: $e');
+      if (mounted) {
+        setState(() {
+          _collectedShareCoins = previousCollected;
+          _claimedSteps = previousClaimed;
+        });
+        _updatePendingAmount();
+      }
+    } finally {
+      _harvestInFlight = false;
+    }
   }
 
   Future<void> _setBenefitNotifEnabled(bool enabled) async {
@@ -985,6 +1020,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final running =
         ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
     final todayKey = PedometerKstClock.dateKey();
+    if (_lastSavedDate.isNotEmpty && _lastSavedDate != todayKey) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (_lastSavedDate == PedometerKstClock.dateKey()) return;
+        _ensureDailyRollover(
+          sensorTotal: math.max(live.steps, _steps) + _stepOffset,
+        );
+      });
+    }
     final effectiveSteps = math.max(live.steps, _steps).clamp(0, 999999);
     final weekSteps = {
       ..._weekSteps,

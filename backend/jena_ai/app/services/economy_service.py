@@ -1,17 +1,21 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hashlib
 
 from app.constants.economy_constants import (
     DAILY_CAP_KM,
     DAILY_CAP_SRV_TOKENS,
     MAX_REFERRAL_PAYOUTS,
+    PEDOMETER_DAILY_HARVEST_SHARE_CAP,
+    PEDOMETER_SHARE_PER_STEP,
     REFERRAL_REWARD_SRV,
     SIGNUP_REWARD_SRV,
     SRV_TOKENS_PER_KM,
     TRIAL_COMPLETION_REWARD_SRV,
     TRIAL_RUNS_REQUIRED,
 )
+
+_KST = timezone(timedelta(hours=9))
 
 
 @dataclass(frozen=True)
@@ -25,6 +29,38 @@ class EconomyService:
     def today_key(self, now: datetime | None = None) -> str:
         current = now or datetime.now(timezone.utc)
         return current.date().isoformat()
+
+    def kst_today_key(self, now: datetime | None = None) -> str:
+        current = now or datetime.now(timezone.utc)
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        return current.astimezone(_KST).date().isoformat()
+
+    def normalize_pedometer_harvest(
+        self,
+        harvest: dict | None,
+        today: str,
+    ) -> dict:
+        harvest = harvest or {}
+        if harvest.get("dateKey") != today:
+            return {"dateKey": today, "claimedSteps": 0, "harvestedShare": 0}
+        return {
+            "dateKey": today,
+            "claimedSteps": int(harvest.get("claimedSteps") or 0),
+            "harvestedShare": int(harvest.get("harvestedShare") or 0),
+        }
+
+    def pedometer_harvest_share(
+        self,
+        *,
+        claimed_steps: int,
+        prev_claimed_steps: int,
+        harvested_share: int,
+    ) -> int:
+        delta = max(0, claimed_steps - prev_claimed_steps)
+        raw = int(delta * PEDOMETER_SHARE_PER_STEP)
+        remaining = max(0, PEDOMETER_DAILY_HARVEST_SHARE_CAP - harvested_share)
+        return min(raw, remaining)
 
     def generate_referral_code(self, uid: str) -> str:
         digest = hashlib.sha256(uid.encode("utf-8")).hexdigest()

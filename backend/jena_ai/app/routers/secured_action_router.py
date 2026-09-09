@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.models.secured_actions import (
     ApplyReferralRequest,
     CollectDiamondBoxRequest,
+    HarvestPedometerRequest,
     JoinTournamentRequest,
     RefundRequest,
     SecuredActionResult,
@@ -58,6 +59,14 @@ def request_refund(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.request_refund(uid=uid, request=request)
+
+
+@router.post("/pedometer/harvest", response_model=SecuredActionResult)
+def harvest_pedometer_share(
+    request: HarvestPedometerRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.harvest_pedometer_share(uid=uid, request=request)
 
 
 @router.post("/account/delete", response_model=SecuredActionResult)

@@ -68,6 +68,15 @@ class SecuredActionApiClient {
     );
   }
 
+  Future<void> harvestPedometerShare({
+    required int claimedSteps,
+  }) async {
+    await _post(
+      '/actions/pedometer/harvest',
+      {'claimed_steps': claimedSteps},
+    );
+  }
+
   Future<void> transferValueToWeb3({
     required String destinationAddress,
     required int amountSrv,

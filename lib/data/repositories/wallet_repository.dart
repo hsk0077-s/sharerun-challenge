@@ -79,6 +79,15 @@ class WalletRepository {
     return _securedActionApiClient.requestRefund(shareAmount: shareAmount);
   }
 
+  /// Walking-challenge SHARE mint. Server increments `wallet.shareBalance` only.
+  Future<void> harvestPedometerShare({
+    required int claimedSteps,
+  }) {
+    return _securedActionApiClient.harvestPedometerShare(
+      claimedSteps: claimedSteps,
+    );
+  }
+
   Future<void> transferValueToWeb3({
     required String destinationAddress,
     required int amountSrv,

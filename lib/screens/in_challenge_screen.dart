@@ -13,9 +13,7 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
-import '../data/models/user_model.dart';
-import '../features/jena_validation/services/jena_run_submission_packager.dart';
-import '../features/jena_validation/services/mock_jena_validation_service.dart';
+import '../core/api/api_exception.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/run_tracking/models/route_point.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
@@ -51,8 +49,6 @@ class InChallengeScreen extends ConsumerStatefulWidget {
 typedef SoloRunTrackingScreen = InChallengeScreen;
 
 class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
-  static final _packager = JenaRunSubmissionPackager();
-  static const _mockJena = MockJenaValidationService();
 
   StreamSubscription<RunTelemetry>? _telemetrySubscription;
   RunTelemetry _telemetry = RunTelemetry.empty;
@@ -307,9 +303,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
   Future<void> _finishAndValidate() async {
     setState(() => _validating = true);
     final authUser = ref.read(authStateChangesProvider).value;
-    final localSession = ref.read(persistedAuthSessionProvider);
-    final userId = authUser?.uid ?? localSession?.uid;
-    if (userId == null || userId.isEmpty) {
+    if (authUser == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('로그인 후 러닝 검증을 진행할 수 있습니다.')),
@@ -318,6 +312,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       return;
     }
 
+    final userId = authUser.uid;
     final activityId = 'activity-${DateTime.now().millisecondsSinceEpoch}';
     CompletedRunSession? session;
     try {
@@ -325,24 +320,16 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
             activityId: activityId,
             userId: userId,
           );
-      final profile = ref.read(activeUserProfileProvider).value;
-      final payload = _packager.package(
-        activityId: activityId,
-        userId: userId,
-        session: session,
-        watchType: profile?.watchType ?? WatchType.none,
-      );
-      final result = await _mockJena.validateSubmission(payload);
-
-      await ref.read(activityRepositoryProvider).persistMinimizedJenaResult(
+      final result = await ref
+          .read(activityValidationServiceProvider)
+          .validateAndPersistResult(
             activityId: activityId,
             userId: userId,
             distanceKm: session.telemetry.distanceKm,
-            jenaVerified: result.verified,
-            activityStatus: result.decision.activityStatus,
-            jenaDecision: result.decision.name,
-            jenaReason: result.reason,
-            locked: result.decision == JenaDecision.pending,
+            durationSeconds: session.telemetry.durationSeconds,
+            gyroStabilityScore: session.telemetry.gyroStabilityScore,
+            routePoints: session.routePoints,
+            sensorBuffer: session.sensorBuffer,
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;
@@ -399,7 +386,9 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       session?.discardAllSensitive();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Jena 검증 실패: $error')),
+        SnackBar(
+          content: Text('Jena 검증 실패: ${ApiErrorMessage.from(error)}'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _validating = false);

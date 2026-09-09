@@ -189,27 +189,10 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     }
   }
 
-  /// 만보기 동전 줍기 — 로컬 지갑 + Firestore SHARE 가산.
+  /// 만보기 동전 UI. SHARE 원장은 서버 전용이라 클라이언트에서 가산하지 않는다.
   Future<void> creditShare(int amount) async {
     if (amount <= 0) return;
-    final next = state.wallet.shareBalance + amount;
-    state = state.copyWith(
-      wallet: state.wallet.copyWith(shareBalance: next),
-    );
-    ref.read(walletProvider.notifier).chargeShare(amount);
-    final uid = _currentUid();
-    if (uid == null || uid.isEmpty) return;
-    try {
-      await ref.read(userRepositoryProvider).addShareBalance(
-            uid: uid,
-            shareAmount: amount,
-          );
-    } catch (_) {}
-    await writeTransactionReceipt(
-      title: '만보기 동전 줍기 🪙',
-      amount: amount,
-      assetType: 'SHARE',
-    );
+    debugPrint('creditShare skipped (server-owned wallet): amount=$amount');
   }
 }
 

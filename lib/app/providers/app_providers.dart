@@ -117,7 +117,10 @@ final walletRepositoryProvider = Provider<WalletRepository>(
 );
 
 final userRepositoryProvider = Provider<UserRepository>(
-  (ref) => UserRepository(ref.watch(firestoreServiceProvider)),
+  (ref) => UserRepository(
+    ref.watch(firestoreServiceProvider),
+    securedActionApiClient: ref.watch(securedActionApiClientProvider),
+  ),
 );
 
 final activityRepositoryProvider = Provider<ActivityRepository>(

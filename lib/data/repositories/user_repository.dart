@@ -2,14 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../core/constants/firestore_paths.dart';
+import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
-  UserRepository(this._firestoreService);
+  UserRepository(
+    this._firestoreService, {
+    SecuredActionApiClient? securedActionApiClient,
+  }) : _securedActionApiClient = securedActionApiClient;
 
   final FirestoreService _firestoreService;
+  final SecuredActionApiClient? _securedActionApiClient;
 
+  /// Matches `validUserCreate` in firestore.rules — extra keys or non-zero
+  /// wallet / tier != 1 are rejected.
   Future<void> ensureUserDocument({
     required String uid,
     String watchType = 'none',
@@ -24,24 +31,13 @@ class UserRepository {
       }, SetOptions(merge: true));
     }
 
+    // Create payload must match validUserCreate (watchType always none).
+    // [watchType] is applied later via updateWatchType, not on create.
+    assert(watchType.isNotEmpty);
     return userRef.set({
       'uid': uid,
-      'watchType': watchType,
-      'tier': 0,
-      'nickname': '',
-      'gender': 'male',
-      'donationCount': 0,
-      'cumulativeDonationAmount': 0,
-      'dailyDistance': 0,
-      'activityStreakCount': 0,
-      'runningShoeMileage': 0,
-      'streakBonusWeekKey': '',
-      'shoeAlertTierSent': 0,
-      'goldenHourAlertDateKey': '',
-      'lastJenaPendingNotifiedId': '',
-      'preferredRunHour': 19,
-      'preliminaryRunsCount': 0,
-      'healthDataConsent': false,
+      'watchType': 'none',
+      'tier': 1,
       'sensitiveDataConsent': false,
       'termsAccepted': false,
       'pushNotificationsEnabled': false,
@@ -51,16 +47,9 @@ class UserRepository {
         'valueTokenBalance': 0,
         'totalDonationValue': 0,
       },
-      'economy': {
-        'signupRewardClaimed': false,
-        'trialRunCount': 0,
-        'trialMilestoneRewardClaimed': false,
-        'firstTierGranted': false,
-        'referralPayoutCount': 0,
-      },
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    });
   }
 
   Stream<int> watchUserTier(String uid) {
@@ -141,30 +130,15 @@ class UserRepository {
   }
 
   /// 후원 1건 원자 누적 + 천사 등급 코드 기록.
+  /// Donation totals are server-owned (sponsor webhook / winner reward).
   Future<void> recordDonation({
     required String uid,
     required int amountWon,
     required String angelTierCode,
   }) async {
-    if (amountWon < 0) {
-      throw ArgumentError.value(amountWon, 'amountWon');
-    }
-    await ensureUserDocument(uid: uid);
-    final userRef = _firestoreService.doc(FirestorePaths.user(uid));
-    await _firestoreService.runTransaction((transaction) async {
-      transaction.set(
-        userRef,
-        {
-          'donationCount': FieldValue.increment(1),
-          'cumulativeDonationAmount': FieldValue.increment(amountWon),
-          'angelTierCode': angelTierCode,
-          'lastDonationAmountWon': amountWon,
-          'lastDonatedAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
-    });
+    debugPrint(
+      'recordDonation skipped (server-owned ledger): uid=$uid amount=$amountWon',
+    );
   }
 
   /// Users.watch_api_token 매핑 — 어뷰징 차단 Jena 파이프라인 핸드오프.
@@ -183,39 +157,27 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  /// Atomically increments `wallet.shareBalance` for pedometer claims.
+  /// Pedometer SHARE minting is server-owned. Client no longer writes the ledger.
   Future<void> addShareBalance({
     required String uid,
     required int shareAmount,
   }) async {
-    if (shareAmount <= 0) {
-      return;
-    }
-    final userRef = _firestoreService.doc(FirestorePaths.user(uid));
-    await ensureUserDocument(uid: uid);
-    await userRef.set({
-      'wallet.shareBalance': FieldValue.increment(shareAmount),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'addShareBalance skipped (server-owned wallet): uid=$uid amount=$shareAmount',
+    );
   }
 
-  /// Atomically increments `wallet.diamondBalance` for stamp-tour rewards.
+  /// Stamp-tour DIA minting is server-owned. Client no longer writes the ledger.
   Future<void> addDiamondBalance({
     required String uid,
     required int diamondAmount,
   }) async {
-    if (diamondAmount <= 0) {
-      return;
-    }
-    final userRef = _firestoreService.doc(FirestorePaths.user(uid));
-    await ensureUserDocument(uid: uid);
-    await userRef.set({
-      'wallet.diamondBalance': FieldValue.increment(diamondAmount),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'addDiamondBalance skipped (server-owned wallet): uid=$uid amount=$diamondAmount',
+    );
   }
 
-  /// 잔액 증감 + 아이템/스폰서 플래그. 재설치 복원용 원장.
+  /// Economy flags and balances are backend-owned. Client writes are ignored.
   Future<void> mergeEconomyState({
     required String uid,
     int? shareDelta,
@@ -224,26 +186,9 @@ class UserRepository {
     bool? hasCPR,
     bool? isSponsored,
   }) async {
-    if (uid.isEmpty) return;
-    final share = shareDelta ?? 0;
-    final diamond = diamondDelta ?? 0;
-    final value = valueDelta ?? 0;
-    if (share == 0 &&
-        diamond == 0 &&
-        value == 0 &&
-        hasCPR == null &&
-        isSponsored == null) {
-      return;
-    }
-    await ensureUserDocument(uid: uid);
-    await _firestoreService.doc(FirestorePaths.user(uid)).set({
-      if (share != 0) 'wallet.shareBalance': FieldValue.increment(share),
-      if (diamond != 0) 'wallet.diamondBalance': FieldValue.increment(diamond),
-      if (value != 0) 'wallet.valueTokenBalance': FieldValue.increment(value),
-      if (hasCPR != null) 'hasCPR': hasCPR,
-      if (isSponsored != null) 'isSponsored': isSponsored,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'mergeEconomyState skipped (server-owned wallet): uid=$uid',
+    );
   }
 
   /// 네이티브 헬스 연동 완료 — 관리 대시보드 조회용 플래그.
@@ -282,27 +227,14 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  /// Guest login profile — skips onboarding and marks the account as test-only.
-  Future<void> bootstrapGuestProfile({required String uid}) {
-    return _firestoreService.doc(FirestorePaths.user(uid)).set({
-      'uid': uid,
-      'watchType': 'none',
-      'tier': 1,
-      'isGuest': true,
-      'healthDataConsent': false,
-      'sensitiveDataConsent': false,
-      'termsAccepted': true,
-      'termsAcceptedAt': FieldValue.serverTimestamp(),
-      'pushNotificationsEnabled': false,
-      'wallet': {
-        'shareBalance': 0,
-        'diamondBalance': 0,
-        'valueTokenBalance': 0,
-        'totalDonationValue': 0,
-      },
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+  /// Guest login profile — create via [ensureUserDocument], then terms.
+  Future<void> bootstrapGuestProfile({required String uid}) async {
+    await ensureUserDocument(uid: uid);
+    try {
+      await acceptTerms(uid: uid, pushNotificationsEnabled: false);
+    } catch (e) {
+      debugPrint('bootstrapGuestProfile terms: $e');
+    }
   }
 
   Future<void> updatePushSettings({
@@ -342,42 +274,40 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  /// 1단계 신규 가입 보상 100 SHARE (+ 선택 추천코드).
+  /// Signup reward is minted by `POST /actions/onboarding/claim-signup`.
   Future<void> applySignupReward({
     required String uid,
     required int shareAmount,
     String? referralCode,
   }) async {
-    if (shareAmount <= 0) return;
-    final payload = <String, dynamic>{
-      'wallet.shareBalance': FieldValue.increment(shareAmount),
-      'economy.signupRewardClaimed': true,
-      'updatedAt': FieldValue.serverTimestamp(),
-    };
+    await ensureUserDocument(uid: uid);
+    final api = _securedActionApiClient;
+    if (api == null) {
+      debugPrint('applySignupReward skipped: secured API client missing');
+      return;
+    }
+    await api.claimSignupReward();
     final code = referralCode?.trim();
     if (code != null && code.isNotEmpty) {
-      payload['economy.referredByCode'] = code;
+      try {
+        await api.applyReferralCode(code);
+      } catch (e) {
+        debugPrint('applyReferralCode: $e');
+      }
     }
-    await ensureUserDocument(uid: uid);
-    await _firestoreService.doc(FirestorePaths.user(uid)).set(
-          payload,
-          SetOptions(merge: true),
-        );
   }
 
   Future<void> updateTrialRunCount({
     required String uid,
     required int trialRunCount,
   }) {
-    final count = trialRunCount.clamp(0, 5);
-    return _firestoreService.doc(FirestorePaths.user(uid)).set({
-      'preliminaryRunsCount': count,
-      'economy.trialRunCount': count,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'updateTrialRunCount skipped (server-owned economy): uid=$uid count=$trialRunCount',
+    );
+    return Future<void>.value();
   }
 
-  /// 4단계 완료 — 티어 확정 + 500 SHARE + 추천 지연 지급 트리거 준비.
+  /// Trial completion rewards and tier grants are minted by run validation.
   Future<void> completePreliminaryEvaluation({
     required String uid,
     required int tierRank,
@@ -385,34 +315,20 @@ class UserRepository {
     required int averagePaceSeconds,
     required int trialShareReward,
   }) async {
-    await ensureUserDocument(uid: uid);
-    await _firestoreService.doc(FirestorePaths.user(uid)).set({
-      'tier': tierRank,
-      'tierCode': tierCode,
-      'averagePaceSeconds': averagePaceSeconds,
-      'preliminaryRunsCount': 5,
-      'economy.trialRunCount': 5,
-      'economy.trialMilestoneRewardClaimed': true,
-      'economy.firstTierGranted': true,
-      if (trialShareReward > 0)
-        'wallet.shareBalance': FieldValue.increment(trialShareReward),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'completePreliminaryEvaluation skipped (server-owned economy): uid=$uid',
+    );
   }
 
-  /// 추천인 300 SHARE 지연 보상 — 백엔드 락 해제 지시 (최대 [maxPayouts]명).
+  /// Referral payouts are applied by the secured run-validation / referral APIs.
   Future<void> enqueueReferralUnlock({
     required String referredUid,
     required int rewardShare,
     required int maxPayouts,
   }) async {
-    await _firestoreService.doc(FirestorePaths.user(referredUid)).set({
-      'economy.referralUnlockPending': true,
-      'economy.referralUnlockRewardShare': rewardShare,
-      'economy.referralUnlockMaxPayouts': maxPayouts,
-      'economy.referralUnlockRequestedAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'enqueueReferralUnlock skipped (server-owned economy): referred=$referredUid',
+    );
   }
 
   /// 최초 닉네임 설정 — DIA 차감 없음.
@@ -428,41 +344,18 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  /// 닉네임 변경 + 100 DIA 원자적 차감.
+  /// Nickname only — DIA fee must be charged by a secured API, not the client.
   Future<void> updateNicknameWithDiaFee({
     required String uid,
     required String nickname,
     required int diaFee,
   }) async {
-    if (diaFee < 0) {
-      throw ArgumentError.value(diaFee, 'diaFee');
-    }
-    final userRef = _firestoreService.doc(FirestorePaths.user(uid));
     await ensureUserDocument(uid: uid);
-    await _firestoreService.runTransaction((transaction) async {
-      final snap = await transaction.get(userRef);
-      final data = snap.data() ?? <String, dynamic>{};
-      final wallet = data['wallet'];
-      final walletMap = switch (wallet) {
-        final Map<String, dynamic> m => m,
-        final Map m => Map<String, dynamic>.from(m),
-        _ => <String, dynamic>{},
-      };
-      final currentDia = (walletMap['diamondBalance'] as num?)?.toInt() ?? 0;
-      if (currentDia < diaFee) {
-        throw StateError('DIA 잔액 부족: 필요 $diaFee, 보유 $currentDia');
-      }
-      transaction.set(
-        userRef,
-        {
-          'nickname': nickname,
-          'wallet.diamondBalance': FieldValue.increment(-diaFee),
-          'nicknameUpdatedAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        },
-        SetOptions(merge: true),
-      );
-    });
+    await _firestoreService.doc(FirestorePaths.user(uid)).set({
+      'nickname': nickname,
+      'nicknameUpdatedAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 
   Future<void> updateRetentionFields({
@@ -531,18 +424,15 @@ class UserRepository {
     }
   }
 
-  /// Jena 샌드배깅 탐지 패킷 — 강제 승급.
+  /// Jena 샌드배깅 탐지 패킷 — tier is server-owned.
   Future<void> forceSetTierFromJena({
     required String uid,
     required int tierRank,
     required String tierCode,
   }) {
-    return _firestoreService.doc(FirestorePaths.user(uid)).set({
-      'tier': tierRank,
-      'tierCode': tierCode,
-      'jenaForcePromoted': true,
-      'jenaForcePromotedAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    debugPrint(
+      'forceSetTierFromJena skipped (server-owned economy): uid=$uid',
+    );
+    return Future<void>.value();
   }
 }

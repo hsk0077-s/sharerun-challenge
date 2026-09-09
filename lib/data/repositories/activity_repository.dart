@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/constants/firestore_paths.dart';
-import '../../features/run_tracking/services/abusing_defense_sensor_skeleton.dart';
 import '../firebase/firestore_service.dart';
 import '../models/activity_model.dart';
 import '../models/user_model.dart';
@@ -40,7 +39,8 @@ class ActivityRepository {
     );
   }
 
-  /// 데이터 최소화: Lat/Lon·BPM 없이 Jena 검증 플래그 + 거리만 기록.
+  /// Client activity writes cannot mark a run passed. Use
+  /// `POST /actions/runs/validate` via [ActivityValidationService].
   Future<void> persistMinimizedJenaResult({
     required String activityId,
     required String userId,
@@ -51,23 +51,11 @@ class ActivityRepository {
     String? jenaReason,
     bool locked = false,
   }) {
-    final payload = AbusingDefenseSensorSkeleton.minimizedActivityDocument(
-      activityId: activityId,
-      distanceKm: distanceKm,
-      jenaVerified: jenaVerified,
-    );
-    return _firestoreService.doc(FirestorePaths.activity(activityId)).set(
-      {
-        ...payload,
-        'userId': userId,
-        'jenaVerified': jenaVerified,
-        'activityStatus': activityStatus.code,
-        'locked': locked,
-        if (jenaDecision != null) 'jenaDecision': jenaDecision,
-        if (jenaReason != null) 'jenaReason': jenaReason,
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      SetOptions(merge: true),
+    throw UnsupportedError(
+      'Activity $activityId for $userId must be persisted by '
+      'POST /actions/runs/validate (distanceKm=$distanceKm, '
+      'verified=$jenaVerified, status=${activityStatus.code}, '
+      'decision=$jenaDecision, locked=$locked, reason=$jenaReason).',
     );
   }
 

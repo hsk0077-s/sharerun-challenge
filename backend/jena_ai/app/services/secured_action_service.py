@@ -7,6 +7,7 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from app.models.secured_actions import (
     CollectDiamondBoxRequest,
+    HarvestPedometerRequest,
     JoinTournamentRequest,
     RefundRequest,
     SecuredActionResult,
@@ -942,6 +943,84 @@ class SecuredActionService:
             accepted=True,
             status="collected",
             reason="Diamond box collected.",
+        )
+
+    def harvest_pedometer_share(
+        self,
+        uid: str,
+        request: HarvestPedometerRequest,
+    ) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return self._harvest_pedometer_share_tx(
+            transaction, uid, request, user_ref
+        )
+
+    @firestore.transactional
+    def _harvest_pedometer_share_tx(
+        self,
+        transaction,
+        uid: str,
+        request: HarvestPedometerRequest,
+        user_ref,
+    ) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        user = user_snapshot.to_dict() or {}
+        today = self._economy_service.kst_today_key()
+        harvest = self._economy_service.normalize_pedometer_harvest(
+            user.get("pedometerHarvest"),
+            today,
+        )
+        prev_claimed = int(harvest["claimedSteps"])
+        harvested = int(harvest["harvestedShare"])
+        claimed = int(request.claimed_steps)
+        if claimed <= prev_claimed:
+            return SecuredActionResult(
+                accepted=True,
+                status="already_harvested",
+                reason="Pedometer harvest watermark already applied.",
+            )
+
+        share = self._economy_service.pedometer_harvest_share(
+            claimed_steps=claimed,
+            prev_claimed_steps=prev_claimed,
+            harvested_share=harvested,
+        )
+        updates = {
+            "pedometerHarvest.dateKey": today,
+            "pedometerHarvest.claimedSteps": claimed,
+            "pedometerHarvest.harvestedShare": harvested + share,
+            "updatedAt": SERVER_TIMESTAMP,
+        }
+        if share > 0:
+            updates["wallet.shareBalance"] = firestore.Increment(share)
+            tx_ref = self.firebase_service.db.collection(
+                "walletTransactions"
+            ).document()
+            transaction.set(
+                tx_ref,
+                {
+                    "uid": uid,
+                    "type": "pedometer_harvest",
+                    "shareAmount": share,
+                    "claimedSteps": claimed,
+                    "createdAt": SERVER_TIMESTAMP,
+                },
+            )
+        transaction.update(user_ref, updates)
+        if share <= 0:
+            return SecuredActionResult(
+                accepted=True,
+                status="daily_cap_reached",
+                reason="Walking challenge daily SHARE cap reached.",
+            )
+        return SecuredActionResult(
+            accepted=True,
+            status="harvested",
+            reason=f"{share} SHARE credited from walking challenge.",
         )
 
     def request_refund(self, uid: str, request: RefundRequest) -> SecuredActionResult:

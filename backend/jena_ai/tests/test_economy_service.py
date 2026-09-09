@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.services.economy_service import EconomyService
 
 
@@ -40,3 +42,73 @@ def test_trial_milestone_reached_at_five_runs() -> None:
     service = EconomyService()
     assert service.trial_milestone_reached(4) is False
     assert service.trial_milestone_reached(5) is True
+
+
+def test_kst_today_key_rolls_at_utc_plus_9_midnight() -> None:
+    service = EconomyService()
+    just_before = datetime(2026, 9, 8, 14, 59, tzinfo=timezone.utc)
+    at_midnight = datetime(2026, 9, 8, 15, 0, tzinfo=timezone.utc)
+    assert service.kst_today_key(just_before) == "2026-09-08"
+    assert service.kst_today_key(at_midnight) == "2026-09-09"
+
+
+def test_normalize_pedometer_harvest_resets_on_new_kst_day() -> None:
+    service = EconomyService()
+    previous = {
+        "dateKey": "2026-09-08",
+        "claimedSteps": 4000,
+        "harvestedShare": 40,
+    }
+    reset = service.normalize_pedometer_harvest(previous, "2026-09-09")
+    assert reset == {
+        "dateKey": "2026-09-09",
+        "claimedSteps": 0,
+        "harvestedShare": 0,
+    }
+    same_day = service.normalize_pedometer_harvest(previous, "2026-09-08")
+    assert same_day["claimedSteps"] == 4000
+    assert same_day["harvestedShare"] == 40
+
+
+def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> None:
+    service = EconomyService()
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=150,
+            prev_claimed_steps=0,
+            harvested_share=0,
+        )
+        == 1
+    )
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=250,
+            prev_claimed_steps=150,
+            harvested_share=1,
+        )
+        == 1
+    )
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=7000,
+            prev_claimed_steps=0,
+            harvested_share=0,
+        )
+        == 60
+    )
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=1000,
+            prev_claimed_steps=0,
+            harvested_share=55,
+        )
+        == 5
+    )
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=200,
+            prev_claimed_steps=150,
+            harvested_share=1,
+        )
+        == 0
+    )

@@ -22,6 +22,10 @@ class RefundRequest(BaseModel):
     share_amount: int = Field(gt=0)
 
 
+class HarvestPedometerRequest(BaseModel):
+    claimed_steps: int = Field(ge=0, le=999999)
+
+
 class WinnerRewardRequest(BaseModel):
     activity_id: str
     action: str = Field(

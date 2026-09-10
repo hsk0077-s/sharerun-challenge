@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../core/async/stream_guards.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../firebase/firestore_service.dart';
 import '../models/activity_model.dart';
@@ -11,13 +12,17 @@ class ActivityRepository {
   final FirestoreService _firestoreService;
 
   Stream<List<ActivityModel>> watchRecentActivities(String uid) {
-    return _firestoreService
-        .collection(FirestorePaths.activities)
-        .where('userId', isEqualTo: uid)
-        .orderBy('updatedAt', descending: true)
-        .limit(30)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(_fromSnapshot).toList());
+    return onStreamErrorEmit<List<ActivityModel>>(
+      _firestoreService
+          .collection(FirestorePaths.activities)
+          .where('userId', isEqualTo: uid)
+          .orderBy('updatedAt', descending: true)
+          .limit(30)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map(_fromSnapshot).toList()),
+      const <ActivityModel>[],
+      debugLabel: 'watchRecentActivities',
+    );
   }
 
   /// Activities.watch_api_token 매핑 — Users 컬렉션과 동일 토큰을 연결.

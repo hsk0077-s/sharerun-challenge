@@ -22,7 +22,7 @@ class _EmailVerificationBannerState extends ConsumerState<EmailVerificationBanne
       return const SizedBox.shrink();
     }
 
-    final user = ref.watch(authStateChangesProvider).value;
+    final user = ref.watch(authStateChangesProvider).asData?.value;
     if (user == null || user.isAnonymous) {
       return const SizedBox.shrink();
     }

@@ -22,25 +22,7 @@ class IapPurchaseController {
         _readUid = readUid,
         _onLocalProvisionFallback = onLocalProvisionFallback,
         _iap = iap ?? InAppPurchase.instance {
-    _subscription = _iap.purchaseStream.listen(
-      _onPurchaseUpdates,
-      onError: (Object error, StackTrace stackTrace) {
-        debugPrint('IAP purchaseStream error: $error\n$stackTrace');
-        _emit(
-          const IapUiEvent(
-            kind: IapUiKind.error,
-            message: '결제 스트림이 일시 중단되었습니다. 연결을 확인한 뒤 다시 시도해 주세요.',
-          ),
-        );
-        _subscription = null;
-        _ensureListening();
-      },
-      onDone: () {
-        _subscription = null;
-        _ensureListening();
-      },
-      cancelOnError: false,
-    );
+    _bindPurchaseStream();
   }
 
   final PurchaseRepository _purchaseRepository;
@@ -287,23 +269,53 @@ class IapPurchaseController {
     }
   }
 
+  void _bindPurchaseStream() {
+    try {
+      _subscription = _iap.purchaseStream.listen(
+        _onPurchaseUpdates,
+        onError: (Object error, StackTrace stackTrace) {
+          debugPrint('IAP purchaseStream error: $error\n$stackTrace');
+          _emit(
+            const IapUiEvent(
+              kind: IapUiKind.error,
+              message: '결제 스트림이 일시 중단되었습니다. 연결을 확인한 뒤 다시 시도해 주세요.',
+            ),
+          );
+          _subscription = null;
+          _ensureListening();
+        },
+        onDone: () {
+          _subscription = null;
+          _ensureListening();
+        },
+        cancelOnError: false,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('IAP purchaseStream subscribe failed: $error\n$stackTrace');
+    }
+  }
+
   void _ensureListening() {
     if (_subscription != null) return;
     if (_resubscribeAttempts >= 5) return;
     _resubscribeAttempts += 1;
-    _subscription = _iap.purchaseStream.listen(
-      _onPurchaseUpdates,
-      onError: (Object error, StackTrace stackTrace) {
-        debugPrint('IAP resubscribe error: $error\n$stackTrace');
-        _subscription = null;
-        _ensureListening();
-      },
-      onDone: () {
-        _subscription = null;
-        _ensureListening();
-      },
-      cancelOnError: false,
-    );
+    try {
+      _subscription = _iap.purchaseStream.listen(
+        _onPurchaseUpdates,
+        onError: (Object error, StackTrace stackTrace) {
+          debugPrint('IAP resubscribe error: $error\n$stackTrace');
+          _subscription = null;
+          _ensureListening();
+        },
+        onDone: () {
+          _subscription = null;
+          _ensureListening();
+        },
+        cancelOnError: false,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('IAP resubscribe failed: $error\n$stackTrace');
+    }
   }
 
   void _emit(IapUiEvent event) {

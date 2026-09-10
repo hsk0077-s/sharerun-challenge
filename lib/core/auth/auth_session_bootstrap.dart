@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../app/router/route_names.dart';
 import 'local_auth_session.dart';
@@ -21,16 +23,22 @@ abstract final class AuthSessionBootstrap {
     var session = await store.read();
 
     if (session == null || session.uid.isEmpty) {
-      final firebaseUser = FirebaseAuth.instance.currentUser;
-      if (firebaseUser != null && firebaseUser.uid.isNotEmpty) {
-        session = LocalAuthSession(
-          uid: firebaseUser.uid,
-          isGuest: firebaseUser.isAnonymous,
-        );
-        await store.saveSession(
-          uid: session.uid,
-          isGuest: session.isGuest,
-        );
+      try {
+        if (Firebase.apps.isNotEmpty) {
+          final firebaseUser = FirebaseAuth.instance.currentUser;
+          if (firebaseUser != null && firebaseUser.uid.isNotEmpty) {
+            session = LocalAuthSession(
+              uid: firebaseUser.uid,
+              isGuest: firebaseUser.isAnonymous,
+            );
+            await store.saveSession(
+              uid: session.uid,
+              isGuest: session.isGuest,
+            );
+          }
+        }
+      } catch (e) {
+        debugPrint('AuthSessionBootstrap firebase user: $e');
       }
     }
 

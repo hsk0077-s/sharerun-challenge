@@ -22,8 +22,10 @@ Future<void> bootstrapFirebase() async {
     await Firebase.initializeApp(options: options);
   } on FirebaseException catch (error) {
     if (error.code != 'duplicate-app') {
-      rethrow;
+      await _initializeExistingDefaultApp(error);
     }
+  } catch (error) {
+    await _initializeExistingDefaultApp(error);
   }
 
   if (!AppEnv.useFirebaseEmulator || AppEnv.useLocalMockData) {
@@ -48,4 +50,21 @@ Future<void> bootstrapFirebase() async {
     'Firebase emulators: auth=$host:${AppEnv.firebaseAuthEmulatorPort} '
     'firestore=$host:${AppEnv.firebaseFirestoreEmulatorPort}',
   );
+}
+
+/// Native `google-services.json` / GoogleService-Info.plist may already have
+/// created the default app. AppEnv demo keys (no bundled `.env`) must not
+/// crash cold start — keep the existing app if Dart options disagree.
+Future<void> _initializeExistingDefaultApp(Object error) async {
+  debugPrint('Firebase initializeApp(options) failed: $error');
+  if (Firebase.apps.isNotEmpty) {
+    return;
+  }
+  try {
+    await Firebase.initializeApp();
+  } on FirebaseException catch (fallback) {
+    if (fallback.code != 'duplicate-app') {
+      rethrow;
+    }
+  }
 }

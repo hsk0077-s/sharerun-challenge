@@ -29,17 +29,20 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     });
     final initial = ref.read(activeUserProfileProvider).asData?.value ??
         UserModel.dashboardDefault(uid: '');
-    listenToFirestoreProfile(
-      uid: ref.read(authStateChangesProvider).asData?.value?.uid ??
-          initial.uid,
-    );
+    // Pass uid from auth/session providers — never from `state`, which is
+    // uninitialized until this `build()` returns (cold-start ErrorWidget).
+    listenToFirestoreProfile(uid: _currentUid() ?? initial.uid);
     return initial;
   }
 
+  /// Resolves uid from auth providers only. Do not read [state] here:
+  /// [build] calls this before the notifier is initialized, and Riverpod
+  /// would throw `Tried to read the state of an uninitialized provider`.
   String? _currentUid() {
     final auth = ref.read(authStateChangesProvider).asData?.value;
     if (auth != null && auth.uid.isNotEmpty) return auth.uid;
-    if (state.uid.isNotEmpty) return state.uid;
+    final persisted = ref.read(persistedAuthSessionProvider)?.uid;
+    if (persisted != null && persisted.isNotEmpty) return persisted;
     return null;
   }
 

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.models.secured_actions import (
     ApplyReferralRequest,
     CollectDiamondBoxRequest,
+    DebugTestGrantRequest,
     HarvestPedometerRequest,
     JoinTournamentRequest,
     RefundRequest,
@@ -71,9 +72,10 @@ def harvest_pedometer_share(
 
 @router.post("/debug/test-grant-1m", response_model=SecuredActionResult)
 def grant_debug_test_wallet(
+    request: DebugTestGrantRequest = DebugTestGrantRequest(),
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
-    return service.grant_debug_test_wallet(uid=uid)
+    return service.grant_debug_test_wallet(uid=uid, request=request)
 
 
 @router.post("/account/delete", response_model=SecuredActionResult)

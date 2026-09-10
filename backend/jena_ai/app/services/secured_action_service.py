@@ -7,6 +7,7 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from app.models.secured_actions import (
     CollectDiamondBoxRequest,
+    DebugTestGrantRequest,
     HarvestPedometerRequest,
     JoinTournamentRequest,
     RefundRequest,
@@ -19,6 +20,7 @@ from app.models.secured_actions import (
 from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
     TEST_WALLET_GRANT_AMOUNT,
+    TEST_WALLET_GRANT_ELIGIBLE_FLAG,
     TEST_WALLET_GRANT_FLAG,
 )
 from app.models.validation_request import ValidationRequest
@@ -1072,16 +1074,46 @@ class SecuredActionService:
     def _test_grant_already_applied(user: dict) -> bool:
         return user.get(TEST_WALLET_GRANT_FLAG) is True
 
-    def grant_debug_test_wallet(self, uid: str) -> SecuredActionResult:
+    @staticmethod
+    def is_test_grant_authorized(
+        uid: str,
+        user: dict,
+        grant_secret: str = "",
+        *,
+        allowlist: frozenset[str] | None = None,
+        expected_secret: str | None = None,
+    ) -> bool:
+        from app.config import test_wallet_grant_secret, test_wallet_grant_uids
+
+        allowed = allowlist if allowlist is not None else test_wallet_grant_uids()
+        if uid and uid in allowed:
+            return True
+        if user.get(TEST_WALLET_GRANT_ELIGIBLE_FLAG) is True:
+            return True
+        expected = (
+            expected_secret
+            if expected_secret is not None
+            else test_wallet_grant_secret()
+        )
+        return bool(expected) and grant_secret == expected
+
+    def grant_debug_test_wallet(
+        self,
+        uid: str,
+        request: DebugTestGrantRequest | None = None,
+    ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._grant_debug_test_wallet_tx(transaction, uid, user_ref)
+        return self._grant_debug_test_wallet_tx(
+            transaction, uid, request or DebugTestGrantRequest(), user_ref
+        )
 
     @firestore.transactional
     def _grant_debug_test_wallet_tx(
         self,
         transaction,
         uid: str,
+        request: DebugTestGrantRequest,
         user_ref,
     ) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
@@ -1091,6 +1123,7 @@ class SecuredActionService:
         user = user_snapshot.to_dict() or {}
         current_share, current_dia, current_value = self._wallet_balances(user)
         if self._test_grant_already_applied(user):
+            # Never reset existing test balances on relaunch.
             return self._harvest_result(
                 status="already_granted",
                 reason="Debug 1M test grant was already applied.",
@@ -1098,6 +1131,13 @@ class SecuredActionService:
                 share_balance=current_share,
                 diamond_balance=current_dia,
                 value_token_balance=current_value,
+            )
+        if not self.is_test_grant_authorized(
+            uid, user, request.grant_secret
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not eligible for debug test grant.",
             )
 
         amount = TEST_WALLET_GRANT_AMOUNT

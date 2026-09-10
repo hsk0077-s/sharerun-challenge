@@ -146,6 +146,67 @@ def test_debug_test_wallet_grant_flag_is_one_shot() -> None:
     )
 
 
+def test_debug_test_wallet_grant_is_denied_without_allowlist_or_flag() -> None:
+    assert not SecuredActionService.is_test_grant_authorized(
+        "some-other-uid",
+        {},
+        "",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_allowlisted_uid() -> None:
+    assert SecuredActionService.is_test_grant_authorized(
+        "owner-uid",
+        {},
+        "",
+        allowlist=frozenset({"owner-uid"}),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_admin_eligible_flag() -> None:
+    assert SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {"testGrant1mEligible": True},
+        "",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {"testGrant1mEligible": False},
+        "",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_matching_secret_only() -> None:
+    assert SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {},
+        "private-debug-secret",
+        allowlist=frozenset(),
+        expected_secret="private-debug-secret",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {},
+        "wrong",
+        allowlist=frozenset(),
+        expected_secret="private-debug-secret",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {},
+        "private-debug-secret",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
 def test_debug_test_wallet_grant_result_sets_all_three_assets() -> None:
     result = SecuredActionService()._harvest_result(
         status="granted",

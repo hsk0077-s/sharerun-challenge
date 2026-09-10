@@ -75,5 +75,8 @@ void main() {
   test('debug 1M grant is one-shot keyed and one million', () {
     expect(DebugTestWalletGrantHost.amount, 1000000);
     expect(DebugTestWalletGrantHost.prefsKey, 'testGrant1mDone');
+    expect(DebugTestWalletGrantHost.allowlistUids, isEmpty);
+    expect(DebugTestWalletGrantHost.isAllowlisted(''), isFalse);
+    expect(DebugTestWalletGrantHost.isAllowlisted('some-other-uid'), isFalse);
   });
 }

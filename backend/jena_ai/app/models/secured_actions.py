@@ -22,6 +22,10 @@ class RefundRequest(BaseModel):
     share_amount: int = Field(gt=0)
 
 
+class DebugTestGrantRequest(BaseModel):
+    grant_secret: str = ""
+
+
 class HarvestPedometerRequest(BaseModel):
     claimed_steps: int = Field(ge=0, le=999999)
 

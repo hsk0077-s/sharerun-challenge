@@ -14,6 +14,9 @@ SRV_TOKENS_PER_KM = 10
 PEDOMETER_SHARE_PER_STEP = 0.01
 PEDOMETER_DAILY_HARVEST_SHARE_CAP = 60
 
-# Debug one-shot QA grant (kDebugMode client + Firestore testGrant1mDone).
+# Debug one-shot QA grant. Empty UID allowlist = nobody, including debug builds.
 TEST_WALLET_GRANT_AMOUNT = 1_000_000
 TEST_WALLET_GRANT_FLAG = "testGrant1mDone"
+TEST_WALLET_GRANT_ELIGIBLE_FLAG = "testGrant1mEligible"
+# Put the tester Firebase Auth UID(s) here. Leave empty so other users never get it.
+TEST_WALLET_GRANT_UIDS: frozenset[str] = frozenset()

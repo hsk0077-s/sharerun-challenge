@@ -349,7 +349,13 @@ service cloud.firestore {
       allow get: if isOwner(uid) || isAdmin();
       allow list: if isAdmin();
       allow create: if validUserCreate(uid);
-      allow update: if validUserSettingsUpdate(uid) || isAdminUserOpsUpdate();
+      // Clients cannot set testGrant1mEligible / testGrant1mDone.
+      // Those flags are Admin SDK / Firebase console only.
+      allow update: if (validUserSettingsUpdate(uid) || isAdminUserOpsUpdate())
+        && !request.resource.data.diff(resource.data).changedKeys().hasAny([
+          'testGrant1mEligible',
+          'testGrant1mDone'
+        ]);
       allow delete: if false;
 
       match /collectedDiamondBoxes/{boxId} {

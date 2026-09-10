@@ -80,8 +80,13 @@ class SecuredActionApiClient {
   }
 
   /// Debug one-shot QA grant. Release builds must not call this.
-  Future<PedometerHarvestResult> grantDebugTestWallet1m() async {
-    final json = await _post('/actions/debug/test-grant-1m', const {});
+  Future<PedometerHarvestResult> grantDebugTestWallet1m({
+    String grantSecret = '',
+  }) async {
+    final json = await _post(
+      '/actions/debug/test-grant-1m',
+      {if (grantSecret.isNotEmpty) 'grant_secret': grantSecret},
+    );
     return PedometerHarvestResult.fromJson(json);
   }
 

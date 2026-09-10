@@ -69,6 +69,13 @@ def harvest_pedometer_share(
     return service.harvest_pedometer_share(uid=uid, request=request)
 
 
+@router.post("/debug/test-grant-1m", response_model=SecuredActionResult)
+def grant_debug_test_wallet(
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.grant_debug_test_wallet(uid=uid)
+
+
 @router.post("/account/delete", response_model=SecuredActionResult)
 def delete_account(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.delete_account(uid=uid)

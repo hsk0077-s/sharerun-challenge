@@ -37,4 +37,19 @@ void main() {
     expect(result.status, 'harvested');
     expect(result.creditedShare(fallback: 20), 20);
   });
+
+  test('debug 1M grant snapshot parses all three balances', () {
+    final result = PedometerHarvestResult.fromJson({
+      'status': 'granted',
+      'share_credited': 1000000,
+      'share_balance': 1000000,
+      'diamond_balance': 1000000,
+      'value_token_balance': 1000000,
+    });
+
+    expect(result.status, 'granted');
+    expect(result.shareBalance, 1000000);
+    expect(result.diamondBalance, 1000000);
+    expect(result.valueTokenBalance, 1000000);
+  });
 }

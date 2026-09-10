@@ -17,6 +17,7 @@ import 'data/firebase/firebase_bootstrap.dart';
 import 'features/iap/widgets/iap_lifecycle_host.dart';
 import 'features/pedometer/solo_pedometer_foreground.dart';
 import 'features/pedometer/walking_challenge_notification_service.dart';
+import 'features/wallet/debug_test_wallet_grant.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,6 +46,13 @@ Future<void> main() async {
     await _runPmTestInitializationOnce();
   }
 
+  Widget app = const IapLifecycleHost(
+    child: ShareRunChallengeApp(),
+  );
+  if (kDebugMode) {
+    app = DebugTestWalletGrantHost(child: app);
+  }
+
   runApp(
     ProviderScope(
       overrides: [
@@ -55,9 +63,7 @@ Future<void> main() async {
             return notifier;
           }),
       ],
-      child: const IapLifecycleHost(
-        child: ShareRunChallengeApp(),
-      ),
+      child: app,
     ),
   );
 }

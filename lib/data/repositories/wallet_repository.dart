@@ -108,6 +108,14 @@ class WalletRepository {
     );
   }
 
+  /// Debug one-shot 1M SHARE/DIA/VALUE. No-op outside [kDebugMode].
+  Future<PedometerHarvestResult> grantDebugTestWallet1m() {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug test grant is debug-only.');
+    }
+    return _securedActionApiClient.grantDebugTestWallet1m();
+  }
+
   Future<void> transferValueToWeb3({
     required String destinationAddress,
     required int amountSrv,

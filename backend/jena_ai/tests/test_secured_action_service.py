@@ -128,3 +128,35 @@ def test_harvest_result_returns_share_snapshot_and_preserves_dia_value() -> None
     assert dumped["diamond_balance"] == 0
     assert dumped["value_token_balance"] == 5000
     assert dumped["status"] == "harvested"
+
+
+def test_debug_test_wallet_grant_amount_is_one_million() -> None:
+    from app.constants.economy_constants import TEST_WALLET_GRANT_AMOUNT
+
+    assert TEST_WALLET_GRANT_AMOUNT == 1_000_000
+
+
+def test_debug_test_wallet_grant_flag_is_one_shot() -> None:
+    assert SecuredActionService._test_grant_already_applied(
+        {"testGrant1mDone": True}
+    )
+    assert not SecuredActionService._test_grant_already_applied({})
+    assert not SecuredActionService._test_grant_already_applied(
+        {"testGrant1mDone": False}
+    )
+
+
+def test_debug_test_wallet_grant_result_sets_all_three_assets() -> None:
+    result = SecuredActionService()._harvest_result(
+        status="granted",
+        reason="Debug test grant set SHARE/DIA/VALUE to 1000000.",
+        share_credited=1_000_000,
+        share_balance=1_000_000,
+        diamond_balance=1_000_000,
+        value_token_balance=1_000_000,
+    )
+    dumped = result.model_dump()
+    assert dumped["status"] == "granted"
+    assert dumped["share_balance"] == 1_000_000
+    assert dumped["diamond_balance"] == 1_000_000
+    assert dumped["value_token_balance"] == 1_000_000

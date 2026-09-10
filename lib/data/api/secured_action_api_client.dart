@@ -79,6 +79,12 @@ class SecuredActionApiClient {
     return PedometerHarvestResult.fromJson(json);
   }
 
+  /// Debug one-shot QA grant. Release builds must not call this.
+  Future<PedometerHarvestResult> grantDebugTestWallet1m() async {
+    final json = await _post('/actions/debug/test-grant-1m', const {});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
   Future<void> transferValueToWeb3({
     required String destinationAddress,
     required int amountSrv,

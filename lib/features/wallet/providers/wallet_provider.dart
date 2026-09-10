@@ -102,6 +102,19 @@ class WalletNotifier extends Notifier<WalletState> {
     state = state.copyWith(shareBalance: state.shareBalance + shareCredited);
   }
 
+  /// Debug test grant / full snapshot. Null fields keep the current value.
+  void applyWalletSnapshot({
+    int? shareBalance,
+    int? diamondBalance,
+    int? valueBalance,
+  }) {
+    state = state.copyWith(
+      shareBalance: shareBalance,
+      diamondBalance: diamondBalance,
+      valueBalance: valueBalance,
+    );
+  }
+
   /// src-14 PG 결제 완료 시 SHARE 충전.
   void chargeShare(int amount) {
     if (amount <= 0) return;

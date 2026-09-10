@@ -17,6 +17,10 @@ from app.models.secured_actions import (
     WinnerRewardRequest,
 )
 from app.services.firebase_service import FirebaseService
+from app.constants.economy_constants import (
+    TEST_WALLET_GRANT_AMOUNT,
+    TEST_WALLET_GRANT_FLAG,
+)
 from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
@@ -1062,6 +1066,75 @@ class SecuredActionService:
             share_balance=new_share,
             diamond_balance=current_dia,
             value_token_balance=current_value,
+        )
+
+    @staticmethod
+    def _test_grant_already_applied(user: dict) -> bool:
+        return user.get(TEST_WALLET_GRANT_FLAG) is True
+
+    def grant_debug_test_wallet(self, uid: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return self._grant_debug_test_wallet_tx(transaction, uid, user_ref)
+
+    @firestore.transactional
+    def _grant_debug_test_wallet_tx(
+        self,
+        transaction,
+        uid: str,
+        user_ref,
+    ) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        user = user_snapshot.to_dict() or {}
+        current_share, current_dia, current_value = self._wallet_balances(user)
+        if self._test_grant_already_applied(user):
+            return self._harvest_result(
+                status="already_granted",
+                reason="Debug 1M test grant was already applied.",
+                share_credited=0,
+                share_balance=current_share,
+                diamond_balance=current_dia,
+                value_token_balance=current_value,
+            )
+
+        amount = TEST_WALLET_GRANT_AMOUNT
+        # Dotted fields only — keep wallet.totalDonationValue intact.
+        transaction.update(
+            user_ref,
+            {
+                "wallet.shareBalance": amount,
+                "wallet.diamondBalance": amount,
+                "wallet.valueTokenBalance": amount,
+                TEST_WALLET_GRANT_FLAG: True,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        tx_ref = self.firebase_service.db.collection(
+            "walletTransactions"
+        ).document()
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "debug_test_grant_1m",
+                "shareAmount": amount,
+                "diamondAmount": amount,
+                "valueAmount": amount,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return self._harvest_result(
+            status="granted",
+            reason=(
+                f"Debug test grant set SHARE/DIA/VALUE to {amount}."
+            ),
+            share_credited=amount,
+            share_balance=amount,
+            diamond_balance=amount,
+            value_token_balance=amount,
         )
 
     def request_refund(self, uid: str, request: RefundRequest) -> SecuredActionResult:

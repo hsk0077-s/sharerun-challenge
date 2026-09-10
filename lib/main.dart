@@ -2,15 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:pedometer/pedometer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// [핀셋 복구] 터미널에서 생성한 Firebase 설정 파일을 정확히 불러옵니다.
-import 'firebase_options.dart'; 
 
 import 'app/app.dart';
 import 'app/app_config.dart';
@@ -18,29 +13,29 @@ import 'app/providers/app_providers.dart';
 import 'core/auth/auth_session_bootstrap.dart';
 import 'core/config/app_env.dart';
 import 'core/notifications/notification_service.dart';
+import 'data/firebase/firebase_bootstrap.dart';
 import 'features/iap/widgets/iap_lifecycle_host.dart';
 import 'features/pedometer/solo_pedometer_foreground.dart';
 import 'features/pedometer/walking_challenge_notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await KakaoSdk.init(nativeAppKey: 'c45c63710e60f98b3fe617ae0b75c274');
   try {
-    await dotenv.load(fileName: ".env");
+    await KakaoSdk.init(nativeAppKey: 'c45c63710e60f98b3fe617ae0b75c274');
   } catch (e) {
-    debugPrint("DotEnv Load Error: $e");
-    // fallback if needed
+    debugPrint('KakaoSdk.init: $e');
   }
   await AppEnv.load();
 
-  SoloPedometerForeground.bindUi();
+  try {
+    SoloPedometerForeground.bindUi();
+  } catch (e) {
+    debugPrint('SoloPedometerForeground.bindUi: $e');
+  }
   unawaited(WalkingChallengeNotificationService.ensureInitialized());
   unawaited(NotificationService.instance.initialize());
 
-  // 파이어베이스 백엔드 엔진 초기화
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await bootstrapFirebase();
 
   final bootstrap = await AuthSessionBootstrap.run();
   AppConfig.initialRoute = bootstrap.initialRoute;

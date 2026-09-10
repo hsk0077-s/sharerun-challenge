@@ -3,7 +3,9 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Runtime config from project-root `.env` (asset) with `--dart-define` fallback.
+/// Runtime config from `--dart-define` / `--dart-define-from-file=.env`.
+/// Project-root `.env` is not a Flutter asset (gitignored; omitted from
+/// pubspec so CI can build). Do not load it via dotenv at startup.
 abstract final class AppEnv {
   static var _loaded = false;
 
@@ -11,11 +13,10 @@ abstract final class AppEnv {
     if (_loaded) {
       return;
     }
-    try {
-      await dotenv.load(fileName: '.env', isOptional: true);
-    } catch (_) {
-      // Asset missing in CI/release — fall back to defaults / dart-define.
-    }
+    // `.env` is gitignored and is not a Flutter asset (removed so CI can
+    // build the bundle). Do not call dotenv.load(fileName: '.env') — a missing
+    // asset throws FlutterError/FileNotFoundError on every cold start.
+    // Runtime values come from --dart-define / --dart-define-from-file=.env.
     if (!dotenv.isInitialized) {
       try {
         dotenv.loadFromString(envString: 'APP_ENV_LOADED=1');

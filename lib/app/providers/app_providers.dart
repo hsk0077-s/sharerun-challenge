@@ -193,7 +193,8 @@ final activeUserProfileProvider = StreamProvider<UserModel>((ref) {
 
 /// 미소명 Jena 보류 세션이 1건 이상일 때 마이페이지 탭 Red Dot.
 final hasPendingJenaAppealProvider = Provider<bool>((ref) {
-  final activities = ref.watch(recentActivitiesProvider).value ?? const [];
+  final activities =
+      ref.watch(recentActivitiesProvider).asData?.value ?? const [];
   return activities.any((activity) => activity.needsJenaAppeal);
 });
 

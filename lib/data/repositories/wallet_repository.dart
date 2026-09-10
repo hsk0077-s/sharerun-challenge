@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../core/async/stream_guards.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
@@ -58,18 +59,36 @@ class WalletRepository {
   }
 
   Stream<WalletModel> watchWallet(String uid) {
-    return _firestoreService.doc(FirestorePaths.user(uid)).snapshots().map(
-      (snapshot) {
-        final data = snapshot.data();
-        final wallet = data?['wallet'] as Map<String, dynamic>?;
-
-        return WalletModel(
-          shareBalance: (wallet?['shareBalance'] as num?)?.toInt() ?? 0,
-          diamondBalance: (wallet?['diamondBalance'] as num?)?.toInt() ?? 0,
-          valueTokenBalance: (wallet?['valueTokenBalance'] as num?)?.toInt() ?? 0,
-          totalDonationValue: (wallet?['totalDonationValue'] as num?)?.toInt() ?? 0,
-        );
-      },
+    return onStreamErrorEmit<WalletModel>(
+      _firestoreService.doc(FirestorePaths.user(uid)).snapshots().map(
+        (snapshot) {
+          try {
+            final data = snapshot.data();
+            final walletRaw = data?['wallet'];
+            final Map<String, dynamic>? walletMap = switch (walletRaw) {
+              final Map<String, dynamic> m => m,
+              final Map m => Map<String, dynamic>.from(m),
+              _ => null,
+            };
+            return WalletModel.fromJson({
+              if (data?['shareBalance'] != null)
+                'shareBalance': data!['shareBalance'],
+              if (data?['diamondBalance'] != null)
+                'diamondBalance': data!['diamondBalance'],
+              if (data?['valueBalance'] != null)
+                'valueTokenBalance': data!['valueBalance'],
+              if (data?['valueTokenBalance'] != null)
+                'valueTokenBalance': data!['valueTokenBalance'],
+              ...?walletMap,
+            });
+          } catch (e) {
+            debugPrint('watchWallet parse: $e');
+            return WalletModel.empty();
+          }
+        },
+      ),
+      WalletModel.empty(),
+      debugLabel: 'watchWallet',
     );
   }
 

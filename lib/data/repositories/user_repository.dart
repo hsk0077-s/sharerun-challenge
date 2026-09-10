@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../core/async/stream_guards.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
@@ -25,10 +26,10 @@ class UserRepository {
     final snapshot = await userRef.get();
 
     if (snapshot.exists) {
-      return userRef.set({
-        'uid': uid,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      // Existing docs must not be touched here. A merge of uid/updatedAt
+      // fails validUserProfileUpdate when watchType or sensitiveDataConsent
+      // is missing (permission-denied on every ensureUserDocument call).
+      return;
     }
 
     // Create payload must match validUserCreate (watchType always none).
@@ -53,35 +54,43 @@ class UserRepository {
   }
 
   Stream<int> watchUserTier(String uid) {
-    return _firestoreService.doc(FirestorePaths.user(uid)).snapshots().map(
-      (snapshot) {
-        final data = snapshot.data();
-        return (data?['tier'] as num?)?.toInt() ?? 1;
-      },
+    return onStreamErrorEmit<int>(
+      _firestoreService.doc(FirestorePaths.user(uid)).snapshots().map(
+        (snapshot) {
+          final data = snapshot.data();
+          return (data?['tier'] as num?)?.toInt() ?? 1;
+        },
+      ),
+      1,
+      debugLabel: 'watchUserTier',
     );
   }
 
   Stream<UserModel> watchUserProfile(String uid) {
-    return _firestoreService.doc(FirestorePaths.user(uid)).snapshots().asyncMap(
-      (snapshot) async {
-        if (!snapshot.exists || snapshot.data() == null) {
-          // New user: seed a default document, never throw to the UI stream.
-          try {
-            await ensureUserDocument(uid: uid);
-          } catch (_) {
-            // Permission / offline — still return an in-memory default.
+    return onStreamErrorEmit<UserModel>(
+      _firestoreService.doc(FirestorePaths.user(uid)).snapshots().asyncMap(
+        (snapshot) async {
+          if (!snapshot.exists || snapshot.data() == null) {
+            // New user: seed a default document, never throw to the UI stream.
+            try {
+              await ensureUserDocument(uid: uid);
+            } catch (_) {
+              // Permission / offline — still return an in-memory default.
+            }
+            return UserModel.dashboardDefault(uid: uid);
           }
-          return UserModel.dashboardDefault(uid: uid);
-        }
 
-        try {
-          final data = Map<String, dynamic>.from(snapshot.data()!);
-          data['uid'] = data['uid'] ?? uid;
-          return UserModel.fromJson(data);
-        } catch (_) {
-          return UserModel.dashboardDefault(uid: uid);
-        }
-      },
+          try {
+            final data = Map<String, dynamic>.from(snapshot.data()!);
+            data['uid'] = data['uid'] ?? uid;
+            return UserModel.fromJson(data);
+          } catch (_) {
+            return UserModel.dashboardDefault(uid: uid);
+          }
+        },
+      ),
+      UserModel.dashboardDefault(uid: uid),
+      debugLabel: 'watchUserProfile',
     );
   }
 

@@ -98,3 +98,33 @@ def test_ensure_email_verified_raises_for_unverified_password(
 
     assert exc_info.value.status_code == 403
     assert exc_info.value.detail == "Email verification is required."
+
+
+def test_wallet_balances_read_nested_map_without_defaulting_other_assets() -> None:
+    share, dia, value = SecuredActionService._wallet_balances(
+        {
+            "wallet": {
+                "shareBalance": 12,
+                "diamondBalance": 3,
+                "valueTokenBalance": 5000,
+            }
+        }
+    )
+    assert (share, dia, value) == (12, 3, 5000)
+
+
+def test_harvest_result_returns_share_snapshot_and_preserves_dia_value() -> None:
+    result = SecuredActionService()._harvest_result(
+        status="harvested",
+        reason="51 SHARE credited from walking challenge.",
+        share_credited=51,
+        share_balance=51,
+        diamond_balance=0,
+        value_token_balance=5000,
+    )
+    dumped = result.model_dump()
+    assert dumped["share_credited"] == 51
+    assert dumped["share_balance"] == 51
+    assert dumped["diamond_balance"] == 0
+    assert dumped["value_token_balance"] == 5000
+    assert dumped["status"] == "harvested"

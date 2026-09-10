@@ -956,6 +956,35 @@ class SecuredActionService:
             transaction, uid, request, user_ref
         )
 
+    @staticmethod
+    def _wallet_balances(user: dict) -> tuple[int, int, int]:
+        wallet = user.get("wallet") or {}
+        return (
+            int(wallet.get("shareBalance") or 0),
+            int(wallet.get("diamondBalance") or 0),
+            int(wallet.get("valueTokenBalance") or 0),
+        )
+
+    def _harvest_result(
+        self,
+        *,
+        status: str,
+        reason: str,
+        share_credited: int,
+        share_balance: int,
+        diamond_balance: int,
+        value_token_balance: int,
+    ) -> SecuredActionResult:
+        return SecuredActionResult(
+            accepted=True,
+            status=status,
+            reason=reason,
+            share_credited=share_credited,
+            share_balance=share_balance,
+            diamond_balance=diamond_balance,
+            value_token_balance=value_token_balance,
+        )
+
     @firestore.transactional
     def _harvest_pedometer_share_tx(
         self,
@@ -969,6 +998,7 @@ class SecuredActionService:
             raise HTTPException(status_code=404, detail="User not found.")
 
         user = user_snapshot.to_dict() or {}
+        current_share, current_dia, current_value = self._wallet_balances(user)
         today = self._economy_service.kst_today_key()
         harvest = self._economy_service.normalize_pedometer_harvest(
             user.get("pedometerHarvest"),
@@ -978,10 +1008,13 @@ class SecuredActionService:
         harvested = int(harvest["harvestedShare"])
         claimed = int(request.claimed_steps)
         if claimed <= prev_claimed:
-            return SecuredActionResult(
-                accepted=True,
+            return self._harvest_result(
                 status="already_harvested",
                 reason="Pedometer harvest watermark already applied.",
+                share_credited=0,
+                share_balance=current_share,
+                diamond_balance=current_dia,
+                value_token_balance=current_value,
             )
 
         share = self._economy_service.pedometer_harvest_share(
@@ -989,6 +1022,8 @@ class SecuredActionService:
             prev_claimed_steps=prev_claimed,
             harvested_share=harvested,
         )
+        new_share = current_share + share
+        # Dotted SHARE field only — never replace the wallet map (DIA/VALUE).
         updates = {
             "pedometerHarvest.dateKey": today,
             "pedometerHarvest.claimedSteps": claimed,
@@ -996,7 +1031,7 @@ class SecuredActionService:
             "updatedAt": SERVER_TIMESTAMP,
         }
         if share > 0:
-            updates["wallet.shareBalance"] = firestore.Increment(share)
+            updates["wallet.shareBalance"] = new_share
             tx_ref = self.firebase_service.db.collection(
                 "walletTransactions"
             ).document()
@@ -1012,15 +1047,21 @@ class SecuredActionService:
             )
         transaction.update(user_ref, updates)
         if share <= 0:
-            return SecuredActionResult(
-                accepted=True,
+            return self._harvest_result(
                 status="daily_cap_reached",
                 reason="Walking challenge daily SHARE cap reached.",
+                share_credited=0,
+                share_balance=current_share,
+                diamond_balance=current_dia,
+                value_token_balance=current_value,
             )
-        return SecuredActionResult(
-            accepted=True,
+        return self._harvest_result(
             status="harvested",
             reason=f"{share} SHARE credited from walking challenge.",
+            share_credited=share,
+            share_balance=new_share,
+            diamond_balance=current_dia,
+            value_token_balance=current_value,
         )
 
     def request_refund(self, uid: str, request: RefundRequest) -> SecuredActionResult:

@@ -2,8 +2,9 @@ import '../../../data/models/tournament_join_result.dart';
 
 /// Decides whether a successful join HTTP response should debit Home SHARE.
 ///
-/// Jena is the ledger. This only mirrors the entry fee onto [walletProvider]
-/// the same way personal sponsorship calls `subtractShare`, and only once.
+/// Jena is the release ledger. Debug USB also mirrors the fee onto
+/// [walletProvider] (like personal sponsorship `subtractShare`) when Jena
+/// cannot be reached, and only once.
 abstract final class TournamentJoinDebit {
   /// True for a newly accepted join. False for idempotent re-join, failures
   /// (those never produce a result), and zero-fee rooms.

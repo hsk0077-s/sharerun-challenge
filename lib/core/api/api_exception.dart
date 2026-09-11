@@ -79,6 +79,7 @@ abstract final class ApiErrorMessage {
       'User or tournament not found.' => '사용자 또는 대회 정보를 찾을 수 없습니다.',
       'User or activity not found.' => '사용자 또는 활동 정보를 찾을 수 없습니다.',
       'Email verification is required.' => '이메일 인증을 완료해 주세요.',
+      'Invalid Firebase ID token.' => '로그인 인증이 만료되었습니다. 다시 로그인해 주세요.',
       _ => detail,
     };
   }

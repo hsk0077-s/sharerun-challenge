@@ -3,6 +3,7 @@ import 'package:share_run_challenge/data/models/tournament_join_result.dart';
 import 'package:share_run_challenge/data/models/tournament_model.dart';
 import 'package:share_run_challenge/features/tournaments/utils/tournament_join_debit.dart';
 import 'package:share_run_challenge/features/tournaments/utils/tournament_join_gate.dart';
+import 'package:share_run_challenge/features/tournaments/utils/tournament_join_outcome.dart';
 
 TournamentModel _room({int entryFeeShare = 30000}) {
   return TournamentModel.fromJson(
@@ -79,6 +80,12 @@ void main() {
       ),
       isFalse,
     );
+    final planSnack = TournamentJoinPlanner.fromJenaSuccess(
+      result: again,
+      entryFeeShare: 30000,
+    );
+    expect(planSnack.showsPaidSnackbar, isFalse);
+    expect(planSnack.snackbarMessage, isNot(contains('Entry Share locked')));
   });
 
   test('failed or zero-fee join does not debit', () {

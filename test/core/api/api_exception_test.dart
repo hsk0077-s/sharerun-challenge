@@ -63,5 +63,12 @@ void main() {
         contains('boom'),
       );
     });
+
+    test('maps Invalid Firebase ID token to Korean copy', () {
+      expect(
+        ApiErrorMessage.forDetail('Invalid Firebase ID token.'),
+        '로그인 인증이 만료되었습니다. 다시 로그인해 주세요.',
+      );
+    });
   });
 }

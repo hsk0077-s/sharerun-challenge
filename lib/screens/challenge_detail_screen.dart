@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -12,6 +13,9 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../data/models/tournament_model.dart';
+import '../features/challenge/providers/challenge_room_providers.dart';
+import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'live_running_screen.dart';
 
 /// 대회방 상세정보 및 기부처 선택 화면 (Screen 9).
@@ -190,37 +194,12 @@ class ChallengeDetailScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Material(
-                        color: AppColors.primaryMint,
-                        borderRadius: BorderRadius.circular(
-                          AppShapes.cardRadius,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => LiveRunningScreen(
-                                  roomId: roomId,
-                                ),
-                              ),
-                            );
-                          },
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: AppShapes.buttonHeight,
-                            child: Center(
-                              child: Text(
-                                copy.joinLabel,
-                                style: AppTextStyles.buttonText.copyWith(
-                                  color: AppColors.textWhite,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      _ChallengeJoinPayButton(
+                        roomId: roomId,
+                        joinLabel: copy.joinLabel,
+                        title: copy.title,
+                        entryFeeShare: copy.entryFeeShare,
+                        targetDistanceKm: copy.radiusMeters / 1000,
                       ),
                     ],
                   ),
@@ -249,6 +228,7 @@ class _ChallengeDetailCopy {
     required this.cprTickets,
     required this.joinLabel,
     required this.radiusMeters,
+    required this.entryFeeShare,
   });
 
   final String title;
@@ -264,6 +244,7 @@ class _ChallengeDetailCopy {
   final String cprTickets;
   final String joinLabel;
   final double radiusMeters;
+  final int entryFeeShare;
 
   static const _beginnerRoomIds = <String>{
     RouteNames.beginner1kmRoomId,
@@ -287,6 +268,7 @@ class _ChallengeDetailCopy {
         cprTickets: AppStrings.challengeDetailCprTickets,
         joinLabel: AppStrings.challengeDetailJoin,
         radiusMeters: 1000,
+        entryFeeShare: 100000,
       );
     }
 
@@ -305,6 +287,104 @@ class _ChallengeDetailCopy {
       cprTickets: AppStrings.challengeDetailCprTickets,
       joinLabel: AppStrings.challengeDetailJoin,
       radiusMeters: 3000,
+      entryFeeShare: 30000,
+    );
+  }
+}
+
+class _ChallengeJoinPayButton extends ConsumerStatefulWidget {
+  const _ChallengeJoinPayButton({
+    required this.roomId,
+    required this.joinLabel,
+    required this.title,
+    required this.entryFeeShare,
+    required this.targetDistanceKm,
+  });
+
+  final String? roomId;
+  final String joinLabel;
+  final String title;
+  final int entryFeeShare;
+  final double targetDistanceKm;
+
+  @override
+  ConsumerState<_ChallengeJoinPayButton> createState() =>
+      _ChallengeJoinPayButtonState();
+}
+
+class _ChallengeJoinPayButtonState
+    extends ConsumerState<_ChallengeJoinPayButton> {
+  var _busy = false;
+
+  TournamentModel _resolveRoom() {
+    final id = widget.roomId;
+    if (id != null && id.isNotEmpty) {
+      final rooms = ref.read(tournamentListProvider).asData?.value;
+      if (rooms != null) {
+        for (final room in rooms) {
+          if (room.id == id) return room;
+        }
+      }
+    }
+    return TournamentModel(
+      id: (id != null && id.isNotEmpty) ? id : 'demo-intermediate-3km',
+      title: widget.title,
+      targetDistanceKm: widget.targetDistanceKm,
+      entryFeeShare: widget.entryFeeShare,
+      winnerRewardValue: (widget.entryFeeShare * 0.4).round(),
+      donationValue: (widget.entryFeeShare * 0.2).round(),
+      minParticipantsBep: 10,
+      maxParticipants: 200,
+      participantCount: 1,
+      requiredTier: 1,
+      status: TournamentStatus.recruiting,
+      sponsorName: 'UNICEF',
+    );
+  }
+
+  Future<void> _onJoin() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    try {
+      final joined = await joinTournamentWithPreflight(
+        context: context,
+        ref: ref,
+        tournament: _resolveRoom(),
+      );
+      if (!joined || !mounted) return;
+      await Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => LiveRunningScreen(roomId: widget.roomId),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.primaryMint,
+      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: _busy ? null : _onJoin,
+        child: SizedBox(
+          width: double.infinity,
+          height: AppShapes.buttonHeight,
+          child: Center(
+            child: Text(
+              widget.joinLabel,
+              style: AppTextStyles.buttonText.copyWith(
+                color: AppColors.textWhite,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

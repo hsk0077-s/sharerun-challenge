@@ -18,6 +18,7 @@ import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
@@ -196,7 +197,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final wallet = ref.watch(walletProvider);
     final userTierAsync = ref.watch(activeUserTierProvider);
     final challengesAsync = ref.watch(tournamentRoomsProvider);
-    final joinedIds = ref.watch(joinedTournamentIdsProvider).value ?? const {};
+    final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
     final onboarding = ref.watch(onboardingProvider);
     final showGradeEval =
         onboarding.currentStep != OnboardingStep.completed;

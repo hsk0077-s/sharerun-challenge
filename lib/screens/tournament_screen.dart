@@ -6,6 +6,7 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../data/models/tournament_model.dart';
+import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'sponsor_payment_screen.dart';
 
@@ -70,7 +71,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
     }
     final userTier = ref.watch(activeUserTierProvider).value ?? 1;
     final authUser = ref.watch(authStateChangesProvider).value;
-    final joinedIds = ref.watch(joinedTournamentIdsProvider).value ?? const {};
+    final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
 
     return ListView(
       controller: _scrollController,

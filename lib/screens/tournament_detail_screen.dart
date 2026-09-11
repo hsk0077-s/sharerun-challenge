@@ -10,6 +10,7 @@ import '../data/models/tournament_model.dart';
 import '../data/models/tournament_participation_model.dart';
 import '../data/models/user_model.dart';
 import '../features/run_tracking/utils/run_start_preflight.dart';
+import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/widgets/sponsor_rolling_banner.dart';
 import 'sponsor_payment_screen.dart';
@@ -44,7 +45,7 @@ class TournamentDetailScreen extends ConsumerWidget {
     final tournamentAsync = ref.watch(tournamentByIdProvider(tournamentId));
     final authUser = ref.watch(authStateChangesProvider).value;
     final userTier = ref.watch(activeUserTierProvider).value ?? 1;
-    final joinedIds = ref.watch(joinedTournamentIdsProvider).value ?? const {};
+    final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tournament Detail')),

@@ -6,9 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../core/constants/economy_constants.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_shapes.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/theme.dart';
 import '../../../screens/solo_pedometer_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../pedometer/pedometer_harvest_ledger.dart';
@@ -22,6 +20,7 @@ class DailyCapGauge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
     final cap = EconomyConstants.dailyCapKm;
     final km = dailyKm < 0 ? 0.0 : dailyKm;
     final progress = (km / cap).clamp(0.0, 1.0);
@@ -32,35 +31,34 @@ class DailyCapGauge extends StatelessWidget {
       children: [
         Text(
           '${km.toStringAsFixed(1)}km / ${cap.toStringAsFixed(1)}km 채굴 완료 ($percent%)',
-          style: AppTextStyles.caption.copyWith(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: AppColors.tealAccent,
-          ),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: tokens.colors.accent,
+              ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: tokens.spacing.xs),
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(tokens.radii.sm),
           child: SizedBox(
             height: 10,
             child: Stack(
               children: [
-                const ColoredBox(
-                  color: AppColors.settingsBackground,
-                  child: SizedBox.expand(),
+                ColoredBox(
+                  color: tokens.colors.outline,
+                  child: const SizedBox.expand(),
                 ),
                 FractionallySizedBox(
                   widthFactor: progress,
-                  child: const DecoratedBox(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          AppColors.primaryMintLight,
-                          AppColors.tealAccent,
+                          tokens.colors.primary,
+                          tokens.colors.accent,
                         ],
                       ),
                     ),
-                    child: SizedBox.expand(),
+                    child: const SizedBox.expand(),
                   ),
                 ),
               ],
@@ -85,8 +83,6 @@ class SoloQuickStartBanner extends ConsumerStatefulWidget {
 
 class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
     with SingleTickerProviderStateMixin {
-  static const _mintGlow = Color(0xFF00D2B4);
-
   late final AnimationController _glow;
   var _storedSteps = 0;
   var _claimedSteps = 0;
@@ -117,8 +113,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
           '';
       final today = PedometerKstClock.dateKey();
       final prefix = PedometerHarvestLedger.prefix(uid: uid, dateKey: today);
-      final backup =
-          prefs.getInt(PedometerKstClock.backupStepsKey(today)) ?? 0;
+      final backup = prefs.getInt(PedometerKstClock.backupStepsKey(today)) ?? 0;
       final legacy = prefs.getInt('$prefix.steps') ?? 0;
       final claimed = PedometerHarvestLedger.coalesceClaimed(
         current: 0,
@@ -156,33 +151,29 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
     final steps = liveSteps > _storedSteps ? liveSteps : _storedSteps;
     final canCollect = steps > 0 && steps > _claimedSteps;
     final label = canCollect ? '워킹챌린지 코인줍기' : '워킹 챌린지 시작';
+    final tokens = context.srcTokens;
+    final glowColor = tokens.colors.primary;
     return AnimatedBuilder(
       animation: _glow,
       builder: (context, child) {
         final pulse = 0.32 + _glow.value * 0.58;
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: tokens.radii.panel,
             boxShadow: canCollect
                 ? [
                     BoxShadow(
-                      color: _mintGlow.withValues(alpha: pulse),
+                      color: glowColor.withValues(alpha: pulse),
                       blurRadius: 20 + _glow.value * 16,
                       spreadRadius: 2 + _glow.value * 4,
                     ),
                     BoxShadow(
-                      color: _mintGlow.withValues(alpha: pulse * 0.7),
+                      color: glowColor.withValues(alpha: pulse * 0.7),
                       blurRadius: 10 + _glow.value * 8,
                       spreadRadius: 0.5,
                     ),
                   ]
-                : [
-                    BoxShadow(
-                      color: AppColors.tealAccent.withValues(alpha: 0.28),
-                      blurRadius: 14,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                : AppShadows.card,
           ),
           child: child,
         );
@@ -191,35 +182,37 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
         color: Colors.transparent,
         child: InkWell(
           onTap: widget.onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: tokens.radii.panel,
           child: Ink(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: const LinearGradient(
+              borderRadius: tokens.radii.panel,
+              gradient: LinearGradient(
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
                 colors: [
-                  AppColors.primaryMintLight,
-                  AppColors.tealAccent,
+                  tokens.colors.primary,
+                  tokens.colors.accent,
                 ],
               ),
               border: Border.all(
                 color: canCollect
-                    ? _mintGlow
-                    : AppColors.pulseCyan.withValues(alpha: 0.55),
+                    ? glowColor
+                    : tokens.colors.accent.withValues(alpha: 0.55),
                 width: canCollect ? 2 : 1.2,
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: EdgeInsets.symmetric(
+                horizontal: tokens.spacing.md,
+                vertical: tokens.spacing.sm,
+              ),
               child: Text(
                 label,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.agreementLabel.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
-                  color: AppColors.textWhite,
-                ),
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: tokens.colors.onPrimary,
+                    ),
               ),
             ),
           ),
@@ -251,8 +244,7 @@ class DailyStreakCard extends ConsumerWidget {
         ref.read(practiceStreakProvider.notifier).consumeDiaReward();
       });
     }
-    final activities =
-        ref.watch(recentActivitiesProvider).value ?? const [];
+    final activities = ref.watch(recentActivitiesProvider).value ?? const [];
     final now = DateTime.now();
     final marked = RetentionMetrics.markedWeekdays(activities, now);
 
@@ -329,9 +321,7 @@ class _StreakStamp extends StatelessWidget {
                 ? AppColors.tealAccent.withValues(alpha: 0.16)
                 : AppColors.settingsBackground,
             border: Border.all(
-              color: stamped
-                  ? AppColors.tealAccent
-                  : AppColors.borderLight,
+              color: stamped ? AppColors.tealAccent : AppColors.borderLight,
             ),
           ),
           child: Icon(

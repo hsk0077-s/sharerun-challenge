@@ -4,9 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
 import '../../../core/navigation/app_route_nav.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_shapes.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/theme.dart';
 import '../../../screens/angel_book_page.dart';
 import '../../../screens/personal_sponsor_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
@@ -73,12 +71,16 @@ class AngelTierBadge extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 3),
-        Text(
-          '[${tier.koreanName}]',
-          style: AppTextStyles.agreementLabel.copyWith(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: tier.isPreAngel ? AppColors.textGrey : AppColors.angelGold,
+        Flexible(
+          child: Text(
+            '[${tier.koreanName}]',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.agreementLabel.copyWith(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: tier.isPreAngel ? AppColors.textGrey : AppColors.angelGold,
+            ),
           ),
         ),
       ],
@@ -145,7 +147,8 @@ class _AngelMascotState extends State<AngelMascot>
         width: size,
         height: size,
         child: Center(
-          child: Text(widget.tier.emoji, style: TextStyle(fontSize: size * 0.42)),
+          child:
+              Text(widget.tier.emoji, style: TextStyle(fontSize: size * 0.42)),
         ),
       ),
     );
@@ -440,29 +443,32 @@ class AngelSponsorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
     return Material(
-      color: AppColors.tealAccent.withValues(alpha: 0.14),
-      borderRadius: BorderRadius.circular(14),
+      color: tokens.colors.donation.withValues(alpha: 0.14),
+      borderRadius: tokens.radii.panel,
       child: InkWell(
         onTap: onTap ?? () => openPersonalSponsor(context),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: tokens.radii.panel,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: EdgeInsets.symmetric(
+            horizontal: tokens.spacing.md,
+            vertical: tokens.spacing.sm,
+          ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: tokens.radii.panel,
             border: Border.all(
-              color: AppColors.tealAccent.withValues(alpha: 0.45),
+              color: tokens.colors.donation.withValues(alpha: 0.45),
             ),
           ),
           child: Text(
             '❤️  내 이름으로 달리기 후원하기',
             textAlign: TextAlign.center,
-            style: AppTextStyles.agreementLabel.copyWith(
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
-              color: AppColors.tealAccent,
-            ),
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: tokens.colors.donation,
+                ),
           ),
         ),
       ),

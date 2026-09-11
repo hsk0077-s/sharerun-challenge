@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme/app_text_styles.dart';
+import '../../core/theme/theme.dart';
 
 enum DebugJenaReachability { unknown, ok, fail }
 
@@ -29,9 +29,8 @@ class DebugEconomyStatus {
     final grantLabel = switch (grant) {
       DebugGrantPhase.pending => 'grant: pending',
       DebugGrantPhase.done => 'grant: done',
-      DebugGrantPhase.failed => grantDetail.isEmpty
-          ? 'grant: failed'
-          : 'grant: failed:$grantDetail',
+      DebugGrantPhase.failed =>
+        grantDetail.isEmpty ? 'grant: failed' : 'grant: failed:$grantDetail',
     };
     return 'DEBUG $jenaLabel  $grantLabel';
   }
@@ -103,13 +102,16 @@ class DebugEconomyStatusLine extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (!kDebugMode) return const SizedBox.shrink();
     final line = ref.watch(debugEconomyStatusProvider).homeLine;
+    final tokens = context.srcTokens;
     return Padding(
-      padding: const EdgeInsets.only(top: 6),
+      padding: EdgeInsets.only(top: tokens.spacing.xxs),
       child: Text(
         line,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: AppTextStyles.caption.copyWith(fontSize: 11),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: tokens.colors.muted,
+            ),
       ),
     );
   }

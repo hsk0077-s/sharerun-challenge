@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
 import '../../../core/navigation/dashboard_tab_navigation.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/theme.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../onboarding/widgets/nickname_change_sheet.dart';
 import '../../onboarding/widgets/nickname_setup_sheet.dart';
@@ -16,8 +15,7 @@ abstract final class GenderAvatarAssets {
   static const male = 'assets/images/characters/avatar_gender_male.png';
   static const female = 'assets/images/characters/avatar_gender_female.png';
 
-  static String pathFor(String gender) =>
-      gender == 'female' ? female : male;
+  static String pathFor(String gender) => gender == 'female' ? female : male;
 }
 
 /// 홈 유저네임 상단 — 성별 상반신 아바타. 탭 시 커스터마이징 시트.
@@ -33,6 +31,7 @@ class GenderProfileAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gender = ref.watch(userGenderProvider);
     final asset = GenderAvatarAssets.pathFor(gender);
+    final tokens = context.srcTokens;
 
     return Material(
       color: Colors.transparent,
@@ -44,11 +43,12 @@ class GenderProfileAvatar extends ConsumerWidget {
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.agreementBoxFill,
+            color: tokens.colors.primary.withValues(alpha: 0.16),
             border: Border.all(
-              color: AppColors.tealAccent.withValues(alpha: 0.45),
+              color: tokens.colors.accent.withValues(alpha: 0.45),
               width: 1.5,
             ),
+            boxShadow: AppShadows.rest,
           ),
           child: ClipOval(
             child: Image.asset(
@@ -78,18 +78,21 @@ class TextTierLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(tokens.radii.xs),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        padding: EdgeInsets.symmetric(
+          horizontal: tokens.spacing.xxs,
+          vertical: tokens.spacing.xxs / 2,
+        ),
         child: Text(
           '[${tier.koreanName}]',
-          style: AppTextStyles.agreementLabel.copyWith(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.tealAccent,
-          ),
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: tokens.colors.accent,
+              ),
         ),
       ),
     );
@@ -117,18 +120,20 @@ class HomeUserIdentityHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final nickname = ref.watch(userNicknameProvider);
-    final tier = ref.watch(activeUserTierStructProvider) ??
-        UserTier.unratedFallback;
+    final tier =
+        ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
     final angel = ref.watch(userAngelTierProvider);
     final displayName = SrcOnboardingController.isUnsetNickname(nickname)
         ? '닉네임을 설정해 주세요'
         : nickname;
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const GenderProfileAvatar(size: 72),
-        const SizedBox(height: 10),
+        SizedBox(height: tokens.spacing.sm),
         Material(
           color: Colors.transparent,
           child: InkWell(
@@ -139,29 +144,33 @@ class HomeUserIdentityHeader extends ConsumerWidget {
                 NicknameChangeSheet.show(context);
               }
             },
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(tokens.radii.xs),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+              padding: EdgeInsets.symmetric(
+                horizontal: tokens.spacing.xxs / 2,
+                vertical: tokens.spacing.xxs / 2,
+              ),
               child: Text(
                 displayName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.header1.copyWith(
+                style: textTheme.titleMedium?.copyWith(
                   fontSize: 18,
-                  fontWeight:
-                      angel.emphasizeNickname ? FontWeight.w800 : FontWeight.w700,
+                  fontWeight: angel.emphasizeNickname
+                      ? FontWeight.w800
+                      : FontWeight.w700,
                   color: angel.goldNickname
-                      ? AppColors.angelGold
-                      : AppColors.textBlack,
+                      ? tokens.colors.donation
+                      : tokens.colors.ink,
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: tokens.spacing.xxs),
         Wrap(
-          spacing: 8,
-          runSpacing: 4,
+          spacing: tokens.spacing.xs,
+          runSpacing: tokens.spacing.xxs,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             TextTierLabel(
@@ -298,7 +307,8 @@ class _GenderChoiceCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: selected ? AppColors.tealAccent : AppColors.borderLight,
+                    color:
+                        selected ? AppColors.tealAccent : AppColors.borderLight,
                     width: selected ? 2.5 : 1,
                   ),
                 ),

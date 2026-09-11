@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:health/health.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:health/health.dart';
+import 'package:share_run_challenge/core/theme/theme.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
-import '../app/theme/app_colors.dart';
 import '../core/auth/health_data_consent_store.dart';
 import '../core/navigation/app_route_nav.dart';
-import '../core/theme/app_colors.dart' as src_colors;
 import '../core/widgets/async_value_section.dart';
 import '../core/widgets/currency_badge.dart';
 import '../data/models/tournament_model.dart';
@@ -119,8 +118,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     try {
       final firebaseUser = ref.read(authStateChangesProvider).value;
       final localUid = ref.read(persistedAuthSessionProvider)?.uid;
-      final signedIn = firebaseUser != null ||
-          (localUid != null && localUid.isNotEmpty);
+      final signedIn =
+          firebaseUser != null || (localUid != null && localUid.isNotEmpty);
       final profileConsent =
           ref.read(activeUserProfileProvider).value?.healthDataConsent ?? false;
       final prefsConsent = await HealthDataConsentStore().readAgreed();
@@ -135,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         messenger.showSnackBar(
           SnackBar(
             content: Text(blocked),
-            backgroundColor: AppColors.dangerRed,
+            backgroundColor: context.srcTokens.colors.danger,
           ),
         );
         return;
@@ -194,20 +193,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     final wallet = ref.watch(walletProvider);
     final userTierAsync = ref.watch(activeUserTierProvider);
     final challengesAsync = ref.watch(tournamentRoomsProvider);
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
     final onboarding = ref.watch(onboardingProvider);
-    final showGradeEval =
-        onboarding.currentStep != OnboardingStep.completed;
+    final showGradeEval = onboarding.currentStep != OnboardingStep.completed;
     final trialDone = onboarding.preliminaryPaceSeconds.length.clamp(0, 5);
 
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(tokens.spacing.page),
       children: [
         const HomeUserIdentityHeader(),
-        const SizedBox(height: 16),
+        SizedBox(height: tokens.spacing.md),
         Align(
           alignment: Alignment.centerRight,
           child: FilledButton.icon(
@@ -257,152 +257,145 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     }
                   },
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.neonLime,
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              backgroundColor: tokens.colors.primary,
+              foregroundColor: tokens.colors.onPrimary,
+              padding: EdgeInsets.symmetric(
+                horizontal: tokens.spacing.md,
+                vertical: tokens.spacing.sm,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: tokens.radii.capsule,
+              ),
             ),
             icon: _linkingWatch
-                ? const SizedBox(
+                ? SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.black,
+                      color: tokens.colors.onPrimary,
                     ),
                   )
                 : const Icon(Icons.watch_rounded),
             label: Text(
               _linkingWatch ? '연동 중...' : '워치 연동',
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: tokens.colors.onPrimary,
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: tokens.spacing.sm),
         if (showGradeEval) ...[
           OutlinedButton.icon(
             onPressed: () => context.pushNamed(RouteNames.preliminaryEvalName),
             icon: const Icon(Icons.emoji_events_outlined),
             label: Text(
               '등급 심사 (예비 $trialDone/5회)',
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style:
+                  textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: tokens.spacing.xl),
         ] else
-          const SizedBox(height: 24),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 4, 0, 4),
-          child: Row(
+          SizedBox(height: tokens.spacing.xl),
+        SrcSurfaceCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(
-                Icons.account_balance_wallet_outlined,
-                color: src_colors.AppColors.tealAccent,
-                size: 22,
+              Row(
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: tokens.colors.accent,
+                    size: 22,
+                  ),
+                  SizedBox(width: tokens.spacing.xs),
+                  Expanded(
+                    child: Text(
+                      'My Wallet',
+                      style: textTheme.titleLarge,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'My Wallet',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+              SizedBox(height: tokens.spacing.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: _HomeWalletBadgeTap(
+                      onTap: _onOpenInAppBilling,
+                      child: CurrencyBadge(
+                        label: 'Share',
+                        amount: wallet.shareBalance,
+                        color: tokens.colors.accent,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: tokens.spacing.sm),
+                  Expanded(
+                    child: _HomeWalletBadgeTap(
+                      onTap: () => _onOpenStore(focus: StoreFocus.items),
+                      child: CurrencyBadge(
+                        label: 'Diamond',
+                        amount: wallet.diamondBalance,
+                        color: tokens.colors.primary,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: tokens.spacing.sm),
+                  Expanded(
+                    child: _HomeWalletBadgeTap(
+                      onTap: () => _onOpenStore(focus: StoreFocus.donate),
+                      child: CurrencyBadge(
+                        label: 'Value',
+                        amount: wallet.valueBalance,
+                        color: tokens.colors.donation,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              const DebugEconomyStatusLine(),
+              SizedBox(height: tokens.spacing.sm),
+              DailyCapGauge(dailyKm: ref.watch(retentionDailyKmProvider)),
             ],
           ),
         ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: _HomeWalletBadgeTap(
-                onTap: _onOpenInAppBilling,
-                child: CurrencyBadge(
-                  label: 'Share',
-                  amount: wallet.shareBalance,
-                  color: AppColors.electricBlue,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _HomeWalletBadgeTap(
-                onTap: () => _onOpenStore(focus: StoreFocus.items),
-                child: CurrencyBadge(
-                  label: 'Diamond',
-                  amount: wallet.diamondBalance,
-                  color: Colors.purpleAccent,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _HomeWalletBadgeTap(
-                onTap: () => _onOpenStore(focus: StoreFocus.donate),
-                child: CurrencyBadge(
-                  label: 'Value',
-                  amount: wallet.valueBalance,
-                  color: AppColors.neonLime,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const DebugEconomyStatusLine(),
-        const SizedBox(height: 14),
-        DailyCapGauge(dailyKm: ref.watch(retentionDailyKmProvider)),
-        const SizedBox(height: 12),
+        SizedBox(height: tokens.spacing.sm),
         SoloQuickStartBanner(onTap: _onOpenSoloRun),
-        const SizedBox(height: 14),
+        SizedBox(height: tokens.spacing.sm),
         const AngelSponsorBanner(),
-        const SizedBox(height: 42),
-        Center(
-          child: SizedBox.square(
-            dimension: 184,
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.neonLime,
-                foregroundColor: Colors.black,
-                shape: const CircleBorder(),
-                elevation: 12,
-                shadowColor: AppColors.neonLime.withValues(alpha: 0.4),
-              ),
-              onPressed: _onStartRun,
-              child: const Text(
-                'START',
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 48),
-        Text('Active Challenges', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
+        SizedBox(height: tokens.spacing.xxl),
+        _HomeStartButton(onPressed: _onStartRun),
+        SizedBox(height: tokens.spacing.xxl),
+        Text('Active Challenges', style: textTheme.titleLarge),
+        SizedBox(height: tokens.spacing.md),
         AsyncValueSection<List<TournamentModel>>(
           asyncValue: challengesAsync,
           dataBuilder: (context, rooms) {
             final userTier = userTierAsync.value ?? 1;
-            final activeChallenges = rooms
-                .where((room) => room.isRecruiting)
-                .take(10)
-                .toList();
+            final activeChallenges =
+                rooms.where((room) => room.isRecruiting).take(10).toList();
 
             if (activeChallenges.isEmpty) {
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.cardBlack,
-                  borderRadius: BorderRadius.circular(22),
+              return SrcSurfaceCard(
+                child: Text(
+                  'No recruiting tournament rooms yet.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: tokens.colors.muted,
+                  ),
                 ),
-                child: const Text('No recruiting tournament rooms yet.'),
               );
             }
 
             return SizedBox(
-              height: 148,
+              height: 156,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: activeChallenges.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, __) => SizedBox(width: tokens.spacing.sm),
                 itemBuilder: (context, index) {
                   final room = activeChallenges[index];
                   return _ActiveChallengeCard(
@@ -417,53 +410,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
           },
         ),
-        const SizedBox(height: 28),
-        Text('다이아몬드 잔액', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.cardBlack,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: Colors.purpleAccent.withValues(alpha: 0.55),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.purpleAccent.withValues(alpha: 0.18),
-                blurRadius: 24,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
+        SizedBox(height: tokens.spacing.xl),
+        Text('다이아몬드 잔액', style: textTheme.titleLarge),
+        SizedBox(height: tokens.spacing.sm),
+        SrcSurfaceCard(
+          borderColor: tokens.colors.primary.withValues(alpha: 0.45),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.diamond_rounded,
-                color: Colors.purpleAccent,
+                color: tokens.colors.primary,
                 size: 36,
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: tokens.spacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Diamond Balance',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
+                      style: textTheme.labelMedium?.copyWith(
+                        color: tokens.colors.muted,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    SizedBox(height: tokens.spacing.xxs),
                     Text(
                       wallet.diamondBalance.toString(),
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w900,
-                            color: Colors.purpleAccent,
-                          ),
+                      style: textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                        color: tokens.colors.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -471,7 +448,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: tokens.spacing.sm),
       ],
     );
   }
@@ -492,72 +469,74 @@ class _ActiveChallengeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     final locked = room.lockedForTier(userTier);
     final full = room.isFull;
+    final highlight = isJoined || (!full && !locked);
+    final highlightColor =
+        highlight ? tokens.colors.donation : tokens.colors.muted;
 
-    return Material(
-      color: AppColors.cardBlack,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Container(
-          width: 240,
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return SrcSurfaceCard(
+      width: 240,
+      height: 156,
+      padding: EdgeInsets.all(tokens.spacing.sm),
+      onTap: onTap,
+      borderColor: highlight
+          ? tokens.colors.donation.withValues(alpha: 0.35)
+          : tokens.colors.outline,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Icon(
-                    locked ? Icons.lock_rounded : Icons.emoji_events_rounded,
-                    color: locked ? AppColors.textSecondary : AppColors.neonLime,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      room.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
-                ],
+              Icon(
+                locked ? Icons.lock_rounded : Icons.emoji_events_rounded,
+                color: locked ? tokens.colors.muted : tokens.colors.primary,
+                size: 18,
               ),
-              const SizedBox(height: 10),
-              Text(
-                '${room.targetDistanceKm.toStringAsFixed(1)}km · ${room.entryFeeShare} Share',
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                room.recruitmentSummary,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                isJoined
-                    ? 'Joined · +${room.winnerRewardValue} Value on verified finish'
-                    : locked
-                        ? 'Tier ${room.requiredTier} room locked'
-                        : full
-                            ? 'Room full'
-                            : '+${room.winnerRewardValue} Value on verified finish',
-                style: TextStyle(
-                  color: isJoined || (!full && !locked)
-                      ? AppColors.neonLime
-                      : AppColors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12,
+              SizedBox(width: tokens.spacing.xs),
+              Expanded(
+                child: Text(
+                  room.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleSmall,
                 ),
               ),
             ],
           ),
-        ),
+          SizedBox(height: tokens.spacing.xs),
+          Text(
+            '${room.targetDistanceKm.toStringAsFixed(1)}km · ${room.entryFeeShare} Share',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
+          ),
+          SizedBox(height: tokens.spacing.xxs),
+          Text(
+            room.recruitmentSummary,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.labelSmall?.copyWith(color: tokens.colors.muted),
+          ),
+          const Spacer(),
+          Text(
+            isJoined
+                ? 'Joined · +${room.winnerRewardValue} Value on verified finish'
+                : locked
+                    ? 'Tier ${room.requiredTier} room locked'
+                    : full
+                        ? 'Room full'
+                        : '+${room.winnerRewardValue} Value on verified finish',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.labelMedium?.copyWith(
+              color: highlightColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -574,15 +553,69 @@ class _HomeWalletBadgeTap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: tokens.radii.card,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        splashColor: src_colors.AppColors.tealAccent.withValues(alpha: 0.15),
-        highlightColor: src_colors.AppColors.tealAccent.withValues(alpha: 0.06),
+        borderRadius: tokens.radii.card,
+        splashColor: tokens.colors.accent.withValues(alpha: 0.15),
+        highlightColor: tokens.colors.accent.withValues(alpha: 0.06),
         child: child,
+      ),
+    );
+  }
+}
+
+class _HomeStartButton extends StatelessWidget {
+  const _HomeStartButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  static const _size = 184.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: tokens.colors.primary.withValues(alpha: 0.32),
+              blurRadius: 28,
+              offset: const Offset(0, 10),
+            ),
+            ...AppShadows.raised,
+          ],
+        ),
+        child: SizedBox.square(
+          dimension: _size,
+          child: FilledButton(
+            key: const Key('home-start-cta'),
+            style: FilledButton.styleFrom(
+              backgroundColor: scheme.primary,
+              foregroundColor: scheme.onPrimary,
+              shape: const CircleBorder(),
+              elevation: 0,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(_size, _size),
+            ),
+            onPressed: onPressed,
+            child: Text(
+              'START',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 34,
+                    letterSpacing: 1.2,
+                    color: scheme.onPrimary,
+                  ),
+            ),
+          ),
+        ),
       ),
     );
   }

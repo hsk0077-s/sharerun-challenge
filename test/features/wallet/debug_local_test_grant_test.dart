@@ -115,6 +115,34 @@ void main() {
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 
+  test(
+    'prefs marked done but Home wallet is still 0 must not local re-apply',
+    () {
+      expect(
+        DebugTestWalletGrantHost.shouldLocalReapplyBecauseWalletEmpty(
+          prefsMarkedDone: true,
+          walletEmpty: true,
+        ),
+        isFalse,
+      );
+      expect(
+        DebugWalletGrant.shouldRunLocalGrant(
+          debugMode: true,
+          prefsMarkedDone: true,
+          walletEmpty: true,
+        ),
+        isFalse,
+      );
+      expect(
+        DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
+          prefsMarkedDone: true,
+          walletEmpty: true,
+        ),
+        isTrue,
+      );
+    },
+  );
+
   test('stale prefs lock is one-shot even while Home wallet is still 0', () {
     expect(
       DebugTestWalletGrantHost.shouldHonorLocalGrantLock(

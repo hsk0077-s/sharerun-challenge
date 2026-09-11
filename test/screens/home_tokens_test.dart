@@ -10,6 +10,7 @@ import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
+import 'package:share_run_challenge/features/profile/widgets/gender_profile_avatar.dart';
 import 'package:share_run_challenge/screens/home_screen.dart';
 import 'package:share_run_challenge/screens/main_dashboard_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -168,15 +169,24 @@ void main() {
     expect(valueStyle?.color, AppColors.angelGold);
   });
 
-  testWidgets('Home START golden', (tester) async {
+  Future<void> pumpHomeGolden(WidgetTester tester, {required Widget home}) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_scopedApp(home: const Scaffold(body: HomeScreen())));
+    await tester.pumpWidget(_scopedApp(home: home));
+    await tester.runAsync(() async {
+      final context = tester.element(find.byType(MaterialApp));
+      await precacheImage(const AssetImage(GenderAvatarAssets.male), context);
+      await precacheImage(const AssetImage(GenderAvatarAssets.female), context);
+    });
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
+  }
+
+  testWidgets('Home START golden', (tester) async {
+    await pumpHomeGolden(tester, home: const Scaffold(body: HomeScreen()));
 
     await expectLater(
       find.byType(HomeScreen),
@@ -185,16 +195,7 @@ void main() {
   });
 
   testWidgets('live Home tab golden', (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
-    await tester.pumpWidget(
-      _scopedApp(home: const MainDashboardScreen()),
-    );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 80));
+    await pumpHomeGolden(tester, home: const MainDashboardScreen());
 
     await expectLater(
       find.byType(MainDashboardScreen),

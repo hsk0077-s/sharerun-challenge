@@ -118,12 +118,13 @@ class _WalkingMascotState extends State<WalkingMascot>
   late final AnimationController _loop;
   late final AnimationController _pickup;
   late final Listenable _tick;
+  var _celebrating = false;
 
   WalkingMascotMotion get motion {
     if (MediaQuery.disableAnimationsOf(context)) {
       return WalkingMascotMotion.idle;
     }
-    if (_pickup.isAnimating) return WalkingMascotMotion.pickup;
+    if (_celebrating) return WalkingMascotMotion.pickup;
     if (widget.moving) return WalkingMascotMotion.walking;
     return WalkingMascotMotion.idle;
   }
@@ -144,8 +145,10 @@ class _WalkingMascotState extends State<WalkingMascot>
     _tick = Listenable.merge([_loop, _pickup]);
     _pickup.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
-        _syncLoopDuration();
-        setState(() {});
+        setState(() {
+          _celebrating = false;
+          _syncLoopDuration();
+        });
       }
     });
   }
@@ -154,6 +157,7 @@ class _WalkingMascotState extends State<WalkingMascot>
   void didUpdateWidget(covariant WalkingMascot oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.pickupNonce > oldWidget.pickupNonce) {
+      _celebrating = true;
       _pickup.forward(from: 0);
     }
     if (widget.moving != oldWidget.moving) {
@@ -199,7 +203,7 @@ class _WalkingMascotState extends State<WalkingMascot>
       animation: _tick,
       builder: (context, child) {
         final current = motion;
-        final loopT = Curves.easeInOut.transform(_loop.value);
+        final loopT = Curves.easeInOut.transform(_loop.value.clamp(0.0, 1.0));
         var lift = 0.0;
         var tilt = 0.0;
         var scaleX = 1.0;
@@ -207,10 +211,13 @@ class _WalkingMascotState extends State<WalkingMascot>
         var sparkle = 0.0;
 
         if (current == WalkingMascotMotion.pickup) {
-          final t = _pickup.value;
+          final t = _pickup.value.clamp(0.0, 1.0);
           final hop = t < 0.42
-              ? Curves.easeOut.transform(t / 0.42)
-              : 1 - Curves.easeIn.transform((t - 0.42) / 0.58);
+              ? Curves.easeOut.transform((t / 0.42).clamp(0.0, 1.0))
+              : 1 -
+                  Curves.easeIn.transform(
+                    ((t - 0.42) / 0.58).clamp(0.0, 1.0),
+                  );
           lift = hop * size * 0.16;
           scaleY = t < 0.42 ? 1 + hop * 0.07 : 1 - (1 - hop) * 0.07;
           scaleX = 2 - scaleY;

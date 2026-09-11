@@ -93,23 +93,26 @@ void main() {
         home: StatefulBuilder(
           builder: (context, setState) {
             return Scaffold(
-              body: Column(
-                children: [
-                  WalkingMascot(
-                    tier: UserTier.unratedFallback,
-                    size: 80,
-                    moving: moving,
-                    pickupNonce: pickupNonce,
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() => moving = true),
-                    child: const Text('walk'),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() => pickupNonce += 1),
-                    child: const Text('pickup'),
-                  ),
-                ],
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    WalkingMascot(
+                      tier: UserTier.unratedFallback,
+                      size: 80,
+                      moving: moving,
+                      pickupNonce: pickupNonce,
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => moving = true),
+                      child: const Text('walk'),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => pickupNonce += 1),
+                      child: const Text('pickup'),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -138,7 +141,8 @@ void main() {
     );
 
     await tester.pump(WalkingMascot.pickupDuration);
-    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.byKey(const Key('walking-mascot-motion-pickup')), findsNothing);
     expect(
       find.byKey(const Key('walking-mascot-motion-walking')),
       findsOneWidget,

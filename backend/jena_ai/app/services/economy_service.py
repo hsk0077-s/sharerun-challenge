@@ -58,7 +58,8 @@ class EconomyService:
         harvested_share: int,
     ) -> int:
         delta = max(0, claimed_steps - prev_claimed_steps)
-        raw = int(delta * PEDOMETER_SHARE_PER_STEP)
+        steps_per_share = int(round(1 / PEDOMETER_SHARE_PER_STEP))
+        raw = delta // steps_per_share
         remaining = max(0, PEDOMETER_DAILY_HARVEST_SHARE_CAP - harvested_share)
         return min(raw, remaining)
 

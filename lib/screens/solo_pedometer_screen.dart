@@ -21,6 +21,7 @@ import '../core/theme/app_text_styles.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/pedometer/solo_pedometer_engine.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
+import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
@@ -637,9 +638,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   Future<String> _prefPrefix() async {
-    final uid = ref.read(userProfileProvider).uid;
+    final uid = _harvestUid();
     final key = PedometerKstClock.dateKey();
-    return 'solo_pedo_${uid}_$key';
+    return PedometerHarvestLedger.prefix(uid: uid, dateKey: key);
   }
 
   static int _prefToInt(Object? raw, [int fallback = 0]) {
@@ -689,8 +690,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         _isOffsetCaptured = true;
         _isClaimedDataLoaded = true;
         if (sameKstDay) {
-          _claimedSteps = prefs.getInt('${todayKey}_claimed_steps') ??
-              _claimedSteps;
+          _claimedSteps = PedometerHarvestLedger.coalesceClaimed(
+            current: _claimedSteps,
+            fromTodayKey: _prefToInt(
+              prefs.get(PedometerHarvestLedger.todayClaimedKey(todayKey)),
+            ),
+            fromPrefix: _claimedSteps,
+            steps: _steps,
+          );
           _collectedShareCoins =
               prefs.getDouble('collected_share_coins') ?? _collectedShareCoins;
         }
@@ -717,8 +724,30 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   double _computePendingShare(int steps) {
-    final diffSteps = steps - _claimedSteps;
-    return diffSteps > 0 ? diffSteps * 0.01 : 0.0;
+    return PedometerHarvestLedger.pendingShareExact(
+      steps: steps,
+      claimedSteps: _claimedSteps,
+    );
+  }
+
+  Future<void> _persistClaimedWatermark(int claimed) async {
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = _getTodayKey();
+    await prefs.setInt(
+      PedometerHarvestLedger.todayClaimedKey(todayKey),
+      claimed,
+    );
+    try {
+      final prefix = await _prefPrefix();
+      await prefs.setInt('$prefix.claimedSteps', claimed);
+      await prefs.setDouble(
+        '$prefix.pendingShare',
+        PedometerHarvestLedger.pendingShareExact(
+          steps: math.max(_steps, claimed),
+          claimedSteps: claimed,
+        ),
+      );
+    } catch (_) {}
   }
 
   void _updatePendingAmount() {
@@ -751,7 +780,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final legacySteps = prefs.getInt('$prefix.steps') ?? 0;
       final legacyKm = prefs.getDouble('$prefix.km') ?? 0;
       final savedMicro = _prefToInt(prefs.get('$prefix.microShare'));
-      final savedClaimed = _prefToInt(prefs.get('$prefix.claimedSteps'));
+      final savedClaimedPrefix = _prefToInt(prefs.get('$prefix.claimedSteps'));
+      final savedClaimedToday = _prefToInt(
+        prefs.get(PedometerHarvestLedger.todayClaimedKey(todayKey)),
+      );
       final savedChallengeReward =
           prefs.getBool('$prefix.hasReceivedChallengeReward') ?? false;
       final savedBonusReward =
@@ -796,7 +828,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         _weekSteps = week;
         if (_selectedDayKey.isEmpty) _selectedDayKey = todayKey;
         _isNotificationEnabled = notifOn;
-        _claimedSteps = savedClaimed.clamp(0, steps);
+        _claimedSteps = PedometerHarvestLedger.coalesceClaimed(
+          current: _claimedSteps,
+          fromTodayKey: savedClaimedToday,
+          fromPrefix: savedClaimedPrefix,
+          steps: steps,
+        );
         _hasReceivedMilestone1 = savedMilestone1;
         _hasReceivedMilestone2 = savedMilestone2;
         _hasReceivedMilestone3 = savedMilestone3;
@@ -872,10 +909,24 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final prefix = await _prefPrefix();
       await prefs.setDouble('$prefix.km', km);
       await prefs.setInt('$prefix.steps', steps);
-      await prefs.setInt('$prefix.claimedSteps', _claimedSteps);
+      final claimed = PedometerHarvestLedger.coalesceClaimed(
+        current: _claimedSteps,
+        fromTodayKey:
+            prefs.getInt(PedometerHarvestLedger.todayClaimedKey(ymd)) ?? 0,
+        fromPrefix: _prefToInt(prefs.get('$prefix.claimedSteps')),
+        steps: steps,
+      );
+      await prefs.setInt('$prefix.claimedSteps', claimed);
+      await prefs.setInt(
+        PedometerHarvestLedger.todayClaimedKey(ymd),
+        claimed,
+      );
       await prefs.setDouble(
         '$prefix.pendingShare',
-        _computePendingShare(steps),
+        PedometerHarvestLedger.pendingShareExact(
+          steps: steps,
+          claimedSteps: claimed,
+        ),
       );
       await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
       await prefs.setBool(
@@ -931,8 +982,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     if (_harvestInFlight) return;
     final pedometerState = ref.read(pedometerStateProvider);
     final liveSteps = math.max(pedometerState.steps, _steps);
-    final diffSteps = liveSteps - _claimedSteps;
-    final int toClaim = (diffSteps * 0.01).floor();
+    final int toClaim = PedometerHarvestLedger.pendingShareFloor(
+      steps: liveSteps,
+      claimedSteps: _claimedSteps,
+    );
     if (toClaim <= 0) return;
     _harvestInFlight = true;
     final previousClaimed = _claimedSteps;
@@ -948,12 +1001,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _harvestInFlight = false;
       return;
     }
-    final todayKey = _getTodayKey();
     setState(() {
       _claimedSteps = liveSteps;
     });
     ref.read(walkingPendingShareProvider.notifier).state = 0.0;
     unawaited(_syncForegroundNotification(liveSteps));
+    // Persist the watermark before the API returns so back-navigation
+    // cannot restore the old pending floor and harvest it again.
+    await _persistClaimedWatermark(liveSteps);
     try {
       final uid = _harvestUid();
       if (uid.isEmpty) {
@@ -963,10 +1018,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             claimedSteps: liveSteps,
           );
       final credited = result.creditedShare(fallback: toClaim);
-      ref.read(walletProvider.notifier).applyShareFromServer(
-            shareBalance: result.shareBalance,
-            shareCredited: credited,
-          );
+      final minted = result.mintedShare && credited > 0;
+      if (minted || result.shareBalance != null) {
+        ref.read(walletProvider.notifier).applyShareFromServer(
+              shareBalance: result.shareBalance,
+              shareCredited: minted ? credited : 0,
+            );
+      }
       final walletShare = ref.read(walletProvider).shareBalance;
       if (mounted) {
         setState(() {
@@ -975,18 +1033,17 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       } else {
         _collectedShareCoins = walletShare.toDouble();
       }
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('${todayKey}_claimed_steps', _claimedSteps);
-      await prefs.setDouble('collected_share_coins', _collectedShareCoins);
+      await _persistClaimedWatermark(_claimedSteps);
       try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setDouble('collected_share_coins', _collectedShareCoins);
         final prefix = await _prefPrefix();
-        await prefs.setInt('$prefix.claimedSteps', _claimedSteps);
-        await prefs.setDouble('$prefix.pendingShare', 0.0);
         await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
+        await prefs.setDouble('$prefix.pendingShare', 0.0);
       } catch (_) {}
       debugPrint(
-        '[HARVEST SUCCESS] +$credited SHARE claimedSteps=$liveSteps '
-        'walletShare=$walletShare',
+        '[HARVEST SUCCESS] status=${result.status} +$credited SHARE '
+        'claimedSteps=$liveSteps walletShare=$walletShare',
       );
     } catch (e) {
       debugPrint('[HARVEST] secured credit failed: $e');
@@ -1001,7 +1058,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             content: Text('셰어 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
           ),
         );
+      } else {
+        _collectedShareCoins = previousCollected;
+        _claimedSteps = previousClaimed;
       }
+      await _persistClaimedWatermark(previousClaimed);
     } finally {
       _harvestInFlight = false;
     }
@@ -1067,9 +1128,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final weekDays = PedometerKstClock.thisWeekDays();
     final selectedKey =
         _selectedDayKey.isEmpty ? PedometerKstClock.dateKey() : _selectedDayKey;
-    final diffSteps = effectiveSteps - _claimedSteps;
-    final currentPendingShare = diffSteps > 0 ? (diffSteps * 0.01) : 0.0;
-    final pendingCoinsInt = currentPendingShare.floor();
+    final currentPendingShare = PedometerHarvestLedger.pendingShareExact(
+      steps: effectiveSteps,
+      claimedSteps: _claimedSteps,
+    );
+    final pendingCoinsInt = PedometerHarvestLedger.pendingShareFloor(
+      steps: effectiveSteps,
+      claimedSteps: _claimedSteps,
+    );
     final hasPendingCoins = pendingCoinsInt >= 1;
 
     return PopScope(
@@ -1224,7 +1290,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   Widget _buildTodayMiningChip() {
-    final todayCollectedCoins = (_claimedSteps * 0.01).toInt();
+    final todayCollectedCoins = PedometerHarvestLedger.pendingShareFloor(
+      steps: _claimedSteps,
+      claimedSteps: 0,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
@@ -1302,7 +1371,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     required bool hasPendingCoins,
     required int pendingCoinsInt,
   }) {
-    final isMaxDailyReached = (_claimedSteps * 0.01).toInt() >= 60;
+    final isMaxDailyReached = PedometerHarvestLedger.pendingShareFloor(
+          steps: _claimedSteps,
+          claimedSteps: 0,
+        ) >=
+        60;
     if (isMaxDailyReached) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),

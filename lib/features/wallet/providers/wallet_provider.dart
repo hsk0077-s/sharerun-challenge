@@ -82,7 +82,14 @@ class WalletNotifier extends Notifier<WalletState> {
   }
 
   void _syncFromRemote(WalletModel model) {
-    state = WalletState.fromModel(model);
+    final incoming = WalletState.fromModel(model);
+    // Auth/loading and pre-grant user docs emit 0/0/0. That snapshot must
+    // not wipe a just-applied debug grant or harvest credit.
+    if (incoming.isEmpty && !state.isEmpty) {
+      if (!_ready.isCompleted) _ready.complete();
+      return;
+    }
+    state = incoming;
     if (!_ready.isCompleted) _ready.complete();
   }
 

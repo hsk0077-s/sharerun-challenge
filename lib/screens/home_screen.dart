@@ -12,12 +12,12 @@ import '../core/theme/app_colors.dart' as src_colors;
 import '../core/widgets/async_value_section.dart';
 import '../core/widgets/currency_badge.dart';
 import '../data/models/tournament_model.dart';
-import '../data/models/wallet_model.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
 import 'in_challenge_screen.dart';
 import 'store_screen.dart';
@@ -106,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final walletAsync = ref.watch(activeWalletProvider);
+    final wallet = ref.watch(walletProvider);
     final userTierAsync = ref.watch(activeUserTierProvider);
     final challengesAsync = ref.watch(tournamentRoomsProvider);
     final joinedIds = ref.watch(joinedTournamentIdsProvider).value ?? const {};
@@ -222,44 +222,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        AsyncValueSection<WalletModel>(
-          asyncValue: walletAsync,
-          dataBuilder: (context, wallet) => Row(
-            children: [
-              Expanded(
-                child: _HomeWalletBadgeTap(
-                  onTap: _onOpenInAppBilling,
-                  child: CurrencyBadge(
-                    label: 'Share',
-                    amount: wallet.shareBalance,
-                    color: AppColors.electricBlue,
-                  ),
+        Row(
+          children: [
+            Expanded(
+              child: _HomeWalletBadgeTap(
+                onTap: _onOpenInAppBilling,
+                child: CurrencyBadge(
+                  label: 'Share',
+                  amount: wallet.shareBalance,
+                  color: AppColors.electricBlue,
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HomeWalletBadgeTap(
-                  onTap: () => _onOpenStore(focus: StoreFocus.items),
-                  child: CurrencyBadge(
-                    label: 'Diamond',
-                    amount: wallet.diamondBalance,
-                    color: Colors.purpleAccent,
-                  ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _HomeWalletBadgeTap(
+                onTap: () => _onOpenStore(focus: StoreFocus.items),
+                child: CurrencyBadge(
+                  label: 'Diamond',
+                  amount: wallet.diamondBalance,
+                  color: Colors.purpleAccent,
                 ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HomeWalletBadgeTap(
-                  onTap: () => _onOpenStore(focus: StoreFocus.donate),
-                  child: CurrencyBadge(
-                    label: 'Value',
-                    amount: wallet.valueTokenBalance,
-                    color: AppColors.neonLime,
-                  ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _HomeWalletBadgeTap(
+                onTap: () => _onOpenStore(focus: StoreFocus.donate),
+                child: CurrencyBadge(
+                  label: 'Value',
+                  amount: wallet.valueBalance,
+                  color: AppColors.neonLime,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
         const SizedBox(height: 14),
         DailyCapGauge(dailyKm: ref.watch(retentionDailyKmProvider)),
@@ -409,58 +406,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 28),
         Text('다이아몬드 잔액', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
-        AsyncValueSection<WalletModel>(
-          asyncValue: walletAsync,
-          dataBuilder: (context, wallet) => Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.cardBlack,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: Colors.purpleAccent.withValues(alpha: 0.55),
-                width: 1.5,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.cardBlack,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Colors.purpleAccent.withValues(alpha: 0.55),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.purpleAccent.withValues(alpha: 0.18),
+                blurRadius: 24,
+                spreadRadius: 2,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.purpleAccent.withValues(alpha: 0.18),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.diamond_rounded,
-                  color: Colors.purpleAccent,
-                  size: 36,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Diamond Balance',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.diamond_rounded,
+                color: Colors.purpleAccent,
+                size: 36,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Diamond Balance',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        wallet.diamondBalance.toString(),
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              color: Colors.purpleAccent,
-                            ),
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      wallet.diamondBalance.toString(),
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            color: Colors.purpleAccent,
+                          ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 12),

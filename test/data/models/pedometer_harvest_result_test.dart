@@ -32,10 +32,18 @@ void main() {
     expect(result.valueTokenBalance, 5000);
   });
 
-  test('empty body is treated as harvested so older APIs still credit', () {
+  test('already_harvested without share_credited does not replay the floor', () {
+    final result = PedometerHarvestResult.fromJson({
+      'status': 'already_harvested',
+      'share_balance': 40,
+    });
+    expect(result.creditedShare(fallback: 29), 0);
+  });
+
+  test('empty body does not credit the client floor amount', () {
     final result = PedometerHarvestResult.fromJson(const {});
-    expect(result.status, 'harvested');
-    expect(result.creditedShare(fallback: 20), 20);
+    expect(result.status, isEmpty);
+    expect(result.creditedShare(fallback: 29), 0);
   });
 
   test('debug 1M grant snapshot parses all three balances', () {

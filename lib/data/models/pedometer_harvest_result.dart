@@ -17,16 +17,17 @@ class PedometerHarvestResult {
 
   bool get mintedShare => status == 'harvested';
 
-  /// Server-credited SHARE. Unknown `harvested` bodies fall back to [fallback].
+  /// Server-credited SHARE. Only an explicit `harvested` body may use [fallback].
+  /// `already_harvested` / empty / unknown statuses must not replay the floor.
   int creditedShare({required int fallback}) {
     if (shareCredited != null) return shareCredited!;
-    if (status == 'harvested' || status.isEmpty) return fallback;
+    if (status == 'harvested') return fallback;
     return 0;
   }
 
   factory PedometerHarvestResult.fromJson(Map<String, dynamic> json) {
     if (json.isEmpty) {
-      return const PedometerHarvestResult(status: 'harvested');
+      return const PedometerHarvestResult(status: '');
     }
     return PedometerHarvestResult(
       accepted: json['accepted'] as bool? ?? true,

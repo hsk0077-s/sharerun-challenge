@@ -1076,6 +1076,14 @@ class SecuredActionService:
         return user.get(TEST_WALLET_GRANT_FLAG) is True
 
     @staticmethod
+    def _test_grant_needs_reapply(user: dict) -> bool:
+        """Flag set but balances still 0 — grant never landed; allow one retry."""
+        if not SecuredActionService._test_grant_already_applied(user):
+            return False
+        share, dia, value = SecuredActionService._wallet_balances(user)
+        return share <= 0 and dia <= 0 and value <= 0
+
+    @staticmethod
     def is_test_grant_authorized(
         uid: str,
         user: dict,
@@ -1132,7 +1140,9 @@ class SecuredActionService:
 
         user = user_snapshot.to_dict() or {}
         current_share, current_dia, current_value = self._wallet_balances(user)
-        if self._test_grant_already_applied(user):
+        if self._test_grant_already_applied(
+            user
+        ) and not self._test_grant_needs_reapply(user):
             # Never reset existing test balances on relaunch.
             return self._harvest_result(
                 status="already_granted",

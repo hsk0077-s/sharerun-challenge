@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
+import 'package:share_run_challenge/core/api/api_exception.dart';
+import 'package:share_run_challenge/data/models/pedometer_harvest_result.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/wallet/debug_test_wallet_grant.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
@@ -70,6 +72,11 @@ void main() {
     expect(container.read(walletProvider).shareBalance, 1000000);
     expect(container.read(walletProvider).diamondBalance, 1000000);
     expect(container.read(walletProvider).valueBalance, 1000000);
+
+    notifier.replaceFromRemote(WalletModel.empty());
+    expect(container.read(walletProvider).shareBalance, 1000000);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
   });
 
   test('debug 1M grant is one-shot keyed and one million', () {
@@ -89,5 +96,49 @@ void main() {
     );
     // flutter test runs in kDebugMode, so flutter run would send this secret.
     expect(DebugTestWalletGrantHost.grantSecret(), isNotEmpty);
+  });
+
+  test('grant prefs lock only after granted or non-zero already_granted', () {
+    expect(
+      DebugTestWalletGrantHost.shouldMarkGrantConsumed(
+        const PedometerHarvestResult(status: 'granted', shareBalance: 1000000),
+      ),
+      isTrue,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldMarkGrantConsumed(
+        const PedometerHarvestResult(status: 'already_granted'),
+      ),
+      isFalse,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldMarkGrantConsumed(
+        const PedometerHarvestResult(
+          status: 'already_granted',
+          shareBalance: 1000000,
+          diamondBalance: 1000000,
+          valueTokenBalance: 1000000,
+        ),
+      ),
+      isTrue,
+    );
+  });
+
+  test('grant retries user-not-found and undeployed 403', () {
+    expect(
+      DebugTestWalletGrantHost.shouldRetryGrant(
+        const ApiException(statusCode: 404, detail: 'User not found.'),
+      ),
+      isTrue,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldRetryGrant(
+        const ApiException(
+          statusCode: 403,
+          detail: 'Not eligible for debug test grant.',
+        ),
+      ),
+      isTrue,
+    );
   });
 }

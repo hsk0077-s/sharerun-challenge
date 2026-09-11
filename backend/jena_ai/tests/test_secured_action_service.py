@@ -146,6 +146,23 @@ def test_debug_test_wallet_grant_flag_is_one_shot() -> None:
     )
 
 
+def test_debug_test_wallet_grant_reapplies_when_flag_set_but_balances_zero() -> None:
+    assert SecuredActionService._test_grant_needs_reapply(
+        {"testGrant1mDone": True, "wallet": {}}
+    )
+    assert not SecuredActionService._test_grant_needs_reapply(
+        {
+            "testGrant1mDone": True,
+            "wallet": {
+                "shareBalance": 1_000_000,
+                "diamondBalance": 1_000_000,
+                "valueTokenBalance": 1_000_000,
+            },
+        }
+    )
+    assert not SecuredActionService._test_grant_needs_reapply({})
+
+
 def test_debug_test_grant_request_defaults_are_safe_for_release() -> None:
     from app.models.secured_actions import DebugTestGrantRequest
 

@@ -24,6 +24,7 @@ import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/debug_local_harvest.dart';
 import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
+import '../features/pedometer/pedometer_step_truth.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
@@ -222,6 +223,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   var _rewardGrantInFlight = false;
   var _harvestInFlight = false;
   Timer? _goldenPushDebounce;
+  Timer? _healthPollTimer;
+  var _pedoRebindInFlight = false;
+  DateTime? _lastPedoRebindAt;
 
   UserTier get _tier =>
       ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
@@ -251,6 +255,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       } on PlatformException catch (e, st) {
         debugPrint('initPedometerSystem activityRecognition: $e\n$st');
       }
+      try {
+        await Permission.sensors.request();
+      } on PlatformException catch (e, st) {
+        debugPrint('initPedometerSystem sensors: $e\n$st');
+      } catch (e, st) {
+        debugPrint('initPedometerSystem sensors: $e\n$st');
+      }
       if (!mounted) return;
       try {
         await _health.configure();
@@ -263,26 +274,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       if (!mounted) return;
       await _loadClaimedData();
       if (!mounted) return;
-      _pedoSub = Pedometer.stepCountStream.listen(
-        _onPedometerEvent,
-        onError: (Object error, StackTrace stack) {
-          debugPrint('Pedometer.stepCountStream: $error\n$stack');
-        },
-        cancelOnError: false,
-      );
-      try {
-        _statusSub = Pedometer.pedestrianStatusStream.listen(
-          _onPedestrianStatus,
-          onError: (Object error, StackTrace stack) {
-            debugPrint('Pedometer.pedestrianStatusStream: $error\n$stack');
-          },
-          cancelOnError: false,
-        );
-      } on PlatformException catch (e, st) {
-        debugPrint('initPedometerSystem pedestrianStatus: $e\n$st');
-      } catch (e, st) {
-        debugPrint('initPedometerSystem pedestrianStatus: $e\n$st');
-      }
+      await _listenOsPedometer(reason: 'init');
       if (!mounted) return;
       if (_isNotificationEnabled) {
         unawaited(
@@ -296,11 +288,81 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         );
       }
       unawaited(_pullLiveStepsFromService());
+      _healthPollTimer?.cancel();
+      _healthPollTimer = Timer.periodic(const Duration(seconds: 20), (_) {
+        unawaited(syncBackgroundSteps(requestIfMissing: false));
+      });
       _scheduleGoldenPushes();
     } on PlatformException catch (e, st) {
       debugPrint('initPedometerSystem PlatformException: $e\n$st');
     } catch (e, st) {
       debugPrint('initPedometerSystem: $e\n$st');
+    }
+  }
+
+  /// Re-bind TYPE_STEP_COUNTER after background, USB `flutter run` detach, or
+  /// EventChannel `FlutterJNI was detached` (channels `step_count` /
+  /// `step_detection`). A dead subscription is why shake stopped while Health
+  /// Connect still returned ~1,834.
+  Future<void> _listenOsPedometer({required String reason}) async {
+    if (!mounted || _pedoRebindInFlight) return;
+    final now = DateTime.now();
+    if (!PedometerStepTruth.shouldRebindSensor(
+      now: now,
+      lastRebindAt: _lastPedoRebindAt,
+      force: reason == 'init' || reason == 'resume',
+    )) {
+      return;
+    }
+    _pedoRebindInFlight = true;
+    _lastPedoRebindAt = now;
+    try {
+      await _pedoSub?.cancel();
+      await _statusSub?.cancel();
+      _pedoSub = null;
+      _statusSub = null;
+      _baselineReady = false;
+      _sessionDelta = 0;
+      debugPrint(
+        '${PedometerStepTruth.sourceLog(
+          source: 'sensor-rebind',
+          daily: _steps,
+          offset: _stepOffset,
+          healthBase: _healthBase,
+          ui: _steps,
+        )} reason=$reason',
+      );
+      _pedoSub = Pedometer.stepCountStream.listen(
+        _onPedometerEvent,
+        onError: (Object error, StackTrace stack) {
+          debugPrint('Pedometer.stepCountStream: $error\n$stack');
+          unawaited(_listenOsPedometer(reason: 'stream-error'));
+        },
+        onDone: () {
+          debugPrint('${PedometerStepTruth.logPrefix} source=sensor-done');
+          unawaited(_listenOsPedometer(reason: 'stream-done'));
+        },
+        cancelOnError: false,
+      );
+      try {
+        _statusSub = Pedometer.pedestrianStatusStream.listen(
+          _onPedestrianStatus,
+          onError: (Object error, StackTrace stack) {
+            debugPrint('Pedometer.pedestrianStatusStream: $error\n$stack');
+          },
+          cancelOnError: false,
+        );
+      } on PlatformException catch (e, st) {
+        debugPrint('_listenOsPedometer pedestrianStatus: $e\n$st');
+      } catch (e, st) {
+        debugPrint('_listenOsPedometer pedestrianStatus: $e\n$st');
+      }
+    } on PlatformException catch (e, st) {
+      debugPrint('_listenOsPedometer PlatformException: $e\n$st');
+    } catch (e, st) {
+      debugPrint('_listenOsPedometer: $e\n$st');
+    } finally {
+      _pedoRebindInFlight = false;
     }
   }
 
@@ -327,16 +389,44 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       if (!_baselineReady) {
         _baselineSteps = raw;
         _baselineReady = true;
-        return;
+        debugPrint(
+          PedometerStepTruth.sourceLog(
+            source: 'sensor-baseline',
+            daily: _steps,
+            raw: raw,
+            offset: _stepOffset,
+            healthBase: _healthBase,
+            sessionDelta: 0,
+            ui: _steps,
+          ),
+        );
+      } else {
+        _sessionDelta = math.max(0, raw - _baselineSteps);
       }
-      _sessionDelta = math.max(0, raw - _baselineSteps);
       if (!mounted) return;
       _setMoving(true);
       _stillTimer?.cancel();
       _stillTimer = Timer(const Duration(seconds: 3), () {
         _setMoving(false);
       });
-      _applyOsSteps(_healthBase + _sessionDelta);
+      final next = PedometerStepTruth.fromSensorEvent(
+        raw: raw,
+        healthBase: _healthBase,
+        sessionDelta: _sessionDelta,
+        stepOffset: _stepOffset,
+      );
+      debugPrint(
+        PedometerStepTruth.sourceLog(
+          source: 'sensor',
+          daily: next,
+          raw: raw,
+          offset: _stepOffset,
+          healthBase: _healthBase,
+          sessionDelta: _sessionDelta,
+          ui: _steps,
+        ),
+      );
+      _applyDailySteps(next, source: 'sensor');
     } on PlatformException catch (e, st) {
       debugPrint('_onPedometerEvent PlatformException: $e\n$st');
     } catch (e, st) {
@@ -369,12 +459,40 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         }
         var next = math.max(total, _steps);
         next = math.max(next, await SoloPedometerForeground.liveSteps());
-        _healthBase = next;
-        _sessionDelta = 0;
-        _baselineReady = false;
-        _applyOsSteps(next);
+        debugPrint(
+          PedometerStepTruth.sourceLog(
+            source: 'health',
+            daily: next,
+            raw: total,
+            offset: _stepOffset,
+            healthBase: _healthBase,
+            sessionDelta: _sessionDelta,
+            ui: _steps,
+          ),
+        );
+        // Only re-anchor the pedometer session when Health raises the floor.
+        // A periodic poll that always reset the baseline swallowed Samsung
+        // shake/step events (first event after each poll became a no-op).
+        if (next > _healthBase) {
+          _healthBase = next;
+          _sessionDelta = 0;
+          _baselineReady = false;
+        } else {
+          _healthBase = math.max(_healthBase, total);
+        }
+        _applyDailySteps(next, source: 'health');
+        unawaited(_syncForegroundNotification(math.max(next, _steps)));
         return;
       }
+      debugPrint(
+        PedometerStepTruth.sourceLog(
+          source: 'health-miss',
+          daily: _steps,
+          offset: _stepOffset,
+          healthBase: _healthBase,
+          ui: _steps,
+        ),
+      );
       if (_steps > 0) {
         unawaited(
           ref.read(pedometerStateProvider.notifier).updateSteps(
@@ -383,6 +501,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                 isMoving: _isMoving,
               ),
         );
+        unawaited(_syncForegroundNotification(_steps));
       }
     } on PlatformException catch (e, st) {
       debugPrint('syncBackgroundSteps PlatformException: $e\n$st');
@@ -476,10 +595,22 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
-  void _applyOsSteps(int steps) {
+  void _applyDailySteps(int steps, {required String source}) {
     if (!mounted) return;
-    _ensureDailyRollover(sensorTotal: math.max(steps, _steps));
-    final effective = (steps - _stepOffset).clamp(0, 999999);
+    _ensureDailyRollover(
+      sensorTotal: math.max(steps, _steps) + _stepOffset,
+    );
+    final effective = PedometerStepTruth.clampDaily(steps);
+    debugPrint(
+      PedometerStepTruth.sourceLog(
+        source: 'apply-$source',
+        daily: effective,
+        offset: _stepOffset,
+        healthBase: _healthBase,
+        sessionDelta: _sessionDelta,
+        ui: _steps,
+      ),
+    );
     if (effective <= _steps) return;
     final km = SoloPedometerEngine.kmFromSteps(effective);
     final todayKey = PedometerKstClock.dateKey();
@@ -506,12 +637,17 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   void _onIsolateSteps(int steps) {
     if (!mounted) return;
-    _ensureDailyRollover(sensorTotal: math.max(steps, _steps));
-    if (steps <= _steps) return;
+    _ensureDailyRollover(
+      sensorTotal: math.max(steps, _steps) + _stepOffset,
+    );
+    if (steps <= _steps) {
+      unawaited(_syncForegroundNotification(_steps));
+      return;
+    }
     _healthBase = steps;
     _sessionDelta = 0;
     _baselineReady = false;
-    _applyOsSteps(steps);
+    _applyDailySteps(steps, source: 'isolate');
   }
 
   Future<void> _pullLiveStepsFromService() async {
@@ -577,8 +713,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _ensureDailyRollover(
         sensorTotal: math.max(_steps, 0) + _stepOffset,
       );
+      unawaited(_listenOsPedometer(reason: 'resume'));
       unawaited(_pullLiveStepsFromService());
       unawaited(syncBackgroundSteps());
+      unawaited(_syncForegroundNotification(_steps));
       if (_isNotificationEnabled) {
         unawaited(
           SoloPedometerForeground.ensureAlive(
@@ -867,6 +1005,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       week[todayKey] = math.max(week[todayKey] ?? 0, steps);
       setState(() {
         if (steps > _steps) _steps = steps;
+        if (steps > _healthBase) _healthBase = steps;
         if (km > _km) _km = km;
         _kstDayKey = todayKey;
         _weekSteps = week;
@@ -1040,6 +1179,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     WidgetsBinding.instance.removeObserver(this);
     _stillTimer?.cancel();
     _goldenPushDebounce?.cancel();
+    _healthPollTimer?.cancel();
     unawaited(_pedoSub?.cancel());
     unawaited(_statusSub?.cancel());
     unawaited(_engine.dispose());

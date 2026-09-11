@@ -16,6 +16,7 @@ import '../../app/router/route_names.dart';
 import '../../core/theme/app_colors.dart';
 import 'kst_calendar.dart';
 import 'pedometer_day_rollover.dart';
+import 'pedometer_step_truth.dart';
 
 const _channelId = 'src_walking_coin_pickup';
 const _channelName = '워킹챌린지 코인 줍기';
@@ -68,6 +69,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   var snipedMilestone3 = false;
   var isPushEnabled = true;
   var _smartFlagsHydrated = false;
+  var _sensorRebindInFlight = false;
+  DateTime? _lastSensorRebindAt;
   static final _smartPlugin = FlutterLocalNotificationsPlugin();
   static var _smartPluginReady = false;
 
@@ -84,7 +87,58 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       } catch (e, st) {
         debugPrint('SoloPedometerForegroundHandler load date: $e\n$st');
       }
+      if (_steps <= 0) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final todayKey = KstCalendar.dateKey();
+          final persisted = prefs.getInt('${todayKey}_steps') ?? 0;
+          if (persisted > 0) {
+            _steps = persisted;
+            _anchor = persisted;
+            debugPrint(
+              PedometerStepTruth.sourceLog(
+                source: 'isolate-hydrate',
+                daily: persisted,
+                ui: persisted,
+              ),
+            );
+          }
+        } catch (e, st) {
+          debugPrint('SoloPedometerForegroundHandler hydrate: $e\n$st');
+        }
+      }
       await _publish(_steps);
+      _listenSensor(reason: 'onStart');
+    } on PlatformException catch (e, st) {
+      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+    } catch (e, st) {
+      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+    }
+  }
+
+  void _listenSensor({required String reason}) {
+    if (_sensorRebindInFlight) return;
+    final now = DateTime.now();
+    if (!PedometerStepTruth.shouldRebindSensor(
+      now: now,
+      lastRebindAt: _lastSensorRebindAt,
+      force: reason == 'onStart',
+    )) {
+      return;
+    }
+    _sensorRebindInFlight = true;
+    _lastSensorRebindAt = now;
+    try {
+      unawaited(_sub?.cancel());
+      _baselineReady = false;
+      debugPrint(
+        '${PedometerStepTruth.sourceLog(
+          source: 'isolate-rebind',
+          daily: _steps,
+          offset: stepOffset,
+          ui: _steps,
+        )} reason=$reason',
+      );
       _sub = Pedometer.stepCountStream.listen(
         (event) {
           try {
@@ -102,18 +156,26 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         },
         onError: (Object error, StackTrace stack) {
           debugPrint('SoloPedometerForegroundHandler stream: $error\n$stack');
+          _listenSensor(reason: 'stream-error');
+        },
+        onDone: () {
+          debugPrint('SoloPedometerForegroundHandler stream done');
+          _listenSensor(reason: 'stream-done');
         },
         cancelOnError: false,
       );
     } on PlatformException catch (e, st) {
-      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+      debugPrint('SoloPedometerForegroundHandler listen: $e\n$st');
     } catch (e, st) {
-      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+      debugPrint('SoloPedometerForegroundHandler listen: $e\n$st');
+    } finally {
+      _sensorRebindInFlight = false;
     }
   }
 
   @override
   void onRepeatEvent(DateTime timestamp) {
+    if (_sub == null) _listenSensor(reason: 'onStart');
     unawaited(_commit(_steps.toInt()));
     unawaited(_maybeFireSmartPushes(_steps));
   }
@@ -421,6 +483,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       );
       final resolved =
           await SoloPedometerForeground.resolveNotification(rawSteps: steps);
+      debugPrint(
+        PedometerStepTruth.sourceLog(
+          source: 'notif-publish',
+          daily: resolved.effectiveSteps,
+          ui: steps,
+        ),
+      );
       await FlutterForegroundTask.saveData(
         key: _claimedKey,
         value: resolved.claimedSteps,
@@ -492,34 +561,30 @@ abstract final class SoloPedometerForeground {
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final todayKey = KstCalendar.dateKey();
-
-    final stepOffset = prefs.getInt('${todayKey}_step_offset') ?? 0;
     final claimedSteps = prefs.getInt('${todayKey}_claimed_steps') ?? 0;
-
-    final effectiveSteps = (rawSteps - stepOffset).clamp(0, 999999);
-    final pendingShareAmount = 0.0;
-    final currentSteps = effectiveSteps;
-    late final String title;
-    late final String body;
-
-    if (currentSteps >= 4500) {
-      title = '챌린지 완주 성공! 🎉';
-      body =
-          '60 SHARE 획득 완료! 만보 보너스(+20 SHARE)를 향해 전진 중 (${_comma(currentSteps)}/10,000보)';
-    } else if (currentSteps >= 1500) {
-      title = '숲길 걷는 중 👟';
-      body =
-          '현재 ${_comma(currentSteps)}보 · 마일스톤 진행 중 (다음 목표: 4,500보)';
-    } else {
-      title = '셰어런 챌린지 대기 중 🎯';
-      body =
-          '오늘의 숲길 산책을 시작해 보세요! (${_comma(currentSteps)} / 4,500보)';
-    }
+    // UI / isolate store *daily* steps. Midnight sensor offset must not be
+    // subtracted again — that zeroed the shade while the walking screen
+    // still showed the persisted daily count (e.g. 1,835 vs 0 / 4,500).
+    final persistedToday = prefs.getInt('${todayKey}_steps') ?? 0;
+    final effectiveSteps = PedometerStepTruth.dailyFromSources(
+      liveDaily: rawSteps,
+      persistedToday: persistedToday,
+    );
+    final copy =
+        WalkingChallengeNotificationCopy.fromDailySteps(effectiveSteps);
+    debugPrint(
+      PedometerStepTruth.sourceLog(
+        source: 'notif-resolve',
+        daily: effectiveSteps,
+        raw: rawSteps,
+        ui: persistedToday,
+      ),
+    );
 
     return (
-      title: title,
-      body: body,
-      pendingShare: pendingShareAmount.toDouble(),
+      title: copy.title,
+      body: copy.body,
+      pendingShare: 0.0,
       effectiveSteps: effectiveSteps,
       claimedSteps: claimedSteps,
     );

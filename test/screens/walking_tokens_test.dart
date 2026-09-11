@@ -7,6 +7,7 @@ import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -93,16 +94,39 @@ void main() {
     final harvest = tester.widget<FilledButton>(
       find.byKey(const Key('walking-harvest-cta')),
     );
-    expect(
-      harvest.style?.backgroundColor?.resolve(const <WidgetState>{}),
-      AppColors.angelGold,
-    );
     expect(harvest.onPressed, isNull);
+
+    final harvestInk = tester.widget<Ink>(
+      find.ancestor(
+        of: find.byKey(const Key('walking-harvest-cta')),
+        matching: find.byType(Ink),
+      ),
+    );
+    expect(
+      (harvestInk.decoration as BoxDecoration).gradient?.colors,
+      contains(AppColors.angelGold),
+    );
 
     final shareStyle = tester
         .widget<Text>(find.byKey(const Key('walking-share-balance')))
         .style;
     expect(shareStyle?.color, AppColors.tealAccent);
+    expect(shareStyle?.fontSize, greaterThanOrEqualTo(32));
+
+    final stepStyle =
+        tester.widget<Text>(find.byKey(const Key('walking-step-count'))).style;
+    expect(stepStyle?.fontSize, greaterThanOrEqualTo(64));
+    expect(stepStyle?.color, WalkingLook.onHero);
+
+    final mascot = tester.widget<Image>(find.byKey(const Key('walking-mascot')));
+    expect(mascot.color, isNull);
+    expect(mascot.colorBlendMode, isNull);
+    expect(
+      mascot.image,
+      const AssetImage(
+        'assets/images/characters/chibi_snail_cute_gold_medal.png',
+      ),
+    );
   });
 
   testWidgets('benefit notification toggle stays on the walking screen',

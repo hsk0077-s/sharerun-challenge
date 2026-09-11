@@ -25,6 +25,7 @@ import '../features/pedometer/debug_local_harvest.dart';
 import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
+import '../features/pedometer/walking_look.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/wallet/debug_economy_status.dart';
@@ -1246,7 +1247,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     };
     final effectiveKm =
         double.parse((effectiveSteps * 0.00075).toStringAsFixed(2));
-    final buddySize = MediaQuery.sizeOf(context).shortestSide * 0.30;
+    final buddySize = MediaQuery.sizeOf(context).shortestSide * 0.42;
     final weekDays = PedometerKstClock.thisWeekDays();
     final selectedKey =
         _selectedDayKey.isEmpty ? PedometerKstClock.dateKey() : _selectedDayKey;
@@ -1259,6 +1260,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       claimedSteps: _claimedSteps,
     );
     final hasPendingCoins = pendingCoinsInt >= 1;
+    final isMaxDailyReached = PedometerHarvestLedger.pendingShareFloor(
+          steps: _claimedSteps,
+          claimedSteps: 0,
+        ) >=
+        60;
 
     return PopScope(
       canPop: false,
@@ -1267,182 +1273,93 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         _goHomeSafe();
       },
       child: Scaffold(
-        backgroundColor: tokens.colors.canvas,
+        backgroundColor: WalkingLook.pageMist,
         body: DecoratedBox(
           decoration: const BoxDecoration(
-            gradient: AppColors.loginBackgroundGradient,
+            gradient: WalkingLook.pageGradient,
           ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    tokens.spacing.xxs,
-                    tokens.spacing.xxs,
-                    tokens.spacing.sm,
-                    0,
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.arrow_back_ios_new,
-                          color: tokens.colors.ink,
+          child: Column(
+            children: [
+              Expanded(
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _WalkingHeroCanvas(
+                        title: '워킹챌린지',
+                        onBack: _goHomeSafe,
+                        gauge: _buildHybridProgressGauge(
+                          tier: running,
+                          currentKm: effectiveKm,
+                          currentSteps: effectiveSteps,
+                          characterSize: buddySize,
                         ),
-                        tooltip: '뒤로',
-                        onPressed: () {
-                          // 로그인 화면 역행 방지 및 홈 화면 안전 다이렉트 랜딩
-                          _goHomeSafe();
-                        },
+                        stepCount: _comma(effectiveSteps),
+                        km: effectiveKm,
+                        kcal: effectiveSteps * 0.045,
+                        pendingShare: currentPendingShare,
+                        tierLabel: '[${running.koreanName}] 산책 중',
                       ),
-                      Expanded(
-                        child: Text(
-                          '워킹챌린지',
-                          textAlign: TextAlign.center,
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: tokens.colors.ink,
-                          ),
-                        ),
+                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(
+                        tokens.spacing.page,
+                        tokens.spacing.md,
+                        tokens.spacing.page,
+                        tokens.spacing.sm,
                       ),
-                      SizedBox(width: tokens.spacing.xxl + tokens.spacing.md),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          tokens.spacing.page,
-                          tokens.spacing.xxs,
-                          tokens.spacing.page,
-                          tokens.spacing.sm,
-                        ),
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            children: [
-                              _buildHybridProgressGauge(
-                                tier: running,
-                                currentKm: effectiveKm,
-                                currentSteps: effectiveSteps,
-                                characterSize: buddySize * 0.42,
-                              ),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate(
+                          [
+                            _buildCumulativeShareAccountCard(),
+                            SizedBox(height: tokens.spacing.sm),
+                            _WeekJournalCard(
+                              days: weekDays,
+                              stepsByKey: weekSteps,
+                              selectedKey: selectedKey,
+                              todayKey: todayKey,
+                              stepOffset: 0,
+                              onSelect: _onSelectWeekDay,
+                            ),
+                            if (running.isSnail) ...[
                               SizedBox(height: tokens.spacing.sm),
                               Text(
-                                _comma(effectiveSteps),
-                                key: const Key('walking-step-count'),
-                                textAlign: TextAlign.center,
-                                style: textTheme.displaySmall?.copyWith(
-                                  fontSize: 56,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1.0,
-                                  letterSpacing: -1.4,
-                                  color: tokens.colors.ink,
-                                ),
-                              ),
-                              Text(
-                                '걸음',
+                                '👼 3km만 걸어도 특별히 60 SHARE 혜택!',
                                 textAlign: TextAlign.center,
                                 style: textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: tokens.colors.muted,
-                                  height: 1.2,
-                                ),
-                              ),
-                              SizedBox(height: tokens.spacing.sm),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _TodayKmBadge(km: effectiveKm),
-                                  ),
-                                  SizedBox(width: tokens.spacing.xs),
-                                  Expanded(
-                                    child: _KcalBadge(
-                                      kcal: effectiveSteps * 0.045,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: tokens.spacing.sm),
-                              _buildTodayMiningChip(),
-                              SizedBox(height: tokens.spacing.sm),
-                              _buildPendingCoinJarSection(
-                                currentPendingShare: currentPendingShare,
-                                hasPendingCoins: hasPendingCoins,
-                                pendingCoinsInt: pendingCoinsInt,
-                              ),
-                              SizedBox(height: tokens.spacing.md),
-                              _WeekJournalCard(
-                                days: weekDays,
-                                stepsByKey: weekSteps,
-                                selectedKey: selectedKey,
-                                todayKey: todayKey,
-                                stepOffset: 0,
-                                onSelect: _onSelectWeekDay,
-                              ),
-                              SizedBox(height: tokens.spacing.sm),
-                              _buildCumulativeShareAccountCard(),
-                              SizedBox(height: tokens.spacing.sm),
-                              _TierBoardCard(tier: running),
-                              if (running.isSnail) ...[
-                                SizedBox(height: tokens.spacing.xs),
-                                Text(
-                                  '👼 3km만 걸어도 특별히 60 SHARE 혜택!',
-                                  textAlign: TextAlign.center,
-                                  style: textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 12,
-                                    color: tokens.colors.accent,
-                                  ),
-                                ),
-                              ],
-                              SizedBox(height: tokens.spacing.md),
-                              _BenefitNotifBanner(
-                                enabled: _isNotificationEnabled,
-                                onToggle: () => unawaited(
-                                  _setBenefitNotifEnabled(
-                                    !_isNotificationEnabled,
-                                  ),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                  color: tokens.colors.accent,
                                 ),
                               ),
                             ],
-                          ),
+                            SizedBox(height: tokens.spacing.md),
+                            _BenefitNotifBanner(
+                              enabled: _isNotificationEnabled,
+                              onToggle: () => unawaited(
+                                _setBenefitNotifEnabled(
+                                  !_isNotificationEnabled,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: tokens.spacing.lg),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              _WalkingHarvestDock(
+                isMaxDailyReached: isMaxDailyReached,
+                currentPendingShare: currentPendingShare,
+                hasPendingCoins: hasPendingCoins,
+                pendingCoinsInt: pendingCoinsInt,
+                onClaim: () => unawaited(_onHarvestCoins()),
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildTodayMiningChip() {
-    final tokens = context.srcTokens;
-    final todayCollectedCoins = PedometerHarvestLedger.pendingShareFloor(
-      steps: _claimedSteps,
-      claimedSteps: 0,
-    );
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: tokens.spacing.md,
-        vertical: tokens.spacing.xxs + 2,
-      ),
-      decoration: BoxDecoration(
-        color: tokens.colors.primary.withValues(alpha: 0.14),
-        borderRadius: tokens.radii.capsule,
-      ),
-      child: Text(
-        '오늘의 채굴 : $todayCollectedCoins / 60 SHARE 🪙',
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: tokens.colors.accent,
-              fontWeight: FontWeight.w800,
-            ),
       ),
     );
   }
@@ -1453,102 +1370,64 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final walletShare = ref.watch(walletProvider).shareBalance;
+    final todayCollectedCoins = PedometerHarvestLedger.pendingShareFloor(
+      steps: _claimedSteps,
+      claimedSteps: 0,
+    );
     return SrcSurfaceCard(
       key: const Key('walking-share-account'),
-      margin: EdgeInsets.symmetric(vertical: tokens.spacing.sm),
+      color: AppColors.glassFill,
+      borderColor: const Color(0x14FFFFFF),
+      padding: EdgeInsets.fromLTRB(
+        tokens.spacing.lg,
+        tokens.spacing.md,
+        tokens.spacing.md,
+        tokens.spacing.md,
+      ),
       onTap: _openMyWallet,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '내 누적 셰어 통장 🏦',
-                style: textTheme.labelMedium?.copyWith(
-                  color: tokens.colors.muted,
-                  fontWeight: FontWeight.w600,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '내 누적 셰어 통장 🏦',
+                  style: textTheme.labelMedium?.copyWith(
+                    color: tokens.colors.muted,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              SizedBox(height: tokens.spacing.xxs),
-              Text(
-                '$walletShare SHARE',
-                key: const Key('walking-share-balance'),
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: tokens.colors.accent,
+                SizedBox(height: tokens.spacing.xxs),
+                Text(
+                  '$walletShare SHARE',
+                  key: const Key('walking-share-balance'),
+                  style: textTheme.displaySmall?.copyWith(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w900,
+                    height: 1.05,
+                    letterSpacing: -1.1,
+                    color: tokens.colors.accent,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: tokens.spacing.xxs),
+                Text(
+                  '오늘의 채굴 : $todayCollectedCoins / 60 SHARE 🪙',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: tokens.colors.muted,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
           Icon(
-            Icons.account_balance_wallet,
-            color: tokens.colors.accent.withValues(alpha: 0.8),
+            Icons.account_balance_wallet_rounded,
+            color: tokens.colors.accent.withValues(alpha: 0.72),
             size: 28,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildPendingCoinJarSection({
-    required double currentPendingShare,
-    required bool hasPendingCoins,
-    required int pendingCoinsInt,
-  }) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    final isMaxDailyReached = PedometerHarvestLedger.pendingShareFloor(
-          steps: _claimedSteps,
-          claimedSteps: 0,
-        ) >=
-        60;
-    if (isMaxDailyReached) {
-      return Container(
-        key: const Key('walking-goal-complete'),
-        margin: EdgeInsets.symmetric(vertical: tokens.spacing.sm),
-        padding: EdgeInsets.all(tokens.spacing.xl),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              tokens.colors.primary,
-              AppColors.primaryMintDark,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: tokens.radii.panel,
-          boxShadow: AppShadows.raised,
-        ),
-        child: Column(
-          children: [
-            const Text('🎉', style: TextStyle(fontSize: 40)),
-            SizedBox(height: tokens.spacing.sm),
-            Text(
-              '오늘의 목표 달성!',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: tokens.colors.onPrimary,
-              ),
-            ),
-            SizedBox(height: tokens.spacing.xs),
-            Text(
-              '오늘 하루도 열심히 달리셨네요.\n고생하셨습니다. 내일 다시 걸어보죠! 🏃‍♂️✨',
-              textAlign: TextAlign.center,
-              style: textTheme.bodyMedium?.copyWith(
-                color: tokens.colors.onPrimary,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    return _PiggyBankCard(
-      currentPendingShare: currentPendingShare,
-      hasPendingCoins: hasPendingCoins,
-      pendingCoinsInt: pendingCoinsInt,
-      onClaim: () => unawaited(_onHarvestCoins()),
     );
   }
 
@@ -1670,7 +1549,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       currentSteps: currentSteps,
     );
     final percent = (finalProgress * 100).toInt();
-    final charSize = characterSize.clamp(40.0, 50.0);
+    final charSize = characterSize.clamp(78.0, 96.0);
     final complete = _isWalkingChallengeComplete(
       tier: tier,
       currentKm: currentKm,
@@ -1685,16 +1564,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           textAlign: TextAlign.center,
           style: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w800,
-            color: complete ? tokens.colors.accent : tokens.colors.ink,
+            color: complete ? WalkingLook.harvestHi : WalkingLook.onHero,
           ),
         ),
         SizedBox(height: tokens.spacing.xs),
         SizedBox(
           width: double.infinity,
-          height: charSize + 14,
+          height: charSize + 18,
           child: LayoutBuilder(
             builder: (context, constraints) {
-              const barH = 14.0;
+              const barH = 10.0;
               const checkpointT = 4500 / 10000.0;
               final maxLeft =
                   (constraints.maxWidth - charSize).clamp(0.0, 4000.0);
@@ -1707,25 +1586,25 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                   Positioned(
                     left: 0,
                     right: 0,
-                    bottom: 0,
+                    bottom: 4,
                     height: barH,
                     child: ClipRRect(
                       borderRadius: tokens.radii.capsule,
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          ColoredBox(color: tokens.colors.outline),
+                          ColoredBox(
+                            color: WalkingLook.onHero.withValues(alpha: 0.18),
+                          ),
                           FractionallySizedBox(
                             alignment: Alignment.centerLeft,
                             widthFactor: trailT,
-                            child: DecoratedBox(
+                            child: const DecoratedBox(
                               decoration: BoxDecoration(
-                                borderRadius: tokens.radii.capsule,
                                 gradient: LinearGradient(
                                   colors: [
-                                    AppColors.primaryMintDark,
-                                    tokens.colors.primary,
-                                    AppColors.primaryMintLight,
+                                    Color(0xFF7EE0C8),
+                                    Color(0xFFB8F3DE),
                                   ],
                                 ),
                               ),
@@ -1738,16 +1617,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                   Positioned(
                     left: (constraints.maxWidth * checkpointT - 1)
                         .clamp(0.0, constraints.maxWidth),
-                    bottom: 0,
+                    bottom: 4,
                     width: 2,
                     height: barH,
                     child: ColoredBox(
-                      color: tokens.colors.ink.withValues(alpha: 0.35),
+                      color: WalkingLook.onHero.withValues(alpha: 0.45),
                     ),
                   ),
                   Positioned(
                     left: flagLeft,
-                    bottom: barH - 2,
+                    bottom: barH + 2,
                     width: 28,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -1759,13 +1638,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                             fontSize: 9,
                             fontWeight: FontWeight.w800,
                             height: 1.0,
-                            color: tokens.colors.accent,
+                            color: WalkingLook.onHero,
                           ),
                         ),
                         Icon(
                           Icons.flag_rounded,
-                          size: 18,
-                          color: tokens.colors.danger,
+                          size: 16,
+                          color: WalkingLook.harvestHi,
                         ),
                       ],
                     ),
@@ -1775,17 +1654,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                     bottom: barH,
                     width: charSize,
                     height: charSize,
-                    child: Transform.flip(
-                      flipX: true,
-                      child: Image.asset(
-                        'assets/images/characters/chibi_snail_disappointed.png',
-                        width: charSize,
-                        height: charSize,
-                        fit: BoxFit.contain,
-                        color: tokens.colors.primary,
-                        colorBlendMode: BlendMode.multiply,
-                        filterQuality: FilterQuality.medium,
-                      ),
+                    child: WalkingMascot(
+                      tier: tier,
+                      size: charSize,
                     ),
                   ),
                 ],
@@ -1820,106 +1691,205 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 }
 
-class _MiniStatCard extends StatelessWidget {
-  const _MiniStatCard({
-    required this.label,
-    required this.value,
-    required this.hint,
+class _WalkingHeroCanvas extends StatelessWidget {
+  const _WalkingHeroCanvas({
+    required this.title,
+    required this.onBack,
+    required this.gauge,
+    required this.stepCount,
+    required this.km,
+    required this.kcal,
+    required this.pendingShare,
+    required this.tierLabel,
   });
 
-  final String label;
-  final String value;
-  final String hint;
+  final String title;
+  final VoidCallback onBack;
+  final Widget gauge;
+  final String stepCount;
+  final double km;
+  final double kcal;
+  final double pendingShare;
+  final String tierLabel;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
-    return SrcSurfaceCard(
-      padding: EdgeInsets.all(tokens.spacing.sm),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return DecoratedBox(
+      decoration: const BoxDecoration(gradient: WalkingLook.heroGradient),
+      child: Stack(
         children: [
-          Text(
-            label,
-            style: textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: tokens.colors.muted,
-            ),
-          ),
-          SizedBox(height: tokens.spacing.xs),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.headlineMedium?.copyWith(
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              height: 1.05,
-              color: tokens.colors.ink,
-            ),
-          ),
-          SizedBox(height: tokens.spacing.xxs),
-          Text(
-            hint,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: textTheme.labelSmall,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TierBoardCard extends StatelessWidget {
-  const _TierBoardCard({required this.tier});
-
-  final UserTier tier;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    return SrcSurfaceCard(
-      padding: EdgeInsets.symmetric(
-        horizontal: tokens.spacing.md,
-        vertical: tokens.spacing.sm,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              '[${tier.koreanName}] 산책 중',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: textTheme.labelLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: tokens.colors.ink,
+          const Positioned.fill(child: _WalkingHeroBloom()),
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                tokens.spacing.page,
+                tokens.spacing.xxs,
+                tokens.spacing.page,
+                tokens.spacing.xl,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: WalkingLook.onHero,
+                        ),
+                        tooltip: '뒤로',
+                        onPressed: onBack,
+                      ),
+                      Expanded(
+                        child: Text(
+                          title,
+                          textAlign: TextAlign.center,
+                          style: textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: WalkingLook.onHero,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: tokens.spacing.xxl + tokens.spacing.md),
+                    ],
+                  ),
+                  Text(
+                    tierLabel,
+                    style: textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: WalkingLook.onHeroMuted,
+                    ),
+                  ),
+                  SizedBox(height: tokens.spacing.sm),
+                  gauge,
+                  SizedBox(height: tokens.spacing.sm),
+                  Text(
+                    stepCount,
+                    key: const Key('walking-step-count'),
+                    textAlign: TextAlign.center,
+                    style: textTheme.displaySmall?.copyWith(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w900,
+                      height: 0.95,
+                      letterSpacing: -2.2,
+                      color: WalkingLook.onHero,
+                    ),
+                  ),
+                  Text(
+                    '걸음',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: WalkingLook.onHeroMuted,
+                      height: 1.2,
+                    ),
+                  ),
+                  SizedBox(height: tokens.spacing.md),
+                  Row(
+                    children: [
+                      Expanded(child: _HeroStatChip(label: '${km.toStringAsFixed(2)} km')),
+                      SizedBox(width: tokens.spacing.xs),
+                      Expanded(
+                        child: _HeroStatChip(
+                          label: '${kcal.toStringAsFixed(1)} kcal',
+                        ),
+                      ),
+                      SizedBox(width: tokens.spacing.xs),
+                      Expanded(
+                        child: _HeroStatChip(
+                          label: '${pendingShare.toStringAsFixed(2)} SHARE',
+                          emphasize: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          Text(
-            '목표 ${tier.targetKm.toStringAsFixed(1)}km',
-            style: textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: tokens.colors.accent,
-            ),
-          ),
         ],
       ),
     );
   }
 }
 
-class _PiggyBankCard extends StatelessWidget {
-  const _PiggyBankCard({
+class _WalkingHeroBloom extends StatelessWidget {
+  const _WalkingHeroBloom();
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0.0, -0.15),
+            radius: 0.85,
+            colors: [
+              const Color(0x66F6D56B),
+              WalkingLook.heroLift.withValues(alpha: 0.28),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.38, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroStatChip extends StatelessWidget {
+  const _HeroStatChip({
+    required this.label,
+    this.emphasize = false,
+  });
+
+  final String label;
+  final bool emphasize;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: tokens.spacing.xs,
+        vertical: tokens.spacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: WalkingLook.onHero.withValues(alpha: emphasize ? 0.20 : 0.12),
+        borderRadius: tokens.radii.capsule,
+        border: Border.all(
+          color: emphasize
+              ? WalkingLook.harvestHi.withValues(alpha: 0.55)
+              : WalkingLook.onHero.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              color: emphasize ? WalkingLook.harvestHi : WalkingLook.onHero,
+            ),
+      ),
+    );
+  }
+}
+
+class _WalkingHarvestDock extends StatelessWidget {
+  const _WalkingHarvestDock({
+    required this.isMaxDailyReached,
     required this.currentPendingShare,
     required this.hasPendingCoins,
     required this.pendingCoinsInt,
     required this.onClaim,
   });
 
+  final bool isMaxDailyReached;
   final double currentPendingShare;
   final bool hasPendingCoins;
   final int pendingCoinsInt;
@@ -1929,141 +1899,94 @@ class _PiggyBankCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
-    return SrcSurfaceCard(
-      color: tokens.colors.donation.withValues(alpha: 0.12),
-      borderColor: tokens.colors.donation.withValues(alpha: 0.35),
-      padding: EdgeInsets.fromLTRB(
-        tokens.spacing.md,
-        tokens.spacing.md,
-        tokens.spacing.md,
-        tokens.spacing.md - 2,
-      ),
-      child: Column(
-        children: [
-          Text(
-            '줍기 대기 : ${currentPendingShare.toStringAsFixed(2)} SHARE',
-            style: textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: tokens.colors.donation,
-            ),
+    if (isMaxDailyReached) {
+      return SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            tokens.spacing.page,
+            tokens.spacing.sm,
+            tokens.spacing.page,
+            tokens.spacing.sm,
           ),
-          SizedBox(height: tokens.spacing.sm),
-          SizedBox(
-            width: double.infinity,
-            height: AppShapes.buttonHeight - 6,
-            child: FilledButton(
-              key: const Key('walking-harvest-cta'),
-              onPressed: hasPendingCoins ? onClaim : null,
-              style: FilledButton.styleFrom(
-                backgroundColor: tokens.colors.donation,
-                disabledBackgroundColor:
-                    tokens.colors.donation.withValues(alpha: 0.35),
-                foregroundColor: tokens.colors.ink,
-                shape: RoundedRectangleBorder(
-                  borderRadius: tokens.radii.card,
-                ),
+          child: Container(
+            key: const Key('walking-goal-complete'),
+            padding: EdgeInsets.all(tokens.spacing.lg),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [WalkingLook.heroMid, WalkingLook.heroLift],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Text(
-                hasPendingCoins
-                    ? '$pendingCoinsInt SHARE 줍기'
-                    : '코인 쌓이는 중...',
-                style: textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: tokens.colors.ink,
+              borderRadius: tokens.radii.panel,
+              boxShadow: WalkingLook.glassLift,
+            ),
+            child: Column(
+              children: [
+                const Text('🎉', style: TextStyle(fontSize: 36)),
+                SizedBox(height: tokens.spacing.xs),
+                Text(
+                  '오늘의 목표 달성!',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: WalkingLook.onHero,
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TodayKmBadge extends StatelessWidget {
-  const _TodayKmBadge({required this.km});
-
-  final double km;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: tokens.spacing.sm,
-        vertical: tokens.spacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: tokens.colors.primary.withValues(alpha: 0.14),
-        borderRadius: tokens.radii.capsule,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.directions_run,
-            size: 16,
-            color: tokens.colors.accent,
-          ),
-          SizedBox(width: tokens.spacing.xxs),
-          Flexible(
-            child: Text(
-              '${km.toStringAsFixed(2)} km',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    color: tokens.colors.accent,
+                SizedBox(height: tokens.spacing.xxs),
+                Text(
+                  '오늘 하루도 열심히 달리셨네요.\n고생하셨습니다. 내일 다시 걸어보죠! 🏃‍♂️✨',
+                  textAlign: TextAlign.center,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: WalkingLook.onHero,
+                    height: 1.45,
                   ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _KcalBadge extends StatelessWidget {
-  const _KcalBadge({required this.kcal});
-
-  final double kcal;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: tokens.spacing.sm,
-        vertical: tokens.spacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: tokens.colors.warning.withValues(alpha: 0.18),
-        borderRadius: tokens.radii.capsule,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.local_fire_department,
-            size: 16,
-            color: tokens.colors.warning,
-          ),
-          SizedBox(width: tokens.spacing.xxs),
-          Flexible(
-            child: Text(
-              '${kcal.toStringAsFixed(1)} kcal',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+        ),
+      );
+    }
+    return Material(
+      color: tokens.colors.surface,
+      elevation: 0,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: tokens.colors.surface,
+          boxShadow: AppShadows.nav,
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              tokens.spacing.page,
+              tokens.spacing.sm,
+              tokens.spacing.page,
+              tokens.spacing.sm,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '줍기 대기 : ${currentPendingShare.toStringAsFixed(2)} SHARE',
+                  style: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    color: tokens.colors.warning,
+                    color: tokens.colors.donation,
                   ),
+                ),
+                SizedBox(height: tokens.spacing.sm),
+                SizedBox(
+                  width: double.infinity,
+                  child: WalkingHarvestCta(
+                    hasPendingCoins: hasPendingCoins,
+                    pendingCoinsInt: pendingCoinsInt,
+                    onPressed: hasPendingCoins ? onClaim : null,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -2083,12 +2006,8 @@ class _BenefitNotifBanner extends StatelessWidget {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     return SrcSurfaceCard(
-      color: enabled
-          ? tokens.colors.primary.withValues(alpha: 0.10)
-          : tokens.colors.muted.withValues(alpha: 0.10),
-      borderColor: enabled
-          ? tokens.colors.primary.withValues(alpha: 0.35)
-          : tokens.colors.outline,
+      color: tokens.colors.surface,
+      borderColor: tokens.colors.outline.withValues(alpha: 0.7),
       padding: EdgeInsets.fromLTRB(
         tokens.spacing.sm,
         tokens.spacing.sm,
@@ -2186,6 +2105,8 @@ class _WeekJournalCard extends StatelessWidget {
             : rawSelectedSteps);
 
     return SrcSurfaceCard(
+      color: AppColors.glassFill,
+      borderColor: const Color(0x14FFFFFF),
       padding: EdgeInsets.fromLTRB(
         tokens.spacing.md,
         tokens.spacing.md,
@@ -2238,7 +2159,7 @@ class _WeekJournalCard extends StatelessWidget {
               vertical: tokens.spacing.sm,
             ),
             decoration: BoxDecoration(
-              color: tokens.colors.primary.withValues(alpha: 0.12),
+              color: WalkingLook.pageMist,
               borderRadius: tokens.radii.card,
             ),
             child: Text(
@@ -2286,8 +2207,8 @@ class _WeekDayCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
-    final fill = complete ? tokens.colors.primary : tokens.colors.surface;
-    final fg = complete ? tokens.colors.onPrimary : tokens.colors.ink;
+    final fill = complete ? WalkingLook.heroMid : tokens.colors.surface;
+    final fg = complete ? WalkingLook.onHero : tokens.colors.ink;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -2304,9 +2225,9 @@ class _WeekDayCircle extends StatelessWidget {
           boxShadow: complete
               ? [
                   BoxShadow(
-                    color: tokens.colors.primary.withValues(alpha: 0.35),
+                    color: WalkingLook.heroMid.withValues(alpha: 0.28),
                     blurRadius: 10,
-                    spreadRadius: 0.5,
+                    spreadRadius: 0.4,
                   ),
                 ]
               : AppShadows.rest,
@@ -2318,7 +2239,7 @@ class _WeekDayCircle extends StatelessWidget {
               label,
               style: textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: complete ? tokens.colors.onPrimary : tokens.colors.muted,
+                color: complete ? WalkingLook.onHeroMuted : tokens.colors.muted,
               ),
             ),
             SizedBox(height: tokens.spacing.xxs / 2),

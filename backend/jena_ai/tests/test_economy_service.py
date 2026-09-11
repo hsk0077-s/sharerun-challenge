@@ -112,3 +112,19 @@ def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> No
         )
         == 0
     )
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=2918,
+            prev_claimed_steps=0,
+            harvested_share=0,
+        )
+        == 29
+    )
+    assert (
+        service.pedometer_harvest_share(
+            claimed_steps=2918,
+            prev_claimed_steps=2918,
+            harvested_share=29,
+        )
+        == 0
+    )

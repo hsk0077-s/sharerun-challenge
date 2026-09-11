@@ -11,6 +11,7 @@ import '../../../core/theme/app_shapes.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/solo_pedometer_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
+import '../../pedometer/pedometer_harvest_ledger.dart';
 import '../providers/practice_streak_provider.dart';
 
 /// 지갑 카드 내부 일일 5km 채굴 게이지.
@@ -111,13 +112,28 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
   Future<void> _hydrateStepsFromPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final uid = ref.read(activeUserProfileProvider).asData?.value.uid ?? '';
+      final uid = ref.read(firebaseAuthProvider).currentUser?.uid ??
+          ref.read(activeUserProfileProvider).asData?.value.uid ??
+          '';
       final today = PedometerKstClock.dateKey();
-      final prefix = 'solo_pedo_${uid}_$today';
+      final prefix = PedometerHarvestLedger.prefix(uid: uid, dateKey: today);
       final backup =
           prefs.getInt(PedometerKstClock.backupStepsKey(today)) ?? 0;
       final legacy = prefs.getInt('$prefix.steps') ?? 0;
-      final claimed = prefs.getInt('$prefix.claimedSteps') ?? 0;
+      final claimed = PedometerHarvestLedger.coalesceClaimed(
+        current: 0,
+        fromTodayKey:
+            prefs.getInt(PedometerHarvestLedger.todayClaimedKey(today)) ?? 0,
+        fromPrefix: prefs.getInt('$prefix.claimedSteps') ?? 0,
+        fromGlobal: PedometerHarvestLedger.claimedFromGlobal(
+          storedDate:
+              prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
+          storedClaimed:
+              prefs.getInt(PedometerHarvestLedger.globalClaimedKey) ?? 0,
+          todayKey: today,
+        ),
+        steps: backup > legacy ? backup : legacy,
+      );
       final steps = backup > legacy ? backup : legacy;
       if (!mounted) return;
       if (_storedSteps == steps && _claimedSteps == claimed) return;

@@ -8,29 +8,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/providers/app_providers.dart';
 import '../../../core/api/api_exception.dart';
 import '../../../core/config/app_env.dart';
+import '../../../core/constants/debug_wallet_grant.dart';
 import '../../../data/models/pedometer_harvest_result.dart';
 import 'providers/wallet_provider.dart';
 
 /// Debug one-shot 1,000,000 SHARE/DIA/VALUE after login.
 ///
 /// **Who:** [kDebugMode] (`flutter run`) only. Release/profile store builds
-/// never mount this host and never call the grant API.
+/// never mount this host and never call the grant API or local write.
 ///
 /// **Once per uid:** SharedPreferences [prefsKeyForUid] + Firestore
 /// `testGrant1mDone`. Relaunch does not reset balances; spend/earn continue.
+///
+/// **Reliability:** Home reads `walletProvider` / `users/{uid}.wallet`.
+/// The local Firestore write is the primary path so USB testing does not
+/// depend on Jena being reachable. Jena `POST /actions/debug/test-grant-1m`
+/// is still attempted once as a best-effort sync.
 class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
   const DebugTestWalletGrantHost({required this.child, super.key});
 
-  static const prefsKey = 'testGrant1mDone';
-  static const amount = 1000000;
-  static const maxAttempts = 12;
+  static const prefsKey = DebugWalletGrant.prefsKey;
+  static const amount = DebugWalletGrant.amount;
+  static const maxAttempts = DebugWalletGrant.maxAttempts;
+  static const debugClientSecret = DebugWalletGrant.debugClientSecret;
 
-  /// Baked into debug clients only. Must match Jena
-  /// `TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET`. Override with
-  /// `--dart-define=TEST_WALLET_GRANT_SECRET=...` if needed.
-  static const debugClientSecret = 'sharerun-debug-test-grant-1m';
-
-  static String prefsKeyForUid(String uid) => '${prefsKey}_$uid';
+  static String prefsKeyForUid(String uid) =>
+      DebugWalletGrant.prefsKeyForUid(uid);
 
   /// Secret sent by debug clients. Empty outside [kDebugMode].
   static String grantSecret() {
@@ -38,6 +41,41 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
     final fromEnv = AppEnv.testWalletGrantSecret;
     if (fromEnv.isNotEmpty) return fromEnv;
     return debugClientSecret;
+  }
+
+  static bool shouldApplyLocalGrant({
+    required bool debugMode,
+    required bool walletEmpty,
+  }) {
+    return DebugWalletGrant.shouldApplyLocalGrant(
+      debugMode: debugMode,
+      walletEmpty: walletEmpty,
+    );
+  }
+
+  static Map<String, dynamic> localGrantFirestoreFields({
+    int amount = amount,
+  }) {
+    return DebugWalletGrant.firestoreMergeFields(amount: amount);
+  }
+
+  static PedometerHarvestResult localGrantedResult({int amount = amount}) {
+    return PedometerHarvestResult(
+      status: 'granted',
+      shareBalance: amount,
+      diamondBalance: amount,
+      valueTokenBalance: amount,
+    );
+  }
+
+  /// Apply 1M to the same [WalletNotifier] Home watches. Does not need Jena.
+  static void applyLocalGrantToNotifier(WalletNotifier notifier) {
+    const amount = DebugWalletGrant.amount;
+    notifier.applyWalletSnapshot(
+      shareBalance: amount,
+      diamondBalance: amount,
+      valueBalance: amount,
+    );
   }
 
   /// Local one-shot flag is only written after a real grant or a non-zero
@@ -81,9 +119,7 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
 class _DebugTestWalletGrantHostState
     extends ConsumerState<DebugTestWalletGrantHost> {
   var _inFlight = false;
-  var _attempts = 0;
   var _consumed = false;
-  Timer? _retry;
 
   @override
   void initState() {
@@ -93,12 +129,6 @@ class _DebugTestWalletGrantHostState
         unawaited(_tryGrantOnce());
       });
     }
-  }
-
-  @override
-  void dispose() {
-    _retry?.cancel();
-    super.dispose();
   }
 
   @override
@@ -114,27 +144,6 @@ class _DebugTestWalletGrantHostState
     return widget.child;
   }
 
-  Duration _retryDelay() {
-    final shift = _attempts.clamp(0, 4);
-    final ms = 400 * (1 << shift);
-    return Duration(milliseconds: ms > 4000 ? 4000 : ms);
-  }
-
-  void _scheduleRetry() {
-    if (_consumed || _attempts >= DebugTestWalletGrantHost.maxAttempts) {
-      debugPrint(
-        '[TEST GRANT 1M] stopped after $_attempts attempts. '
-        'Need Jena with POST /actions/debug/test-grant-1m deployed, '
-        'and users/{uid} must exist.',
-      );
-      return;
-    }
-    _retry?.cancel();
-    _retry = Timer(_retryDelay(), () {
-      unawaited(_tryGrantOnce());
-    });
-  }
-
   Future<void> _tryGrantOnce() async {
     if (!kDebugMode || _inFlight || _consumed) return;
     final uid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
@@ -143,16 +152,24 @@ class _DebugTestWalletGrantHostState
     final prefs = await SharedPreferences.getInstance();
     final uidKey = DebugTestWalletGrantHost.prefsKeyForUid(uid);
     final prefsMarkedDone = prefs.getBool(uidKey) ?? false;
+    final walletEmpty = ref.read(walletProvider).isEmpty;
     if (DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
       prefsMarkedDone: prefsMarkedDone,
-      walletEmpty: ref.read(walletProvider).isEmpty,
+      walletEmpty: walletEmpty,
     )) {
       _consumed = true;
       return;
     }
+    if (!DebugTestWalletGrantHost.shouldApplyLocalGrant(
+      debugMode: kDebugMode,
+      walletEmpty: walletEmpty,
+    )) {
+      return;
+    }
     if (prefsMarkedDone) {
       debugPrint(
-        '[TEST GRANT 1M] prefs marked done but Home wallet is still 0 — retry',
+        '[TEST GRANT 1M] prefs marked done but Home wallet is still 0 — '
+        'local re-apply',
       );
       await prefs.remove(uidKey);
     }
@@ -164,40 +181,61 @@ class _DebugTestWalletGrantHostState
       } catch (e) {
         debugPrint('[TEST GRANT 1M] ensureUserDocument: $e');
       }
-      final result = await ref.read(walletRepositoryProvider).grantDebugTestWallet1m(
-            grantSecret: DebugTestWalletGrantHost.grantSecret(),
-          );
-      const fallback = DebugTestWalletGrantHost.amount;
-      final grantedNow = result.status == 'granted';
-      ref.read(walletProvider.notifier).applyWalletSnapshot(
-            shareBalance: result.shareBalance ?? (grantedNow ? fallback : null),
-            diamondBalance:
-                result.diamondBalance ?? (grantedNow ? fallback : null),
-            valueBalance:
-                result.valueTokenBalance ?? (grantedNow ? fallback : null),
-          );
-      debugPrint(
-        '[TEST GRANT 1M] ${result.status} '
-        'SHARE=${result.shareBalance} '
-        'DIA=${result.diamondBalance} '
-        'VALUE=${result.valueTokenBalance}',
+
+      // Primary path: Home reads walletProvider. Do this before any HTTP.
+      DebugTestWalletGrantHost.applyLocalGrantToNotifier(
+        ref.read(walletProvider.notifier),
       );
-      if (DebugTestWalletGrantHost.shouldMarkGrantConsumed(result)) {
-        _consumed = true;
-        await prefs.setBool(uidKey, true);
-        await prefs.setBool(DebugTestWalletGrantHost.prefsKey, true);
-      } else {
-        _attempts += 1;
-        _inFlight = false;
-        _scheduleRetry();
+
+      var firestoreOk = false;
+      try {
+        await ref.read(walletRepositoryProvider).applyLocalDebugTestGrant(
+              uid: uid,
+            );
+        firestoreOk = true;
+      } catch (e) {
+        debugPrint(
+          '[TEST GRANT 1M] local Firestore write failed '
+          '(Home still shows in-memory 1M): $e',
+        );
       }
+
+      try {
+        final result =
+            await ref.read(walletRepositoryProvider).grantDebugTestWallet1m(
+                  grantSecret: DebugTestWalletGrantHost.grantSecret(),
+                );
+        if (DebugTestWalletGrantHost.shouldMarkGrantConsumed(result)) {
+          ref.read(walletProvider.notifier).applyWalletSnapshot(
+                shareBalance: result.shareBalance,
+                diamondBalance: result.diamondBalance,
+                valueBalance: result.valueTokenBalance,
+              );
+          debugPrint(
+            '[TEST GRANT 1M] Jena ${result.status} '
+            'SHARE=${result.shareBalance} '
+            'DIA=${result.diamondBalance} '
+            'VALUE=${result.valueTokenBalance}',
+          );
+        } else {
+          debugPrint('[TEST GRANT 1M] Jena ${result.status} ignored');
+        }
+      } catch (e) {
+        debugPrint('[TEST GRANT 1M] Jena skipped (local grant already applied): $e');
+      }
+
+      _consumed = true;
+      await prefs.setBool(uidKey, true);
+      await prefs.setBool(DebugTestWalletGrantHost.prefsKey, true);
+      debugPrint(
+        '[TEST GRANT 1M] local granted '
+        'SHARE=DIA=VALUE=${DebugTestWalletGrantHost.amount} '
+        'firestore=$firestoreOk',
+      );
     } catch (e, st) {
       debugPrint('[TEST GRANT 1M] failed: $e\n$st');
+    } finally {
       _inFlight = false;
-      if (DebugTestWalletGrantHost.shouldRetryGrant(e)) {
-        _attempts += 1;
-        _scheduleRetry();
-      }
     }
   }
 }

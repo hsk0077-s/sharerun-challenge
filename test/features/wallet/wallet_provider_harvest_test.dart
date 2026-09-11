@@ -79,6 +79,64 @@ void main() {
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 
+  test('harvest SHARE snapshot does not zero granted DIA/VALUE', () {
+    const remote = WalletModel(
+      shareBalance: 0,
+      diamondBalance: 0,
+      valueTokenBalance: 0,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyWalletSnapshot(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    notifier.applyShareFromServer(shareCredited: 51);
+    expect(container.read(walletProvider).shareBalance, 1000051);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+
+    notifier.replaceFromRemote(
+      const WalletModel(
+        shareBalance: 1000051,
+        diamondBalance: 0,
+        valueTokenBalance: 0,
+        totalDonationValue: 0,
+      ),
+    );
+    expect(container.read(walletProvider).shareBalance, 1000051);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test('mergeRemote keeps local DIA/VALUE when harvest sends zeros', () {
+    const current = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const harvest = WalletState(
+      shareBalance: 51,
+      diamondBalance: 0,
+      valueBalance: 0,
+    );
+    final merged = WalletNotifier.mergeRemote(current, harvest);
+    expect(merged.shareBalance, 51);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
   test('debug 1M grant is one-shot keyed and one million', () {
     expect(DebugTestWalletGrantHost.amount, 1000000);
     expect(DebugTestWalletGrantHost.prefsKey, 'testGrant1mDone');

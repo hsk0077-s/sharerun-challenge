@@ -29,7 +29,7 @@ Environment flags (`.env`):
 - `USE_FIREBASE_EMULATOR=true` — connect Flutter to local Auth/Firestore emulators
 - `USE_LOCAL_MOCK_DATA=true` — skip Firebase, use in-app mock data (UI preview)
 - `ALLOW_ANONYMOUS_BOOTSTRAP=true` — auto anonymous sign-in for emulator testing
-- `JENA_BASE_URL` — Android emulator: `http://10.0.2.2:8080`, desktop/iOS: `http://127.0.0.1:8080`
+- `JENA_BASE_URL` — omit for debug defaults: physical Android / iOS / desktop `http://127.0.0.1:8080` (use `adb reverse tcp:8080 tcp:8080` on a USB phone). Android emulator: `--dart-define=ANDROID_EMULATOR=true` or `--dart-define=JENA_BASE_URL=http://10.0.2.2:8080`
 
 Emulator UI: `http://127.0.0.1:4000` · Firestore port `8085` · Auth port `9099`
 
@@ -64,8 +64,10 @@ For UI-only local work without email accounts:
 
 ```powershell
 flutter run `
-  --dart-define=JENA_BASE_URL=http://10.0.2.2:8080 `
   --dart-define=ALLOW_ANONYMOUS_BOOTSTRAP=true
+# Physical Android: adb reverse tcp:8080 tcp:8080  (default Jena http://127.0.0.1:8080)
+# Emulator Jena:    --dart-define=ANDROID_EMULATOR=true
+#                   or --dart-define=JENA_BASE_URL=http://10.0.2.2:8080
 ```
 
 Production builds must not set `ALLOW_ANONYMOUS_BOOTSTRAP`.
@@ -417,8 +419,8 @@ flutter build ios `
   --dart-define=PG_BASE_URL=https://<pg-host>
 ```
 
-Android emulator local testing keeps the default `http://10.0.2.2:8080`.
-Physical devices should use your machine LAN IP or the deployed Cloud Run URL.
+Android emulator local testing: `--dart-define=ANDROID_EMULATOR=true` (Jena `http://10.0.2.2:8080`).
+Physical USB debug: `adb reverse tcp:8080 tcp:8080` so the default `http://127.0.0.1:8080` reaches the host. Debug login still grants 1M SHARE/DIA/VALUE from Firestore/`walletProvider` even if Jena is down.
 
 ### 4. Post-deploy smoke checks
 

@@ -234,7 +234,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    SoloPedometerForeground.onLiveSteps = _onIsolateSteps;
+    SoloPedometerForeground.addLiveStepsListener(_onIsolateSteps);
     unawaited(() async {
       await _restoreTodayFromPrefs();
       await _loadClaimedData();
@@ -1175,7 +1175,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   @override
   void dispose() {
-    SoloPedometerForeground.onLiveSteps = null;
+    SoloPedometerForeground.removeLiveStepsListener(_onIsolateSteps);
     WidgetsBinding.instance.removeObserver(this);
     _stillTimer?.cancel();
     _goldenPushDebounce?.cancel();

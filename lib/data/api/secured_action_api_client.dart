@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
@@ -85,7 +86,10 @@ class SecuredActionApiClient {
   }) async {
     final json = await _post(
       '/actions/debug/test-grant-1m',
-      {if (grantSecret.isNotEmpty) 'grant_secret': grantSecret},
+      {
+        if (kDebugMode) 'debug_client': true,
+        if (grantSecret.isNotEmpty) 'grant_secret': grantSecret,
+      },
     );
     return PedometerHarvestResult.fromJson(json);
   }

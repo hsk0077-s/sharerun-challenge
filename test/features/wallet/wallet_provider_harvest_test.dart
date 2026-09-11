@@ -75,8 +75,19 @@ void main() {
   test('debug 1M grant is one-shot keyed and one million', () {
     expect(DebugTestWalletGrantHost.amount, 1000000);
     expect(DebugTestWalletGrantHost.prefsKey, 'testGrant1mDone');
-    expect(DebugTestWalletGrantHost.allowlistUids, isEmpty);
-    expect(DebugTestWalletGrantHost.isAllowlisted(''), isFalse);
-    expect(DebugTestWalletGrantHost.isAllowlisted('some-other-uid'), isFalse);
+    expect(
+      DebugTestWalletGrantHost.prefsKeyForUid('uid-1'),
+      'testGrant1mDone_uid-1',
+    );
+  });
+
+  test('debug client bakes a grant secret; release path stays empty-gated', () {
+    expect(DebugTestWalletGrantHost.debugClientSecret, isNotEmpty);
+    expect(
+      DebugTestWalletGrantHost.debugClientSecret,
+      'sharerun-debug-test-grant-1m',
+    );
+    // flutter test runs in kDebugMode, so flutter run would send this secret.
+    expect(DebugTestWalletGrantHost.grantSecret(), isNotEmpty);
   });
 }

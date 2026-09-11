@@ -24,6 +24,8 @@ class RefundRequest(BaseModel):
 
 class DebugTestGrantRequest(BaseModel):
     grant_secret: str = ""
+    # Set only by kDebugMode Flutter clients. Release/profile never send this.
+    debug_client: bool = False
 
 
 class HarvestPedometerRequest(BaseModel):

@@ -523,6 +523,24 @@ abstract final class SoloPedometerForeground {
   static DateTime? _lastOpenAt;
   static GoRouter? _uiRouter;
   static void Function(int steps)? onLiveSteps;
+  static final List<void Function(int steps)> _liveListeners = [];
+
+  static void addLiveStepsListener(void Function(int steps) listener) {
+    if (!_liveListeners.contains(listener)) {
+      _liveListeners.add(listener);
+    }
+  }
+
+  static void removeLiveStepsListener(void Function(int steps) listener) {
+    _liveListeners.remove(listener);
+  }
+
+  static void _emitLiveSteps(int steps) {
+    onLiveSteps?.call(steps);
+    for (final listener in List<void Function(int)>.of(_liveListeners)) {
+      listener(steps);
+    }
+  }
 
   static ForegroundTaskOptions get _taskOptions => ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.repeat(1000),
@@ -629,7 +647,7 @@ abstract final class SoloPedometerForeground {
       return;
     }
     if (data is int) {
-      onLiveSteps?.call(data);
+      _emitLiveSteps(data);
     }
   }
 

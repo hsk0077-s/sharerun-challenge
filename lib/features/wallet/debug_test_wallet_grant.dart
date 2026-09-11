@@ -114,6 +114,19 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
     return prefsMarkedDone;
   }
 
+  /// USB smoking gun (PR #12):
+  /// `[DEBUG LOCAL] prefs marked done but Home wallet is still 0 — local re-apply`
+  /// then `grant SHARE=DIA=VALUE=1000000 firestore=true`.
+  ///
+  /// Must stay false. A transient UI 0 is not "never granted".
+  static bool shouldLocalReapplyBecauseWalletEmpty({
+    required bool prefsMarkedDone,
+    required bool walletEmpty,
+  }) {
+    if (!prefsMarkedDone || !walletEmpty) return false;
+    return false;
+  }
+
   /// Jena `already_granted` / `granted` must not restore 1M over a spent wallet.
   static bool shouldApplyGrantSnapshot({
     required String status,
@@ -180,8 +193,19 @@ class _DebugTestWalletGrantHostState
       prefsMarkedDone: prefsMarkedDone,
       walletEmpty: walletEmpty,
     )) {
+      // Wait for remote hydrate. Do not clear prefs or write 1M.
       _consumed = true;
       ref.read(debugEconomyStatusProvider.notifier).markGrantDone();
+      debugPrint(
+        '[DEBUG LOCAL] grant already done (prefs); skip re-apply '
+        'walletEmpty=$walletEmpty',
+      );
+      return;
+    }
+    if (DebugTestWalletGrantHost.shouldLocalReapplyBecauseWalletEmpty(
+      prefsMarkedDone: prefsMarkedDone,
+      walletEmpty: walletEmpty,
+    )) {
       return;
     }
     if (!DebugTestWalletGrantHost.shouldRunLocalGrant(

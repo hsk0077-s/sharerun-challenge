@@ -11,6 +11,7 @@ class SrcSurfaceCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.onTap,
+    this.color,
     this.borderColor,
     this.width,
     this.height,
@@ -20,6 +21,7 @@ class SrcSurfaceCard extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
+  final Color? color;
   final Color? borderColor;
   final double? width;
   final double? height;
@@ -29,7 +31,7 @@ class SrcSurfaceCard extends StatelessWidget {
     final tokens = context.srcTokens;
     final radius = tokens.radii.card;
     final decoration = BoxDecoration(
-      color: tokens.colors.surface,
+      color: color ?? tokens.colors.surface,
       borderRadius: radius,
       border: Border.all(color: borderColor ?? tokens.colors.outline),
       boxShadow: AppShadows.card,

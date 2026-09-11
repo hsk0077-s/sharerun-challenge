@@ -155,7 +155,7 @@ abstract final class AppColors {
 
   // ---------------------------------------------------------------------------
   // Compatibility aliases — former `lib/app/theme` Black-Neon leftovers.
-  // Home / Walking / Lobby still import that path; hex now matches SrcTheme.
+  // Lobby / My still import that path; hex now matches SrcTheme.
   // Phase 2b+ screens should stop using neonLime / cardBlack names.
   // ---------------------------------------------------------------------------
   static const Color bgWhite = surfaceWhite;

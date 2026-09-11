@@ -87,6 +87,39 @@ void main() {
     });
   });
 
+  group('PedometerStepTruth.shouldRebindSensor', () {
+    final t0 = DateTime.utc(2026, 9, 11, 12);
+    test('resume/init force a rebind even inside the cooldown', () {
+      expect(
+        PedometerStepTruth.shouldRebindSensor(
+          now: t0.add(const Duration(milliseconds: 200)),
+          lastRebindAt: t0,
+          force: true,
+        ),
+        isTrue,
+      );
+    });
+
+    test('stream-error honors a 2s cooldown after FlutterJNI detach flaps', () {
+      expect(
+        PedometerStepTruth.shouldRebindSensor(
+          now: t0.add(const Duration(milliseconds: 500)),
+          lastRebindAt: t0,
+          force: false,
+        ),
+        isFalse,
+      );
+      expect(
+        PedometerStepTruth.shouldRebindSensor(
+          now: t0.add(const Duration(seconds: 2)),
+          lastRebindAt: t0,
+          force: false,
+        ),
+        isTrue,
+      );
+    });
+  });
+
   group('WalkingChallengeNotificationCopy', () {
     test('0 daily steps uses the waiting / 4,500 copy with matching count', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(0);

@@ -38,6 +38,19 @@ abstract final class PedometerStepTruth {
     return math.max(fromSession, fromRaw);
   }
 
+  /// After `FlutterJNI was detached` / EventChannel `step_count` death,
+  /// resume and init always rebind; error/done paths honor a short cooldown.
+  static bool shouldRebindSensor({
+    required DateTime now,
+    DateTime? lastRebindAt,
+    required bool force,
+    Duration cooldown = const Duration(seconds: 2),
+  }) {
+    if (force) return true;
+    if (lastRebindAt == null) return true;
+    return now.difference(lastRebindAt) >= cooldown;
+  }
+
   static String sourceLog({
     required String source,
     required int daily,

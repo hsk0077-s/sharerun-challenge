@@ -69,6 +69,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   var snipedMilestone3 = false;
   var isPushEnabled = true;
   var _smartFlagsHydrated = false;
+  var _sensorRebindInFlight = false;
+  DateTime? _lastSensorRebindAt;
   static final _smartPlugin = FlutterLocalNotificationsPlugin();
   static var _smartPluginReady = false;
 
@@ -85,7 +87,58 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       } catch (e, st) {
         debugPrint('SoloPedometerForegroundHandler load date: $e\n$st');
       }
+      if (_steps <= 0) {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final todayKey = KstCalendar.dateKey();
+          final persisted = prefs.getInt('${todayKey}_steps') ?? 0;
+          if (persisted > 0) {
+            _steps = persisted;
+            _anchor = persisted;
+            debugPrint(
+              PedometerStepTruth.sourceLog(
+                source: 'isolate-hydrate',
+                daily: persisted,
+                ui: persisted,
+              ),
+            );
+          }
+        } catch (e, st) {
+          debugPrint('SoloPedometerForegroundHandler hydrate: $e\n$st');
+        }
+      }
       await _publish(_steps);
+      _listenSensor(reason: 'onStart');
+    } on PlatformException catch (e, st) {
+      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+    } catch (e, st) {
+      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+    }
+  }
+
+  void _listenSensor({required String reason}) {
+    if (_sensorRebindInFlight) return;
+    final now = DateTime.now();
+    if (!PedometerStepTruth.shouldRebindSensor(
+      now: now,
+      lastRebindAt: _lastSensorRebindAt,
+      force: reason == 'onStart',
+    )) {
+      return;
+    }
+    _sensorRebindInFlight = true;
+    _lastSensorRebindAt = now;
+    try {
+      unawaited(_sub?.cancel());
+      _baselineReady = false;
+      debugPrint(
+        '${PedometerStepTruth.sourceLog(
+          source: 'isolate-rebind',
+          daily: _steps,
+          offset: stepOffset,
+          ui: _steps,
+        )} reason=$reason',
+      );
       _sub = Pedometer.stepCountStream.listen(
         (event) {
           try {
@@ -103,18 +156,26 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         },
         onError: (Object error, StackTrace stack) {
           debugPrint('SoloPedometerForegroundHandler stream: $error\n$stack');
+          _listenSensor(reason: 'stream-error');
+        },
+        onDone: () {
+          debugPrint('SoloPedometerForegroundHandler stream done');
+          _listenSensor(reason: 'stream-done');
         },
         cancelOnError: false,
       );
     } on PlatformException catch (e, st) {
-      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+      debugPrint('SoloPedometerForegroundHandler listen: $e\n$st');
     } catch (e, st) {
-      debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
+      debugPrint('SoloPedometerForegroundHandler listen: $e\n$st');
+    } finally {
+      _sensorRebindInFlight = false;
     }
   }
 
   @override
   void onRepeatEvent(DateTime timestamp) {
+    if (_sub == null) _listenSensor(reason: 'onStart');
     unawaited(_commit(_steps.toInt()));
     unawaited(_maybeFireSmartPushes(_steps));
   }

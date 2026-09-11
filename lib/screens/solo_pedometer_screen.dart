@@ -224,6 +224,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   var _harvestInFlight = false;
   Timer? _goldenPushDebounce;
   Timer? _healthPollTimer;
+  var _pedoRebindInFlight = false;
+  DateTime? _lastPedoRebindAt;
 
   UserTier get _tier =>
       ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
@@ -272,26 +274,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       if (!mounted) return;
       await _loadClaimedData();
       if (!mounted) return;
-      _pedoSub = Pedometer.stepCountStream.listen(
-        _onPedometerEvent,
-        onError: (Object error, StackTrace stack) {
-          debugPrint('Pedometer.stepCountStream: $error\n$stack');
-        },
-        cancelOnError: false,
-      );
-      try {
-        _statusSub = Pedometer.pedestrianStatusStream.listen(
-          _onPedestrianStatus,
-          onError: (Object error, StackTrace stack) {
-            debugPrint('Pedometer.pedestrianStatusStream: $error\n$stack');
-          },
-          cancelOnError: false,
-        );
-      } on PlatformException catch (e, st) {
-        debugPrint('initPedometerSystem pedestrianStatus: $e\n$st');
-      } catch (e, st) {
-        debugPrint('initPedometerSystem pedestrianStatus: $e\n$st');
-      }
+      await _listenOsPedometer(reason: 'init');
       if (!mounted) return;
       if (_isNotificationEnabled) {
         unawaited(
@@ -314,6 +297,72 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       debugPrint('initPedometerSystem PlatformException: $e\n$st');
     } catch (e, st) {
       debugPrint('initPedometerSystem: $e\n$st');
+    }
+  }
+
+  /// Re-bind TYPE_STEP_COUNTER after background, USB `flutter run` detach, or
+  /// EventChannel `FlutterJNI was detached` (channels `step_count` /
+  /// `step_detection`). A dead subscription is why shake stopped while Health
+  /// Connect still returned ~1,834.
+  Future<void> _listenOsPedometer({required String reason}) async {
+    if (!mounted || _pedoRebindInFlight) return;
+    final now = DateTime.now();
+    if (!PedometerStepTruth.shouldRebindSensor(
+      now: now,
+      lastRebindAt: _lastPedoRebindAt,
+      force: reason == 'init' || reason == 'resume',
+    )) {
+      return;
+    }
+    _pedoRebindInFlight = true;
+    _lastPedoRebindAt = now;
+    try {
+      await _pedoSub?.cancel();
+      await _statusSub?.cancel();
+      _pedoSub = null;
+      _statusSub = null;
+      _baselineReady = false;
+      _sessionDelta = 0;
+      debugPrint(
+        '${PedometerStepTruth.sourceLog(
+          source: 'sensor-rebind',
+          daily: _steps,
+          offset: _stepOffset,
+          healthBase: _healthBase,
+          ui: _steps,
+        )} reason=$reason',
+      );
+      _pedoSub = Pedometer.stepCountStream.listen(
+        _onPedometerEvent,
+        onError: (Object error, StackTrace stack) {
+          debugPrint('Pedometer.stepCountStream: $error\n$stack');
+          unawaited(_listenOsPedometer(reason: 'stream-error'));
+        },
+        onDone: () {
+          debugPrint('${PedometerStepTruth.logPrefix} source=sensor-done');
+          unawaited(_listenOsPedometer(reason: 'stream-done'));
+        },
+        cancelOnError: false,
+      );
+      try {
+        _statusSub = Pedometer.pedestrianStatusStream.listen(
+          _onPedestrianStatus,
+          onError: (Object error, StackTrace stack) {
+            debugPrint('Pedometer.pedestrianStatusStream: $error\n$stack');
+          },
+          cancelOnError: false,
+        );
+      } on PlatformException catch (e, st) {
+        debugPrint('_listenOsPedometer pedestrianStatus: $e\n$st');
+      } catch (e, st) {
+        debugPrint('_listenOsPedometer pedestrianStatus: $e\n$st');
+      }
+    } on PlatformException catch (e, st) {
+      debugPrint('_listenOsPedometer PlatformException: $e\n$st');
+    } catch (e, st) {
+      debugPrint('_listenOsPedometer: $e\n$st');
+    } finally {
+      _pedoRebindInFlight = false;
     }
   }
 
@@ -664,8 +713,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _ensureDailyRollover(
         sensorTotal: math.max(_steps, 0) + _stepOffset,
       );
+      unawaited(_listenOsPedometer(reason: 'resume'));
       unawaited(_pullLiveStepsFromService());
       unawaited(syncBackgroundSteps());
+      unawaited(_syncForegroundNotification(_steps));
       if (_isNotificationEnabled) {
         unawaited(
           SoloPedometerForeground.ensureAlive(

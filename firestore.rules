@@ -250,6 +250,57 @@ service cloud.firestore {
             .hasOnly(['uid', 'wallet', 'updatedAt']);
     }
 
+    // Debug USB: SHARE may decrease after the one-shot grant (join / personal
+    // sponsor). DIA/VALUE stay unchanged. Donation totals may only increase.
+    // Release clients never call this path.
+    function validDebugShareSpend(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && resource.data.testGrant1mDone == true
+        && request.resource.data.testGrant1mDone == true
+        && request.resource.data.wallet.shareBalance is int
+        && request.resource.data.wallet.shareBalance >= 0
+        && request.resource.data.wallet.shareBalance
+            < resource.data.wallet.shareBalance
+        && request.resource.data.wallet.diamondBalance
+            == resource.data.wallet.diamondBalance
+        && request.resource.data.wallet.valueTokenBalance
+            == resource.data.wallet.valueTokenBalance
+        && request.resource.data.diff(resource.data).changedKeys()
+            .hasOnly([
+              'uid',
+              'wallet',
+              'updatedAt',
+              'donationCount',
+              'cumulativeDonationAmount',
+              'isSponsored'
+            ])
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['donationCount'])
+          || (
+            request.resource.data.donationCount is int
+            && request.resource.data.donationCount >= (
+              'donationCount' in resource.data
+                ? resource.data.donationCount
+                : 0
+            )
+          )
+        )
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['cumulativeDonationAmount'])
+          || (
+            request.resource.data.cumulativeDonationAmount is int
+            && request.resource.data.cumulativeDonationAmount >= (
+              'cumulativeDonationAmount' in resource.data
+                ? resource.data.cumulativeDonationAmount
+                : 0
+            )
+          )
+        );
+    }
+
     function validUserCreate(uid) {
       return isOwner(uid)
         && request.resource.data.keys().hasOnly([
@@ -407,6 +458,7 @@ service cloud.firestore {
       allow update: if isAdminUserOpsUpdate()
         || validDebugTestWalletGrant(uid)
         || validDebugLocalHarvestShare(uid)
+        || validDebugShareSpend(uid)
         || (
           validUserSettingsUpdate(uid)
           && !request.resource.data.diff(resource.data).changedKeys().hasAny([

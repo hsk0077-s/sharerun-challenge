@@ -47,9 +47,23 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
   static bool shouldApplyLocalGrant({
     required bool debugMode,
     required bool walletEmpty,
+    bool prefsMarkedDone = false,
   }) {
-    return DebugWalletGrant.shouldApplyLocalGrant(
+    return DebugWalletGrant.shouldRunLocalGrant(
       debugMode: debugMode,
+      prefsMarkedDone: prefsMarkedDone,
+      walletEmpty: walletEmpty,
+    );
+  }
+
+  static bool shouldRunLocalGrant({
+    required bool debugMode,
+    required bool prefsMarkedDone,
+    required bool walletEmpty,
+  }) {
+    return DebugWalletGrant.shouldRunLocalGrant(
+      debugMode: debugMode,
+      prefsMarkedDone: prefsMarkedDone,
       walletEmpty: walletEmpty,
     );
   }
@@ -91,14 +105,35 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
     return share > 0 || dia > 0 || value > 0;
   }
 
-  /// PR #7 wrote this flag even when the wallet stayed 0. Ignore it so
-  /// Home can still receive the 1M grant.
+  /// Durable one-shot. Prefs stay locked after a real debit even if Home
+  /// briefly reads 0 before Firestore hydrates.
   static bool shouldHonorLocalGrantLock({
     required bool prefsMarkedDone,
     required bool walletEmpty,
   }) {
-    if (!prefsMarkedDone) return false;
-    return !walletEmpty;
+    return prefsMarkedDone;
+  }
+
+  /// USB smoking gun (PR #12):
+  /// `[DEBUG LOCAL] prefs marked done but Home wallet is still 0 — local re-apply`
+  /// then `grant SHARE=DIA=VALUE=1000000 firestore=true`.
+  ///
+  /// Must stay false. A transient UI 0 is not "never granted".
+  static bool shouldLocalReapplyBecauseWalletEmpty({
+    required bool prefsMarkedDone,
+    required bool walletEmpty,
+  }) {
+    if (!prefsMarkedDone || !walletEmpty) return false;
+    return false;
+  }
+
+  /// Jena `already_granted` / `granted` must not restore 1M over a spent wallet.
+  static bool shouldApplyGrantSnapshot({
+    required String status,
+    required bool localWalletEmpty,
+  }) {
+    if (!localWalletEmpty) return false;
+    return status == 'granted' || status == 'already_granted';
   }
 
   static bool shouldRetryGrant(Object error) {
@@ -158,22 +193,30 @@ class _DebugTestWalletGrantHostState
       prefsMarkedDone: prefsMarkedDone,
       walletEmpty: walletEmpty,
     )) {
+      // Wait for remote hydrate. Do not clear prefs or write 1M.
       _consumed = true;
       ref.read(debugEconomyStatusProvider.notifier).markGrantDone();
+      debugPrint(
+        '[DEBUG LOCAL] grant already done (prefs); skip re-apply '
+        'walletEmpty=$walletEmpty',
+      );
       return;
     }
-    if (!DebugTestWalletGrantHost.shouldApplyLocalGrant(
-      debugMode: kDebugMode,
+    if (DebugTestWalletGrantHost.shouldLocalReapplyBecauseWalletEmpty(
+      prefsMarkedDone: prefsMarkedDone,
       walletEmpty: walletEmpty,
     )) {
       return;
     }
-    if (prefsMarkedDone) {
-      debugPrint(
-        '[DEBUG LOCAL] prefs marked done but Home wallet is still 0 — '
-        'local re-apply',
-      );
-      await prefs.remove(uidKey);
+    if (!DebugTestWalletGrantHost.shouldRunLocalGrant(
+      debugMode: kDebugMode,
+      prefsMarkedDone: prefsMarkedDone,
+      walletEmpty: walletEmpty,
+    )) {
+      if (!walletEmpty) {
+        _consumed = true;
+      }
+      return;
     }
 
     _inFlight = true;
@@ -209,7 +252,11 @@ class _DebugTestWalletGrantHostState
                   grantSecret: DebugTestWalletGrantHost.grantSecret(),
                 );
         ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
-        if (DebugTestWalletGrantHost.shouldMarkGrantConsumed(result)) {
+        if (DebugTestWalletGrantHost.shouldMarkGrantConsumed(result) &&
+            DebugTestWalletGrantHost.shouldApplyGrantSnapshot(
+              status: result.status,
+              localWalletEmpty: ref.read(walletProvider).isEmpty,
+            )) {
           ref.read(walletProvider.notifier).applyWalletSnapshot(
                 shareBalance: result.shareBalance,
                 diamondBalance: result.diamondBalance,

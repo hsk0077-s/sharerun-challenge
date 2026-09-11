@@ -13,16 +13,34 @@ abstract final class DebugWalletGrant {
 
   static String prefsKeyForUid(String uid) => '${prefsKey}_$uid';
 
-  /// Home is empty in debug — apply the local grant even if a stale prefs
-  /// lock exists from a previous Jena failure.
+  /// First-time fill only. [prefsMarkedDone] is durable across kill/relaunch
+  /// and wins even while Home still shows 0 (cold-start hydration).
   static bool shouldApplyLocalGrant({
     required bool debugMode,
     required bool walletEmpty,
+    bool prefsMarkedDone = false,
   }) {
-    return debugMode && walletEmpty;
+    return shouldRunLocalGrant(
+      debugMode: debugMode,
+      prefsMarkedDone: prefsMarkedDone,
+      walletEmpty: walletEmpty,
+    );
+  }
+
+  /// One-shot per install/uid. A spent wallet that looks empty before
+  /// Firestore hydrates must not restore 1M.
+  static bool shouldRunLocalGrant({
+    required bool debugMode,
+    required bool prefsMarkedDone,
+    required bool walletEmpty,
+  }) {
+    if (!debugMode) return false;
+    if (prefsMarkedDone) return false;
+    return walletEmpty;
   }
 
   /// Fields merged into `users/{uid}` so Home/`walletProvider` see 1M.
+  /// Does not write donation totals — those persist independently of the grant.
   /// Callers add `updatedAt` (and `uid` when needed).
   static Map<String, dynamic> firestoreMergeFields({int amount = amount}) {
     return {
@@ -36,7 +54,18 @@ abstract final class DebugWalletGrant {
       'shareBalance': amount,
       'diamondBalance': amount,
       'valueTokenBalance': amount,
-      'totalDonationValue': 0,
+    };
+  }
+
+  /// Sponsorship / debug SHARE spend. Never resets donation aggregates to 0.
+  static Map<String, dynamic> donationPersistFields({
+    required int donationCount,
+    required int cumulativeDonationAmount,
+  }) {
+    return {
+      'donationCount': donationCount,
+      'cumulativeDonationAmount': cumulativeDonationAmount,
+      'isSponsored': true,
     };
   }
 }

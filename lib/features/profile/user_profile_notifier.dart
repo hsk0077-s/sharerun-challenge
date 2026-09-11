@@ -156,10 +156,21 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     } catch (e) {
       debugPrint('processDonation mergeEconomyState: $e');
     }
+    if (kDebugMode && assetType == 'SHARE') {
+      try {
+        await ref.read(walletRepositoryProvider).persistDebugShareSpend(
+              uid: uid,
+              shareDelta: -amount,
+              donationCount: nextCount,
+              cumulativeDonationAmount: nextAmount,
+              isSponsored: true,
+            );
+      } catch (e) {
+        debugPrint('processDonation persistDebugShareSpend: $e');
+      }
+    }
     await writeTransactionReceipt(
-      title: assetType == 'VALUE'
-          ? '유니세프 글로벌 기부 펀딩 참여 🕊️'
-          : '유니세프 기부 완료 🕊️',
+      title: assetType == 'VALUE' ? '유니세프 글로벌 기부 펀딩 참여 🕊️' : '유니세프 기부 완료 🕊️',
       amount: -amount,
       assetType: assetType,
     );

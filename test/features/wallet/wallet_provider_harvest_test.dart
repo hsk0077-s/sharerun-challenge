@@ -72,6 +72,32 @@ void main() {
   });
 
   test(
+      'debug harvest does not re-apply 1M grant over a post-join SHARE ledger',
+      () {
+    const remote = WalletModel(
+      shareBalance: 970000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyShareFromServer(shareBalance: 1000018, shareCredited: 18);
+    expect(container.read(walletProvider).shareBalance, 970018);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test(
       'applyWalletSnapshot sets SHARE DIA VALUE together for the 1M test grant',
       () {
     const remote = WalletModel(
@@ -345,6 +371,89 @@ void main() {
       durableShare: 970000,
     );
     expect(merged.shareBalance, 970000);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('applyShareFromServer harvest stays on Home after stale grant merge', () {
+    const remote = WalletModel(
+      shareBalance: 970000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.rememberDurableDebugShare(970000);
+
+    notifier.applyShareFromServer(shareCredited: 18);
+    expect(container.read(walletProvider).shareBalance, 970018);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+
+    notifier.replaceFromRemote(remote);
+    expect(container.read(walletProvider).shareBalance, 970018);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+
+    notifier.replaceFromRemote(
+      const WalletModel(
+        shareBalance: 1000000,
+        diamondBalance: 1000000,
+        valueTokenBalance: 1000000,
+        totalDonationValue: 0,
+      ),
+    );
+    expect(container.read(walletProvider).shareBalance, 970018);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test('mergeRemote keeps durable harvest when Firestore is still pre-credit',
+      () {
+    const current = WalletState(
+      shareBalance: 970018,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const stale = WalletState(
+      shareBalance: 970000,
+      diamondBalance: 0,
+      valueBalance: 0,
+    );
+    final merged = WalletNotifier.mergeRemote(
+      current,
+      stale,
+      durableShare: 970018,
+    );
+    expect(merged.shareBalance, 970018);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('cold start keeps durable harvest when Firestore is still pre-credit',
+      () {
+    const empty = WalletState();
+    const stale = WalletState(
+      shareBalance: 970000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    final merged = WalletNotifier.mergeRemote(
+      empty,
+      stale,
+      durableShare: 970018,
+    );
+    expect(merged.shareBalance, 970018);
     expect(merged.diamondBalance, 1000000);
     expect(merged.valueBalance, 1000000);
   });

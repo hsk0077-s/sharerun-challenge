@@ -105,18 +105,37 @@ abstract final class DebugLocalWalletStore {
     if (history != null) _history[uid] = List<DebugLocalShareTx>.from(history);
   }
 
-  /// Firestore SHARE cannot climb back over a recorded spend except a small
-  /// harvest bump. Grant restore (1M over 0) is not clamped here — callers
-  /// skip the ceiling when there is no durable spend.
+  /// Resolve Firestore SHARE against the durable local ledger.
+  ///
+  /// Incoming cannot climb back over a recorded spend except a small harvest
+  /// bump. A harvest-sized drop below durable is treated as a stale remote
+  /// missing the local credit (keep durable). Spend-sized drops still apply.
   static int applyShareCeiling({
     required int incomingShare,
     required int durableShare,
     int harvestSlack = harvestSlack,
   }) {
-    if (incomingShare <= durableShare) return incomingShare;
-    final bump = incomingShare - durableShare;
-    if (bump <= harvestSlack) return incomingShare;
-    return durableShare;
+    if (incomingShare > durableShare) {
+      final bump = incomingShare - durableShare;
+      if (bump <= harvestSlack) return incomingShare;
+      return durableShare;
+    }
+    final drop = durableShare - incomingShare;
+    if (drop > 0 && drop <= harvestSlack) return durableShare;
+    return incomingShare;
+  }
+
+  /// In-session / prefs hydrate: lift an empty or stale-low wallet up to the
+  /// durable ledger, but do not clamp a harvest-sized in-memory credit down.
+  static int resolveHydratedShare({
+    required int currentShare,
+    required int durableShare,
+    int harvestSlack = harvestSlack,
+  }) {
+    if (currentShare <= 0) return durableShare;
+    if (currentShare < durableShare) return durableShare;
+    if (currentShare > durableShare + harvestSlack) return durableShare;
+    return currentShare;
   }
 
   /// In-session: incoming SHARE restores a join/sponsor-sized debit.
@@ -171,7 +190,17 @@ abstract final class DebugLocalWalletStore {
     String uid,
   ) {
     if (uid.isEmpty) return const DebugLocalWalletSnapshot();
-    final share = prefs.getInt(shareKey(uid));
+    final prefsShare = prefs.getInt(shareKey(uid));
+    final cachedShare = _share[uid];
+    final int? share;
+    if (prefsShare != null && cachedShare != null) {
+      share = applyShareCeiling(
+        incomingShare: prefsShare,
+        durableShare: cachedShare,
+      );
+    } else {
+      share = cachedShare ?? prefsShare;
+    }
     final paid = parseIdList(prefs.getStringList(paidJoinKey(uid)));
     final history = parseHistory(prefs.getString(historyKey(uid)));
     rememberInMemory(
@@ -223,6 +252,37 @@ abstract final class DebugLocalWalletStore {
     await prefs.setString(
       historyKey(uid),
       jsonEncode(history.map((tx) => tx.toJson()).toList()),
+    );
+  }
+
+  static const harvestHistoryTitle = '워킹챌린지 코인 줍기';
+
+  /// Debug USB: persist a walking harvest so Home / 누적 통장 keep the SHARE
+  /// after Jena fail, grant re-hydrate, or process restart.
+  static Future<void> recordHarvestCredit({
+    required SharedPreferences prefs,
+    required String uid,
+    required int shareBalanceAfter,
+    required int credited,
+  }) async {
+    if (uid.isEmpty || shareBalanceAfter < 0 || credited <= 0) return;
+    final tx = DebugLocalShareTx(
+      id: 'TX_SHARE_HARVEST_${DateTime.now().millisecondsSinceEpoch}',
+      title: harvestHistoryTitle,
+      amount: credited,
+      assetType: 'SHARE',
+      timestampMs: DateTime.now().millisecondsSinceEpoch,
+    );
+    final history = [tx, ...cachedHistory(uid)].take(40).toList();
+    rememberInMemory(
+      uid: uid,
+      share: shareBalanceAfter,
+      history: history,
+    );
+    await prefs.setInt(shareKey(uid), shareBalanceAfter);
+    await prefs.setString(
+      historyKey(uid),
+      jsonEncode(history.map((row) => row.toJson()).toList()),
     );
   }
 

@@ -27,10 +27,32 @@ void main() {
     );
   });
 
-  test('debug harvest log is tagged [DEBUG LOCAL]', () {
+  test('debug harvest log is tagged [HARVEST] with source', () {
     expect(
-      DebugLocalHarvest.successLog(credited: 29, shareBalance: 1000029),
-      '[DEBUG LOCAL] harvest +29 SHARE walletShare=1000029',
+      DebugLocalHarvest.resultLog(
+        credited: true,
+        amount: 18,
+        source: 'local',
+        walletShare: 970018,
+      ),
+      '[HARVEST] credited=Y amount=18 source=local walletShare=970018',
+    );
+    expect(
+      DebugLocalHarvest.resultLog(
+        credited: true,
+        amount: 18,
+        source: 'jena',
+        walletShare: 970018,
+      ),
+      '[HARVEST] credited=Y amount=18 source=jena walletShare=970018',
+    );
+    expect(
+      DebugLocalHarvest.resultLog(
+        credited: false,
+        amount: 0,
+        source: 'jena',
+      ),
+      '[HARVEST] credited=N amount=0 source=jena',
     );
   });
 }

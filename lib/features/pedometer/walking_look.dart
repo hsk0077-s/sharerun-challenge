@@ -60,12 +60,21 @@ abstract final class WalkingLook {
     ),
   ];
 
+  /// Same walking snail as main before the Runday polish PR.
+  static const snailWalkingAsset =
+      'assets/images/characters/chibi_snail_disappointed.png';
+
+  /// Alpha-only knockout for the disappointed PNG's opaque near-white plate.
+  /// Does **not** tint pixels (no `primaryMint` / `BlendMode.multiply` rect).
+  static const whitePlateKnockout = ColorFilter.matrix(<double>[
+    1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    -4, -4, -4, 11.6, 0,
+  ]);
+
   static String mascotAsset(UserTier tier) {
-    if (tier.isSnail) {
-      // Transparent-background running pose. Do not use the disappointed
-      // PNG here — it has an opaque white plate that reads as a square.
-      return 'assets/images/characters/chibi_snail_cute_gold_medal.png';
-    }
+    if (tier.isSnail) return snailWalkingAsset;
     return tier.avatarAssetPath;
   }
 }
@@ -111,22 +120,31 @@ class WalkingMascot extends StatelessWidget {
           ),
           Transform.flip(
             flipX: true,
-            child: Image.asset(
-              WalkingLook.mascotAsset(tier),
-              key: const Key('walking-mascot'),
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-              errorBuilder: (_, __, ___) => Icon(
-                Icons.pets_rounded,
-                size: size * 0.55,
-                color: WalkingLook.onHero,
-              ),
-            ),
+            child: _untintedMascot(),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _untintedMascot() {
+    final image = Image.asset(
+      WalkingLook.mascotAsset(tier),
+      key: const Key('walking-mascot'),
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+      errorBuilder: (_, __, ___) => Icon(
+        Icons.pets_rounded,
+        size: size * 0.55,
+        color: WalkingLook.onHero,
+      ),
+    );
+    if (!tier.isSnail) return image;
+    return ColorFiltered(
+      colorFilter: WalkingLook.whitePlateKnockout,
+      child: image,
     );
   }
 }

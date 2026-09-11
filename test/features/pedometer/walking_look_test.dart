@@ -5,15 +5,18 @@ import 'package:share_run_challenge/features/onboarding/src_onboarding_controlle
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 
 void main() {
-  test('snail mascot uses the transparent running asset, not the white-plate PNG',
-      () {
+  test('snail mascot keeps the previous walking-challenge asset', () {
     expect(
       WalkingLook.mascotAsset(UserTier.unratedFallback),
-      'assets/images/characters/chibi_snail_cute_gold_medal.png',
+      WalkingLook.snailWalkingAsset,
     );
     expect(
       WalkingLook.mascotAsset(UserTier.unratedFallback),
-      isNot(contains('disappointed')),
+      'assets/images/characters/chibi_snail_disappointed.png',
+    );
+    expect(
+      WalkingLook.mascotAsset(UserTier.unratedFallback),
+      isNot(contains('cute_gold_medal')),
     );
   });
 
@@ -63,5 +66,14 @@ void main() {
     final image = tester.widget<Image>(find.byKey(const Key('walking-mascot')));
     expect(image.color, isNull);
     expect(image.colorBlendMode, isNull);
+    expect(
+      find.descendant(
+        of: find.byType(ColorFiltered),
+        matching: find.byKey(const Key('walking-mascot')),
+      ),
+      findsOneWidget,
+    );
+    final filter = tester.widget<ColorFiltered>(find.byType(ColorFiltered));
+    expect(filter.colorFilter, WalkingLook.whitePlateKnockout);
   });
 }

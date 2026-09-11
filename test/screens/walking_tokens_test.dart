@@ -130,9 +130,7 @@ void main() {
     expect(mascot.colorBlendMode, isNull);
     expect(
       mascot.image,
-      const AssetImage(
-        'assets/images/characters/chibi_snail_cute_gold_medal.png',
-      ),
+      const AssetImage(WalkingLook.snailWalkingAsset),
     );
   });
 

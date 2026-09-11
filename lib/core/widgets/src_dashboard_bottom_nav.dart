@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers/app_providers.dart';
 import '../strings/app_strings.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 
 /// 메인 대시보드 하단 네비게이션 바 (5대 탭).
@@ -26,15 +27,9 @@ class DashboardBottomNav extends ConsumerWidget {
     final myPageDot = ref.watch(hasPendingJenaAppealProvider);
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surfaceWhite,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: AppShadows.nav,
       ),
       child: SafeArea(
         top: false,

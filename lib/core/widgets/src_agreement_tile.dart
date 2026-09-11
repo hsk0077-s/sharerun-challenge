@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_shapes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 import 'src_checkbox.dart';
 
@@ -30,7 +31,10 @@ class SRCAgreementBox extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 14,
+      ),
       decoration: BoxDecoration(
         color: AppColors.agreementBoxFill,
         borderRadius: BorderRadius.circular(AppShapes.agreementBoxRadius),
@@ -40,7 +44,7 @@ class SRCAgreementBox extends StatelessWidget {
         children: [
           if (!checkboxOnRight) ...[
             checkbox,
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
           ],
           Expanded(
             child: Text(
@@ -49,11 +53,11 @@ class SRCAgreementBox extends StatelessWidget {
             ),
           ),
           if (trailing != null) ...[
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.xs),
             trailing!,
           ],
           if (checkboxOnRight) ...[
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             checkbox,
           ],
         ],

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_radii.dart';
+import 'app_spacing.dart';
 
 /// SRC 앱 전역 Shape 상수.
+///
+/// Radii/spacing numbers come from [AppRadii] / [AppSpacing] so screens
+/// that still import this file keep compiling with the same values.
 abstract final class AppShapes {
   /// 소셜 로그인 버튼 — 스타디움 형태 (완전 둥근 캡슐)
-  static const double buttonRadius = 30;
+  static const double buttonRadius = AppRadii.pill;
 
   /// 텍스트 입력 필드
-  static const double inputRadius = 8;
+  static const double inputRadius = AppRadii.sm;
 
   /// 카드 / 패널
-  static const double cardRadius = 12;
+  static const double cardRadius = AppRadii.md;
 
   /// 소셜 로그인 버튼 높이
   static const double buttonHeight = 54;
@@ -59,13 +64,13 @@ abstract final class AppShapes {
   static const double googleButtonBorderWidth = 1;
 
   /// 약관 동의 박스 모서리
-  static const double agreementBoxRadius = 12;
+  static const double agreementBoxRadius = AppRadii.md;
 
   /// 약관 화면 좌우 패딩
-  static const double termsHorizontalPadding = 20;
+  static const double termsHorizontalPadding = AppSpacing.page;
 
   /// OAuth 카드 모서리
-  static const double oauthCardRadius = 16;
+  static const double oauthCardRadius = AppRadii.lg;
 
   static BorderRadius get buttonBorderRadius =>
       BorderRadius.circular(buttonRadius);

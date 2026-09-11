@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_shadows.dart';
 import '../theme/app_shapes.dart';
 
 /// 85% 글래스모피즘 카드 — 블러 15 + 0.5px 화이트 림.
@@ -31,13 +32,7 @@ class SrcGlassCard extends StatelessWidget {
             color: AppColors.glassFill,
             borderRadius: radius,
             border: Border.all(color: AppColors.glassRim, width: 0.5),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.pulseCyan.withValues(alpha: 0.08),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            boxShadow: AppShadows.glass,
           ),
           child: padding == null
               ? child

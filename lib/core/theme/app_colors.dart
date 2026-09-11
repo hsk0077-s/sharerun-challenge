@@ -1,16 +1,28 @@
 import 'package:flutter/material.dart';
 
-/// SRC 앱 전역 컬러 팔레트.
+/// SRC 앱 전역 컬러 팔레트 (single source of truth).
 ///
-/// 로그인 화면 및 이후 28개 화면에서 공통으로 사용합니다.
+/// Visual language: **1 primary (mint) + 1 accent (teal) + neutrals**,
+/// plus donation gold for emotional moments. Hex values come from the
+/// existing SRC brand already used by [SrcTheme] — do not add a second
+/// mint/teal. Later screens should prefer `context.srcTokens.colors`
+/// or [ColorScheme]; keep this class for named extras (social, Garmin).
+///
+/// 시각 언어: 프라이머리 민트 1 + 액센트 틸 1 + 뉴트럴. 기부 감정은 골드.
 abstract final class AppColors {
-  // Brand
+  // Brand — primary
   static const primaryMint = Color(0xFF76C8A7);
   static const primaryMintDark = Color(0xFF5BB896);
   static const primaryMintLight = Color(0xFF88D1B1);
 
+  /// Role alias for [primaryMint].
+  static const Color primary = primaryMint;
+
   /// 설정·웰니스 UI 포인트 (티얼 액센트).
   static const tealAccent = Color(0xFF11B79C);
+
+  /// Role alias for [tealAccent] (the single accent).
+  static const Color accent = tealAccent;
 
   /// 하단 투과 펄스 광원 (하이엔드 웰니스 캔버스).
   static const pulseCyan = Color(0xFF00F0FF);
@@ -140,4 +152,20 @@ abstract final class AppColors {
     colors: [bgGradientStart, bgGradientMid, bgGradientEnd],
     stops: [0.0, 0.42, 1.0],
   );
+
+  // ---------------------------------------------------------------------------
+  // Compatibility aliases — former `lib/app/theme` Black-Neon leftovers.
+  // Home / Walking / Lobby still import that path; hex now matches SrcTheme.
+  // Phase 2b+ screens should stop using neonLime / cardBlack names.
+  // ---------------------------------------------------------------------------
+  static const Color bgWhite = surfaceWhite;
+  static const Color primaryTeal = tealAccent;
+  static const Color oledBlack = surfaceWhite;
+  static const Color surfaceBlack = bgGradientEnd;
+  static const Color cardBlack = surfaceWhite;
+  static const Color neonLime = primaryMint;
+  static const Color electricBlue = tealAccent;
+  static const Color dangerRed = error;
+  static const Color textPrimary = textBlack;
+  static const Color textSecondary = textGrey;
 }

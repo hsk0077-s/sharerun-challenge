@@ -88,6 +88,8 @@ void main() {
     expect(find.text('이번 주 분석 일지'), findsOneWidget);
     expect(find.textContaining('산책 중'), findsOneWidget);
     expect(find.textContaining('워킹챌린지 혜택 알림'), findsOneWidget);
+    expect(find.textContaining('보이스 코칭'), findsOneWidget);
+    expect(find.byKey(const Key('voice-coaching-walk-toggle')), findsOneWidget);
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
     final ctx = tester.element(find.text('워킹챌린지'));

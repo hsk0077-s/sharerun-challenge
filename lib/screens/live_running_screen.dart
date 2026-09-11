@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -11,10 +12,12 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import 'onboarding_run_result_screen.dart';
 
 /// 라이브 러닝 및 고스트 페이스 화면 (Screen 10).
-class LiveRunningScreen extends StatefulWidget {
+class LiveRunningScreen extends ConsumerStatefulWidget {
   const LiveRunningScreen({super.key, this.roomId});
 
   /// Active room from Room Detail — selects 1km vs 3km competition context.
@@ -25,10 +28,10 @@ class LiveRunningScreen extends StatefulWidget {
   static const _neonPath = Color(0xFF00E5FF);
 
   @override
-  State<LiveRunningScreen> createState() => _LiveRunningScreenState();
+  ConsumerState<LiveRunningScreen> createState() => _LiveRunningScreenState();
 }
 
-class _LiveRunningScreenState extends State<LiveRunningScreen> {
+class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   static const _fallbackTarget = LatLng(37.5665, 126.9780);
   static const _beginnerRoomIds = <String>{
     RouteNames.beginner1kmRoomId,
@@ -261,6 +264,7 @@ class _LiveRunningScreenState extends State<LiveRunningScreen> {
       ).listen((position) {
         if (!mounted) return;
         final target = LatLng(position.latitude, position.longitude);
+        final previousKm = _distanceInMeters / 1000.0;
         setState(() {
           _cameraTarget = target;
           if (isRunning) {
@@ -280,6 +284,14 @@ class _LiveRunningScreenState extends State<LiveRunningScreen> {
           }
           _markers = _buildMarkers(target);
         });
+        if (isRunning) {
+          unawaited(
+            ref.read(voiceCoachingControllerProvider).onRunProgress(
+                  previousKm: previousKm,
+                  currentKm: _distanceInMeters / 1000.0,
+                ),
+          );
+        }
         _mapController?.animateCamera(CameraUpdate.newLatLng(target));
       });
     } catch (_) {
@@ -301,6 +313,7 @@ class _LiveRunningScreenState extends State<LiveRunningScreen> {
       setState(() => _elapsedSeconds++);
     });
     unawaited(_startPositionStream());
+    unawaited(ref.read(voiceCoachingControllerProvider).onRunStarted());
   }
 
   void _stopTracking() {
@@ -313,6 +326,7 @@ class _LiveRunningScreenState extends State<LiveRunningScreen> {
   void _onFinish() {
     setState(() => isRunning = false);
     _stopTracking();
+    unawaited(ref.read(voiceCoachingControllerProvider).onRunFinished());
     if (!mounted) return;
     Navigator.push(
       context,
@@ -449,6 +463,7 @@ class _LiveRunningHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const VoiceCoachingHeaderToggle(color: AppColors.primaryMint),
                 Text(
                   AppStrings.liveRunningGps,
                   style: AppTextStyles.buttonText.copyWith(

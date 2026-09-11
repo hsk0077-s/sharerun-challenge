@@ -27,6 +27,8 @@ import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/pedometer_step_truth.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/pedometer/walking_look.dart';
+import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/voice_coaching/widgets/voice_coaching_walk_banner.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/wallet/debug_economy_status.dart';
@@ -294,6 +296,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         unawaited(syncBackgroundSteps(requestIfMissing: false));
       });
       _scheduleGoldenPushes();
+      unawaited(_announceWalkingCoachStart());
     } on PlatformException catch (e, st) {
       debugPrint('initPedometerSystem PlatformException: $e\n$st');
     } catch (e, st) {
@@ -556,6 +559,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       );
     }
     unawaited(_persistDailyResetState());
+    ref.read(voiceCoachingControllerProvider).session.resetWalkDay();
     return true;
   }
 
@@ -613,6 +617,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       ),
     );
     if (effective <= _steps) return;
+    final previousSteps = _steps;
+    final previousKm = _km;
     final km = SoloPedometerEngine.kmFromSteps(effective);
     final todayKey = PedometerKstClock.dateKey();
     setState(() {
@@ -634,6 +640,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     unawaited(_persistKm(km, steps: effective, syncRemote: false));
     unawaited(_syncForegroundNotification(effective));
     unawaited(_maybeGrantLockedRewards(effective));
+    unawaited(
+      ref.read(voiceCoachingControllerProvider).onWalkingProgress(
+            previousSteps: previousSteps,
+            currentSteps: effective,
+            previousKm: previousKm,
+            currentKm: km,
+            targetKm: _tier.targetKm,
+          ),
+    );
   }
 
   void _onIsolateSteps(int steps) {
@@ -1187,6 +1202,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     super.dispose();
   }
 
+  Future<void> _announceWalkingCoachStart() async {
+    await ref.read(voiceCoachingEnabledProvider.notifier).ensureLoaded();
+    if (!mounted) return;
+    await ref.read(voiceCoachingControllerProvider).onWalkingOpened();
+  }
+
   void _refreshPendingShare(int steps) {
     _updatePendingAmount();
     unawaited(_syncForegroundNotification(steps));
@@ -1251,6 +1272,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         credited: minted ? credited : 0,
         source: 'jena',
       );
+      if (minted || credited > 0) {
+        unawaited(
+          ref.read(voiceCoachingControllerProvider).onHarvestCompleted(),
+        );
+      }
     } catch (e) {
       debugPrint('[HARVEST] secured credit failed: $e');
       if (DebugLocalHarvest.shouldCreditOnJenaFailure(
@@ -1277,6 +1303,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           uid: uid,
           credited: toClaim,
           source: 'local',
+        );
+        unawaited(
+          ref.read(voiceCoachingControllerProvider).onHarvestCompleted(),
         );
       } else if (mounted) {
         setState(() {
@@ -1498,6 +1527,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                                 ),
                               ),
                             ),
+                            SizedBox(height: tokens.spacing.sm),
+                            const VoiceCoachingWalkBanner(),
                             SizedBox(height: tokens.spacing.lg),
                           ],
                         ),

@@ -508,4 +508,15 @@ abstract final class AppStrings {
   static const notificationPaymentJustNow = '방금 전';
   static const notificationSystemEmpty = '도달한 새로운 알림이 없습니다. 🔔';
   static const notificationSystemFallbackTitle = '알림';
+
+  // ── Voice coaching (Phase 3a) ─────────────────────────────────────
+  static const voiceCoachingTitle = '보이스 코칭';
+  static const voiceCoachingSubtitle =
+      '워킹·러닝 중 짧은 응원 멘트를 음성으로 들려줍니다';
+  static const voiceCoachingWalkOn = '보이스 코칭 켜져 있음';
+  static const voiceCoachingWalkOff = '보이스 코칭이 꺼져 있습니다';
+  static const voiceCoachingEnable = '코칭 켜기';
+  static const voiceCoachingDisable = '코칭 끄기';
+  static const voiceCoachingOnTooltip = '보이스 코칭 끄기';
+  static const voiceCoachingOffTooltip = '보이스 코칭 켜기';
 }

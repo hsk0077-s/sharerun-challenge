@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -23,6 +25,7 @@ import '../data/repositories/auth_repository.dart'
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/onboarding/widgets/nickname_change_sheet.dart';
+import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
 
 /// 마이페이지 종합 설정 화면 — 계정·알림·프로툴·약관/지원.
@@ -394,6 +397,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   if (uid != null) {
                     _updatePushNotifications(uid: uid, enabled: value);
                   }
+                },
+              ),
+              const Divider(height: 1, color: AppColors.borderLight),
+              SwitchListTile.adaptive(
+                secondary: const Icon(
+                  Icons.record_voice_over_outlined,
+                  color: AppColors.tealAccent,
+                ),
+                title: Text(
+                  AppStrings.voiceCoachingTitle,
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  AppStrings.voiceCoachingSubtitle,
+                  style: AppTextStyles.caption,
+                ),
+                value: ref.watch(voiceCoachingEnabledProvider),
+                activeThumbColor: AppColors.tealAccent,
+                activeTrackColor: AppColors.tealAccent.withValues(alpha: 0.4),
+                onChanged: (value) {
+                  unawaited(
+                    ref
+                        .read(voiceCoachingEnabledProvider.notifier)
+                        .setEnabled(value),
+                  );
                 },
               ),
               const Divider(height: 1, color: AppColors.borderLight),

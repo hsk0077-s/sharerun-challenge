@@ -103,8 +103,13 @@ void main() {
     expect(container.read(walletProvider).diamondBalance, 1000000);
     expect(container.read(walletProvider).valueBalance, 1000000);
 
+    notifier.applyShareFromServer(shareCredited: 29);
+    expect(container.read(walletProvider).shareBalance, 1000029);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+
     notifier.replaceFromRemote(WalletModel.empty());
-    expect(container.read(walletProvider).shareBalance, 1000000);
+    expect(container.read(walletProvider).shareBalance, 1000029);
     expect(container.read(walletProvider).diamondBalance, 1000000);
     expect(container.read(walletProvider).valueBalance, 1000000);
   });

@@ -10,6 +10,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/config/app_env.dart';
 import '../../../core/constants/debug_wallet_grant.dart';
 import '../../../data/models/pedometer_harvest_result.dart';
+import 'debug_economy_status.dart';
 import 'providers/wallet_provider.dart';
 
 /// Debug one-shot 1,000,000 SHARE/DIA/VALUE after login.
@@ -158,6 +159,7 @@ class _DebugTestWalletGrantHostState
       walletEmpty: walletEmpty,
     )) {
       _consumed = true;
+      ref.read(debugEconomyStatusProvider.notifier).markGrantDone();
       return;
     }
     if (!DebugTestWalletGrantHost.shouldApplyLocalGrant(
@@ -168,18 +170,19 @@ class _DebugTestWalletGrantHostState
     }
     if (prefsMarkedDone) {
       debugPrint(
-        '[TEST GRANT 1M] prefs marked done but Home wallet is still 0 — '
+        '[DEBUG LOCAL] prefs marked done but Home wallet is still 0 — '
         'local re-apply',
       );
       await prefs.remove(uidKey);
     }
 
     _inFlight = true;
+    ref.read(debugEconomyStatusProvider.notifier).markGrantPending();
     try {
       try {
         await ref.read(userRepositoryProvider).ensureUserDocument(uid: uid);
       } catch (e) {
-        debugPrint('[TEST GRANT 1M] ensureUserDocument: $e');
+        debugPrint('[DEBUG LOCAL] ensureUserDocument: $e');
       }
 
       // Primary path: Home reads walletProvider. Do this before any HTTP.
@@ -195,7 +198,7 @@ class _DebugTestWalletGrantHostState
         firestoreOk = true;
       } catch (e) {
         debugPrint(
-          '[TEST GRANT 1M] local Firestore write failed '
+          '[DEBUG LOCAL] grant Firestore write failed '
           '(Home still shows in-memory 1M): $e',
         );
       }
@@ -205,6 +208,7 @@ class _DebugTestWalletGrantHostState
             await ref.read(walletRepositoryProvider).grantDebugTestWallet1m(
                   grantSecret: DebugTestWalletGrantHost.grantSecret(),
                 );
+        ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
         if (DebugTestWalletGrantHost.shouldMarkGrantConsumed(result)) {
           ref.read(walletProvider.notifier).applyWalletSnapshot(
                 shareBalance: result.shareBalance,
@@ -212,28 +216,32 @@ class _DebugTestWalletGrantHostState
                 valueBalance: result.valueTokenBalance,
               );
           debugPrint(
-            '[TEST GRANT 1M] Jena ${result.status} '
+            '[DEBUG LOCAL] Jena ${result.status} '
             'SHARE=${result.shareBalance} '
             'DIA=${result.diamondBalance} '
             'VALUE=${result.valueTokenBalance}',
           );
         } else {
-          debugPrint('[TEST GRANT 1M] Jena ${result.status} ignored');
+          debugPrint('[DEBUG LOCAL] Jena ${result.status} ignored');
         }
       } catch (e) {
-        debugPrint('[TEST GRANT 1M] Jena skipped (local grant already applied): $e');
+        ref.read(debugEconomyStatusProvider.notifier).markJenaFail();
+        debugPrint(
+          '[DEBUG LOCAL] Jena skipped (local grant already applied): $e',
+        );
       }
 
       _consumed = true;
       await prefs.setBool(uidKey, true);
       await prefs.setBool(DebugTestWalletGrantHost.prefsKey, true);
+      ref.read(debugEconomyStatusProvider.notifier).markGrantDone();
       debugPrint(
-        '[TEST GRANT 1M] local granted '
-        'SHARE=DIA=VALUE=${DebugTestWalletGrantHost.amount} '
+        '[DEBUG LOCAL] grant SHARE=DIA=VALUE=${DebugTestWalletGrantHost.amount} '
         'firestore=$firestoreOk',
       );
     } catch (e, st) {
-      debugPrint('[TEST GRANT 1M] failed: $e\n$st');
+      ref.read(debugEconomyStatusProvider.notifier).markGrantFailed(e);
+      debugPrint('[DEBUG LOCAL] grant failed: $e\n$st');
     } finally {
       _inFlight = false;
     }

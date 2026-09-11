@@ -138,6 +138,27 @@ class WalletRepository {
     );
   }
 
+  /// Debug harvest: persist SHARE only. DIA/VALUE stay as-is. Release: no-op.
+  Future<void> creditLocalDebugHarvestShare({
+    required String uid,
+    required int shareBalance,
+  }) async {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug harvest credit is debug-only.');
+    }
+    if (uid.isEmpty || shareBalance < 0) return;
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+      {
+        'uid': uid,
+        'wallet': {
+          'shareBalance': shareBalance,
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
   Future<void> transferValueToWeb3({
     required String destinationAddress,
     required int amountSrv,

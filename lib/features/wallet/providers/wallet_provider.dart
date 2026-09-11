@@ -1,5 +1,6 @@
 import 'dart:async' show Completer, unawaited;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
@@ -92,8 +93,14 @@ class WalletNotifier extends Notifier<WalletState> {
     if (incoming.isEmpty && !current.isEmpty) {
       return current;
     }
+    var share = incoming.shareBalance;
+    // Debug local harvest credits SHARE on walletProvider first. A later
+    // empty/stale Firestore SHARE must not wipe that credit.
+    if (kDebugMode && current.shareBalance > incoming.shareBalance) {
+      share = current.shareBalance;
+    }
     return WalletState(
-      shareBalance: incoming.shareBalance,
+      shareBalance: share,
       diamondBalance: incoming.diamondBalance == 0 && current.diamondBalance > 0
           ? current.diamondBalance
           : incoming.diamondBalance,
@@ -112,6 +119,16 @@ class WalletNotifier extends Notifier<WalletState> {
     int shareCredited = 0,
   }) {
     if (shareBalance != null) {
+      // Debug local grant/harvest may already be ahead of Jena. Do not
+      // replace a higher local SHARE with a stale server snapshot.
+      if (kDebugMode && shareBalance < state.shareBalance) {
+        if (shareCredited > 0) {
+          state = state.copyWith(
+            shareBalance: state.shareBalance + shareCredited,
+          );
+        }
+        return;
+      }
       state = state.copyWith(shareBalance: shareBalance);
       return;
     }

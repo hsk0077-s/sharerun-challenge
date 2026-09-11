@@ -152,7 +152,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.textContaining('꺼져 있습니다'), findsOneWidget);
+    expect(find.textContaining('혜택 알림이 완전히 꺼져 있습니다'), findsOneWidget);
+    expect(find.textContaining('보이스 코칭이 꺼져 있습니다'), findsOneWidget);
     expect(find.text('알림 받기'), findsOneWidget);
     expect(find.text('워킹챌린지'), findsOneWidget);
     expect(find.byKey(const Key('walking-harvest-cta')), findsOneWidget);

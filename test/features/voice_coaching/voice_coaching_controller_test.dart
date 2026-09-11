@@ -39,7 +39,7 @@ void main() {
     );
   });
 
-  tearDown(container.dispose);
+  tearDown(() => container.dispose());
 
   test('preference survives a new container (app restart)', () async {
     await container.read(voiceCoachingEnabledProvider.notifier).ensureLoaded();

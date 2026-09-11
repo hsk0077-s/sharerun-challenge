@@ -52,13 +52,13 @@ abstract final class WalkingLook {
         ),
       ];
 
-  static List<BoxShadow> get glassLift => [
-        BoxShadow(
-          color: const Color(0x140C2F2C),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
-        ),
-      ];
+  static const glassLift = [
+    BoxShadow(
+      color: Color(0x140C2F2C),
+      blurRadius: 20,
+      offset: Offset(0, 8),
+    ),
+  ];
 
   static String mascotAsset(UserTier tier) {
     if (tier.isSnail) {

@@ -1641,7 +1641,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                             color: WalkingLook.onHero,
                           ),
                         ),
-                        Icon(
+                        const Icon(
                           Icons.flag_rounded,
                           size: 16,
                           color: WalkingLook.harvestHi,

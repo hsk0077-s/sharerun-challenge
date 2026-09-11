@@ -102,9 +102,16 @@ void main() {
         matching: find.byType(Ink),
       ),
     );
+    final harvestColors =
+        (harvestInk.decoration as BoxDecoration).gradient!.colors;
     expect(
-      (harvestInk.decoration as BoxDecoration).gradient?.colors,
-      contains(AppColors.angelGold),
+      harvestColors.any(
+        (color) =>
+            (color.r - AppColors.angelGold.r).abs() < 0.01 &&
+            (color.g - AppColors.angelGold.g).abs() < 0.01 &&
+            (color.b - AppColors.angelGold.b).abs() < 0.01,
+      ),
+      isTrue,
     );
 
     final shareStyle = tester

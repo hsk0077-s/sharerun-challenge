@@ -81,4 +81,97 @@ void main() {
     final filter = tester.widget<ColorFiltered>(find.byType(ColorFiltered));
     expect(filter.colorFilter, WalkingLook.whitePlateKnockout);
   });
+
+  testWidgets('WalkingMascot idles, then walks, then celebrates pickup',
+      (tester) async {
+    var moving = false;
+    var pickupNonce = 0;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.light,
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            return Scaffold(
+              body: Column(
+                children: [
+                  WalkingMascot(
+                    tier: UserTier.unratedFallback,
+                    size: 80,
+                    moving: moving,
+                    pickupNonce: pickupNonce,
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => moving = true),
+                    child: const Text('walk'),
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => pickupNonce += 1),
+                    child: const Text('pickup'),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('walking-mascot-motion-idle')), findsOneWidget);
+    expect(
+      tester.widget<Image>(find.byKey(const Key('walking-mascot'))).image,
+      const AssetImage(WalkingLook.snailWalkingAsset),
+    );
+
+    await tester.tap(find.text('walk'));
+    await tester.pump();
+    expect(
+      find.byKey(const Key('walking-mascot-motion-walking')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('pickup'));
+    await tester.pump();
+    expect(
+      find.byKey(const Key('walking-mascot-motion-pickup')),
+      findsOneWidget,
+    );
+
+    await tester.pump(WalkingMascot.pickupDuration);
+    await tester.pump();
+    expect(
+      find.byKey(const Key('walking-mascot-motion-walking')),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<Image>(find.byKey(const Key('walking-mascot'))).image,
+      const AssetImage('assets/images/characters/chibi_snail_smiling.png'),
+    );
+  });
+
+  testWidgets('WalkingMascot stays still when animations are disabled',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.light,
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          );
+        },
+        home: const Scaffold(
+          body: WalkingMascot(
+            tier: UserTier.unratedFallback,
+            size: 80,
+            moving: true,
+            pickupNonce: 1,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('walking-mascot-motion-idle')), findsOneWidget);
+    expect(find.byKey(const Key('walking-mascot')), findsOneWidget);
+  });
 }

@@ -223,6 +223,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   var _hasReceivedBonus = false;
   var _rewardGrantInFlight = false;
   var _harvestInFlight = false;
+  var _mascotPickupNonce = 0;
   Timer? _goldenPushDebounce;
   Timer? _healthPollTimer;
   var _pedoRebindInFlight = false;
@@ -1223,6 +1224,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
     setState(() {
       _claimedSteps = liveSteps;
+      _mascotPickupNonce += 1;
     });
     ref.read(walkingPendingShareProvider.notifier).state = 0.0;
     unawaited(_syncForegroundNotification(liveSteps));
@@ -1449,6 +1451,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                           currentKm: effectiveKm,
                           currentSteps: effectiveSteps,
                           characterSize: buddySize,
+                          moving: _isMoving,
+                          pickupNonce: _mascotPickupNonce,
                         ),
                         stepCount: _comma(effectiveSteps),
                         km: effectiveKm,
@@ -1696,6 +1700,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     required double currentKm,
     required int currentSteps,
     required double characterSize,
+    required bool moving,
+    required int pickupNonce,
   }) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
@@ -1813,6 +1819,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                     child: WalkingMascot(
                       tier: tier,
                       size: charSize,
+                      moving: moving,
+                      pickupNonce: pickupNonce,
                     ),
                   ),
                 ],

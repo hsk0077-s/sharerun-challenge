@@ -34,6 +34,7 @@ class TournamentJoinPlan {
     required this.debugLog,
     this.persistLocalJoin = false,
     this.joinedForUi = false,
+    this.unlockRun = false,
   });
 
   final TournamentJoinKind kind;
@@ -45,19 +46,21 @@ class TournamentJoinPlan {
   /// Write Firestore SHARE increment + prefs lock (debug fallback only).
   final bool persistLocalJoin;
 
-  /// Treat the user as joined for navigation / UI (paid, already, debug).
+  /// Treat the user as joined for lists / overlay (paid, already, debug).
   final bool joinedForUi;
 
+  /// Start the run. False for unpaid "already joined" overlays.
+  final bool unlockRun;
+
   bool get showsPaidSnackbar =>
-      kind == TournamentJoinKind.paid || kind == TournamentJoinKind.debugLocalPaid;
+      kind == TournamentJoinKind.paid ||
+      kind == TournamentJoinKind.debugLocalPaid;
 }
 
 abstract final class TournamentJoinMessages {
-  static const alreadyJoined =
-      '이미 참가한 챌린지입니다. 참가비는 다시 차감되지 않습니다.';
+  static const alreadyJoined = '이미 참가한 챌린지입니다. 참가비는 다시 차감되지 않습니다.';
   static const rejected = '참가가 거절되었습니다. 참가비는 차감되지 않았습니다.';
-  static const joinPaymentFailed =
-      '참가·결제가 완료되지 않았습니다. 서버 연결 또는 인증에 실패했습니다.';
+  static const joinPaymentFailed = '참가·결제가 완료되지 않았습니다. 서버 연결 또는 인증에 실패했습니다.';
 
   static String paid(int fee) => '참가 완료. 참가비 $fee SHARE가 잠겼습니다.';
 
@@ -95,6 +98,7 @@ abstract final class TournamentJoinPlanner {
         snackbarMessage: TournamentJoinMessages.alreadyJoined,
         debugLog: '[JOIN] status=already_joined debit=N error=',
         joinedForUi: true,
+        unlockRun: true,
       );
     }
     if (!result.accepted) {
@@ -132,6 +136,7 @@ abstract final class TournamentJoinPlanner {
       snackbarMessage: TournamentJoinMessages.paid(debit),
       debugLog: '[JOIN] status=$status debit=Y amount=$debit error=',
       joinedForUi: true,
+      unlockRun: true,
     );
   }
 
@@ -147,8 +152,10 @@ abstract final class TournamentJoinPlanner {
         applyDebit: false,
         debitAmount: 0,
         snackbarMessage: TournamentJoinMessages.alreadyJoined,
-        debugLog: '[JOIN] status=already_joined debit=N error=${_errorForLog(error)}',
+        debugLog:
+            '[JOIN] status=already_joined debit=N error=${_errorForLog(error)}',
         joinedForUi: true,
+        unlockRun: true,
       );
     }
 
@@ -164,6 +171,7 @@ abstract final class TournamentJoinPlanner {
             'error=${_errorForLog(error)}',
         persistLocalJoin: true,
         joinedForUi: true,
+        unlockRun: true,
       );
     }
 
@@ -173,8 +181,18 @@ abstract final class TournamentJoinPlanner {
       applyDebit: false,
       debitAmount: 0,
       snackbarMessage: '${TournamentJoinMessages.joinPaymentFailed} ($detail)',
-      debugLog: '[JOIN] status=failed_closed debit=N error=${_errorForLog(error)}',
+      debugLog:
+          '[JOIN] status=failed_closed debit=N error=${_errorForLog(error)}',
     );
+  }
+
+  /// Gate "already joined" must not start the run unless Jena or a durable
+  /// paid local join proved the fee was taken.
+  static bool unlockWhenAlreadyJoinedBlocked({
+    required bool remoteOrJenaJoined,
+    required bool durablePaidJoin,
+  }) {
+    return remoteOrJenaJoined || durablePaidJoin;
   }
 
   static String _errorForLog(Object error) {

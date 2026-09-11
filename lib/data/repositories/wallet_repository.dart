@@ -143,6 +143,9 @@ class WalletRepository {
   Future<void> persistDebugShareSpend({
     required String uid,
     required int shareDelta,
+    int? shareBalanceAfter,
+    int? diamondBalance,
+    int? valueBalance,
     int? donationCount,
     int? cumulativeDonationAmount,
     bool isSponsored = false,
@@ -151,18 +154,38 @@ class WalletRepository {
       throw UnsupportedError('Debug SHARE spend persist is debug-only.');
     }
     if (uid.isEmpty || shareDelta >= 0) return;
-    await _firestoreService.doc(FirestorePaths.user(uid)).set(
-      {
+    final payload = <String, dynamic>{
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (shareBalanceAfter != null && shareBalanceAfter >= 0) {
+      payload.addAll(
+        DebugWalletGrant.shareSpendMergeFields(
+          uid: uid,
+          shareBalanceAfter: shareBalanceAfter,
+          diamondBalance: diamondBalance,
+          valueBalance: valueBalance,
+          donationCount: donationCount,
+          cumulativeDonationAmount: cumulativeDonationAmount,
+          isSponsored: isSponsored,
+        ),
+      );
+    } else {
+      payload.addAll({
         'uid': uid,
+        DebugWalletGrant.prefsKey: true,
         'wallet.shareBalance': FieldValue.increment(shareDelta),
-        'updatedAt': FieldValue.serverTimestamp(),
+        if (diamondBalance != null) 'wallet.diamondBalance': diamondBalance,
+        if (valueBalance != null) 'wallet.valueTokenBalance': valueBalance,
         if (donationCount != null) 'donationCount': donationCount,
         if (cumulativeDonationAmount != null)
           'cumulativeDonationAmount': cumulativeDonationAmount,
         if (isSponsored) 'isSponsored': true,
-      },
-      SetOptions(merge: true),
-    );
+      });
+    }
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+          payload,
+          SetOptions(merge: true),
+        );
   }
 
   /// Debug harvest: persist SHARE only. DIA/VALUE stay as-is. Release: no-op.

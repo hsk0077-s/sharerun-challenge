@@ -2,9 +2,11 @@ import 'dart:async' show Completer, unawaited;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../data/models/wallet_model.dart';
+import '../debug_local_wallet_store.dart';
 
 /// 전역 재화 표시 — Firestore [activeWalletProvider]가 원장이다.
 /// SharedPreferences SHARE/DIA/VALUE 값은 표시에 쓰지 않는다.
@@ -45,16 +47,25 @@ class WalletState {
 
 class WalletNotifier extends Notifier<WalletState> {
   Completer<void> _ready = Completer<void>();
+  int? _durableDebugShare;
 
   @override
   WalletState build() {
     _ready = Completer<void>();
+    _durableDebugShare = null;
     ref.onDispose(() {
       if (!_ready.isCompleted) _ready.complete();
     });
     ref.listen<AsyncValue<WalletModel>>(activeWalletProvider, (_, next) {
       next.whenData(_syncFromRemote);
     });
+    ref.listen(authStateChangesProvider, (_, next) {
+      final uid = next.asData?.value?.uid;
+      if (uid != null && uid.isNotEmpty) {
+        unawaited(_hydrateDurableDebugShare());
+      }
+    });
+    unawaited(_hydrateDurableDebugShare());
     final existing = ref.read(activeWalletProvider).asData?.value;
     if (existing != null) {
       Future<void>.microtask(() {
@@ -64,6 +75,30 @@ class WalletNotifier extends Notifier<WalletState> {
     }
     unawaited(_markReady());
     return const WalletState();
+  }
+
+  /// Debug USB: keep the post-spend SHARE so Firestore 1M cannot wipe it.
+  void rememberDurableDebugShare(int share) {
+    if (!kDebugMode || share < 0) return;
+    _durableDebugShare = share;
+  }
+
+  Future<void> _hydrateDurableDebugShare() async {
+    if (!kDebugMode) return;
+    final uid = ref.read(authStateChangesProvider).asData?.value?.uid ?? '';
+    if (uid.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
+      final share = snap.share;
+      if (share == null) return;
+      rememberDurableDebugShare(share);
+      if (state.shareBalance <= 0 || state.shareBalance > share) {
+        state = state.copyWith(shareBalance: share);
+      }
+    } catch (e) {
+      debugPrint('hydrateDurableDebugShare: $e');
+    }
   }
 
   Future<void> _markReady() async {
@@ -83,7 +118,11 @@ class WalletNotifier extends Notifier<WalletState> {
   }
 
   void _syncFromRemote(WalletModel model) {
-    state = mergeRemote(state, WalletState.fromModel(model));
+    state = mergeRemote(
+      state,
+      WalletState.fromModel(model),
+      durableShare: _durableDebugShare,
+    );
     if (!_ready.isCompleted) _ready.complete();
   }
 
@@ -98,7 +137,11 @@ class WalletNotifier extends Notifier<WalletState> {
 
   /// Firestore is the ledger, but SHARE-only harvest snapshots (DIA/VALUE 0)
   /// must not wipe a debug grant or in-memory harvest credit.
-  static WalletState mergeRemote(WalletState current, WalletState incoming) {
+  static WalletState mergeRemote(
+    WalletState current,
+    WalletState incoming, {
+    int? durableShare,
+  }) {
     if (incoming.isEmpty && !current.isEmpty) {
       return current;
     }
@@ -108,6 +151,17 @@ class WalletNotifier extends Notifier<WalletState> {
       incomingShare: incoming.shareBalance,
       incomingDiamond: incoming.diamondBalance,
       incomingValue: incoming.valueBalance,
+    )) {
+      share = current.shareBalance;
+    }
+    if (durableShare != null) {
+      share = DebugLocalWalletStore.applyShareCeiling(
+        incomingShare: share,
+        durableShare: durableShare,
+      );
+    } else if (DebugLocalWalletStore.shouldRejectHydrateRestore(
+      currentShare: current.shareBalance,
+      incomingShare: incoming.shareBalance,
     )) {
       share = current.shareBalance;
     }
@@ -208,6 +262,9 @@ class WalletNotifier extends Notifier<WalletState> {
     state = state.copyWith(
       shareBalance: (state.shareBalance - amount).clamp(0, 1 << 31),
     );
+    if (kDebugMode) {
+      _durableDebugShare = state.shareBalance;
+    }
   }
 
   void creditDia(int amount) {

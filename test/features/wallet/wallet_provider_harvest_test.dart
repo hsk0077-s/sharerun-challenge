@@ -315,6 +315,88 @@ void main() {
     expect(merged.valueBalance, 1000000);
   });
 
+  test('hydrate of stale 1M cannot wipe an in-session 30k join debit', () {
+    const current = WalletState(
+      shareBalance: 970000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const staleGrant = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    final merged = WalletNotifier.mergeRemote(current, staleGrant);
+    expect(merged.shareBalance, 970000);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('durable SHARE ceiling wins over stale grant hydrate on cold start', () {
+    const empty = WalletState();
+    const staleGrant = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    final merged = WalletNotifier.mergeRemote(
+      empty,
+      staleGrant,
+      durableShare: 970000,
+    );
+    expect(merged.shareBalance, 970000);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('durable SHARE still allows a small harvest bump', () {
+    const current = WalletState(
+      shareBalance: 970000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const harvest = WalletState(
+      shareBalance: 970051,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    final merged = WalletNotifier.mergeRemote(
+      current,
+      harvest,
+      durableShare: 970000,
+    );
+    expect(merged.shareBalance, 970051);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('applyEntryFeeDebit then stale remote merge keeps the debit', () {
+    const remote = WalletModel(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyEntryFeeDebit(30000);
+    expect(container.read(walletProvider).shareBalance, 970000);
+
+    notifier.replaceFromRemote(remote);
+    expect(container.read(walletProvider).shareBalance, 970000);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
   test('debug 1M grant is one-shot keyed and one million', () {
     expect(DebugTestWalletGrantHost.amount, 1000000);
     expect(DebugTestWalletGrantHost.prefsKey, 'testGrant1mDone');

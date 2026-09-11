@@ -68,4 +68,29 @@ abstract final class DebugWalletGrant {
       'isSponsored': true,
     };
   }
+
+  /// Dotted-field merge for `validDebugShareSpend`. Absolute SHARE plus
+  /// unchanged DIA/VALUE so rules see a full wallet map. Does not include
+  /// `updatedAt` (callers add a server timestamp).
+  static Map<String, dynamic> shareSpendMergeFields({
+    required String uid,
+    required int shareBalanceAfter,
+    int? diamondBalance,
+    int? valueBalance,
+    int? donationCount,
+    int? cumulativeDonationAmount,
+    bool isSponsored = false,
+  }) {
+    return {
+      'uid': uid,
+      prefsKey: true,
+      'wallet.shareBalance': shareBalanceAfter,
+      if (diamondBalance != null) 'wallet.diamondBalance': diamondBalance,
+      if (valueBalance != null) 'wallet.valueTokenBalance': valueBalance,
+      if (donationCount != null) 'donationCount': donationCount,
+      if (cumulativeDonationAmount != null)
+        'cumulativeDonationAmount': cumulativeDonationAmount,
+      if (isSponsored) 'isSponsored': true,
+    };
+  }
 }

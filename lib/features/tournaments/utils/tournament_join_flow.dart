@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,7 +8,11 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/auth/email_verification_guard.dart';
 import '../../../data/models/tournament_model.dart';
 import '../../wallet/providers/wallet_provider.dart';
+import 'tournament_join_debit.dart';
 import 'tournament_join_gate.dart';
+
+/// Prevents double-tap from calling Jena twice before `joinedIds` updates.
+final Set<String> _joinInFlight = <String>{};
 
 Future<void> joinTournamentWithPreflight({
   required BuildContext context,
@@ -49,25 +55,52 @@ Future<void> joinTournamentWithPreflight({
     return;
   }
 
+  if (!_joinInFlight.add(tournament.id)) {
+    return;
+  }
+
   try {
-    await ref.read(tournamentRepositoryProvider).joinTournament(
+    final result = await ref.read(tournamentRepositoryProvider).joinTournament(
           tournament: tournament,
         );
-    await ref.read(pushNotificationServiceProvider).subscribeToTournament(
-          tournament.id,
-        );
-    if (!context.mounted) {
-      return;
+    if (TournamentJoinDebit.shouldApplyEntryFee(
+      result: result,
+      entryFeeShare: tournament.entryFeeShare,
+    )) {
+      final debit = TournamentJoinDebit.debitAmount(
+        result: result,
+        entryFeeShare: tournament.entryFeeShare,
+      );
+      ref.read(walletProvider.notifier).applyEntryFeeDebit(debit);
+      unawaited(
+        ref.read(walletRepositoryProvider).logClientWalletTransaction(
+              uid: authUser.uid,
+              title: '대회 참가',
+              amount: -debit,
+              assetType: 'SHARE',
+            ),
+      );
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${tournament.title} joined. Entry Share locked.')),
-    );
   } catch (error) {
+    _joinInFlight.remove(tournament.id);
     if (!context.mounted) {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(ApiErrorMessage.from(error))),
     );
+    return;
   }
+
+  try {
+    await ref.read(pushNotificationServiceProvider).subscribeToTournament(
+          tournament.id,
+        );
+  } catch (_) {}
+  if (!context.mounted) {
+    return;
+  }
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('${tournament.title} joined. Entry Share locked.')),
+  );
 }

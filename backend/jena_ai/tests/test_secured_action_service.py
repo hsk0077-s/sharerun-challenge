@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
+from app.models.secured_actions import SecuredActionResult
 from app.services.secured_action_service import SecuredActionService
 
 
@@ -26,8 +27,41 @@ def test_already_joined_returns_idempotent_success() -> None:
     result = SecuredActionService()._already_joined_result()
 
     assert result.accepted is True
-    assert result.status == "joined"
+    assert result.status == "already_joined"
     assert result.reason == "Tournament was already joined."
+    assert result.share_credited == 0
+    assert result.share_balance is None
+
+
+def test_already_joined_includes_wallet_snapshot() -> None:
+    result = SecuredActionService()._already_joined_result(
+        share_balance=970_000,
+        diamond_balance=1_000_000,
+        value_token_balance=1_000_000,
+    )
+
+    assert result.status == "already_joined"
+    assert result.share_credited == 0
+    assert result.share_balance == 970_000
+    assert result.diamond_balance == 1_000_000
+    assert result.value_token_balance == 1_000_000
+
+
+def test_join_action_result_reports_share_debit_snapshot() -> None:
+    result = SecuredActionResult(
+        accepted=True,
+        status="joined",
+        reason="Tournament joined with Share and Diamond deposit.",
+        share_credited=-30_000,
+        share_balance=970_000,
+        diamond_balance=1_000_000,
+        value_token_balance=1_000_000,
+    )
+    dumped = result.model_dump()
+    assert dumped["share_credited"] == -30_000
+    assert dumped["share_balance"] == 970_000
+    assert dumped["diamond_balance"] == 1_000_000
+    assert dumped["value_token_balance"] == 1_000_000
 
 
 def test_already_collected_returns_idempotent_success() -> None:

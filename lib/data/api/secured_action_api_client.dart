@@ -9,6 +9,7 @@ import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../models/pedometer_harvest_result.dart';
+import '../models/tournament_join_result.dart';
 import '../models/winner_reward_action.dart';
 
 class SecuredActionApiClient {
@@ -22,13 +23,14 @@ class SecuredActionApiClient {
   final FirebaseAuth firebaseAuth;
   final http.Client _httpClient;
 
-  Future<void> joinTournament({
+  Future<TournamentJoinResult> joinTournament({
     required String tournamentId,
   }) async {
-    await _post(
+    final json = await _post(
       '/actions/tournaments/join',
       {'tournament_id': tournamentId},
     );
+    return TournamentJoinResult.fromJson(json);
   }
 
   Future<JenaValidationResult> validateRun({

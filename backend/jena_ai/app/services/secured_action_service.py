@@ -709,20 +709,23 @@ class SecuredActionService:
 
         if not user_snapshot.exists or not tournament_snapshot.exists:
             raise HTTPException(status_code=404, detail="User or tournament not found.")
-        if participant_snapshot.exists:
-            return self._already_joined_result()
 
         user = user_snapshot.to_dict() or {}
         tournament = tournament_snapshot.to_dict() or {}
+        share, diamonds, value = self._wallet_balances(user)
+        if participant_snapshot.exists:
+            return self._already_joined_result(
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+
         user_tier = int(user.get("tier") or 1)
         required_tier = int(tournament.get("requiredTier") or 1)
         entry_fee = int(tournament.get("entryFeeShare") or 0)
         required_deposit = int(tournament.get("diamondDepositRequired") or 0)
         diamond_deposit = request.diamond_deposit or required_deposit
         selected_charity = request.selected_charity or "UNICEF"
-        wallet = user.get("wallet") or {}
-        share = int(wallet.get("shareBalance") or 0)
-        diamonds = int(wallet.get("diamondBalance") or 0)
 
         if tournament.get("status", "recruiting") != "recruiting":
             raise HTTPException(status_code=400, detail="Tournament is not recruiting.")
@@ -774,10 +777,16 @@ class SecuredActionService:
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
+        new_share = share - entry_fee
+        new_diamonds = diamonds - diamond_deposit if diamond_deposit > 0 else diamonds
         return SecuredActionResult(
             accepted=True,
             status="joined",
             reason="Tournament joined with Share and Diamond deposit.",
+            share_credited=-entry_fee,
+            share_balance=new_share,
+            diamond_balance=new_diamonds,
+            value_token_balance=value,
         )
 
     @firestore.transactional
@@ -1372,11 +1381,20 @@ class SecuredActionService:
             return reward
         return 0
 
-    def _already_joined_result(self) -> SecuredActionResult:
+    def _already_joined_result(
+        self,
+        share_balance: int | None = None,
+        diamond_balance: int | None = None,
+        value_token_balance: int | None = None,
+    ) -> SecuredActionResult:
         return SecuredActionResult(
             accepted=True,
-            status="joined",
+            status="already_joined",
             reason="Tournament was already joined.",
+            share_credited=0,
+            share_balance=share_balance,
+            diamond_balance=diamond_balance,
+            value_token_balance=value_token_balance,
         )
 
     def _already_collected_result(self) -> SecuredActionResult:

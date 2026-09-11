@@ -4,6 +4,7 @@ import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
 import '../firebase/share_spend_transaction.dart';
+import '../models/tournament_join_result.dart';
 import '../models/tournament_model.dart';
 import '../models/tournament_participation_model.dart';
 
@@ -104,7 +105,7 @@ class TournamentRepository {
     });
   }
 
-  Future<void> joinTournament({
+  Future<TournamentJoinResult> joinTournament({
     required TournamentModel tournament,
   }) {
     return _securedActionApiClient.joinTournament(
@@ -158,9 +159,9 @@ class TournamentRepository {
       }
 
       participations.sort(
-        (left, right) =>
-            (right.joinedAt ?? DateTime.fromMillisecondsSinceEpoch(0))
-                .compareTo(left.joinedAt ?? DateTime.fromMillisecondsSinceEpoch(0)),
+        (left, right) => (right.joinedAt ??
+                DateTime.fromMillisecondsSinceEpoch(0))
+            .compareTo(left.joinedAt ?? DateTime.fromMillisecondsSinceEpoch(0)),
       );
       return participations;
     });

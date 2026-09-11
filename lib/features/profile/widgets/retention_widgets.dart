@@ -248,37 +248,32 @@ class DailyStreakCard extends ConsumerWidget {
     final now = DateTime.now();
     final marked = RetentionMetrics.markedWeekdays(activities, now);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      padding: EdgeInsets.fromLTRB(
+        tokens.spacing.md,
+        14,
+        tokens.spacing.md,
+        14,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             '🔥 $streak일째 불꽃 유지 중!',
-            style: AppTextStyles.agreementLabel.copyWith(
+            style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w800,
-              fontSize: 15,
-              color: AppColors.warningOrange,
+              color: tokens.colors.warning,
             ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: tokens.spacing.xxs + 2),
           Text(
             '7일 연속 실천 완료 시 10 다이아몬드(DIA) 보너스 획득! 💎',
-            style: AppTextStyles.caption.copyWith(
+            style: textTheme.bodySmall?.copyWith(
               fontSize: 12,
               height: 1.4,
-              color: AppColors.textGrey,
+              color: tokens.colors.muted,
             ),
           ),
           const SizedBox(height: 14),
@@ -310,6 +305,8 @@ class _StreakStamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
         Container(
@@ -318,25 +315,25 @@ class _StreakStamp extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: stamped
-                ? AppColors.tealAccent.withValues(alpha: 0.16)
-                : AppColors.settingsBackground,
+                ? tokens.colors.accent.withValues(alpha: 0.16)
+                : tokens.colors.outline.withValues(alpha: 0.45),
             border: Border.all(
-              color: stamped ? AppColors.tealAccent : AppColors.borderLight,
+              color: stamped ? tokens.colors.accent : tokens.colors.outline,
             ),
           ),
           child: Icon(
             Icons.directions_run_rounded,
             size: 18,
-            color: stamped ? AppColors.tealAccent : AppColors.textGreyLight,
+            color: stamped ? tokens.colors.accent : tokens.colors.muted,
           ),
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: tokens.spacing.xxs),
         Text(
           label,
-          style: AppTextStyles.caption.copyWith(
+          style: textTheme.labelSmall?.copyWith(
             fontSize: 10,
             fontWeight: stamped ? FontWeight.w700 : FontWeight.w500,
-            color: stamped ? AppColors.tealAccent : AppColors.textGrey,
+            color: stamped ? tokens.colors.accent : tokens.colors.muted,
           ),
         ),
       ],

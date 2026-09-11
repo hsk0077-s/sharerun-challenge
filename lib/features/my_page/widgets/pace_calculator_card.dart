@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
+import '../../../core/theme/theme.dart';
 
 class PaceCalculatorCard extends StatefulWidget {
   const PaceCalculatorCard({super.key});
@@ -27,17 +27,19 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
   @override
   Widget build(BuildContext context) {
     final result = _calculateGoalPace();
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.speed_rounded, color: AppColors.neonLime),
-            const SizedBox(width: 8),
+            Icon(Icons.speed_rounded, color: tokens.colors.primary),
+            SizedBox(width: tokens.spacing.xs),
             Text(
               '목표 페이스 계산기',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: textTheme.titleMedium?.copyWith(color: tokens.colors.ink),
             ),
           ],
         ),
@@ -51,7 +53,7 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
           ),
           onChanged: (_) => setState(() {}),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: tokens.spacing.sm),
         Row(
           children: [
             Expanded(
@@ -65,7 +67,7 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
                 onChanged: (_) => setState(() {}),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: tokens.spacing.xs),
             Expanded(
               child: TextField(
                 controller: _minutesController,
@@ -77,7 +79,7 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
                 onChanged: (_) => setState(() {}),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: tokens.spacing.xs),
             Expanded(
               child: TextField(
                 controller: _secondsController,
@@ -91,21 +93,23 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: tokens.spacing.md),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(tokens.spacing.md),
           decoration: BoxDecoration(
-            color: AppColors.surfaceBlack,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.neonLime.withValues(alpha: 0.3)),
+            color: tokens.colors.primary.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(tokens.radii.lg),
+            border: Border.all(
+              color: tokens.colors.primary.withValues(alpha: 0.3),
+            ),
           ),
           child: Text(
             result ?? '유효한 거리와 목표 시간을 입력하세요.',
-            style: TextStyle(
+            style: textTheme.titleSmall?.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: result == null ? AppColors.textSecondary : AppColors.neonLime,
+              color: result == null ? tokens.colors.muted : tokens.colors.primary,
             ),
           ),
         ),

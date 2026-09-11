@@ -25,7 +25,7 @@
 /// ```
 ///
 /// Do **not** import `lib/app/theme/app_colors.dart` in new code — that path
-/// is a compatibility shim for Lobby / My until Phase 2d.
+/// is a leftover compatibility shim. Lobby / My now read `context.srcTokens`.
 library;
 
 export 'app_colors.dart';

@@ -218,96 +218,96 @@ class AngelChronicleCard extends ConsumerWidget {
       cumulativeDonationAmount: amount,
     );
 
-    return Material(
-      color: AppColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-          border: Border.all(
-            color: AppColors.angelGold.withValues(alpha: 0.45),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            InkWell(
-              onTap: () => openAngelBook(context),
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      '나의 천사 연대기',
-                      style: AppTextStyles.agreementLabel.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      padding: EdgeInsets.fromLTRB(
+        tokens.spacing.md,
+        14,
+        tokens.spacing.md,
+        14,
+      ),
+      borderColor: tokens.colors.donation.withValues(alpha: 0.45),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          InkWell(
+            onTap: () => openAngelBook(context),
+            borderRadius: BorderRadius.circular(tokens.radii.sm + 2),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    '나의 천사 연대기',
+                    style: textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: tokens.colors.ink,
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        AngelMascot(tier: tier, size: 72),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${tier.emoji} ${tier.koreanName}',
-                                style: AppTextStyles.header1.copyWith(
-                                  fontSize: 17,
-                                ),
+                  ),
+                  SizedBox(height: tokens.spacing.sm),
+                  Row(
+                    children: [
+                      AngelMascot(tier: tier, size: 72),
+                      SizedBox(width: tokens.spacing.sm),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${tier.emoji} ${tier.koreanName}',
+                              style: textTheme.titleLarge?.copyWith(
+                                fontSize: 17,
+                                color: tokens.colors.ink,
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                tier.englishName,
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textGrey,
-                                ),
+                            ),
+                            SizedBox(height: tokens.spacing.xxs / 2),
+                            Text(
+                              tier.englishName,
+                              style: textTheme.bodySmall?.copyWith(
+                                color: tokens.colors.muted,
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                '후원 $count회 · '
-                                '${AngelTierX.formatWon(amount)}',
-                                style: AppTextStyles.caption.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            ),
+                            SizedBox(height: tokens.spacing.xxs + 2),
+                            Text(
+                              '후원 $count회 · '
+                              '${AngelTierX.formatWon(amount)}',
+                              style: textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: tokens.colors.donation,
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
+          ),
             if (isPreAngel) ...[
-              const SizedBox(height: 12),
+              SizedBox(height: tokens.spacing.sm),
               Text(
                 '아직 등 뒤에 장착된 진짜 날개가 없습니다. '
                 '단 1회 기부로 귀여운 아기 날개를 달아보세요!',
-                style: AppTextStyles.caption.copyWith(
+                style: textTheme.bodySmall?.copyWith(
                   fontSize: 12,
                   height: 1.45,
-                  color: AppColors.textGrey,
+                  color: tokens.colors.muted,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: tokens.spacing.sm),
               const _FirstWingCta(),
             ] else ...[
-              const SizedBox(height: 12),
+              SizedBox(height: tokens.spacing.sm),
               AngelProgressBar(progress: progress, label: gap),
-              const SizedBox(height: 10),
+              SizedBox(height: tokens.spacing.sm),
               const _PromoteAngelCta(),
             ],
           ],
         ),
-      ),
     );
   }
 }
@@ -318,31 +318,33 @@ class _FirstWingCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () => openPersonalSponsor(context),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(tokens.radii.md),
         child: Ink(
           height: 46,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: const LinearGradient(
+            borderRadius: BorderRadius.circular(tokens.radii.md),
+            gradient: LinearGradient(
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                AppColors.primaryMintLight,
-                AppColors.tealAccent,
+                tokens.colors.primary,
+                tokens.colors.accent,
               ],
             ),
           ),
           child: Center(
             child: Text(
               '첫 날개 달기 👼 〉',
-              style: AppTextStyles.agreementLabel.copyWith(
+              style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
-                color: AppColors.textWhite,
+                color: tokens.colors.onPrimary,
               ),
             ),
           ),
@@ -358,21 +360,26 @@ class _PromoteAngelCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Material(
-      color: AppColors.tealAccent.withValues(alpha: 0.10),
-      borderRadius: BorderRadius.circular(10),
+      color: tokens.colors.accent.withValues(alpha: 0.10),
+      borderRadius: BorderRadius.circular(tokens.radii.sm + 2),
       child: InkWell(
         onTap: () => openPersonalSponsor(context),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(tokens.radii.sm + 2),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: EdgeInsets.symmetric(
+            horizontal: tokens.spacing.sm,
+            vertical: tokens.spacing.sm - 2,
+          ),
           child: Text(
             '후원하고 천사 등급 올리기 〉',
             textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(
+            style: textTheme.bodySmall?.copyWith(
               fontSize: 13,
               fontWeight: FontWeight.w700,
-              color: AppColors.tealAccent,
+              color: tokens.colors.accent,
             ),
           ),
         ),

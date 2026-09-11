@@ -6,9 +6,7 @@ import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
-import '../core/theme/app_text_styles.dart';
+import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../core/widgets/src_gradient_background.dart';
@@ -59,9 +57,10 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
     final scaffold = Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
+      backgroundColor: tokens.colors.canvas,
       body: SRCGradientBackground(
         child: SafeArea(
           bottom: false,
@@ -70,11 +69,11 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    12,
-                    AppShapes.termsHorizontalPadding,
-                    16,
+                  padding: EdgeInsets.fromLTRB(
+                    tokens.spacing.page,
+                    tokens.spacing.sm,
+                    tokens.spacing.page,
+                    tokens.spacing.md,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -83,21 +82,21 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                         onSettings: _onSettings,
                         onSubscriptionManage: _onSubscriptionManage,
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: tokens.spacing.md),
                       const _ProfileCard(),
                       const SizedBox(height: 14),
                       const AngelChronicleCard(),
                       const SizedBox(height: 14),
                       const DailyStreakCard(),
                       const SizedBox(height: 14),
-                      _CalendarCard(
+                      const _CalendarCard(
                         activeDays: _activeDays,
                         crownDay: _crownDay,
                       ),
                       const SizedBox(height: 14),
                       const ActivityListCard(),
                       const SizedBox(height: 14),
-                      _StatsChartCard(kmValues: _chartKm),
+                      const _StatsChartCard(kmValues: _chartKm),
                     ],
                   ),
                 ),
@@ -133,44 +132,64 @@ class _MyPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           AppStrings.myPageTitle,
-          style: AppTextStyles.header1.copyWith(fontSize: 24),
+          style: textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: tokens.colors.ink,
+          ),
         ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             InkWell(
+              key: const Key('my-page-subscription'),
               onTap: onSubscriptionManage,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(tokens.radii.sm),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: tokens.spacing.xxs,
+                  vertical: tokens.spacing.xxs,
+                ),
                 child: Text(
                   AppStrings.myPageSubscriptionManage,
-                  style: AppTextStyles.agreementLabel.copyWith(fontSize: 14),
+                  style: textTheme.titleSmall?.copyWith(
+                    fontSize: 14,
+                    color: tokens.colors.accent,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
             InkWell(
+              key: const Key('my-page-settings'),
               onTap: onSettings,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(tokens.radii.sm),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: tokens.spacing.xxs,
+                  vertical: tokens.spacing.xxs,
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.settings_outlined,
                       size: 20,
-                      color: AppColors.textBlack,
+                      color: tokens.colors.ink,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: tokens.spacing.xxs),
                     Text(
                       AppStrings.myPageSettings,
-                      style: AppTextStyles.agreementLabel.copyWith(fontSize: 14),
+                      style: textTheme.titleSmall?.copyWith(
+                        fontSize: 14,
+                        color: tokens.colors.ink,
+                      ),
                     ),
                   ],
                 ),
@@ -206,6 +225,8 @@ class _ProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     final nickname = ref.watch(userNicknameProvider);
     final displayName = SrcOnboardingController.isUnsetNickname(nickname)
         ? AppStrings.myPageNickname
@@ -213,12 +234,13 @@ class _ProfileCard extends ConsumerWidget {
     final tier =
         ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
 
-    return _WhiteCard(
+    return SrcSurfaceCard(
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Row(
         children: [
           InkWell(
             onTap: () => _openTierBook(context),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(tokens.radii.md),
             child: _TierCharacterAvatar(tier: tier),
           ),
           const SizedBox(width: 14),
@@ -228,15 +250,16 @@ class _ProfileCard extends ConsumerWidget {
               children: [
                 Text(
                   displayName,
-                  style: AppTextStyles.agreementLabel.copyWith(
+                  style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 17,
+                    color: tokens.colors.ink,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: tokens.spacing.xxs + 2),
                 InkWell(
                   onTap: () => _openTierBook(context),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(tokens.radii.xs + 2),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 2,
@@ -244,10 +267,10 @@ class _ProfileCard extends ConsumerWidget {
                     ),
                     child: Text(
                       '[${tier.koreanName}]',
-                      style: AppTextStyles.caption.copyWith(
+                      style: textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
-                        color: AppColors.tealAccent,
+                        color: tokens.colors.accent,
                       ),
                     ),
                   ),
@@ -268,14 +291,15 @@ class _TierCharacterAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
     return Container(
       width: 72,
       height: 72,
       decoration: BoxDecoration(
-        color: AppColors.agreementBoxFill,
-        borderRadius: BorderRadius.circular(12),
+        color: tokens.colors.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(tokens.radii.md),
         border: Border.all(
-          color: AppColors.tealAccent.withValues(alpha: 0.35),
+          color: tokens.colors.accent.withValues(alpha: 0.35),
         ),
       ),
       clipBehavior: Clip.antiAlias,
@@ -300,26 +324,33 @@ class _CalendarCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _WhiteCard(
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Column(
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
+            padding: EdgeInsets.symmetric(
+              vertical: tokens.spacing.sm - 2,
+              horizontal: 14,
+            ),
             decoration: BoxDecoration(
-              color: AppColors.agreementBoxFill,
-              borderRadius: BorderRadius.circular(20),
+              color: tokens.colors.primary.withValues(alpha: 0.14),
+              borderRadius: tokens.radii.capsule,
             ),
             child: Text(
               AppStrings.myPageStreak,
-              style: AppTextStyles.agreementLabel.copyWith(
+              style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
+                color: tokens.colors.ink,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: tokens.spacing.md),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -357,6 +388,8 @@ class _CalendarDayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -366,7 +399,7 @@ class _CalendarDayCell extends StatelessWidget {
             height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primaryMint, width: 1.5),
+              border: Border.all(color: tokens.colors.primary, width: 1.5),
             ),
           ),
         if (hasCrown)
@@ -376,9 +409,9 @@ class _CalendarDayCell extends StatelessWidget {
               const Text('👑', style: TextStyle(fontSize: 14)),
               Text(
                 '$day',
-                style: AppTextStyles.caption.copyWith(
+                style: textTheme.labelSmall?.copyWith(
                   fontSize: 10,
-                  color: AppColors.textGreyLight,
+                  color: tokens.colors.muted,
                 ),
               ),
             ],
@@ -386,9 +419,9 @@ class _CalendarDayCell extends StatelessWidget {
         if (!hasCrown)
           Text(
             '$day',
-            style: AppTextStyles.caption.copyWith(
+            style: textTheme.labelSmall?.copyWith(
               fontSize: 12,
-              color: AppColors.textGreyLight,
+              color: tokens.colors.muted,
             ),
           ),
       ],
@@ -403,19 +436,28 @@ class _StatsChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _WhiteCard(
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
             height: 140,
             child: CustomPaint(
-              painter: _RunningChartPainter(kmValues: kmValues),
+              painter: _RunningChartPainter(
+                kmValues: kmValues,
+                lineColor: tokens.colors.primary,
+                fillTop: tokens.colors.primary.withValues(alpha: 0.35),
+                fillBottom: tokens.colors.primary.withValues(alpha: 0.02),
+                labelColor: tokens.colors.muted,
+              ),
               child: const SizedBox.expand(),
             ),
           ),
-          const SizedBox(height: 12),
-          Divider(color: AppColors.borderLight, height: 1),
+          SizedBox(height: tokens.spacing.sm),
+          Divider(color: tokens.colors.outline, height: 1),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -425,36 +467,38 @@ class _StatsChartCard extends StatelessWidget {
                   children: [
                     Text(
                       AppStrings.myPageMonthlyDistanceLabel,
-                      style: AppTextStyles.caption.copyWith(fontSize: 12),
+                      style: textTheme.bodySmall?.copyWith(fontSize: 12),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: tokens.spacing.xxs),
                     Text(
                       AppStrings.myPageMonthlyDistanceValue,
-                      style: AppTextStyles.agreementLabel.copyWith(
+                      style: textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
+                        color: tokens.colors.accent,
                       ),
                     ),
                   ],
                 ),
               ),
-              Container(width: 1, height: 36, color: AppColors.borderLight),
+              Container(width: 1, height: 36, color: tokens.colors.outline),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 12),
+                    padding: EdgeInsets.only(left: tokens.spacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         AppStrings.myPageAvgPaceLabel,
-                        style: AppTextStyles.caption.copyWith(fontSize: 12),
+                        style: textTheme.bodySmall?.copyWith(fontSize: 12),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: tokens.spacing.xxs),
                       Text(
                         AppStrings.myPageAvgPaceValue,
-                        style: AppTextStyles.agreementLabel.copyWith(
+                        style: textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
+                          color: tokens.colors.ink,
                         ),
                       ),
                     ],
@@ -470,9 +514,19 @@ class _StatsChartCard extends StatelessWidget {
 }
 
 class _RunningChartPainter extends CustomPainter {
-  _RunningChartPainter({required this.kmValues});
+  _RunningChartPainter({
+    required this.kmValues,
+    required this.lineColor,
+    required this.fillTop,
+    required this.fillBottom,
+    required this.labelColor,
+  });
 
   final List<double> kmValues;
+  final Color lineColor;
+  final Color fillTop;
+  final Color fillBottom;
+  final Color labelColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -505,10 +559,7 @@ class _RunningChartPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          AppColors.primaryMint.withValues(alpha: 0.35),
-          AppColors.primaryMint.withValues(alpha: 0.02),
-        ],
+        colors: [fillTop, fillBottom],
       ).createShader(Rect.fromLTWH(0, chartTop, size.width, chartHeight));
 
     canvas.drawPath(fillPath, fillPaint);
@@ -519,7 +570,7 @@ class _RunningChartPainter extends CustomPainter {
     }
 
     final linePaint = Paint()
-      ..color = AppColors.primaryMint
+      ..color = lineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5
       ..strokeCap = StrokeCap.round
@@ -528,16 +579,16 @@ class _RunningChartPainter extends CustomPainter {
     canvas.drawPath(linePath, linePaint);
 
     for (var i = 0; i < points.length; i++) {
-      canvas.drawCircle(points[i], 4, Paint()..color = AppColors.primaryMint);
+      canvas.drawCircle(points[i], 4, Paint()..color = lineColor);
 
       final label = '${kmValues[i].toInt()}km';
       final textPainter = TextPainter(
         text: TextSpan(
           text: label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w600,
-            color: AppColors.textGrey,
+            color: labelColor,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -552,31 +603,10 @@ class _RunningChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RunningChartPainter oldDelegate) {
-    return oldDelegate.kmValues != kmValues;
-  }
-}
-
-class _WhiteCard extends StatelessWidget {
-  const _WhiteCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: child,
-    );
+    return oldDelegate.kmValues != kmValues ||
+        oldDelegate.lineColor != lineColor ||
+        oldDelegate.fillTop != fillTop ||
+        oldDelegate.fillBottom != fillBottom ||
+        oldDelegate.labelColor != labelColor;
   }
 }

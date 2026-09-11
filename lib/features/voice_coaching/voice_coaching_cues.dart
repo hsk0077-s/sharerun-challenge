@@ -1,3 +1,7 @@
+/// Phase 3a ships the free coach only. Later DIA/paid tiers can extend this
+/// without a second on/off toggle.
+enum VoiceCoachPlan { free }
+
 /// Short coaching lines. Korean is the spoken default; [en] is for later l10n.
 class VoiceCue {
   const VoiceCue({

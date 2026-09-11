@@ -26,9 +26,7 @@ class VoiceCoachingController {
   Future<void> onEnabledChanged(bool enabled) async {
     if (!enabled) {
       await _speaker.stop();
-      return;
     }
-    await speakCue(VoiceCoachingCues.enabledConfirm);
   }
 
   Future<void> onWalkingOpened() => speakCue(session.walkingOpened());

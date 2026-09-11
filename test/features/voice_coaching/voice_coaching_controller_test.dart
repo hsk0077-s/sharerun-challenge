@@ -82,8 +82,7 @@ void main() {
 
   test('when coaching is on, crossed milestones speak Korean cues', () async {
     await container.read(voiceCoachingEnabledProvider.notifier).setEnabled(true);
-    expect(speaker.spoken, [VoiceCoachingCues.enabledConfirm.ko]);
-    speaker.spoken.clear();
+    expect(speaker.spoken, isEmpty);
 
     final coach = container.read(voiceCoachingControllerProvider);
     await coach.onWalkingProgress(

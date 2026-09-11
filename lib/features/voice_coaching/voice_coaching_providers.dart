@@ -1,8 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'voice_coaching_controller.dart';
+import 'voice_coaching_cues.dart';
 import 'voice_coaching_preference_store.dart';
 import 'voice_coaching_speaker.dart';
+
+/// Always the free coach in this PR. Paid/DIA plans can replace this later.
+final voiceCoachPlanProvider = Provider<VoiceCoachPlan>(
+  (ref) => VoiceCoachPlan.free,
+);
 
 final voiceCoachingPreferenceStoreProvider =
     Provider<VoiceCoachingPreferenceStore>(

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_shapes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
 
 /// SRC 디자인 시스템 공통 텍스트 입력 필드.
@@ -65,7 +66,9 @@ class SRCTextField extends StatelessWidget {
               counterText: '',
               filled: true,
               fillColor: AppColors.surfaceWhite,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+              ),
               border: AppShapes.inputBorder,
               enabledBorder: AppShapes.inputBorder,
               focusedBorder: AppShapes.inputFocusedBorder,

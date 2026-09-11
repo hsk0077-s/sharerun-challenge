@@ -4,10 +4,12 @@ import 'app_colors.dart';
 
 /// SRC 앱 전역 타이포그래피.
 ///
-/// [Theme.of(context).textTheme]과 함께 사용하거나,
-/// 독립적으로 직접 참조할 수 있습니다.
+/// Scale (display → overline) is the Phase 2 source of truth.
+/// Named styles (`header1`, `caption`, …) stay for existing screens.
+/// New UI should use [Theme.of(context).textTheme] or the scale names.
 abstract final class AppTextStyles {
-  static const String _fontFamily = 'Pretendard';
+  static const String fontFamily = 'Pretendard';
+  static const String _fontFamily = fontFamily;
 
   /// 로고 상단 "SRC" 텍스트
   static const logoMark = TextStyle(
@@ -127,5 +129,43 @@ abstract final class AppTextStyles {
     height: 1.4,
     decoration: TextDecoration.underline,
     decorationColor: AppColors.primaryMint,
+  );
+
+  // --- Type scale (Phase 2+). Sizes align with existing named styles. ---
+
+  /// 26 / w700 — same as [termsTitle].
+  static const display = termsTitle;
+
+  /// 24 / w700 — same as [header1].
+  static const headline = header1;
+
+  /// 22 / w700 — section titles.
+  static const title = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.3,
+    color: AppColors.textBlack,
+    height: 1.3,
+  );
+
+  /// 18 / w700 — card titles.
+  static const titleSm = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    color: AppColors.textBlack,
+    height: 1.3,
+  );
+
+  /// 11 / w500 — overline / nav labels.
+  static const overline = TextStyle(
+    fontFamily: _fontFamily,
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0.2,
+    color: AppColors.textGrey,
+    height: 1.2,
   );
 }

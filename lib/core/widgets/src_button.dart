@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_shapes.dart';
+import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../theme/src_tokens.dart';
 
 /// 소셜 로그인 및 공통 액션 버튼 변형.
 enum SRCButtonVariant {
@@ -73,12 +75,13 @@ class SRCButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = _resolveStyle();
+    final tokens = context.srcTokens;
+    final style = _resolveStyle(tokens);
     final canTap = enabled && !isLoading && onPressed != null;
     final displayStyle = !canTap && variant == SRCButtonVariant.primary
-        ? const _ButtonStyle(
+        ? _ButtonStyle(
             backgroundColor: AppColors.buttonDisabled,
-            foregroundColor: AppColors.textWhite,
+            foregroundColor: tokens.colors.onPrimary,
           )
         : style;
 
@@ -87,7 +90,8 @@ class SRCButton extends StatelessWidget {
       height: AppShapes.buttonHeight,
       child: Material(
         color: displayStyle.backgroundColor,
-        shape: AppShapes.buttonShape.copyWith(
+        shape: RoundedRectangleBorder(
+          borderRadius: tokens.radii.capsule,
           side: displayStyle.borderSide,
         ),
         clipBehavior: Clip.antiAlias,
@@ -114,7 +118,9 @@ class SRCButton extends StatelessWidget {
                           ),
                         Padding(
                           padding: EdgeInsets.symmetric(
-                            horizontal: leading != null ? 48 : 20,
+                            horizontal: leading != null
+                                ? AppSpacing.xxl + AppSpacing.md
+                                : AppSpacing.lg,
                           ),
                           child: Text(
                             label,
@@ -131,7 +137,7 @@ class SRCButton extends StatelessWidget {
     );
   }
 
-  _ButtonStyle _resolveStyle() {
+  _ButtonStyle _resolveStyle(SrcTokens tokens) {
     return switch (variant) {
       SRCButtonVariant.google => const _ButtonStyle(
           backgroundColor: AppColors.googleWhite,
@@ -153,14 +159,14 @@ class SRCButton extends StatelessWidget {
           backgroundColor: AppColors.kakaoYellow,
           foregroundColor: AppColors.textBlack,
         ),
-      SRCButtonVariant.primary => const _ButtonStyle(
-          backgroundColor: AppColors.primaryMint,
-          foregroundColor: AppColors.textWhite,
+      SRCButtonVariant.primary => _ButtonStyle(
+          backgroundColor: tokens.colors.primary,
+          foregroundColor: tokens.colors.onPrimary,
         ),
-      SRCButtonVariant.outline => const _ButtonStyle(
-          backgroundColor: AppColors.surfaceWhite,
-          foregroundColor: AppColors.primaryMint,
-          borderSide: BorderSide(color: AppColors.primaryMint),
+      SRCButtonVariant.outline => _ButtonStyle(
+          backgroundColor: tokens.colors.surface,
+          foregroundColor: tokens.colors.primary,
+          borderSide: BorderSide(color: tokens.colors.primary),
         ),
     };
   }

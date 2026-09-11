@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../app/app.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
-import '../app/theme/app_colors.dart';
+import '../core/theme/theme.dart';
 import '../core/api/api_exception.dart';
 import '../core/auth/firebase_auth_messages.dart';
 import '../core/auth/health_data_consent_store.dart';
@@ -53,27 +53,35 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     if (!mounted) {
       return;
     }
+    final tokens = context.srcTokens;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
           '✅ 민감정보 수집 동의가 완료되었습니다. 이제 러닝을 시작할 수 있습니다!',
         ),
-        backgroundColor: AppColors.cardBlack,
+        backgroundColor: tokens.colors.ink,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(tokens.radii.lg),
+        ),
       ),
     );
   }
 
   void _showHealthDataTerms() {
+    final tokens = context.srcTokens;
     showModalBottomSheet<void>(
       context: context,
-      backgroundColor: AppColors.surfaceBlack,
+      backgroundColor: tokens.colors.surface,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(tokens.radii.xl),
+        ),
       ),
       builder: (context) {
+        final sheetTokens = context.srcTokens;
+        final textTheme = Theme.of(context).textTheme;
         return DraggableScrollableSheet(
           expand: false,
           initialChildSize: 0.72,
@@ -81,7 +89,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           maxChildSize: 0.92,
           builder: (context, scrollController) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              padding: EdgeInsets.fromLTRB(
+                sheetTokens.spacing.page,
+                sheetTokens.spacing.sm,
+                sheetTokens.spacing.page,
+                sheetTokens.spacing.xl,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -90,41 +103,42 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(99),
+                        color: sheetTokens.colors.muted.withValues(alpha: 0.4),
+                        borderRadius: sheetTokens.radii.capsule,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  SizedBox(height: sheetTokens.spacing.md + 2),
                   Text(
                     LegalConstants.healthDataConsentTitle,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: sheetTokens.colors.ink,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: sheetTokens.spacing.xs),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.cardBlack,
-                      borderRadius: BorderRadius.circular(8),
+                      color: sheetTokens.colors.surface,
+                      borderRadius: BorderRadius.circular(sheetTokens.radii.sm),
                       border: Border.all(
-                        color: AppColors.electricBlue.withValues(alpha: 0.35),
+                        color: sheetTokens.colors.accent.withValues(alpha: 0.35),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       '이용약관과 별도 · 선택 동의',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
+                      style: textTheme.labelSmall?.copyWith(
+                        color: sheetTokens.colors.muted,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: sheetTokens.spacing.md),
                   Expanded(
                     child: SingleChildScrollView(
                       controller: scrollController,
@@ -133,16 +147,18 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                         children: [
                           Text(
                             LegalConstants.healthDataConsentSummary,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: sheetTokens.colors.ink,
                               height: 1.55,
                             ),
                           ),
                           const SizedBox(height: 14),
                           Text(
                             LegalConstants.ephemeralSensorPolicy,
-                            style: TextStyle(
-                              color: AppColors.electricBlue.withValues(alpha: 0.9),
+                            style: textTheme.bodySmall?.copyWith(
+                              color: sheetTokens.colors.accent.withValues(
+                                alpha: 0.9,
+                              ),
                               fontSize: 13,
                               height: 1.45,
                             ),
@@ -151,12 +167,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: sheetTokens.spacing.sm),
                   FilledButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.neonLime,
-                      foregroundColor: Colors.black,
+                      backgroundColor: sheetTokens.colors.primary,
+                      foregroundColor: sheetTokens.colors.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: const Text(
@@ -193,16 +209,22 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final verifiedRunDays = _verifiedRunDays(verifiedRuns);
     final crownDay = _crownDay(verifiedRuns);
 
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(tokens.spacing.page),
       children: [
-        Text('마이페이지', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 18),
+        Text(
+          '마이페이지',
+          style: textTheme.headlineSmall?.copyWith(color: tokens.colors.ink),
+        ),
+        SizedBox(height: tokens.spacing.md + 2),
         _SectionCard(
           title: '러닝 캘린더',
           child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: tokens.spacing.xs,
+            runSpacing: tokens.spacing.xs,
             children: calendarDays.map((day) {
               final hasRun = verifiedRunDays.contains(day);
               final showCrown =
@@ -211,7 +233,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                 showCrown
                     ? Icons.workspace_premium_rounded
                     : Icons.circle,
-                color: hasRun ? AppColors.neonLime : Colors.white12,
+                color: hasRun ? tokens.colors.primary : tokens.colors.outline,
                 size: 18,
               );
             }).toList(),
@@ -222,8 +244,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           child: ShoeMileageTracker(totalDistanceKm: totalDistance),
         ),
         const SizedBox(height: 12),
-        _SectionCard(
-          child: const PaceCalculatorCard(),
+        const _SectionCard(
+          child: PaceCalculatorCard(),
         ),
         const SizedBox(height: 12),
         _SectionCard(
@@ -282,8 +304,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           const SizedBox(height: 8),
           OutlinedButton.icon(
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.dangerRed,
-              side: const BorderSide(color: AppColors.dangerRed),
+              foregroundColor: context.srcTokens.colors.danger,
+              side: BorderSide(color: context.srcTokens.colors.danger),
             ),
             onPressed: () => _deleteAccount(),
             icon: const Icon(Icons.delete_forever_rounded),
@@ -408,7 +430,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.dangerRed,
+                backgroundColor: context.srcTokens.colors.danger,
               ),
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text('삭제'),
@@ -465,17 +487,13 @@ class _HealthDataConsentSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.cardBlack,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: isAgreed
-              ? AppColors.neonLime.withValues(alpha: 0.55)
-              : AppColors.electricBlue.withValues(alpha: 0.3),
-        ),
-      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      padding: EdgeInsets.all(tokens.spacing.md + 2),
+      borderColor: isAgreed
+          ? tokens.colors.primary.withValues(alpha: 0.55)
+          : tokens.colors.accent.withValues(alpha: 0.3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -483,44 +501,45 @@ class _HealthDataConsentSection extends StatelessWidget {
             children: [
               Icon(
                 Icons.monitor_heart_outlined,
-                color: isAgreed ? AppColors.neonLime : AppColors.electricBlue,
+                color: isAgreed ? tokens.colors.primary : tokens.colors.accent,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: tokens.spacing.xs),
               Expanded(
                 child: Text(
                   LegalConstants.healthDataConsentTitle,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: tokens.colors.ink,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: tokens.spacing.sm),
           Text(
             LegalConstants.healthDataConsentSummary,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
+            style: textTheme.bodySmall?.copyWith(
+              color: tokens.colors.muted,
               height: 1.45,
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: tokens.spacing.md),
           if (isAgreed)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               decoration: BoxDecoration(
-                color: AppColors.surfaceBlack,
-                borderRadius: BorderRadius.circular(14),
+                color: tokens.colors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(tokens.radii.lg),
                 border: Border.all(
-                  color: AppColors.neonLime.withValues(alpha: 0.45),
+                  color: tokens.colors.primary.withValues(alpha: 0.45),
                 ),
               ),
-              child: const Text(
+              child: Text(
                 '✅ 건강 데이터 연동 및 동의 완료',
-                style: TextStyle(
-                  color: AppColors.neonLime,
+                style: textTheme.titleSmall?.copyWith(
+                  color: tokens.colors.primary,
                   fontWeight: FontWeight.w800,
                   fontSize: 15,
                 ),
@@ -528,12 +547,15 @@ class _HealthDataConsentSection extends StatelessWidget {
             )
           else
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              padding: EdgeInsets.symmetric(
+                horizontal: tokens.spacing.sm,
+                vertical: tokens.spacing.sm - 2,
+              ),
               decoration: BoxDecoration(
-                color: AppColors.surfaceBlack,
-                borderRadius: BorderRadius.circular(16),
+                color: tokens.colors.surface,
+                borderRadius: BorderRadius.circular(tokens.radii.lg),
                 border: Border.all(
-                  color: AppColors.electricBlue.withValues(alpha: 0.25),
+                  color: tokens.colors.accent.withValues(alpha: 0.25),
                 ),
               ),
               child: Row(
@@ -541,38 +563,42 @@ class _HealthDataConsentSection extends StatelessWidget {
                   Expanded(
                     child: Text(
                       LegalConstants.healthDataConsentLabel,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: tokens.colors.ink,
+                      ),
                     ),
                   ),
                   Switch.adaptive(
                     value: false,
                     onChanged: onConsentEnabled,
-                    activeThumbColor: AppColors.neonLime,
-                    activeTrackColor: AppColors.neonLime.withValues(alpha: 0.35),
-                    inactiveThumbColor: AppColors.textSecondary,
-                    inactiveTrackColor: AppColors.cardBlack,
+                    activeThumbColor: tokens.colors.primary,
+                    activeTrackColor: tokens.colors.primary.withValues(
+                      alpha: 0.35,
+                    ),
+                    inactiveThumbColor: tokens.colors.muted,
+                    inactiveTrackColor: tokens.colors.outline,
                   ),
                 ],
               ),
             ),
           if (!isAgreed) ...[
-            const SizedBox(height: 10),
+            SizedBox(height: tokens.spacing.sm),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: onViewTerms,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.electricBlue,
+                  foregroundColor: tokens.colors.accent,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
-                child: const Text(
+                child: Text(
                   '[약관 전문 보기]',
-                  style: TextStyle(
+                  style: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     decoration: TextDecoration.underline,
-                    decorationColor: AppColors.electricBlue,
+                    decorationColor: tokens.colors.accent,
+                    color: tokens.colors.accent,
                   ),
                 ),
               ),
@@ -595,18 +621,19 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.cardBlack,
-        borderRadius: BorderRadius.circular(22),
-      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      padding: EdgeInsets.all(tokens.spacing.md + 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (title != null) ...[
-            Text(title!, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 12),
+            Text(
+              title!,
+              style: textTheme.titleMedium?.copyWith(color: tokens.colors.ink),
+            ),
+            SizedBox(height: tokens.spacing.sm),
           ],
           child,
         ],

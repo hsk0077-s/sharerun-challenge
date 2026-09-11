@@ -155,8 +155,8 @@ abstract final class AppColors {
 
   // ---------------------------------------------------------------------------
   // Compatibility aliases — former `lib/app/theme` Black-Neon leftovers.
-  // Lobby / My still import that path; hex now matches SrcTheme.
-  // Phase 2b+ screens should stop using neonLime / cardBlack names.
+  // Hex now matches SrcTheme. Remaining screens (shop, crew, join/detail)
+  // should stop using neonLime / cardBlack names in later visual slices.
   // ---------------------------------------------------------------------------
   static const Color bgWhite = surfaceWhite;
   static const Color primaryTeal = tealAccent;

@@ -5,9 +5,7 @@ import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
-import '../core/theme/app_text_styles.dart';
+import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../core/widgets/src_gradient_background.dart';
@@ -64,23 +62,25 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
     );
   }
 
-  List<Widget> _liveTournamentCards(WidgetRef ref) {
+  List<Widget> _liveTournamentCards(BuildContext context, WidgetRef ref) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     final asyncRooms = ref.watch(tournamentListProvider);
     return asyncRooms.maybeWhen(
       data: (rooms) {
         if (rooms.isEmpty) return const [];
         return [
-          const SizedBox(height: 16),
+          SizedBox(height: tokens.spacing.md),
           Text(
             '실시간 개설 · 참가 가능 방',
-            style: AppTextStyles.agreementLabel.copyWith(
+            style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              fontSize: 15,
+              color: tokens.colors.ink,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: tokens.spacing.sm),
           for (final room in rooms) ...[
-            _LightMintRoomCard(
+            _OpenRoomCard(
               title: room.title,
               subtitle:
                   '${room.targetDistanceKm.toStringAsFixed(0)}km · '
@@ -88,7 +88,7 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                   'BEP ${((room.participantCount / room.minParticipantsBep.clamp(1, 1 << 20)) * 100).clamp(0, 999).toStringAsFixed(0)}%',
               onEnter: () => _onOpenLiveRoom(room),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: tokens.spacing.sm),
           ],
         ];
       },
@@ -98,9 +98,11 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
     final scaffold = Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
+      backgroundColor: tokens.colors.canvas,
       body: SRCGradientBackground(
         child: SafeArea(
           bottom: false,
@@ -108,76 +110,84 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppShapes.termsHorizontalPadding,
-                  8,
-                  AppShapes.termsHorizontalPadding,
+                padding: EdgeInsets.fromLTRB(
+                  tokens.spacing.page,
+                  tokens.spacing.xs,
+                  tokens.spacing.page,
                   0,
                 ),
                 child: Align(
                   alignment: Alignment.centerRight,
                   child: OutlinedButton(
+                    key: const Key('lobby-create-room'),
                     onPressed: _onCreateRoom,
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primaryMint,
-                      side: const BorderSide(
-                        color: AppColors.primaryMint,
+                      foregroundColor: tokens.colors.primary,
+                      side: BorderSide(
+                        color: tokens.colors.primary,
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: tokens.radii.capsule,
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: tokens.spacing.md,
+                        vertical: tokens.spacing.xs,
                       ),
                     ),
                     child: Text(
                       AppStrings.lobbyCreateRoom,
-                      style: AppTextStyles.buttonText.copyWith(
-                        color: AppColors.primaryMint,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: tokens.colors.primary,
                         fontSize: 13,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppShapes.termsHorizontalPadding,
-                  12,
-                  AppShapes.termsHorizontalPadding,
-                  16,
+                padding: EdgeInsets.fromLTRB(
+                  tokens.spacing.page,
+                  tokens.spacing.sm,
+                  tokens.spacing.page,
+                  tokens.spacing.md,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       AppStrings.lobbyTitle,
-                      style: AppTextStyles.header1.copyWith(fontSize: 24),
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: tokens.colors.ink,
+                      ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: tokens.spacing.xs),
                     Text(
                       AppStrings.lobbySubtitle,
-                      style: AppTextStyles.termsSubtitle,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: tokens.colors.muted,
+                      ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: tokens.spacing.sm),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: TextButton(
+                        key: const Key('lobby-battle-pass'),
                         onPressed: _onOpenBattlePass,
                         style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primaryMintDark,
+                          foregroundColor: tokens.colors.accent,
                           padding: EdgeInsets.zero,
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                         child: Text(
                           AppStrings.lobbyBattlePassCta,
-                          style: AppTextStyles.caption.copyWith(
+                          style: textTheme.labelMedium?.copyWith(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.primaryMintDark,
+                            color: tokens.colors.accent,
                           ),
                         ),
                       ),
@@ -187,14 +197,14 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
               ),
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
+                  padding: EdgeInsets.fromLTRB(
+                    tokens.spacing.page,
                     0,
-                    AppShapes.termsHorizontalPadding,
-                    16,
+                    tokens.spacing.page,
+                    tokens.spacing.md,
                   ),
                   children: [
-                    _SponsorBlackRoomCard(
+                    _SponsorRoomCard(
                       title: AppStrings.lobbySponsorRoomTitle,
                       subtitle: AppStrings.lobbySponsorRoomSub,
                       onEnter: () {
@@ -205,8 +215,8 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    _LightMintRoomCard(
+                    SizedBox(height: tokens.spacing.sm),
+                    _OpenRoomCard(
                       title: AppStrings.lobbyRoom1Title,
                       subtitle: AppStrings.lobbyRoom1Sub,
                       onEnter: () {
@@ -217,18 +227,18 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 12),
-                    _SolidMintRoomCard(
+                    SizedBox(height: tokens.spacing.sm),
+                    _FeaturedRoomCard(
                       title: AppStrings.lobbyRoom2Title,
                       subtitle: AppStrings.lobbyRoom2Sub,
                       onEnter: _onEnterRoom,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: tokens.spacing.sm),
                     const _LockedRoomCard(
                       title: AppStrings.lobbyRoom3Title,
                       subtitle: AppStrings.lobbyRoom3Sub,
                     ),
-                    ..._liveTournamentCards(ref),
+                    ..._liveTournamentCards(context, ref),
                   ],
                 ),
               ),
@@ -252,8 +262,58 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
   }
 }
 
-class _SponsorBlackRoomCard extends StatelessWidget {
-  const _SponsorBlackRoomCard({
+class _LobbyEnterChip extends StatelessWidget {
+  const _LobbyEnterChip({
+    required this.onEnter,
+    required this.background,
+    required this.foreground,
+    this.borderColor,
+    this.buttonKey,
+  });
+
+  final VoidCallback onEnter;
+  final Color background;
+  final Color foreground;
+  final Color? borderColor;
+  final Key? buttonKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return Material(
+      color: background,
+      shape: RoundedRectangleBorder(
+        borderRadius: tokens.radii.capsule,
+        side: borderColor == null
+            ? BorderSide.none
+            : BorderSide(color: borderColor!, width: 1.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: buttonKey,
+        onTap: onEnter,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: tokens.spacing.sm - 2,
+          ),
+          child: Text(
+            AppStrings.lobbyEnterRoom,
+            style: textTheme.labelLarge?.copyWith(
+              color: foreground,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SponsorRoomCard extends StatelessWidget {
+  const _SponsorRoomCard({
     required this.title,
     required this.subtitle,
     required this.onEnter,
@@ -265,20 +325,14 @@ class _SponsorBlackRoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.nikeBlack,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        border: Border.all(color: AppColors.voltYellow, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.nikeBlack.withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    final onDonation = Theme.of(context).colorScheme.onTertiary;
+    return SrcSurfaceCard(
+      key: const Key('lobby-sponsor-card'),
+      color: tokens.colors.donation.withValues(alpha: 0.14),
+      borderColor: tokens.colors.donation.withValues(alpha: 0.55),
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Row(
         children: [
           Expanded(
@@ -287,45 +341,27 @@ class _SponsorBlackRoomCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: AppColors.voltYellow,
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: tokens.colors.donation,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: tokens.spacing.xxs + 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: 13,
-                    color: AppColors.textWhite.withValues(alpha: 0.85),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: tokens.colors.ink.withValues(alpha: 0.78),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Material(
-            color: AppColors.voltYellow,
-            borderRadius: BorderRadius.circular(20),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onEnter,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                child: Text(
-                  AppStrings.lobbyEnterRoom,
-                  style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.nikeBlack,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ),
+          SizedBox(width: tokens.spacing.sm),
+          _LobbyEnterChip(
+            buttonKey: const Key('lobby-sponsor-enter'),
+            onEnter: onEnter,
+            background: tokens.colors.donation,
+            foreground: onDonation,
           ),
         ],
       ),
@@ -333,8 +369,8 @@ class _SponsorBlackRoomCard extends StatelessWidget {
   }
 }
 
-class _LightMintRoomCard extends StatelessWidget {
-  const _LightMintRoomCard({
+class _OpenRoomCard extends StatelessWidget {
+  const _OpenRoomCard({
     required this.title,
     required this.subtitle,
     required this.onEnter,
@@ -346,20 +382,12 @@ class _LightMintRoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.agreementBoxFill,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        border: Border.all(color: AppColors.primaryMint, width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      color: tokens.colors.primary.withValues(alpha: 0.10),
+      borderColor: tokens.colors.primary.withValues(alpha: 0.55),
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Row(
         children: [
           Expanded(
@@ -368,41 +396,26 @@ class _LightMintRoomCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.agreementLabel.copyWith(
+                  style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
+                    color: tokens.colors.ink,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: tokens.spacing.xxs + 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.caption.copyWith(fontSize: 13),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: tokens.colors.muted,
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Material(
-            color: AppColors.primaryMintDark,
-            borderRadius: BorderRadius.circular(20),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onEnter,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                child: Text(
-                  AppStrings.lobbyEnterRoom,
-                  style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.textWhite,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+          SizedBox(width: tokens.spacing.sm),
+          _LobbyEnterChip(
+            onEnter: onEnter,
+            background: tokens.colors.primary,
+            foreground: tokens.colors.onPrimary,
           ),
         ],
       ),
@@ -410,8 +423,8 @@ class _LightMintRoomCard extends StatelessWidget {
   }
 }
 
-class _SolidMintRoomCard extends StatelessWidget {
-  const _SolidMintRoomCard({
+class _FeaturedRoomCard extends StatelessWidget {
+  const _FeaturedRoomCard({
     required this.title,
     required this.subtitle,
     required this.onEnter,
@@ -423,19 +436,12 @@ class _SolidMintRoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primaryMint,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryMintDark.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      color: tokens.colors.primary,
+      borderColor: tokens.colors.primary,
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Row(
         children: [
           Expanded(
@@ -444,48 +450,27 @@ class _SolidMintRoomCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.agreementLabel.copyWith(
+                  style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: AppColors.textWhite,
+                    color: tokens.colors.onPrimary,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: tokens.spacing.xxs + 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: 13,
-                    color: AppColors.textWhite.withValues(alpha: 0.9),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: tokens.colors.onPrimary.withValues(alpha: 0.9),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Material(
-            color: AppColors.primaryMintDark,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: const BorderSide(color: AppColors.textWhite, width: 1.5),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onEnter,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                child: Text(
-                  AppStrings.lobbyEnterRoom,
-                  style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.textWhite,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
+          SizedBox(width: tokens.spacing.sm),
+          _LobbyEnterChip(
+            onEnter: onEnter,
+            background: tokens.colors.accent,
+            foreground: tokens.colors.onAccent,
+            borderColor: tokens.colors.onPrimary,
           ),
         ],
       ),
@@ -504,19 +489,12 @@ class _LockedRoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.borderLight,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SrcSurfaceCard(
+      color: tokens.colors.outline.withValues(alpha: 0.45),
+      borderColor: tokens.colors.outline,
+      padding: EdgeInsets.all(tokens.spacing.md),
       child: Row(
         children: [
           Expanded(
@@ -525,39 +503,36 @@ class _LockedRoomCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.agreementLabel.copyWith(
+                  style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: AppColors.textGrey,
+                    color: tokens.colors.muted,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: tokens.spacing.xxs + 2),
                 Text(
                   subtitle,
-                  style: AppTextStyles.caption.copyWith(
-                    fontSize: 13,
-                    color: AppColors.textGreyLight,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: tokens.colors.muted,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: tokens.spacing.sm),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.lock_outline_rounded,
-                color: AppColors.textGrey,
+                color: tokens.colors.muted,
                 size: 22,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: tokens.spacing.xxs),
               Text(
                 AppStrings.lobbyGradeBlocked,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 11,
+                style: textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textGrey,
+                  color: tokens.colors.muted,
                 ),
               ),
             ],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/impact_constants.dart';
+import '../../../core/theme/theme.dart';
 
 class ShoeMileageTracker extends StatelessWidget {
   const ShoeMileageTracker({
@@ -16,52 +16,59 @@ class ShoeMileageTracker extends StatelessWidget {
     final goal = ImpactConstants.shoeMileageGoalKm;
     final progress = (totalDistanceKm / goal).clamp(0.0, 1.0);
     final needsReplacement = totalDistanceKm >= goal;
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.directions_run_rounded, color: AppColors.electricBlue),
-            const SizedBox(width: 8),
+            Icon(Icons.directions_run_rounded, color: tokens.colors.accent),
+            SizedBox(width: tokens.spacing.xs),
             Text(
               '러닝화 마일리지 트래커',
-              style: Theme.of(context).textTheme.titleMedium,
+              style: textTheme.titleMedium?.copyWith(color: tokens.colors.ink),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: tokens.spacing.sm),
         LinearProgressIndicator(
           value: progress,
-          color: needsReplacement ? AppColors.dangerRed : AppColors.electricBlue,
-          backgroundColor: Colors.white12,
+          color: needsReplacement ? tokens.colors.danger : tokens.colors.accent,
+          backgroundColor: tokens.colors.outline,
           minHeight: 12,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(tokens.radii.sm),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: tokens.spacing.sm),
         Text(
           '${totalDistanceKm.toStringAsFixed(1)} km / $goal km',
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: tokens.spacing.xs),
         if (needsReplacement)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(tokens.spacing.sm),
             decoration: BoxDecoration(
-              color: AppColors.dangerRed.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.dangerRed.withValues(alpha: 0.4)),
+              color: tokens.colors.danger.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(tokens.radii.md),
+              border: Border.all(
+                color: tokens.colors.danger.withValues(alpha: 0.4),
+              ),
             ),
-            child: const Text(
+            child: Text(
               '⚠️ 500km 도달! 쿠셔닝 성능 저하 위험 — 러닝화 교체를 권장합니다.',
-              style: TextStyle(color: AppColors.dangerRed, height: 1.4),
+              style: textTheme.bodyMedium?.copyWith(
+                color: tokens.colors.danger,
+                height: 1.4,
+              ),
             ),
           )
         else
           Text(
             '교체 알림: ${(goal - totalDistanceKm).toStringAsFixed(1)} km 남음',
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
           ),
       ],
     );

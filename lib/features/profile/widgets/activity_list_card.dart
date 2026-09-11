@@ -5,9 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/providers/app_providers.dart';
 import '../../../app/router/route_names.dart';
 import '../../../core/navigation/app_route_nav.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_shapes.dart';
-import '../../../core/theme/app_text_styles.dart';
+import '../../../core/theme/theme.dart';
 import '../../../data/models/activity_model.dart';
 import '../../../screens/appeal_center_screen.dart';
 
@@ -41,38 +39,34 @@ class ActivityListCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activities = ref.watch(recentActivitiesProvider).value ?? const [];
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
+    return SrcSurfaceCard(
+      padding: EdgeInsets.fromLTRB(
+        tokens.spacing.md,
+        14,
+        tokens.spacing.md,
+        tokens.spacing.sm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             '러닝 로그',
-            style: AppTextStyles.agreementLabel.copyWith(
+            style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w800,
-              fontSize: 15,
+              color: tokens.colors.ink,
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: tokens.spacing.sm),
           if (activities.isEmpty)
             Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+              padding: EdgeInsets.only(bottom: tokens.spacing.xxs + 2),
               child: Text(
                 '최근 러닝 기록이 없습니다',
-                style: AppTextStyles.caption.copyWith(
-                  color: AppColors.textGrey,
+                style: textTheme.bodySmall?.copyWith(
+                  color: tokens.colors.muted,
                 ),
               ),
             )
@@ -96,9 +90,11 @@ class _ActivityLogTile extends StatelessWidget {
     final pending = activity.needsJenaAppeal;
     final date = _dateLabel(activity.completedAt);
     final pace = activity.formattedPace;
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: tokens.spacing.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -110,16 +106,16 @@ class _ActivityLogTile extends StatelessWidget {
                   children: [
                     Text(
                       date.isEmpty ? '기록' : date,
-                      style: AppTextStyles.caption.copyWith(
+                      style: textTheme.bodySmall?.copyWith(
                         fontSize: 12,
-                        color: AppColors.textGrey,
+                        color: tokens.colors.muted,
                       ),
                     ),
                     if (pace != null) ...[
-                      const SizedBox(height: 2),
+                      SizedBox(height: tokens.spacing.xxs / 2),
                       Text(
                         pace,
-                        style: AppTextStyles.caption.copyWith(fontSize: 12),
+                        style: textTheme.bodySmall?.copyWith(fontSize: 12),
                       ),
                     ],
                   ],
@@ -127,15 +123,16 @@ class _ActivityLogTile extends StatelessWidget {
               ),
               Text(
                 '${activity.distanceKm.toStringAsFixed(1)} km',
-                style: AppTextStyles.agreementLabel.copyWith(
+                style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 14,
+                  color: tokens.colors.accent,
                 ),
               ),
             ],
           ),
           if (pending) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: tokens.spacing.xs),
             Align(
               alignment: Alignment.centerRight,
               child: _JenaHoldBadge(
@@ -166,20 +163,25 @@ class _JenaHoldBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Material(
-      color: AppColors.warningFill,
-      borderRadius: BorderRadius.circular(8),
+      color: tokens.colors.warning.withValues(alpha: 0.16),
+      borderRadius: BorderRadius.circular(tokens.radii.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(tokens.radii.sm),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          padding: EdgeInsets.symmetric(
+            horizontal: tokens.spacing.xs,
+            vertical: 5,
+          ),
           child: Text(
             '⚠️ 기록 보류 - 소명하기 〉',
-            style: AppTextStyles.caption.copyWith(
+            style: textTheme.labelSmall?.copyWith(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: AppColors.warningOrange,
+              color: tokens.colors.warning,
             ),
           ),
         ),

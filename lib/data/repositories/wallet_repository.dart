@@ -138,6 +138,33 @@ class WalletRepository {
     );
   }
 
+  /// Debug USB: persist a SHARE spend + donation totals without rewriting
+  /// DIA/VALUE or zeroing aggregates. Release: no-op.
+  Future<void> persistDebugShareSpend({
+    required String uid,
+    required int shareDelta,
+    int? donationCount,
+    int? cumulativeDonationAmount,
+    bool isSponsored = false,
+  }) async {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug SHARE spend persist is debug-only.');
+    }
+    if (uid.isEmpty || shareDelta >= 0) return;
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+      {
+        'uid': uid,
+        'wallet.shareBalance': FieldValue.increment(shareDelta),
+        'updatedAt': FieldValue.serverTimestamp(),
+        if (donationCount != null) 'donationCount': donationCount,
+        if (cumulativeDonationAmount != null)
+          'cumulativeDonationAmount': cumulativeDonationAmount,
+        if (isSponsored) 'isSponsored': true,
+      },
+      SetOptions(merge: true),
+    );
+  }
+
   /// Debug harvest: persist SHARE only. DIA/VALUE stay as-is. Release: no-op.
   Future<void> creditLocalDebugHarvestShare({
     required String uid,
@@ -150,9 +177,7 @@ class WalletRepository {
     await _firestoreService.doc(FirestorePaths.user(uid)).set(
       {
         'uid': uid,
-        'wallet': {
-          'shareBalance': shareBalance,
-        },
+        'wallet.shareBalance': shareBalance,
         'updatedAt': FieldValue.serverTimestamp(),
       },
       SetOptions(merge: true),

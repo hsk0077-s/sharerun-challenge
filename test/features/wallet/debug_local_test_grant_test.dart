@@ -9,7 +9,8 @@ import 'package:share_run_challenge/features/wallet/providers/wallet_provider.da
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('local debug grant is debug-only and only when Home wallet is empty', () {
+  test('local debug grant is debug-only and only when Home wallet is empty',
+      () {
     expect(
       DebugWalletGrant.shouldApplyLocalGrant(
         debugMode: true,
@@ -33,8 +34,9 @@ void main() {
     );
     expect(
       DebugTestWalletGrantHost.shouldApplyLocalGrant(
-        debugMode: false,
+        debugMode: true,
         walletEmpty: true,
+        prefsMarkedDone: true,
       ),
       isFalse,
     );
@@ -51,7 +53,6 @@ void main() {
           'shareBalance': 1000000,
           'diamondBalance': 1000000,
           'valueTokenBalance': 1000000,
-          'totalDonationValue': 0,
         },
       },
     );
@@ -114,20 +115,115 @@ void main() {
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 
-  test('stale prefs lock still allows local grant while Home is 0', () {
+  test('stale prefs lock is one-shot even while Home wallet is still 0', () {
     expect(
       DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
+        prefsMarkedDone: true,
+        walletEmpty: true,
+      ),
+      isTrue,
+    );
+    expect(
+      DebugWalletGrant.shouldRunLocalGrant(
+        debugMode: true,
+        prefsMarkedDone: true,
+        walletEmpty: true,
+      ),
+      isFalse,
+    );
+  });
+
+  test('grant does not re-run after sponsorship SHARE drop and relaunch', () {
+    const remote = WalletModel(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    DebugTestWalletGrantHost.applyLocalGrantToNotifier(notifier);
+    expect(container.read(walletProvider).shareBalance, 1000000);
+
+    notifier.applyEntryFeeDebit(50000);
+    expect(container.read(walletProvider).shareBalance, 950000);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+
+    const prefsMarkedDone = true;
+    final spent = container.read(walletProvider);
+    expect(
+      DebugWalletGrant.shouldRunLocalGrant(
+        debugMode: true,
+        prefsMarkedDone: prefsMarkedDone,
+        walletEmpty: spent.isEmpty,
+      ),
+      isFalse,
+    );
+
+    // Cold start: notifier empty until Firestore hydrates.
+    expect(
+      DebugWalletGrant.shouldRunLocalGrant(
+        debugMode: true,
         prefsMarkedDone: true,
         walletEmpty: true,
       ),
       isFalse,
     );
     expect(
-      DebugWalletGrant.shouldApplyLocalGrant(
-        debugMode: true,
-        walletEmpty: true,
+      DebugTestWalletGrantHost.shouldApplyGrantSnapshot(
+        status: 'already_granted',
+        localWalletEmpty: false,
       ),
-      isTrue,
+      isFalse,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldApplyGrantSnapshot(
+        status: 'granted',
+        localWalletEmpty: false,
+      ),
+      isFalse,
+    );
+
+    notifier.replaceFromRemote(
+      const WalletModel(
+        shareBalance: 950000,
+        diamondBalance: 1000000,
+        valueTokenBalance: 1000000,
+        totalDonationValue: 0,
+      ),
+    );
+    expect(container.read(walletProvider).shareBalance, 950000);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test('grant payload does not reset donation aggregates', () {
+    final fields = DebugWalletGrant.firestoreMergeFields();
+    expect(fields.containsKey('donationCount'), isFalse);
+    expect(fields.containsKey('cumulativeDonationAmount'), isFalse);
+    expect(fields.containsKey('isSponsored'), isFalse);
+    final wallet = fields['wallet'] as Map<String, dynamic>;
+    expect(wallet.containsKey('totalDonationValue'), isFalse);
+    expect(
+      DebugWalletGrant.donationPersistFields(
+        donationCount: 1,
+        cumulativeDonationAmount: 50000,
+      ),
+      {
+        'donationCount': 1,
+        'cumulativeDonationAmount': 50000,
+        'isSponsored': true,
+      },
     );
   });
 }

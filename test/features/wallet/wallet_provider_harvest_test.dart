@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/core/api/api_exception.dart';
+import 'package:share_run_challenge/core/constants/debug_wallet_grant.dart';
 import 'package:share_run_challenge/data/models/pedometer_harvest_result.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/wallet/debug_test_wallet_grant.dart';
@@ -359,13 +360,14 @@ void main() {
     );
   });
 
-  test('stale prefs lock is ignored while Home wallet is still empty', () {
+  test('stale prefs lock stays one-shot even while Home wallet is still empty',
+      () {
     expect(
       DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
         prefsMarkedDone: true,
         walletEmpty: true,
       ),
-      isFalse,
+      isTrue,
     );
     expect(
       DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
@@ -373,6 +375,14 @@ void main() {
         walletEmpty: false,
       ),
       isTrue,
+    );
+    expect(
+      DebugWalletGrant.shouldRunLocalGrant(
+        debugMode: true,
+        prefsMarkedDone: true,
+        walletEmpty: true,
+      ),
+      isFalse,
     );
   });
 

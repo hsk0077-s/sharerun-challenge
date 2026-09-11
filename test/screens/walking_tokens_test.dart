@@ -62,6 +62,13 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(_scopedWalking());
     await tester.pump();
+    await tester.runAsync(() async {
+      await precacheImage(
+        const AssetImage(WalkingLook.snailWalkingAsset),
+        tester.element(find.byType(SoloPedometerScreen)),
+      );
+    });
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
   }
 
@@ -182,6 +189,13 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(_scopedWalking());
+    await tester.pump();
+    await tester.runAsync(() async {
+      await precacheImage(
+        const AssetImage(WalkingLook.snailWalkingAsset),
+        tester.element(find.byType(SoloPedometerScreen)),
+      );
+    });
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
 

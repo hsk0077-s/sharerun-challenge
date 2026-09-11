@@ -2,7 +2,7 @@
 ///
 /// Release/profile builds must never credit SHARE locally.
 abstract final class DebugLocalHarvest {
-  static const logPrefix = '[DEBUG LOCAL]';
+  static const logPrefix = '[HARVEST]';
 
   static bool shouldCreditOnJenaFailure({
     required bool debugMode,
@@ -11,10 +11,15 @@ abstract final class DebugLocalHarvest {
     return debugMode && toClaim > 0;
   }
 
-  static String successLog({
-    required int credited,
-    required int shareBalance,
+  static String resultLog({
+    required bool credited,
+    required int amount,
+    required String source,
+    int? walletShare,
   }) {
-    return '$logPrefix harvest +$credited SHARE walletShare=$shareBalance';
+    final src = source == 'jena' ? 'jena' : 'local';
+    final tail = walletShare == null ? '' : ' walletShare=$walletShare';
+    return '$logPrefix credited=${credited ? 'Y' : 'N'} amount=$amount '
+        'source=$src$tail';
   }
 }

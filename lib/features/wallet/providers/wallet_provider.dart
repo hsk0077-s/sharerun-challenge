@@ -92,9 +92,16 @@ class WalletNotifier extends Notifier<WalletState> {
       final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
       final share = snap.share;
       if (share == null) return;
-      rememberDurableDebugShare(share);
-      if (state.shareBalance <= 0 || state.shareBalance > share) {
-        state = state.copyWith(shareBalance: share);
+      final current = state.shareBalance > (_durableDebugShare ?? 0)
+          ? state.shareBalance
+          : (_durableDebugShare ?? state.shareBalance);
+      final resolved = DebugLocalWalletStore.resolveHydratedShare(
+        currentShare: current,
+        durableShare: share,
+      );
+      rememberDurableDebugShare(resolved);
+      if (state.shareBalance != resolved) {
+        state = state.copyWith(shareBalance: resolved);
       }
     } catch (e) {
       debugPrint('hydrateDurableDebugShare: $e');
@@ -211,14 +218,42 @@ class WalletNotifier extends Notifier<WalletState> {
           state = state.copyWith(
             shareBalance: state.shareBalance + shareCredited,
           );
+          _rememberHarvestDurable();
         }
         return;
       }
+      // Jena wallet snapshot can still be the pre-join 1M. Only take a
+      // harvest-sized bump; never re-apply the grant over a spent ledger.
+      if (kDebugMode &&
+          state.shareBalance > 0 &&
+          shareBalance > state.shareBalance + DebugLocalWalletStore.harvestSlack) {
+        if (shareCredited > 0) {
+          state = state.copyWith(
+            shareBalance: state.shareBalance + shareCredited,
+          );
+        }
+        _rememberHarvestDurable();
+        return;
+      }
       state = state.copyWith(shareBalance: shareBalance);
+      _rememberHarvestDurable();
       return;
     }
     if (shareCredited <= 0) return;
     state = state.copyWith(shareBalance: state.shareBalance + shareCredited);
+    _rememberHarvestDurable();
+  }
+
+  void _rememberHarvestDurable() {
+    if (!kDebugMode) return;
+    _durableDebugShare = state.shareBalance;
+    final uid = ref.read(authStateChangesProvider).asData?.value?.uid ?? '';
+    if (uid.isNotEmpty) {
+      DebugLocalWalletStore.rememberInMemory(
+        uid: uid,
+        share: state.shareBalance,
+      );
+    }
   }
 
   /// Debug test grant / full snapshot. Null fields keep the current value.

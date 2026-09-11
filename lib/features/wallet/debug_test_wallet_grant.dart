@@ -207,10 +207,14 @@ class _DebugTestWalletGrantHostState
         final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
         if (snap.share != null) {
           final notifier = ref.read(walletProvider.notifier);
-          notifier.rememberDurableDebugShare(snap.share!);
           final current = ref.read(walletProvider).shareBalance;
-          if (current <= 0 || current > snap.share!) {
-            notifier.applyWalletSnapshot(shareBalance: snap.share);
+          final resolved = DebugLocalWalletStore.resolveHydratedShare(
+            currentShare: current,
+            durableShare: snap.share!,
+          );
+          notifier.rememberDurableDebugShare(resolved);
+          if (current != resolved) {
+            notifier.applyWalletSnapshot(shareBalance: resolved);
           }
         }
         if (snap.paidIds.isNotEmpty) {

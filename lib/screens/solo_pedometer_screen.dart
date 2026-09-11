@@ -28,6 +28,8 @@ import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/wallet/debug_economy_status.dart';
+import '../features/wallet/debug_local_wallet_store.dart';
+import '../features/wallet/providers/debug_local_share_history_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'my_wallet_screen.dart';
 
@@ -1103,25 +1105,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             );
       }
       ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
-      final walletShare = ref.read(walletProvider).shareBalance;
-      if (mounted) {
-        setState(() {
-          _collectedShareCoins = walletShare.toDouble();
-        });
-      } else {
-        _collectedShareCoins = walletShare.toDouble();
-      }
-      await _persistClaimedWatermark(_claimedSteps);
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setDouble('collected_share_coins', _collectedShareCoins);
-        final prefix = await _prefPrefix();
-        await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
-        await prefs.setDouble('$prefix.pendingShare', 0.0);
-      } catch (_) {}
-      debugPrint(
-        '[HARVEST SUCCESS] status=${result.status} +$credited SHARE '
-        'claimedSteps=$liveSteps walletShare=$walletShare',
+      await _persistHarvestWalletUi(
+        uid: uid,
+        credited: minted ? credited : 0,
+        source: 'jena',
       );
     } catch (e) {
       debugPrint('[HARVEST] secured credit failed: $e');
@@ -1145,26 +1132,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             '$writeError',
           );
         }
-        if (mounted) {
-          setState(() {
-            _collectedShareCoins = walletShare.toDouble();
-          });
-        } else {
-          _collectedShareCoins = walletShare.toDouble();
-        }
-        await _persistClaimedWatermark(_claimedSteps);
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setDouble('collected_share_coins', _collectedShareCoins);
-          final prefix = await _prefPrefix();
-          await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
-          await prefs.setDouble('$prefix.pendingShare', 0.0);
-        } catch (_) {}
-        debugPrint(
-          DebugLocalHarvest.successLog(
-            credited: toClaim,
-            shareBalance: walletShare,
-          ),
+        await _persistHarvestWalletUi(
+          uid: uid,
+          credited: toClaim,
+          source: 'local',
         );
       } else if (mounted) {
         setState(() {
@@ -1186,6 +1157,51 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     } finally {
       _harvestInFlight = false;
     }
+  }
+
+  /// Push harvest SHARE into Home/`walletProvider` + durable debug ledger.
+  Future<void> _persistHarvestWalletUi({
+    required String uid,
+    required int credited,
+    required String source,
+  }) async {
+    final walletShare = ref.read(walletProvider).shareBalance;
+    if (mounted) {
+      setState(() {
+        _collectedShareCoins = walletShare.toDouble();
+      });
+    } else {
+      _collectedShareCoins = walletShare.toDouble();
+    }
+    await _persistClaimedWatermark(_claimedSteps);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('collected_share_coins', _collectedShareCoins);
+      final prefix = await _prefPrefix();
+      await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
+      await prefs.setDouble('$prefix.pendingShare', 0.0);
+      if (kDebugMode && uid.isNotEmpty && credited > 0) {
+        await DebugLocalWalletStore.recordHarvestCredit(
+          prefs: prefs,
+          uid: uid,
+          shareBalanceAfter: walletShare,
+          credited: credited,
+        );
+        ref.read(debugLocalShareHistoryProvider.notifier).replace(
+              DebugLocalWalletStore.cachedHistory(uid),
+            );
+      }
+    } catch (e) {
+      debugPrint('${DebugLocalHarvest.logPrefix} durable persist failed: $e');
+    }
+    debugPrint(
+      DebugLocalHarvest.resultLog(
+        credited: credited > 0,
+        amount: credited,
+        source: source,
+        walletShare: walletShare,
+      ),
+    );
   }
 
   Future<void> _setBenefitNotifEnabled(bool enabled) async {

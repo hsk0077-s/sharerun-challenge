@@ -33,6 +33,44 @@ void main() {
       ),
       900000,
     );
+    expect(
+      DebugLocalWalletStore.applyShareCeiling(
+        incomingShare: 970000,
+        durableShare: 970018,
+      ),
+      970018,
+    );
+  });
+
+  test('hydrate keeps a harvest-sized in-session credit above stale prefs', () {
+    expect(
+      DebugLocalWalletStore.resolveHydratedShare(
+        currentShare: 970018,
+        durableShare: 970000,
+      ),
+      970018,
+    );
+    expect(
+      DebugLocalWalletStore.resolveHydratedShare(
+        currentShare: 0,
+        durableShare: 970018,
+      ),
+      970018,
+    );
+    expect(
+      DebugLocalWalletStore.resolveHydratedShare(
+        currentShare: 1000000,
+        durableShare: 970018,
+      ),
+      970018,
+    );
+    expect(
+      DebugLocalWalletStore.resolveHydratedShare(
+        currentShare: 970000,
+        durableShare: 970018,
+      ),
+      970018,
+    );
   });
 
   test('hydrate restore of a 30k join debit is rejected in debug', () {
@@ -155,6 +193,42 @@ void main() {
     );
     expect(merged, hasLength(1));
     expect(merged.single.id, 'TX_SHARE_FS_1');
+  });
+
+  test('recordHarvestCredit writes SHARE and 줍기 history', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await DebugLocalWalletStore.recordPaidJoin(
+      prefs: prefs,
+      uid: 'uid-1',
+      tournamentId: 'demo-intermediate-3km',
+      shareBalanceAfter: 970000,
+      debitAmount: 30000,
+      historyTitle: kTournamentEntryHistoryTitle,
+    );
+    await DebugLocalWalletStore.recordHarvestCredit(
+      prefs: prefs,
+      uid: 'uid-1',
+      shareBalanceAfter: 970018,
+      credited: 18,
+    );
+
+    expect(prefs.getInt(DebugLocalWalletStore.shareKey('uid-1')), 970018);
+    expect(DebugLocalWalletStore.cachedShare('uid-1'), 970018);
+    final history = DebugLocalWalletStore.cachedHistory('uid-1');
+    expect(history.first.title, DebugLocalWalletStore.harvestHistoryTitle);
+    expect(history.first.amount, 18);
+    expect(history.first.assetType, 'SHARE');
+    expect(history.any((tx) => tx.title == '대회 참가'), isTrue);
+  });
+
+  test('hydrateFromPrefs does not clobber an in-memory harvest credit', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(DebugLocalWalletStore.shareKey('uid-1'), 970000);
+    DebugLocalWalletStore.rememberInMemory(uid: 'uid-1', share: 970018);
+
+    final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, 'uid-1');
+    expect(snap.share, 970018);
+    expect(DebugLocalWalletStore.cachedShare('uid-1'), 970018);
   });
 
   test('legacy debugLocalJoinedIds key is not the paid ledger', () {

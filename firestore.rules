@@ -197,6 +197,59 @@ service cloud.firestore {
         && request.resource.data.wallet.totalDonationValue == 0;
     }
 
+    function resourceWalletBalancesEmpty() {
+      return !('wallet' in resource.data)
+        || (
+          (
+            !('shareBalance' in resource.data.wallet)
+            || resource.data.wallet.shareBalance == 0
+          )
+          && (
+            !('diamondBalance' in resource.data.wallet)
+            || resource.data.wallet.diamondBalance == 0
+          )
+          && (
+            !('valueTokenBalance' in resource.data.wallet)
+            || resource.data.wallet.valueTokenBalance == 0
+          )
+        );
+    }
+
+    // Debug USB one-shot: empty wallet -> 1,000,000 SHARE/DIA/VALUE.
+    // Release clients never call this. Re-apply is allowed only while still 0.
+    function validDebugTestWalletGrant(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && resourceWalletBalancesEmpty()
+        && request.resource.data.testGrant1mDone == true
+        && request.resource.data.wallet.shareBalance == 1000000
+        && request.resource.data.wallet.diamondBalance == 1000000
+        && request.resource.data.wallet.valueTokenBalance == 1000000
+        && request.resource.data.diff(resource.data).changedKeys()
+            .hasOnly(['uid', 'wallet', 'testGrant1mDone', 'updatedAt']);
+    }
+
+    // Debug harvest: SHARE may increase after the one-shot grant. DIA/VALUE
+    // must stay unchanged. Release clients never call this path.
+    function validDebugLocalHarvestShare(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && resource.data.testGrant1mDone == true
+        && request.resource.data.testGrant1mDone == true
+        && request.resource.data.wallet.shareBalance is int
+        && request.resource.data.wallet.shareBalance >= (
+          'shareBalance' in resource.data.wallet
+            ? resource.data.wallet.shareBalance
+            : 0
+        )
+        && request.resource.data.wallet.diamondBalance
+            == resource.data.wallet.diamondBalance
+        && request.resource.data.wallet.valueTokenBalance
+            == resource.data.wallet.valueTokenBalance
+        && request.resource.data.diff(resource.data).changedKeys()
+            .hasOnly(['uid', 'wallet', 'updatedAt']);
+    }
+
     function validUserCreate(uid) {
       return isOwner(uid)
         && request.resource.data.keys().hasOnly([
@@ -349,13 +402,18 @@ service cloud.firestore {
       allow get: if isOwner(uid) || isAdmin();
       allow list: if isAdmin();
       allow create: if validUserCreate(uid);
-      // Clients cannot set testGrant1mEligible / testGrant1mDone.
-      // Those flags are Admin SDK / Firebase console only.
-      allow update: if (validUserSettingsUpdate(uid) || isAdminUserOpsUpdate())
-        && !request.resource.data.diff(resource.data).changedKeys().hasAny([
-          'testGrant1mEligible',
-          'testGrant1mDone'
-        ]);
+      // Clients cannot set testGrant1mEligible. testGrant1mDone is only
+      // writable via the one-shot empty-wallet debug grant below.
+      allow update: if isAdminUserOpsUpdate()
+        || validDebugTestWalletGrant(uid)
+        || validDebugLocalHarvestShare(uid)
+        || (
+          validUserSettingsUpdate(uid)
+          && !request.resource.data.diff(resource.data).changedKeys().hasAny([
+            'testGrant1mEligible',
+            'testGrant1mDone'
+          ])
+        );
       allow delete: if false;
 
       match /collectedDiamondBoxes/{boxId} {

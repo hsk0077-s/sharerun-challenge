@@ -1,5 +1,6 @@
 import 'dart:async' show Completer, unawaited;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
@@ -82,15 +83,31 @@ class WalletNotifier extends Notifier<WalletState> {
   }
 
   void _syncFromRemote(WalletModel model) {
-    final incoming = WalletState.fromModel(model);
-    // Auth/loading and pre-grant user docs emit 0/0/0. That snapshot must
-    // not wipe a just-applied debug grant or harvest credit.
-    if (incoming.isEmpty && !state.isEmpty) {
-      if (!_ready.isCompleted) _ready.complete();
-      return;
-    }
-    state = incoming;
+    state = mergeRemote(state, WalletState.fromModel(model));
     if (!_ready.isCompleted) _ready.complete();
+  }
+
+  /// Firestore is the ledger, but SHARE-only harvest snapshots (DIA/VALUE 0)
+  /// must not wipe a debug grant or in-memory harvest credit.
+  static WalletState mergeRemote(WalletState current, WalletState incoming) {
+    if (incoming.isEmpty && !current.isEmpty) {
+      return current;
+    }
+    var share = incoming.shareBalance;
+    // Debug local harvest credits SHARE on walletProvider first. A later
+    // empty/stale Firestore SHARE must not wipe that credit.
+    if (kDebugMode && current.shareBalance > incoming.shareBalance) {
+      share = current.shareBalance;
+    }
+    return WalletState(
+      shareBalance: share,
+      diamondBalance: incoming.diamondBalance == 0 && current.diamondBalance > 0
+          ? current.diamondBalance
+          : incoming.diamondBalance,
+      valueBalance: incoming.valueBalance == 0 && current.valueBalance > 0
+          ? current.valueBalance
+          : incoming.valueBalance,
+    );
   }
 
   /// Firestore 스냅샷으로 잔액을 덮어쓴다. 재설치·기기 변경 복원용.
@@ -102,6 +119,16 @@ class WalletNotifier extends Notifier<WalletState> {
     int shareCredited = 0,
   }) {
     if (shareBalance != null) {
+      // Debug local grant/harvest may already be ahead of Jena. Do not
+      // replace a higher local SHARE with a stale server snapshot.
+      if (kDebugMode && shareBalance < state.shareBalance) {
+        if (shareCredited > 0) {
+          state = state.copyWith(
+            shareBalance: state.shareBalance + shareCredited,
+          );
+        }
+        return;
+      }
       state = state.copyWith(shareBalance: shareBalance);
       return;
     }

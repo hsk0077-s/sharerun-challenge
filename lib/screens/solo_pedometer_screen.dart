@@ -21,10 +21,12 @@ import '../core/theme/app_text_styles.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/pedometer/solo_pedometer_engine.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
+import '../features/pedometer/debug_local_harvest.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
+import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'my_wallet_screen.dart';
 
@@ -1046,8 +1048,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     // Persist the watermark before the API returns so back-navigation
     // cannot restore the old pending floor and harvest it again.
     await _persistClaimedWatermark(liveSteps);
+    final uid = _harvestUid();
     try {
-      final uid = _harvestUid();
       if (uid.isEmpty) {
         throw StateError('로그인이 필요합니다.');
       }
@@ -1062,6 +1064,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               shareCredited: minted ? credited : 0,
             );
       }
+      ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
       final walletShare = ref.read(walletProvider).shareBalance;
       if (mounted) {
         setState(() {
@@ -1084,7 +1087,48 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       );
     } catch (e) {
       debugPrint('[HARVEST] secured credit failed: $e');
-      if (mounted) {
+      if (DebugLocalHarvest.shouldCreditOnJenaFailure(
+        debugMode: kDebugMode,
+        toClaim: toClaim,
+      )) {
+        ref.read(debugEconomyStatusProvider.notifier).markJenaFail();
+        ref.read(walletProvider.notifier).applyShareFromServer(
+              shareCredited: toClaim,
+            );
+        final walletShare = ref.read(walletProvider).shareBalance;
+        try {
+          await ref.read(walletRepositoryProvider).creditLocalDebugHarvestShare(
+                uid: uid,
+                shareBalance: walletShare,
+              );
+        } catch (writeError) {
+          debugPrint(
+            '${DebugLocalHarvest.logPrefix} harvest Firestore write failed: '
+            '$writeError',
+          );
+        }
+        if (mounted) {
+          setState(() {
+            _collectedShareCoins = walletShare.toDouble();
+          });
+        } else {
+          _collectedShareCoins = walletShare.toDouble();
+        }
+        await _persistClaimedWatermark(_claimedSteps);
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setDouble('collected_share_coins', _collectedShareCoins);
+          final prefix = await _prefPrefix();
+          await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
+          await prefs.setDouble('$prefix.pendingShare', 0.0);
+        } catch (_) {}
+        debugPrint(
+          DebugLocalHarvest.successLog(
+            credited: toClaim,
+            shareBalance: walletShare,
+          ),
+        );
+      } else if (mounted) {
         setState(() {
           _collectedShareCoins = previousCollected;
           _claimedSteps = previousClaimed;
@@ -1095,11 +1139,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             content: Text('셰어 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
           ),
         );
+        await _persistClaimedWatermark(previousClaimed);
       } else {
         _collectedShareCoins = previousCollected;
         _claimedSteps = previousClaimed;
+        await _persistClaimedWatermark(previousClaimed);
       }
-      await _persistClaimedWatermark(previousClaimed);
     } finally {
       _harvestInFlight = false;
     }

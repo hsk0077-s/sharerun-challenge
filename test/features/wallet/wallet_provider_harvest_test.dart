@@ -44,6 +44,31 @@ void main() {
     expect(container.read(walletProvider).valueBalance, 5000);
   });
 
+  test('debug applyShareFromServer does not replace 1M grant with stale Jena SHARE',
+      () {
+    const remote = WalletModel(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyShareFromServer(shareBalance: 51, shareCredited: 29);
+    expect(container.read(walletProvider).shareBalance, 1000029);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
   test('applyWalletSnapshot sets SHARE DIA VALUE together for the 1M test grant',
       () {
     const remote = WalletModel(
@@ -77,6 +102,82 @@ void main() {
     expect(container.read(walletProvider).shareBalance, 1000000);
     expect(container.read(walletProvider).diamondBalance, 1000000);
     expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test('harvest SHARE snapshot does not zero granted DIA/VALUE', () {
+    const remote = WalletModel(
+      shareBalance: 0,
+      diamondBalance: 0,
+      valueTokenBalance: 0,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyWalletSnapshot(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    notifier.applyShareFromServer(shareCredited: 51);
+    expect(container.read(walletProvider).shareBalance, 1000051);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+
+    notifier.replaceFromRemote(
+      const WalletModel(
+        shareBalance: 1000051,
+        diamondBalance: 0,
+        valueTokenBalance: 0,
+        totalDonationValue: 0,
+      ),
+    );
+    expect(container.read(walletProvider).shareBalance, 1000051);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test('mergeRemote keeps local DIA/VALUE when harvest sends zeros', () {
+    const current = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const harvest = WalletState(
+      shareBalance: 51,
+      diamondBalance: 0,
+      valueBalance: 0,
+    );
+    final merged = WalletNotifier.mergeRemote(current, harvest);
+    expect(merged.shareBalance, 1000000);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('debug mergeRemote keeps local SHARE harvest credit above stale remote',
+      () {
+    const current = WalletState(
+      shareBalance: 1000029,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const stale = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 0,
+      valueBalance: 0,
+    );
+    final merged = WalletNotifier.mergeRemote(current, stale);
+    expect(merged.shareBalance, 1000029);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
   });
 
   test('debug 1M grant is one-shot keyed and one million', () {

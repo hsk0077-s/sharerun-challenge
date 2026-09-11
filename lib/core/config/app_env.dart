@@ -96,9 +96,28 @@ abstract final class AppEnv {
       ) ??
       8085;
 
+  /// Local Jena URL when `JENA_BASE_URL` is unset.
+  ///
+  /// Android emulator: `http://10.0.2.2:8080` (`--dart-define=ANDROID_EMULATOR=true`
+  /// or `--dart-define=JENA_BASE_URL=http://10.0.2.2:8080`).
+  /// Physical Android debug: `http://127.0.0.1:8080` with
+  /// `adb reverse tcp:8080 tcp:8080`. iOS/desktop: loopback.
+  static String defaultJenaBaseUrl({
+    bool? isAndroid,
+    bool? androidEmulator,
+  }) {
+    final android = isAndroid ?? (!kIsWeb && Platform.isAndroid);
+    final emulator =
+        androidEmulator ?? _bool('ANDROID_EMULATOR', defaultValue: false);
+    if (android && emulator) {
+      return 'http://10.0.2.2:8080';
+    }
+    return 'http://127.0.0.1:8080';
+  }
+
   static String get jenaBaseUrl => _get(
         'JENA_BASE_URL',
-        defaultValue: 'http://10.0.2.2:8080',
+        defaultValue: defaultJenaBaseUrl(),
       );
 
   static String get pgBaseUrl => _get(

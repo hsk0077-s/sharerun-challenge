@@ -17,6 +17,7 @@ import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
 import 'in_challenge_screen.dart';
@@ -258,6 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ],
         ),
+        const DebugEconomyStatusLine(),
         const SizedBox(height: 14),
         DailyCapGauge(dailyKm: ref.watch(retentionDailyKmProvider)),
         const SizedBox(height: 12),

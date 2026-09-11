@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../core/async/stream_guards.dart';
+import '../../core/constants/debug_wallet_grant.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
@@ -117,6 +118,44 @@ class WalletRepository {
     }
     return _securedActionApiClient.grantDebugTestWallet1m(
       grantSecret: grantSecret,
+    );
+  }
+
+  /// Debug one-shot write to `users/{uid}.wallet` + `testGrant1mDone`.
+  /// Home/`walletProvider` read this document. Release/profile must not call.
+  Future<void> applyLocalDebugTestGrant({required String uid}) async {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug test grant is debug-only.');
+    }
+    if (uid.isEmpty) return;
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+      {
+        'uid': uid,
+        ...DebugWalletGrant.firestoreMergeFields(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  /// Debug harvest: persist SHARE only. DIA/VALUE stay as-is. Release: no-op.
+  Future<void> creditLocalDebugHarvestShare({
+    required String uid,
+    required int shareBalance,
+  }) async {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug harvest credit is debug-only.');
+    }
+    if (uid.isEmpty || shareBalance < 0) return;
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+      {
+        'uid': uid,
+        'wallet': {
+          'shareBalance': shareBalance,
+        },
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
     );
   }
 

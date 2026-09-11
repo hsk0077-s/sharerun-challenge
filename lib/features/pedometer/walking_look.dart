@@ -60,11 +60,12 @@ abstract final class WalkingLook {
     ),
   ];
 
-  /// Same walking snail as main before the Runday polish PR.
+  /// Same walking-challenge snail as after #21 (`chibi_snail_disappointed`),
+  /// derived to a smile with the sigh puff removed. Not the gold-medal mascot.
   static const snailWalkingAsset =
-      'assets/images/characters/chibi_snail_disappointed.png';
+      'assets/images/characters/chibi_snail_smiling.png';
 
-  /// Alpha-only knockout for the disappointed PNG's opaque near-white plate.
+  /// Alpha-only knockout for the snail PNG's opaque near-white plate.
   /// Does **not** tint pixels (no `primaryMint` / `BlendMode.multiply` rect).
   static const whitePlateKnockout = ColorFilter.matrix(<double>[
     1, 0, 0, 0, 0,

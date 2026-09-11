@@ -5,18 +5,23 @@ import 'package:share_run_challenge/features/onboarding/src_onboarding_controlle
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 
 void main() {
-  test('snail mascot keeps the previous walking-challenge asset', () {
+  test('snail mascot uses the smiling derivative of the walking-challenge snail',
+      () {
     expect(
       WalkingLook.mascotAsset(UserTier.unratedFallback),
       WalkingLook.snailWalkingAsset,
     );
     expect(
       WalkingLook.mascotAsset(UserTier.unratedFallback),
-      'assets/images/characters/chibi_snail_disappointed.png',
+      'assets/images/characters/chibi_snail_smiling.png',
     );
     expect(
       WalkingLook.mascotAsset(UserTier.unratedFallback),
       isNot(contains('cute_gold_medal')),
+    );
+    expect(
+      WalkingLook.mascotAsset(UserTier.unratedFallback),
+      isNot(contains('disappointed')),
     );
   });
 

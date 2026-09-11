@@ -25,7 +25,7 @@
 /// ```
 ///
 /// Do **not** import `lib/app/theme/app_colors.dart` in new code — that path
-/// is a compatibility shim for Home / Walking / Lobby until Phase 2b–2d.
+/// is a compatibility shim for Walking / Lobby / My until Phase 2c–2d.
 library;
 
 export 'app_colors.dart';

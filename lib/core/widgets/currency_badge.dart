@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../app/theme/app_colors.dart';
+import 'package:share_run_challenge/core/theme/theme.dart';
 
 class CurrencyBadge extends StatelessWidget {
   const CurrencyBadge({
@@ -16,23 +15,33 @@ class CurrencyBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(tokens.spacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.cardBlack,
-        border: Border.all(color: color.withOpacity(0.45)),
-        borderRadius: BorderRadius.circular(18),
+        color: tokens.colors.surface,
+        border: Border.all(color: color.withValues(alpha: 0.45)),
+        borderRadius: tokens.radii.card,
+        boxShadow: AppShadows.rest,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 8),
+          Text(
+            label,
+            style: textTheme.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: tokens.spacing.xs),
           Text(
             amount.toString(),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w900,
+              color: tokens.colors.ink,
+            ),
           ),
         ],
       ),

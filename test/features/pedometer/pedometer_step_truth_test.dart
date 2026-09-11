@@ -65,6 +65,17 @@ void main() {
       );
     });
 
+    test('Health 1834 + isolate 0 still keeps walking-screen 1835', () {
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 1834,
+          persistedToday: 1835,
+          isolateDaily: 0,
+        ),
+        1835,
+      );
+    });
+
     test('hydrates notification from persisted walking-screen steps', () {
       expect(
         PedometerStepTruth.dailyFromSources(

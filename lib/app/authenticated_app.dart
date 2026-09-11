@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/theme/src_theme.dart';
-import 'router/dashboard_router.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
+import '../features/pedometer/walking_step_keepalive.dart';
+import '../screens/solo_pedometer_screen.dart';
+import 'router/dashboard_router.dart';
 
 /// Dashboard shell (tabs + sub-routes) shown after local guest login.
 ///
@@ -20,16 +24,32 @@ class AuthenticatedApp extends ConsumerStatefulWidget {
 
 class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
   GoRouter? _router;
+  WalkingStepKeepAlive? _stepKeepAlive;
 
   @override
   void initState() {
     super.initState();
     _router = ref.read(dashboardRouterProvider);
     SoloPedometerForeground.attachRouter(_router);
+    _stepKeepAlive = WalkingStepKeepAlive(
+      onDaily: (steps, km) {
+        unawaited(
+          ref.read(pedometerStateProvider.notifier).updateSteps(
+                steps,
+                km,
+                isMoving: false,
+              ),
+        );
+      },
+    );
+    unawaited(_stepKeepAlive!.attach());
   }
 
   @override
   void dispose() {
+    final keepAlive = _stepKeepAlive;
+    _stepKeepAlive = null;
+    if (keepAlive != null) unawaited(keepAlive.detach());
     SoloPedometerForeground.attachRouter(null);
     super.dispose();
   }

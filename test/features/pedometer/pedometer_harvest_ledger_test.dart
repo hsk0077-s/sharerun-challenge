@@ -70,4 +70,48 @@ void main() {
       2918,
     );
   });
+
+  test('2950 steps with claimed 0 is 29.50 pending and 29 floor', () {
+    expect(
+      PedometerHarvestLedger.pendingShareExact(steps: 2950, claimedSteps: 0),
+      29.5,
+    );
+    expect(
+      PedometerHarvestLedger.pendingShareFloor(steps: 2950, claimedSteps: 0),
+      29,
+    );
+    expect(
+      PedometerHarvestLedger.pendingShareFloor(steps: 2950, claimedSteps: 2950),
+      0,
+    );
+  });
+
+  test('global same-day claimed survives empty uid prefix', () {
+    expect(
+      PedometerHarvestLedger.claimedFromGlobal(
+        storedDate: '2026-09-11',
+        storedClaimed: 2950,
+        todayKey: '2026-09-11',
+      ),
+      2950,
+    );
+    expect(
+      PedometerHarvestLedger.claimedFromGlobal(
+        storedDate: '2026-09-10',
+        storedClaimed: 2950,
+        todayKey: '2026-09-11',
+      ),
+      0,
+    );
+    expect(
+      PedometerHarvestLedger.coalesceClaimed(
+        current: 0,
+        fromTodayKey: 0,
+        fromPrefix: 0,
+        fromGlobal: 2950,
+        steps: 2950,
+      ),
+      2950,
+    );
+  });
 }

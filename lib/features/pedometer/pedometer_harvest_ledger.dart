@@ -6,6 +6,9 @@
 abstract final class PedometerHarvestLedger {
   static const stepsPerShare = 100;
 
+  static const globalClaimedKey = 'solo_pedo_claimed_steps';
+  static const globalClaimedDateKey = 'solo_pedo_claimed_date';
+
   static String todayClaimedKey(String dateKey) => '${dateKey}_claimed_steps';
 
   static String prefix({required String uid, required String dateKey}) =>
@@ -34,13 +37,24 @@ abstract final class PedometerHarvestLedger {
     required int current,
     required int fromTodayKey,
     required int fromPrefix,
+    int fromGlobal = 0,
     int steps = 0,
   }) {
     var claimed = current;
     if (fromTodayKey > claimed) claimed = fromTodayKey;
     if (fromPrefix > claimed) claimed = fromPrefix;
+    if (fromGlobal > claimed) claimed = fromGlobal;
     if (claimed < 0) claimed = 0;
     if (steps > 0 && claimed > steps) claimed = steps;
     return claimed;
+  }
+
+  static int claimedFromGlobal({
+    required String? storedDate,
+    required int storedClaimed,
+    required String todayKey,
+  }) {
+    if (storedDate != todayKey) return 0;
+    return storedClaimed < 0 ? 0 : storedClaimed;
   }
 }

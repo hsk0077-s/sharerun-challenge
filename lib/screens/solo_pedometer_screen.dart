@@ -453,6 +453,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       await prefs.setDouble('$prefix.collectedShare', 0);
       await prefs.setInt('$prefix.claimedSteps', 0);
       await prefs.setInt('${_lastSavedDate}_claimed_steps', 0);
+      await prefs.setInt(PedometerHarvestLedger.globalClaimedKey, 0);
+      await prefs.setString(
+        PedometerHarvestLedger.globalClaimedDateKey,
+        _lastSavedDate,
+      );
       await prefs.setInt('$prefix.steps', _steps);
       await prefs.setDouble('$prefix.km', _km);
       final ymd = PedometerKstClock.dateKey();
@@ -696,6 +701,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               prefs.get(PedometerHarvestLedger.todayClaimedKey(todayKey)),
             ),
             fromPrefix: _claimedSteps,
+            fromGlobal: PedometerHarvestLedger.claimedFromGlobal(
+              storedDate:
+                  prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
+              storedClaimed: _prefToInt(
+                prefs.get(PedometerHarvestLedger.globalClaimedKey),
+              ),
+              todayKey: todayKey,
+            ),
             steps: _steps,
           );
           _collectedShareCoins =
@@ -736,6 +749,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     await prefs.setInt(
       PedometerHarvestLedger.todayClaimedKey(todayKey),
       claimed,
+    );
+    await prefs.setInt(PedometerHarvestLedger.globalClaimedKey, claimed);
+    await prefs.setString(
+      PedometerHarvestLedger.globalClaimedDateKey,
+      todayKey,
     );
     try {
       final prefix = await _prefPrefix();
@@ -783,6 +801,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final savedClaimedPrefix = _prefToInt(prefs.get('$prefix.claimedSteps'));
       final savedClaimedToday = _prefToInt(
         prefs.get(PedometerHarvestLedger.todayClaimedKey(todayKey)),
+      );
+      final savedClaimedGlobal = PedometerHarvestLedger.claimedFromGlobal(
+        storedDate: prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
+        storedClaimed: _prefToInt(
+          prefs.get(PedometerHarvestLedger.globalClaimedKey),
+        ),
+        todayKey: todayKey,
       );
       final savedChallengeReward =
           prefs.getBool('$prefix.hasReceivedChallengeReward') ?? false;
@@ -832,6 +857,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           current: _claimedSteps,
           fromTodayKey: savedClaimedToday,
           fromPrefix: savedClaimedPrefix,
+          fromGlobal: savedClaimedGlobal,
           steps: steps,
         );
         _hasReceivedMilestone1 = savedMilestone1;
@@ -914,12 +940,23 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         fromTodayKey:
             prefs.getInt(PedometerHarvestLedger.todayClaimedKey(ymd)) ?? 0,
         fromPrefix: _prefToInt(prefs.get('$prefix.claimedSteps')),
+        fromGlobal: PedometerHarvestLedger.claimedFromGlobal(
+          storedDate: prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
+          storedClaimed:
+              prefs.getInt(PedometerHarvestLedger.globalClaimedKey) ?? 0,
+          todayKey: ymd,
+        ),
         steps: steps,
       );
       await prefs.setInt('$prefix.claimedSteps', claimed);
       await prefs.setInt(
         PedometerHarvestLedger.todayClaimedKey(ymd),
         claimed,
+      );
+      await prefs.setInt(PedometerHarvestLedger.globalClaimedKey, claimed);
+      await prefs.setString(
+        PedometerHarvestLedger.globalClaimedDateKey,
+        ymd,
       );
       await prefs.setDouble(
         '$prefix.pendingShare',
@@ -1312,6 +1349,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   Widget _buildCumulativeShareAccountCard() {
+    // Spendable SHARE — same ledger as Home 나의 지갑. Do not show local
+    // milestone `_collectedShareCoins` (that is the 20 SHARE desync).
     final walletShare = ref.watch(walletProvider).shareBalance;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),

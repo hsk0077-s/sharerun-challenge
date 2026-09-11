@@ -52,6 +52,16 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
     return share > 0 || dia > 0 || value > 0;
   }
 
+  /// PR #7 wrote this flag even when the wallet stayed 0. Ignore it so
+  /// Home can still receive the 1M grant.
+  static bool shouldHonorLocalGrantLock({
+    required bool prefsMarkedDone,
+    required bool walletEmpty,
+  }) {
+    if (!prefsMarkedDone) return false;
+    return !walletEmpty;
+  }
+
   static bool shouldRetryGrant(Object error) {
     if (error is ApiException) {
       if (error.statusCode == 404 || error.statusCode == 403) return true;
@@ -132,13 +142,28 @@ class _DebugTestWalletGrantHostState
 
     final prefs = await SharedPreferences.getInstance();
     final uidKey = DebugTestWalletGrantHost.prefsKeyForUid(uid);
-    if (prefs.getBool(uidKey) ?? false) {
+    final prefsMarkedDone = prefs.getBool(uidKey) ?? false;
+    if (DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
+      prefsMarkedDone: prefsMarkedDone,
+      walletEmpty: ref.read(walletProvider).isEmpty,
+    )) {
       _consumed = true;
       return;
+    }
+    if (prefsMarkedDone) {
+      debugPrint(
+        '[TEST GRANT 1M] prefs marked done but Home wallet is still 0 — retry',
+      );
+      await prefs.remove(uidKey);
     }
 
     _inFlight = true;
     try {
+      try {
+        await ref.read(userRepositoryProvider).ensureUserDocument(uid: uid);
+      } catch (e) {
+        debugPrint('[TEST GRANT 1M] ensureUserDocument: $e');
+      }
       final result = await ref.read(walletRepositoryProvider).grantDebugTestWallet1m(
             grantSecret: DebugTestWalletGrantHost.grantSecret(),
           );

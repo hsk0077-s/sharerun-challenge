@@ -125,6 +125,13 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
         fromTodayKey:
             prefs.getInt(PedometerHarvestLedger.todayClaimedKey(today)) ?? 0,
         fromPrefix: prefs.getInt('$prefix.claimedSteps') ?? 0,
+        fromGlobal: PedometerHarvestLedger.claimedFromGlobal(
+          storedDate:
+              prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
+          storedClaimed:
+              prefs.getInt(PedometerHarvestLedger.globalClaimedKey) ?? 0,
+          todayKey: today,
+        ),
         steps: backup > legacy ? backup : legacy,
       );
       final steps = backup > legacy ? backup : legacy;

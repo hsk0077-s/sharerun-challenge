@@ -124,6 +124,23 @@ void main() {
     );
   });
 
+  test('stale prefs lock is ignored while Home wallet is still empty', () {
+    expect(
+      DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
+        prefsMarkedDone: true,
+        walletEmpty: true,
+      ),
+      isFalse,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldHonorLocalGrantLock(
+        prefsMarkedDone: true,
+        walletEmpty: false,
+      ),
+      isTrue,
+    );
+  });
+
   test('grant retries user-not-found and undeployed 403', () {
     expect(
       DebugTestWalletGrantHost.shouldRetryGrant(

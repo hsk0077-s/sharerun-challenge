@@ -17,6 +17,7 @@ import '../../core/constants/impact_constants.dart';
 import '../../core/theme/app_colors.dart';
 import '../../data/models/activity_model.dart';
 import '../../data/models/user_model.dart';
+import '../pedometer/kst_calendar.dart';
 import '../wallet/providers/wallet_provider.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -886,53 +887,27 @@ abstract final class NicknameValidator {
 
 /// 만보기 Health 쿼리 — KST(UTC+9) 당일 00:00~현재, 통합 걸음만 단건 조회.
 abstract final class PedometerKstClock {
-  static const kstOffset = Duration(hours: 9);
+  static const kstOffset = KstCalendar.offset;
   static const _stepTypes = [HealthDataType.STEPS];
   static const _stepAccess = [HealthDataAccess.READ];
 
-  static ({DateTime startDate, DateTime endDate}) todayRange() {
-    final now = DateTime.now();
-    final kstNow = now.toUtc().add(kstOffset);
-    final startUtc = DateTime.utc(
-      kstNow.year,
-      kstNow.month,
-      kstNow.day,
-    ).subtract(kstOffset);
-    return (startDate: startUtc.toLocal(), endDate: now);
-  }
+  static ({DateTime startDate, DateTime endDate}) todayRange([DateTime? now]) =>
+      KstCalendar.todayRange(now);
 
-  static String dateKey([DateTime? now]) {
-    final kstNow = (now ?? DateTime.now()).toUtc().add(kstOffset);
-    final m = kstNow.month.toString().padLeft(2, '0');
-    final d = kstNow.day.toString().padLeft(2, '0');
-    return '${kstNow.year}-$m-$d';
-  }
+  static String dateKey([DateTime? now]) => KstCalendar.dateKey(now);
 
-  static String dateKeyFromYmd(int year, int month, int day) {
-    final m = month.toString().padLeft(2, '0');
-    final d = day.toString().padLeft(2, '0');
-    return '$year-$m-$d';
-  }
+  static String dateKeyFromYmd(int year, int month, int day) =>
+      KstCalendar.dateKeyFromYmd(year, month, day);
 
   static String backupStepsKey(String ymd) => '${ymd}_steps';
 
   static String backupKmKey(String ymd) => '${ymd}_km';
 
   /// KST 기준 이번 주 월요일~일요일.
-  static List<({int year, int month, int day, String key})> thisWeekDays() {
-    final kstNow = DateTime.now().toUtc().add(kstOffset);
-    final today = DateTime.utc(kstNow.year, kstNow.month, kstNow.day);
-    final monday = today.subtract(Duration(days: today.weekday - 1));
-    return List.generate(7, (i) {
-      final d = monday.add(Duration(days: i));
-      return (
-        year: d.year,
-        month: d.month,
-        day: d.day,
-        key: dateKeyFromYmd(d.year, d.month, d.day),
-      );
-    });
-  }
+  static List<({int year, int month, int day, String key})> thisWeekDays([
+    DateTime? now,
+  ]) =>
+      KstCalendar.thisWeekDays(now);
 
   static Future<bool> requestAuthorization(Health health) async {
     try {
@@ -1818,18 +1793,19 @@ final activeUserTierStructProvider = Provider<UserTier?>((ref) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 abstract final class RetentionCalendar {
-  static String dateKey(DateTime d) {
-    final m = d.month.toString().padLeft(2, '0');
-    final day = d.day.toString().padLeft(2, '0');
-    return '${d.year}-$m-$day';
-  }
+  static String dateKey(DateTime d) => KstCalendar.dateKey(d);
 
   static String weekKey(DateTime d) {
-    final monday = d.subtract(Duration(days: d.weekday - 1));
-    return dateKey(DateTime(monday.year, monday.month, monday.day));
+    final kst = KstCalendar.toKst(d);
+    final monday = DateTime.utc(kst.year, kst.month, kst.day)
+        .subtract(Duration(days: kst.weekday - 1));
+    return KstCalendar.dateKeyFromYmd(monday.year, monday.month, monday.day);
   }
 
-  static DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+  static DateTime dateOnly(DateTime d) {
+    final kst = KstCalendar.toKst(d);
+    return DateTime.utc(kst.year, kst.month, kst.day);
+  }
 }
 
 abstract final class RetentionMetrics {

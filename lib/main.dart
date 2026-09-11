@@ -15,6 +15,7 @@ import 'core/config/app_env.dart';
 import 'core/notifications/notification_service.dart';
 import 'data/firebase/firebase_bootstrap.dart';
 import 'features/iap/widgets/iap_lifecycle_host.dart';
+import 'features/pedometer/kst_calendar.dart';
 import 'features/pedometer/solo_pedometer_foreground.dart';
 import 'features/pedometer/walking_challenge_notification_service.dart';
 import 'features/wallet/debug_test_wallet_grant.dart';
@@ -114,7 +115,7 @@ Future<void> _runPmTestInitializationOnce() async {
     } catch (e) {
       debugPrint('PM TEST INIT sensor read skipped: $e');
     }
-    final todayIso = DateTime.now().toIso8601String().split('T')[0];
+    final todayIso = KstCalendar.dateKey();
     await prefs.setInt('stepOffset', sensorTotal);
     await prefs.setInt('${todayIso}_step_offset', sensorTotal);
     await prefs.setString('lastSavedDate', todayIso);

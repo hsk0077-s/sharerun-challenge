@@ -14,6 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/root_navigator.dart';
 import '../../app/router/route_names.dart';
 import '../../core/theme/app_colors.dart';
+import 'kst_calendar.dart';
+import 'pedometer_day_rollover.dart';
 
 const _channelId = 'src_walking_coin_pickup';
 const _channelName = '워킹챌린지 코인 줍기';
@@ -55,7 +57,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   var _lastRaw = 0;
   var _baselineReady = false;
   var _steps = 0;
-  var lastFiredDay = DateTime.now().day;
+  var lastFiredDateKey = '';
   var lastSavedDate = '';
   var stepOffset = 0;
   var firedMorning = false;
@@ -151,14 +153,15 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     try {
       final now = DateTime.now();
       await _hydrateSmartPushFlags(now);
-      if (now.day != lastFiredDay) {
+      final todayKey = KstCalendar.dateKey(now);
+      if (lastFiredDateKey != todayKey) {
         firedMorning = false;
         firedLunch = false;
         firedEvening = false;
         snipedMilestone1 = false;
         snipedMilestone2 = false;
         snipedMilestone3 = false;
-        lastFiredDay = now.day;
+        lastFiredDateKey = todayKey;
         await _persistSmartPushFlags(now);
       }
 
@@ -254,16 +257,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     _smartFlagsHydrated = true;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final todayKey =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final todayKey = KstCalendar.dateKey(now);
       final savedDate = prefs.getString(_smartPushDateKey) ?? '';
       if (savedDate != todayKey) {
-        lastFiredDay = savedDate.isEmpty
-            ? now.day
-            : (int.tryParse(savedDate.split('-').last) ?? now.day);
+        lastFiredDateKey = savedDate;
         return;
       }
-      lastFiredDay = now.day;
+      lastFiredDateKey = todayKey;
       firedMorning = prefs.getBool(_smartPushMorningKey) ?? false;
       firedLunch = prefs.getBool(_smartPushLunchKey) ?? false;
       firedEvening = prefs.getBool(_smartPushEveningKey) ?? false;
@@ -279,8 +279,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   Future<void> _persistSmartPushFlags(DateTime now) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final todayKey =
-          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final todayKey = KstCalendar.dateKey(now);
       await prefs.setString(_smartPushDateKey, todayKey);
       await prefs.setBool(_smartPushMorningKey, firedMorning);
       await prefs.setBool(_smartPushLunchKey, firedLunch);
@@ -348,7 +347,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
           await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
       final next =
           math.max(computed, math.max(saved, _steps)).toInt();
-      final todayIso = DateTime.now().toIso8601String().split('T')[0];
+      final todayIso = KstCalendar.dateKey();
       if (lastSavedDate.isEmpty) {
         lastSavedDate = todayIso;
         try {
@@ -358,9 +357,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         } catch (_) {}
       } else if (lastSavedDate != todayIso) {
         final sensorTotal = _lastRaw > 0 ? _lastRaw : next;
-        stepOffset = sensorTotal;
-        lastSavedDate = todayIso;
-        lastFiredDay = DateTime.now().day;
+        final plan = PedometerDayRollover.plan(
+          todayKey: todayIso,
+          sensorTotal: sensorTotal,
+        );
+        stepOffset = plan.stepOffset;
+        lastSavedDate = plan.dateKey;
+        lastFiredDateKey = plan.dateKey;
         firedMorning = false;
         firedLunch = false;
         firedEvening = false;
@@ -373,12 +376,22 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         await _persistSmartPushFlags(DateTime.now());
         try {
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('lastSavedDate', lastSavedDate);
-          await prefs.setInt('stepOffset', stepOffset);
-          await prefs.setInt('${todayIso}_step_offset', stepOffset);
-          await prefs.setDouble('collected_share_coins', 0);
+          for (final entry in PedometerDayRollover.prefsToWrite(plan).entries) {
+            final value = entry.value;
+            if (value is int) {
+              await prefs.setInt(entry.key, value);
+            } else if (value is double) {
+              await prefs.setDouble(entry.key, value);
+            } else if (value is String) {
+              await prefs.setString(entry.key, value);
+            }
+          }
         } catch (_) {}
         await FlutterForegroundTask.saveData(key: _stepsKey, value: 0);
+        await FlutterForegroundTask.saveData(
+          key: _claimedKey,
+          value: 0,
+        );
         await _publish(0);
         FlutterForegroundTask.sendDataToMain(0);
         return;
@@ -478,9 +491,7 @@ abstract final class SoloPedometerForeground {
     required int rawSteps,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now().toLocal();
-    final todayKey =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final todayKey = KstCalendar.dateKey();
 
     final stepOffset = prefs.getInt('${todayKey}_step_offset') ?? 0;
     final claimedSteps = prefs.getInt('${todayKey}_claimed_steps') ?? 0;

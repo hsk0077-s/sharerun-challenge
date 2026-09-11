@@ -23,6 +23,7 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/pedometer/solo_pedometer_engine.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/debug_local_harvest.dart';
+import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
@@ -358,7 +359,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final todayKey = PedometerKstClock.dateKey();
       final rolled = _kstDayKey.isNotEmpty && _kstDayKey != todayKey;
       if (rolled) {
-        _ensureDailyRollover(sensorTotal: math.max(_steps, 0));
+        _ensureDailyRollover(sensorTotal: math.max(_steps, 0) + _stepOffset);
       }
       _kstDayKey = todayKey;
       if (total != null) {
@@ -391,34 +392,36 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
-  void _ensureDailyRollover({required int sensorTotal}) {
-    final todayIso = PedometerKstClock.dateKey();
-    if (_lastSavedDate == todayIso) return;
-    if (_lastSavedDate.isEmpty) {
-      _lastSavedDate = todayIso;
-      unawaited(() async {
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('lastSavedDate', _lastSavedDate);
-          await prefs.setInt('stepOffset', _stepOffset);
-        } catch (e) {
-          debugPrint('_ensureDailyRollover stamp: $e');
-        }
-      }());
-      return;
+  bool _ensureDailyRollover({required int sensorTotal}) {
+    final todayIso = PedometerDayRollover.todayKey();
+    if (!PedometerDayRollover.canEvaluate(_lastSavedDate)) {
+      return false;
     }
-    _stepOffset = sensorTotal;
-    _steps = 0;
-    _km = 0.0;
-    _collectedShareCoins = 0.0;
-    _claimedSteps = 0;
-    _hasReceivedMilestone1 = false;
-    _hasReceivedMilestone2 = false;
-    _hasReceivedMilestone3 = false;
-    _hasReceivedBonus = false;
-    _lastSavedDate = todayIso;
-    _kstDayKey = PedometerKstClock.dateKey();
+    if (!PedometerDayRollover.needsRollover(
+      lastSavedDate: _lastSavedDate,
+      todayKey: todayIso,
+    )) {
+      return false;
+    }
+    final plan = PedometerDayRollover.plan(
+      todayKey: todayIso,
+      sensorTotal: sensorTotal,
+    );
+    _stepOffset = plan.stepOffset;
+    _steps = plan.steps;
+    _km = plan.km;
+    _collectedShareCoins = plan.collectedShare;
+    _claimedSteps = plan.claimedSteps;
+    _hasReceivedMilestone1 = plan.milestone1;
+    _hasReceivedMilestone2 = plan.milestone2;
+    _hasReceivedMilestone3 = plan.milestone3;
+    _hasReceivedBonus = plan.bonus;
+    _lastSavedDate = plan.dateKey;
+    _kstDayKey = plan.dateKey;
     _streakReportedForDay = '';
+    _claimedTenths.clear();
+    _unclaimedCoins = const [];
+    _flyingCoins = const [];
     if (mounted) {
       setState(() {
         _weekSteps = {..._weekSteps, _kstDayKey: 0};
@@ -432,6 +435,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       );
     }
     unawaited(_persistDailyResetState());
+    return true;
   }
 
   Future<void> _persistDailyResetState() async {
@@ -689,11 +693,19 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       if (_lastSavedDate.isEmpty) {
         _lastSavedDate = prefs.getString('lastSavedDate') ?? '';
       }
-      _ensureDailyRollover(
+      if (_lastSavedDate.isEmpty) {
+        _lastSavedDate = todayKey;
+        unawaited(prefs.setString(
+          PedometerDayRollover.lastSavedDateKey,
+          todayKey,
+        ));
+      }
+      final prefix = await _prefPrefix();
+      final rolled = _ensureDailyRollover(
         sensorTotal: math.max(_steps, 0) + _stepOffset,
       );
       if (!mounted) return;
-      final sameKstDay = _lastSavedDate == todayKey;
+      final sameKstDay = !rolled && _lastSavedDate == todayKey;
       setState(() {
         _isOffsetCaptured = true;
         _isClaimedDataLoaded = true;
@@ -703,7 +715,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             fromTodayKey: _prefToInt(
               prefs.get(PedometerHarvestLedger.todayClaimedKey(todayKey)),
             ),
-            fromPrefix: _claimedSteps,
+            fromPrefix: _prefToInt(prefs.get('$prefix.claimedSteps')),
             fromGlobal: PedometerHarvestLedger.claimedFromGlobal(
               storedDate:
                   prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
@@ -716,6 +728,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           );
           _collectedShareCoins =
               prefs.getDouble('collected_share_coins') ?? _collectedShareCoins;
+        } else {
+          _claimedSteps = 0;
+          _collectedShareCoins = 0;
         }
       });
       _updatePendingAmount();
@@ -871,7 +886,30 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         _lastSavedDate = savedLastDate;
         _stepOffset = savedOffset;
       });
-      _ensureDailyRollover(sensorTotal: math.max(steps, savedOffset));
+      if (_lastSavedDate.isEmpty) {
+        _lastSavedDate = todayKey;
+        unawaited(() async {
+          try {
+            await prefs.setString(
+              PedometerDayRollover.lastSavedDateKey,
+              todayKey,
+            );
+          } catch (e) {
+            debugPrint('_restoreTodayFromPrefs stamp: $e');
+          }
+        }());
+      }
+      final rolled = _ensureDailyRollover(
+        sensorTotal: math.max(steps, savedOffset),
+      );
+      if (rolled) {
+        _claimedSteps = 0;
+        _collectedShareCoins = 0;
+        _hasReceivedMilestone1 = false;
+        _hasReceivedMilestone2 = false;
+        _hasReceivedMilestone3 = false;
+        _hasReceivedBonus = false;
+      }
       _refreshPendingShare(_steps);
       if (_steps > 0 || _km > 0) {
         unawaited(

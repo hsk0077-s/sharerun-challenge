@@ -121,7 +121,7 @@ class SecuredActionService:
         user_snapshot = user_ref.get(transaction=transaction)
         user = user_snapshot.to_dict() or {} if user_snapshot.exists else {}
         economy = user.get("economy") or {}
-        today = self._economy_service.today_key()
+        today = self._economy_service.kst_today_key()
         daily_mining = self._economy_service.normalize_daily_mining(
             user.get("dailyMining"), today
         )

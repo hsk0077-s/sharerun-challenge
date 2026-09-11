@@ -253,5 +253,20 @@ void main() {
         'isSponsored': true,
       },
     );
+    expect(
+      DebugWalletGrant.shareSpendMergeFields(
+        uid: 'uid-1',
+        shareBalanceAfter: 970000,
+        diamondBalance: 1000000,
+        valueBalance: 1000000,
+      ),
+      {
+        'uid': 'uid-1',
+        'testGrant1mDone': true,
+        'wallet.shareBalance': 970000,
+        'wallet.diamondBalance': 1000000,
+        'wallet.valueTokenBalance': 1000000,
+      },
+    );
   });
 }

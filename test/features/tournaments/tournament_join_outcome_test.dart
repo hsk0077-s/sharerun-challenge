@@ -26,6 +26,7 @@ void main() {
     expect(plan.debitAmount, 30000);
     expect(plan.persistLocalJoin, isFalse);
     expect(plan.joinedForUi, isTrue);
+    expect(plan.unlockRun, isTrue);
     expect(plan.showsPaidSnackbar, isTrue);
     expect(plan.snackbarMessage, contains('참가비 30000 SHARE'));
     expect(plan.snackbarMessage, isNot(contains('Entry Share locked')));
@@ -60,6 +61,7 @@ void main() {
     expect(plan.snackbarMessage, isNot(contains('Entry Share locked')));
     expect(plan.debugLog, contains('debit=N'));
     expect(plan.joinedForUi, isTrue);
+    expect(plan.unlockRun, isTrue);
   });
 
   test('Jena Invalid Firebase ID token in debug uses local debit once', () {
@@ -82,6 +84,7 @@ void main() {
     expect(plan.debitAmount, 30000);
     expect(plan.persistLocalJoin, isTrue);
     expect(plan.joinedForUi, isTrue);
+    expect(plan.unlockRun, isTrue);
     expect(plan.showsPaidSnackbar, isTrue);
     expect(plan.snackbarMessage, contains('디버그'));
     expect(plan.debugLog, contains('debit=Y'));
@@ -103,6 +106,7 @@ void main() {
     expect(plan.applyDebit, isFalse);
     expect(plan.persistLocalJoin, isFalse);
     expect(plan.joinedForUi, isFalse);
+    expect(plan.unlockRun, isFalse);
     expect(plan.showsPaidSnackbar, isFalse);
     expect(plan.snackbarMessage, contains('참가·결제가 완료되지 않았습니다'));
     expect(plan.debugLog, contains('debit=N'));
@@ -140,6 +144,7 @@ void main() {
     expect(plan.applyDebit, isFalse);
     expect(plan.persistLocalJoin, isFalse);
     expect(plan.showsPaidSnackbar, isFalse);
+    expect(plan.unlockRun, isTrue);
   });
 
   test('business-rule Jena errors stay fail-closed even in debug', () {
@@ -159,6 +164,7 @@ void main() {
     );
     expect(plan.kind, TournamentJoinKind.failedClosed);
     expect(plan.applyDebit, isFalse);
+    expect(plan.unlockRun, isFalse);
     expect(plan.snackbarMessage, contains('참가·결제가 완료되지 않았습니다'));
     expect(plan.snackbarMessage, contains('대회 정원이 가득 찼습니다'));
   });
@@ -228,6 +234,47 @@ void main() {
     expect(
       container.read(localJoinedTournamentIdsProvider),
       {'room-1', 'room-2'},
+    );
+  });
+
+  test('already-joined gate does not unlock the run without payment proof', () {
+    expect(
+      TournamentJoinPlanner.unlockWhenAlreadyJoinedBlocked(
+        remoteOrJenaJoined: false,
+        durablePaidJoin: false,
+      ),
+      isFalse,
+    );
+    expect(
+      TournamentJoinPlanner.unlockWhenAlreadyJoinedBlocked(
+        remoteOrJenaJoined: true,
+        durablePaidJoin: false,
+      ),
+      isTrue,
+    );
+    expect(
+      TournamentJoinPlanner.unlockWhenAlreadyJoinedBlocked(
+        remoteOrJenaJoined: false,
+        durablePaidJoin: true,
+      ),
+      isTrue,
+    );
+  });
+
+  test('stale PR14 local overlay ids are not payment proof', () {
+    expect(
+      DebugLocalJoinLedger.alreadyPaid(
+        localJoinedIds: {'demo-intermediate-3km'},
+        tournamentId: 'demo-intermediate-3km',
+      ),
+      isTrue,
+    );
+    expect(
+      TournamentJoinPlanner.unlockWhenAlreadyJoinedBlocked(
+        remoteOrJenaJoined: false,
+        durablePaidJoin: false,
+      ),
+      isFalse,
     );
   });
 }

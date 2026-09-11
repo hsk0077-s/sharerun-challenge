@@ -195,6 +195,7 @@ class ChallengeDetailScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       _ChallengeJoinPayButton(
+                        key: ValueKey<String>('join-${roomId ?? 'default'}'),
                         roomId: roomId,
                         joinLabel: copy.joinLabel,
                         title: copy.title,
@@ -294,6 +295,7 @@ class _ChallengeDetailCopy {
 
 class _ChallengeJoinPayButton extends ConsumerStatefulWidget {
   const _ChallengeJoinPayButton({
+    super.key,
     required this.roomId,
     required this.joinLabel,
     required this.title,
@@ -344,6 +346,7 @@ class _ChallengeJoinPayButtonState
 
   Future<void> _onJoin() async {
     if (_busy) return;
+    final navigator = Navigator.of(context);
     setState(() => _busy = true);
     try {
       final joined = await joinTournamentWithPreflight(
@@ -351,13 +354,14 @@ class _ChallengeJoinPayButtonState
         ref: ref,
         tournament: _resolveRoom(),
       );
-      if (!joined || !mounted) return;
-      await Navigator.push<void>(
-        context,
+      if (!joined) return;
+      await navigator.push<void>(
         MaterialPageRoute<void>(
           builder: (_) => LiveRunningScreen(roomId: widget.roomId),
         ),
       );
+    } catch (e, st) {
+      debugPrint('[JOIN] button: $e\n$st');
     } finally {
       if (mounted) setState(() => _busy = false);
     }

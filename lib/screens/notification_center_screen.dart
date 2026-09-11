@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/providers/app_providers.dart';
 import '../core/config/app_env.dart';
@@ -13,6 +14,8 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/profile/user_profile_notifier.dart';
+import '../features/wallet/debug_local_wallet_store.dart';
+import '../features/wallet/providers/debug_local_share_history_provider.dart';
 
 /// 알림 센터 및 재화 히스토리 화면 (Screen 28).
 class NotificationCenterScreen extends StatefulWidget {
@@ -44,7 +47,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
   void initState() {
     super.initState();
     final initial = widget.initialTabIndex.clamp(0, 1);
-    _tabController = TabController(length: 2, vsync: this, initialIndex: initial);
+    _tabController =
+        TabController(length: 2, vsync: this, initialIndex: initial);
   }
 
   @override
@@ -348,15 +352,44 @@ class _NotificationCard extends StatelessWidget {
   }
 }
 
-class _RealtimePaymentHistoryList extends ConsumerWidget {
+class _RealtimePaymentHistoryList extends ConsumerStatefulWidget {
   const _RealtimePaymentHistoryList();
 
   static const _debitColor = Color(0xFFFF453A);
   static const _creditColor = Color(0xFF30D158);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_RealtimePaymentHistoryList> createState() =>
+      _RealtimePaymentHistoryListState();
+}
+
+class _RealtimePaymentHistoryListState
+    extends ConsumerState<_RealtimePaymentHistoryList> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _hydrateLocalHistory();
+    });
+  }
+
+  Future<void> _hydrateLocalHistory() async {
     final uid = _signedInUid(ref);
+    if (uid.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
+      if (!mounted || snap.history.isEmpty) return;
+      ref.read(debugLocalShareHistoryProvider.notifier).replace(snap.history);
+    } catch (e) {
+      debugPrint('[HISTORY] local hydrate: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = _signedInUid(ref);
+    final local = ref.watch(debugLocalShareHistoryProvider);
     if (AppEnv.useLocalMockData || uid.isEmpty) {
       return const _PaymentHistoryEmpty();
     }
@@ -369,112 +402,144 @@ class _RealtimePaymentHistoryList extends ConsumerWidget {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
+            !snapshot.hasData &&
+            local.isEmpty) {
           return const Center(
             child: CircularProgressIndicator(color: AppColors.pulseCyan),
           );
         }
-        if (snapshot.hasError) {
-          return const _PaymentHistoryEmpty();
-        }
+        final remote = <DebugLocalShareTx>[];
         final snapData = snapshot.data;
-        if (snapData == null || snapData.docs.isEmpty) {
+        if (snapData != null) {
+          for (final doc in snapData.docs) {
+            remote.add(_txFromFirestore(doc.id, doc.data()));
+          }
+        }
+        final rows = DebugLocalWalletStore.mergeHistory(
+          remote: remote,
+          local: local,
+        );
+        if (rows.isEmpty) {
           return const _PaymentHistoryEmpty();
         }
-        final docs = snapData.docs;
         return ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          itemCount: docs.length,
+          itemCount: rows.length,
           itemBuilder: (context, index) {
-            final data = docs[index].data();
-            final titleRaw = data['title'];
-            final title = titleRaw is String && titleRaw.isNotEmpty
-                ? titleRaw
-                : AppStrings.notificationPaymentUnknown;
-            final amountRaw = data['amount'];
-            final amount = amountRaw is num ? amountRaw.toInt() : 0;
-            final assetRaw = data['assetType'];
-            final assetType = assetRaw is String && assetRaw.isNotEmpty
-                ? assetRaw
-                : 'SHARE';
-            final tsRaw = data['timestamp'];
-            final timestamp = tsRaw is Timestamp ? tsRaw : null;
-            final dateStr = timestamp != null
-                ? _formatWalletTxDate(timestamp.toDate().toLocal())
-                : AppStrings.notificationPaymentJustNow;
-            final isNegative = amount < 0;
-            final amountLabel = '${isNegative ? '' : '+'}$amount $assetType';
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceWhite,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.borderLight.withValues(alpha: 0.8),
-                  width: 0.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.textBlack.withValues(alpha: 0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: AppTextStyles.agreementLabel.copyWith(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          dateStr,
-                          style: AppTextStyles.caption.copyWith(
-                            fontSize: 12,
-                            color: AppColors.textGrey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        amountLabel,
-                        style: TextStyle(
-                          color: isNegative ? _debitColor : _creditColor,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        AppStrings.notificationPaymentReceipt,
-                        style: TextStyle(
-                          color: AppColors.tealAccent,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
+            return _PaymentHistoryTile(tx: rows[index]);
           },
         );
       },
+    );
+  }
+
+  static DebugLocalShareTx _txFromFirestore(
+    String id,
+    Map<String, dynamic> data,
+  ) {
+    final titleRaw = data['title'];
+    final title = titleRaw is String && titleRaw.isNotEmpty
+        ? titleRaw
+        : AppStrings.notificationPaymentUnknown;
+    final amountRaw = data['amount'];
+    final amount = amountRaw is num ? amountRaw.toInt() : 0;
+    final assetRaw = data['assetType'];
+    final assetType =
+        assetRaw is String && assetRaw.isNotEmpty ? assetRaw : 'SHARE';
+    final tsRaw = data['timestamp'];
+    final timestampMs =
+        tsRaw is Timestamp ? tsRaw.toDate().millisecondsSinceEpoch : 0;
+    return DebugLocalShareTx(
+      id: id,
+      title: title,
+      amount: amount,
+      assetType: assetType,
+      timestampMs: timestampMs,
+    );
+  }
+}
+
+class _PaymentHistoryTile extends StatelessWidget {
+  const _PaymentHistoryTile({required this.tx});
+
+  final DebugLocalShareTx tx;
+
+  @override
+  Widget build(BuildContext context) {
+    final dateStr = tx.timestampMs > 0
+        ? _formatWalletTxDate(tx.timestamp.toLocal())
+        : AppStrings.notificationPaymentJustNow;
+    final isNegative = tx.amount < 0;
+    final amountLabel = '${isNegative ? '' : '+'}${tx.amount} ${tx.assetType}';
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.borderLight.withValues(alpha: 0.8),
+          width: 0.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textBlack.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  tx.title,
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  dateStr,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 12,
+                    color: AppColors.textGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                amountLabel,
+                style: TextStyle(
+                  color: isNegative
+                      ? _RealtimePaymentHistoryList._debitColor
+                      : _RealtimePaymentHistoryList._creditColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                AppStrings.notificationPaymentReceipt,
+                style: TextStyle(
+                  color: AppColors.tealAccent,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

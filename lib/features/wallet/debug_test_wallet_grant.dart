@@ -10,7 +10,10 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/config/app_env.dart';
 import '../../../core/constants/debug_wallet_grant.dart';
 import '../../../data/models/pedometer_harvest_result.dart';
+import '../tournaments/providers/local_joined_ids_provider.dart';
 import 'debug_economy_status.dart';
+import 'debug_local_wallet_store.dart';
+import 'providers/debug_local_share_history_provider.dart';
 import 'providers/wallet_provider.dart';
 
 /// Debug one-shot 1,000,000 SHARE/DIA/VALUE after login.
@@ -200,6 +203,29 @@ class _DebugTestWalletGrantHostState
         '[DEBUG LOCAL] grant already done (prefs); skip re-apply '
         'walletEmpty=$walletEmpty',
       );
+      try {
+        final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
+        if (snap.share != null) {
+          final notifier = ref.read(walletProvider.notifier);
+          notifier.rememberDurableDebugShare(snap.share!);
+          final current = ref.read(walletProvider).shareBalance;
+          if (current <= 0 || current > snap.share!) {
+            notifier.applyWalletSnapshot(shareBalance: snap.share);
+          }
+        }
+        if (snap.paidIds.isNotEmpty) {
+          ref
+              .read(localJoinedTournamentIdsProvider.notifier)
+              .addAll(snap.paidIds);
+        }
+        if (snap.history.isNotEmpty) {
+          ref
+              .read(debugLocalShareHistoryProvider.notifier)
+              .replace(snap.history);
+        }
+      } catch (e) {
+        debugPrint('[DEBUG LOCAL] durable SHARE hydrate: $e');
+      }
       return;
     }
     if (DebugTestWalletGrantHost.shouldLocalReapplyBecauseWalletEmpty(

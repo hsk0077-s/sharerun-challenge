@@ -22,6 +22,10 @@ class RefundRequest(BaseModel):
     share_amount: int = Field(gt=0)
 
 
+class DebugTestGrantRequest(BaseModel):
+    grant_secret: str = ""
+
+
 class HarvestPedometerRequest(BaseModel):
     claimed_steps: int = Field(ge=0, le=999999)
 
@@ -73,3 +77,9 @@ class SecuredActionResult(BaseModel):
     accepted: bool
     status: str
     reason: str
+    # Optional wallet snapshot so the client can bind Home SHARE without
+    # waiting on a Firestore listener, and without rewriting DIA/VALUE.
+    share_credited: int = 0
+    share_balance: int | None = None
+    diamond_balance: int | None = None
+    value_token_balance: int | None = None

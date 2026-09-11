@@ -24,6 +24,7 @@ import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
 import '../features/profile/user_profile_notifier.dart';
+import '../features/wallet/providers/wallet_provider.dart';
 import 'my_wallet_screen.dart';
 
 class PedometerData {
@@ -920,6 +921,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     unawaited(_syncForegroundNotification(steps));
   }
 
+  String _harvestUid() {
+    final authUid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
+    if (authUid.isNotEmpty) return authUid;
+    return ref.read(userProfileProvider).uid;
+  }
+
   Future<void> _onHarvestCoins() async {
     if (_harvestInFlight) return;
     final pedometerState = ref.read(pedometerStateProvider);
@@ -942,19 +949,31 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       return;
     }
     final todayKey = _getTodayKey();
-    final userProfile = ref.read(userProfileProvider);
-    final uid = userProfile.uid;
     setState(() {
-      _collectedShareCoins += toClaim;
       _claimedSteps = liveSteps;
     });
     ref.read(walkingPendingShareProvider.notifier).state = 0.0;
     unawaited(_syncForegroundNotification(liveSteps));
     try {
-      if (uid.isNotEmpty) {
-        await ref.read(walletRepositoryProvider).harvestPedometerShare(
-              claimedSteps: liveSteps,
-            );
+      final uid = _harvestUid();
+      if (uid.isEmpty) {
+        throw StateError('로그인이 필요합니다.');
+      }
+      final result = await ref.read(walletRepositoryProvider).harvestPedometerShare(
+            claimedSteps: liveSteps,
+          );
+      final credited = result.creditedShare(fallback: toClaim);
+      ref.read(walletProvider.notifier).applyShareFromServer(
+            shareBalance: result.shareBalance,
+            shareCredited: credited,
+          );
+      final walletShare = ref.read(walletProvider).shareBalance;
+      if (mounted) {
+        setState(() {
+          _collectedShareCoins = walletShare.toDouble();
+        });
+      } else {
+        _collectedShareCoins = walletShare.toDouble();
       }
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('${todayKey}_claimed_steps', _claimedSteps);
@@ -965,7 +984,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         await prefs.setDouble('$prefix.pendingShare', 0.0);
         await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
       } catch (_) {}
-      debugPrint('[HARVEST SUCCESS] +$toClaim SHARE claimedSteps=$liveSteps');
+      debugPrint(
+        '[HARVEST SUCCESS] +$credited SHARE claimedSteps=$liveSteps '
+        'walletShare=$walletShare',
+      );
     } catch (e) {
       debugPrint('[HARVEST] secured credit failed: $e');
       if (mounted) {
@@ -974,6 +996,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           _claimedSteps = previousClaimed;
         });
         _updatePendingAmount();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('셰어 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
+          ),
+        );
       }
     } finally {
       _harvestInFlight = false;
@@ -1216,6 +1243,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   }
 
   Widget _buildCumulativeShareAccountCard() {
+    final walletShare = ref.watch(walletProvider).shareBalance;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 10),
       padding: const EdgeInsets.all(20),
@@ -1247,7 +1275,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               ),
               const SizedBox(height: 4),
               Text(
-                '${_collectedShareCoins.toInt()} SHARE',
+                '$walletShare SHARE',
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,

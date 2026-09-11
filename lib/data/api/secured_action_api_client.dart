@@ -7,6 +7,7 @@ import '../../core/api/api_exception.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
+import '../models/pedometer_harvest_result.dart';
 import '../models/winner_reward_action.dart';
 
 class SecuredActionApiClient {
@@ -68,13 +69,25 @@ class SecuredActionApiClient {
     );
   }
 
-  Future<void> harvestPedometerShare({
+  Future<PedometerHarvestResult> harvestPedometerShare({
     required int claimedSteps,
   }) async {
-    await _post(
+    final json = await _post(
       '/actions/pedometer/harvest',
       {'claimed_steps': claimedSteps},
     );
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Debug one-shot QA grant. Release builds must not call this.
+  Future<PedometerHarvestResult> grantDebugTestWallet1m({
+    String grantSecret = '',
+  }) async {
+    final json = await _post(
+      '/actions/debug/test-grant-1m',
+      {if (grantSecret.isNotEmpty) 'grant_secret': grantSecret},
+    );
+    return PedometerHarvestResult.fromJson(json);
   }
 
   Future<void> transferValueToWeb3({

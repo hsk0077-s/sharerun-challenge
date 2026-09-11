@@ -44,5 +44,34 @@ void main() {
 
       expect(transaction.amountSummary, '-100 Share');
     });
+
+    test('maps pedometer harvest to walking-challenge pickup label', () {
+      const transaction = WalletTransactionModel(
+        id: 'tx-4',
+        type: 'pedometer_harvest',
+        shareAmount: 20,
+        valueAmount: 0,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: null,
+      );
+
+      expect(transaction.displayLabel, '워킹챌린지 코인 줍기');
+      expect(transaction.amountSummary, '+20 Share');
+    });
+
+    test('maps debug 1M test grant label', () {
+      const transaction = WalletTransactionModel(
+        id: 'tx-5',
+        type: 'debug_test_grant_1m',
+        shareAmount: 1000000,
+        valueAmount: 1000000,
+        diamondAmount: 1000000,
+        createdAt: null,
+        tournamentId: null,
+      );
+
+      expect(transaction.displayLabel, '디버그 테스트 지급');
+    });
   });
 }

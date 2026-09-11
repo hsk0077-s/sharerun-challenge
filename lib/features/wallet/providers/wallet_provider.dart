@@ -89,6 +89,32 @@ class WalletNotifier extends Notifier<WalletState> {
   /// Firestore 스냅샷으로 잔액을 덮어쓴다. 재설치·기기 변경 복원용.
   void replaceFromRemote(WalletModel model) => _syncFromRemote(model);
 
+  /// Walking-challenge harvest: update SHARE only. DIA/VALUE stay as-is.
+  void applyShareFromServer({
+    int? shareBalance,
+    int shareCredited = 0,
+  }) {
+    if (shareBalance != null) {
+      state = state.copyWith(shareBalance: shareBalance);
+      return;
+    }
+    if (shareCredited <= 0) return;
+    state = state.copyWith(shareBalance: state.shareBalance + shareCredited);
+  }
+
+  /// Debug test grant / full snapshot. Null fields keep the current value.
+  void applyWalletSnapshot({
+    int? shareBalance,
+    int? diamondBalance,
+    int? valueBalance,
+  }) {
+    state = state.copyWith(
+      shareBalance: shareBalance,
+      diamondBalance: diamondBalance,
+      valueBalance: valueBalance,
+    );
+  }
+
   /// src-14 PG 결제 완료 시 SHARE 충전.
   void chargeShare(int amount) {
     if (amount <= 0) return;

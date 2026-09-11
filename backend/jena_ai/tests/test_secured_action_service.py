@@ -98,3 +98,126 @@ def test_ensure_email_verified_raises_for_unverified_password(
 
     assert exc_info.value.status_code == 403
     assert exc_info.value.detail == "Email verification is required."
+
+
+def test_wallet_balances_read_nested_map_without_defaulting_other_assets() -> None:
+    share, dia, value = SecuredActionService._wallet_balances(
+        {
+            "wallet": {
+                "shareBalance": 12,
+                "diamondBalance": 3,
+                "valueTokenBalance": 5000,
+            }
+        }
+    )
+    assert (share, dia, value) == (12, 3, 5000)
+
+
+def test_harvest_result_returns_share_snapshot_and_preserves_dia_value() -> None:
+    result = SecuredActionService()._harvest_result(
+        status="harvested",
+        reason="51 SHARE credited from walking challenge.",
+        share_credited=51,
+        share_balance=51,
+        diamond_balance=0,
+        value_token_balance=5000,
+    )
+    dumped = result.model_dump()
+    assert dumped["share_credited"] == 51
+    assert dumped["share_balance"] == 51
+    assert dumped["diamond_balance"] == 0
+    assert dumped["value_token_balance"] == 5000
+    assert dumped["status"] == "harvested"
+
+
+def test_debug_test_wallet_grant_amount_is_one_million() -> None:
+    from app.constants.economy_constants import TEST_WALLET_GRANT_AMOUNT
+
+    assert TEST_WALLET_GRANT_AMOUNT == 1_000_000
+
+
+def test_debug_test_wallet_grant_flag_is_one_shot() -> None:
+    assert SecuredActionService._test_grant_already_applied(
+        {"testGrant1mDone": True}
+    )
+    assert not SecuredActionService._test_grant_already_applied({})
+    assert not SecuredActionService._test_grant_already_applied(
+        {"testGrant1mDone": False}
+    )
+
+
+def test_debug_test_wallet_grant_is_denied_without_allowlist_or_flag() -> None:
+    assert not SecuredActionService.is_test_grant_authorized(
+        "some-other-uid",
+        {},
+        "",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_allowlisted_uid() -> None:
+    assert SecuredActionService.is_test_grant_authorized(
+        "owner-uid",
+        {},
+        "",
+        allowlist=frozenset({"owner-uid"}),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_admin_eligible_flag() -> None:
+    assert SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {"testGrant1mEligible": True},
+        "",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {"testGrant1mEligible": False},
+        "",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_matching_secret_only() -> None:
+    assert SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {},
+        "private-debug-secret",
+        allowlist=frozenset(),
+        expected_secret="private-debug-secret",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {},
+        "wrong",
+        allowlist=frozenset(),
+        expected_secret="private-debug-secret",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "random-uid",
+        {},
+        "private-debug-secret",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_result_sets_all_three_assets() -> None:
+    result = SecuredActionService()._harvest_result(
+        status="granted",
+        reason="Debug test grant set SHARE/DIA/VALUE to 1000000.",
+        share_credited=1_000_000,
+        share_balance=1_000_000,
+        diamond_balance=1_000_000,
+        value_token_balance=1_000_000,
+    )
+    dumped = result.model_dump()
+    assert dumped["status"] == "granted"
+    assert dumped["share_balance"] == 1_000_000
+    assert dumped["diamond_balance"] == 1_000_000
+    assert dumped["value_token_balance"] == 1_000_000

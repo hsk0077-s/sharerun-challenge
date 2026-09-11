@@ -122,4 +122,10 @@ abstract final class AppEnv {
     }
     return googleMapsNativeConfigured;
   }
+
+  /// Private debug grant secret. Empty by default — never grant by secret
+  /// unless the owner passes `--dart-define=TEST_WALLET_GRANT_SECRET=...`
+  /// matching the Jena env of the same name.
+  static String get testWalletGrantSecret =>
+      _get('TEST_WALLET_GRANT_SECRET', defaultValue: '').trim();
 }

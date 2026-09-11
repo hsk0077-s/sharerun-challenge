@@ -5,6 +5,7 @@ import '../../core/async/stream_guards.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
+import '../models/pedometer_harvest_result.dart';
 import '../models/wallet_model.dart';
 import '../models/wallet_transaction_model.dart';
 
@@ -98,12 +99,24 @@ class WalletRepository {
     return _securedActionApiClient.requestRefund(shareAmount: shareAmount);
   }
 
-  /// Walking-challenge SHARE mint. Server increments `wallet.shareBalance` only.
-  Future<void> harvestPedometerShare({
+  /// Walking-challenge SHARE mint. Server updates `wallet.shareBalance` only.
+  Future<PedometerHarvestResult> harvestPedometerShare({
     required int claimedSteps,
   }) {
     return _securedActionApiClient.harvestPedometerShare(
       claimedSteps: claimedSteps,
+    );
+  }
+
+  /// Debug one-shot 1M SHARE/DIA/VALUE. No-op outside [kDebugMode].
+  Future<PedometerHarvestResult> grantDebugTestWallet1m({
+    String grantSecret = '',
+  }) {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug test grant is debug-only.');
+    }
+    return _securedActionApiClient.grantDebugTestWallet1m(
+      grantSecret: grantSecret,
     );
   }
 

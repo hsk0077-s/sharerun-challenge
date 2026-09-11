@@ -87,6 +87,10 @@ class WalletNotifier extends Notifier<WalletState> {
     if (!_ready.isCompleted) _ready.complete();
   }
 
+  /// Debug local harvest may sit a few SHARE above a stale Firestore snapshot.
+  /// Join/validate debits (tens of thousands of SHARE) must still apply.
+  static const debugHarvestShareSlack = 60;
+
   /// Firestore is the ledger, but SHARE-only harvest snapshots (DIA/VALUE 0)
   /// must not wipe a debug grant or in-memory harvest credit.
   static WalletState mergeRemote(WalletState current, WalletState incoming) {
@@ -94,9 +98,12 @@ class WalletNotifier extends Notifier<WalletState> {
       return current;
     }
     var share = incoming.shareBalance;
-    // Debug local harvest credits SHARE on walletProvider first. A later
-    // empty/stale Firestore SHARE must not wipe that credit.
-    if (kDebugMode && current.shareBalance > incoming.shareBalance) {
+    if (shouldPreserveDebugShare(
+      currentShare: current.shareBalance,
+      incomingShare: incoming.shareBalance,
+      incomingDiamond: incoming.diamondBalance,
+      incomingValue: incoming.valueBalance,
+    )) {
       share = current.shareBalance;
     }
     return WalletState(
@@ -108,6 +115,21 @@ class WalletNotifier extends Notifier<WalletState> {
           ? current.valueBalance
           : incoming.valueBalance,
     );
+  }
+
+  static bool shouldPreserveDebugShare({
+    required int currentShare,
+    required int incomingShare,
+    int incomingDiamond = 0,
+    int incomingValue = 0,
+  }) {
+    if (!kDebugMode) return false;
+    final drop = currentShare - incomingShare;
+    if (drop <= 0) return false;
+    if (drop <= debugHarvestShareSlack) return true;
+    // Harvest snapshots may send SHARE only (DIA/VALUE 0). Join/validate
+    // send a full wallet and must be allowed to lower SHARE.
+    return incomingDiamond == 0 && incomingValue == 0;
   }
 
   /// Firestore 스냅샷으로 잔액을 덮어쓴다. 재설치·기기 변경 복원용.

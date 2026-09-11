@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/config/app_env.dart';
+import '../core/auth/health_data_consent_store.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -20,6 +21,7 @@ import '../features/run_tracking/models/run_telemetry.dart';
 import '../features/run_tracking/services/ghost_pace_matcher.dart';
 import '../features/run_tracking/services/gps_tracking_service.dart';
 import '../features/run_tracking/services/run_session_service.dart';
+import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
 import 'run_result_screen.dart';
 import 'appeal_center_screen.dart';
@@ -257,6 +259,26 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
 
   Future<void> _startRunSession() async {
     try {
+      final firebaseUser = ref.read(authStateChangesProvider).value;
+      final localUid = ref.read(persistedAuthSessionProvider)?.uid;
+      final signedIn = firebaseUser != null ||
+          (localUid != null && localUid.isNotEmpty);
+      final profileConsent =
+          ref.read(activeUserProfileProvider).value?.healthDataConsent ?? false;
+      final prefsConsent = await HealthDataConsentStore().readAgreed();
+      final startBlocked = HomeStartGate.startBlockReason(
+        signedIn: signedIn,
+        healthConsent: profileConsent || prefsConsent,
+      );
+      if (startBlocked != null) {
+        if (!mounted) return;
+        setState(() {
+          _starting = false;
+          _sessionStarted = false;
+          _startError = startBlocked;
+        });
+        return;
+      }
       final service = ref.read(runSessionServiceProvider);
       _telemetrySubscription = service.telemetryStream.listen((event) {
         if (!mounted) return;
@@ -303,16 +325,20 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
   Future<void> _finishAndValidate() async {
     setState(() => _validating = true);
     final authUser = ref.read(authStateChangesProvider).value;
-    if (authUser == null) {
+    final validateBlocked = HomeStartGate.validateBlockReason(
+      signedIn: authUser != null,
+      sessionStarted: _sessionStarted,
+    );
+    if (validateBlocked != null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 후 러닝 검증을 진행할 수 있습니다.')),
+        SnackBar(content: Text(validateBlocked)),
       );
       setState(() => _validating = false);
       return;
     }
 
-    final userId = authUser.uid;
+    final userId = authUser!.uid;
     final activityId = 'activity-${DateTime.now().millisecondsSinceEpoch}';
     CompletedRunSession? session;
     try {

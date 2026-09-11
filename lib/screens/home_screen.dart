@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:health/health.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
+import '../core/auth/health_data_consent_store.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart' as src_colors;
 import '../core/widgets/async_value_section.dart';
@@ -16,6 +16,7 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/retention_widgets.dart';
+import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/providers/wallet_provider.dart';
@@ -104,6 +105,91 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     HealthDataAccess.READ,
     HealthDataAccess.READ,
   ];
+
+  Future<void> _onStartRun() async {
+    if (_startingRun) {
+      return;
+    }
+    _startingRun = true;
+
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    try {
+      final firebaseUser = ref.read(authStateChangesProvider).value;
+      final localUid = ref.read(persistedAuthSessionProvider)?.uid;
+      final signedIn = firebaseUser != null ||
+          (localUid != null && localUid.isNotEmpty);
+      final profileConsent =
+          ref.read(activeUserProfileProvider).value?.healthDataConsent ?? false;
+      final prefsConsent = await HealthDataConsentStore().readAgreed();
+      final blocked = HomeStartGate.startBlockReason(
+        signedIn: signedIn,
+        healthConsent: profileConsent || prefsConsent,
+      );
+      if (blocked != null) {
+        if (!mounted) {
+          return;
+        }
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(blocked),
+            backgroundColor: AppColors.dangerRed,
+          ),
+        );
+        return;
+      }
+
+      final health = Health();
+      await health.configure();
+
+      var granted = await health.hasPermissions(
+        _healthTypes,
+        permissions: _healthPermissions,
+      );
+
+      if (granted != true) {
+        await health.requestAuthorization(
+          _healthTypes,
+          permissions: _healthPermissions,
+        );
+        await Future<void>.delayed(
+          const Duration(milliseconds: 300),
+        );
+        granted = await health.hasPermissions(
+          _healthTypes,
+          permissions: _healthPermissions,
+        );
+      }
+
+      if (granted == false) {
+        if (!mounted) {
+          return;
+        }
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Health Connect 권한이 필요합니다. 상단 워치 연동을 먼저 완료해 주세요.',
+            ),
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) {
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        navigator.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const InChallengeScreen(),
+          ),
+        );
+      });
+    } finally {
+      _startingRun = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -278,82 +364,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 elevation: 12,
                 shadowColor: AppColors.neonLime.withValues(alpha: 0.4),
               ),
-              onPressed: () async {
-                if (_startingRun) {
-                  return;
-                }
-                _startingRun = true;
-
-                final navigator = Navigator.of(context);
-                final messenger = ScaffoldMessenger.of(context);
-
-                try {
-                  final prefs = await SharedPreferences.getInstance();
-                  final isHealthDataAgreed =
-                      prefs.getBool('isHealthDataAgreed') ?? false;
-                  if (!isHealthDataAgreed) {
-                    if (!mounted) {
-                      return;
-                    }
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('마이페이지에서 민감정보 수집에 동의해주세요'),
-                        backgroundColor: AppColors.dangerRed,
-                      ),
-                    );
-                    return;
-                  }
-
-                  final health = Health();
-                  await health.configure();
-
-                  var granted = await health.hasPermissions(
-                    _healthTypes,
-                    permissions: _healthPermissions,
-                  );
-
-                  if (granted != true) {
-                    await health.requestAuthorization(
-                      _healthTypes,
-                      permissions: _healthPermissions,
-                    );
-                    await Future<void>.delayed(
-                      const Duration(milliseconds: 300),
-                    );
-                    granted = await health.hasPermissions(
-                      _healthTypes,
-                      permissions: _healthPermissions,
-                    );
-                  }
-
-                  if (granted == false) {
-                    if (!mounted) {
-                      return;
-                    }
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Health Connect 권한이 필요합니다. 상단 워치 연동을 먼저 완료해 주세요.',
-                        ),
-                      ),
-                    );
-                    return;
-                  }
-
-                  if (!mounted) {
-                    return;
-                  }
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    navigator.push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const InChallengeScreen(),
-                      ),
-                    );
-                  });
-                } finally {
-                  _startingRun = false;
-                }
-              },
+              onPressed: _onStartRun,
               child: const Text(
                 'START',
                 style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900),

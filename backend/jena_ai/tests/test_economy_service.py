@@ -52,6 +52,24 @@ def test_kst_today_key_rolls_at_utc_plus_9_midnight() -> None:
     assert service.kst_today_key(at_midnight) == "2026-09-09"
 
 
+def test_normalize_daily_mining_resets_on_new_kst_day() -> None:
+    service = EconomyService()
+    previous = {
+        "dateKey": "2026-09-08",
+        "earnedKm": 3.0,
+        "earnedSrvTokens": 30,
+    }
+    reset = service.normalize_daily_mining(previous, "2026-09-09")
+    assert reset == {
+        "dateKey": "2026-09-09",
+        "earnedKm": 0.0,
+        "earnedSrvTokens": 0,
+    }
+    same_day = service.normalize_daily_mining(previous, "2026-09-08")
+    assert same_day["earnedKm"] == 3.0
+    assert same_day["earnedSrvTokens"] == 30
+
+
 def test_normalize_pedometer_harvest_resets_on_new_kst_day() -> None:
     service = EconomyService()
     previous = {

@@ -9,6 +9,7 @@ import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
+import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
 import 'run_result_screen.dart';
 
@@ -164,17 +165,21 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
     setState(() => validating = true);
 
     final authUser = ref.read(authStateChangesProvider).value;
-    if (authUser == null) {
+    final validateBlocked = HomeStartGate.validateBlockReason(
+      signedIn: authUser != null,
+      sessionStarted: sessionStarted,
+    );
+    if (validateBlocked != null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('로그인 후 러닝 검증을 진행할 수 있습니다.')),
+          SnackBar(content: Text(validateBlocked)),
         );
         setState(() => validating = false);
       }
       return;
     }
 
-    final userId = authUser.uid;
+    final userId = authUser!.uid;
     final activityId = 'activity-${DateTime.now().millisecondsSinceEpoch}';
 
     try {

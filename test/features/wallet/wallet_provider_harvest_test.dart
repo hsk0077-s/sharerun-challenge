@@ -180,6 +180,51 @@ void main() {
     expect(merged.valueBalance, 1000000);
   });
 
+  test('debug mergeRemote applies join SHARE debit and keeps DIA/VALUE', () {
+    const current = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    const afterJoin = WalletState(
+      shareBalance: 970000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    final merged = WalletNotifier.mergeRemote(current, afterJoin);
+    expect(merged.shareBalance, 970000);
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 1000000);
+  });
+
+  test('debug harvest slack does not preserve a 30k join debit', () {
+    expect(
+      WalletNotifier.shouldPreserveDebugShare(
+        currentShare: 1000000,
+        incomingShare: 51,
+        incomingDiamond: 0,
+        incomingValue: 0,
+      ),
+      isTrue,
+    );
+    expect(
+      WalletNotifier.shouldPreserveDebugShare(
+        currentShare: 1000029,
+        incomingShare: 1000000,
+      ),
+      isTrue,
+    );
+    expect(
+      WalletNotifier.shouldPreserveDebugShare(
+        currentShare: 1000000,
+        incomingShare: 970000,
+        incomingDiamond: 1000000,
+        incomingValue: 1000000,
+      ),
+      isFalse,
+    );
+  });
+
   test('debug 1M grant is one-shot keyed and one million', () {
     expect(DebugTestWalletGrantHost.amount, 1000000);
     expect(DebugTestWalletGrantHost.prefsKey, 'testGrant1mDone');

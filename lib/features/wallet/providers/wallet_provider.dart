@@ -91,6 +91,11 @@ class WalletNotifier extends Notifier<WalletState> {
   /// Join/validate debits (tens of thousands of SHARE) must still apply.
   static const debugHarvestShareSlack = 60;
 
+  /// Largest single join/sponsor SHARE spend we still treat as a debit
+  /// (20 km entry 200k + 50k personal sponsor). Bigger SHARE-only drops are
+  /// the debug grant vs Jena harvest wipe (1M → 51).
+  static const debugMaxSpendShareDrop = 250000;
+
   /// Firestore is the ledger, but SHARE-only harvest snapshots (DIA/VALUE 0)
   /// must not wipe a debug grant or in-memory harvest credit.
   static WalletState mergeRemote(WalletState current, WalletState incoming) {
@@ -127,9 +132,13 @@ class WalletNotifier extends Notifier<WalletState> {
     final drop = currentShare - incomingShare;
     if (drop <= 0) return false;
     if (drop <= debugHarvestShareSlack) return true;
-    // Harvest snapshots may send SHARE only (DIA/VALUE 0). Join/validate
-    // send a full wallet and must be allowed to lower SHARE.
-    return incomingDiamond == 0 && incomingValue == 0;
+    // Harvest may send SHARE only (DIA/VALUE 0) far below the 1M grant.
+    // Join/sponsor remainders are spend-sized even when the nested wallet
+    // map was previously replaced with SHARE-only (debug harvest write).
+    if (incomingDiamond == 0 && incomingValue == 0) {
+      return drop > debugMaxSpendShareDrop;
+    }
+    return false;
   }
 
   /// Firestore 스냅샷으로 잔액을 덮어쓴다. 재설치·기기 변경 복원용.
@@ -189,6 +198,16 @@ class WalletNotifier extends Notifier<WalletState> {
         shareBalance: (state.shareBalance - amount).clamp(0, 1 << 31),
       );
     });
+  }
+
+  /// Tournament join / entry-fee spend. Synchronous so Home SHARE drops
+  /// before a Firestore snapshot can merge against the pre-debit balance.
+  /// DIA/VALUE are unchanged.
+  void applyEntryFeeDebit(int amount) {
+    if (amount <= 0) return;
+    state = state.copyWith(
+      shareBalance: (state.shareBalance - amount).clamp(0, 1 << 31),
+    );
   }
 
   void creditDia(int amount) {

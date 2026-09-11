@@ -14,9 +14,11 @@ SRV_TOKENS_PER_KM = 10
 PEDOMETER_SHARE_PER_STEP = 0.01
 PEDOMETER_DAILY_HARVEST_SHARE_CAP = 60
 
-# Debug one-shot QA grant. Empty UID allowlist = nobody, including debug builds.
+# Debug one-shot QA grant. Play Store / release clients never send the
+# baked debug-client secret. UID allowlist remains an optional extra gate.
 TEST_WALLET_GRANT_AMOUNT = 1_000_000
 TEST_WALLET_GRANT_FLAG = "testGrant1mDone"
 TEST_WALLET_GRANT_ELIGIBLE_FLAG = "testGrant1mEligible"
-# Put the tester Firebase Auth UID(s) here. Leave empty so other users never get it.
 TEST_WALLET_GRANT_UIDS: frozenset[str] = frozenset()
+# Must match Flutter DebugTestWalletGrantHost.debugClientSecret (kDebugMode).
+TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET = "sharerun-debug-test-grant-1m"

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,31 +9,33 @@ import '../../../app/providers/app_providers.dart';
 import '../../../core/config/app_env.dart';
 import 'providers/wallet_provider.dart';
 
-/// Debug one-shot 1,000,000 SHARE/DIA/VALUE for the owner/tester only.
+/// Debug one-shot 1,000,000 SHARE/DIA/VALUE after login.
 ///
-/// **Who gets it:** only a UID in [allowlistUids], or a user whose Firestore
-/// doc has admin-set `testGrant1mEligible: true`, or a matching
-/// `TEST_WALLET_GRANT_SECRET`. [allowlistUids] is empty by default — other
-/// debug installs never receive the grant.
+/// **Who:** [kDebugMode] (`flutter run`) only. Release/profile store builds
+/// never mount this host and never call the grant API.
 ///
-/// **Once:** SharedPreferences [prefsKey] + Firestore `testGrant1mDone`.
-/// Relaunch does not reset balances; spend/earn continue from the granted
-/// amounts.
+/// **Once per uid:** SharedPreferences [prefsKeyForUid] + Firestore
+/// `testGrant1mDone`. Relaunch does not reset balances; spend/earn continue.
 class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
   const DebugTestWalletGrantHost({required this.child, super.key});
 
   static const prefsKey = 'testGrant1mDone';
   static const amount = 1000000;
-  static const eligibleField = 'testGrant1mEligible';
 
-  /// Put the tester Firebase Auth UID here, then debug-run once.
-  /// Leave empty so nobody is auto-granted.
-  static const allowlistUids = <String>[
-    // 'YOUR_FIREBASE_UID',
-  ];
+  /// Baked into debug clients only. Must match Jena
+  /// `TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET`. Override with
+  /// `--dart-define=TEST_WALLET_GRANT_SECRET=...` if needed.
+  static const debugClientSecret = 'sharerun-debug-test-grant-1m';
 
-  static bool isAllowlisted(String uid) =>
-      uid.isNotEmpty && allowlistUids.contains(uid);
+  static String prefsKeyForUid(String uid) => '${prefsKey}_$uid';
+
+  /// Secret sent by debug clients. Empty outside [kDebugMode].
+  static String grantSecret() {
+    if (!kDebugMode) return '';
+    final fromEnv = AppEnv.testWalletGrantSecret;
+    if (fromEnv.isNotEmpty) return fromEnv;
+    return debugClientSecret;
+  }
 
   final Widget child;
 
@@ -76,24 +77,15 @@ class _DebugTestWalletGrantHostState
     if (uid.isEmpty) return;
 
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(DebugTestWalletGrantHost.prefsKey) ?? false) {
-      return;
-    }
-
-    final secret = AppEnv.testWalletGrantSecret;
-    final eligible = await _isCallerEligible(uid: uid, secret: secret);
-    if (!eligible) {
-      debugPrint(
-        '[TEST GRANT 1M] skipped — uid not allowlisted, '
-        'no admin eligible flag, no secret',
-      );
+    final uidKey = DebugTestWalletGrantHost.prefsKeyForUid(uid);
+    if (prefs.getBool(uidKey) ?? false) {
       return;
     }
 
     _inFlight = true;
     try {
       final result = await ref.read(walletRepositoryProvider).grantDebugTestWallet1m(
-            grantSecret: secret,
+            grantSecret: DebugTestWalletGrantHost.grantSecret(),
           );
       const fallback = DebugTestWalletGrantHost.amount;
       final grantedNow = result.status == 'granted';
@@ -104,6 +96,7 @@ class _DebugTestWalletGrantHostState
             valueBalance:
                 result.valueTokenBalance ?? (grantedNow ? fallback : null),
           );
+      await prefs.setBool(uidKey, true);
       await prefs.setBool(DebugTestWalletGrantHost.prefsKey, true);
       debugPrint(
         '[TEST GRANT 1M] ${result.status} '
@@ -114,22 +107,6 @@ class _DebugTestWalletGrantHostState
     } catch (e, st) {
       debugPrint('[TEST GRANT 1M] failed: $e\n$st');
       _inFlight = false;
-    }
-  }
-
-  Future<bool> _isCallerEligible({
-    required String uid,
-    required String secret,
-  }) async {
-    if (DebugTestWalletGrantHost.isAllowlisted(uid)) return true;
-    if (secret.isNotEmpty) return true;
-    try {
-      final snap =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      return snap.data()?[DebugTestWalletGrantHost.eligibleField] == true;
-    } catch (e) {
-      debugPrint('[TEST GRANT 1M] eligible lookup failed: $e');
-      return false;
     }
   }
 }

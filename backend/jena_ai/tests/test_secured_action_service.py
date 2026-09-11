@@ -146,6 +146,14 @@ def test_debug_test_wallet_grant_flag_is_one_shot() -> None:
     )
 
 
+def test_debug_test_grant_request_defaults_are_safe_for_release() -> None:
+    from app.models.secured_actions import DebugTestGrantRequest
+
+    request = DebugTestGrantRequest()
+    assert request.debug_client is False
+    assert request.grant_secret == ""
+
+
 def test_debug_test_wallet_grant_is_denied_without_allowlist_or_flag() -> None:
     assert not SecuredActionService.is_test_grant_authorized(
         "some-other-uid",
@@ -202,6 +210,47 @@ def test_debug_test_wallet_grant_allows_matching_secret_only() -> None:
         "random-uid",
         {},
         "private-debug-secret",
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+
+
+def test_debug_test_wallet_grant_allows_debug_client_baked_secret() -> None:
+    from app.constants.economy_constants import (
+        TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
+    )
+
+    assert TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET == "sharerun-debug-test-grant-1m"
+    assert SecuredActionService.is_test_grant_authorized(
+        "any-uid",
+        {},
+        TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
+        debug_client=True,
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+    # Release/profile never send debug_client; baked secret alone is not enough.
+    assert not SecuredActionService.is_test_grant_authorized(
+        "any-uid",
+        {},
+        TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
+        debug_client=False,
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "any-uid",
+        {},
+        "wrong",
+        debug_client=True,
+        allowlist=frozenset(),
+        expected_secret="",
+    )
+    assert not SecuredActionService.is_test_grant_authorized(
+        "play-store-uid",
+        {},
+        "",
+        debug_client=False,
         allowlist=frozenset(),
         expected_secret="",
     )

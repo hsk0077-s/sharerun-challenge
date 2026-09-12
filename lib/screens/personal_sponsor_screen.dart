@@ -141,7 +141,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
+                AppRouteNav.popOrHome(context);
               },
               child: const Text(AppStrings.personalSponsorCelebrateDone),
             ),

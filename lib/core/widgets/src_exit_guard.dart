@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router/route_names.dart';
+import '../navigation/app_pop_policy.dart';
 import '../navigation/dashboard_tab_navigation.dart';
 import '../strings/app_strings.dart';
 
@@ -54,18 +56,37 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         if (didPop) return;
 
         final router = GoRouter.maybeOf(context);
-        if (router != null && router.canPop()) {
-          router.pop();
-          return;
-        }
-        if (router == null && Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
+        final navigatorCanPop = Navigator.of(context).canPop();
+        final rootPath = router?.routeInformationProvider.value.uri.path ??
+            ModalRoute.of(context)?.settings.name ??
+            '';
+        final atTabRoot = router != null
+            ? AppPopPolicy.isMainTabRoot(rootPath)
+            : !navigatorCanPop;
+        final action = AppPopPolicy.resolve(
+          atTabRoot: atTabRoot,
+          canPopNearestNavigator: navigatorCanPop,
+          routerCanPop: router?.canPop() ?? false,
+          tabIndex: _currentTabIndex,
+        );
+
+        if (action == AppPopAction.popDetail) {
+          if (navigatorCanPop) {
+            Navigator.of(context).pop();
+            return;
+          }
+          if (router != null && router.canPop()) {
+            router.pop();
+          }
           return;
         }
 
-        // 탭 수렴: 홈이 아니면 홈으로.
-        if (_currentTabIndex != DashboardTabNavigation.home) {
+        if (action == AppPopAction.goHome) {
           _lastBackAt = null;
+          if (router != null && !atTabRoot) {
+            router.go(RouteNames.mainDashboard);
+            return;
+          }
           _goHome();
           return;
         }

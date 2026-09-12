@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../app/router/route_names.dart';
+import '../core/challenge/challenge_entry_fee.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -255,12 +256,13 @@ class _ChallengeDetailCopy {
   factory _ChallengeDetailCopy.forRoom(String? roomId) {
     final isBeginner = roomId != null && _beginnerRoomIds.contains(roomId);
     if (isBeginner) {
+      const fee = ChallengeEntryFee.beginner1kmShare;
       return const _ChallengeDetailCopy(
         title: '1km 초보 챌린지',
-        entryFee: '참가비: 100,000 SHARE',
+        entryFee: AppStrings.dashboardChallenge1Sub,
         badge: 'Beginner',
-        prize: '상금: 10만 원',
-        donation: '기부금: 유니세프 기부 10만 원',
+        prize: '상금: 3만 원',
+        donation: '기부금: 유니세프 기부 3만 원',
         distance: '거리: 1km',
         timeRemaining: AppStrings.challengeDetailTimeRemaining,
         recruitment: '모집 인원: 120 / 200명 (최소 BEP: 100명)',
@@ -269,11 +271,12 @@ class _ChallengeDetailCopy {
         cprTickets: AppStrings.challengeDetailCprTickets,
         joinLabel: AppStrings.challengeDetailJoin,
         radiusMeters: 1000,
-        entryFeeShare: 100000,
+        entryFeeShare: fee,
       );
     }
 
-    // Default / intermediate-3km-room → existing 중급 3km content.
+    // Default / intermediate-3km-room → 중급 3km (longer = higher fee).
+    const fee = ChallengeEntryFee.intermediate3kmShare;
     return const _ChallengeDetailCopy(
       title: AppStrings.challengeDetailTitle,
       entryFee: AppStrings.challengeDetailEntryFee,
@@ -288,7 +291,7 @@ class _ChallengeDetailCopy {
       cprTickets: AppStrings.challengeDetailCprTickets,
       joinLabel: AppStrings.challengeDetailJoin,
       radiusMeters: 3000,
-      entryFeeShare: 30000,
+      entryFeeShare: fee,
     );
   }
 }

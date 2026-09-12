@@ -41,6 +41,8 @@
 	<string>SRC uses location to map and verify outdoor running challenges.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>셰어런챌린지에서 정확한 걸음 수 측정을 위해 모션 및 피트니스 데이터에 접근합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>홈 화면 아바타에 사용할 사진을 선택하기 위해 사진 보관함에 접근합니다.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>CFBundleURLTypes</key>

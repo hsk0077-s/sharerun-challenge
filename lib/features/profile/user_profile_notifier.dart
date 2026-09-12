@@ -121,6 +121,7 @@ class UserProfileNotifier extends Notifier<UserProfile> {
   Future<void> processDonation(
     int amount, {
     String assetType = 'SHARE',
+    String? receiptTitle,
   }) async {
     if (amount <= 0) return;
     final won = amount * AngelEconomy.shareToWon;
@@ -170,7 +171,8 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       }
     }
     await writeTransactionReceipt(
-      title: assetType == 'VALUE' ? '유니세프 글로벌 기부 펀딩 참여 🕊️' : '유니세프 기부 완료 🕊️',
+      title: receiptTitle ??
+          (assetType == 'VALUE' ? '유니세프 글로벌 기부 펀딩 참여 🕊️' : '유니세프 기부 완료 🕊️'),
       amount: -amount,
       assetType: assetType,
     );

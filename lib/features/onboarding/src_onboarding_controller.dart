@@ -1957,8 +1957,8 @@ abstract final class RetentionAlertEngine {
           title: '골든 아워 채굴',
           body:
               '오늘의 영웅이 될 준비가 되셨나요? 러너님만을 위한 골든 아워입니다. '
-              '가볍게 달리고 일일 500원 채굴 캡을 달성해 보세요! 👼',
-          routeName: RouteNames.preliminaryEvalName,
+              '가볍게 걷고 일일 5km / 50 SRV 채굴 캡을 달성해 보세요! 👼',
+          routeName: RouteNames.soloPedometer,
         ),
       );
     }

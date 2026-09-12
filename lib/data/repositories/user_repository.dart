@@ -425,6 +425,7 @@ class UserRepository {
         'title': title,
         'body': body,
         'code': code,
+        if (routeName != null) 'routeName': routeName,
         'timestamp': FieldValue.serverTimestamp(),
       });
       debugPrint('[FIRESTORE NOTIFICATION] 시스템 알림 클라우드 업로드 성공');

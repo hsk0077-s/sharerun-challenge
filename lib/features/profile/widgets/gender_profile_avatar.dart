@@ -4,10 +4,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
 import '../../../core/navigation/dashboard_tab_navigation.dart';
+import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../onboarding/widgets/nickname_change_sheet.dart';
 import '../../onboarding/widgets/nickname_setup_sheet.dart';
+import '../avatar_choice.dart';
+import '../avatar_choice_provider.dart';
 import '../user_profile_notifier.dart';
 import 'angel_tier_widgets.dart';
 
@@ -30,12 +33,13 @@ class GenderProfileAvatar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final gender = ref.watch(userGenderProvider);
-    final asset = GenderAvatarAssets.pathFor(gender);
+    final avatar = ref.watch(avatarChoiceProvider);
     final tokens = context.srcTokens;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        key: const Key('home-header-avatar'),
         onTap: () => showGenderCustomizeSheet(context, ref),
         customBorder: const CircleBorder(),
         child: Ink(
@@ -51,12 +55,9 @@ class GenderProfileAvatar extends ConsumerWidget {
             boxShadow: AppShadows.rest,
           ),
           child: ClipOval(
-            child: Image.asset(
-              asset,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => CustomPaint(
-                painter: _GenderBustPainter(isFemale: gender == 'female'),
-              ),
+            child: _AvatarImage(
+              choice: avatar,
+              genderFallback: gender,
             ),
           ),
         ),
@@ -188,6 +189,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
 Future<void> showGenderCustomizeSheet(BuildContext context, WidgetRef ref) {
   return showModalBottomSheet<void>(
     context: context,
+    isScrollControlled: true,
     backgroundColor: AppColors.surfaceWhite,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -203,10 +205,11 @@ class _GenderCustomizeSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(userGenderProvider);
+    final avatar = ref.watch(avatarChoiceProvider);
+    final selected = avatar.isPhoto ? AvatarChoice.photoId : avatar.presetId;
 
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -221,49 +224,69 @@ class _GenderCustomizeSheet extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              '성별 커스터마이징',
+              AppStrings.avatarCustomizeTitle,
               style: AppTextStyles.header1.copyWith(fontSize: 18),
             ),
             const SizedBox(height: 6),
             Text(
-              '아바타를 선택하면 즉시 저장됩니다',
+              AppStrings.avatarCustomizeHint,
+              textAlign: TextAlign.center,
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.textGrey,
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _GenderChoiceCard(
-                    label: '남성 아바타',
-                    asset: GenderAvatarAssets.male,
-                    isFemale: false,
-                    selected: selected == 'male',
-                    onTap: () async {
-                      await ref
-                          .read(userProfileNotifierProvider.notifier)
-                          .updateGender('male');
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
-                  ),
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: AvatarPresets.all.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.78,
+              ),
+              itemBuilder: (context, index) {
+                final preset = AvatarPresets.all[index];
+                return _PresetChoiceCard(
+                  preset: preset,
+                  selected: selected == preset.id,
+                  onTap: () async {
+                    await ref
+                        .read(avatarChoiceProvider.notifier)
+                        .selectPreset(preset.id);
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                key: const Key('avatar-pick-gallery'),
+                onPressed: () async {
+                  final ok = await ref
+                      .read(avatarChoiceProvider.notifier)
+                      .pickGalleryPhoto();
+                  if (!context.mounted) return;
+                  if (ok) {
+                    Navigator.of(context).pop();
+                    return;
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(AppStrings.avatarGalleryFailed),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.photo_library_outlined),
+                label: Text(
+                  avatar.isPhoto
+                      ? '${AppStrings.avatarPickGallery} ✓'
+                      : AppStrings.avatarPickGallery,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _GenderChoiceCard(
-                    label: '여성 아바타',
-                    asset: GenderAvatarAssets.female,
-                    isFemale: true,
-                    selected: selected == 'female',
-                    onTap: () async {
-                      await ref
-                          .read(userProfileNotifierProvider.notifier)
-                          .updateGender('female');
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
-                  ),
-                ),
-              ],
+              ),
             ),
           ],
         ),
@@ -272,18 +295,51 @@ class _GenderCustomizeSheet extends ConsumerWidget {
   }
 }
 
-class _GenderChoiceCard extends StatelessWidget {
-  const _GenderChoiceCard({
-    required this.label,
-    required this.asset,
-    required this.isFemale,
+class _AvatarImage extends StatelessWidget {
+  const _AvatarImage({
+    required this.choice,
+    required this.genderFallback,
+  });
+
+  final AvatarChoice choice;
+  final String genderFallback;
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = choice.photoBytes;
+    if (choice.isPhoto && bytes != null) {
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _assetOrBust(
+          GenderAvatarAssets.pathFor(genderFallback),
+          genderFallback,
+        ),
+      );
+    }
+    final preset = AvatarPresets.byId(choice.presetId);
+    return _assetOrBust(preset.asset, genderFallback);
+  }
+
+  Widget _assetOrBust(String asset, String gender) {
+    return Image.asset(
+      asset,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => CustomPaint(
+        painter: _GenderBustPainter(isFemale: gender == 'female'),
+      ),
+    );
+  }
+}
+
+class _PresetChoiceCard extends StatelessWidget {
+  const _PresetChoiceCard({
+    required this.preset,
     required this.selected,
     required this.onTap,
   });
 
-  final String label;
-  final String asset;
-  final bool isFemale;
+  final AvatarPreset preset;
   final bool selected;
   final VoidCallback onTap;
 
@@ -293,41 +349,47 @@ class _GenderChoiceCard extends StatelessWidget {
       color: selected
           ? AppColors.tealAccent.withValues(alpha: 0.10)
           : AppColors.agreementBoxFill,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
+        key: Key('avatar-preset-${preset.id}'),
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 14, 12, 12),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
           child: Column(
             children: [
-              Container(
-                width: 96,
-                height: 96,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color:
-                        selected ? AppColors.tealAccent : AppColors.borderLight,
-                    width: selected ? 2.5 : 1,
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected
+                          ? AppColors.tealAccent
+                          : AppColors.borderLight,
+                      width: selected ? 2.5 : 1,
+                    ),
                   ),
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    asset,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => CustomPaint(
-                      painter: _GenderBustPainter(isFemale: isFemale),
+                  child: ClipOval(
+                    child: Image.asset(
+                      preset.asset,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => CustomPaint(
+                        painter: _GenderBustPainter(
+                          isFemale: preset.id == AvatarChoice.femaleId,
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 4),
               Text(
-                label,
+                preset.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontWeight: FontWeight.w700,
-                  fontSize: 13,
+                  fontSize: 11,
                   color: selected ? AppColors.tealAccent : AppColors.textBlack,
                 ),
               ),

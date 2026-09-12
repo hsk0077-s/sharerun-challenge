@@ -4,8 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../../../app/providers/app_providers.dart';
 import '../../../core/strings/app_strings.dart';
+import '../../pedometer/kst_calendar.dart';
+import '../../profile/user_profile_notifier.dart';
+import '../../wallet/providers/wallet_provider.dart';
+import '../stamp_tour_progress_store.dart';
 
 @immutable
 class StampLandmark {
@@ -130,6 +133,7 @@ class StampTourNotifier extends Notifier<StampTourState> {
   Position? _lastPosition;
   final Set<String> _rewardedLandmarkIds = <String>{};
   var _walkRewardClaimed = false;
+  var _hydrated = false;
 
   @override
   StampTourState build() {
@@ -137,8 +141,61 @@ class StampTourNotifier extends Notifier<StampTourState> {
       _positionSub?.cancel();
       _positionSub = null;
     });
-    Future.microtask(startTracking);
+    Future.microtask(() async {
+      await _hydratePersistedProgress();
+      await startTracking();
+    });
     return StampTourState.initial();
+  }
+
+  Future<void> _hydratePersistedProgress() async {
+    try {
+      final progress = await const StampTourProgressStore().read(
+        todayKey: KstCalendar.dateKey(),
+      );
+      _rewardedLandmarkIds
+        ..clear()
+        ..addAll(progress.rewardedLandmarkIds);
+      _walkRewardClaimed = progress.walkRewardClaimed;
+      final landmarks = state.landmarks
+          .map(
+            (landmark) => landmark.copyWith(
+              isVisited: progress.visitedLandmarkIds.contains(landmark.id),
+            ),
+          )
+          .toList();
+      state = state.copyWith(
+        landmarks: landmarks,
+        walkMissionCompleted: progress.walkMissionCompleted,
+        walkDistanceKm: progress.walkDistanceKm,
+      );
+      _hydrated = true;
+    } catch (e) {
+      debugPrint('StampTour hydrate: $e');
+      _hydrated = true;
+    }
+  }
+
+  Future<void> _persistProgress() async {
+    if (!_hydrated) return;
+    try {
+      final visited = state.landmarks
+          .where((landmark) => landmark.isVisited)
+          .map((landmark) => landmark.id)
+          .toSet();
+      await const StampTourProgressStore().write(
+        StampTourProgress(
+          visitedLandmarkIds: visited,
+          rewardedLandmarkIds: Set<String>.from(_rewardedLandmarkIds),
+          walkMissionCompleted: state.walkMissionCompleted,
+          walkDistanceKm: state.walkDistanceKm,
+          walkRewardClaimed: _walkRewardClaimed,
+          walkDateKey: KstCalendar.dateKey(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('StampTour persist: $e');
+    }
   }
 
   Future<void> startTracking() async {
@@ -198,12 +255,14 @@ class StampTourNotifier extends Notifier<StampTourState> {
     if (!next.walkMissionCompleted && walkKm >= _walkMissionKm) {
       next = next.copyWith(walkMissionCompleted: true);
       state = next;
+      await _persistProgress();
       if (!_walkRewardClaimed) {
         _walkRewardClaimed = true;
         await claimDiamondReward(diamondAmount: 1);
       }
     } else {
       state = next;
+      await _persistProgress();
     }
 
     await checkLocationAndUnlock(position);
@@ -250,6 +309,7 @@ class StampTourNotifier extends Notifier<StampTourState> {
     await _resolveCurrentPosition();
     if (state.walkDistanceKm >= _walkMissionKm) {
       state = state.copyWith(walkMissionCompleted: true);
+      await _persistProgress();
       if (!_walkRewardClaimed) {
         _walkRewardClaimed = true;
         await claimDiamondReward(diamondAmount: 1);
@@ -294,6 +354,7 @@ class StampTourNotifier extends Notifier<StampTourState> {
         currentPosition: currentPosition,
         clearError: true,
       );
+      await _persistProgress();
     } else {
       state = state.copyWith(currentPosition: currentPosition);
     }
@@ -320,22 +381,19 @@ class StampTourNotifier extends Notifier<StampTourState> {
     }
   }
 
-  /// Updates Firestore `users/{uid}.wallet.diamondBalance` via increment.
+  /// Credits local wallet DIA immediately so stamp claims are not a no-op.
   Future<void> claimDiamondReward({required int diamondAmount}) async {
     if (diamondAmount <= 0 || state.claiming) return;
 
-    final uid = ref.read(firebaseAuthProvider).currentUser?.uid;
-    if (uid == null || uid.isEmpty) {
-      state = state.copyWith(lastError: '로그인이 필요합니다.');
-      return;
-    }
-
     state = state.copyWith(claiming: true, clearError: true);
     try {
-      await ref.read(userRepositoryProvider).addDiamondBalance(
-            uid: uid,
-            diamondAmount: diamondAmount,
+      ref.read(walletProvider.notifier).creditDia(diamondAmount);
+      await ref.read(userProfileNotifierProvider.notifier).writeTransactionReceipt(
+            title: '스탬프 투어 DIA 보상',
+            amount: diamondAmount,
+            assetType: 'DIA',
           );
+      await _persistProgress();
     } catch (e) {
       debugPrint('claimDiamondReward error: $e');
       state = state.copyWith(lastError: '다이아몬드 보상 저장에 실패했습니다.');

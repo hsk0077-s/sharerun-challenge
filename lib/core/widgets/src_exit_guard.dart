@@ -54,7 +54,13 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         if (didPop) return;
 
         final router = GoRouter.maybeOf(context);
-        if (router != null && router.canPop()) {
+        // Tab-shell leftover only: after cold start / unvisited branches,
+        // GoRouter.canPop() can be true at a tab root. Popping it finishes
+        // the shell. Details sit outside this guard and pop themselves.
+        // Do not use AppPopPolicy / onNavigationNotification (#41 banned).
+        if (widget.navigationShell == null &&
+            router != null &&
+            router.canPop()) {
           router.pop();
           return;
         }

@@ -18,6 +18,7 @@ import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../features/wallet/widgets/wallet_inventory_section.dart';
 import 'in_app_billing_screen.dart';
 import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
@@ -197,6 +198,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     final nicknameUnset = ref.watch(needsNicknameSetupProvider);
     final dailyKm = ref.watch(retentionDailyKmProvider);
     final wallet = ref.watch(walletProvider);
+    final shop = ref.watch(shopTabProvider);
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
@@ -233,6 +235,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                     gradeCompletedCount: trialDone,
                     onGradeEval: _onOpenPreliminaryEval,
                     dailyKm: dailyKm,
+                    shop: shop,
                   ),
                   SizedBox(height: tokens.spacing.sm),
                   SoloQuickStartBanner(onTap: _onOpenSoloQuickStart),
@@ -353,6 +356,7 @@ class _WalletCard extends StatelessWidget {
     required this.gradeCompletedCount,
     required this.onGradeEval,
     required this.dailyKm,
+    required this.shop,
   });
 
   final int share;
@@ -365,6 +369,7 @@ class _WalletCard extends StatelessWidget {
   final int gradeCompletedCount;
   final VoidCallback onGradeEval;
   final double dailyKm;
+  final ShopTabState shop;
 
   @override
   Widget build(BuildContext context) {
@@ -431,6 +436,10 @@ class _WalletCard extends StatelessWidget {
               ),
             ),
           ),
+          if (shop.hasOwnedItems) ...[
+            SizedBox(height: tokens.spacing.sm),
+            WalletInventorySection(shop: shop, compact: true),
+          ],
           SizedBox(height: tokens.spacing.sm),
           DailyCapGauge(dailyKm: dailyKm),
           AnimatedSwitcher(

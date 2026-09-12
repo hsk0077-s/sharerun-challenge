@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/constants/debug_wallet_grant.dart';
+
 /// Debug USB durable SHARE + paid-join ledger.
 ///
 /// Firestore `persistDebugShareSpend` is often permission-denied when the
@@ -49,17 +51,23 @@ class DebugLocalShareTx {
 class DebugLocalWalletSnapshot {
   const DebugLocalWalletSnapshot({
     this.share,
+    this.diamond,
+    this.value,
     this.paidIds = const {},
     this.history = const [],
   });
 
   final int? share;
+  final int? diamond;
+  final int? value;
   final Set<String> paidIds;
   final List<DebugLocalShareTx> history;
 }
 
 abstract final class DebugLocalWalletStore {
   static const shareKeyPrefix = 'debugLocalShareBalance_';
+  static const diamondKeyPrefix = 'debugLocalDiamondBalance_';
+  static const valueKeyPrefix = 'debugLocalValueBalance_';
   static const historyKeyPrefix = 'debugLocalShareHistory_';
   static const paidJoinKeyPrefix = 'debugPaidJoinedIds_';
 
@@ -69,17 +77,24 @@ abstract final class DebugLocalWalletStore {
 
   static const harvestSlack = 60;
   static const maxSpendShareDrop = 250000;
+  static const currencyCreditSlack = 100;
 
   static final Map<String, int> _share = {};
+  static final Map<String, int> _diamond = {};
+  static final Map<String, int> _value = {};
   static final Map<String, Set<String>> _paid = {};
   static final Map<String, List<DebugLocalShareTx>> _history = {};
 
   static String shareKey(String uid) => '$shareKeyPrefix$uid';
+  static String diamondKey(String uid) => '$diamondKeyPrefix$uid';
+  static String valueKey(String uid) => '$valueKeyPrefix$uid';
   static String historyKey(String uid) => '$historyKeyPrefix$uid';
   static String paidJoinKey(String uid) => '$paidJoinKeyPrefix$uid';
   static String legacyJoinedKey(String uid) => '$legacyJoinedKeyPrefix$uid';
 
   static int? cachedShare(String uid) => _share[uid];
+  static int? cachedDiamond(String uid) => _diamond[uid];
+  static int? cachedValue(String uid) => _value[uid];
   static Set<String> cachedPaidJoins(String uid) =>
       Set<String>.unmodifiable(_paid[uid] ?? const {});
   static List<DebugLocalShareTx> cachedHistory(String uid) =>
@@ -87,6 +102,8 @@ abstract final class DebugLocalWalletStore {
 
   static void clearCacheForTest() {
     _share.clear();
+    _diamond.clear();
+    _value.clear();
     _paid.clear();
     _history.clear();
   }
@@ -94,15 +111,68 @@ abstract final class DebugLocalWalletStore {
   static void rememberInMemory({
     required String uid,
     int? share,
+    int? diamond,
+    int? value,
     Set<String>? paidIds,
     List<DebugLocalShareTx>? history,
   }) {
     if (uid.isEmpty) return;
     if (share != null && share >= 0) _share[uid] = share;
+    if (diamond != null && diamond >= 0) _diamond[uid] = diamond;
+    if (value != null && value >= 0) _value[uid] = value;
     if (paidIds != null) {
       _paid[uid] = paidIds.where((id) => id.isNotEmpty).toSet();
     }
     if (history != null) _history[uid] = List<DebugLocalShareTx>.from(history);
+  }
+
+  /// Stale 1M grant must not refill a spent DIA/VALUE ledger.
+  /// Shop spends are 30 DIA — a small slack must not treat 1M as a credit.
+  static int applyBalanceCeiling({
+    required int incoming,
+    required int durable,
+    int creditSlack = currencyCreditSlack,
+    int grantAmount = DebugWalletGrant.amount,
+  }) {
+    if (incoming <= durable) return incoming;
+    if (incoming >= grantAmount && durable < incoming) return durable;
+    final bump = incoming - durable;
+    if (bump <= creditSlack) return incoming;
+    return durable;
+  }
+
+  static bool shouldRejectBalanceRestore({
+    required int current,
+    required int incoming,
+    int creditSlack = currencyCreditSlack,
+    int grantAmount = DebugWalletGrant.amount,
+  }) {
+    if (!kDebugMode) return false;
+    if (current <= 0) return false;
+    if (incoming >= grantAmount && current < incoming) return true;
+    final restore = incoming - current;
+    if (restore <= creditSlack) return false;
+    return true;
+  }
+
+  static Future<void> persistBalances({
+    required SharedPreferences prefs,
+    required String uid,
+    int? share,
+    int? diamond,
+    int? value,
+  }) async {
+    if (uid.isEmpty) return;
+    rememberInMemory(uid: uid, share: share, diamond: diamond, value: value);
+    if (share != null && share >= 0) {
+      await prefs.setInt(shareKey(uid), share);
+    }
+    if (diamond != null && diamond >= 0) {
+      await prefs.setInt(diamondKey(uid), diamond);
+    }
+    if (value != null && value >= 0) {
+      await prefs.setInt(valueKey(uid), value);
+    }
   }
 
   /// Resolve Firestore SHARE against the durable local ledger.
@@ -201,16 +271,36 @@ abstract final class DebugLocalWalletStore {
     } else {
       share = cachedShare ?? prefsShare;
     }
+    final prefsDia = prefs.getInt(diamondKey(uid));
+    final cachedDia = _diamond[uid];
+    final int? diamond;
+    if (prefsDia != null && cachedDia != null) {
+      diamond = applyBalanceCeiling(incoming: prefsDia, durable: cachedDia);
+    } else {
+      diamond = cachedDia ?? prefsDia;
+    }
+    final prefsValue = prefs.getInt(valueKey(uid));
+    final cachedValue = _value[uid];
+    final int? value;
+    if (prefsValue != null && cachedValue != null) {
+      value = applyBalanceCeiling(incoming: prefsValue, durable: cachedValue);
+    } else {
+      value = cachedValue ?? prefsValue;
+    }
     final paid = parseIdList(prefs.getStringList(paidJoinKey(uid)));
     final history = parseHistory(prefs.getString(historyKey(uid)));
     rememberInMemory(
       uid: uid,
       share: share,
+      diamond: diamond,
+      value: value,
       paidIds: paid,
       history: history,
     );
     return DebugLocalWalletSnapshot(
       share: share,
+      diamond: diamond,
+      value: value,
       paidIds: paid,
       history: history,
     );

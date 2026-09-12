@@ -48,11 +48,15 @@ class WalletState {
 class WalletNotifier extends Notifier<WalletState> {
   Completer<void> _ready = Completer<void>();
   int? _durableDebugShare;
+  int? _durableDebugDia;
+  int? _durableDebugValue;
 
   @override
   WalletState build() {
     _ready = Completer<void>();
     _durableDebugShare = null;
+    _durableDebugDia = null;
+    _durableDebugValue = null;
     ref.onDispose(() {
       if (!_ready.isCompleted) _ready.complete();
     });
@@ -77,10 +81,21 @@ class WalletNotifier extends Notifier<WalletState> {
     return const WalletState();
   }
 
-  /// Debug USB: keep the post-spend SHARE so Firestore 1M cannot wipe it.
+  /// Debug USB: keep the post-spend ledger so Firestore 1M cannot wipe it.
   void rememberDurableDebugShare(int share) {
     if (!kDebugMode || share < 0) return;
     _durableDebugShare = share;
+  }
+
+  void rememberDurableDebugWallet({
+    int? share,
+    int? diamond,
+    int? value,
+  }) {
+    if (!kDebugMode) return;
+    if (share != null && share >= 0) _durableDebugShare = share;
+    if (diamond != null && diamond >= 0) _durableDebugDia = diamond;
+    if (value != null && value >= 0) _durableDebugValue = value;
   }
 
   Future<void> _hydrateDurableDebugShare() async {
@@ -91,17 +106,41 @@ class WalletNotifier extends Notifier<WalletState> {
       final prefs = await SharedPreferences.getInstance();
       final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
       final share = snap.share;
-      if (share == null) return;
-      final current = state.shareBalance > (_durableDebugShare ?? 0)
-          ? state.shareBalance
-          : (_durableDebugShare ?? state.shareBalance);
-      final resolved = DebugLocalWalletStore.resolveHydratedShare(
-        currentShare: current,
-        durableShare: share,
-      );
-      rememberDurableDebugShare(resolved);
-      if (state.shareBalance != resolved) {
-        state = state.copyWith(shareBalance: resolved);
+      if (share != null) {
+        final current = state.shareBalance > (_durableDebugShare ?? 0)
+            ? state.shareBalance
+            : (_durableDebugShare ?? state.shareBalance);
+        final resolved = DebugLocalWalletStore.resolveHydratedShare(
+          currentShare: current,
+          durableShare: share,
+        );
+        rememberDurableDebugShare(resolved);
+        if (state.shareBalance != resolved) {
+          state = state.copyWith(shareBalance: resolved);
+        }
+      }
+      if (snap.diamond != null) {
+        final resolved = DebugLocalWalletStore.applyBalanceCeiling(
+          incoming: state.diamondBalance > 0
+              ? state.diamondBalance
+              : snap.diamond!,
+          durable: snap.diamond!,
+        );
+        rememberDurableDebugWallet(diamond: resolved);
+        if (state.diamondBalance != resolved) {
+          state = state.copyWith(diamondBalance: resolved);
+        }
+      }
+      if (snap.value != null) {
+        final resolved = DebugLocalWalletStore.applyBalanceCeiling(
+          incoming:
+              state.valueBalance > 0 ? state.valueBalance : snap.value!,
+          durable: snap.value!,
+        );
+        rememberDurableDebugWallet(value: resolved);
+        if (state.valueBalance != resolved) {
+          state = state.copyWith(valueBalance: resolved);
+        }
       }
     } catch (e) {
       debugPrint('hydrateDurableDebugShare: $e');
@@ -129,6 +168,8 @@ class WalletNotifier extends Notifier<WalletState> {
       state,
       WalletState.fromModel(model),
       durableShare: _durableDebugShare,
+      durableDiamond: _durableDebugDia,
+      durableValue: _durableDebugValue,
     );
     if (!_ready.isCompleted) _ready.complete();
   }
@@ -148,6 +189,8 @@ class WalletNotifier extends Notifier<WalletState> {
     WalletState current,
     WalletState incoming, {
     int? durableShare,
+    int? durableDiamond,
+    int? durableValue,
   }) {
     if (incoming.isEmpty && !current.isEmpty) {
       return current;
@@ -172,14 +215,40 @@ class WalletNotifier extends Notifier<WalletState> {
     )) {
       share = current.shareBalance;
     }
+    var diamond = incoming.diamondBalance == 0 && current.diamondBalance > 0
+        ? current.diamondBalance
+        : incoming.diamondBalance;
+    if (DebugLocalWalletStore.shouldRejectBalanceRestore(
+      current: current.diamondBalance,
+      incoming: diamond,
+    )) {
+      diamond = current.diamondBalance;
+    }
+    if (durableDiamond != null) {
+      diamond = DebugLocalWalletStore.applyBalanceCeiling(
+        incoming: diamond,
+        durable: durableDiamond,
+      );
+    }
+    var value = incoming.valueBalance == 0 && current.valueBalance > 0
+        ? current.valueBalance
+        : incoming.valueBalance;
+    if (DebugLocalWalletStore.shouldRejectBalanceRestore(
+      current: current.valueBalance,
+      incoming: value,
+    )) {
+      value = current.valueBalance;
+    }
+    if (durableValue != null) {
+      value = DebugLocalWalletStore.applyBalanceCeiling(
+        incoming: value,
+        durable: durableValue,
+      );
+    }
     return WalletState(
       shareBalance: share,
-      diamondBalance: incoming.diamondBalance == 0 && current.diamondBalance > 0
-          ? current.diamondBalance
-          : incoming.diamondBalance,
-      valueBalance: incoming.valueBalance == 0 && current.valueBalance > 0
-          ? current.valueBalance
-          : incoming.valueBalance,
+      diamondBalance: diamond,
+      valueBalance: value,
     );
   }
 
@@ -257,16 +326,45 @@ class WalletNotifier extends Notifier<WalletState> {
   }
 
   /// Debug test grant / full snapshot. Null fields keep the current value.
+  /// A later 1M snapshot must not raise a spent durable ledger.
   void applyWalletSnapshot({
     int? shareBalance,
     int? diamondBalance,
     int? valueBalance,
   }) {
+    var share = shareBalance ?? state.shareBalance;
+    var diamond = diamondBalance ?? state.diamondBalance;
+    var value = valueBalance ?? state.valueBalance;
+    if (kDebugMode) {
+      if (_durableDebugShare != null) {
+        share = DebugLocalWalletStore.applyShareCeiling(
+          incomingShare: share,
+          durableShare: _durableDebugShare!,
+        );
+      }
+      if (_durableDebugDia != null) {
+        diamond = DebugLocalWalletStore.applyBalanceCeiling(
+          incoming: diamond,
+          durable: _durableDebugDia!,
+        );
+      }
+      if (_durableDebugValue != null) {
+        value = DebugLocalWalletStore.applyBalanceCeiling(
+          incoming: value,
+          durable: _durableDebugValue!,
+        );
+      }
+    }
     state = state.copyWith(
-      shareBalance: shareBalance,
-      diamondBalance: diamondBalance,
-      valueBalance: valueBalance,
+      shareBalance: share,
+      diamondBalance: diamond,
+      valueBalance: value,
     );
+    if (kDebugMode) {
+      _durableDebugShare ??= state.shareBalance;
+      _durableDebugDia ??= state.diamondBalance;
+      _durableDebugValue ??= state.valueBalance;
+    }
   }
 
   /// src-14 PG 결제 완료 시 SHARE 충전.
@@ -282,11 +380,10 @@ class WalletNotifier extends Notifier<WalletState> {
 
   void deductShare(int amount) {
     if (amount <= 0) return;
-    _applyAfterReady(() {
-      state = state.copyWith(
-        shareBalance: (state.shareBalance - amount).clamp(0, 1 << 31),
-      );
-    });
+    state = state.copyWith(
+      shareBalance: (state.shareBalance - amount).clamp(0, 1 << 31),
+    );
+    _rememberSpendDurable();
   }
 
   /// Tournament join / entry-fee spend. Synchronous so Home SHARE drops
@@ -297,9 +394,7 @@ class WalletNotifier extends Notifier<WalletState> {
     state = state.copyWith(
       shareBalance: (state.shareBalance - amount).clamp(0, 1 << 31),
     );
-    if (kDebugMode) {
-      _durableDebugShare = state.shareBalance;
-    }
+    _rememberSpendDurable();
   }
 
   void creditDia(int amount) {
@@ -318,20 +413,49 @@ class WalletNotifier extends Notifier<WalletState> {
 
   void debitDia(int amount) {
     if (amount <= 0) return;
-    _applyAfterReady(() {
-      state = state.copyWith(
-        diamondBalance: (state.diamondBalance - amount).clamp(0, 1 << 31),
-      );
-    });
+    state = state.copyWith(
+      diamondBalance: (state.diamondBalance - amount).clamp(0, 1 << 31),
+    );
+    _rememberSpendDurable();
   }
 
   void debitValue(int amount) {
     if (amount <= 0) return;
-    _applyAfterReady(() {
-      state = state.copyWith(
-        valueBalance: (state.valueBalance - amount).clamp(0, 1 << 31),
+    state = state.copyWith(
+      valueBalance: (state.valueBalance - amount).clamp(0, 1 << 31),
+    );
+    _rememberSpendDurable();
+  }
+
+  void _rememberSpendDurable() {
+    if (!kDebugMode) return;
+    _durableDebugShare = state.shareBalance;
+    _durableDebugDia = state.diamondBalance;
+    _durableDebugValue = state.valueBalance;
+    final uid = ref.read(authStateChangesProvider).asData?.value?.uid ?? '';
+    if (uid.isEmpty) return;
+    DebugLocalWalletStore.rememberInMemory(
+      uid: uid,
+      share: state.shareBalance,
+      diamond: state.diamondBalance,
+      value: state.valueBalance,
+    );
+    unawaited(_persistDurablePrefs(uid));
+  }
+
+  Future<void> _persistDurablePrefs(String uid) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await DebugLocalWalletStore.persistBalances(
+        prefs: prefs,
+        uid: uid,
+        share: state.shareBalance,
+        diamond: state.diamondBalance,
+        value: state.valueBalance,
       );
-    });
+    } catch (e) {
+      debugPrint('persistDurablePrefs: $e');
+    }
   }
 }
 

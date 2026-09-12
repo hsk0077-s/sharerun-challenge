@@ -205,17 +205,27 @@ class _DebugTestWalletGrantHostState
       );
       try {
         final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
+        final notifier = ref.read(walletProvider.notifier);
+        final current = ref.read(walletProvider);
         if (snap.share != null) {
-          final notifier = ref.read(walletProvider.notifier);
-          final current = ref.read(walletProvider).shareBalance;
           final resolved = DebugLocalWalletStore.resolveHydratedShare(
-            currentShare: current,
+            currentShare: current.shareBalance,
             durableShare: snap.share!,
           );
           notifier.rememberDurableDebugShare(resolved);
-          if (current != resolved) {
+          if (current.shareBalance != resolved) {
             notifier.applyWalletSnapshot(shareBalance: resolved);
           }
+        }
+        if (snap.diamond != null || snap.value != null) {
+          notifier.rememberDurableDebugWallet(
+            diamond: snap.diamond,
+            value: snap.value,
+          );
+          notifier.applyWalletSnapshot(
+            diamondBalance: snap.diamond,
+            valueBalance: snap.value,
+          );
         }
         if (snap.paidIds.isNotEmpty) {
           ref

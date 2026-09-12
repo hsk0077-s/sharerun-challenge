@@ -52,7 +52,10 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
         return;
       }
       final previousTier = ref.read(userProfileProvider).angelTier;
-      ref.read(walletProvider.notifier).subtractShare(_donationShare);
+      // Sync + durable, same as tournament join. `subtractShare` is async and
+      // does not remember the post-spend ledger, so a stale Firestore
+      // snapshot restores pre-debit SHARE and the My-page bar snaps back.
+      ref.read(walletProvider.notifier).applyEntryFeeDebit(_donationShare);
       await ref.read(userProfileNotifierProvider.notifier).processDonation(
             _donationShare,
             receiptTitle: _purpose == _SponsorPurpose.prize

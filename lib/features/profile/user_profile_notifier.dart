@@ -19,9 +19,19 @@ import '../wallet/providers/wallet_provider.dart';
 class UserProfileNotifier extends Notifier<UserProfile> {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
       _profileSubscription;
+  int? _durableDonationCount;
+  int? _durableDonationAmount;
+  var _durableSponsored = false;
+
+  static const _donationCountPrefix = 'angelDonationCount_';
+  static const _donationAmountPrefix = 'angelDonationAmount_';
+  static const _sponsoredPrefix = 'angelIsSponsored_';
 
   @override
   UserProfile build() {
+    _durableDonationCount = null;
+    _durableDonationAmount = null;
+    _durableSponsored = false;
     ref.onDispose(() {
       _profileSubscription?.cancel();
     });
@@ -36,6 +46,7 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     // Pass uid from auth/session providers — never from `state`, which is
     // uninitialized until this `build()` returns (cold-start ErrorWidget).
     listenToFirestoreProfile(uid: _currentUid() ?? initial.uid);
+    unawaited(_hydrateDurableDonations());
     return initial;
   }
 
@@ -77,10 +88,122 @@ class UserProfileNotifier extends Notifier<UserProfile> {
   }
 
   void _applyCloudProfile(UserModel profile) {
-    state = profile;
+    try {
+      state = retainOptimisticDonationTotals(
+        local: state,
+        remote: profile,
+        durableDonationCount: _durableDonationCount,
+        durableDonationAmount: _durableDonationAmount,
+        durableSponsored: _durableSponsored,
+      );
+    } catch (_) {
+      // `build()` may deliver the first cloud snapshot before `state` exists.
+      state = retainOptimisticDonationTotals(
+        local: profile,
+        remote: profile,
+        durableDonationCount: _durableDonationCount,
+        durableDonationAmount: _durableDonationAmount,
+        durableSponsored: _durableSponsored,
+      );
+    }
     ref.read(walletProvider.notifier).replaceFromRemote(profile.wallet);
     if (profile.hasCPR) {
       ref.read(shopTabProvider.notifier).restoreCprOwned();
+    }
+  }
+
+  /// SHARE sponsorship updates donation totals locally first. A stale
+  /// `users/{uid}` snapshot must not snap the My-page bar back down.
+  /// Remote webhook totals may still increase. Durable prefs cover restart
+  /// when `recordDonation` is permission-denied.
+  static UserModel retainOptimisticDonationTotals({
+    required UserModel local,
+    required UserModel remote,
+    int? durableDonationCount,
+    int? durableDonationAmount,
+    bool durableSponsored = false,
+  }) {
+    final count = _maxNonNegative([
+      local.safeDonationCount,
+      remote.safeDonationCount,
+      durableDonationCount ?? 0,
+    ]);
+    final amount = _maxNonNegative([
+      local.safeCumulativeDonationAmount,
+      remote.safeCumulativeDonationAmount,
+      durableDonationAmount ?? 0,
+    ]);
+    return remote.copyWith(
+      donationCount: count,
+      cumulativeDonationAmount: amount,
+      isSponsored:
+          local.isSponsored || remote.isSponsored || durableSponsored,
+    );
+  }
+
+  static int _maxNonNegative(List<int> values) {
+    var best = 0;
+    for (final value in values) {
+      if (value > best) best = value;
+    }
+    return best;
+  }
+
+  void _rememberDurableDonations({
+    required int count,
+    required int amount,
+    bool sponsored = true,
+  }) {
+    if (count > (_durableDonationCount ?? 0)) {
+      _durableDonationCount = count;
+    }
+    if (amount > (_durableDonationAmount ?? 0)) {
+      _durableDonationAmount = amount;
+    }
+    if (sponsored) _durableSponsored = true;
+  }
+
+  Future<void> _hydrateDurableDonations() async {
+    final uid = _currentUid();
+    if (uid == null || uid.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final count = prefs.getInt('$_donationCountPrefix$uid');
+      final amount = prefs.getInt('$_donationAmountPrefix$uid');
+      final sponsored = prefs.getBool('$_sponsoredPrefix$uid') ?? false;
+      if (count == null && amount == null && !sponsored) return;
+      _rememberDurableDonations(
+        count: count ?? 0,
+        amount: amount ?? 0,
+        sponsored: sponsored,
+      );
+      state = retainOptimisticDonationTotals(
+        local: state,
+        remote: state,
+        durableDonationCount: _durableDonationCount,
+        durableDonationAmount: _durableDonationAmount,
+        durableSponsored: _durableSponsored,
+      );
+    } catch (e) {
+      debugPrint('hydrateDurableDonations: $e');
+    }
+  }
+
+  Future<void> _persistDurableDonations() async {
+    final uid = _currentUid();
+    if (uid == null || uid.isEmpty) return;
+    final count = _durableDonationCount ?? state.safeDonationCount;
+    final amount = _durableDonationAmount ?? state.safeCumulativeDonationAmount;
+    if (count <= 0 && amount <= 0 && !_durableSponsored) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('$_donationCountPrefix$uid', count);
+      await prefs.setInt('$_donationAmountPrefix$uid', amount);
+      if (_durableSponsored || state.isSponsored) {
+        await prefs.setBool('$_sponsoredPrefix$uid', true);
+      }
+    } catch (e) {
+      debugPrint('persistDurableDonations: $e');
     }
   }
 
@@ -168,6 +291,8 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       cumulativeDonationAmount: nextAmount,
       isSponsored: true,
     );
+    _rememberDurableDonations(count: nextCount, amount: nextAmount);
+    unawaited(_persistDurableDonations());
     final uid = _receiptUid();
     if (uid != null && uid.isNotEmpty) {
       try {
@@ -204,9 +329,16 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       }
       if (kDebugMode && assetType == 'SHARE') {
         try {
+          // Absolute post-debit balances — `validDebugShareSpend` requires
+          // int SHARE plus unchanged DIA/VALUE. Increment-only writes are
+          // rejected and the stale snapshot restores the pre-debit ledger.
+          final wallet = ref.read(walletProvider);
           await ref.read(walletRepositoryProvider).persistDebugShareSpend(
                 uid: uid,
                 shareDelta: -amount,
+                shareBalanceAfter: wallet.shareBalance,
+                diamondBalance: wallet.diamondBalance,
+                valueBalance: wallet.valueBalance,
                 donationCount: nextCount,
                 cumulativeDonationAmount: nextAmount,
                 isSponsored: true,

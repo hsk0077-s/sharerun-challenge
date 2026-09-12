@@ -301,6 +301,40 @@ service cloud.firestore {
         );
     }
 
+    // Personal SHARE sponsor: increment donation count/total only.
+    // Does not touch wallet SHARE/DIA/VALUE (those stay on the debit path).
+    function validDonationRecord(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.diff(resource.data).changedKeys()
+            .hasOnly([
+              'uid',
+              'donationCount',
+              'cumulativeDonationAmount',
+              'isSponsored',
+              'angelTierCode',
+              'updatedAt'
+            ])
+        && request.resource.data.donationCount is int
+        && request.resource.data.donationCount >= (
+          'donationCount' in resource.data
+            ? resource.data.donationCount
+            : 0
+        )
+        && request.resource.data.cumulativeDonationAmount is int
+        && request.resource.data.cumulativeDonationAmount >= (
+          'cumulativeDonationAmount' in resource.data
+            ? resource.data.cumulativeDonationAmount
+            : 0
+        )
+        && request.resource.data.isSponsored == true
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['angelTierCode'])
+          || request.resource.data.angelTierCode is string
+        );
+    }
+
     // Debug USB: shop DIA and/or VALUE may decrease after the one-shot
     // grant. SHARE must stay unchanged. hasCPR may only become true.
     // Release clients never call this path.
@@ -492,6 +526,7 @@ service cloud.firestore {
         || validDebugTestWalletGrant(uid)
         || validDebugLocalHarvestShare(uid)
         || validDebugShareSpend(uid)
+        || validDonationRecord(uid)
         || validDebugShopCurrencySpend(uid)
         || (
           validUserSettingsUpdate(uid)

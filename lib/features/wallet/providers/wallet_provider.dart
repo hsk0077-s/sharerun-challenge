@@ -355,9 +355,9 @@ class WalletNotifier extends Notifier<WalletState> {
     });
   }
 
-  /// Tournament join / entry-fee spend. Synchronous so Home SHARE drops
-  /// before a Firestore snapshot can merge against the pre-debit balance.
-  /// DIA/VALUE are unchanged.
+  /// Tournament join / personal SHARE sponsor spend. Synchronous so Home
+  /// SHARE drops before a Firestore snapshot can merge against the
+  /// pre-debit balance. DIA/VALUE are unchanged.
   void applyEntryFeeDebit(int amount) {
     if (amount <= 0) return;
     state = state.copyWith(

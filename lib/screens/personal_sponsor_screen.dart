@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -33,7 +34,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
 
   static const _donationShare = 50000;
 
-  void _onClose() => Navigator.pop(context);
+  void _onClose() => AppRouteNav.popOrHome(context);
 
   Future<void> _onSponsor() async {
     if (_busy) return;
@@ -147,11 +148,17 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-                AppRouteNav.push<void>(
-                  context,
-                  RouteNames.hallOfFame,
-                  materialBuilder: (_) => const HallOfFameScreen(),
+                // Replace sponsor with HoF so Android back pops to the
+                // previous tab instead of leaving HoF as the only route.
+                final router = GoRouter.maybeOf(context);
+                if (router != null) {
+                  context.pushReplacement(RouteNames.hallOfFame);
+                  return;
+                }
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HallOfFameScreen(),
+                  ),
                 );
               },
               child: const Text(AppStrings.personalSponsorCelebrateHall),
@@ -164,9 +171,15 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.sponsorBgGradientEnd,
-      body: SRCGradientBackground(
+    return PopScope(
+      canPop: AppRouteNav.canPop(context),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        AppRouteNav.popOrHome(context);
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.sponsorBgGradientEnd,
+        body: SRCGradientBackground(
         gradient: AppColors.sponsorBackgroundGradient,
         child: SafeArea(
           child: Column(
@@ -314,6 +327,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
           ),
         ),
       ),
+    ),
     );
   }
 }

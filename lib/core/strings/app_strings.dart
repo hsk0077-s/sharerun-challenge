@@ -469,6 +469,8 @@ abstract final class AppStrings {
   static const hallOfFameRank3Badge = '🛡️ 방패 SBT 뱃지';
   static const hallOfFameRank3Value = '2,800,000 VALUE';
   static const hallOfFameDonateCta = '나도 기부하고 명예의 전당 오르기 💎';
+  static const hallOfFameDonateHistoryTitle = '명예의 전당 기부 완료 🕊️';
+  static const storeDonateHistoryTitle = '유니세프 글로벌 기부 펀딩 참여 🕊️';
   static const runningCrewHallOfFame = '👑 명예의 전당';
 
   // ── Appeal / Customer Service (Screen 27) ────────────────────────

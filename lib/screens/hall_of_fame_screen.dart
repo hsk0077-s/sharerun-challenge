@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +9,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 
@@ -36,6 +39,13 @@ class HallOfFameScreen extends ConsumerWidget {
       return;
     }
     ref.read(walletProvider.notifier).debitValue(_donateValue);
+    unawaited(
+      ref.read(userProfileNotifierProvider.notifier).writeTransactionReceipt(
+            title: AppStrings.hallOfFameDonateHistoryTitle,
+            amount: -_donateValue,
+            assetType: 'VALUE',
+          ),
+    );
     final left = ref.read(walletProvider).valueBalance;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

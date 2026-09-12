@@ -73,11 +73,36 @@ class UserProfileNotifier extends Notifier<UserProfile> {
   }
 
   void _applyCloudProfile(UserModel profile) {
-    state = profile;
+    try {
+      state = retainOptimisticDonationTotals(local: state, remote: profile);
+    } catch (_) {
+      // `build()` may deliver the first cloud snapshot before `state` exists.
+      state = profile;
+    }
     ref.read(walletProvider.notifier).replaceFromRemote(profile.wallet);
     if (profile.hasCPR) {
       ref.read(shopTabProvider.notifier).restoreCprOwned();
     }
+  }
+
+  /// SHARE sponsorship updates donation totals locally first. A stale
+  /// `users/{uid}` snapshot must not snap the My-page bar back down.
+  /// Remote webhook totals may still increase.
+  static UserModel retainOptimisticDonationTotals({
+    required UserModel local,
+    required UserModel remote,
+  }) {
+    return remote.copyWith(
+      donationCount: local.safeDonationCount > remote.safeDonationCount
+          ? local.safeDonationCount
+          : remote.safeDonationCount,
+      cumulativeDonationAmount:
+          local.safeCumulativeDonationAmount >
+                  remote.safeCumulativeDonationAmount
+              ? local.safeCumulativeDonationAmount
+              : remote.safeCumulativeDonationAmount,
+      isSponsored: local.isSponsored || remote.isSponsored,
+    );
   }
 
   /// 소비/구매 클라우드 영수증. `users/{uid}/wallet_transactions`.
@@ -172,9 +197,16 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     }
     if (kDebugMode && assetType == 'SHARE') {
       try {
+        // Absolute post-debit balances — `validDebugShareSpend` requires
+        // int SHARE plus unchanged DIA/VALUE. Increment-only writes are
+        // rejected and the stale snapshot restores the pre-debit ledger.
+        final wallet = ref.read(walletProvider);
         await ref.read(walletRepositoryProvider).persistDebugShareSpend(
               uid: uid,
               shareDelta: -amount,
+              shareBalanceAfter: wallet.shareBalance,
+              diamondBalance: wallet.diamondBalance,
+              valueBalance: wallet.valueBalance,
               donationCount: nextCount,
               cumulativeDonationAmount: nextAmount,
               isSponsored: true,

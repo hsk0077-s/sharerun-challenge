@@ -171,7 +171,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: AppRouteNav.canPop(context),
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         AppRouteNav.popOrHome(context);

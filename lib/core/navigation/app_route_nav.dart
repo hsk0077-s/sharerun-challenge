@@ -24,12 +24,6 @@ abstract final class AppRouteNav {
     return Navigator.of(context).pushNamed<T>(location, arguments: extra);
   }
 
-  static bool canPop(BuildContext context) {
-    final router = GoRouter.maybeOf(context);
-    return (router != null && router.canPop()) ||
-        Navigator.of(context).canPop();
-  }
-
   static void pop<T extends Object?>(BuildContext context, [T? result]) {
     final router = GoRouter.maybeOf(context);
     if (router != null && router.canPop()) {
@@ -43,16 +37,15 @@ abstract final class AppRouteNav {
 
   /// Detail back: pop when a stack exists, otherwise return to Home.
   /// Never calls [SystemNavigator.pop] — only a true tab root may exit.
+  ///
+  /// Prefer the nearest [Navigator] only. A stale [GoRouter.canPop] from the
+  /// shell must not pop a different stack (that is what killed the app).
   static void popOrHome<T extends Object?>(BuildContext context, [T? result]) {
-    final router = GoRouter.maybeOf(context);
-    if (router != null && router.canPop()) {
-      router.pop(result);
-      return;
-    }
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop(result);
       return;
     }
+    final router = GoRouter.maybeOf(context);
     if (router != null) {
       router.go(RouteNames.mainDashboard);
       return;

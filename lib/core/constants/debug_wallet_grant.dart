@@ -93,4 +93,23 @@ abstract final class DebugWalletGrant {
       if (isSponsored) 'isSponsored': true,
     };
   }
+
+  /// Shop DIA / VALUE spend. SHARE stays unchanged so harvest / join
+  /// ledgers are not rewritten. Optional [hasCPR] is CPR-only.
+  static Map<String, dynamic> shopSpendMergeFields({
+    required String uid,
+    required int shareBalance,
+    required int diamondBalance,
+    required int valueBalance,
+    bool? hasCPR,
+  }) {
+    return {
+      'uid': uid,
+      prefsKey: true,
+      'wallet.shareBalance': shareBalance,
+      'wallet.diamondBalance': diamondBalance,
+      'wallet.valueTokenBalance': valueBalance,
+      if (hasCPR == true) 'hasCPR': true,
+    };
+  }
 }

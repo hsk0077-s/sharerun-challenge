@@ -205,8 +205,8 @@ class _DebugTestWalletGrantHostState
       );
       try {
         final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
+        final notifier = ref.read(walletProvider.notifier);
         if (snap.share != null) {
-          final notifier = ref.read(walletProvider.notifier);
           final current = ref.read(walletProvider).shareBalance;
           final resolved = DebugLocalWalletStore.resolveHydratedShare(
             currentShare: current,
@@ -215,6 +215,26 @@ class _DebugTestWalletGrantHostState
           notifier.rememberDurableDebugShare(resolved);
           if (current != resolved) {
             notifier.applyWalletSnapshot(shareBalance: resolved);
+          }
+        }
+        if (snap.diamond != null && snap.diamond! > 0) {
+          final resolved = DebugLocalWalletStore.resolveDurableCurrency(
+            incoming: ref.read(walletProvider).diamondBalance,
+            durable: snap.diamond!,
+          );
+          notifier.rememberDurableWallet(diamond: resolved);
+          if (ref.read(walletProvider).diamondBalance != resolved) {
+            notifier.applyWalletSnapshot(diamondBalance: resolved);
+          }
+        }
+        if (snap.value != null && snap.value! > 0) {
+          final resolved = DebugLocalWalletStore.resolveDurableCurrency(
+            incoming: ref.read(walletProvider).valueBalance,
+            durable: snap.value!,
+          );
+          notifier.rememberDurableWallet(value: resolved);
+          if (ref.read(walletProvider).valueBalance != resolved) {
+            notifier.applyWalletSnapshot(valueBalance: resolved);
           }
         }
         if (snap.paidIds.isNotEmpty) {
@@ -262,6 +282,17 @@ class _DebugTestWalletGrantHostState
       DebugTestWalletGrantHost.applyLocalGrantToNotifier(
         ref.read(walletProvider.notifier),
       );
+      try {
+        await DebugLocalWalletStore.persistBalances(
+          prefs: prefs,
+          uid: uid,
+          share: DebugWalletGrant.amount,
+          diamond: DebugWalletGrant.amount,
+          value: DebugWalletGrant.amount,
+        );
+      } catch (e) {
+        debugPrint('[DEBUG LOCAL] grant durable persist: $e');
+      }
 
       var firestoreOk = false;
       try {

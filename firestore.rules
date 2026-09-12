@@ -301,6 +301,39 @@ service cloud.firestore {
         );
     }
 
+    // Debug USB: shop DIA and/or VALUE may decrease after the one-shot
+    // grant. SHARE must stay unchanged. hasCPR may only become true.
+    // Release clients never call this path.
+    function validDebugShopCurrencySpend(uid) {
+      return isOwner(uid)
+        && request.resource.data.uid == uid
+        && resource.data.testGrant1mDone == true
+        && request.resource.data.testGrant1mDone == true
+        && request.resource.data.wallet.shareBalance
+            == resource.data.wallet.shareBalance
+        && request.resource.data.wallet.diamondBalance is int
+        && request.resource.data.wallet.diamondBalance >= 0
+        && request.resource.data.wallet.valueTokenBalance is int
+        && request.resource.data.wallet.valueTokenBalance >= 0
+        && request.resource.data.wallet.diamondBalance
+            <= resource.data.wallet.diamondBalance
+        && request.resource.data.wallet.valueTokenBalance
+            <= resource.data.wallet.valueTokenBalance
+        && (
+          request.resource.data.wallet.diamondBalance
+              < resource.data.wallet.diamondBalance
+          || request.resource.data.wallet.valueTokenBalance
+              < resource.data.wallet.valueTokenBalance
+        )
+        && request.resource.data.diff(resource.data).changedKeys()
+            .hasOnly(['uid', 'wallet', 'updatedAt', 'hasCPR'])
+        && (
+          !request.resource.data.diff(resource.data).changedKeys()
+              .hasAny(['hasCPR'])
+          || request.resource.data.hasCPR == true
+        );
+    }
+
     function validUserCreate(uid) {
       return isOwner(uid)
         && request.resource.data.keys().hasOnly([
@@ -459,6 +492,7 @@ service cloud.firestore {
         || validDebugTestWalletGrant(uid)
         || validDebugLocalHarvestShare(uid)
         || validDebugShareSpend(uid)
+        || validDebugShopCurrencySpend(uid)
         || (
           validUserSettingsUpdate(uid)
           && !request.resource.data.diff(resource.data).changedKeys().hasAny([

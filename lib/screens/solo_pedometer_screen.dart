@@ -1763,7 +1763,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         SizedBox(height: tokens.spacing.xs),
         SizedBox(
           width: double.infinity,
-          height: charSize + 36,
+          height: charSize + 18,
           child: LayoutBuilder(
             builder: (context, constraints) {
               const barH = 10.0;

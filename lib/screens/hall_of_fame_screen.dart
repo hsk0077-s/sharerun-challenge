@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,15 +9,23 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+
+/// 명예의 전당 VALUE 기부 — 잔액이 있을 때만 차감 (부족 시 자동 충전 없음).
+abstract final class HallOfFameDonate {
+  static const valueAmount = 500;
+
+  static bool canAfford(int valueBalance) => valueBalance >= valueAmount;
+}
 
 /// 명예의 전당 화면 (Screen 26).
 class HallOfFameScreen extends ConsumerWidget {
   const HallOfFameScreen({super.key});
 
   static const _saveNavy = Color(0xFF1A2B4A);
-  static const _donateValue = 500;
+  static const _donateValue = HallOfFameDonate.valueAmount;
 
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
@@ -25,17 +35,20 @@ class HallOfFameScreen extends ConsumerWidget {
 
   void _onDonate(BuildContext context, WidgetRef ref) {
     final wallet = ref.read(walletProvider);
-    if (wallet.valueBalance < _donateValue) {
-      ref.read(walletProvider.notifier).creditValue(_donateValue * 10);
-    }
-    final after = ref.read(walletProvider);
-    if (after.valueBalance < _donateValue) {
+    if (!HallOfFameDonate.canAfford(wallet.valueBalance)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('VALUE가 부족합니다.')),
+        SnackBar(
+          content: Text(
+            'VALUE가 부족합니다. (필요 $_donateValue / 보유 ${wallet.valueBalance})',
+          ),
+        ),
       );
       return;
     }
-    ref.read(walletProvider.notifier).debitValue(_donateValue);
+    ref.read(walletProvider.notifier).applyValueDebit(_donateValue);
+    unawaited(
+      ref.read(userProfileNotifierProvider.notifier).donateValue(_donateValue),
+    );
     final left = ref.read(walletProvider).valueBalance;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

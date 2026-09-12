@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/navigation/app_route_nav.dart';
-import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/widgets/src_exit_guard.dart';
 
 void main() {
@@ -29,48 +28,6 @@ void main() {
   bool didRequestExit() => platformCalls.any(
         (call) => call.method == 'SystemNavigator.pop',
       );
-
-  testWidgets(
-      'leftover router.canPop at Shop tab: first BACK goes Home, no exit',
-      (tester) async {
-    final router = _leftoverShellRouter(initialLocation: RouteNames.shop);
-    await tester.pumpWidget(_nestedApp(router));
-    await tester.pumpAndSettle();
-    expect(find.text('SHOP_ROOT'), findsOneWidget);
-    expect(router.canPop(), isTrue, reason: 'outer ShellRoute leftover');
-
-    final handled = await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-
-    expect(handled, isTrue);
-    expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(find.text('SHOP_ROOT'), findsNothing);
-    expect(didRequestExit(), isFalse);
-  });
-
-  testWidgets(
-      'leftover router.canPop at Home tab: first BACK snacks, does not exit',
-      (tester) async {
-    final router = _leftoverShellRouter(
-      initialLocation: RouteNames.mainDashboard,
-    );
-    await tester.pumpWidget(_nestedApp(router));
-    await tester.pumpAndSettle();
-    expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(router.canPop(), isTrue, reason: 'outer ShellRoute leftover');
-
-    var handled = await tester.binding.handlePopRoute();
-    await tester.pump();
-    expect(handled, isTrue);
-    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
-    expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(didRequestExit(), isFalse);
-
-    handled = await tester.binding.handlePopRoute();
-    await tester.pump();
-    expect(handled, isTrue);
-    expect(didRequestExit(), isTrue);
-  });
 
   testWidgets(
       'each of 5 tab roots: first BACK does not exit (cold start)',
@@ -98,11 +55,30 @@ void main() {
   });
 
   testWidgets(
-      'leftover tab shell: pushed HoF still pops, never exits',
+      'imperative leftover then go(Shop): first BACK goes Home, no exit',
       (tester) async {
-    final router = _leftoverShellRouter(
-      initialLocation: RouteNames.mainDashboard,
-    );
+    final router = _fiveTabRouter(initialLocation: RouteNames.mainDashboard);
+    await tester.pumpWidget(_nestedApp(router));
+    await tester.pumpAndSettle();
+
+    router.push(RouteNames.hallOfFame);
+    await tester.pumpAndSettle();
+    expect(find.text('HOF_STAND_IN'), findsOneWidget);
+
+    router.go(RouteNames.shop);
+    await tester.pumpAndSettle();
+    expect(find.text('SHOP_ROOT'), findsOneWidget);
+
+    final handled = await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(handled, isTrue);
+    expect(find.text('HOME_ROOT'), findsOneWidget);
+    expect(find.text('HOF_STAND_IN'), findsNothing);
+    expect(didRequestExit(), isFalse);
+  });
+
+  testWidgets('pushed HoF still pops; does not exit', (tester) async {
+    final router = _fiveTabRouter(initialLocation: RouteNames.mainDashboard);
     await tester.pumpWidget(_nestedApp(router));
     await tester.pumpAndSettle();
 
@@ -133,73 +109,6 @@ Widget _nestedApp(GoRouter router) {
       },
       child: MaterialApp.router(routerConfig: router),
     ),
-  );
-}
-
-/// Extra [ShellRoute] match so [GoRouter.canPop] is true at tab roots —
-/// the leftover state after a fresh install / unvisited branches.
-GoRouter _leftoverShellRouter({required String initialLocation}) {
-  return GoRouter(
-    initialLocation: initialLocation,
-    routes: [
-      ShellRoute(
-        builder: (context, state, child) => child,
-        routes: [
-          StatefulShellRoute.indexedStack(
-            builder: (context, state, navigationShell) {
-              return SrcExitGuard(
-                navigationShell: navigationShell,
-                child: Scaffold(
-                  body: navigationShell,
-                  bottomNavigationBar: BottomNavigationBar(
-                    currentIndex: navigationShell.currentIndex,
-                    onTap: navigationShell.goBranch,
-                    items: const [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home_rounded),
-                        label: 'Home',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.store_rounded),
-                        label: 'Shop',
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            branches: [
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: RouteNames.mainDashboard,
-                    builder: (context, state) => const Center(
-                      child: Text('HOME_ROOT'),
-                    ),
-                  ),
-                ],
-              ),
-              StatefulShellBranch(
-                routes: [
-                  GoRoute(
-                    path: RouteNames.shop,
-                    builder: (context, state) => const Center(
-                      child: Text('SHOP_ROOT'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          GoRoute(
-            path: RouteNames.hallOfFame,
-            builder: (context, state) => const _PushedDetailStandIn(
-              label: 'HOF_STAND_IN',
-            ),
-          ),
-        ],
-      ),
-    ],
   );
 }
 
@@ -294,6 +203,12 @@ GoRouter _fiveTabRouter({required String initialLocation}) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: RouteNames.hallOfFame,
+        builder: (context, state) => const _PushedDetailStandIn(
+          label: 'HOF_STAND_IN',
+        ),
       ),
     ],
   );

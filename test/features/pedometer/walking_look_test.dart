@@ -4,6 +4,45 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 
+Offset _poseTranslation(WidgetTester tester) {
+  final transform = tester.widget<Transform>(
+    find.byKey(const Key('walking-mascot-pose')),
+  );
+  final translation = transform.transform.getTranslation();
+  return Offset(translation.x, translation.y);
+}
+
+Future<void> _pumpMascot(
+  WidgetTester tester, {
+  bool moving = false,
+  int pickupNonce = 0,
+  bool disableAnimations = false,
+}) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      theme: SrcTheme.light,
+      builder: disableAnimations
+          ? (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(disableAnimations: true),
+                child: child!,
+              );
+            }
+          : null,
+      home: Scaffold(
+        body: Center(
+          child: WalkingMascot(
+            tier: UserTier.unratedFallback,
+            size: 80,
+            moving: moving,
+            pickupNonce: pickupNonce,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 void main() {
   test('snail mascot uses the smiling derivative of the walking-challenge snail',
       () {
@@ -153,29 +192,133 @@ void main() {
     );
   });
 
-  testWidgets('WalkingMascot stays still when animations are disabled',
+  test('evaluatePose idle / walk / pickup travel is large enough to see', () {
+    const size = 80.0;
+    final idle = WalkingMascot.evaluatePose(
+      motion: WalkingMascotMotion.idle,
+      size: size,
+      loopValue: 1,
+      loopReversing: false,
+      pickupValue: 0,
+    );
+    final walk = WalkingMascot.evaluatePose(
+      motion: WalkingMascotMotion.walking,
+      size: size,
+      loopValue: 1,
+      loopReversing: false,
+      pickupValue: 0,
+    );
+    final pickup = WalkingMascot.evaluatePose(
+      motion: WalkingMascotMotion.pickup,
+      size: size,
+      loopValue: 0,
+      loopReversing: false,
+      pickupValue: 0.42,
+    );
+
+    expect(idle.lift, greaterThanOrEqualTo(size * 0.14));
+    expect(idle.lift, closeTo(size * WalkingMascot.idleLiftFactor, 0.01));
+    expect(walk.lift, greaterThan(idle.lift));
+    expect(walk.lift, closeTo(size * WalkingMascot.walkLiftFactor, 0.01));
+    final walkMid = WalkingMascot.evaluatePose(
+      motion: WalkingMascotMotion.walking,
+      size: size,
+      loopValue: 0.5,
+      loopReversing: false,
+      pickupValue: 0,
+    );
+    expect(walkMid.slide.abs(), greaterThan(4));
+    expect(pickup.lift, greaterThan(walk.lift));
+    expect(pickup.lift, greaterThanOrEqualTo(size * 0.30));
+    expect(pickup.sparkle, greaterThan(0));
+  });
+
+  testWidgets('WalkingMascot idle pose actually translates over time',
       (tester) async {
+    await _pumpMascot(tester);
+    await tester.pump();
+    final start = _poseTranslation(tester);
+
+    await tester.pump(WalkingMascot.idleLoopDuration ~/ 2);
+    final mid = _poseTranslation(tester);
+
+    expect(
+      (mid - start).distance,
+      greaterThan(6),
+      reason: 'idle bob/sway must move more than a couple of pixels',
+    );
+    expect(mid.dy.abs(), greaterThan(4));
+    expect(find.byKey(const Key('walking-mascot-motion-idle')), findsOneWidget);
+  });
+
+  testWidgets('WalkingMascot waddle translates while moving', (tester) async {
+    await _pumpMascot(tester, moving: true);
+    await tester.pump();
+    final start = _poseTranslation(tester);
+
+    await tester.pump(WalkingMascot.walkLoopDuration ~/ 2);
+    final mid = _poseTranslation(tester);
+
+    expect((mid - start).distance, greaterThan(8));
+    expect(find.byKey(const Key('walking-mascot-motion-walking')), findsOneWidget);
+  });
+
+  testWidgets('WalkingMascot harvest hop lifts farther than idle',
+      (tester) async {
+    var pickupNonce = 0;
     await tester.pumpWidget(
       MaterialApp(
         theme: SrcTheme.light,
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(disableAnimations: true),
-            child: child!,
-          );
-        },
-        home: const Scaffold(
-          body: WalkingMascot(
-            tier: UserTier.unratedFallback,
-            size: 80,
-            moving: true,
-            pickupNonce: 1,
-          ),
+        home: StatefulBuilder(
+          builder: (context, setState) {
+            return Scaffold(
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    WalkingMascot(
+                      tier: UserTier.unratedFallback,
+                      size: 80,
+                      pickupNonce: pickupNonce,
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => pickupNonce += 1),
+                      child: const Text('pickup'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
+    await tester.tap(find.text('pickup'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    final hop = _poseTranslation(tester);
 
-    expect(find.byKey(const Key('walking-mascot-motion-idle')), findsOneWidget);
+    expect(
+      find.byKey(const Key('walking-mascot-motion-pickup')),
+      findsOneWidget,
+    );
+    expect(hop.dy.abs(), greaterThan(12));
+  });
+
+  testWidgets('WalkingMascot still moves when disableAnimations is on',
+      (tester) async {
+    await _pumpMascot(tester, moving: true, disableAnimations: true);
+    await tester.pump();
+    final start = _poseTranslation(tester);
+
+    await tester.pump(WalkingMascot.walkLoopDuration ~/ 2);
+    final mid = _poseTranslation(tester);
+
     expect(find.byKey(const Key('walking-mascot')), findsOneWidget);
+    expect(
+      find.byKey(const Key('walking-mascot-motion-walking')),
+      findsOneWidget,
+    );
+    expect((mid - start).distance, greaterThan(8));
   });
 }

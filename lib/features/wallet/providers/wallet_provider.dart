@@ -175,13 +175,15 @@ class WalletNotifier extends Notifier<WalletState> {
     var value = incoming.valueBalance == 0 && current.valueBalance > 0
         ? current.valueBalance
         : incoming.valueBalance;
-    // Reuse the existing spend-restore helper so a HoF 500 VALUE debit is
-    // not refilled by a stale 1M snapshot. Grant (0 → 1M) and harvest
-    // VALUE=0 still follow the rules above / shouldRejectHydrateRestore.
-    if (DebugLocalWalletStore.shouldRejectHydrateRestore(
-      currentShare: current.valueBalance,
-      incomingShare: value,
-    )) {
+    // After an in-session HoF debit (current VALUE > 0), reuse the SHARE
+    // spend-restore helper so a stale 1M snapshot cannot put 500 back.
+    // Skip when current is 0 so first hydrate / grant (0 → 5k or 1M) still
+    // applies. Harvest VALUE=0 is already kept by the line above.
+    if (current.valueBalance > 0 &&
+        DebugLocalWalletStore.shouldRejectHydrateRestore(
+          currentShare: current.valueBalance,
+          incomingShare: value,
+        )) {
       value = current.valueBalance;
     }
     return WalletState(

@@ -479,6 +479,19 @@ void main() {
     expect(merged.valueBalance, 1000000);
   });
 
+  test('mergeRemote still hydrates first VALUE when local is 0', () {
+    const current = WalletState();
+    const incoming = WalletState(
+      shareBalance: 0,
+      diamondBalance: 7,
+      valueBalance: 5000,
+    );
+    final merged = WalletNotifier.mergeRemote(current, incoming);
+    expect(merged.shareBalance, 0);
+    expect(merged.diamondBalance, 7);
+    expect(merged.valueBalance, 5000);
+  });
+
   test('applyValueDebit drops VALUE once and leaves SHARE/DIA', () {
     const remote = WalletModel(
       shareBalance: 1000000,

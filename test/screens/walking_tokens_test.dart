@@ -141,6 +141,11 @@ void main() {
       mascot.image,
       const AssetImage(WalkingLook.snailWalkingAsset),
     );
+    expect(find.byKey(const Key('walking-mascot-motion-idle')), findsOneWidget);
+    final walkingMascot =
+        tester.widget<WalkingMascot>(find.byType(WalkingMascot));
+    expect(walkingMascot.moving, isFalse);
+    expect(walkingMascot.pickupNonce, 0);
   });
 
   testWidgets('benefit notification toggle stays on the walking screen',
@@ -191,7 +196,12 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_scopedWalking());
+    await tester.pumpWidget(
+      TickerMode(
+        enabled: false,
+        child: _scopedWalking(),
+      ),
+    );
     await tester.pump();
     await tester.runAsync(() async {
       await precacheImage(

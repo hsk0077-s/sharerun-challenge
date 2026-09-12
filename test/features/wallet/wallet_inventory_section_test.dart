@@ -10,9 +10,9 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: SrcTheme.light,
-        home: Scaffold(
+        home: const Scaffold(
           body: WalletInventorySection(
-            shop: const ShopTabState(cprCount: 1, safeGuardCount: 2),
+            shop: ShopTabState(cprCount: 1, safeGuardCount: 2),
           ),
         ),
       ),

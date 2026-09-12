@@ -1,4 +1,11 @@
+import 'dart:async' show unawaited;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../app/providers/app_providers.dart';
+import '../shop_inventory_store.dart';
 
 /// 상점 탭(src-13) · 보관함(src-20) 공용 인벤토리 / 펀딩 진행률.
 class ShopTabState {
@@ -17,6 +24,19 @@ class ShopTabState {
   final int sharePackCount;
   final double fundingProgress;
   final int totalDonatedValue;
+
+  bool get hasOwnedItems =>
+      cprCount > 0 ||
+      safeGuardCount > 0 ||
+      starBoostCount > 0 ||
+      sharePackCount > 0;
+
+  ShopInventorySnapshot get inventory => ShopInventorySnapshot(
+        cprCount: cprCount,
+        safeGuardCount: safeGuardCount,
+        starBoostCount: starBoostCount,
+        sharePackCount: sharePackCount,
+      );
 
   ShopTabState copyWith({
     int? cprCount,
@@ -72,7 +92,59 @@ class ShopTabNotifier extends Notifier<ShopTabState> {
   static const sharePackShareReward = 10000;
 
   @override
-  ShopTabState build() => const ShopTabState();
+  ShopTabState build() {
+    unawaited(_hydrate());
+    return const ShopTabState();
+  }
+
+  String _uid() {
+    try {
+      final auth = ref.read(authStateChangesProvider).asData?.value?.uid ?? '';
+      if (auth.isNotEmpty) return auth;
+      return ref.read(persistedAuthSessionProvider)?.uid ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Future<void> _hydrate() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      restoreInventory(ShopInventoryStore.hydrate(prefs, uid: _uid()));
+    } catch (e) {
+      debugPrint('shop inventory hydrate: $e');
+    }
+  }
+
+  Future<void> _persist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await ShopInventoryStore.persist(
+        prefs: prefs,
+        inventory: state.inventory,
+        uid: _uid(),
+      );
+    } catch (e) {
+      debugPrint('shop inventory persist: $e');
+    }
+  }
+
+  void restoreInventory(ShopInventorySnapshot snap) {
+    if (!snap.hasOwnedItems && !state.hasOwnedItems) return;
+    final merged = ShopInventorySnapshot.mergeMax(state.inventory, snap);
+    if (merged.cprCount == state.cprCount &&
+        merged.safeGuardCount == state.safeGuardCount &&
+        merged.starBoostCount == state.starBoostCount &&
+        merged.sharePackCount == state.sharePackCount) {
+      return;
+    }
+    state = state.copyWith(
+      cprCount: merged.cprCount,
+      safeGuardCount: merged.safeGuardCount,
+      starBoostCount: merged.starBoostCount,
+      sharePackCount: merged.sharePackCount,
+    );
+  }
 
   void addDonation(int valueAmount) {
     if (valueAmount <= 0) return;
@@ -96,12 +168,20 @@ class ShopTabNotifier extends Notifier<ShopTabState> {
       case ShopItemSku.sharePack:
         state = state.copyWith(sharePackCount: state.sharePackCount + qty);
     }
+    unawaited(_persist());
   }
 
   /// Firestore `hasCPR` 복원 — 로컬 인벤토리가 비어 있을 때만 채운다.
   void restoreCprOwned() {
     if (state.cprCount > 0) return;
     state = state.copyWith(cprCount: 1);
+    unawaited(_persist());
+  }
+
+  void restoreSafeGuardOwned() {
+    if (state.safeGuardCount > 0) return;
+    state = state.copyWith(safeGuardCount: 1);
+    unawaited(_persist());
   }
 
   bool useItem(ShopItemSku sku) {
@@ -109,20 +189,18 @@ class ShopTabNotifier extends Notifier<ShopTabState> {
       case ShopItemSku.cpr:
         if (state.cprCount <= 0) return false;
         state = state.copyWith(cprCount: state.cprCount - 1);
-        return true;
       case ShopItemSku.safeGuard:
         if (state.safeGuardCount <= 0) return false;
         state = state.copyWith(safeGuardCount: state.safeGuardCount - 1);
-        return true;
       case ShopItemSku.starBoost:
         if (state.starBoostCount <= 0) return false;
         state = state.copyWith(starBoostCount: state.starBoostCount - 1);
-        return true;
       case ShopItemSku.sharePack:
         if (state.sharePackCount <= 0) return false;
         state = state.copyWith(sharePackCount: state.sharePackCount - 1);
-        return true;
     }
+    unawaited(_persist());
+    return true;
   }
 }
 

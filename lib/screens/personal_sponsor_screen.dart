@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../app/router/route_names.dart';
-import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -14,6 +14,13 @@ import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'hall_of_fame_screen.dart';
+
+/// 천사 후원 SHARE 차감. 디버그 1M 재지급으로 롤백되면 안 된다.
+abstract final class AngelSponsorDebit {
+  static const shareAmount = 50000;
+
+  static bool canAfford(int shareBalance) => shareBalance >= shareAmount;
+}
 
 enum _SponsorPurpose { prize, donation }
 
@@ -31,7 +38,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
   var _monthlyMembership = true;
   var _busy = false;
 
-  static const _donationShare = 50000;
+  static const _donationShare = AngelSponsorDebit.shareAmount;
 
   void _onClose() => Navigator.pop(context);
 
@@ -144,11 +151,15 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                Navigator.of(context).pop();
-                AppRouteNav.push<void>(
-                  context,
-                  RouteNames.hallOfFame,
-                  materialBuilder: (_) => const HallOfFameScreen(),
+                final router = GoRouter.maybeOf(context);
+                if (router != null) {
+                  context.pushReplacement(RouteNames.hallOfFame);
+                  return;
+                }
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HallOfFameScreen(),
+                  ),
                 );
               },
               child: const Text(AppStrings.personalSponsorCelebrateHall),

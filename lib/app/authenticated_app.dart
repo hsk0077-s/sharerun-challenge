@@ -56,7 +56,9 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return PopScope(
+      canPop: false,
+      child: MaterialApp.router(
       debugShowCheckedModeBanner: false,
       // Light SRC theme — do NOT use AppTheme.dark (black neon) post-login.
       theme: SrcTheme.light,
@@ -67,6 +69,7 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: _router!,
+    ),
     );
   }
 }

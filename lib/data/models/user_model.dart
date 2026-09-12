@@ -80,6 +80,7 @@ class UserModel {
     this.lastJenaPendingNotifiedId = '',
     this.preferredRunHour = 19,
     this.hasCPR = false,
+    this.hasSafeGuard = false,
     this.isSponsored = false,
   });
 
@@ -134,6 +135,9 @@ class UserModel {
 
   /// 심폐소생권(CPR) 보유. 앱 재설치 후 Firestore에서 복원.
   final bool hasCPR;
+
+  /// 세이프가드 보유. 앱 재설치 후 Firestore/로컬 인벤토리에서 복원.
+  final bool hasSafeGuard;
 
   /// 스폰서/글로벌 기부 참여 여부. 앱 재설치 후 Firestore에서 복원.
   final bool isSponsored;
@@ -217,6 +221,7 @@ class UserModel {
     String? lastJenaPendingNotifiedId,
     int? preferredRunHour,
     bool? hasCPR,
+    bool? hasSafeGuard,
     bool? isSponsored,
   }) {
     return UserModel(
@@ -247,6 +252,7 @@ class UserModel {
           lastJenaPendingNotifiedId ?? this.lastJenaPendingNotifiedId,
       preferredRunHour: preferredRunHour ?? this.preferredRunHour,
       hasCPR: hasCPR ?? this.hasCPR,
+      hasSafeGuard: hasSafeGuard ?? this.hasSafeGuard,
       isSponsored: isSponsored ?? this.isSponsored,
     );
   }
@@ -356,6 +362,7 @@ class UserModel {
             (json['lastJenaPendingNotifiedId'] as String?)?.trim() ?? '',
         preferredRunHour: _preferredHour(json['preferredRunHour']),
         hasCPR: json['hasCPR'] == true,
+        hasSafeGuard: json['hasSafeGuard'] == true,
         isSponsored: json['isSponsored'] == true,
       );
     } catch (_) {

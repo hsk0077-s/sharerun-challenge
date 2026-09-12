@@ -231,6 +231,44 @@ void main() {
     expect(DebugLocalWalletStore.cachedShare('uid-1'), 970018);
   });
 
+  test('DIA/VALUE spend prefs survive hydrate and reject 1M restore', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await DebugLocalWalletStore.persistBalances(
+      prefs: prefs,
+      uid: 'uid-1',
+      share: 950000,
+      diamond: 999970,
+      value: 999500,
+    );
+
+    expect(
+      DebugLocalWalletStore.shouldRejectBalanceRestore(
+        current: 999970,
+        incoming: 1000000,
+      ),
+      isTrue,
+    );
+    expect(
+      DebugLocalWalletStore.applyBalanceCeiling(
+        incoming: 1000000,
+        durable: 999970,
+      ),
+      999970,
+    );
+    expect(
+      DebugLocalWalletStore.applyBalanceCeiling(
+        incoming: 999980,
+        durable: 999970,
+      ),
+      999980,
+    );
+
+    final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, 'uid-1');
+    expect(snap.share, 950000);
+    expect(snap.diamond, 999970);
+    expect(snap.value, 999500);
+  });
+
   test('legacy debugLocalJoinedIds key is not the paid ledger', () {
     expect(
       DebugLocalWalletStore.legacyJoinedKey('uid-1'),

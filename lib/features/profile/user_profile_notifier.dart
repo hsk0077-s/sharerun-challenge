@@ -78,6 +78,9 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     if (profile.hasCPR) {
       ref.read(shopTabProvider.notifier).restoreCprOwned();
     }
+    if (profile.hasSafeGuard) {
+      ref.read(shopTabProvider.notifier).restoreSafeGuardOwned();
+    }
   }
 
   /// 소비/구매 클라우드 영수증. `users/{uid}/wallet_transactions`.
@@ -157,17 +160,30 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     } catch (e) {
       debugPrint('processDonation mergeEconomyState: $e');
     }
-    if (kDebugMode && assetType == 'SHARE') {
+    if (kDebugMode) {
       try {
-        await ref.read(walletRepositoryProvider).persistDebugShareSpend(
-              uid: uid,
-              shareDelta: -amount,
-              donationCount: nextCount,
-              cumulativeDonationAmount: nextAmount,
-              isSponsored: true,
-            );
+        final wallet = ref.read(walletProvider);
+        if (assetType == 'SHARE') {
+          await ref.read(walletRepositoryProvider).persistDebugShareSpend(
+                uid: uid,
+                shareDelta: -amount,
+                shareBalanceAfter: wallet.shareBalance,
+                diamondBalance: wallet.diamondBalance,
+                valueBalance: wallet.valueBalance,
+                donationCount: nextCount,
+                cumulativeDonationAmount: nextAmount,
+                isSponsored: true,
+              );
+        } else {
+          await ref.read(walletRepositoryProvider).persistDebugCurrencySpend(
+                uid: uid,
+                shareBalance: wallet.shareBalance,
+                diamondBalance: wallet.diamondBalance,
+                valueBalance: wallet.valueBalance,
+              );
+        }
       } catch (e) {
-        debugPrint('processDonation persistDebugShareSpend: $e');
+        debugPrint('processDonation persistDebugSpend: $e');
       }
     }
     await writeTransactionReceipt(
@@ -183,10 +199,11 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     return processDonation(amount, assetType: 'VALUE');
   }
 
-  /// 상점 아이템 구매 — DIA 차감 + CPR 플래그 클라우드 반영.
+  /// 상점 아이템 구매 — DIA 차감 + 인벤토리 클라우드/로컬 반영.
   Future<void> persistShopPurchase({
     required int diamondFee,
     required bool markCpr,
+    bool markSafeGuard = false,
   }) async {
     final uid = _currentUid();
     if (uid == null || uid.isEmpty) return;
@@ -194,14 +211,34 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       state = state.copyWith(hasCPR: true);
       ref.read(shopTabProvider.notifier).restoreCprOwned();
     }
+    if (markSafeGuard) {
+      state = state.copyWith(hasSafeGuard: true);
+      ref.read(shopTabProvider.notifier).restoreSafeGuardOwned();
+    }
     try {
       await ref.read(userRepositoryProvider).mergeEconomyState(
             uid: uid,
             diamondDelta: diamondFee == 0 ? null : -diamondFee.abs(),
             hasCPR: markCpr ? true : null,
+            hasSafeGuard: markSafeGuard ? true : null,
           );
     } catch (e) {
       debugPrint('persistShopPurchase: $e');
+    }
+    if (kDebugMode) {
+      try {
+        final wallet = ref.read(walletProvider);
+        await ref.read(walletRepositoryProvider).persistDebugCurrencySpend(
+              uid: uid,
+              shareBalance: wallet.shareBalance,
+              diamondBalance: wallet.diamondBalance,
+              valueBalance: wallet.valueBalance,
+              hasCPR: markCpr ? true : null,
+              hasSafeGuard: markSafeGuard ? true : null,
+            );
+      } catch (e) {
+        debugPrint('persistShopPurchase debug currency: $e');
+      }
     }
   }
 

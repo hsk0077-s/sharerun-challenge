@@ -86,6 +86,30 @@ abstract final class WalkingLook {
 /// No Rive / Lottie pipeline; the smiling-snail PNG stays the same asset.
 enum WalkingMascotMotion { idle, walking, pickup }
 
+/// One frame of snail motion. Factors are of [WalkingMascot.size] so travel
+/// stays visible on the real ~80–96px walking track (the smiling PNG has
+/// large transparent padding — #26's 2.8%/7% lifts were ~2–7px and read as
+/// static). Do **not** freeze this when [MediaQuery.disableAnimations] is
+/// true: that flag is on many real phones (Reduce Motion / animator scale 0)
+/// and would zero idle, waddle, and harvest hop together.
+class WalkingMascotPose {
+  const WalkingMascotPose({
+    required this.lift,
+    required this.slide,
+    required this.tilt,
+    required this.scaleX,
+    required this.scaleY,
+    required this.sparkle,
+  });
+
+  final double lift;
+  final double slide;
+  final double tilt;
+  final double scaleX;
+  final double scaleY;
+  final double sparkle;
+}
+
 /// Natural mascot — no token-colored rect / BlendMode tint.
 class WalkingMascot extends StatefulWidget {
   const WalkingMascot({
@@ -105,9 +129,55 @@ class WalkingMascot extends StatefulWidget {
   /// Increment to play a one-shot harvest pickup hop.
   final int pickupNonce;
 
-  static const idleLoopDuration = Duration(milliseconds: 2400);
-  static const walkLoopDuration = Duration(milliseconds: 520);
+  static const idleLoopDuration = Duration(milliseconds: 1800);
+  static const walkLoopDuration = Duration(milliseconds: 460);
   static const pickupDuration = Duration(milliseconds: 720);
+
+  static const idleLiftFactor = 0.15;
+  static const walkLiftFactor = 0.18;
+  static const walkSlideFactor = 0.12;
+  static const idleSlideFactor = 0.045;
+  static const pickupHopFactor = 0.32;
+
+  static WalkingMascotPose evaluatePose({
+    required WalkingMascotMotion motion,
+    required double size,
+    required double loopValue,
+    required bool loopReversing,
+    required double pickupValue,
+  }) {
+    final loopT = Curves.easeInOut.transform(loopValue.clamp(0.0, 1.0));
+    if (motion == WalkingMascotMotion.pickup) {
+      final t = pickupValue.clamp(0.0, 1.0);
+      final hop = t < 0.42
+          ? Curves.easeOut.transform((t / 0.42).clamp(0.0, 1.0))
+          : 1 -
+              Curves.easeIn.transform(
+                ((t - 0.42) / 0.58).clamp(0.0, 1.0),
+              );
+      final lift = hop * size * pickupHopFactor;
+      final scaleY = t < 0.42 ? 1 + hop * 0.10 : 1 - (1 - hop) * 0.10;
+      return WalkingMascotPose(
+        lift: lift,
+        slide: 0,
+        tilt: math.sin(t * math.pi * 2) * 0.16,
+        scaleX: 2 - scaleY,
+        scaleY: scaleY,
+        sparkle: (1 - (t - 0.15).abs() * 1.6).clamp(0.0, 1.0),
+      );
+    }
+    final walking = motion == WalkingMascotMotion.walking;
+    final sway = math.sin(loopValue * math.pi);
+    final dir = loopReversing ? -1.0 : 1.0;
+    return WalkingMascotPose(
+      lift: loopT * size * (walking ? walkLiftFactor : idleLiftFactor),
+      slide: sway * dir * size * (walking ? walkSlideFactor : idleSlideFactor),
+      tilt: sway * dir * (walking ? 0.18 : 0.07),
+      scaleX: walking ? 1 + loopT * 0.06 : 1 + loopT * 0.02,
+      scaleY: walking ? 1 - loopT * 0.08 : 1 - loopT * 0.025,
+      sparkle: 0,
+    );
+  }
 
   @override
   State<WalkingMascot> createState() => _WalkingMascotState();
@@ -121,9 +191,6 @@ class _WalkingMascotState extends State<WalkingMascot>
   var _celebrating = false;
 
   WalkingMascotMotion get motion {
-    if (MediaQuery.disableAnimationsOf(context)) {
-      return WalkingMascotMotion.idle;
-    }
     if (_celebrating) return WalkingMascotMotion.pickup;
     if (widget.moving) return WalkingMascotMotion.walking;
     return WalkingMascotMotion.idle;
@@ -137,7 +204,7 @@ class _WalkingMascotState extends State<WalkingMascot>
       duration: widget.moving
           ? WalkingMascot.walkLoopDuration
           : WalkingMascot.idleLoopDuration,
-    )..repeat(reverse: true);
+    );
     _pickup = AnimationController(
       vsync: this,
       duration: WalkingMascot.pickupDuration,
@@ -154,6 +221,12 @@ class _WalkingMascotState extends State<WalkingMascot>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _ensureLooping();
+  }
+
+  @override
   void didUpdateWidget(covariant WalkingMascot oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.pickupNonce > oldWidget.pickupNonce) {
@@ -163,14 +236,20 @@ class _WalkingMascotState extends State<WalkingMascot>
     if (widget.moving != oldWidget.moving) {
       _syncLoopDuration();
     }
+    _ensureLooping();
   }
 
   void _syncLoopDuration() {
     final next = widget.moving && !_pickup.isAnimating
         ? WalkingMascot.walkLoopDuration
         : WalkingMascot.idleLoopDuration;
-    if (_loop.duration == next) return;
-    _loop.duration = next;
+    if (_loop.duration != next) {
+      _loop.duration = next;
+    }
+    _ensureLooping();
+  }
+
+  void _ensureLooping() {
     if (!_loop.isAnimating) {
       _loop.repeat(reverse: true);
     }
@@ -187,62 +266,24 @@ class _WalkingMascotState extends State<WalkingMascot>
   Widget build(BuildContext context) {
     final size = widget.size;
     final art = _untintedMascot();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      return _groundedStack(
-        size: size,
-        lift: 0,
-        tilt: 0,
-        scaleX: 1,
-        scaleY: 1,
-        sparkle: 0,
-        child: art,
-      );
-    }
-
     return AnimatedBuilder(
       animation: _tick,
       builder: (context, child) {
-        final current = motion;
-        final loopT = Curves.easeInOut.transform(_loop.value.clamp(0.0, 1.0));
-        var lift = 0.0;
-        var tilt = 0.0;
-        var scaleX = 1.0;
-        var scaleY = 1.0;
-        var sparkle = 0.0;
-
-        if (current == WalkingMascotMotion.pickup) {
-          final t = _pickup.value.clamp(0.0, 1.0);
-          final hop = t < 0.42
-              ? Curves.easeOut.transform((t / 0.42).clamp(0.0, 1.0))
-              : 1 -
-                  Curves.easeIn.transform(
-                    ((t - 0.42) / 0.58).clamp(0.0, 1.0),
-                  );
-          lift = hop * size * 0.16;
-          scaleY = t < 0.42 ? 1 + hop * 0.07 : 1 - (1 - hop) * 0.07;
-          scaleX = 2 - scaleY;
-          tilt = math.sin(t * math.pi * 2) * 0.11;
-          sparkle = (1 - (t - 0.15).abs() * 1.6).clamp(0.0, 1.0);
-        } else {
-          final walking = current == WalkingMascotMotion.walking;
-          final amp = size * (walking ? 0.07 : 0.028);
-          lift = loopT * amp;
-          final sway = math.sin(_loop.value * math.pi);
-          final dir = _loop.status == AnimationStatus.reverse ? -1.0 : 1.0;
-          tilt = sway * dir * (walking ? 0.085 : 0.02);
-          if (walking) {
-            scaleY = 1 - loopT * 0.045;
-            scaleX = 1 + loopT * 0.025;
-          }
-        }
-
+        final pose = WalkingMascot.evaluatePose(
+          motion: motion,
+          size: size,
+          loopValue: _loop.value,
+          loopReversing: _loop.status == AnimationStatus.reverse,
+          pickupValue: _pickup.value,
+        );
         return _groundedStack(
           size: size,
-          lift: lift,
-          tilt: tilt,
-          scaleX: scaleX,
-          scaleY: scaleY,
-          sparkle: sparkle,
+          lift: pose.lift,
+          slide: pose.slide,
+          tilt: pose.tilt,
+          scaleX: pose.scaleX,
+          scaleY: pose.scaleY,
+          sparkle: pose.sparkle,
           child: child!,
         );
       },
@@ -253,6 +294,7 @@ class _WalkingMascotState extends State<WalkingMascot>
   Widget _groundedStack({
     required double size,
     required double lift,
+    required double slide,
     required double tilt,
     required double scaleX,
     required double scaleY,
@@ -296,7 +338,8 @@ class _WalkingMascotState extends State<WalkingMascot>
           ),
           if (sparkle > 0) ..._pickupSparkles(size, sparkle),
           Transform.translate(
-            offset: Offset(0, -lift),
+            key: const Key('walking-mascot-pose'),
+            offset: Offset(slide, -lift),
             child: Transform.rotate(
               angle: tilt,
               alignment: Alignment.bottomCenter,

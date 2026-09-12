@@ -290,5 +290,26 @@ void main() {
         'wallet.valueTokenBalance': 1000000,
       },
     );
+    expect(
+      DebugWalletGrant.shareSpendMergeFields(
+        uid: 'uid-1',
+        shareBalanceAfter: 790000,
+        diamondBalance: 1000000,
+        valueBalance: 1000000,
+        donationCount: 1,
+        cumulativeDonationAmount: 50000,
+        isSponsored: true,
+      ),
+      {
+        'uid': 'uid-1',
+        'testGrant1mDone': true,
+        'wallet.shareBalance': 790000,
+        'wallet.diamondBalance': 1000000,
+        'wallet.valueTokenBalance': 1000000,
+        'donationCount': 1,
+        'cumulativeDonationAmount': 50000,
+        'isSponsored': true,
+      },
+    );
   });
 }

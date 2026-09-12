@@ -5,7 +5,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/navigation/app_pop_policy.dart';
 import '../core/theme/src_theme.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
@@ -72,7 +71,6 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
       },
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        onNavigationNotification: AppPopPolicy.consumeNavigationNotification,
         // Light SRC theme — do NOT use AppTheme.dark (black neon) post-login.
         theme: SrcTheme.light,
         supportedLocales: const [Locale('ko'), Locale('en')],

@@ -77,8 +77,12 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
         infoWindow: InfoWindow(
           title: landmark.name,
           snippet: landmark.isVisited
-              ? AppStrings.stampTourVisitComplete
-              : '반경 50m 이내 접근',
+              ? (landmark.awardsOfficialDia
+                  ? '${AppStrings.stampTourVisitComplete} · ${AppStrings.stampTourOfficialDiaPending}'
+                  : '${AppStrings.stampTourStampCollected} (개인)')
+              : (landmark.isPersonalStamp
+                  ? '개인 스탬프 · 반경 50m'
+                  : '공식 랜드마크 · 반경 50m'),
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(
           landmark.isVisited
@@ -183,6 +187,8 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
                               title: AppStrings.stampTourMissionWalk,
                               completed: tour.walkMissionCompleted,
                               inProgress: !tour.walkMissionCompleted,
+                              // Client cannot mint DIA; never show a fake credit.
+                              officialDiaPending: true,
                               cardShadow: _cardShadow,
                               completedMint: _completedMint,
                               inProgressGrey: _inProgressGrey,
@@ -194,6 +200,7 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
                               title: tour.stampMissionTitle,
                               completed: tour.stampMissionCompleted,
                               inProgress: !tour.stampMissionCompleted,
+                              officialDiaPending: true,
                               cardShadow: _cardShadow,
                               completedMint: _completedMint,
                               inProgressGrey: _inProgressGrey,
@@ -370,6 +377,7 @@ class _MissionCard extends StatelessWidget {
     required this.cardShadow,
     this.completed = false,
     this.inProgress = false,
+    this.officialDiaPending = false,
     this.completedMint,
     this.inProgressGrey,
     this.onTap,
@@ -380,6 +388,7 @@ class _MissionCard extends StatelessWidget {
   final List<BoxShadow> cardShadow;
   final bool completed;
   final bool inProgress;
+  final bool officialDiaPending;
   final Color? completedMint;
   final Color? inProgressGrey;
   final VoidCallback? onTap;
@@ -417,15 +426,21 @@ class _MissionCard extends StatelessWidget {
                   ),
                 ),
                 if (completed) ...[
-                  const Icon(
-                    Icons.diamond_rounded,
-                    color: Color(0xFF42A5F5),
+                  Icon(
+                    officialDiaPending
+                        ? Icons.hourglass_top_rounded
+                        : Icons.diamond_rounded,
+                    color: officialDiaPending
+                        ? AppColors.textGrey
+                        : const Color(0xFF42A5F5),
                     size: 16,
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    '획득 완료',
-                    style: TextStyle(
+                  Text(
+                    officialDiaPending
+                        ? AppStrings.stampTourOfficialDiaPending
+                        : '획득 완료',
+                    style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -457,9 +472,9 @@ class _MissionCard extends StatelessWidget {
                       color: inProgressGrey,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Text(
+                    child: const Text(
                       AppStrings.stampTourMissionInProgress,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w600,

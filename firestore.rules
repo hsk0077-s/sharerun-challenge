@@ -558,6 +558,18 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Official stamp-tour catalog. Clients read; admin replaces the list.
+    // Scoped to stamp_tour so other future config docs stay closed.
+    match /config/{docId} {
+      allow read: if (signedIn() || isAdmin()) && docId == 'stamp_tour';
+      allow write: if isAdmin() && docId == 'stamp_tour';
+    }
+
+    match /stampLandmarks/{landmarkId} {
+      allow read: if signedIn() || isAdmin();
+      allow write: if isAdmin();
+    }
+
     match /crewRankings/{crewId} {
       allow read: if true;
       allow create, update, delete: if false;

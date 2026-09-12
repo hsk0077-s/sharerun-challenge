@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
+import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/currency_badge.dart';
 import 'package:share_run_challenge/data/models/tournament_model.dart';
@@ -151,6 +152,11 @@ void main() {
     expect(find.text('방 상세 보기'), findsNWidgets(2));
     expect(find.text('워킹 챌린지 시작'), findsOneWidget);
     expect(find.textContaining('내 이름으로 달리기 후원하기'), findsOneWidget);
+    expect(find.text(AppStrings.dashboardChallenge1Sub), findsOneWidget);
+    expect(find.text(AppStrings.dashboardChallenge2Sub), findsOneWidget);
+    expect(find.byIcon(Icons.mail_outline_rounded), findsNothing);
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
     final shareStyle = tester
@@ -166,6 +172,34 @@ void main() {
         )
         .style;
     expect(valueStyle?.color, AppColors.angelGold);
+  });
+
+  testWidgets('Home avatar sheet offers presets and gallery, not only gender',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _scopedApp(home: const MainDashboardScreen()),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.byKey(const Key('home-header-avatar')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+
+    expect(find.text(AppStrings.avatarCustomizeTitle), findsOneWidget);
+    expect(find.byKey(const Key('avatar-preset-snail')), findsOneWidget);
+    expect(find.byKey(const Key('avatar-preset-cheetah')), findsOneWidget);
+    expect(find.byKey(const Key('avatar-pick-gallery')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('avatar-preset-snail')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    expect(find.text(AppStrings.avatarCustomizeTitle), findsNothing);
   });
 
   testWidgets('Home START golden', (tester) async {

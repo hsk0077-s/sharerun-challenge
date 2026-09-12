@@ -89,9 +89,9 @@ abstract final class AppStrings {
   static const dashboardStampMapTooltip = '오늘의 미션 · 스탬프 투어';
   static const dashboardOngoingChallenges = '진행 중인 챌린지';
   static const dashboardChallenge1Title = '초보 1km 챌린지 🏆';
-  static const dashboardChallenge1Sub = 'Entry 료: 10만 SHARE';
+  static const dashboardChallenge1Sub = '참가비: 30,000 SHARE';
   static const dashboardChallenge2Title = '중급 3km 챌린지 (골드 방)';
-  static const dashboardChallenge2Sub = 'BEP: 283/400';
+  static const dashboardChallenge2Sub = '참가비: 60,000 SHARE';
   static const dashboardViewRoom = '방 상세 보기';
   static const dashboardNavHome = '홈';
   static const dashboardNavStore = '상점';
@@ -151,7 +151,7 @@ abstract final class AppStrings {
   static const lobbyRoom2Title = '크루 대항 주말 10K 매치 🔥';
   static const lobbyRoom2Sub = '참가 크루 8팀 · 주말 오전 09:00 시작';
   static const lobbyRoom3Title = '초보 1km 챌린지 (입장 제한)';
-  static const lobbyRoom3Sub = 'Entry 료: 10만 SHARE · 실버 등급 이상 필요';
+  static const lobbyRoom3Sub = '참가비: 30,000 SHARE · 실버 등급 이상 필요';
   static const lobbyEnterRoom = '입장하기';
   static const lobbyGradeBlocked = '하위 등급 차단';
 
@@ -196,7 +196,7 @@ abstract final class AppStrings {
 
   // ── Challenge Detail (Screen 9) ───────────────────────────────────
   static const challengeDetailTitle = '3km 중급 챌린지 (골드 방)';
-  static const challengeDetailEntryFee = '참가비: 30,000 SHARE';
+  static const challengeDetailEntryFee = '참가비: 60,000 SHARE';
   static const challengeDetailGoldBadge = 'Gold';
   static const challengeDetailPrize = '상금: 50만 원';
   static const challengeDetailDonation = '기부금: 유니세프 기부 50만 원';
@@ -327,7 +327,15 @@ abstract final class AppStrings {
       '후원금이 1등 러너의 이름으로 유니세프에 기부됩니다.';
   static const personalSponsorActive = 'ACTIVE';
   static const personalSponsorCta = '50,000 SHARE 후원하고 천사 되기';
+  static const personalSponsorCelebrateTitle = '천사 후원 완료!';
+  static const personalSponsorCelebrateHall = '명예의 전당 보기';
+  static const personalSponsorCelebrateDone = '확인';
   static const myPageAngelSponsor = '천사 후원';
+  static const avatarCustomizeTitle = '아바타 커스터마이징';
+  static const avatarCustomizeHint = '캐릭터를 고르거나 갤러리 사진을 쓰면 바로 저장됩니다';
+  static const avatarPickGallery = '갤러리에서 사진 선택';
+  static const avatarGalleryDenied = '사진 접근 권한이 필요합니다. 설정에서 허용해 주세요.';
+  static const avatarGalleryFailed = '사진을 불러오지 못했습니다. 다시 시도해 주세요.';
 
   // ── Running Crew (Screen 18) ──────────────────────────────────────
   static const runningCrewTitle = '러닝 크루 (Crew)';
@@ -412,9 +420,11 @@ abstract final class AppStrings {
   static const stampTourLandmarkNamsan = '남산타워';
   static const stampTourLandmarkModoil = '모도일 공원';
   static const stampTourMissionWalk = '오늘 가볍게 1km 걷기';
-  static const stampTourMissionWalkReward = '1 획득 완료';
+  static const stampTourMissionWalkReward = 'DIA 지급 대기';
   static const stampTourMissionStamp = '우리 동네 랜드마크 스탬프 찍기 (1/3)';
   static const stampTourMissionInProgress = '진행 중';
+  static const stampTourOfficialDiaPending = 'DIA 지급 대기';
+  static const stampTourStampCollected = '스탬프 완료';
   static const dashboardStampTourCta = '스탬프 투어 확인하기';
 
   // ── Battle Pass (Screen 24) ─────────────────────────────────────────

@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/providers/app_providers.dart';
+import '../app/router/route_names.dart';
 import '../core/config/app_env.dart';
 import '../core/constants/firestore_paths.dart';
+import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -16,6 +19,8 @@ import '../core/widgets/src_gradient_background.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/wallet/debug_local_wallet_store.dart';
 import '../features/wallet/providers/debug_local_share_history_provider.dart';
+import 'appeal_center_screen.dart';
+import 'solo_pedometer_screen.dart';
 
 /// 알림 센터 및 재화 히스토리 화면 (Screen 28).
 class NotificationCenterScreen extends StatefulWidget {
@@ -241,6 +246,8 @@ class _RealtimeSystemNotificationList extends ConsumerWidget {
             final body = bodyRaw is String ? bodyRaw : '';
             final codeRaw = data['code'];
             final code = codeRaw is String ? codeRaw : '';
+            final routeRaw = data['routeName'];
+            final routeName = routeRaw is String ? routeRaw : '';
             final tsRaw = data['timestamp'];
             final timestamp = tsRaw is Timestamp ? tsRaw : null;
             final dateStr = timestamp != null
@@ -252,6 +259,11 @@ class _RealtimeSystemNotificationList extends ConsumerWidget {
                 width: cardWidth,
                 icon: _systemNoticeIcon(code),
                 title: title,
+                onTap: () => _openRetentionRoute(
+                  context,
+                  code: code,
+                  routeName: routeName,
+                ),
                 body: Text(
                   body,
                   textScaler: TextScaler.noScaling,
@@ -280,6 +292,7 @@ class _NotificationCard extends StatelessWidget {
     required this.title,
     required this.body,
     required this.time,
+    this.onTap,
   });
 
   final double width;
@@ -287,16 +300,23 @@ class _NotificationCard extends StatelessWidget {
   final String title;
   final Widget body;
   final String time;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
       height: 110,
-      child: Container(
+      child: Material(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
         padding: EdgeInsets.fromLTRB(14, 12, 14, 10),
         decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(AppShapes.cardRadius),
           boxShadow: [
             BoxShadow(
@@ -347,7 +367,59 @@ class _NotificationCard extends StatelessWidget {
             ),
           ],
         ),
+          ),
+        ),
       ),
+    );
+  }
+}
+
+void _openRetentionRoute(
+  BuildContext context, {
+  required String code,
+  required String routeName,
+}) {
+  final target = routeName.isNotEmpty
+      ? routeName
+      : switch (code) {
+          'golden_hour' => RouteNames.soloPedometer,
+          'jena_pending' => RouteNames.appealCenter,
+          _ => '',
+        };
+  if (target.isEmpty) return;
+
+  final router = GoRouter.maybeOf(context);
+  if (router != null) {
+    try {
+      context.pushNamed(target);
+      return;
+    } catch (_) {
+      if (target == RouteNames.soloPedometer ||
+          target == RouteNames.soloPedometerPath) {
+        context.push(RouteNames.soloPedometerPath);
+        return;
+      }
+      if (target == RouteNames.appealCenter || target == RouteNames.appeal) {
+        context.push(RouteNames.appeal);
+        return;
+      }
+    }
+  }
+
+  if (target == RouteNames.soloPedometer ||
+      target == RouteNames.soloPedometerPath) {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.soloPedometerPath,
+      materialBuilder: (_) => const SoloPedometerScreen(),
+    );
+    return;
+  }
+  if (target == RouteNames.appealCenter || target == RouteNames.appeal) {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.appeal,
+      materialBuilder: (_) => const AppealCenterScreen(),
     );
   }
 }

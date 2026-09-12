@@ -9,6 +9,11 @@ abstract final class FirestorePaths {
   static const walletTransactions = 'walletTransactions';
   static const appeals = 'appeals';
   static const purchases = 'purchases';
+  static const stampLandmarks = 'stampLandmarks';
+
+  /// Remote official stamp-tour catalog. Ops replace this doc instead of
+  /// shipping a new client. Shape: `{ landmarks: [ {id, name, lat, lng} ] }`.
+  static const stampTourConfig = 'config/stamp_tour';
 
   static String user(String uid) => '$users/$uid';
 

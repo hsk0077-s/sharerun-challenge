@@ -334,11 +334,6 @@ class _DashboardHeader extends StatelessWidget {
               color: tokens.colors.ink,
               onPressed: onNotificationTap,
             ),
-            IconButton(
-              icon: const Icon(Icons.mail_outline_rounded),
-              color: tokens.colors.ink,
-              onPressed: () => debugPrint('버튼 클릭됨'),
-            ),
           ],
         ),
       ],

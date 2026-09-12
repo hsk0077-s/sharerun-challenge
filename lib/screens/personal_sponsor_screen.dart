@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/router/route_names.dart';
+import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -11,6 +13,7 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import 'hall_of_fame_screen.dart';
 
 enum _SponsorPurpose { prize, donation }
 
@@ -34,10 +37,6 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
 
   Future<void> _onSponsor() async {
     if (_busy) return;
-    if (_purpose != _SponsorPurpose.donation) {
-      debugPrint('버튼 클릭됨');
-      return;
-    }
     setState(() => _busy = true);
     try {
       final wallet = ref.read(walletProvider);
@@ -52,22 +51,112 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
         );
         return;
       }
+      final previousTier = ref.read(userProfileProvider).angelTier;
       ref.read(walletProvider.notifier).subtractShare(_donationShare);
-      await ref
-          .read(userProfileNotifierProvider.notifier)
-          .processDonation(_donationShare);
+      await ref.read(userProfileNotifierProvider.notifier).processDonation(
+            _donationShare,
+            receiptTitle: _purpose == _SponsorPurpose.prize
+                ? '챌린지 상금 지원 후원 🏆'
+                : '유니세프 기부 완료 🕊️',
+          );
       if (!mounted) return;
-      final messenger = ScaffoldMessenger.maybeOf(context);
-      Navigator.pop(context);
-      messenger?.showSnackBar(
-        const SnackBar(
-          content: Text('후원이 등록되었습니다. 천사 등급이 갱신됩니다.'),
-          behavior: SnackBarBehavior.floating,
-        ),
+      final nextTier = ref.read(userProfileProvider).angelTier;
+      await _showCelebration(
+        previousTier: previousTier,
+        nextTier: nextTier,
       );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _showCelebration({
+    required AngelTier previousTier,
+    required AngelTier nextTier,
+  }) async {
+    final purposeLabel = _purpose == _SponsorPurpose.prize
+        ? AppStrings.personalSponsorPrizeTitle
+        : AppStrings.personalSponsorDonationTitle;
+    final promoted = nextTier.index > previousTier.index;
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceWhite,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+          ),
+          title: Text(
+            AppStrings.personalSponsorCelebrateTitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.header1.copyWith(fontSize: 18),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                nextTier.avatarAssetPath,
+                width: 88,
+                height: 88,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Text(
+                  nextTier.emoji,
+                  style: const TextStyle(fontSize: 42),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                promoted
+                    ? '${previousTier.koreanName} → ${nextTier.emoji} ${nextTier.koreanName}'
+                    : '${nextTier.emoji} ${nextTier.koreanName}',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.agreementLabel.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.angelGold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '$purposeLabel · 50,000 SHARE',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                promoted
+                    ? '날개 배지가 프로필에 장착되었습니다. 명예의 전당에서 천사 후원자를 확인할 수 있어요.'
+                    : '후원이 등록되었습니다. 명예의 전당에서 천사 후원 기록을 확인할 수 있어요.',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(height: 1.4),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop();
+              },
+              child: const Text(AppStrings.personalSponsorCelebrateDone),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop();
+                AppRouteNav.push<void>(
+                  context,
+                  RouteNames.hallOfFame,
+                  materialBuilder: (_) => const HallOfFameScreen(),
+                );
+              },
+              child: const Text(AppStrings.personalSponsorCelebrateHall),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

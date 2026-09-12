@@ -15,7 +15,6 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
-import '../features/wallet/widgets/wallet_inventory_section.dart';
 import 'in_app_billing_screen.dart';
 import 'preliminary_eval_screen.dart';
 import 'settings_screen.dart';
@@ -55,7 +54,6 @@ class MyWalletScreen extends ConsumerWidget {
     final gradeDone = onboarding.preliminaryPaceSeconds.length
         .clamp(0, EconomyConstants.trialRunsRequired);
     final walletState = ref.watch(walletProvider);
-    final shop = ref.watch(shopTabProvider);
     final share = walletState.shareBalance;
     final diamond = walletState.diamondBalance;
     final value = walletState.valueBalance;
@@ -97,8 +95,6 @@ class MyWalletScreen extends ConsumerWidget {
                       onCharge: () => _openBilling(context),
                       onUse: () => _openStore(context, ref),
                     ),
-                    const SizedBox(height: 24),
-                    WalletInventorySection(shop: shop),
                     const SizedBox(height: 24),
                     const Text(
                       AppStrings.myWalletRecentTransactions,

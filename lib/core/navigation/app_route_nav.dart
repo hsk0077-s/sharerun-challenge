@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app/router/route_names.dart';
-import 'dashboard_tab_navigation.dart';
-
 /// Material / GoRouter 공통 push·pop (셸 밖 상세 화면용).
 abstract final class AppRouteNav {
   static Future<T?> push<T extends Object?>(
@@ -33,23 +30,5 @@ abstract final class AppRouteNav {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop(result);
     }
-  }
-
-  /// Detail back: pop when possible, otherwise return to Home (never exit).
-  static void popOrHome(BuildContext context) {
-    final router = GoRouter.maybeOf(context);
-    if (router != null && router.canPop()) {
-      router.pop();
-      return;
-    }
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-      return;
-    }
-    if (router != null) {
-      router.go(RouteNames.mainDashboard);
-      return;
-    }
-    DashboardTabNavigation.go(context, DashboardTabNavigation.home);
   }
 }

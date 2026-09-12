@@ -6,7 +6,6 @@ void main() {
     final profile = UserModel.fromJson({
       'uid': 'u1',
       'hasCPR': true,
-      'hasSafeGuard': true,
       'isSponsored': true,
       'wallet': {
         'shareBalance': 10,
@@ -18,7 +17,6 @@ void main() {
 
     expect(profile.uid, 'u1');
     expect(profile.hasCPR, isTrue);
-    expect(profile.hasSafeGuard, isTrue);
     expect(profile.isSponsored, isTrue);
     expect(profile.shareBalance, 10);
     expect(profile.diamondBalance, 20);
@@ -39,15 +37,9 @@ void main() {
 
   test('copyWith updates hasCPR and isSponsored', () {
     final base = UserModel.dashboardDefault(uid: 'u3');
-    final next = base.copyWith(
-      hasCPR: true,
-      hasSafeGuard: true,
-      isSponsored: true,
-    );
+    final next = base.copyWith(hasCPR: true, isSponsored: true);
     expect(next.hasCPR, isTrue);
-    expect(next.hasSafeGuard, isTrue);
     expect(next.isSponsored, isTrue);
     expect(base.hasCPR, isFalse);
-    expect(base.hasSafeGuard, isFalse);
   });
 }

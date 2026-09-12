@@ -37,6 +37,37 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
   int get _currentTabIndex =>
       widget.navigationShell?.currentIndex ?? widget.tabIndex;
 
+  bool get _isTabShell => widget.navigationShell != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _claimAndroidBackSoon();
+  }
+
+  /// Tab-shell only. Branch / first-frame navigators dispatch
+  /// [NavigationNotification.canHandlePop] false; MaterialApp then calls
+  /// [SystemNavigator.setFrameworkHandlesBack](false) and Android finishes
+  /// the Activity — Flutter never reaches [PopScope]. #45 skipped router.pop
+  /// but the press never arrived. Do **not** set MaterialApp.onNavigationNotification
+  /// (#41 banned). Claim BACK here, then the existing tab converge / snackbar runs.
+  void _claimAndroidBackSoon() {
+    if (!_isTabShell) return;
+    void claim(Duration _) {
+      if (!mounted || !_isTabShell) return;
+      SystemNavigator.setFrameworkHandlesBack(true);
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback(claim);
+    WidgetsBinding.instance.addPostFrameCallback(claim);
+  }
+
+  bool _onTabShellNavigationNotification(NavigationNotification notification) {
+    if (!_isTabShell || notification.canHandlePop) return false;
+    SystemNavigator.setFrameworkHandlesBack(true);
+    return true;
+  }
+
   void _goHome() {
     final shell = widget.navigationShell;
     if (shell != null) {
@@ -48,7 +79,7 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
+    final popGuard = PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
@@ -94,6 +125,11 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         );
       },
       child: widget.child,
+    );
+    if (!_isTabShell) return popGuard;
+    return NotificationListener<NavigationNotification>(
+      onNotification: _onTabShellNavigationNotification,
+      child: popGuard,
     );
   }
 }

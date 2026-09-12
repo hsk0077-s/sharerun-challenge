@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,6 +29,11 @@ void main() {
   bool didRequestExit() => platformCalls.any(
         (call) => call.method == 'SystemNavigator.pop',
       );
+
+  List<bool> frameworkHandlesBackArgs() => platformCalls
+      .where((call) => call.method == 'SystemNavigator.setFrameworkHandlesBack')
+      .map((call) => call.arguments as bool)
+      .toList();
 
   testWidgets(
       'each of 5 tab roots: first BACK does not exit (cold start)',
@@ -75,6 +81,58 @@ void main() {
     expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(find.text('HOF_STAND_IN'), findsNothing);
     expect(didRequestExit(), isFalse);
+  });
+
+  testWidgets(
+      'Android: tab shell claims BACK after cold start (last flag true)',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    try {
+      final router = _fiveTabRouter(initialLocation: RouteNames.shop);
+      await tester.pumpWidget(_nestedApp(router));
+      await tester.pumpAndSettle();
+      expect(find.text('SHOP_ROOT'), findsOneWidget);
+
+      final flags = frameworkHandlesBackArgs();
+      expect(flags, isNotEmpty, reason: 'shell must claim Android BACK');
+      expect(
+        flags.last,
+        isTrue,
+        reason: 'must not leave frameworkHandlesBack false',
+      );
+      expect(didRequestExit(), isFalse);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  testWidgets(
+      'Android: branch canHandlePop=false must not leave BACK to the Activity',
+      (tester) async {
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    try {
+      final router = _fiveTabRouter(initialLocation: RouteNames.shop);
+      await tester.pumpWidget(_nestedApp(router));
+      await tester.pumpAndSettle();
+      platformCalls.clear();
+
+      final shopContext = tester.element(find.text('SHOP_ROOT'));
+      const NavigationNotification(canHandlePop: false).dispatch(shopContext);
+      await tester.pump();
+
+      final flags = frameworkHandlesBackArgs();
+      expect(flags, isNotEmpty);
+      expect(flags.last, isTrue);
+      expect(didRequestExit(), isFalse);
+
+      final handled = await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(handled, isTrue);
+      expect(find.text('HOME_ROOT'), findsOneWidget);
+      expect(didRequestExit(), isFalse);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
   });
 
   testWidgets('pushed HoF still pops; does not exit', (tester) async {

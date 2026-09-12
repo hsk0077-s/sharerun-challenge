@@ -148,8 +148,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                // Replace sponsor with HoF so Android back pops to the
-                // previous tab instead of leaving HoF as the only route.
+                // Keep the previous tab under HoF (pop+push left HoF as root).
                 final router = GoRouter.maybeOf(context);
                 if (router != null) {
                   context.pushReplacement(RouteNames.hallOfFame);
@@ -178,145 +177,143 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
         AppRouteNav.popOrHome(context);
       },
       child: Scaffold(
-        backgroundColor: AppColors.sponsorBgGradientEnd,
-        body: SRCGradientBackground(
-          gradient: AppColors.sponsorBackgroundGradient,
-          child: SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
-                  child: Stack(
-                    alignment: Alignment.center,
+      backgroundColor: AppColors.sponsorBgGradientEnd,
+      body: SRCGradientBackground(
+        gradient: AppColors.sponsorBackgroundGradient,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        color: AppColors.textBlack,
+                        iconSize: 26,
+                        onPressed: _onClose,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48),
+                      child: Text(
+                        AppStrings.personalSponsorTitle,
+                        style: AppTextStyles.termsTitle.copyWith(fontSize: 18),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppShapes.termsHorizontalPadding,
+                    8,
+                    AppShapes.termsHorizontalPadding,
+                    16,
+                  ),
+                  child: Column(
                     children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          icon: const Icon(Icons.close_rounded),
-                          color: AppColors.textBlack,
-                          iconSize: 26,
-                          onPressed: _onClose,
+                      const _AngelProfileSection(),
+                      const SizedBox(height: 24),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceWhite,
+                          borderRadius:
+                              BorderRadius.circular(AppShapes.cardRadius),
+                          border: Border.all(color: AppColors.borderLight),
+                        ),
+                        child: Text(
+                          AppStrings.personalSponsorAmount,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.header1.copyWith(fontSize: 26),
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 48),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          CupertinoSwitch(
+                            value: _monthlyMembership,
+                            activeTrackColor: AppColors.primaryMint,
+                            onChanged: (value) =>
+                                setState(() => _monthlyMembership = value),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              AppStrings.personalSponsorMonthlyToggle,
+                              style: AppTextStyles.agreementLabel.copyWith(
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Align(
+                        alignment: Alignment.centerLeft,
                         child: Text(
-                          AppStrings.personalSponsorTitle,
-                          style:
-                              AppTextStyles.termsTitle.copyWith(fontSize: 18),
-                          textAlign: TextAlign.center,
+                          AppStrings.personalSponsorPurposeLabel,
+                          style: AppTextStyles.agreementLabel.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      _PurposeCard(
+                        selected: _purpose == _SponsorPurpose.prize,
+                        icon: '🏆',
+                        title: AppStrings.personalSponsorPrizeTitle,
+                        description: AppStrings.personalSponsorPrizeDesc,
+                        onTap: () =>
+                            setState(() => _purpose = _SponsorPurpose.prize),
+                      ),
+                      const SizedBox(height: 10),
+                      _PurposeCard(
+                        selected: _purpose == _SponsorPurpose.donation,
+                        icon: '🌍',
+                        title: AppStrings.personalSponsorDonationTitle,
+                        description: AppStrings.personalSponsorDonationDesc,
+                        showActiveBadge: true,
+                        onTap: () =>
+                            setState(() => _purpose = _SponsorPurpose.donation),
                       ),
                     ],
                   ),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppShapes.termsHorizontalPadding,
-                      8,
-                      AppShapes.termsHorizontalPadding,
-                      16,
-                    ),
-                    child: Column(
-                      children: [
-                        const _AngelProfileSection(),
-                        const SizedBox(height: 24),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceWhite,
-                            borderRadius:
-                                BorderRadius.circular(AppShapes.cardRadius),
-                            border: Border.all(color: AppColors.borderLight),
-                          ),
-                          child: Text(
-                            AppStrings.personalSponsorAmount,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.header1.copyWith(fontSize: 26),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            CupertinoSwitch(
-                              value: _monthlyMembership,
-                              activeTrackColor: AppColors.primaryMint,
-                              onChanged: (value) =>
-                                  setState(() => _monthlyMembership = value),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                AppStrings.personalSponsorMonthlyToggle,
-                                style: AppTextStyles.agreementLabel.copyWith(
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            AppStrings.personalSponsorPurposeLabel,
-                            style: AppTextStyles.agreementLabel.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _PurposeCard(
-                          selected: _purpose == _SponsorPurpose.prize,
-                          icon: '🏆',
-                          title: AppStrings.personalSponsorPrizeTitle,
-                          description: AppStrings.personalSponsorPrizeDesc,
-                          onTap: () =>
-                              setState(() => _purpose = _SponsorPurpose.prize),
-                        ),
-                        const SizedBox(height: 10),
-                        _PurposeCard(
-                          selected: _purpose == _SponsorPurpose.donation,
-                          icon: '🌍',
-                          title: AppStrings.personalSponsorDonationTitle,
-                          description: AppStrings.personalSponsorDonationDesc,
-                          showActiveBadge: true,
-                          onTap: () => setState(
-                              () => _purpose = _SponsorPurpose.donation),
-                        ),
-                      ],
-                    ),
+              ),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppShapes.termsHorizontalPadding,
+                    4,
+                    AppShapes.termsHorizontalPadding,
+                    12,
                   ),
-                ),
-                SafeArea(
-                  top: false,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppShapes.termsHorizontalPadding,
-                      4,
-                      AppShapes.termsHorizontalPadding,
-                      12,
-                    ),
-                    child: Material(
-                      color: AppColors.primaryMint,
-                      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: _onSponsor,
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: AppShapes.buttonHeight,
-                          child: Center(
-                            child: Text(
-                              AppStrings.personalSponsorCta,
-                              style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
-                                fontSize: 15,
-                              ),
+                  child: Material(
+                    color: AppColors.primaryMint,
+                    borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+                    clipBehavior: Clip.antiAlias,
+                    child: InkWell(
+                      onTap: _onSponsor,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: AppShapes.buttonHeight,
+                        child: Center(
+                          child: Text(
+                            AppStrings.personalSponsorCta,
+                            style: AppTextStyles.buttonText.copyWith(
+                              color: AppColors.textWhite,
+                              fontSize: 15,
                             ),
                           ),
                         ),
@@ -324,11 +321,12 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
+    ),
     );
   }
 }
@@ -367,8 +365,9 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
     final tier = profile.angelTier;
     final count = profile.safeDonationCount;
     final amount = profile.safeCumulativeDonationAmount;
-    final displayName =
-        SrcOnboardingController.isUnsetNickname(nickname) ? '러너' : nickname;
+    final displayName = SrcOnboardingController.isUnsetNickname(nickname)
+        ? '러너'
+        : nickname;
     final progress = tier.progressToNext(
       donationCount: count,
       cumulativeDonationAmount: amount,
@@ -399,15 +398,13 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                AppColors.tealAccent.withValues(alpha: pulse),
+                            color: AppColors.tealAccent.withValues(alpha: pulse),
                             blurRadius: 22,
                             spreadRadius: 8,
                           ),
                           if (tier.goldNickname)
                             BoxShadow(
-                              color:
-                                  AppColors.angelGold.withValues(alpha: pulse),
+                              color: AppColors.angelGold.withValues(alpha: pulse),
                               blurRadius: 18,
                               spreadRadius: 4,
                             ),
@@ -430,8 +427,9 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
             fontSize: 18,
             fontWeight:
                 tier.emphasizeNickname ? FontWeight.w800 : FontWeight.w700,
-            color:
-                tier.goldNickname ? AppColors.angelGold : AppColors.textBlack,
+            color: tier.goldNickname
+                ? AppColors.angelGold
+                : AppColors.textBlack,
           ),
         ),
         const SizedBox(height: 4),
@@ -546,7 +544,8 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
     if (next.minDonationAmountWon <= 0) {
       return '다음 [${next.koreanName}] 등급까지 후원 $remainCount회 남음!';
     }
-    final remainWon = (next.minDonationAmountWon - amount).clamp(0, 1 << 30);
+    final remainWon =
+        (next.minDonationAmountWon - amount).clamp(0, 1 << 30);
     return '다음 [${next.koreanName}] 등급까지 후원 $remainCount회(또는 ${AngelTierX.formatWon(remainWon)}) 남음!';
   }
 }
@@ -571,7 +570,9 @@ class _PurposeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? AppColors.agreementBoxFill : AppColors.surfaceWhite,
+      color: selected
+          ? AppColors.agreementBoxFill
+          : AppColors.surfaceWhite,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppShapes.cardRadius),
         side: BorderSide(

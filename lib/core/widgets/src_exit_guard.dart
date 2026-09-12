@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../app/router/route_names.dart';
-import '../navigation/back_to_home_policy.dart';
 import '../navigation/dashboard_tab_navigation.dart';
 import '../strings/app_strings.dart';
 
@@ -56,43 +54,18 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         if (didPop) return;
 
         final router = GoRouter.maybeOf(context);
-        final navigatorCanPop = Navigator.of(context).canPop();
-        final routerCanPop = router?.canPop() ?? false;
-        // Root URL — not the shell branch's local GoRouterState, which stays
-        // on a tab path while a sibling like /hall-of-fame is showing.
-        final location =
-            router?.routeInformationProvider.value.uri.toString() ??
-                ModalRoute.of(context)?.settings.name ??
-                '';
-        final atTabRoot = router != null
-            ? BackToHomePolicy.isMainTabRoot(location)
-            : !navigatorCanPop;
-        // Careful first-back: ignore spurious GoRouter.canPop at tab roots.
-        // Never block a real Navigator pop (Material / nested detail).
-        final canPopDetail = navigatorCanPop || (routerCanPop && !atTabRoot);
-        final action = BackToHomePolicy.resolve(
-          atTabRoot: atTabRoot,
-          canPopDetail: canPopDetail,
-          tabIndex: _currentTabIndex,
-        );
-
-        if (action == BackToHomeAction.popDetail) {
-          if (router != null && routerCanPop && !atTabRoot) {
-            router.pop();
-            return;
-          }
-          if (navigatorCanPop) {
-            Navigator.of(context).pop();
-          }
+        if (router != null && router.canPop()) {
+          router.pop();
+          return;
+        }
+        if (router == null && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
           return;
         }
 
-        if (action == BackToHomeAction.goHome) {
+        // 탭 수렴: 홈이 아니면 홈으로.
+        if (_currentTabIndex != DashboardTabNavigation.home) {
           _lastBackAt = null;
-          if (router != null && !atTabRoot) {
-            router.go(RouteNames.mainDashboard);
-            return;
-          }
           _goHome();
           return;
         }

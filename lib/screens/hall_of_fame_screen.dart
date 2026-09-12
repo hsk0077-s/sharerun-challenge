@@ -56,111 +56,107 @@ class HallOfFameScreen extends ConsumerWidget {
         AppRouteNav.popOrHome(context);
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SRCGradientBackground(
-          gradient: _screenGradient,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final contentWidth = constraints.maxWidth;
+      backgroundColor: Colors.white,
+      body: SRCGradientBackground(
+        gradient: _screenGradient,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final contentWidth = constraints.maxWidth;
 
-              return SafeArea(
-                bottom: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: _HallOfFameHeader(
-                                onBack: () => AppRouteNav.popOrHome(context),
-                              ),
+            return SafeArea(
+              bottom: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _HallOfFameHeader(
+                              onBack: () => AppRouteNav.popOrHome(context),
                             ),
-                            const SizedBox(height: 16),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 20),
-                              child: SeraphimHonorBillboard(),
+                          ),
+                          const SizedBox(height: 16),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: SeraphimHonorBillboard(),
+                          ),
+                          const SizedBox(height: 20),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: _HeroLeaderCard(
+                              width: contentWidth - 40,
                             ),
-                            const SizedBox(height: 20),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: _HeroLeaderCard(
-                                width: contentWidth - 40,
-                              ),
+                          ),
+                          const SizedBox(height: 24),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _RankingCard(
+                              medal: '🥈',
+                              rankLabel: AppStrings.hallOfFameRank2Label,
+                              subtitle: AppStrings.hallOfFameRank2Subtitle,
+                              badgeLabel: AppStrings.hallOfFameRank2Badge,
+                              valueLabel: AppStrings.hallOfFameRank2Value,
                             ),
-                            const SizedBox(height: 24),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: _RankingCard(
-                                medal: '🥈',
-                                rankLabel: AppStrings.hallOfFameRank2Label,
-                                subtitle: AppStrings.hallOfFameRank2Subtitle,
-                                badgeLabel: AppStrings.hallOfFameRank2Badge,
-                                valueLabel: AppStrings.hallOfFameRank2Value,
-                              ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: _RankingCard(
+                              medal: '🥉',
+                              rankLabel: AppStrings.hallOfFameRank3Label,
+                              subtitle: AppStrings.hallOfFameRank3Subtitle,
+                              badgeLabel: AppStrings.hallOfFameRank3Badge,
+                              valueLabel: AppStrings.hallOfFameRank3Value,
                             ),
-                            const SizedBox(height: 12),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: _RankingCard(
-                                medal: '🥉',
-                                rankLabel: AppStrings.hallOfFameRank3Label,
-                                subtitle: AppStrings.hallOfFameRank3Subtitle,
-                                badgeLabel: AppStrings.hallOfFameRank3Badge,
-                                valueLabel: AppStrings.hallOfFameRank3Value,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    SafeArea(
-                      top: false,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                        child: Center(
-                          child: SizedBox(
-                            width: contentWidth * 0.9,
-                            height: AppShapes.buttonHeight,
-                            child: FilledButton(
-                              onPressed: () => _onDonate(context, ref),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: _saveNavy,
-                                foregroundColor: AppColors.textWhite,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppShapes.cardRadius,
-                                  ),
+                  ),
+                  SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      child: Center(
+                        child: SizedBox(
+                          width: contentWidth * 0.9,
+                          height: AppShapes.buttonHeight,
+                          child: FilledButton(
+                            onPressed: () => _onDonate(context, ref),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: _saveNavy,
+                              foregroundColor: AppColors.textWhite,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppShapes.cardRadius,
                                 ),
                               ),
-                              child: Text(
-                                AppStrings.hallOfFameDonateCta,
-                                style: AppTextStyles.buttonText.copyWith(
-                                  color: AppColors.textWhite,
-                                  fontSize: 14,
-                                ),
-                                textAlign: TextAlign.center,
+                            ),
+                            child: Text(
+                              AppStrings.hallOfFameDonateCta,
+                              style: AppTextStyles.buttonText.copyWith(
+                                color: AppColors.textWhite,
+                                fontSize: 14,
                               ),
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
+    ),
     );
   }
 }

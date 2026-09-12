@@ -188,6 +188,37 @@ class WalletRepository {
         );
   }
 
+  /// Debug USB: persist a shop DIA/VALUE spend (+ optional CPR flag).
+  /// Release: no-op. Local SharedPreferences still holds the spend if this
+  /// write is permission-denied (rules not deployed yet).
+  Future<void> persistDebugShopSpend({
+    required String uid,
+    required int shareBalance,
+    required int diamondBalance,
+    required int valueBalance,
+    bool? hasCPR,
+  }) async {
+    if (!kDebugMode) {
+      throw UnsupportedError('Debug shop spend persist is debug-only.');
+    }
+    if (uid.isEmpty || shareBalance < 0 || diamondBalance < 0 || valueBalance < 0) {
+      return;
+    }
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+      {
+        ...DebugWalletGrant.shopSpendMergeFields(
+          uid: uid,
+          shareBalance: shareBalance,
+          diamondBalance: diamondBalance,
+          valueBalance: valueBalance,
+          hasCPR: hasCPR,
+        ),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
   /// Debug harvest: persist SHARE only. DIA/VALUE stay as-is. Release: no-op.
   Future<void> creditLocalDebugHarvestShare({
     required String uid,

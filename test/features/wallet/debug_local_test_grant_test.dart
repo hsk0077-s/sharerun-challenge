@@ -5,9 +5,14 @@ import 'package:share_run_challenge/core/constants/debug_wallet_grant.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/wallet/debug_test_wallet_grant.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   test('local debug grant is debug-only and only when Home wallet is empty',
       () {
@@ -59,6 +64,23 @@ void main() {
     expect(
       DebugTestWalletGrantHost.localGrantFirestoreFields(),
       DebugWalletGrant.firestoreMergeFields(),
+    );
+    expect(
+      DebugWalletGrant.shopSpendMergeFields(
+        uid: 'uid-1',
+        shareBalance: 1000000,
+        diamondBalance: 999970,
+        valueBalance: 1000000,
+        hasCPR: true,
+      ),
+      {
+        'uid': 'uid-1',
+        'testGrant1mDone': true,
+        'wallet.shareBalance': 1000000,
+        'wallet.diamondBalance': 999970,
+        'wallet.valueTokenBalance': 1000000,
+        'hasCPR': true,
+      },
     );
     final result = DebugTestWalletGrantHost.localGrantedResult();
     expect(result.status, 'granted');

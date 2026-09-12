@@ -19,6 +19,7 @@ import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
+import 'my_wallet_screen.dart';
 import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
 import 'preliminary_eval_screen.dart';
@@ -226,6 +227,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                     share: wallet.shareBalance,
                     diamond: wallet.diamondBalance,
                     value: wallet.valueBalance,
+                    onWalletTap: () => MyWalletScreen.open(context),
                     onShareTap: _onOpenInAppBilling,
                     onDiamondTap: () => _onOpenStore(focus: StoreFocus.items),
                     onValueTap: () => _onOpenStore(focus: StoreFocus.donate),
@@ -346,6 +348,7 @@ class _WalletCard extends StatelessWidget {
     required this.share,
     required this.diamond,
     required this.value,
+    required this.onWalletTap,
     required this.onShareTap,
     required this.onDiamondTap,
     required this.onValueTap,
@@ -358,6 +361,7 @@ class _WalletCard extends StatelessWidget {
   final int share;
   final int diamond;
   final int value;
+  final VoidCallback onWalletTap;
   final VoidCallback onShareTap;
   final VoidCallback onDiamondTap;
   final VoidCallback onValueTap;
@@ -378,22 +382,27 @@ class _WalletCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Icon(
-                Icons.account_balance_wallet_outlined,
-                color: tokens.colors.accent,
-                size: 22,
-              ),
-              SizedBox(width: tokens.spacing.xs),
-              Text(
-                AppStrings.dashboardMyWallet,
-                style: textTheme.titleMedium?.copyWith(
-                  color: tokens.colors.ink,
-                  fontWeight: FontWeight.w800,
+          GestureDetector(
+            key: const Key('home-my-wallet-icon'),
+            behavior: HitTestBehavior.opaque,
+            onTap: onWalletTap,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_outlined,
+                  color: tokens.colors.accent,
+                  size: 22,
                 ),
-              ),
-            ],
+                SizedBox(width: tokens.spacing.xs),
+                Text(
+                  AppStrings.dashboardMyWallet,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: tokens.colors.ink,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
           ),
           SizedBox(height: tokens.spacing.md),
           _WalletTapSegment(

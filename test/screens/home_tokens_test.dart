@@ -13,6 +13,7 @@ import 'package:share_run_challenge/features/wallet/providers/wallet_provider.da
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
 import 'package:share_run_challenge/screens/home_screen.dart';
 import 'package:share_run_challenge/screens/main_dashboard_screen.dart';
+import 'package:share_run_challenge/screens/my_wallet_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _wallet = WalletModel(
@@ -172,6 +173,28 @@ void main() {
         )
         .style;
     expect(valueStyle?.color, AppColors.angelGold);
+  });
+
+  testWidgets('Home wallet icon opens the same My Wallet screen as walking',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _scopedApp(home: const MainDashboardScreen()),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.byKey(const Key('home-my-wallet-icon')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byType(MyWalletScreen), findsOneWidget);
+    expect(find.byKey(const Key('wallet-inventory-section')), findsOneWidget);
+    expect(find.text(AppStrings.myWalletRecentTransactions), findsOneWidget);
   });
 
   testWidgets('Home avatar sheet offers presets and gallery, not only gender',

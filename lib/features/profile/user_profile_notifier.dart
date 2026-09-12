@@ -157,6 +157,19 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     } catch (e) {
       debugPrint('processDonation mergeEconomyState: $e');
     }
+    if (kDebugMode && assetType == 'VALUE') {
+      try {
+        final wallet = ref.read(walletProvider);
+        await ref.read(walletRepositoryProvider).persistDebugShopSpend(
+              uid: uid,
+              shareBalance: wallet.shareBalance,
+              diamondBalance: wallet.diamondBalance,
+              valueBalance: wallet.valueBalance,
+            );
+      } catch (e) {
+        debugPrint('processDonation persistDebugShopSpend: $e');
+      }
+    }
     if (kDebugMode && assetType == 'SHARE') {
       try {
         await ref.read(walletRepositoryProvider).persistDebugShareSpend(
@@ -202,6 +215,20 @@ class UserProfileNotifier extends Notifier<UserProfile> {
           );
     } catch (e) {
       debugPrint('persistShopPurchase: $e');
+    }
+    if (kDebugMode) {
+      try {
+        final wallet = ref.read(walletProvider);
+        await ref.read(walletRepositoryProvider).persistDebugShopSpend(
+              uid: uid,
+              shareBalance: wallet.shareBalance,
+              diamondBalance: wallet.diamondBalance,
+              valueBalance: wallet.valueBalance,
+              hasCPR: markCpr ? true : null,
+            );
+      } catch (e) {
+        debugPrint('persistShopPurchase Firestore: $e');
+      }
     }
   }
 

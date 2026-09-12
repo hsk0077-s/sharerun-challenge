@@ -231,6 +231,67 @@ void main() {
     expect(DebugLocalWalletStore.cachedShare('uid-1'), 970018);
   });
 
+  test('resolveDurableCurrency never wipes a 1M grant with durable 0', () {
+    expect(
+      DebugLocalWalletStore.resolveDurableCurrency(
+        incoming: 1000000,
+        durable: 0,
+      ),
+      1000000,
+    );
+    expect(
+      DebugLocalWalletStore.resolveDurableCurrency(
+        incoming: 1000000,
+        durable: -1,
+      ),
+      1000000,
+    );
+  });
+
+  test('resolveDurableCurrency keeps a shop spend over a stale 1M snapshot', () {
+    expect(
+      DebugLocalWalletStore.resolveDurableCurrency(
+        incoming: 1000000,
+        durable: 999970,
+      ),
+      999970,
+    );
+    expect(
+      DebugLocalWalletStore.resolveDurableCurrency(
+        incoming: 0,
+        durable: 999970,
+      ),
+      999970,
+    );
+  });
+
+  test('resolveDurableCurrency still applies a real remote DIA credit', () {
+    expect(
+      DebugLocalWalletStore.resolveDurableCurrency(
+        incoming: 1000030,
+        durable: 1000000,
+      ),
+      1000030,
+    );
+  });
+
+  test('persistBalances then hydrate restores DIA and VALUE', () async {
+    final prefs = await SharedPreferences.getInstance();
+    await DebugLocalWalletStore.persistBalances(
+      prefs: prefs,
+      uid: 'uid-1',
+      share: 1000000,
+      diamond: 999970,
+      value: 999500,
+    );
+
+    DebugLocalWalletStore.clearCacheForTest();
+    final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, 'uid-1');
+    expect(snap.share, 1000000);
+    expect(snap.diamond, 999970);
+    expect(snap.value, 999500);
+  });
+
   test('legacy debugLocalJoinedIds key is not the paid ledger', () {
     expect(
       DebugLocalWalletStore.legacyJoinedKey('uid-1'),

@@ -7,9 +7,14 @@ import 'package:share_run_challenge/data/models/pedometer_harvest_result.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/wallet/debug_test_wallet_grant.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
 
   test('applyShareFromServer credits SHARE without zeroing DIA/VALUE', () {
     const remote = WalletModel(
@@ -503,6 +508,81 @@ void main() {
     notifier.replaceFromRemote(remote);
     expect(container.read(walletProvider).shareBalance, 970000);
     expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 1000000);
+  });
+
+  test('shop DIA spend survives a stale 1M remote without wiping grant', () {
+    const spent = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 999970,
+      valueBalance: 1000000,
+    );
+    const staleGrant = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 1000000,
+    );
+    final kept = WalletNotifier.mergeRemote(
+      spent,
+      staleGrant,
+      durableDiamond: 999970,
+      durableValue: 1000000,
+    );
+    expect(kept.shareBalance, 1000000);
+    expect(kept.diamondBalance, 999970);
+    expect(kept.valueBalance, 1000000);
+
+    final firstGrant = WalletNotifier.mergeRemote(
+      const WalletState(),
+      staleGrant,
+      durableDiamond: 0,
+      durableValue: 0,
+    );
+    expect(firstGrant.diamondBalance, 1000000);
+    expect(firstGrant.valueBalance, 1000000);
+  });
+
+  test('shop VALUE donate survives empty remote after permission-denied write',
+      () {
+    const spent = WalletState(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueBalance: 999500,
+    );
+    final merged = WalletNotifier.mergeRemote(
+      spent,
+      const WalletState(),
+      durableDiamond: 1000000,
+      durableValue: 999500,
+    );
+    expect(merged.diamondBalance, 1000000);
+    expect(merged.valueBalance, 999500);
+  });
+
+  test('debitDia is sync and stays deducted after stale grant merge', () {
+    const remote = WalletModel(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.debitDia(30);
+    expect(container.read(walletProvider).diamondBalance, 999970);
+
+    notifier.replaceFromRemote(remote);
+    expect(container.read(walletProvider).shareBalance, 1000000);
+    expect(container.read(walletProvider).diamondBalance, 999970);
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 

@@ -22,6 +22,7 @@ import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
 import 'in_challenge_screen.dart';
+import 'my_wallet_screen.dart';
 import 'store_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -304,21 +305,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.account_balance_wallet_outlined,
-                    color: tokens.colors.accent,
-                    size: 22,
-                  ),
-                  SizedBox(width: tokens.spacing.xs),
-                  Expanded(
-                    child: Text(
-                      'My Wallet',
-                      style: textTheme.titleLarge,
+              GestureDetector(
+                key: const Key('home-my-wallet-icon'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => MyWalletScreen.open(context),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: tokens.colors.accent,
+                      size: 22,
                     ),
-                  ),
-                ],
+                    SizedBox(width: tokens.spacing.xs),
+                    Expanded(
+                      child: Text(
+                        'My Wallet',
+                        style: textTheme.titleLarge,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(height: tokens.spacing.md),
               Row(

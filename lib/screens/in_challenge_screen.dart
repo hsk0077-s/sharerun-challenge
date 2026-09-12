@@ -23,6 +23,8 @@ import '../features/run_tracking/services/gps_tracking_service.dart';
 import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
+import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import 'run_result_screen.dart';
 import 'appeal_center_screen.dart';
 
@@ -283,7 +285,14 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       _telemetrySubscription = service.telemetryStream.listen((event) {
         if (!mounted) return;
         final prev = _telemetry.routePoints.length;
+        final previousKm = _telemetry.distanceKm;
         setState(() => _telemetry = event);
+        unawaited(
+          ref.read(voiceCoachingControllerProvider).onRunProgress(
+                previousKm: previousKm,
+                currentKm: event.distanceKm,
+              ),
+        );
         if (event.routePoints.length > prev && event.routePoints.isNotEmpty) {
           final p = event.routePoints.last;
           final controller = _mapController;
@@ -304,6 +313,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
         _startError = null;
         _permissionIssue = null;
       });
+      unawaited(ref.read(voiceCoachingControllerProvider).onRunStarted());
     } on GpsPermissionException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -323,6 +333,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
   }
 
   Future<void> _finishAndValidate() async {
+    unawaited(ref.read(voiceCoachingControllerProvider).onRunFinished());
     setState(() => _validating = true);
     final authUser = ref.read(authStateChangesProvider).value;
     final validateBlocked = HomeStartGate.validateBlockReason(
@@ -456,6 +467,7 @@ class _Header extends StatelessWidget {
               ),
             ),
           ),
+          const VoiceCoachingHeaderToggle(color: AppColors.tealAccent),
           const Icon(Icons.sensors_rounded, color: AppColors.tealAccent, size: 18),
           const SizedBox(width: 4),
           Text(

@@ -172,14 +172,24 @@ class WalletNotifier extends Notifier<WalletState> {
     )) {
       share = current.shareBalance;
     }
+    var value = incoming.valueBalance == 0 && current.valueBalance > 0
+        ? current.valueBalance
+        : incoming.valueBalance;
+    // Reuse the existing spend-restore helper so a HoF 500 VALUE debit is
+    // not refilled by a stale 1M snapshot. Grant (0 → 1M) and harvest
+    // VALUE=0 still follow the rules above / shouldRejectHydrateRestore.
+    if (DebugLocalWalletStore.shouldRejectHydrateRestore(
+      currentShare: current.valueBalance,
+      incomingShare: value,
+    )) {
+      value = current.valueBalance;
+    }
     return WalletState(
       shareBalance: share,
       diamondBalance: incoming.diamondBalance == 0 && current.diamondBalance > 0
           ? current.diamondBalance
           : incoming.diamondBalance,
-      valueBalance: incoming.valueBalance == 0 && current.valueBalance > 0
-          ? current.valueBalance
-          : incoming.valueBalance,
+      valueBalance: value,
     );
   }
 
@@ -300,6 +310,16 @@ class WalletNotifier extends Notifier<WalletState> {
     if (kDebugMode) {
       _durableDebugShare = state.shareBalance;
     }
+  }
+
+  /// Hall of Fame / VALUE entry-fee spend. Synchronous so Home VALUE drops
+  /// before a Firestore snapshot can merge against the pre-debit balance.
+  /// SHARE/DIA are unchanged. Does not rewrite the durable SHARE ledger.
+  void applyValueDebit(int amount) {
+    if (amount <= 0) return;
+    state = state.copyWith(
+      valueBalance: (state.valueBalance - amount).clamp(0, 1 << 31),
+    );
   }
 
   void creditDia(int amount) {

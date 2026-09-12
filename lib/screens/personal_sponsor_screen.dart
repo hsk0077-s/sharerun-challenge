@@ -15,6 +15,13 @@ import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'hall_of_fame_screen.dart';
 
+/// 천사 후원 SHARE 차감 — 기존 참가비 동기 차감 경로를 사용한다.
+abstract final class AngelSponsorDebit {
+  static const shareAmount = 50000;
+
+  static bool canAfford(int shareBalance) => shareBalance >= shareAmount;
+}
+
 enum _SponsorPurpose { prize, donation }
 
 /// 개인 스폰서십(천사 후원) 화면 (Screen 17).
@@ -31,7 +38,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
   var _monthlyMembership = true;
   var _busy = false;
 
-  static const _donationShare = 50000;
+  static const _donationShare = AngelSponsorDebit.shareAmount;
 
   void _onClose() => Navigator.pop(context);
 
@@ -40,7 +47,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
     setState(() => _busy = true);
     try {
       final wallet = ref.read(walletProvider);
-      if (wallet.shareBalance < _donationShare) {
+      if (!AngelSponsorDebit.canAfford(wallet.shareBalance)) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -52,7 +59,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
         return;
       }
       final previousTier = ref.read(userProfileProvider).angelTier;
-      ref.read(walletProvider.notifier).subtractShare(_donationShare);
+      ref.read(walletProvider.notifier).applyEntryFeeDebit(_donationShare);
       await ref.read(userProfileNotifierProvider.notifier).processDonation(
             _donationShare,
             receiptTitle: _purpose == _SponsorPurpose.prize

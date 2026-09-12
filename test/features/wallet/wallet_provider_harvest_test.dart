@@ -479,6 +479,61 @@ void main() {
     expect(merged.valueBalance, 1000000);
   });
 
+  test('applyValueDebit drops VALUE once and leaves SHARE/DIA', () {
+    const remote = WalletModel(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyValueDebit(500);
+
+    expect(container.read(walletProvider).shareBalance, 1000000);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 999500);
+
+    notifier.applyValueDebit(0);
+    expect(container.read(walletProvider).valueBalance, 999500);
+  });
+
+  test('applyValueDebit then stale remote merge keeps the 500 VALUE debit', () {
+    const remote = WalletModel(
+      shareBalance: 1000000,
+      diamondBalance: 1000000,
+      valueTokenBalance: 1000000,
+      totalDonationValue: 0,
+    );
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream<WalletModel>.value(remote),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(walletProvider.notifier);
+    notifier.replaceFromRemote(remote);
+    notifier.applyValueDebit(500);
+    expect(container.read(walletProvider).valueBalance, 999500);
+
+    notifier.replaceFromRemote(remote);
+    expect(container.read(walletProvider).shareBalance, 1000000);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
+    expect(container.read(walletProvider).valueBalance, 999500);
+  });
+
   test('applyEntryFeeDebit then stale remote merge keeps the debit', () {
     const remote = WalletModel(
       shareBalance: 1000000,

@@ -4,41 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 
+import '../../../app/providers/app_providers.dart';
 import '../../../core/strings/app_strings.dart';
 import '../../pedometer/kst_calendar.dart';
-import '../../profile/user_profile_notifier.dart';
-import '../../wallet/providers/wallet_provider.dart';
+import '../firestore_stamp_landmark_source.dart';
+import '../stamp_landmark.dart';
+import '../stamp_landmark_catalog.dart';
 import '../stamp_tour_progress_store.dart';
 
-@immutable
-class StampLandmark {
-  const StampLandmark({
-    required this.id,
-    required this.name,
-    required this.latitude,
-    required this.longitude,
-    required this.isVisited,
-    this.diamondReward = 1,
-  });
-
-  final String id;
-  final String name;
-  final double latitude;
-  final double longitude;
-  final bool isVisited;
-  final int diamondReward;
-
-  StampLandmark copyWith({bool? isVisited}) {
-    return StampLandmark(
-      id: id,
-      name: name,
-      latitude: latitude,
-      longitude: longitude,
-      isVisited: isVisited ?? this.isVisited,
-      diamondReward: diamondReward,
-    );
-  }
-}
+export '../stamp_landmark.dart';
 
 @immutable
 class StampTourState {
@@ -47,6 +21,8 @@ class StampTourState {
     required this.walkMissionCompleted,
     required this.walkDistanceKm,
     required this.claiming,
+    required this.walkOfficialDiaPending,
+    required this.pendingOfficialRewardIds,
     this.currentPosition,
     this.lastError,
   });
@@ -55,50 +31,41 @@ class StampTourState {
   final bool walkMissionCompleted;
   final double walkDistanceKm;
   final bool claiming;
+  final bool walkOfficialDiaPending;
+  final Set<String> pendingOfficialRewardIds;
   final Position? currentPosition;
   final String? lastError;
+
+  List<StampLandmark> get officialLandmarks =>
+      landmarks.where((landmark) => landmark.origin.isOfficial).toList();
+
+  int get officialVisitedCount =>
+      officialLandmarks.where((landmark) => landmark.isVisited).length;
 
   int get visitedCount =>
       landmarks.where((landmark) => landmark.isVisited).length;
 
-  bool get stampMissionCompleted => visitedCount >= landmarks.length;
+  bool get stampMissionCompleted =>
+      officialLandmarks.isNotEmpty &&
+      officialLandmarks.every((landmark) => landmark.isVisited);
+
+  bool get officialStampDiaPending =>
+      officialLandmarks.any(
+        (landmark) =>
+            landmark.isVisited && pendingOfficialRewardIds.contains(landmark.id),
+      );
 
   String get stampMissionTitle =>
-      '우리 동네 랜드마크 스탬프 찍기 ($visitedCount/${landmarks.length})';
+      '우리 동네 랜드마크 스탬프 찍기 ($officialVisitedCount/${officialLandmarks.length})';
 
   factory StampTourState.initial() {
-    return StampTourState(
-      landmarks: const [
-        StampLandmark(
-          id: 'gangbyeon',
-          name: AppStrings.stampTourLandmarkGangbyeon,
-          // Yeouido Hangang Park vicinity
-          latitude: 37.5283,
-          longitude: 126.9326,
-          isVisited: false,
-          diamondReward: 1,
-        ),
-        StampLandmark(
-          id: 'namsan',
-          name: AppStrings.stampTourLandmarkNamsan,
-          latitude: 37.5512,
-          longitude: 126.9882,
-          isVisited: false,
-          diamondReward: 1,
-        ),
-        StampLandmark(
-          id: 'modoil',
-          name: AppStrings.stampTourLandmarkModoil,
-          // Seoul Forest / park stand-in
-          latitude: 37.5443,
-          longitude: 127.0374,
-          isVisited: false,
-          diamondReward: 1,
-        ),
-      ],
+    return const StampTourState(
+      landmarks: SeedStampLandmarkCatalog.seoulDemo,
       walkMissionCompleted: false,
       walkDistanceKm: 0,
       claiming: false,
+      walkOfficialDiaPending: false,
+      pendingOfficialRewardIds: {},
     );
   }
 
@@ -107,6 +74,8 @@ class StampTourState {
     bool? walkMissionCompleted,
     double? walkDistanceKm,
     bool? claiming,
+    bool? walkOfficialDiaPending,
+    Set<String>? pendingOfficialRewardIds,
     Position? currentPosition,
     String? lastError,
     bool clearError = false,
@@ -116,24 +85,35 @@ class StampTourState {
       walkMissionCompleted: walkMissionCompleted ?? this.walkMissionCompleted,
       walkDistanceKm: walkDistanceKm ?? this.walkDistanceKm,
       claiming: claiming ?? this.claiming,
+      walkOfficialDiaPending:
+          walkOfficialDiaPending ?? this.walkOfficialDiaPending,
+      pendingOfficialRewardIds:
+          pendingOfficialRewardIds ?? this.pendingOfficialRewardIds,
       currentPosition: currentPosition ?? this.currentPosition,
       lastError: clearError ? null : (lastError ?? this.lastError),
     );
   }
 }
 
+final stampLandmarkCatalogProvider = Provider<StampLandmarkCatalog>((ref) {
+  return StampLandmarkCatalog(
+    remote: FirestoreStampLandmarkSource(ref.watch(firestoreServiceProvider)),
+  );
+});
+
 final stampTourProvider =
     NotifierProvider<StampTourNotifier, StampTourState>(StampTourNotifier.new);
 
 class StampTourNotifier extends Notifier<StampTourState> {
-  static const _unlockRadiusMeters = 50.0;
-  static const _walkMissionKm = 1.0;
+  static const unlockRadiusMeters = 50.0;
+  static const walkMissionKm = 1.0;
+  static const walkRewardId = 'walk';
 
   StreamSubscription<Position>? _positionSub;
   Position? _lastPosition;
-  final Set<String> _rewardedLandmarkIds = <String>{};
-  var _walkRewardClaimed = false;
+  Future<void>? _hydrateFuture;
   var _hydrated = false;
+  var _nearbyLoaded = false;
 
   @override
   StampTourState build() {
@@ -142,22 +122,31 @@ class StampTourNotifier extends Notifier<StampTourState> {
       _positionSub = null;
     });
     Future.microtask(() async {
-      await _hydratePersistedProgress();
+      await _ensureHydrated();
+      if (!_isLive) return;
       await startTracking();
     });
     return StampTourState.initial();
   }
 
-  Future<void> _hydratePersistedProgress() async {
+  bool get _isLive => ref.mounted;
+
+  Future<void> _ensureHydrated() {
+    return _hydrateFuture ??= _hydrateCatalogAndProgress();
+  }
+
+  Future<void> _hydrateCatalogAndProgress() async {
     try {
+      final catalog = await ref.read(stampLandmarkCatalogProvider).load(
+            uid: ref.read(authStateChangesProvider).asData?.value?.uid,
+          );
       final progress = await const StampTourProgressStore().read(
         todayKey: KstCalendar.dateKey(),
       );
-      _rewardedLandmarkIds
-        ..clear()
-        ..addAll(progress.rewardedLandmarkIds);
-      _walkRewardClaimed = progress.walkRewardClaimed;
-      final landmarks = state.landmarks
+      if (!_isLive) return;
+      final landmarks = (catalog.isEmpty
+              ? SeedStampLandmarkCatalog.seoulDemo
+              : catalog)
           .map(
             (landmark) => landmark.copyWith(
               isVisited: progress.visitedLandmarkIds.contains(landmark.id),
@@ -168,11 +157,42 @@ class StampTourNotifier extends Notifier<StampTourState> {
         landmarks: landmarks,
         walkMissionCompleted: progress.walkMissionCompleted,
         walkDistanceKm: progress.walkDistanceKm,
+        walkOfficialDiaPending: progress.walkRewardClaimed,
+        pendingOfficialRewardIds: Set<String>.from(progress.rewardedLandmarkIds),
       );
-      _hydrated = true;
     } catch (e) {
       debugPrint('StampTour hydrate: $e');
+    } finally {
       _hydrated = true;
+    }
+  }
+
+  Future<void> _maybeLoadNearby(Position position) async {
+    if (_nearbyLoaded) return;
+    _nearbyLoaded = true;
+    try {
+      final extra = await ref.read(stampLandmarkCatalogProvider).nearby.fetchNearby(
+            latitude: position.latitude,
+            longitude: position.longitude,
+          );
+      if (extra.isEmpty || !_isLive) return;
+      final existing = state.landmarks.map((landmark) => landmark.id).toSet();
+      final progress = await const StampTourProgressStore().read(
+        todayKey: KstCalendar.dateKey(),
+      );
+      if (!_isLive) return;
+      final merged = [
+        ...state.landmarks,
+        ...extra.where((landmark) => !existing.contains(landmark.id)).map(
+              (landmark) => landmark.copyWith(
+                isVisited: progress.visitedLandmarkIds.contains(landmark.id),
+              ),
+            ),
+      ];
+      state = state.copyWith(landmarks: merged);
+      await _persistProgress();
+    } catch (e) {
+      debugPrint('StampTour nearby hook: $e');
     }
   }
 
@@ -186,10 +206,10 @@ class StampTourNotifier extends Notifier<StampTourState> {
       await const StampTourProgressStore().write(
         StampTourProgress(
           visitedLandmarkIds: visited,
-          rewardedLandmarkIds: Set<String>.from(_rewardedLandmarkIds),
+          rewardedLandmarkIds: Set<String>.from(state.pendingOfficialRewardIds),
           walkMissionCompleted: state.walkMissionCompleted,
           walkDistanceKm: state.walkDistanceKm,
-          walkRewardClaimed: _walkRewardClaimed,
+          walkRewardClaimed: state.walkOfficialDiaPending,
           walkDateKey: KstCalendar.dateKey(),
         ),
       );
@@ -203,6 +223,7 @@ class StampTourNotifier extends Notifier<StampTourState> {
 
     try {
       final granted = await _ensureLocationPermission();
+      if (!_isLive) return;
       if (!granted) {
         state = state.copyWith(
           lastError: '위치 권한이 필요합니다. 설정에서 허용해 주세요.',
@@ -221,16 +242,19 @@ class StampTourNotifier extends Notifier<StampTourState> {
         },
         onError: (Object e) {
           debugPrint('StampTour GPS error: $e');
+          if (!_isLive) return;
           state = state.copyWith(lastError: 'GPS 수신 중 오류가 발생했습니다.');
         },
       );
     } catch (e) {
       debugPrint('StampTour startTracking error: $e');
+      if (!_isLive) return;
       state = state.copyWith(lastError: '위치 추적을 시작할 수 없습니다.');
     }
   }
 
   Future<void> _onPosition(Position position) async {
+    if (!_isLive) return;
     var walkKm = state.walkDistanceKm;
     final previous = _lastPosition;
     if (previous != null) {
@@ -252,35 +276,33 @@ class StampTourNotifier extends Notifier<StampTourState> {
       clearError: true,
     );
 
-    if (!next.walkMissionCompleted && walkKm >= _walkMissionKm) {
+    if (!next.walkMissionCompleted && walkKm >= walkMissionKm) {
       next = next.copyWith(walkMissionCompleted: true);
       state = next;
       await _persistProgress();
-      if (!_walkRewardClaimed) {
-        _walkRewardClaimed = true;
-        await claimDiamondReward(diamondAmount: 1);
-      }
+      await enqueueOfficialDiaPending(rewardId: walkRewardId);
     } else {
       state = next;
       await _persistProgress();
     }
 
+    await _maybeLoadNearby(position);
     await checkLocationAndUnlock(position);
   }
 
   Future<void> checkLocationAndUnlock(Position currentPosition) async {
     final unlocked = await _unlockNearestIfInRange(currentPosition);
     if (unlocked == null) return;
-    if (!_rewardedLandmarkIds.contains(unlocked.id)) {
-      _rewardedLandmarkIds.add(unlocked.id);
-      await claimDiamondReward(diamondAmount: unlocked.diamondReward);
+    if (unlocked.awardsOfficialDia) {
+      await enqueueOfficialDiaPending(rewardId: unlocked.id);
     }
   }
 
   /// Manual stamp-mission tap. Returns a user-facing snackbar message, or null.
   Future<String?> tryClaimStampMission() async {
+    await _ensureHydrated();
     if (state.stampMissionCompleted) {
-      return '모든 랜드마크 스탬프를 이미 획득했습니다.';
+      return '모든 공식 랜드마크 스탬프를 이미 획득했습니다.';
     }
 
     final position = await _resolveCurrentPosition();
@@ -293,32 +315,30 @@ class StampTourNotifier extends Notifier<StampTourState> {
       return '목표 랜드마크 반경 50m 이내로 접근해 주세요.';
     }
 
-    if (!_rewardedLandmarkIds.contains(unlocked.id)) {
-      _rewardedLandmarkIds.add(unlocked.id);
-      await claimDiamondReward(diamondAmount: unlocked.diamondReward);
+    if (unlocked.awardsOfficialDia) {
+      await enqueueOfficialDiaPending(rewardId: unlocked.id);
+      return '${unlocked.name} 스탬프 획득! ${AppStrings.stampTourOfficialDiaPending}';
     }
-    return '${unlocked.name} 스탬프 획득! 다이아몬드 +${unlocked.diamondReward}';
+    return '${unlocked.name} 개인 스탬프 기록됨 (공식 DIA 없음)';
   }
 
   /// Manual walk-mission tap. Returns a user-facing snackbar message, or null.
   Future<String?> tryClaimWalkMission() async {
+    await _ensureHydrated();
     if (state.walkMissionCompleted) {
       return '오늘의 1km 걷기 미션을 이미 완료했습니다.';
     }
 
     await _resolveCurrentPosition();
-    if (state.walkDistanceKm >= _walkMissionKm) {
+    if (state.walkDistanceKm >= walkMissionKm) {
       state = state.copyWith(walkMissionCompleted: true);
       await _persistProgress();
-      if (!_walkRewardClaimed) {
-        _walkRewardClaimed = true;
-        await claimDiamondReward(diamondAmount: 1);
-      }
-      return '1km 걷기 미션 완료! 다이아몬드 +1';
+      await enqueueOfficialDiaPending(rewardId: walkRewardId);
+      return '1km 걷기 미션 완료! ${AppStrings.stampTourOfficialDiaPending}';
     }
 
     final remain =
-        (_walkMissionKm - state.walkDistanceKm).clamp(0.0, _walkMissionKm);
+        (walkMissionKm - state.walkDistanceKm).clamp(0.0, walkMissionKm);
     return '아직 ${remain.toStringAsFixed(2)}km 더 걸어주세요.';
   }
 
@@ -339,7 +359,7 @@ class StampTourNotifier extends Notifier<StampTourState> {
         landmark.longitude,
       );
 
-      if (meters.isFinite && meters <= _unlockRadiusMeters) {
+      if (meters.isFinite && meters <= unlockRadiusMeters) {
         final visited = landmark.copyWith(isVisited: true);
         updated.add(visited);
         unlocked ??= visited;
@@ -381,24 +401,40 @@ class StampTourNotifier extends Notifier<StampTourState> {
     }
   }
 
-  /// Credits local wallet DIA immediately so stamp claims are not a no-op.
-  Future<void> claimDiamondReward({required int diamondAmount}) async {
-    if (diamondAmount <= 0 || state.claiming) return;
-
-    state = state.copyWith(claiming: true, clearError: true);
+  /// Official DIA is server-owned. Client persists a pending claim and does
+  /// not fake a minted wallet credit while `addDiamondBalance` is a stub.
+  ///
+  /// Future seam: replace this body with a callable / Cloud Function that
+  /// mints DIA for `officialSeed` / `officialRemote` / `nearbyAuto` only,
+  /// then flip pending → minted. Personal (`userProposal` / `crewProposal`)
+  /// stamps must never enter this queue.
+  Future<void> enqueueOfficialDiaPending({required String rewardId}) async {
+    await _ensureHydrated();
+    if (rewardId.isEmpty) return;
+    final pending = Set<String>.from(state.pendingOfficialRewardIds);
+    var walkPending = state.walkOfficialDiaPending;
+    if (rewardId == walkRewardId) {
+      walkPending = true;
+    } else {
+      pending.add(rewardId);
+    }
+    state = state.copyWith(
+      pendingOfficialRewardIds: pending,
+      walkOfficialDiaPending: walkPending,
+      claiming: true,
+      clearError: true,
+    );
     try {
-      ref.read(walletProvider.notifier).creditDia(diamondAmount);
-      await ref.read(userProfileNotifierProvider.notifier).writeTransactionReceipt(
-            title: '스탬프 투어 DIA 보상',
-            amount: diamondAmount,
-            assetType: 'DIA',
-          );
       await _persistProgress();
     } catch (e) {
-      debugPrint('claimDiamondReward error: $e');
-      state = state.copyWith(lastError: '다이아몬드 보상 저장에 실패했습니다.');
+      debugPrint('enqueueOfficialDiaPending: $e');
+      if (_isLive) {
+        state = state.copyWith(lastError: '공식 DIA 대기 기록에 실패했습니다.');
+      }
     } finally {
-      state = state.copyWith(claiming: false);
+      if (_isLive) {
+        state = state.copyWith(claiming: false);
+      }
     }
   }
 

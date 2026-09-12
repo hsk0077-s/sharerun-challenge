@@ -420,9 +420,11 @@ abstract final class AppStrings {
   static const stampTourLandmarkNamsan = '남산타워';
   static const stampTourLandmarkModoil = '모도일 공원';
   static const stampTourMissionWalk = '오늘 가볍게 1km 걷기';
-  static const stampTourMissionWalkReward = '1 획득 완료';
+  static const stampTourMissionWalkReward = 'DIA 지급 대기';
   static const stampTourMissionStamp = '우리 동네 랜드마크 스탬프 찍기 (1/3)';
   static const stampTourMissionInProgress = '진행 중';
+  static const stampTourOfficialDiaPending = 'DIA 지급 대기';
+  static const stampTourStampCollected = '스탬프 완료';
   static const dashboardStampTourCta = '스탬프 투어 확인하기';
 
   // ── Battle Pass (Screen 24) ─────────────────────────────────────────

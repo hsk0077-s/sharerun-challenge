@@ -4,6 +4,8 @@ import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/stamp/providers/stamp_tour_provider.dart';
+import 'package:share_run_challenge/features/stamp/stamp_landmark_catalog.dart';
+import 'package:share_run_challenge/features/stamp/stamp_tour_progress_store.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +27,26 @@ class _SeededWalletNotifier extends WalletNotifier {
   }
 }
 
+ProviderContainer _container() {
+  final profile = UserModel.dashboardDefault(uid: 'stamp-user');
+  return ProviderContainer(
+    overrides: [
+      activeUserProfileProvider.overrideWith(
+        (ref) => Stream<UserModel>.value(profile),
+      ),
+      activeWalletProvider.overrideWith(
+        (ref) => Stream<WalletModel>.value(_wallet),
+      ),
+      walletProvider.overrideWith(_SeededWalletNotifier.new),
+      stampLandmarkCatalogProvider.overrideWith(
+        (ref) => const StampLandmarkCatalog(
+          remote: MemoryOfficialLandmarkSource([]),
+        ),
+      ),
+    ],
+  );
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -32,25 +54,38 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('stamp DIA claim credits the local wallet instead of a no-op', () async {
-    final profile = UserModel.dashboardDefault(uid: 'stamp-user');
-    final container = ProviderContainer(
-      overrides: [
-        activeUserProfileProvider.overrideWith(
-          (ref) => Stream<UserModel>.value(profile),
-        ),
-        activeWalletProvider.overrideWith(
-          (ref) => Stream<WalletModel>.value(_wallet),
-        ),
-        walletProvider.overrideWith(_SeededWalletNotifier.new),
-      ],
-    );
+  test('official DIA stays pending and does not fake-mint the wallet', () async {
+    final container = _container();
     addTearDown(container.dispose);
 
     expect(container.read(walletProvider).diamondBalance, 5);
     await container
         .read(stampTourProvider.notifier)
-        .claimDiamondReward(diamondAmount: 1);
-    expect(container.read(walletProvider).diamondBalance, 6);
+        .enqueueOfficialDiaPending(rewardId: 'gangbyeon');
+
+    expect(container.read(walletProvider).diamondBalance, 5);
+    expect(
+      container.read(stampTourProvider).pendingOfficialRewardIds,
+      contains('gangbyeon'),
+    );
+
+    final stored = await const StampTourProgressStore().read();
+    expect(stored.rewardedLandmarkIds, contains('gangbyeon'));
+  });
+
+  test('walk official DIA pending does not credit DIA', () async {
+    final container = _container();
+    addTearDown(container.dispose);
+
+    await container
+        .read(stampTourProvider.notifier)
+        .enqueueOfficialDiaPending(rewardId: StampTourNotifier.walkRewardId);
+
+    expect(container.read(walletProvider).diamondBalance, 5);
+    expect(container.read(stampTourProvider).walkOfficialDiaPending, isTrue);
+    expect(
+      container.read(stampTourProvider).pendingOfficialRewardIds,
+      isEmpty,
+    );
   });
 }

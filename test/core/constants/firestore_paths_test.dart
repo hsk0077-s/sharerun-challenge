@@ -15,4 +15,9 @@ void main() {
       'users/uid-1/notifications',
     );
   });
+
+  test('stamp-tour catalog paths are config + collection, not user docs', () {
+    expect(FirestorePaths.stampTourConfig, 'config/stamp_tour');
+    expect(FirestorePaths.stampLandmarks, 'stampLandmarks');
+  });
 }

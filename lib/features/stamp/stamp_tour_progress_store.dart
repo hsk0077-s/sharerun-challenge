@@ -17,6 +17,9 @@ class StampTourProgress {
   });
 
   final Set<String> visitedLandmarkIds;
+
+  /// Official landmark IDs queued for DIA. Not a minted-wallet receipt —
+  /// `UserRepository.addDiamondBalance` is a server-owned no-op.
   final Set<String> rewardedLandmarkIds;
   final bool walkMissionCompleted;
   final double walkDistanceKm;

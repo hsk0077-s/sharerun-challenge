@@ -338,6 +338,38 @@ abstract final class DebugLocalWalletStore {
   }
 
   static const harvestHistoryTitle = '워킹챌린지 코인 줍기';
+  static const hofValueDonationTitle = '명예의 전당 기부 완료 🕊️';
+  static const fundingValueDonationTitle = '유니세프 글로벌 기부 펀딩 참여 🕊️';
+
+  /// Append a client receipt (VALUE donation, etc.) without touching SHARE.
+  /// History → payment history merges this with Firestore.
+  static Future<void> recordClientHistory({
+    required SharedPreferences prefs,
+    required String uid,
+    required String title,
+    required int amount,
+    required String assetType,
+  }) async {
+    if (uid.isEmpty || title.isEmpty || amount == 0) return;
+    final prefix = switch (assetType) {
+      'DIA' => 'TX_DIA_LOCAL_',
+      'VALUE' => 'TX_VALUE_LOCAL_',
+      _ => 'TX_SHARE_LOCAL_',
+    };
+    final tx = DebugLocalShareTx(
+      id: '$prefix${DateTime.now().millisecondsSinceEpoch}',
+      title: title,
+      amount: amount,
+      assetType: assetType,
+      timestampMs: DateTime.now().millisecondsSinceEpoch,
+    );
+    final history = [tx, ...cachedHistory(uid)].take(40).toList();
+    rememberInMemory(uid: uid, history: history);
+    await prefs.setString(
+      historyKey(uid),
+      jsonEncode(history.map((row) => row.toJson()).toList()),
+    );
+  }
 
   /// Debug USB: persist a walking harvest so Home / 누적 통장 keep the SHARE
   /// after Jena fail, grant re-hydrate, or process restart.

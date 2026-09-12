@@ -7,9 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app/providers/app_providers.dart';
 import '../../core/config/app_env.dart';
+import '../../core/strings/app_strings.dart';
 import '../../data/models/user_model.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import '../shop/providers/shop_tab_provider.dart';
+import '../wallet/debug_local_wallet_store.dart';
+import '../wallet/providers/debug_local_share_history_provider.dart';
 import '../wallet/providers/wallet_provider.dart';
 
 /// 유저 프로필 반응형 상태 + 성별 Firestore/로컬 동기화.
@@ -204,14 +207,42 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     }
   }
 
+  /// Same uid resolution as shop receipts: auth, persisted session, then profile.
+  String? _receiptUid() {
+    final authUid = _currentUid();
+    if (authUid != null && authUid.isNotEmpty) return authUid;
+    final profileUid = state.uid;
+    if (profileUid.isNotEmpty) return profileUid;
+    return null;
+  }
+
   /// 소비/구매 클라우드 영수증. `users/{uid}/wallet_transactions`.
+  /// VALUE donations also land in the local history ledger so History still
+  /// lists them when Firestore create is denied (USB / legacy rules).
   Future<void> writeTransactionReceipt({
     required String title,
     required int amount,
     required String assetType,
   }) async {
-    final uid = _currentUid();
+    final uid = _receiptUid();
     if (uid == null || uid.isEmpty) return;
+    if (assetType == 'VALUE') {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await DebugLocalWalletStore.recordClientHistory(
+          prefs: prefs,
+          uid: uid,
+          title: title,
+          amount: amount,
+          assetType: assetType,
+        );
+        ref.read(debugLocalShareHistoryProvider.notifier).replace(
+              DebugLocalWalletStore.cachedHistory(uid),
+            );
+      } catch (e) {
+        debugPrint('writeTransactionReceipt local VALUE history: $e');
+      }
+    }
     await ref.read(walletRepositoryProvider).logClientWalletTransaction(
           uid: uid,
           title: title,
@@ -262,63 +293,66 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     );
     _rememberDurableDonations(count: nextCount, amount: nextAmount);
     unawaited(_persistDurableDonations());
-    final uid = _currentUid();
-    if (uid == null || uid.isEmpty) return;
-    try {
-      await ref.read(userRepositoryProvider).recordDonation(
-            uid: uid,
-            amountWon: won,
-            angelTierCode: nextTier.code,
-          );
-    } catch (_) {
-      // 로컬 mock / 오프라인 — 낙관적 승급은 유지한다.
-    }
-    try {
-      await ref.read(userRepositoryProvider).mergeEconomyState(
-            uid: uid,
-            shareDelta: assetType == 'SHARE' ? -amount : null,
-            valueDelta: assetType == 'VALUE' ? -amount : null,
-            isSponsored: true,
-          );
-    } catch (e) {
-      debugPrint('processDonation mergeEconomyState: $e');
-    }
-    if (kDebugMode && assetType == 'VALUE') {
+    final uid = _receiptUid();
+    if (uid != null && uid.isNotEmpty) {
       try {
-        final wallet = ref.read(walletProvider);
-        await ref.read(walletRepositoryProvider).persistDebugShopSpend(
+        await ref.read(userRepositoryProvider).recordDonation(
               uid: uid,
-              shareBalance: wallet.shareBalance,
-              diamondBalance: wallet.diamondBalance,
-              valueBalance: wallet.valueBalance,
+              amountWon: won,
+              angelTierCode: nextTier.code,
             );
-      } catch (e) {
-        debugPrint('processDonation persistDebugShopSpend: $e');
+      } catch (_) {
+        // 로컬 mock / 오프라인 — 낙관적 승급은 유지한다.
       }
-    }
-    if (kDebugMode && assetType == 'SHARE') {
       try {
-        // Absolute post-debit balances — `validDebugShareSpend` requires
-        // int SHARE plus unchanged DIA/VALUE. Increment-only writes are
-        // rejected and the stale snapshot restores the pre-debit ledger.
-        final wallet = ref.read(walletProvider);
-        await ref.read(walletRepositoryProvider).persistDebugShareSpend(
+        await ref.read(userRepositoryProvider).mergeEconomyState(
               uid: uid,
-              shareDelta: -amount,
-              shareBalanceAfter: wallet.shareBalance,
-              diamondBalance: wallet.diamondBalance,
-              valueBalance: wallet.valueBalance,
-              donationCount: nextCount,
-              cumulativeDonationAmount: nextAmount,
+              shareDelta: assetType == 'SHARE' ? -amount : null,
+              valueDelta: assetType == 'VALUE' ? -amount : null,
               isSponsored: true,
             );
       } catch (e) {
-        debugPrint('processDonation persistDebugShareSpend: $e');
+        debugPrint('processDonation mergeEconomyState: $e');
+      }
+      if (kDebugMode && assetType == 'VALUE') {
+        try {
+          final wallet = ref.read(walletProvider);
+          await ref.read(walletRepositoryProvider).persistDebugShopSpend(
+                uid: uid,
+                shareBalance: wallet.shareBalance,
+                diamondBalance: wallet.diamondBalance,
+                valueBalance: wallet.valueBalance,
+              );
+        } catch (e) {
+          debugPrint('processDonation persistDebugShopSpend: $e');
+        }
+      }
+      if (kDebugMode && assetType == 'SHARE') {
+        try {
+          // Absolute post-debit balances — `validDebugShareSpend` requires
+          // int SHARE plus unchanged DIA/VALUE. Increment-only writes are
+          // rejected and the stale snapshot restores the pre-debit ledger.
+          final wallet = ref.read(walletProvider);
+          await ref.read(walletRepositoryProvider).persistDebugShareSpend(
+                uid: uid,
+                shareDelta: -amount,
+                shareBalanceAfter: wallet.shareBalance,
+                diamondBalance: wallet.diamondBalance,
+                valueBalance: wallet.valueBalance,
+                donationCount: nextCount,
+                cumulativeDonationAmount: nextAmount,
+                isSponsored: true,
+              );
+        } catch (e) {
+          debugPrint('processDonation persistDebugShareSpend: $e');
+        }
       }
     }
     await writeTransactionReceipt(
       title: receiptTitle ??
-          (assetType == 'VALUE' ? '유니세프 글로벌 기부 펀딩 참여 🕊️' : '유니세프 기부 완료 🕊️'),
+          (assetType == 'VALUE'
+              ? AppStrings.storeDonateHistoryTitle
+              : '유니세프 기부 완료 🕊️'),
       amount: -amount,
       assetType: assetType,
     );

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/features/tournaments/utils/tournament_join_outcome.dart';
 import 'package:share_run_challenge/features/wallet/debug_local_wallet_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -290,6 +291,87 @@ void main() {
     expect(snap.share, 1000000);
     expect(snap.diamond, 999970);
     expect(snap.value, 999500);
+  });
+
+  test('recordClientHistory writes VALUE donation without changing SHARE',
+      () async {
+    final prefs = await SharedPreferences.getInstance();
+    await DebugLocalWalletStore.recordHarvestCredit(
+      prefs: prefs,
+      uid: 'uid-1',
+      shareBalanceAfter: 970018,
+      credited: 18,
+    );
+    await DebugLocalWalletStore.recordClientHistory(
+      prefs: prefs,
+      uid: 'uid-1',
+      title: DebugLocalWalletStore.hofValueDonationTitle,
+      amount: -500,
+      assetType: 'VALUE',
+    );
+    await DebugLocalWalletStore.recordClientHistory(
+      prefs: prefs,
+      uid: 'uid-1',
+      title: DebugLocalWalletStore.fundingValueDonationTitle,
+      amount: -500,
+      assetType: 'VALUE',
+    );
+
+    expect(DebugLocalWalletStore.cachedShare('uid-1'), 970018);
+    final history = DebugLocalWalletStore.cachedHistory('uid-1');
+    expect(history, hasLength(3));
+    expect(history[0].title, DebugLocalWalletStore.fundingValueDonationTitle);
+    expect(history[0].amount, -500);
+    expect(history[0].assetType, 'VALUE');
+    expect(history[1].title, DebugLocalWalletStore.hofValueDonationTitle);
+    expect(history[1].amount, -500);
+    expect(history[1].assetType, 'VALUE');
+    expect(history.any((tx) => tx.title == '워킹챌린지 코인 줍기'), isTrue);
+
+    final hydrated = DebugLocalWalletStore.parseHistory(
+      prefs.getString(DebugLocalWalletStore.historyKey('uid-1')),
+    );
+    expect(
+      hydrated.where((tx) => tx.assetType == 'VALUE'),
+      hasLength(2),
+    );
+  });
+
+  test('mergeHistory keeps VALUE donation next to SHARE harvest', () {
+    const harvest = DebugLocalShareTx(
+      id: 'TX_SHARE_HARVEST_1',
+      title: DebugLocalWalletStore.harvestHistoryTitle,
+      amount: 18,
+      assetType: 'SHARE',
+      timestampMs: 1,
+    );
+    const donation = DebugLocalShareTx(
+      id: 'TX_VALUE_LOCAL_1',
+      title: DebugLocalWalletStore.hofValueDonationTitle,
+      amount: -500,
+      assetType: 'VALUE',
+      timestampMs: 2,
+    );
+    final merged = DebugLocalWalletStore.mergeHistory(
+      remote: const [harvest],
+      local: const [donation],
+    );
+    expect(merged, hasLength(2));
+    expect(merged.first.assetType, 'VALUE');
+    expect(merged.first.amount, -500);
+    expect(merged.last.assetType, 'SHARE');
+    expect(merged.last.amount, 18);
+  });
+
+  test('VALUE donation history titles match payment-history copy', () {
+    expect(
+      AppStrings.hallOfFameDonateHistoryTitle,
+      DebugLocalWalletStore.hofValueDonationTitle,
+    );
+    expect(
+      AppStrings.storeDonateHistoryTitle,
+      DebugLocalWalletStore.fundingValueDonationTitle,
+    );
   });
 
   test('legacy debugLocalJoinedIds key is not the paid ledger', () {

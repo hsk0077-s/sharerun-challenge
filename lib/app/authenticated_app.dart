@@ -56,17 +56,31 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      // Light SRC theme — do NOT use AppTheme.dark (black neon) post-login.
-      theme: SrcTheme.light,
-      supportedLocales: const [Locale('ko'), Locale('en')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      routerConfig: _router!,
+    // Nested inside ShareRunChallengeApp's MaterialApp. Without this, Android
+    // treats an unhandled inner pop (HoF / sponsor as last page) as app exit
+    // before those screens' PopScope can run. Delegate to the inner navigator
+    // so tab SrcExitGuard is unchanged (#29).
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        final inner = _router?.routerDelegate.navigatorKey.currentState;
+        if (inner != null && inner.mounted) {
+          inner.maybePop();
+        }
+      },
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        // Light SRC theme — do NOT use AppTheme.dark (black neon) post-login.
+        theme: SrcTheme.light,
+        supportedLocales: const [Locale('ko'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        routerConfig: _router!,
+      ),
     );
   }
 }

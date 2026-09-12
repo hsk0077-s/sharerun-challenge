@@ -60,7 +60,7 @@ class HallOfFameScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return PopScope(
-      canPop: AppRouteNav.canPop(context),
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         AppRouteNav.popOrHome(context);

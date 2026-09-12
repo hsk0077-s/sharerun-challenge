@@ -59,7 +59,13 @@ class HallOfFameScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
+    return PopScope(
+      canPop: AppRouteNav.canPop(context),
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        AppRouteNav.popOrHome(context);
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       body: SRCGradientBackground(
         gradient: _screenGradient,
@@ -81,7 +87,7 @@ class HallOfFameScreen extends ConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: _HallOfFameHeader(
-                              onBack: () => AppRouteNav.pop(context),
+                              onBack: () => AppRouteNav.popOrHome(context),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -160,6 +166,7 @@ class HallOfFameScreen extends ConsumerWidget {
           },
         ),
       ),
+    ),
     );
   }
 }

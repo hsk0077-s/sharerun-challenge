@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/router/route_names.dart';
+import 'dashboard_tab_navigation.dart';
+
 /// Material / GoRouter 공통 push·pop (셸 밖 상세 화면용).
 abstract final class AppRouteNav {
   static Future<T?> push<T extends Object?>(
@@ -21,6 +24,12 @@ abstract final class AppRouteNav {
     return Navigator.of(context).pushNamed<T>(location, arguments: extra);
   }
 
+  static bool canPop(BuildContext context) {
+    final router = GoRouter.maybeOf(context);
+    return (router != null && router.canPop()) ||
+        Navigator.of(context).canPop();
+  }
+
   static void pop<T extends Object?>(BuildContext context, [T? result]) {
     final router = GoRouter.maybeOf(context);
     if (router != null && router.canPop()) {
@@ -30,5 +39,24 @@ abstract final class AppRouteNav {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop(result);
     }
+  }
+
+  /// Detail back: pop when a stack exists, otherwise return to Home.
+  /// Never calls [SystemNavigator.pop] — only a true tab root may exit.
+  static void popOrHome<T extends Object?>(BuildContext context, [T? result]) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null && router.canPop()) {
+      router.pop(result);
+      return;
+    }
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop(result);
+      return;
+    }
+    if (router != null) {
+      router.go(RouteNames.mainDashboard);
+      return;
+    }
+    DashboardTabNavigation.go(context, DashboardTabNavigation.home);
   }
 }

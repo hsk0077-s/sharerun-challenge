@@ -47,8 +47,20 @@ abstract final class AppEnv {
 
   static bool get localDevMode => _bool('LOCAL_DEV_MODE', defaultValue: kDebugMode);
 
-  static bool get useFirebaseEmulator =>
-      _bool('USE_FIREBASE_EMULATOR', defaultValue: false);
+  /// Auth/Firestore emulators are debug-only. Release/profile must mint
+  /// production ID tokens so Cloud Run `verify_id_token` accepts them —
+  /// a baked `.env` `USE_FIREBASE_EMULATOR=true` is ignored when
+  /// [kDebugMode] is false.
+  static bool get useFirebaseEmulator => resolveUseFirebaseEmulator(
+        debugMode: kDebugMode,
+        configured: _bool('USE_FIREBASE_EMULATOR', defaultValue: false),
+      );
+
+  static bool resolveUseFirebaseEmulator({
+    required bool debugMode,
+    required bool configured,
+  }) =>
+      debugMode && configured;
 
   static bool get useLocalMockData =>
       _bool('USE_LOCAL_MOCK_DATA', defaultValue: false);
@@ -96,12 +108,14 @@ abstract final class AppEnv {
       ) ??
       8085;
 
-  /// Local Jena URL when `JENA_BASE_URL` is unset.
+  /// Local Jena URL when `JENA_BASE_URL` is unset **in debug**.
   ///
   /// Android emulator: `http://10.0.2.2:8080` (`--dart-define=ANDROID_EMULATOR=true`
   /// or `--dart-define=JENA_BASE_URL=http://10.0.2.2:8080`).
   /// Physical Android debug: `http://127.0.0.1:8080` with
   /// `adb reverse tcp:8080 tcp:8080`. iOS/desktop: loopback.
+  ///
+  /// Release/profile never uses this fallback (see [resolveJenaBaseUrl]).
   static String defaultJenaBaseUrl({
     bool? isAndroid,
     bool? androidEmulator,
@@ -115,10 +129,103 @@ abstract final class AppEnv {
     return 'http://127.0.0.1:8080';
   }
 
-  static String get jenaBaseUrl => _get(
-        'JENA_BASE_URL',
-        defaultValue: defaultJenaBaseUrl(),
+  /// Public Cloud Run URL for release/profile when `JENA_BASE_URL` is unset
+  /// or still a debug loopback. Not a secret. Set via
+  /// `--dart-define=JENA_CLOUD_RUN_BASE_URL=https://<service>` or replace
+  /// the empty default after:
+  /// `gcloud run services describe src-jena-ai --region asia-northeast3 --format='value(status.url)'`
+  static const String shippedJenaCloudRunUrl = String.fromEnvironment(
+    'JENA_CLOUD_RUN_BASE_URL',
+    defaultValue: '',
+  );
+
+  static bool isLoopbackJenaUrl(String url) {
+    final parsed = Uri.tryParse(url.trim());
+    final host = (parsed != null && parsed.host.isNotEmpty)
+        ? parsed.host.toLowerCase()
+        : url.toLowerCase();
+    return host == '127.0.0.1' ||
+        host == 'localhost' ||
+        host == '10.0.2.2' ||
+        host == '::1' ||
+        host == '[::1]' ||
+        host.contains('127.0.0.1') ||
+        host.contains('localhost') ||
+        host.contains('10.0.2.2');
+  }
+
+  /// Debug: `JENA_BASE_URL` or loopback. Release: never loopback — Cloud Run
+  /// via `JENA_BASE_URL` / `JENA_CLOUD_RUN_BASE_URL` / [shippedJenaCloudRunUrl].
+  static String resolveJenaBaseUrl({
+    required bool debugMode,
+    String configured = '',
+    String productionUrl = '',
+    bool? isAndroid,
+    bool? androidEmulator,
+  }) {
+    final trimmed = configured.trim();
+    if (debugMode) {
+      if (trimmed.isNotEmpty) {
+        return trimmed;
+      }
+      return defaultJenaBaseUrl(
+        isAndroid: isAndroid,
+        androidEmulator: androidEmulator,
       );
+    }
+
+    if (trimmed.isNotEmpty && !isLoopbackJenaUrl(trimmed)) {
+      return trimmed;
+    }
+    final production = productionUrl.trim();
+    if (production.isNotEmpty && !isLoopbackJenaUrl(production)) {
+      return production;
+    }
+    throw StateError(
+      'Release/profile build has no Cloud Run Jena URL. '
+      'Pass --dart-define=JENA_BASE_URL=https://<src-jena-ai> '
+      'or --dart-define=JENA_CLOUD_RUN_BASE_URL=https://<src-jena-ai>.',
+    );
+  }
+
+  static String get jenaBaseUrl => resolveJenaBaseUrl(
+        debugMode: kDebugMode,
+        configured: _get('JENA_BASE_URL', defaultValue: ''),
+        productionUrl: shippedJenaCloudRunUrl.isNotEmpty
+            ? shippedJenaCloudRunUrl
+            : _get('JENA_CLOUD_RUN_BASE_URL', defaultValue: ''),
+      );
+
+  static const _demoFirebaseProjectId = 'demo-src-local';
+  static const _demoFirebaseApiKey = 'demo-api-key';
+
+  static bool isPlaceholderFirebaseConfig({
+    String? projectId,
+    String? apiKey,
+  }) {
+    final project = (projectId ?? firebaseProjectId).trim();
+    final key = (apiKey ?? firebaseApiKey).trim();
+    return project.isEmpty ||
+        project == _demoFirebaseProjectId ||
+        key.isEmpty ||
+        key == _demoFirebaseApiKey;
+  }
+
+  /// Release/profile with demo `.env` keys must use native
+  /// `google-services.json` / `GoogleService-Info.plist` so ID tokens
+  /// match Cloud Run's GCP project.
+  static bool preferNativeFirebaseOptions({
+    bool? debugMode,
+    bool? placeholder,
+    bool? emulator,
+  }) {
+    final debug = debugMode ?? kDebugMode;
+    if (debug) {
+      return false;
+    }
+    return (placeholder ?? isPlaceholderFirebaseConfig()) &&
+        !(emulator ?? useFirebaseEmulator);
+  }
 
   static String get pgBaseUrl => _get(
         'PG_BASE_URL',

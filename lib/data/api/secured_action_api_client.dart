@@ -143,10 +143,7 @@ class SecuredActionApiClient {
     String path,
     Map<String, dynamic> body,
   ) async {
-    final token = await firebaseAuth.currentUser?.getIdToken();
-    if (token == null) {
-      throw StateError('Firebase ID token is required.');
-    }
+    final token = await _firebaseIdToken();
 
     final response = await _httpClient.post(
       baseUri.resolve(path),
@@ -168,5 +165,19 @@ class SecuredActionApiClient {
       return const {};
     }
     return jsonDecode(response.body) as Map<String, dynamic>;
+  }
+
+  /// Fresh Firebase ID token. Cached/emulator leftovers are what Cloud Run
+  /// rejects as `Invalid Firebase ID token`.
+  Future<String> _firebaseIdToken() async {
+    final user = firebaseAuth.currentUser;
+    if (user == null) {
+      throw StateError('Firebase ID token is required.');
+    }
+    final token = await user.getIdToken(true);
+    if (token == null || token.isEmpty) {
+      throw StateError('Firebase ID token is required.');
+    }
+    return token;
   }
 }

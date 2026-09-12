@@ -19,7 +19,13 @@ Future<void> bootstrapFirebase() async {
   );
 
   try {
-    await Firebase.initializeApp(options: options);
+    // Release + demo dart-define keys: do not bind the default app to
+    // demo-src-local. Native google-services.json tokens match Cloud Run.
+    if (AppEnv.preferNativeFirebaseOptions()) {
+      await Firebase.initializeApp();
+    } else {
+      await Firebase.initializeApp(options: options);
+    }
   } on FirebaseException catch (error) {
     if (error.code != 'duplicate-app') {
       await _initializeExistingDefaultApp(error);

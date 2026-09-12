@@ -84,4 +84,50 @@ void main() {
     expect(merged.donationCount, 3);
     expect(merged.cumulativeDonationAmount, 150000);
   });
+
+  test('durable donation totals survive a zeroed local and remote profile', () {
+    final blank = UserModel.dashboardDefault(uid: 'u1');
+    final merged = UserProfileNotifier.retainOptimisticDonationTotals(
+      local: blank,
+      remote: blank,
+      durableDonationCount: 1,
+      durableDonationAmount: 50000,
+      durableSponsored: true,
+    );
+    expect(merged.donationCount, 1);
+    expect(merged.cumulativeDonationAmount, 50000);
+    expect(merged.isSponsored, isTrue);
+    expect(merged.angelTier, AngelTier.guardian);
+  });
+
+  test('50k SHARE sponsor updates angel count/total and they stay', () async {
+    final container = ProviderContainer(
+      overrides: [
+        activeUserProfileProvider.overrideWith(
+          (ref) => Stream.value(UserModel.dashboardDefault(uid: '')),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final notifier = container.read(userProfileNotifierProvider.notifier);
+    expect(container.read(userProfileProvider).donationCount, 0);
+    expect(container.read(userProfileProvider).safeCumulativeDonationAmount, 0);
+
+    await notifier.processDonation(50000);
+
+    final after = container.read(userProfileProvider);
+    expect(after.donationCount, 1);
+    expect(after.cumulativeDonationAmount, 50000);
+    expect(after.isSponsored, isTrue);
+    expect(after.angelTier, AngelTier.guardian);
+
+    final snapped = UserProfileNotifier.retainOptimisticDonationTotals(
+      local: after,
+      remote: UserModel.dashboardDefault(uid: ''),
+    );
+    expect(snapped.donationCount, 1);
+    expect(snapped.cumulativeDonationAmount, 50000);
+    expect(snapped.angelTier, AngelTier.guardian);
+  });
 }

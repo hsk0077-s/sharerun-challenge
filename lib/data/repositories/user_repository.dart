@@ -139,14 +139,23 @@ class UserRepository {
   }
 
   /// 후원 1건 원자 누적 + 천사 등급 코드 기록.
-  /// Donation totals are server-owned (sponsor webhook / winner reward).
+  /// Count/total may only increase (`validDonationRecord`).
   Future<void> recordDonation({
     required String uid,
     required int amountWon,
     required String angelTierCode,
   }) async {
-    debugPrint(
-      'recordDonation skipped (server-owned ledger): uid=$uid amount=$amountWon',
+    if (uid.isEmpty || amountWon <= 0) return;
+    await _firestoreService.doc(FirestorePaths.user(uid)).set(
+      {
+        'uid': uid,
+        'donationCount': FieldValue.increment(1),
+        'cumulativeDonationAmount': FieldValue.increment(amountWon),
+        'isSponsored': true,
+        'angelTierCode': angelTierCode,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
     );
   }
 

@@ -60,9 +60,10 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         final routerCanPop = router?.canPop() ?? false;
         // Root URL — not the shell branch's local GoRouterState, which stays
         // on a tab path while a sibling like /hall-of-fame is showing.
-        final location = router?.routeInformationProvider.value.uri.toString() ??
-            ModalRoute.of(context)?.settings.name ??
-            '';
+        final location =
+            router?.routeInformationProvider.value.uri.toString() ??
+                ModalRoute.of(context)?.settings.name ??
+                '';
         final atTabRoot = router != null
             ? BackToHomePolicy.isMainTabRoot(location)
             : !navigatorCanPop;

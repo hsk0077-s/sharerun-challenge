@@ -27,7 +27,7 @@ void main() {
         .setMockMethodCallHandler(SystemChannels.platform, null);
   });
 
-  bool get didRequestExit => platformCalls.any(
+  bool didRequestExit() => platformCalls.any(
         (call) => call.method == 'SystemNavigator.pop',
       );
 
@@ -62,7 +62,7 @@ void main() {
 
     expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(find.text('HOF_STAND_IN'), findsNothing);
-    expect(didRequestExit, isFalse);
+    expect(didRequestExit(), isFalse);
   });
 
   testWidgets('system back from pushed HoF pops to previous', (tester) async {
@@ -81,7 +81,7 @@ void main() {
     expect(handled, isTrue);
     expect(find.text('HOF_STAND_IN'), findsNothing);
     expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(didRequestExit, isFalse);
+    expect(didRequestExit(), isFalse);
   });
 
   testWidgets('system back from HoF-as-root goes Home, never exits',
@@ -97,7 +97,7 @@ void main() {
     expect(handled, isTrue);
     expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(find.text('HOF_STAND_IN'), findsNothing);
-    expect(didRequestExit, isFalse);
+    expect(didRequestExit(), isFalse);
   });
 
   testWidgets('sponsor-as-root back goes Home without exiting', (tester) async {
@@ -111,10 +111,11 @@ void main() {
 
     expect(handled, isTrue);
     expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(didRequestExit, isFalse);
+    expect(didRequestExit(), isFalse);
   });
 
-  testWidgets('Home tab first back confirms; second back exits', (tester) async {
+  testWidgets('Home tab first back confirms; second back exits',
+      (tester) async {
     final router = _shellRouter(initialLocation: RouteNames.mainDashboard);
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pumpAndSettle();
@@ -122,11 +123,11 @@ void main() {
     await tester.binding.handlePopRoute();
     await tester.pump();
     expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
-    expect(didRequestExit, isFalse);
+    expect(didRequestExit(), isFalse);
 
     await tester.binding.handlePopRoute();
     await tester.pump();
-    expect(didRequestExit, isTrue);
+    expect(didRequestExit(), isTrue);
   });
 
   testWidgets('Shop tab first back goes Home (does not block tab back)',
@@ -140,7 +141,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(didRequestExit, isFalse);
+    expect(didRequestExit(), isFalse);
   });
 }
 

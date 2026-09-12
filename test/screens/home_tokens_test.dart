@@ -188,7 +188,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     await tester.tap(find.byKey(const Key('home-header-avatar')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
 
     expect(find.text(AppStrings.avatarCustomizeTitle), findsOneWidget);
     expect(find.byKey(const Key('avatar-preset-snail')), findsOneWidget);
@@ -196,7 +197,8 @@ void main() {
     expect(find.byKey(const Key('avatar-pick-gallery')), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('avatar-preset-snail')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
     expect(find.text(AppStrings.avatarCustomizeTitle), findsNothing);
   });
 

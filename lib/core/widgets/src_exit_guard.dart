@@ -8,11 +8,10 @@ import '../strings/app_strings.dart';
 /// 메인 탭 루트 전용 뒤로가기 가드.
 /// - 홈이 아닌 탭 루트 → 홈 탭으로 수렴
 /// - 홈 탭 루트 → 2초 더블 백 종료
-/// - 하위 상세(nearest Navigator.canPop) → 정상 pop (간섭 없음)
 ///
-/// Do **not** trust leftover [GoRouter.canPop] at tab roots. After a cold
-/// start that flag can stay true until each shell branch is visited; popping
-/// it exits the app. Details above the shell are not this widget's job.
+/// Never pop from this widget. Leftover [GoRouter.canPop] / root
+/// [Navigator.canPop] after cold start (unvisited shell branches) used to
+/// pop the shell and exit. Details above the shell handle their own BACK.
 class SrcExitGuard extends StatefulWidget {
   const SrcExitGuard({
     required this.child,
@@ -57,12 +56,7 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
 
-        // Tab-root only: ignore leftover GoRouter.canPop (cold start /
-        // unvisited branches). That leftover made first BACK pop the shell.
-        if (Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
-          return;
-        }
+        // Tab-root only — do not pop leftover root/router stacks.
 
         // 탭 수렴: 홈이 아니면 홈으로.
         if (_currentTabIndex != DashboardTabNavigation.home) {

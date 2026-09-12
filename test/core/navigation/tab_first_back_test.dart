@@ -30,25 +30,48 @@ void main() {
         (call) => call.method == 'SystemNavigator.pop',
       );
 
-  testWidgets(
-      'cold start: Home first BACK snacks, does not exit (no tab visits)',
+  testWidgets('plain MaterialApp: Home first BACK snacks; second BACK exits',
+      (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: SrcExitGuard(
+          child: Scaffold(body: Text('HOME_ROOT')),
+        ),
+      ),
+    );
+
+    var handled = await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(handled, isTrue);
+    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
+    expect(didRequestExit(), isFalse);
+
+    handled = await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(handled, isTrue);
+    expect(didRequestExit(), isTrue);
+  });
+
+  testWidgets('cold start: Home first BACK does not exit (no tab visits)',
       (tester) async {
     final router = _fiveTabRouter(initialLocation: RouteNames.mainDashboard);
     await tester.pumpWidget(_nestedApp(router));
     await tester.pumpAndSettle();
     expect(find.text('HOME_ROOT'), findsOneWidget);
 
-    final handled = await tester.binding.handlePopRoute();
+    var handled = await tester.binding.handlePopRoute();
     await tester.pump();
-
     expect(handled, isTrue);
     expect(find.text('HOME_ROOT'), findsOneWidget);
-    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
     expect(didRequestExit(), isFalse);
+
+    handled = await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(handled, isTrue);
+    expect(didRequestExit(), isTrue);
   });
 
-  testWidgets(
-      'cold start: each non-home tab first BACK goes Home, never exits',
+  testWidgets('cold start: each non-home tab first BACK goes Home, never exits',
       (tester) async {
     const tabs = <(String, String)>[
       (RouteNames.shop, 'SHOP_ROOT'),
@@ -74,8 +97,7 @@ void main() {
     }
   });
 
-  testWidgets(
-      'leftover GoRouter.canPop at Home first BACK snacks, does not pop shell',
+  testWidgets('leftover GoRouter.canPop at Home first BACK does not pop shell',
       (tester) async {
     final router = _leftoverParentRouter(
       initialLocation: RouteNames.mainDashboard,
@@ -85,14 +107,18 @@ void main() {
     expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(router.canPop(), isTrue, reason: 'parent / is leftover canPop');
 
-    final handled = await tester.binding.handlePopRoute();
+    var handled = await tester.binding.handlePopRoute();
     await tester.pump();
 
     expect(handled, isTrue);
     expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(find.text('BOOT_LEFTOVER'), findsNothing);
-    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
     expect(didRequestExit(), isFalse);
+
+    handled = await tester.binding.handlePopRoute();
+    await tester.pump();
+    expect(handled, isTrue);
+    expect(didRequestExit(), isTrue);
   });
 
   testWidgets(
@@ -137,7 +163,7 @@ void main() {
     handled = await tester.binding.handlePopRoute();
     await tester.pump();
     expect(handled, isTrue);
-    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
+    expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(didRequestExit(), isFalse);
 
     handled = await tester.binding.handlePopRoute();

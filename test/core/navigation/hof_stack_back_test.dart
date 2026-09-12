@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/navigation/app_route_nav.dart';
-import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/widgets/src_exit_guard.dart';
 
 void main() {
@@ -116,8 +115,7 @@ void main() {
     expect(didRequestExit(), isFalse);
   });
 
-  testWidgets(
-      'nested MaterialApp: HoF-as-root back goes Home, never exits',
+  testWidgets('nested MaterialApp: HoF-as-root back goes Home, never exits',
       (tester) async {
     final router = _detailRouter(initialLocation: RouteNames.hallOfFame);
     await tester.pumpWidget(_nestedApp(router));
@@ -133,8 +131,7 @@ void main() {
     expect(didRequestExit(), isFalse);
   });
 
-  testWidgets(
-      'nested MaterialApp: sponsor-as-root back goes Home, never exits',
+  testWidgets('nested MaterialApp: sponsor-as-root back goes Home, never exits',
       (tester) async {
     final router = _detailRouter(initialLocation: RouteNames.personalSponsor);
     await tester.pumpWidget(_nestedApp(router));
@@ -171,7 +168,7 @@ void main() {
     handled = await tester.binding.handlePopRoute();
     await tester.pump();
     expect(handled, isTrue);
-    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
+    expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(didRequestExit(), isFalse);
 
     handled = await tester.binding.handlePopRoute();

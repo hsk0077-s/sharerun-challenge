@@ -84,16 +84,14 @@ abstract final class WalkingLook {
 
 /// Light mascot motion — Flutter [AnimationController] only.
 /// No Rive / Lottie pipeline; the smiling-snail PNG stays the same asset.
-enum WalkingMascotMotion { idle, walking, pickup, staticPose }
+enum WalkingMascotMotion { idle, walking, pickup }
 
 /// One frame of snail motion. Factors are of [WalkingMascot.size] so travel
 /// stays visible on the real ~80–96px walking track (the smiling PNG has
 /// large transparent padding — #26's 2.8%/7% lifts were ~2–7px and read as
-/// static).
-///
-/// Product (#29): idle / waddle / harvest hop are **off**. The smiling snail
-/// stays a grounded PNG. [WalkingMascot.motionEnabled] is the kill switch —
-/// do not leave a half-running controller.
+/// static). Do **not** freeze this when [MediaQuery.disableAnimations] is
+/// true: that flag is on many real phones (Reduce Motion / animator scale 0)
+/// and would zero idle, waddle, and harvest hop together.
 class WalkingMascotPose {
   const WalkingMascotPose({
     required this.lift,
@@ -131,10 +129,6 @@ class WalkingMascot extends StatefulWidget {
   /// Increment to play a one-shot harvest pickup hop.
   final int pickupNonce;
 
-  /// Clean disable — idle bob, walk waddle, and harvest hop stay off.
-  /// The smiling-snail asset is unchanged.
-  static const motionEnabled = false;
-
   static const idleLoopDuration = Duration(milliseconds: 1800);
   static const walkLoopDuration = Duration(milliseconds: 460);
   static const pickupDuration = Duration(milliseconds: 720);
@@ -145,15 +139,6 @@ class WalkingMascot extends StatefulWidget {
   static const idleSlideFactor = 0.045;
   static const pickupHopFactor = 0.32;
 
-  static const groundedPose = WalkingMascotPose(
-    lift: 0,
-    slide: 0,
-    tilt: 0,
-    scaleX: 1,
-    scaleY: 1,
-    sparkle: 0,
-  );
-
   static WalkingMascotPose evaluatePose({
     required WalkingMascotMotion motion,
     required double size,
@@ -161,9 +146,6 @@ class WalkingMascot extends StatefulWidget {
     required bool loopReversing,
     required double pickupValue,
   }) {
-    if (!motionEnabled || motion == WalkingMascotMotion.staticPose) {
-      return groundedPose;
-    }
     final loopT = Curves.easeInOut.transform(loopValue.clamp(0.0, 1.0));
     if (motion == WalkingMascotMotion.pickup) {
       final t = pickupValue.clamp(0.0, 1.0);
@@ -209,9 +191,6 @@ class _WalkingMascotState extends State<WalkingMascot>
   var _celebrating = false;
 
   WalkingMascotMotion get motion {
-    if (!WalkingMascot.motionEnabled) {
-      return WalkingMascotMotion.staticPose;
-    }
     if (_celebrating) return WalkingMascotMotion.pickup;
     if (widget.moving) return WalkingMascotMotion.walking;
     return WalkingMascotMotion.idle;
@@ -231,9 +210,6 @@ class _WalkingMascotState extends State<WalkingMascot>
       duration: WalkingMascot.pickupDuration,
     );
     _tick = Listenable.merge([_loop, _pickup]);
-    if (!WalkingMascot.motionEnabled) {
-      return;
-    }
     _pickup.addStatusListener((status) {
       if (status == AnimationStatus.completed && mounted) {
         setState(() {
@@ -247,17 +223,12 @@ class _WalkingMascotState extends State<WalkingMascot>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (WalkingMascot.motionEnabled) {
-      _ensureLooping();
-    }
+    _ensureLooping();
   }
 
   @override
   void didUpdateWidget(covariant WalkingMascot oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!WalkingMascot.motionEnabled) {
-      return;
-    }
     if (widget.pickupNonce > oldWidget.pickupNonce) {
       _celebrating = true;
       _pickup.forward(from: 0);
@@ -279,11 +250,6 @@ class _WalkingMascotState extends State<WalkingMascot>
   }
 
   void _ensureLooping() {
-    if (!WalkingMascot.motionEnabled) {
-      _loop.stop();
-      _loop.value = 0;
-      return;
-    }
     if (!_loop.isAnimating) {
       _loop.repeat(reverse: true);
     }
@@ -338,9 +304,7 @@ class _WalkingMascotState extends State<WalkingMascot>
     final shadowScale =
         (1.0 - (lift / (size * 0.28)).clamp(0.0, 0.42)).clamp(0.58, 1.0);
     return SizedBox(
-      key: Key(
-        'walking-mascot-motion-${motion == WalkingMascotMotion.staticPose ? 'static' : motion.name}',
-      ),
+      key: Key('walking-mascot-motion-${motion.name}'),
       width: size,
       height: size,
       child: Stack(

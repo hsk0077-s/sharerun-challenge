@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../navigation/back_to_home_policy.dart';
 import '../navigation/dashboard_tab_navigation.dart';
 import '../strings/app_strings.dart';
 
@@ -55,35 +54,17 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         if (didPop) return;
 
         final router = GoRouter.maybeOf(context);
-        final bool atTabRoot;
-        final bool canPopDetail;
-        if (router != null) {
-          final location = GoRouterState.of(context).uri.toString();
-          atTabRoot = BackToHomePolicy.isMainTabRoot(location);
-          canPopDetail = !atTabRoot &&
-              (router.canPop() || Navigator.of(context).canPop());
-        } else {
-          canPopDetail = Navigator.of(context).canPop();
-          atTabRoot = !canPopDetail;
+        if (router != null && router.canPop()) {
+          router.pop();
+          return;
         }
-        final action = BackToHomePolicy.resolve(
-          atTabRoot: atTabRoot,
-          canPopDetail: canPopDetail,
-          tabIndex: _currentTabIndex,
-        );
-
-        if (action == BackToHomeAction.popDetail) {
-          if (router != null && router.canPop()) {
-            router.pop();
-            return;
-          }
-          if (Navigator.of(context).canPop()) {
-            Navigator.of(context).pop();
-          }
+        if (router == null && Navigator.of(context).canPop()) {
+          Navigator.of(context).pop();
           return;
         }
 
-        if (action == BackToHomeAction.goHome) {
+        // 탭 수렴: 홈이 아니면 홈으로.
+        if (_currentTabIndex != DashboardTabNavigation.home) {
           _lastBackAt = null;
           _goHome();
           return;

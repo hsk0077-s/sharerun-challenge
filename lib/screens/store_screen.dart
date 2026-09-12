@@ -157,7 +157,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       await ref.read(userProfileNotifierProvider.notifier).persistShopPurchase(
             diamondFee: cost,
             markCpr: sku == ShopItemSku.cpr,
-            markSafeGuard: sku == ShopItemSku.safeGuard,
           );
       final owned = switch (sku) {
         ShopItemSku.cpr => ref.read(shopTabProvider).cprCount,

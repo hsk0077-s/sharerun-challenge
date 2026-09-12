@@ -17,10 +17,8 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/profile/user_profile_notifier.dart';
-import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/debug_local_wallet_store.dart';
 import '../features/wallet/providers/debug_local_share_history_provider.dart';
-import '../features/wallet/widgets/wallet_inventory_section.dart';
 import 'appeal_center_screen.dart';
 import 'solo_pedometer_screen.dart';
 
@@ -464,23 +462,9 @@ class _RealtimePaymentHistoryListState
   Widget build(BuildContext context) {
     final uid = _signedInUid(ref);
     final local = ref.watch(debugLocalShareHistoryProvider);
-    final shop = ref.watch(shopTabProvider);
-    final history = (AppEnv.useLocalMockData || uid.isEmpty)
-        ? const _PaymentHistoryEmpty()
-        : _paymentHistoryStream(uid, local);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: WalletInventorySection(shop: shop, compact: true),
-        ),
-        Expanded(child: history),
-      ],
-    );
-  }
-
-  Widget _paymentHistoryStream(String uid, List<DebugLocalShareTx> local) {
+    if (AppEnv.useLocalMockData || uid.isEmpty) {
+      return const _PaymentHistoryEmpty();
+    }
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection(FirestorePaths.users)

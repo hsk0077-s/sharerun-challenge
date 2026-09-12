@@ -20,7 +20,6 @@ import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/providers/wallet_provider.dart';
-import '../features/wallet/widgets/wallet_inventory_section.dart';
 import 'in_app_billing_screen.dart';
 import 'in_challenge_screen.dart';
 import 'store_screen.dart';
@@ -197,7 +196,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final wallet = ref.watch(walletProvider);
-    final shop = ref.watch(shopTabProvider);
     final userTierAsync = ref.watch(activeUserTierProvider);
     final challengesAsync = ref.watch(tournamentRoomsProvider);
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
@@ -360,10 +358,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
               const DebugEconomyStatusLine(),
-              if (shop.hasOwnedItems) ...[
-                SizedBox(height: tokens.spacing.sm),
-                WalletInventorySection(shop: shop, compact: true),
-              ],
               SizedBox(height: tokens.spacing.sm),
               DailyCapGauge(dailyKm: ref.watch(retentionDailyKmProvider)),
             ],

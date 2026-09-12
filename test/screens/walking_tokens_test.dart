@@ -141,7 +141,7 @@ void main() {
       mascot.image,
       const AssetImage(WalkingLook.snailWalkingAsset),
     );
-    expect(find.byKey(const Key('walking-mascot-motion-static')), findsOneWidget);
+    expect(find.byKey(const Key('walking-mascot-motion-idle')), findsOneWidget);
     expect(find.byKey(const Key('walking-mascot-pose')), findsOneWidget);
     final walkingMascot =
         tester.widget<WalkingMascot>(find.byType(WalkingMascot));

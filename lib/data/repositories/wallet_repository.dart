@@ -188,35 +188,6 @@ class WalletRepository {
         );
   }
 
-  /// Debug USB: persist spent SHARE/DIA/VALUE so a stale 1M grant cannot refill.
-  Future<void> persistDebugCurrencySpend({
-    required String uid,
-    int? shareBalance,
-    int? diamondBalance,
-    int? valueBalance,
-    bool? hasCPR,
-    bool? hasSafeGuard,
-  }) async {
-    if (!kDebugMode) {
-      throw UnsupportedError('Debug currency spend persist is debug-only.');
-    }
-    if (uid.isEmpty) return;
-    final payload = <String, dynamic>{
-      'uid': uid,
-      DebugWalletGrant.prefsKey: true,
-      'updatedAt': FieldValue.serverTimestamp(),
-      if (shareBalance != null) 'wallet.shareBalance': shareBalance,
-      if (diamondBalance != null) 'wallet.diamondBalance': diamondBalance,
-      if (valueBalance != null) 'wallet.valueTokenBalance': valueBalance,
-      if (hasCPR != null) 'hasCPR': hasCPR,
-      if (hasSafeGuard != null) 'hasSafeGuard': hasSafeGuard,
-    };
-    await _firestoreService.doc(FirestorePaths.user(uid)).set(
-          payload,
-          SetOptions(merge: true),
-        );
-  }
-
   /// Debug harvest: persist SHARE only. DIA/VALUE stay as-is. Release: no-op.
   Future<void> creditLocalDebugHarvestShare({
     required String uid,

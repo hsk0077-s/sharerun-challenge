@@ -193,7 +193,6 @@ class UserRepository {
     int? diamondDelta,
     int? valueDelta,
     bool? hasCPR,
-    bool? hasSafeGuard,
     bool? isSponsored,
   }) async {
     debugPrint(

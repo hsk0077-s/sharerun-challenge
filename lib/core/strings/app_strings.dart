@@ -116,11 +116,6 @@ abstract final class AppStrings {
   static String myWalletShareKrw(String krw) => '(~ $krw KRW)';
   static String myWalletDiamondLabel(int count) => '보유 다이아몬드: $count개';
   static String myWalletValueLabel(String amount) => '보유 밸류(VALUE): $amount';
-  static const myWalletInventoryTitle = '보유 아이템';
-  static const myWalletInventoryEmpty = '아직 보유한 아이템이 없습니다.';
-  static const myWalletInventoryOpen = '보관함 보기';
-  static String myWalletInventoryCount(int count) => '보유 $count';
-
   static String myWalletGradeProgress(int done, int total) =>
       '등급 심사 달리기: $done/$total회 완료 >';
   /// 레거시 alias (구 4탭 '하트' 라벨).

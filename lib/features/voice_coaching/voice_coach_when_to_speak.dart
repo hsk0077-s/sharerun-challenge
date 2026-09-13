@@ -5,8 +5,8 @@ import 'voice_coaching_cues.dart';
 /// Decides *whether* a cue may speak *now*. Cue copy, watch/HR streams,
 /// course elevation, and race-lobby rank are later slices.
 ///
-/// Existing Phase 3a [VoiceCoachingController] still speaks milestone TTS
-/// without this gate. Do not bind run screens here.
+/// [VoiceCoachingController.speakCue] consults this gate. HR / hill / rank
+/// kinds stay unbound — no sensor or lobby feeds here.
 enum VoiceCoachCueKind {
   /// Watch / HR: slow down if heart rate is high.
   /// Stub: no HR / watch stream is consumed in this PR.

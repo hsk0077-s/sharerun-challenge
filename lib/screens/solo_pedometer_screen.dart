@@ -26,6 +26,7 @@ import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/pedometer_step_truth.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
+import '../features/pedometer/walking_challenge_share.dart';
 import '../features/pedometer/walking_look.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_walk_banner.dart';
@@ -781,6 +782,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     nav.pushNamedAndRemoveUntil(RouteNames.home, (route) => false);
   }
 
+  Future<void> _onShareWalkingChallenge(BuildContext buttonContext) async {
+    try {
+      await WalkingChallengeShare.openSystemSheet(
+        sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+      );
+    } catch (e, st) {
+      debugPrint('WalkingChallengeShare: $e\n$st');
+    }
+  }
+
   void _spawnCoinsForKm(double km) {
     // [2단 락] 거리 비례 무한 코인 스폰 잠금 — 완주/만보 보상만 지급.
     if (km < 0) return;
@@ -1506,6 +1517,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                       child: _WalkingHeroCanvas(
                         title: '워킹챌린지',
                         onBack: _goHomeSafe,
+                        onShare: _onShareWalkingChallenge,
                         gauge: _buildHybridProgressGauge(
                           tier: running,
                           currentKm: effectiveKm,
@@ -1920,6 +1932,7 @@ class _WalkingHeroCanvas extends StatelessWidget {
   const _WalkingHeroCanvas({
     required this.title,
     required this.onBack,
+    required this.onShare,
     required this.gauge,
     required this.stepCount,
     required this.km,
@@ -1930,6 +1943,7 @@ class _WalkingHeroCanvas extends StatelessWidget {
 
   final String title;
   final VoidCallback onBack;
+  final Future<void> Function(BuildContext buttonContext) onShare;
   final Widget gauge;
   final String stepCount;
   final double km;
@@ -1977,7 +1991,19 @@ class _WalkingHeroCanvas extends StatelessWidget {
                           ),
                         ),
                       ),
-                      SizedBox(width: tokens.spacing.xxl + tokens.spacing.md),
+                      Builder(
+                        builder: (buttonContext) {
+                          return IconButton(
+                            key: WalkingChallengeShare.buttonKey,
+                            icon: const Icon(
+                              Icons.ios_share,
+                              color: WalkingLook.onHero,
+                            ),
+                            tooltip: WalkingChallengeShare.buttonTooltip,
+                            onPressed: () => onShare(buttonContext),
+                          );
+                        },
+                      ),
                     ],
                   ),
                   Text(

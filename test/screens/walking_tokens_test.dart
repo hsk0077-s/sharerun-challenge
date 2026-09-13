@@ -7,6 +7,7 @@ import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -78,6 +79,7 @@ void main() {
     await pumpWalking(tester);
 
     expect(find.text('워킹챌린지'), findsOneWidget);
+    expect(find.byKey(WalkingChallengeShare.buttonKey), findsOneWidget);
     expect(find.text('걸음'), findsOneWidget);
     expect(find.byKey(const Key('walking-step-count')), findsOneWidget);
     expect(find.text('코인 쌓이는 중...'), findsOneWidget);

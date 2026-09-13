@@ -27,17 +27,31 @@
           "order": "DESCENDING"
         }
       ]
-    },
+    }
+  ],
+  "fieldOverrides": [
     {
       "collectionGroup": "participants",
-      "queryScope": "COLLECTION_GROUP",
-      "fields": [
+      "fieldPath": "uid",
+      "ttl": false,
+      "indexes": [
         {
-          "fieldPath": "uid",
-          "order": "ASCENDING"
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "arrayConfig": "CONTAINS",
+          "queryScope": "COLLECTION"
+        },
+        {
+          "order": "ASCENDING",
+          "queryScope": "COLLECTION_GROUP"
         }
       ]
     }
-  ],
-  "fieldOverrides": []
+  ]
 }

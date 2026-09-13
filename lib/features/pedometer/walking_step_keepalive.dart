@@ -148,7 +148,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     final next = PedometerStepTruth.fromSensorEvent(
       raw: raw,
       healthBase: _floor,
-      sessionDelta: _baselineReady ? (raw - _baseline).clamp(0, 999999) : 0,
+      sessionDelta: _baselineReady
+          ? PedometerStepTruth.clampDaily(raw - _baseline)
+          : 0,
       stepOffset: _offset,
     );
     debugPrint(

@@ -6,17 +6,31 @@ import 'dart:math' as math;
 abstract final class PedometerStepTruth {
   static const logPrefix = '[STEP]';
 
-  /// Health Connect, isolate `_stepsKey`, and UI `_steps` are already daily.
-  static int clampDaily(int steps) => steps.clamp(0, 999999);
+  /// Old overflow / debug clamp. A real KST day cannot reach this; treat it
+  /// as a stub or since-boot dump, not a step count. Never display it.
+  static const overflowSentinel = 999999;
 
-  /// Highest daily reading wins. Do not subtract a sensor offset here.
+  /// Generous real-day ceiling (~75 km). Above this is Health/sensor garbage.
+  static const plausibleDailyMax = 100000;
+
+  /// Health Connect, isolate `_stepsKey`, and UI `_steps` are already daily.
+  /// Implausible values (the 999999 sentinel, or > [plausibleDailyMax])
+  /// become 0 so they cannot win a `max()` against a real reading.
+  static int clampDaily(int steps) {
+    if (steps < 0 || steps > plausibleDailyMax) return 0;
+    return steps;
+  }
+
+  /// Highest *plausible* daily reading wins. Do not subtract a sensor offset
+  /// here. Clamp each source first so a 999999 stub cannot wipe 1,835.
   static int dailyFromSources({
     required int liveDaily,
     int persistedToday = 0,
     int isolateDaily = 0,
   }) {
-    return clampDaily(
-      math.max(liveDaily, math.max(persistedToday, isolateDaily)),
+    return math.max(
+      clampDaily(liveDaily),
+      math.max(clampDaily(persistedToday), clampDaily(isolateDaily)),
     );
   }
 

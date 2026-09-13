@@ -2160,41 +2160,7 @@ class _WalkingHarvestDock extends StatelessWidget {
             tokens.spacing.page,
             tokens.spacing.sm,
           ),
-          child: Container(
-            key: const Key('walking-goal-complete'),
-            padding: EdgeInsets.all(tokens.spacing.lg),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [WalkingLook.heroMid, WalkingLook.heroLift],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: tokens.radii.panel,
-              boxShadow: WalkingLook.glassLift,
-            ),
-            child: Column(
-              children: [
-                const Text('🎉', style: TextStyle(fontSize: 36)),
-                SizedBox(height: tokens.spacing.xs),
-                Text(
-                  '오늘의 목표 달성!',
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: WalkingLook.onHero,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs),
-                Text(
-                  '오늘 하루도 열심히 달리셨네요.\n고생하셨습니다. 내일 다시 걸어보죠! 🏃‍♂️✨',
-                  textAlign: TextAlign.center,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: WalkingLook.onHero,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: const WalkingDailyGoalCompleteCard(),
         ),
       );
     }

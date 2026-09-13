@@ -86,6 +86,75 @@ void main() {
     );
   });
 
+  test('today mined and pending never exceed the daily 60 SHARE cap', () {
+    expect(
+      PedometerHarvestLedger.todayMinedShare(claimedSteps: 999999),
+      PedometerHarvestLedger.dailyShareCap,
+    );
+    expect(
+      PedometerHarvestLedger.pendingShareFloor(
+        steps: 999999,
+        claimedSteps: 0,
+      ),
+      PedometerHarvestLedger.dailyShareCap,
+    );
+    expect(
+      PedometerHarvestLedger.pendingShareExact(
+        steps: 999999,
+        claimedSteps: 0,
+      ),
+      PedometerHarvestLedger.dailyShareCap.toDouble(),
+    );
+    expect(
+      PedometerHarvestLedger.pendingShareFloor(
+        steps: 999999,
+        claimedSteps: 5000,
+      ),
+      10,
+    );
+    expect(
+      PedometerHarvestLedger.pendingShareFloor(
+        steps: 999999,
+        claimedSteps: 6000,
+      ),
+      0,
+    );
+    expect(
+      PedometerHarvestLedger.claimedAfterHarvest(
+        steps: 999999,
+        claimedSteps: 0,
+      ),
+      PedometerHarvestLedger.stepsForDailyCap,
+    );
+    expect(
+      PedometerHarvestLedger.claimedAfterHarvest(
+        steps: 4500,
+        claimedSteps: 0,
+      ),
+      4500,
+    );
+    expect(
+      PedometerHarvestLedger.claimedAfterHarvest(
+        steps: 6200,
+        claimedSteps: 5500,
+      ),
+      PedometerHarvestLedger.stepsForDailyCap,
+    );
+  });
+
+  test('coalesceClaimed drops an overflow claimed watermark to the daily cap',
+      () {
+    expect(
+      PedometerHarvestLedger.coalesceClaimed(
+        current: 999999,
+        fromTodayKey: 999999,
+        fromPrefix: 0,
+        steps: 999999,
+      ),
+      PedometerHarvestLedger.stepsForDailyCap,
+    );
+  });
+
   test('global same-day claimed survives empty uid prefix', () {
     expect(
       PedometerHarvestLedger.claimedFromGlobal(

@@ -52,6 +52,18 @@ void main() {
         1200,
       );
     });
+
+    test('overflow sentinel session does not become today steps', () {
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 999999,
+          healthBase: 999999,
+          sessionDelta: 5,
+          stepOffset: 0,
+        ),
+        0,
+      );
+    });
   });
 
   group('PedometerStepTruth.dailyFromSources', () {
@@ -94,6 +106,29 @@ void main() {
           persistedToday: 1835,
         ),
         2100,
+      );
+    });
+
+    test('999999 overflow stub cannot wipe a real persisted day', () {
+      expect(PedometerStepTruth.clampDaily(999999), 0);
+      expect(PedometerStepTruth.clampDaily(100001), 0);
+      expect(
+        PedometerStepTruth.clampDaily(PedometerStepTruth.plausibleDailyMax),
+        PedometerStepTruth.plausibleDailyMax,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 999999,
+          persistedToday: 1835,
+        ),
+        1835,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 999999,
+          persistedToday: 999999,
+        ),
+        0,
       );
     });
   });
@@ -149,6 +184,12 @@ void main() {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(4500);
       expect(copy.title, contains('챌린지 완주 성공'));
       expect(copy.body, contains('4,500/10,000보'));
+    });
+
+    test('overflow sentinel does not print 999,999 in the shade', () {
+      final copy = WalkingChallengeNotificationCopy.fromDailySteps(999999);
+      expect(copy.body, isNot(contains('999,999')));
+      expect(copy.body, contains('0 / 4,500보'));
     });
   });
 }

@@ -113,6 +113,8 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
         savedSteps = state.steps;
         savedKm = state.km;
       }
+      savedSteps = PedometerStepTruth.clampDaily(savedSteps);
+      if (savedSteps == 0) savedKm = 0;
       state = PedometerData(
         steps: savedSteps,
         km: savedKm,
@@ -125,14 +127,16 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
 
   /// 로컬 백업 완료 후 즉시 클라우드 Firestore 비동기 실시간 동기화
   Future<void> updateSteps(int steps, double km, {required bool isMoving}) async {
-    state = PedometerData(steps: steps, km: km, isMoving: isMoving);
+    final daily = PedometerStepTruth.clampDaily(steps);
+    final safeKm = daily > 0 ? km : 0.0;
+    state = PedometerData(steps: daily, km: safeKm, isMoving: isMoving);
     try {
       final prefs = await SharedPreferences.getInstance();
       final todayKey = _getTodayKey();
       // 1) 로컬 저장소 즉시 영구 기록 (빠른 렌더링 유지)
-      await prefs.setInt('${todayKey}_steps', steps);
-      await prefs.setDouble('${todayKey}_km', km);
-      await _updateWeeklyHistory(prefs, todayKey, steps);
+      await prefs.setInt('${todayKey}_steps', daily);
+      await prefs.setDouble('${todayKey}_km', safeKm);
+      await _updateWeeklyHistory(prefs, todayKey, daily);
       // 2) 클라우드 영구 백업 (기기 변경 대비)
       final userProfile = _ref.read(userProfileProvider);
       final uid = userProfile.uid;
@@ -145,8 +149,8 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
             .collection('daily_metrics')
             .doc(todayKey)
             .set({
-          'steps': steps,
-          'km': km,
+          'steps': daily,
+          'km': safeKm,
           'updatedAt': FieldValue.serverTimestamp(),
         }, SetOptions(merge: true)).catchError((Object e) {
           debugPrint('[CLOUD SYNC ERR] Firestore 걸음 수 백업 실패: $e');
@@ -462,8 +466,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         if (rolled) {
           return;
         }
-        var next = math.max(total, _steps);
-        next = math.max(next, await SoloPedometerForeground.liveSteps());
+        final next = PedometerStepTruth.dailyFromSources(
+          liveDaily: total,
+          persistedToday: _steps,
+          isolateDaily: await SoloPedometerForeground.liveSteps(),
+        );
         debugPrint(
           PedometerStepTruth.sourceLog(
             source: 'health',
@@ -478,12 +485,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         // Only re-anchor the pedometer session when Health raises the floor.
         // A periodic poll that always reset the baseline swallowed Samsung
         // shake/step events (first event after each poll became a no-op).
-        if (next > _healthBase) {
+        final healthFloor = PedometerStepTruth.clampDaily(_healthBase);
+        if (next > healthFloor) {
           _healthBase = next;
           _sessionDelta = 0;
           _baselineReady = false;
         } else {
-          _healthBase = math.max(_healthBase, total);
+          _healthBase = math.max(
+            healthFloor,
+            PedometerStepTruth.clampDaily(total),
+          );
         }
         _applyDailySteps(next, source: 'health');
         unawaited(_syncForegroundNotification(math.max(next, _steps)));
@@ -654,17 +665,18 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   void _onIsolateSteps(int steps) {
     if (!mounted) return;
+    final daily = PedometerStepTruth.clampDaily(steps);
     _ensureDailyRollover(
-      sensorTotal: math.max(steps, _steps) + _stepOffset,
+      sensorTotal: math.max(daily, _steps) + _stepOffset,
     );
-    if (steps <= _steps) {
+    if (daily <= _steps) {
       unawaited(_syncForegroundNotification(_steps));
       return;
     }
-    _healthBase = steps;
+    _healthBase = daily;
     _sessionDelta = 0;
     _baselineReady = false;
-    _applyDailySteps(steps, source: 'isolate');
+    _applyDailySteps(daily, source: 'isolate');
   }
 
   Future<void> _pullLiveStepsFromService() async {
@@ -945,7 +957,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   void _updatePendingAmount() {
     if (!_isClaimedDataLoaded) return;
     if (!mounted) return;
-    final steps = math.max(ref.read(pedometerStateProvider).steps, _steps);
+    final steps = PedometerStepTruth.dailyFromSources(
+      liveDaily: ref.read(pedometerStateProvider).steps,
+      persistedToday: _steps,
+    );
     ref.read(walkingPendingShareProvider.notifier).state =
         _computePendingShare(steps);
   }
@@ -1004,15 +1019,19 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final savedLastDate = prefs.getString('lastSavedDate') ?? '';
       final savedOffset = prefs.getInt('stepOffset') ?? 0;
       if (!mounted) return;
-      final restoredSteps = math.max(primarySteps, legacySteps);
-      final restoredKm = math.max(primaryKm, legacyKm);
+      final restoredSteps = PedometerStepTruth.clampDaily(
+        math.max(primarySteps, legacySteps),
+      );
+      final restoredKm = restoredSteps > 0 ? math.max(primaryKm, legacyKm) : 0.0;
       final km = restoredKm > 0
           ? restoredKm
           : SoloPedometerEngine.kmFromSteps(restoredSteps);
       final steps = restoredSteps > 0
           ? restoredSteps
           : (km > 0
-              ? (km * 1000 / EconomyConstants.pedometerStrideMeters).round()
+              ? PedometerStepTruth.clampDaily(
+                  (km * 1000 / EconomyConstants.pedometerStrideMeters).round(),
+                )
               : 0);
       final week = <String, int>{};
       for (final day in PedometerKstClock.thisWeekDays()) {
@@ -1223,7 +1242,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   Future<void> _onHarvestCoins() async {
     if (_harvestInFlight) return;
     final pedometerState = ref.read(pedometerStateProvider);
-    final liveSteps = math.max(pedometerState.steps, _steps);
+    final liveSteps = PedometerStepTruth.dailyFromSources(
+      liveDaily: pedometerState.steps,
+      persistedToday: _steps,
+    );
     final int toClaim = PedometerHarvestLedger.pendingShareFloor(
       steps: liveSteps,
       claimedSteps: _claimedSteps,
@@ -1232,6 +1254,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     _harvestInFlight = true;
     final previousClaimed = _claimedSteps;
     final previousCollected = _collectedShareCoins;
+    final nextClaimed = PedometerHarvestLedger.claimedAfterHarvest(
+      steps: liveSteps,
+      claimedSteps: _claimedSteps,
+    );
     try {
       HapticFeedback.heavyImpact();
     } on PlatformException catch (e, st) {
@@ -1244,21 +1270,21 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       return;
     }
     setState(() {
-      _claimedSteps = liveSteps;
+      _claimedSteps = nextClaimed;
       _mascotPickupNonce += 1;
     });
     ref.read(walkingPendingShareProvider.notifier).state = 0.0;
     unawaited(_syncForegroundNotification(liveSteps));
     // Persist the watermark before the API returns so back-navigation
     // cannot restore the old pending floor and harvest it again.
-    await _persistClaimedWatermark(liveSteps);
+    await _persistClaimedWatermark(nextClaimed);
     final uid = _harvestUid();
     try {
       if (uid.isEmpty) {
         throw StateError('로그인이 필요합니다.');
       }
       final result = await ref.read(walletRepositoryProvider).harvestPedometerShare(
-            claimedSteps: liveSteps,
+            claimedSteps: nextClaimed,
           );
       final credited = result.creditedShare(fallback: toClaim);
       final minted = result.mintedShare && credited > 0;
@@ -1427,10 +1453,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         );
       });
     }
-    final effectiveSteps = math.max(live.steps, _steps).clamp(0, 999999);
+    final effectiveSteps = PedometerStepTruth.dailyFromSources(
+      liveDaily: live.steps,
+      persistedToday: _steps,
+    );
     final weekSteps = {
       ..._weekSteps,
-      todayKey: math.max(_weekSteps[todayKey] ?? 0, effectiveSteps),
+      todayKey: PedometerStepTruth.dailyFromSources(
+        liveDaily: effectiveSteps,
+        persistedToday: _weekSteps[todayKey] ?? 0,
+      ),
     };
     final effectiveKm =
         double.parse((effectiveSteps * 0.00075).toStringAsFixed(2));
@@ -1447,11 +1479,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       claimedSteps: _claimedSteps,
     );
     final hasPendingCoins = pendingCoinsInt >= 1;
-    final isMaxDailyReached = PedometerHarvestLedger.pendingShareFloor(
-          steps: _claimedSteps,
-          claimedSteps: 0,
+    final isMaxDailyReached = PedometerHarvestLedger.todayMinedShare(
+          claimedSteps: _claimedSteps,
         ) >=
-        60;
+        PedometerHarvestLedger.dailyShareCap;
 
     return PopScope(
       canPop: false,
@@ -1561,9 +1592,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final walletShare = ref.watch(walletProvider).shareBalance;
-    final todayCollectedCoins = PedometerHarvestLedger.pendingShareFloor(
-      steps: _claimedSteps,
-      claimedSteps: 0,
+    final todayCollectedCoins = PedometerHarvestLedger.todayMinedShare(
+      claimedSteps: _claimedSteps,
     );
     return SrcSurfaceCard(
       key: const Key('walking-share-account'),
@@ -1603,7 +1633,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                 ),
                 SizedBox(height: tokens.spacing.xxs),
                 Text(
-                  '오늘의 채굴 : $todayCollectedCoins / 60 SHARE 🪙',
+                  '오늘의 채굴 : $todayCollectedCoins / ${PedometerHarvestLedger.dailyShareCap} SHARE 🪙',
                   style: textTheme.bodySmall?.copyWith(
                     color: tokens.colors.muted,
                     fontWeight: FontWeight.w700,
@@ -2295,9 +2325,11 @@ class _WeekJournalCard extends StatelessWidget {
         selected == null ? 0 : (stepsByKey[selected.key] ?? 0);
     final displaySelectedSteps = selected == null
         ? 0
-        : (selected.key == todayKey
-            ? (rawSelectedSteps - stepOffset).clamp(0, 999999)
-            : rawSelectedSteps);
+        : PedometerStepTruth.clampDaily(
+            selected.key == todayKey
+                ? rawSelectedSteps - stepOffset
+                : rawSelectedSteps,
+          );
 
     return SrcSurfaceCard(
       color: AppColors.glassFill,
@@ -2330,9 +2362,9 @@ class _WeekJournalCard extends StatelessWidget {
                     builder: (context) {
                       final dateKey = days[i].key;
                       final rawSteps = stepsByKey[dateKey] ?? 0;
-                      final steps = dateKey == todayKey
-                          ? (rawSteps - stepOffset).clamp(0, 999999)
-                          : rawSteps;
+                      final steps = PedometerStepTruth.clampDaily(
+                        dateKey == todayKey ? rawSteps - stepOffset : rawSteps,
+                      );
                       return _WeekDayCircle(
                         label: _labels[i.clamp(0, _labels.length - 1)],
                         day: days[i],

@@ -3,7 +3,7 @@ import 'package:share_run_challenge/features/voice_coaching/voice_coach_when_to_
 import 'package:share_run_challenge/features/voice_coaching/voice_coaching_cues.dart';
 
 void main() {
-  const t0 = VoiceCoachSpeakContext(
+  final t0 = VoiceCoachSpeakContext(
     now: DateTime.utc(2026, 9, 13, 6, 30),
     coachingEnabled: true,
     sessionActive: true,

@@ -84,7 +84,8 @@ void main() {
     expect(find.textContaining('줍기 대기'), findsOneWidget);
     expect(find.text('90000 SHARE'), findsOneWidget);
     expect(find.text('내 누적 셰어 통장 🏦'), findsOneWidget);
-    expect(find.textContaining('오늘의 채굴'), findsOneWidget);
+    expect(find.textContaining('오늘의 채굴 : 0 / 60 SHARE'), findsOneWidget);
+    expect(find.textContaining('9999'), findsNothing);
     expect(find.text('이번 주 분석 일지'), findsOneWidget);
     expect(find.textContaining('산책 중'), findsOneWidget);
     expect(find.textContaining('워킹챌린지 혜택 알림'), findsOneWidget);

@@ -7,6 +7,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/pedometer/pedometer_harvest_ledger.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
@@ -44,8 +45,27 @@ void main() {
     expect(WalkingChallengeShare.promoText, contains('SRC'));
     expect(WalkingChallengeShare.promoText, contains(RegExp(r'[가-힣]')));
     expect(WalkingChallengeShare.promoText.toLowerCase(), isNot(contains('kakao sdk')));
+    expect(WalkingChallengeShare.promoText, isNot(contains('오늘의 목표 달성')));
     expect(WalkingChallengeShare.subject, 'SRC 워킹챌린지');
     expect(WalkingChallengeShare.buttonTooltip, '공유');
+  });
+
+  test('daily-goal brag text is short Korean achievement copy', () {
+    expect(WalkingChallengeShare.dailyGoalBragText, contains('오늘의 목표 달성'));
+    expect(WalkingChallengeShare.dailyGoalBragText, contains('워킹챌린지'));
+    expect(WalkingChallengeShare.dailyGoalBragText, contains('SHARE'));
+    expect(WalkingChallengeShare.dailyGoalBragText, contains('SRC'));
+    expect(WalkingChallengeShare.dailyGoalBragText, contains(RegExp(r'[가-힣]')));
+    expect(
+      WalkingChallengeShare.dailyGoalBragText.toLowerCase(),
+      isNot(contains('kakao sdk')),
+    );
+    expect(
+      WalkingChallengeShare.dailyGoalBragText,
+      isNot(equals(WalkingChallengeShare.promoText)),
+    );
+    expect(WalkingChallengeShare.dailyGoalBragSubject, 'SRC 오늘의 목표 달성');
+    expect(WalkingChallengeShare.dailyGoalBragButtonLabel, '자랑하기');
   });
 
   test('openSystemSheet sends promo text to the OS sheet', () async {
@@ -111,5 +131,124 @@ void main() {
     expect(sent, isNotNull);
     expect(sent!.text, WalkingChallengeShare.promoText);
     expect(sent!.files, isNull);
+  });
+
+  test('openDailyGoalBrag sends brag text, not the header promo', () async {
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+
+    await WalkingChallengeShare.openDailyGoalBrag();
+
+    expect(sent, isNotNull);
+    expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
+    expect(sent!.subject, WalkingChallengeShare.dailyGoalBragSubject);
+    expect(sent!.title, WalkingChallengeShare.dailyGoalBragSubject);
+    expect(sent!.files, isNull);
+    expect(sent!.text, isNot(WalkingChallengeShare.promoText));
+  });
+
+  testWidgets('daily-goal card 자랑하기 opens the system sheet with brag text',
+      (tester) async {
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final todayKey = PedometerKstClock.dateKey();
+    SharedPreferences.setMockInitialValues({
+      'is_pedometer_reset_v3_done': true,
+      'lastSavedDate': todayKey,
+      '${todayKey}_claimed_steps': PedometerHarvestLedger.stepsForDailyCap,
+      '${todayKey}_steps': PedometerHarvestLedger.stepsForDailyCap,
+      PedometerHarvestLedger.globalClaimedKey:
+          PedometerHarvestLedger.stepsForDailyCap,
+      PedometerHarvestLedger.globalClaimedDateKey: todayKey,
+    });
+
+    final profile = UserModel.dashboardDefault(uid: '');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          needsNicknameSetupProvider.overrideWith((ref) => false),
+          userNicknameProvider.overrideWith((ref) => '테스트워커'),
+          activeUserProfileProvider.overrideWith(
+            (ref) => Stream<UserModel>.value(profile),
+          ),
+          activeWalletProvider.overrideWith(
+            (ref) => Stream<WalletModel>.value(_wallet),
+          ),
+          walletProvider.overrideWith(_SeededWalletNotifier.new),
+          activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
+        ],
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const SoloPedometerScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    await tester.pump(const Duration(milliseconds: 80));
+
+    expect(find.text('오늘의 목표 달성!'), findsOneWidget);
+    expect(find.byKey(const Key('walking-goal-complete')), findsOneWidget);
+    expect(find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsOneWidget);
+    expect(find.text(WalkingChallengeShare.dailyGoalBragButtonLabel), findsOneWidget);
+    expect(find.byKey(const Key('walking-harvest-cta')), findsNothing);
+
+    await tester.ensureVisible(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
+    await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(sent, isNotNull);
+    expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
+    expect(sent!.subject, WalkingChallengeShare.dailyGoalBragSubject);
+    expect(sent!.files, isNull);
+  });
+
+  testWidgets('자랑하기 is hidden until the daily SHARE cap is reached',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final profile = UserModel.dashboardDefault(uid: '');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          needsNicknameSetupProvider.overrideWith((ref) => false),
+          userNicknameProvider.overrideWith((ref) => '테스트워커'),
+          activeUserProfileProvider.overrideWith(
+            (ref) => Stream<UserModel>.value(profile),
+          ),
+          activeWalletProvider.overrideWith(
+            (ref) => Stream<WalletModel>.value(_wallet),
+          ),
+          walletProvider.overrideWith(_SeededWalletNotifier.new),
+          activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
+        ],
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const SoloPedometerScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+
+    expect(find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsNothing);
+    expect(find.text('오늘의 목표 달성!'), findsNothing);
+    expect(find.byKey(WalkingChallengeShare.buttonKey), findsOneWidget);
   });
 }

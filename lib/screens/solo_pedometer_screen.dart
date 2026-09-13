@@ -2131,6 +2131,16 @@ class _HeroStatChip extends StatelessWidget {
   }
 }
 
+Future<void> _shareDailyGoalBrag(BuildContext buttonContext) async {
+  try {
+    await WalkingChallengeShare.openDailyGoalBrag(
+      sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+    );
+  } catch (e, st) {
+    debugPrint('WalkingChallengeShare.dailyGoalBrag: $e\n$st');
+  }
+}
+
 class _WalkingHarvestDock extends StatelessWidget {
   const _WalkingHarvestDock({
     required this.isMaxDailyReached,
@@ -2191,6 +2201,35 @@ class _WalkingHarvestDock extends StatelessWidget {
                     color: WalkingLook.onHero,
                     height: 1.45,
                   ),
+                ),
+                SizedBox(height: tokens.spacing.md),
+                Builder(
+                  builder: (buttonContext) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        key: WalkingChallengeShare.dailyGoalBragKey,
+                        onPressed: () => unawaited(
+                          _shareDailyGoalBrag(buttonContext),
+                        ),
+                        icon: const Icon(Icons.ios_share, size: 18),
+                        label: const Text(
+                          WalkingChallengeShare.dailyGoalBragButtonLabel,
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: WalkingLook.onHero,
+                          foregroundColor: WalkingLook.heroMid,
+                          disabledBackgroundColor: WalkingLook.onHero,
+                          shadowColor: Colors.transparent,
+                          elevation: 0,
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: tokens.radii.capsule,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

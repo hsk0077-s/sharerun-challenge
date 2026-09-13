@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:share_run_challenge/core/theme/theme.dart';
+
+import 'walking_look.dart';
 
 /// Walking Challenge OS share sheet — Korean promo or daily-goal brag text.
 ///
@@ -61,5 +66,90 @@ abstract final class WalkingChallengeShare {
     final box = context.findRenderObject() as RenderBox?;
     if (box == null || !box.hasSize) return null;
     return box.localToGlobal(Offset.zero) & box.size;
+  }
+}
+
+/// Existing walking "오늘의 목표 달성!" dock + 자랑하기. Text share only.
+class WalkingDailyGoalCompleteCard extends StatelessWidget {
+  const WalkingDailyGoalCompleteCard({super.key});
+
+  static const cardKey = Key('walking-goal-complete');
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      key: cardKey,
+      padding: EdgeInsets.all(tokens.spacing.lg),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [WalkingLook.heroMid, WalkingLook.heroLift],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: tokens.radii.panel,
+        boxShadow: WalkingLook.glassLift,
+      ),
+      child: Column(
+        children: [
+          const Text('🎉', style: TextStyle(fontSize: 36)),
+          SizedBox(height: tokens.spacing.xs),
+          Text(
+            '오늘의 목표 달성!',
+            style: textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: WalkingLook.onHero,
+            ),
+          ),
+          SizedBox(height: tokens.spacing.xxs),
+          Text(
+            '오늘 하루도 열심히 달리셨네요.\n고생하셨습니다. 내일 다시 걸어보죠! 🏃‍♂️✨',
+            textAlign: TextAlign.center,
+            style: textTheme.bodyMedium?.copyWith(
+              color: WalkingLook.onHero,
+              height: 1.45,
+            ),
+          ),
+          SizedBox(height: tokens.spacing.md),
+          Builder(
+            builder: (buttonContext) {
+              return SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  key: WalkingChallengeShare.dailyGoalBragKey,
+                  onPressed: () => unawaited(_shareDailyGoalBrag(buttonContext)),
+                  icon: const Icon(Icons.ios_share, size: 18),
+                  label: const Text(
+                    WalkingChallengeShare.dailyGoalBragButtonLabel,
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: WalkingLook.onHero,
+                    foregroundColor: WalkingLook.heroMid,
+                    disabledBackgroundColor: WalkingLook.onHero,
+                    shadowColor: Colors.transparent,
+                    elevation: 0,
+                    minimumSize: const Size.fromHeight(48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: tokens.radii.capsule,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> _shareDailyGoalBrag(BuildContext buttonContext) async {
+  try {
+    await WalkingChallengeShare.openDailyGoalBrag(
+      sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+    );
+  } catch (e, st) {
+    debugPrint('WalkingChallengeShare.dailyGoalBrag: $e\n$st');
   }
 }

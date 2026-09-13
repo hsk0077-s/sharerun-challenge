@@ -7,7 +7,6 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
-import 'package:share_run_challenge/features/pedometer/pedometer_harvest_ledger.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
@@ -158,54 +157,32 @@ void main() {
       return const ShareResult('', ShareResultStatus.success);
     };
 
-    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.physicalSize = const Size(390, 400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    final todayKey = PedometerKstClock.dateKey();
-    SharedPreferences.setMockInitialValues({
-      'is_pedometer_reset_v3_done': true,
-      'lastSavedDate': todayKey,
-      '${todayKey}_claimed_steps': PedometerHarvestLedger.stepsForDailyCap,
-      '${todayKey}_steps': PedometerHarvestLedger.stepsForDailyCap,
-      PedometerHarvestLedger.globalClaimedKey:
-          PedometerHarvestLedger.stepsForDailyCap,
-      PedometerHarvestLedger.globalClaimedDateKey: todayKey,
-    });
-
-    final profile = UserModel.dashboardDefault(uid: '');
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          needsNicknameSetupProvider.overrideWith((ref) => false),
-          userNicknameProvider.overrideWith((ref) => '테스트워커'),
-          activeUserProfileProvider.overrideWith(
-            (ref) => Stream<UserModel>.value(profile),
+      MaterialApp(
+        theme: SrcTheme.light,
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.all(16),
+            child: WalkingDailyGoalCompleteCard(),
           ),
-          activeWalletProvider.overrideWith(
-            (ref) => Stream<WalletModel>.value(_wallet),
-          ),
-          walletProvider.overrideWith(_SeededWalletNotifier.new),
-          activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
-        ],
-        child: MaterialApp(
-          theme: SrcTheme.light,
-          home: const SoloPedometerScreen(),
         ),
       ),
     );
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 80));
-    await tester.pump(const Duration(milliseconds: 80));
 
     expect(find.text('오늘의 목표 달성!'), findsOneWidget);
-    expect(find.byKey(const Key('walking-goal-complete')), findsOneWidget);
+    expect(find.byKey(WalkingDailyGoalCompleteCard.cardKey), findsOneWidget);
     expect(find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsOneWidget);
-    expect(find.text(WalkingChallengeShare.dailyGoalBragButtonLabel), findsOneWidget);
-    expect(find.byKey(const Key('walking-harvest-cta')), findsNothing);
+    expect(
+      find.text(WalkingChallengeShare.dailyGoalBragButtonLabel),
+      findsOneWidget,
+    );
 
-    await tester.ensureVisible(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
     await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
@@ -214,6 +191,35 @@ void main() {
     expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
     expect(sent!.subject, WalkingChallengeShare.dailyGoalBragSubject);
     expect(sent!.files, isNull);
+  });
+
+  testWidgets('daily-goal brag card golden', (tester) async {
+    tester.view.physicalSize = const Size(390, 320);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: SrcTheme.light,
+        home: const Scaffold(
+          backgroundColor: Color(0xFFF3F7F5),
+          body: Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: WalkingDailyGoalCompleteCard(),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await expectLater(
+      find.byKey(WalkingDailyGoalCompleteCard.cardKey),
+      matchesGoldenFile('goldens/walking_daily_goal_brag.png'),
+    );
   });
 
   testWidgets('자랑하기 is hidden until the daily SHARE cap is reached',

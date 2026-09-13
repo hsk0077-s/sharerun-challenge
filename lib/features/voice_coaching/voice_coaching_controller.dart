@@ -18,8 +18,11 @@ class VoiceCoachingController {
         session = session ?? VoiceCoachingSession(),
         whenToSpeak = whenToSpeak ?? VoiceCoachWhenToSpeak(),
         _now = now ?? DateTime.now,
-        _isSessionActive = isSessionActive ?? () => true,
-        _isDeviceMuted = isDeviceMuted ?? () => false;
+        _isSessionActive = isSessionActive ?? _alwaysActive,
+        _isDeviceMuted = isDeviceMuted ?? _neverMuted;
+
+  static bool _alwaysActive() => true;
+  static bool _neverMuted() => false;
 
   final bool Function() _isEnabled;
   final VoiceCoachingSpeaker _speaker;

@@ -126,7 +126,7 @@ void main() {
   }
 
   test('inactive session or device mute never reaches the speaker', () async {
-    var now = DateTime.utc(2026, 9, 13, 7);
+    final now = DateTime.utc(2026, 9, 13, 7);
     final inactive = gatedCoach(sessionActive: false, now: () => now);
     await inactive.onWalkingOpened();
     await inactive.onWalkingProgress(

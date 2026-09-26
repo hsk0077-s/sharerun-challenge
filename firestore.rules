@@ -574,6 +574,13 @@ service cloud.firestore {
     // Crew tab create («새 크루 창설하기»).
     // Keep 50000 in sync with CrewFoundingWrite.shareCost.
     // Deploy these rules or that transaction stays PERMISSION_DENIED.
+    //
+    // Do not use incomingShare()/incomingDiamond()/incomingValue() here.
+    // Those helpers prefer a literal top-level key named "wallet.shareBalance"
+    // (Flutter set(merge) dotted keys). Crew founding uses Transaction.update,
+    // which changes the nested map only. A stale literal key then fails the
+    // 50,000 debit check and the user update walks the rest of `allow update`
+    // until the 1000-expression cap, which the client shows as permission-denied.
     function validCrewFoundingDebit(uid) {
       return isOwner(uid)
         && 'ownedCrewId' in request.resource.data
@@ -586,21 +593,25 @@ service cloud.firestore {
           'ownedCrewId',
           'updatedAt'
         ])
-        && incomingShare() is int
+        && 'wallet' in request.resource.data
+        && request.resource.data.wallet is map
+        && request.resource.data.wallet.shareBalance is int
         && resourceShare() is int
-        && incomingShare() >= 0
-        && incomingShare() == resourceShare() - 50000
+        && request.resource.data.wallet.shareBalance >= 0
+        && request.resource.data.wallet.shareBalance == resourceShare() - 50000
         && (
           !('wallet' in resource.data)
           || !(resource.data.wallet is map)
           || !('diamondBalance' in resource.data.wallet)
-          || incomingDiamond() == resource.data.wallet.diamondBalance
+          || request.resource.data.wallet.diamondBalance
+              == resource.data.wallet.diamondBalance
         )
         && (
           !('wallet' in resource.data)
           || !(resource.data.wallet is map)
           || !('valueTokenBalance' in resource.data.wallet)
-          || incomingValue() == resource.data.wallet.valueTokenBalance
+          || request.resource.data.wallet.valueTokenBalance
+              == resource.data.wallet.valueTokenBalance
         )
         && request.resource.data.updatedAt == request.time
         && !exists(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))

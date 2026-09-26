@@ -1,7 +1,8 @@
 /// Payload for Crew tab 「새 크루 창설하기」.
 ///
-/// Rules compare nested `wallet.shareBalance`. `Transaction.update` sends
-/// `wallet.shareBalance` as a field path; `set(merge)` does not.
+/// Rules compare nested `wallet.shareBalance`, not a literal dotted key.
+/// `Transaction.update` sends `wallet.shareBalance` as a field path.
+/// `set(merge)` does not, and a leftover literal key must not win in rules.
 abstract final class CrewFoundingWrite {
   /// Same number as `SrcWalletPaymentSystem.crewCreateShareCost` and
   /// `validCrewFoundingDebit` / `match /crews` in `firestore.rules`.

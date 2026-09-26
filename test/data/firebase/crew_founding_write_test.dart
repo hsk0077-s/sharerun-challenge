@@ -17,9 +17,24 @@ void main() {
     expect(rules, contains('function validCrewFoundingDebit(uid)'));
     expect(rules, contains('if validCrewFoundingDebit(uid)'));
     expect(rules, contains('match /crews/{crewId}'));
+    final founding = rules.split('function validCrewFoundingDebit(uid)').last;
+    final foundingBody = founding.split('match /admins/').first;
+    expect(foundingBody.contains('incomingShare()'), isFalse);
+    expect(foundingBody.contains('incomingDiamond()'), isFalse);
+    expect(foundingBody.contains('incomingValue()'), isFalse);
     expect(
-      rules,
-      contains('incomingShare() == resourceShare() - ${CrewFoundingWrite.shareCost}'),
+      foundingBody,
+      contains(
+        'request.resource.data.wallet.shareBalance == resourceShare() - ${CrewFoundingWrite.shareCost}',
+      ),
+    );
+    expect(
+      foundingBody,
+      contains('request.resource.data.wallet.diamondBalance'),
+    );
+    expect(
+      foundingBody,
+      contains('== resource.data.wallet.diamondBalance'),
     );
     expect(
       rules,

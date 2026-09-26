@@ -15,7 +15,30 @@ abstract final class PedometerHarvestLedger {
   static const globalClaimedKey = 'solo_pedo_claimed_steps';
   static const globalClaimedDateKey = 'solo_pedo_claimed_date';
 
+  /// Process-lifetime copy of today's watermark. The walking screen's
+  /// `_claimedSteps` dies on dispose; this is what a remount reads before
+  /// prefs, and what survives a stale prefs read of 0.
+  static String _sessionDate = '';
+  static int _sessionClaimed = 0;
+
   static String todayClaimedKey(String dateKey) => '${dateKey}_claimed_steps';
+
+  static void commitSession({required String dateKey, required int claimed}) {
+    _sessionDate = dateKey;
+    final next = claimed < 0 ? 0 : claimed;
+    _sessionClaimed = next > stepsForDailyCap ? stepsForDailyCap : next;
+  }
+
+  static int sessionClaimed(String dateKey) {
+    if (dateKey.isEmpty || _sessionDate != dateKey) return 0;
+    return _sessionClaimed;
+  }
+
+  /// True when at least one full SHARE (100 steps) is still unclaimed.
+  /// A leftover under 100 steps is not another 줍기.
+  static bool pickupReady({required int steps, required int claimedSteps}) {
+    return pendingShareFloor(steps: steps, claimedSteps: claimedSteps) >= 1;
+  }
 
   static String prefix({required String uid, required String dateKey}) =>
       'solo_pedo_${uid}_$dateKey';
@@ -80,12 +103,14 @@ abstract final class PedometerHarvestLedger {
     required int fromTodayKey,
     required int fromPrefix,
     int fromGlobal = 0,
+    int fromSession = 0,
     int steps = 0,
   }) {
     var claimed = current;
     if (fromTodayKey > claimed) claimed = fromTodayKey;
     if (fromPrefix > claimed) claimed = fromPrefix;
     if (fromGlobal > claimed) claimed = fromGlobal;
+    if (fromSession > claimed) claimed = fromSession;
     if (claimed < 0) claimed = 0;
     if (steps > 0 && claimed > steps) claimed = steps;
     if (claimed > stepsForDailyCap) claimed = stepsForDailyCap;

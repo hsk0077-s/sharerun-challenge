@@ -70,7 +70,7 @@ class DailyCapGauge extends StatelessWidget {
   }
 }
 
-/// 워킹챌린지 홈 CTA. 오늘 걸음 > 주운 걸음이면 줍기 글로우로 전환.
+/// 워킹챌린지 홈 CTA. 100걸음 단위로 아직 안 주운 SHARE가 있을 때만 줍기.
 class SoloQuickStartBanner extends ConsumerStatefulWidget {
   const SoloQuickStartBanner({super.key, required this.onTap});
 
@@ -116,7 +116,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
       final backup = prefs.getInt(PedometerKstClock.backupStepsKey(today)) ?? 0;
       final legacy = prefs.getInt('$prefix.steps') ?? 0;
       final claimed = PedometerHarvestLedger.coalesceClaimed(
-        current: 0,
+        current: _claimedSteps,
         fromTodayKey:
             prefs.getInt(PedometerHarvestLedger.todayClaimedKey(today)) ?? 0,
         fromPrefix: prefs.getInt('$prefix.claimedSteps') ?? 0,
@@ -127,6 +127,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
               prefs.getInt(PedometerHarvestLedger.globalClaimedKey) ?? 0,
           todayKey: today,
         ),
+        fromSession: PedometerHarvestLedger.sessionClaimed(today),
         steps: backup > legacy ? backup : legacy,
       );
       final steps = backup > legacy ? backup : legacy;
@@ -149,7 +150,17 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
       unawaited(_hydrateStepsFromPrefs());
     });
     final steps = liveSteps > _storedSteps ? liveSteps : _storedSteps;
-    final canCollect = steps > 0 && steps > _claimedSteps;
+    final today = PedometerKstClock.dateKey();
+    final claimed = PedometerHarvestLedger.coalesceClaimed(
+      current: _claimedSteps,
+      fromTodayKey: 0,
+      fromPrefix: 0,
+      fromSession: PedometerHarvestLedger.sessionClaimed(today),
+    );
+    final canCollect = PedometerHarvestLedger.pickupReady(
+      steps: steps,
+      claimedSteps: claimed,
+    );
     final label = canCollect ? '워킹챌린지 코인줍기' : '워킹 챌린지 시작';
     final tokens = context.srcTokens;
     final glowColor = tokens.colors.primary;

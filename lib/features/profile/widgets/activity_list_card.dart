@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/providers/app_providers.dart';
 import '../../../app/router/route_names.dart';
 import '../../../core/navigation/app_route_nav.dart';
 import '../../../core/theme/theme.dart';
 import '../../../data/models/activity_model.dart';
 import '../../../screens/appeal_center_screen.dart';
+import '../../pedometer/kst_calendar.dart';
+import '../my_page_activity_stats.dart';
 
 void openAppealCenter(
   BuildContext context, {
@@ -38,7 +39,7 @@ class ActivityListCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activities = ref.watch(recentActivitiesProvider).value ?? const [];
+    final entries = ref.watch(myPageActivityStatsProvider).logEntries;
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
 
@@ -60,7 +61,7 @@ class ActivityListCard extends ConsumerWidget {
             ),
           ),
           SizedBox(height: tokens.spacing.sm),
-          if (activities.isEmpty)
+          if (entries.isEmpty)
             Padding(
               padding: EdgeInsets.only(bottom: tokens.spacing.xxs + 2),
               child: Text(
@@ -71,9 +72,13 @@ class ActivityListCard extends ConsumerWidget {
               ),
             )
           else
-            ...activities.take(8).map(
-                  (activity) => _ActivityLogTile(activity: activity),
-                ),
+            ...entries.map((entry) {
+              final activity = entry.activity;
+              if (activity != null) {
+                return _ActivityLogTile(activity: activity);
+              }
+              return _WalkLogTile(entry: entry);
+            }),
         ],
       ),
     );
@@ -150,9 +155,56 @@ class _ActivityLogTile extends StatelessWidget {
 
   static String _dateLabel(DateTime? at) {
     if (at == null) return '';
-    final m = at.month.toString().padLeft(2, '0');
-    final d = at.day.toString().padLeft(2, '0');
-    return '${at.year}.$m.$d';
+    final kst = KstCalendar.toKst(at);
+    final m = kst.month.toString().padLeft(2, '0');
+    final d = kst.day.toString().padLeft(2, '0');
+    return '${kst.year}.$m.$d';
+  }
+}
+
+class _WalkLogTile extends StatelessWidget {
+  const _WalkLogTile({required this.entry});
+
+  final MyPageLogEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      padding: EdgeInsets.only(bottom: tokens.spacing.sm),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.dateLabel,
+                  style: textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    color: tokens.colors.muted,
+                  ),
+                ),
+                SizedBox(height: tokens.spacing.xxs / 2),
+                Text(
+                  '걷기',
+                  style: textTheme.bodySmall?.copyWith(fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '${entry.km.toStringAsFixed(1)} km',
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              color: tokens.colors.accent,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

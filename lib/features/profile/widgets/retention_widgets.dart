@@ -10,6 +10,7 @@ import '../../../core/theme/theme.dart';
 import '../../../screens/solo_pedometer_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../pedometer/pedometer_harvest_ledger.dart';
+import '../my_page_activity_stats.dart';
 import '../providers/practice_streak_provider.dart';
 
 /// 지갑 카드 내부 일일 5km 채굴 게이지.
@@ -243,7 +244,6 @@ class DailyStreakCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(retentionAlertControllerProvider);
     final streakState = ref.watch(practiceStreakProvider);
-    final streak = streakState.count;
     if (streakState.diaRewardPending) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
@@ -255,9 +255,9 @@ class DailyStreakCard extends ConsumerWidget {
         ref.read(practiceStreakProvider.notifier).consumeDiaReward();
       });
     }
-    final activities = ref.watch(recentActivitiesProvider).value ?? const [];
-    final now = DateTime.now();
-    final marked = RetentionMetrics.markedWeekdays(activities, now);
+    final stats = ref.watch(myPageActivityStatsProvider);
+    final streak = stats.streakDays;
+    final marked = stats.stampedWeekdays;
 
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;

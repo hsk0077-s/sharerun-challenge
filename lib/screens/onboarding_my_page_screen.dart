@@ -1,3 +1,5 @@
+import 'dart:async' show unawaited;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import '../core/widgets/src_exit_guard.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
+import '../features/profile/my_page_activity_stats.dart';
 import '../features/profile/widgets/activity_list_card.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/retention_widgets.dart';
@@ -29,10 +32,6 @@ class OnboardingMyPageScreen extends StatefulWidget {
 
 class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
   static const _currentNavIndex = DashboardTabNavigation.myPage;
-
-  static const _activeDays = {1, 2, 3, 4, 9, 12, 13, 14};
-  static const _crownDay = 10;
-  static const _chartKm = [5.0, 7.0, 6.0, 8.0, 5.0, 9.0, 6.0];
 
   void _onNavTap(int index) {
     if (index == _currentNavIndex) return;
@@ -87,16 +86,20 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                       const SizedBox(height: 14),
                       const AngelChronicleCard(),
                       const SizedBox(height: 14),
-                      const DailyStreakCard(),
-                      const SizedBox(height: 14),
-                      const _CalendarCard(
-                        activeDays: _activeDays,
-                        crownDay: _crownDay,
+                      const _MyPageActivityScope(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            DailyStreakCard(),
+                            SizedBox(height: 14),
+                            _CalendarCard(),
+                            SizedBox(height: 14),
+                            ActivityListCard(),
+                            SizedBox(height: 14),
+                            _StatsChartCard(),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 14),
-                      const ActivityListCard(),
-                      const SizedBox(height: 14),
-                      const _StatsChartCard(kmValues: _chartKm),
                     ],
                   ),
                 ),
@@ -313,17 +316,62 @@ class _TierCharacterAvatar extends StatelessWidget {
   }
 }
 
-class _CalendarCard extends StatelessWidget {
-  const _CalendarCard({
-    required this.activeDays,
-    required this.crownDay,
-  });
+class _MyPageActivityScope extends ConsumerStatefulWidget {
+  const _MyPageActivityScope({required this.child});
 
-  final Set<int> activeDays;
-  final int crownDay;
+  final Widget child;
+
+  @override
+  ConsumerState<_MyPageActivityScope> createState() =>
+      _MyPageActivityScopeState();
+}
+
+class _MyPageActivityScopeState extends ConsumerState<_MyPageActivityScope>
+    with WidgetsBindingObserver {
+  var _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _visible) {
+      unawaited(ref.read(myPagePedometerDaysProvider.notifier).reload());
+    }
+  }
+
+  void _reloadIfShown(bool visible) {
+    if (!visible || _visible) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(ref.read(myPagePedometerDaysProvider.notifier).reload());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final visible = TickerMode.valuesOf(context).enabled;
+    _reloadIfShown(visible);
+    _visible = visible;
+    return widget.child;
+  }
+}
+
+class _CalendarCard extends ConsumerWidget {
+  const _CalendarCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(myPageActivityStatsProvider);
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     return SrcSurfaceCard(
@@ -341,7 +389,7 @@ class _CalendarCard extends StatelessWidget {
               borderRadius: tokens.radii.capsule,
             ),
             child: Text(
-              AppStrings.myPageStreak,
+              '🔥 현재 연속 출석(Streak): ${stats.streakDays}일',
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -359,13 +407,13 @@ class _CalendarCard extends StatelessWidget {
               mainAxisSpacing: 8,
               crossAxisSpacing: 4,
             ),
-            itemCount: 31,
+            itemCount: stats.daysInMonth,
             itemBuilder: (context, index) {
               final day = index + 1;
               return _CalendarDayCell(
                 day: day,
-                isActive: activeDays.contains(day),
-                hasCrown: day == crownDay,
+                isActive: stats.activeMonthDays.contains(day),
+                hasCrown: day == stats.crownDay,
               );
             },
           ),
@@ -429,13 +477,12 @@ class _CalendarDayCell extends StatelessWidget {
   }
 }
 
-class _StatsChartCard extends StatelessWidget {
-  const _StatsChartCard({required this.kmValues});
-
-  final List<double> kmValues;
+class _StatsChartCard extends ConsumerWidget {
+  const _StatsChartCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stats = ref.watch(myPageActivityStatsProvider);
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     return SrcSurfaceCard(
@@ -447,7 +494,7 @@ class _StatsChartCard extends StatelessWidget {
             height: 140,
             child: CustomPaint(
               painter: _RunningChartPainter(
-                kmValues: kmValues,
+                kmValues: stats.weekKm,
                 lineColor: tokens.colors.primary,
                 fillTop: tokens.colors.primary.withValues(alpha: 0.35),
                 fillBottom: tokens.colors.primary.withValues(alpha: 0.02),
@@ -471,7 +518,7 @@ class _StatsChartCard extends StatelessWidget {
                     ),
                     SizedBox(height: tokens.spacing.xxs),
                     Text(
-                      AppStrings.myPageMonthlyDistanceValue,
+                      stats.monthDistanceLabel,
                       style: textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
@@ -484,7 +531,7 @@ class _StatsChartCard extends StatelessWidget {
               Container(width: 1, height: 36, color: tokens.colors.outline),
               Expanded(
                 child: Padding(
-                    padding: EdgeInsets.only(left: tokens.spacing.sm),
+                  padding: EdgeInsets.only(left: tokens.spacing.sm),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -494,7 +541,7 @@ class _StatsChartCard extends StatelessWidget {
                       ),
                       SizedBox(height: tokens.spacing.xxs),
                       Text(
-                        AppStrings.myPageAvgPaceValue,
+                        stats.paceLabel,
                         style: textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
@@ -511,6 +558,15 @@ class _StatsChartCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _chartKmLabel(double km) {
+  if (km <= 0) return '0km';
+  final rounded = km.roundToDouble();
+  if (km >= 10 || (km - rounded).abs() < 0.05) {
+    return '${km.round()}km';
+  }
+  return '${km.toStringAsFixed(1)}km';
 }
 
 class _RunningChartPainter extends CustomPainter {
@@ -532,18 +588,21 @@ class _RunningChartPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (kmValues.isEmpty) return;
 
-    final maxKm = kmValues.reduce((a, b) => a > b ? a : b);
-    final minKm = kmValues.reduce((a, b) => a < b ? a : b);
-    final range = (maxKm - minKm).clamp(1.0, double.infinity);
+    var maxKm = 0.0;
+    for (final value in kmValues) {
+      if (value > maxKm) maxKm = value;
+    }
+    final top = maxKm <= 0 ? 1.0 : maxKm;
     final chartBottom = size.height - 24;
     final chartTop = 20.0;
     final chartHeight = chartBottom - chartTop;
-    final stepX = size.width / (kmValues.length - 1);
+    final stepX =
+        kmValues.length <= 1 ? size.width : size.width / (kmValues.length - 1);
 
     final points = <Offset>[];
     for (var i = 0; i < kmValues.length; i++) {
       final x = i * stepX;
-      final normalized = (kmValues[i] - minKm) / range;
+      final normalized = (kmValues[i] <= 0 ? 0.0 : kmValues[i]) / top;
       final y = chartBottom - normalized * chartHeight;
       points.add(Offset(x, y));
     }
@@ -580,8 +639,9 @@ class _RunningChartPainter extends CustomPainter {
 
     for (var i = 0; i < points.length; i++) {
       canvas.drawCircle(points[i], 4, Paint()..color = lineColor);
+      if (kmValues[i] <= 0) continue;
 
-      final label = '${kmValues[i].toInt()}km';
+      final label = _chartKmLabel(kmValues[i]);
       final textPainter = TextPainter(
         text: TextSpan(
           text: label,

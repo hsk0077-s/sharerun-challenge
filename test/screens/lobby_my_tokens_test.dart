@@ -4,11 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
+import 'package:share_run_challenge/data/models/activity_model.dart';
 import 'package:share_run_challenge/data/models/tournament_model.dart';
 import 'package:share_run_challenge/data/models/tournament_participation_model.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/pedometer/kst_calendar.dart';
+import 'package:share_run_challenge/features/profile/my_page_activity_stats.dart';
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/challenge_lobby_screen.dart';
@@ -44,7 +47,10 @@ class _SeededWalletNotifier extends WalletNotifier {
   WalletState build() => WalletState.fromModel(_wallet);
 }
 
-Widget _scopedApp({required Widget home}) {
+Widget _scopedApp({
+  required Widget home,
+  List<ActivityModel> activities = const [],
+}) {
   final profile =
       UserModel.dashboardDefault(uid: '').copyWith(nickname: '테스트러너');
   return ProviderScope(
@@ -59,7 +65,7 @@ Widget _scopedApp({required Widget home}) {
       ),
       walletProvider.overrideWith(_SeededWalletNotifier.new),
       recentActivitiesProvider.overrideWith(
-        (ref) => Stream.value(const []),
+        (ref) => Stream.value(activities),
       ),
       tournamentRoomsProvider.overrideWith(
         (ref) => Stream<List<TournamentModel>>.value(const [_room]),
@@ -90,12 +96,15 @@ void main() {
     WidgetTester tester,
     Widget home, {
     Size size = const Size(390, 1200),
+    List<ActivityModel> activities = const [],
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(_scopedApp(home: home));
+    await tester.pumpWidget(
+      _scopedApp(home: home, activities: activities),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
   }
@@ -140,9 +149,8 @@ void main() {
       AppColors.tealAccent,
     );
 
-    final sponsorTitle = tester
-        .widget<Text>(find.text(AppStrings.lobbySponsorRoomTitle))
-        .style;
+    final sponsorTitle =
+        tester.widget<Text>(find.text(AppStrings.lobbySponsorRoomTitle)).style;
     expect(sponsorTitle?.color, AppColors.angelGold);
   });
 
@@ -182,7 +190,8 @@ void main() {
       AppColors.angelGold,
     );
 
-    final join = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Join with Share'));
+    final join = tester.widget<FilledButton>(
+        find.widgetWithText(FilledButton, 'Join with Share'));
     expect(
       join.style?.backgroundColor?.resolve(const <WidgetState>{}),
       AppColors.primaryMint,
@@ -200,13 +209,18 @@ void main() {
     expect(find.text('테스트러너'), findsOneWidget);
     expect(find.text('나의 천사 연대기'), findsOneWidget);
     expect(find.text('러닝 로그'), findsOneWidget);
-    expect(find.text(AppStrings.myPageMonthlyDistanceValue), findsOneWidget);
+    expect(find.text('최근 러닝 기록이 없습니다'), findsOneWidget);
+    expect(find.text('0.0 KM'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('🔥 0일째 불꽃 유지 중!'), findsOneWidget);
+    expect(find.text('🔥 현재 연속 출석(Streak): 0일'), findsOneWidget);
+    expect(find.text('42.5 KM'), findsNothing);
+    expect(find.text('5:40 /KM'), findsNothing);
+    expect(find.textContaining('12일'), findsNothing);
     expect(find.byKey(const Key('my-page-settings')), findsOneWidget);
     expect(find.byKey(const Key('my-page-subscription')), findsOneWidget);
     expect(
-      tester
-          .widget<InkWell>(find.byKey(const Key('my-page-settings')))
-          .onTap,
+      tester.widget<InkWell>(find.byKey(const Key('my-page-settings'))).onTap,
       isNotNull,
     );
     expect(
@@ -231,12 +245,87 @@ void main() {
       AppColors.tealAccent,
     );
     expect(
-      tester
-          .widget<Text>(find.text(AppStrings.myPageMonthlyDistanceValue))
-          .style
-          ?.color,
+      tester.widget<Text>(find.text('0.0 KM')).style?.color,
       AppColors.tealAccent,
     );
+  });
+
+  testWidgets('My page streak, log, and chart follow recorded activity',
+      (tester) async {
+    final today = KstCalendar.dateKey();
+    SharedPreferences.setMockInitialValues({
+      '${today}_steps': 2000,
+      '${today}_km': 1.5,
+    });
+    final activities = [
+      ActivityModel(
+        id: 'run-today',
+        userId: 'u',
+        distanceKm: 3.2,
+        durationSeconds: 960,
+        averagePaceSecondsPerKm: 300,
+        completedAt: DateTime.now(),
+        validationStatus: ActivityValidationStatus.verified,
+        jenaReason: null,
+      ),
+      ActivityModel(
+        id: 'run-yesterday',
+        userId: 'u',
+        distanceKm: 2,
+        durationSeconds: 700,
+        averagePaceSecondsPerKm: 350,
+        completedAt: DateTime.now().toUtc().subtract(const Duration(days: 1)),
+        validationStatus: ActivityValidationStatus.verified,
+        jenaReason: null,
+      ),
+    ];
+    final stats = MyPageActivityMath.compute(
+      activities: activities,
+      stepsByDate: {today: 2000},
+      kmByDate: {today: 1.5},
+      now: DateTime.now(),
+    );
+    expect(stats.streakDays, 2);
+
+    await pumpSized(
+      tester,
+      const OnboardingMyPageScreen(),
+      activities: activities,
+    );
+
+    expect(find.text('42.5 KM'), findsNothing);
+    expect(find.textContaining('12일'), findsNothing);
+    expect(
+      find.text('🔥 ${stats.streakDays}일째 불꽃 유지 중!'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('🔥 현재 연속 출석(Streak): ${stats.streakDays}일'),
+      findsOneWidget,
+    );
+    expect(find.text(stats.monthDistanceLabel), findsOneWidget);
+    expect(find.text(stats.paceLabel), findsOneWidget);
+    expect(find.text('3.2 km'), findsOneWidget);
+    expect(find.text('2.0 km'), findsOneWidget);
+    expect(find.text('👑'), findsOneWidget);
+  });
+
+  testWidgets('My page log shows a walk when no run was saved that day',
+      (tester) async {
+    final today = KstCalendar.dateKey();
+    SharedPreferences.setMockInitialValues({
+      '${today}_steps': 2000,
+    });
+
+    await pumpSized(tester, const OnboardingMyPageScreen());
+    await tester.pump();
+
+    expect(find.text('걷기'), findsOneWidget);
+    expect(find.text('1.5 km'), findsOneWidget);
+    expect(find.text('1.5 KM'), findsOneWidget);
+    expect(find.text('🔥 1일째 불꽃 유지 중!'), findsOneWidget);
+    expect(find.text('🔥 현재 연속 출석(Streak): 1일'), findsOneWidget);
+    expect(find.text('최근 러닝 기록이 없습니다'), findsNothing);
   });
 
   testWidgets('My Tournaments empty state uses SrcSurfaceCard', (tester) async {

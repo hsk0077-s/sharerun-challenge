@@ -242,6 +242,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   @override
   void initState() {
     super.initState();
+    _claimedSteps = PedometerHarvestLedger.sessionClaimed(_getTodayKey());
     WidgetsBinding.instance.addObserver(this);
     SoloPedometerForeground.addLiveStepsListener(_onIsolateSteps);
     unawaited(() async {
@@ -562,6 +563,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     _km = plan.km;
     _collectedShareCoins = plan.collectedShare;
     _claimedSteps = plan.claimedSteps;
+    PedometerHarvestLedger.commitSession(
+      dateKey: plan.dateKey,
+      claimed: plan.claimedSteps,
+    );
     _hasReceivedMilestone1 = plan.milestone1;
     _hasReceivedMilestone2 = plan.milestone2;
     _hasReceivedMilestone3 = plan.milestone3;
@@ -927,6 +932,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               ),
               todayKey: todayKey,
             ),
+            fromSession: PedometerHarvestLedger.sessionClaimed(todayKey),
             steps: _steps,
           );
           _collectedShareCoins =
@@ -957,16 +963,27 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
+  int _claimedFor(int steps) {
+    return PedometerHarvestLedger.coalesceClaimed(
+      current: _claimedSteps,
+      fromTodayKey: 0,
+      fromPrefix: 0,
+      fromSession: PedometerHarvestLedger.sessionClaimed(_getTodayKey()),
+      steps: steps,
+    );
+  }
+
   double _computePendingShare(int steps) {
     return PedometerHarvestLedger.pendingShareExact(
       steps: steps,
-      claimedSteps: _claimedSteps,
+      claimedSteps: _claimedFor(steps),
     );
   }
 
   Future<void> _persistClaimedWatermark(int claimed) async {
-    final prefs = await SharedPreferences.getInstance();
     final todayKey = _getTodayKey();
+    PedometerHarvestLedger.commitSession(dateKey: todayKey, claimed: claimed);
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(
       PedometerHarvestLedger.todayClaimedKey(todayKey),
       claimed,
@@ -1087,6 +1104,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           fromTodayKey: savedClaimedToday,
           fromPrefix: savedClaimedPrefix,
           fromGlobal: savedClaimedGlobal,
+          fromSession: PedometerHarvestLedger.sessionClaimed(todayKey),
           steps: steps,
         );
         _hasReceivedMilestone1 = savedMilestone1;
@@ -1192,34 +1210,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final prefix = await _prefPrefix();
       await prefs.setDouble('$prefix.km', km);
       await prefs.setInt('$prefix.steps', steps);
-      final claimed = PedometerHarvestLedger.coalesceClaimed(
-        current: _claimedSteps,
-        fromTodayKey:
-            prefs.getInt(PedometerHarvestLedger.todayClaimedKey(ymd)) ?? 0,
-        fromPrefix: _prefToInt(prefs.get('$prefix.claimedSteps')),
-        fromGlobal: PedometerHarvestLedger.claimedFromGlobal(
-          storedDate: prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
-          storedClaimed:
-              prefs.getInt(PedometerHarvestLedger.globalClaimedKey) ?? 0,
-          todayKey: ymd,
-        ),
-        steps: steps,
-      );
-      await prefs.setInt('$prefix.claimedSteps', claimed);
-      await prefs.setInt(
-        PedometerHarvestLedger.todayClaimedKey(ymd),
-        claimed,
-      );
-      await prefs.setInt(PedometerHarvestLedger.globalClaimedKey, claimed);
-      await prefs.setString(
-        PedometerHarvestLedger.globalClaimedDateKey,
-        ymd,
-      );
+      // Claimed-step keys belong to harvest and KST rollover. A step save
+      // that rewrote them from a pre-줍기 snapshot put 0 back on disk, so
+      // the next open showed 줍기 again.
       await prefs.setDouble(
         '$prefix.pendingShare',
         PedometerHarvestLedger.pendingShareExact(
           steps: steps,
-          claimedSteps: claimed,
+          claimedSteps: _claimedSteps,
         ),
       );
       await prefs.setDouble('$prefix.collectedShare', _collectedShareCoins);
@@ -1286,40 +1284,41 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       liveDaily: pedometerState.steps,
       persistedToday: _steps,
     );
+    final claimedNow = _claimedFor(liveSteps);
     final int toClaim = PedometerHarvestLedger.pendingShareFloor(
       steps: liveSteps,
-      claimedSteps: _claimedSteps,
+      claimedSteps: claimedNow,
     );
     if (toClaim <= 0) return;
     _harvestInFlight = true;
-    final previousClaimed = _claimedSteps;
+    final previousClaimed = claimedNow;
     final previousCollected = _collectedShareCoins;
     final nextClaimed = PedometerHarvestLedger.claimedAfterHarvest(
       steps: liveSteps,
-      claimedSteps: _claimedSteps,
+      claimedSteps: claimedNow,
     );
     try {
-      HapticFeedback.heavyImpact();
-    } on PlatformException catch (e, st) {
-      debugPrint('harvest haptic PlatformException: $e\n$st');
-    } catch (e, st) {
-      debugPrint('harvest haptic: $e\n$st');
-    }
-    if (!mounted) {
-      _harvestInFlight = false;
-      return;
-    }
-    setState(() {
+      try {
+        HapticFeedback.heavyImpact();
+      } on PlatformException catch (e, st) {
+        debugPrint('harvest haptic PlatformException: $e\n$st');
+      } catch (e, st) {
+        debugPrint('harvest haptic: $e\n$st');
+      }
       _claimedSteps = nextClaimed;
-      _mascotPickupNonce += 1;
-    });
-    ref.read(walkingPendingShareProvider.notifier).state = 0.0;
-    unawaited(_syncForegroundNotification(liveSteps));
-    // Persist the watermark before the API returns so back-navigation
-    // cannot restore the old pending floor and harvest it again.
-    await _persistClaimedWatermark(nextClaimed);
-    final uid = _harvestUid();
-    try {
+      if (mounted) {
+        setState(() => _mascotPickupNonce += 1);
+      }
+      // Commit before listeners and before foreground prefs.reload().
+      // Back-navigation must not reopen the same 줍기 floor.
+      await _persistClaimedWatermark(nextClaimed);
+      if (mounted) {
+        ref.read(walkingPendingShareProvider.notifier).state =
+            _computePendingShare(liveSteps);
+        unawaited(_syncForegroundNotification(liveSteps));
+      }
+      final uid = _harvestUid();
+      try {
       if (uid.isEmpty) {
         throw StateError('로그인이 필요합니다.');
       }
@@ -1388,9 +1387,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         );
         await _persistClaimedWatermark(previousClaimed);
       } else {
+        // Screen is already gone. Keep the watermark committed above so
+        // the next open does not offer the same 줍기 again.
         _collectedShareCoins = previousCollected;
-        _claimedSteps = previousClaimed;
-        await _persistClaimedWatermark(previousClaimed);
+      }
       }
     } finally {
       _harvestInFlight = false;
@@ -1510,17 +1510,18 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final weekDays = PedometerKstClock.thisWeekDays();
     final selectedKey =
         _selectedDayKey.isEmpty ? PedometerKstClock.dateKey() : _selectedDayKey;
+    final claimedSteps = _claimedFor(effectiveSteps);
     final currentPendingShare = PedometerHarvestLedger.pendingShareExact(
       steps: effectiveSteps,
-      claimedSteps: _claimedSteps,
+      claimedSteps: claimedSteps,
     );
     final pendingCoinsInt = PedometerHarvestLedger.pendingShareFloor(
       steps: effectiveSteps,
-      claimedSteps: _claimedSteps,
+      claimedSteps: claimedSteps,
     );
     final hasPendingCoins = pendingCoinsInt >= 1;
     final isMaxDailyReached = PedometerHarvestLedger.todayMinedShare(
-          claimedSteps: _claimedSteps,
+          claimedSteps: claimedSteps,
         ) >=
         PedometerHarvestLedger.dailyShareCap;
 
@@ -1634,7 +1635,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final textTheme = Theme.of(context).textTheme;
     final walletShare = ref.watch(walletProvider).shareBalance;
     final todayCollectedCoins = PedometerHarvestLedger.todayMinedShare(
-      claimedSteps: _claimedSteps,
+      claimedSteps: _claimedFor(
+        math.max(_steps, ref.read(pedometerStateProvider).steps),
+      ),
     );
     return SrcSurfaceCard(
       key: const Key('walking-share-account'),

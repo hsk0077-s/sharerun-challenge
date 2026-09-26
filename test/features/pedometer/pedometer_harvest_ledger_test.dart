@@ -21,7 +21,8 @@ void main() {
     );
   });
 
-  test('re-enter does not revive the same floor amount after a successful claim',
+  test(
+      're-enter does not revive the same floor amount after a successful claim',
       () {
     const steps = 2918;
     const claimed = 2918;
@@ -182,5 +183,43 @@ void main() {
       ),
       2950,
     );
+  });
+
+  test('session watermark survives a remount that reads claimed 0', () {
+    const today = '2026-09-26';
+    const yesterday = '2026-09-25';
+    PedometerHarvestLedger.commitSession(dateKey: yesterday, claimed: 1800);
+    expect(PedometerHarvestLedger.sessionClaimed(today), 0);
+
+    PedometerHarvestLedger.commitSession(dateKey: today, claimed: 2900);
+    expect(PedometerHarvestLedger.sessionClaimed(yesterday), 0);
+    expect(
+      PedometerHarvestLedger.coalesceClaimed(
+        current: 0,
+        fromTodayKey: 0,
+        fromPrefix: 0,
+        fromSession: PedometerHarvestLedger.sessionClaimed(today),
+        steps: 2950,
+      ),
+      2900,
+    );
+
+    const steps = 2950;
+    final claimed = PedometerHarvestLedger.claimedAfterHarvest(
+      steps: steps,
+      claimedSteps: 0,
+    );
+    expect(claimed, 2900);
+    expect(steps > claimed, isTrue);
+    expect(
+      PedometerHarvestLedger.pickupReady(
+        steps: steps,
+        claimedSteps: claimed,
+      ),
+      isFalse,
+    );
+
+    PedometerHarvestLedger.commitSession(dateKey: today, claimed: 0);
+    expect(PedometerHarvestLedger.sessionClaimed(today), 0);
   });
 }

@@ -690,7 +690,19 @@ abstract final class SoloPedometerForeground {
 
   static Future<int> liveSteps() async {
     try {
-      return await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
+      final steps =
+          await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
+      final at = await FlutterForegroundTask.getData<int>(key: _stepsAtKey);
+      if (at == null || at <= 0) {
+        return PedometerStepTruth.clampDaily(steps);
+      }
+      return PedometerStepTruth.cachedDailyIfSameDay(
+        cachedSteps: steps,
+        cachedDayKey: KstCalendar.dateKey(
+          DateTime.fromMillisecondsSinceEpoch(at),
+        ),
+        todayKey: KstCalendar.dateKey(),
+      );
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForeground liveSteps: $e\n$st');
       return 0;

@@ -419,11 +419,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _stillTimer = Timer(const Duration(seconds: 3), () {
         _setMoving(false);
       });
+      final todayKey = PedometerKstClock.dateKey();
       final next = PedometerStepTruth.fromSensorEvent(
         raw: raw,
         healthBase: _healthBase,
         sessionDelta: _sessionDelta,
         stepOffset: _stepOffset,
+        floorDayKey: _lastSavedDate,
+        todayKey: todayKey,
       );
       debugPrint(
         PedometerStepTruth.sourceLog(
@@ -498,7 +501,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           );
         }
         _applyDailySteps(next, source: 'health');
-        unawaited(_syncForegroundNotification(math.max(next, _steps)));
+        unawaited(_syncForegroundNotification(_steps));
         return;
       }
       debugPrint(
@@ -510,6 +513,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           ui: _steps,
         ),
       );
+      if (_lastSavedDate.isNotEmpty && _lastSavedDate != todayKey) {
+        _ensureDailyRollover(
+          sensorTotal: math.max(_steps, 0) + _stepOffset,
+        );
+      }
       if (_steps > 0) {
         unawaited(
           ref.read(pedometerStateProvider.notifier).updateSteps(
@@ -546,6 +554,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     );
     _stepOffset = plan.stepOffset;
     _steps = plan.steps;
+    // Yesterday's already-daily floor must not survive the 0 flash.
+    // fromSensorEvent maxes it back in while raw-offset is still ~0.
+    _healthBase = 0;
+    _sessionDelta = 0;
+    _baselineReady = false;
     _km = plan.km;
     _collectedShareCoins = plan.collectedShare;
     _claimedSteps = plan.claimedSteps;
@@ -579,6 +592,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   Future<void> _persistDailyResetState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final ymd = PedometerKstClock.dateKey();
+      await prefs.setInt(PedometerKstClock.backupStepsKey(ymd), _steps);
+      await prefs.setDouble(PedometerKstClock.backupKmKey(ymd), _km);
       await prefs.setString('lastSavedDate', _lastSavedDate);
       await prefs.setInt('stepOffset', _stepOffset);
       await prefs.setInt('${_lastSavedDate}_step_offset', _stepOffset);
@@ -605,9 +621,6 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       );
       await prefs.setInt('$prefix.steps', _steps);
       await prefs.setDouble('$prefix.km', _km);
-      final ymd = PedometerKstClock.dateKey();
-      await prefs.setInt(PedometerKstClock.backupStepsKey(ymd), _steps);
-      await prefs.setDouble(PedometerKstClock.backupKmKey(ymd), _km);
     } catch (e) {
       debugPrint('_persistDailyResetState: $e');
     }
@@ -615,9 +628,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   void _applyDailySteps(int steps, {required String source}) {
     if (!mounted) return;
-    _ensureDailyRollover(
+    final rolled = _ensureDailyRollover(
       sensorTotal: math.max(steps, _steps) + _stepOffset,
     );
+    // The candidate was computed with yesterday's floor. Writing it now
+    // is the 5377 that comes back right after the midnight 0.
+    if (rolled) return;
     final effective = PedometerStepTruth.clampDaily(steps);
     debugPrint(
       PedometerStepTruth.sourceLog(
@@ -664,9 +680,17 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     );
   }
 
-  void _onIsolateSteps(int steps) {
+  void _onIsolateSteps(int _) {
+    unawaited(_onIsolateStepsTrusted());
+  }
+
+  Future<void> _onIsolateStepsTrusted() async {
     if (!mounted) return;
-    final daily = PedometerStepTruth.clampDaily(steps);
+    final trusted = await SoloPedometerForeground.liveSteps();
+    if (!mounted) return;
+    // `liveSteps` drops a cache stamped on a previous KST day. The pushed
+    // int has no day key, so a late 5377 must not bypass that filter.
+    final daily = PedometerStepTruth.clampDaily(trusted);
     _ensureDailyRollover(
       sensorTotal: math.max(daily, _steps) + _stepOffset,
     );
@@ -1086,8 +1110,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           }
         }());
       }
+      // Cold start has no live sensor sample. Reusing yesterday's offset
+      // makes raw-offset equal yesterday's steps on the new KST day.
       final rolled = _ensureDailyRollover(
-        sensorTotal: math.max(steps, savedOffset),
+        sensorTotal: 0,
       );
       if (rolled) {
         _claimedSteps = 0;
@@ -1156,8 +1182,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     required int steps,
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final ymd = PedometerKstClock.dateKey();
+      // Pause/resume across midnight must not file yesterday's total under
+      // today's backup key (keepalive then maxes it back onto the UI).
+      if (_lastSavedDate.isNotEmpty && _lastSavedDate != ymd) return;
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(PedometerKstClock.backupStepsKey(ymd), steps);
       await prefs.setDouble(PedometerKstClock.backupKmKey(ymd), km);
       final prefix = await _prefPrefix();

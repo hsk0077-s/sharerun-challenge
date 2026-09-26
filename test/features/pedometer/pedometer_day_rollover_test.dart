@@ -76,6 +76,8 @@ void main() {
     expect(prefs[PedometerHarvestLedger.globalClaimedKey], 0);
     expect(prefs[PedometerHarvestLedger.globalClaimedDateKey], '2026-09-11');
     expect(prefs[PedometerDayRollover.collectedShareCoinsKey], 0.0);
+    expect(prefs['2026-09-11_steps'], 0);
+    expect(prefs['2026-09-11_km'], 0);
   });
 
   test('wallet inventory donation keys persist across midnight', () {

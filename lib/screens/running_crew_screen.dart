@@ -140,35 +140,10 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   }
 
   Future<void> _onSearch() async {
-    final controller = TextEditingController(text: _searchQuery);
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('크루 검색'),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: '크루 이름 입력',
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (v) => Navigator.pop(ctx, v),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, ''),
-              child: const Text('초기화'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, controller.text),
-              child: const Text('검색'),
-            ),
-          ],
-        );
-      },
+      builder: (ctx) => _CrewSearchDialog(initialQuery: _searchQuery),
     );
-    controller.dispose();
     if (!mounted || result == null) return;
     setState(() => _searchQuery = result.trim());
     _toast(
@@ -275,7 +250,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton(
-                        onPressed: _isSubmitting ? null : _onCreateCrew,
+                          onPressed: _isSubmitting ? null : _onCreateCrew,
                           style: OutlinedButton.styleFrom(
                             backgroundColor: AppColors.surfaceWhite,
                             foregroundColor: _createButtonGold,
@@ -307,7 +282,8 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                                       )
                                     : Text(
                                         AppStrings.runningCrewCreateButton,
-                                        style: AppTextStyles.buttonText.copyWith(
+                                        style:
+                                            AppTextStyles.buttonText.copyWith(
                                           color: _createButtonGold,
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
@@ -479,6 +455,65 @@ class _CrewRankItem {
   final String? distance;
   final bool highlighted;
   final bool showLogo;
+}
+
+/// Owns the field controller until this route unmounts.
+///
+/// [showDialog] completes when the route starts popping, while the focused
+/// field is still mounted. Disposing the controller then rebuilds that field
+/// and deactivates its focus scope with dependents still attached
+/// (`_dependents.isEmpty` on Flutter 3.44).
+class _CrewSearchDialog extends StatefulWidget {
+  const _CrewSearchDialog({required this.initialQuery});
+
+  final String initialQuery;
+
+  @override
+  State<_CrewSearchDialog> createState() => _CrewSearchDialogState();
+}
+
+class _CrewSearchDialogState extends State<_CrewSearchDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialQuery);
+  var _closed = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _close(String value) {
+    if (_closed) return;
+    _closed = true;
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('크루 검색'),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: '크루 이름 입력',
+          border: OutlineInputBorder(),
+        ),
+        onSubmitted: _close,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => _close(''),
+          child: const Text('초기화'),
+        ),
+        FilledButton(
+          onPressed: () => _close(_controller.text),
+          child: const Text('검색'),
+        ),
+      ],
+    );
+  }
 }
 
 class _RunningCrewHeader extends StatelessWidget {
@@ -678,7 +713,8 @@ class _RankingCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textGrey),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.textGrey),
             ],
           ),
         ),

@@ -40,16 +40,45 @@ abstract final class PedometerStepTruth {
   ///   (Samsung TYPE_STEP_COUNTER increments on a light shake).
   /// * `raw - stepOffset` is used only when midnight (or QA init) snapshotted
   ///   the cumulative sensor. Offset `0` must not dump since-boot totals.
+  ///
+  /// When [floorDayKey] and [todayKey] are both set and they differ, the
+  /// floor, session, and offset still belong to the previous KST day.
+  /// `max(yesterday, raw - oldOffset)` is yesterday's total (the
+  /// 5377 → 0 → 5377 flash). Drop that sample; the next event after the
+  /// new offset is snapshotted is today.
   static int fromSensorEvent({
     required int raw,
     required int healthBase,
     required int sessionDelta,
     required int stepOffset,
+    String? floorDayKey,
+    String? todayKey,
   }) {
-    final fromSession = clampDaily(healthBase + sessionDelta);
-    final fromRaw =
-        stepOffset > 0 ? clampDaily(raw - stepOffset) : 0;
+    final staleDay = floorDayKey != null &&
+        todayKey != null &&
+        floorDayKey != todayKey;
+    final base = staleDay ? 0 : healthBase;
+    final delta = staleDay ? 0 : sessionDelta;
+    final offset = staleDay ? 0 : stepOffset;
+    final fromSession = clampDaily(base + delta);
+    final fromRaw = offset > 0 ? clampDaily(raw - offset) : 0;
     return math.max(fromSession, fromRaw);
+  }
+
+  /// Isolate / prefs cache stamped on [cachedDayKey]. A missing stamp keeps
+  /// the value (legacy store). A previous KST day must not be merged back
+  /// onto today after the midnight zero.
+  static int cachedDailyIfSameDay({
+    required int cachedSteps,
+    required String? cachedDayKey,
+    required String todayKey,
+  }) {
+    if (cachedDayKey != null &&
+        cachedDayKey.isNotEmpty &&
+        cachedDayKey != todayKey) {
+      return 0;
+    }
+    return clampDaily(cachedSteps);
   }
 
   /// After `FlutterJNI was detached` / EventChannel `step_count` death,

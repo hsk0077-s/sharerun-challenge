@@ -25,8 +25,26 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   var _baseline = 0;
   var _baselineReady = false;
   var _offset = 0;
+  var _offsetDayKey = '';
+  var _floorDayKey = '';
   var _listening = false;
   DateTime? _lastRebindAt;
+
+  /// First attach just records today. A later KST date drops yesterday's
+  /// floor so a poll cannot max it back onto the provider.
+  void _rollFloorIfNewDay() {
+    final today = KstCalendar.dateKey();
+    if (_floorDayKey.isEmpty) {
+      _floorDayKey = today;
+      return;
+    }
+    if (_floorDayKey == today) return;
+    _floorDayKey = today;
+    _floor = 0;
+    _baselineReady = false;
+    _offset = 0;
+    _offsetDayKey = '';
+  }
 
   Future<void> attach() async {
     if (_listening) return;
@@ -58,18 +76,36 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     unawaited(SoloPedometerForeground.ensureAlive(steps: _floor));
   }
 
-  void _onIsolate(int steps) {
-    _publish(steps, source: 'isolate');
+  void _onIsolate(int _) {
+    unawaited(_onIsolateTrusted());
+  }
+
+  Future<void> _onIsolateTrusted() async {
+    _rollFloorIfNewDay();
+    final trusted = await SoloPedometerForeground.liveSteps();
+    _publish(trusted, source: 'isolate');
   }
 
   Future<void> syncFromSources({required String reason}) async {
     try {
+      _rollFloorIfNewDay();
       final prefs = await SharedPreferences.getInstance();
       final todayKey = KstCalendar.dateKey();
-      final persisted = prefs.getInt('${todayKey}_steps') ?? 0;
-      _offset = prefs.getInt('stepOffset') ??
-          prefs.getInt('${todayKey}_step_offset') ??
-          _offset;
+      final savedDay = prefs.getString('lastSavedDate') ?? '';
+      final persisted = PedometerStepTruth.cachedDailyIfSameDay(
+        cachedSteps: prefs.getInt('${todayKey}_steps') ?? 0,
+        cachedDayKey: savedDay,
+        todayKey: todayKey,
+      );
+      if (savedDay == todayKey) {
+        _offset = prefs.getInt('stepOffset') ??
+            prefs.getInt('${todayKey}_step_offset') ??
+            _offset;
+        _offsetDayKey = todayKey;
+      } else {
+        _offset = 0;
+        _offsetDayKey = '';
+      }
       final isolate = await SoloPedometerForeground.liveSteps();
       var healthToday = 0;
       try {
@@ -140,11 +176,13 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   }
 
   void _onSensor(StepCount event) {
+    _rollFloorIfNewDay();
     final raw = event.steps;
     if (!_baselineReady) {
       _baseline = raw;
       _baselineReady = true;
     }
+    final todayKey = KstCalendar.dateKey();
     final next = PedometerStepTruth.fromSensorEvent(
       raw: raw,
       healthBase: _floor,
@@ -152,6 +190,10 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
           ? PedometerStepTruth.clampDaily(raw - _baseline)
           : 0,
       stepOffset: _offset,
+      // Empty offset day means the snapshot is not today's yet. Passing it
+      // makes fromSensorEvent drop raw-oldOffset (yesterday's 5377).
+      floorDayKey: _offsetDayKey,
+      todayKey: todayKey,
     );
     debugPrint(
       PedometerStepTruth.sourceLog(

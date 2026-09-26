@@ -53,6 +53,51 @@ void main() {
       );
     });
 
+    test('yesterday floor is not reapplied after the KST day flips', () {
+      // 5377 was yesterday in Asia/Seoul. Rollover paints 0, then this
+      // sample used to win max(healthBase, raw - oldOffset) and put 5377
+      // back on today.
+      const yesterday = 5377;
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 50000 + yesterday,
+          healthBase: yesterday,
+          sessionDelta: yesterday,
+          stepOffset: 50000,
+          floorDayKey: '2026-09-25',
+          todayKey: '2026-09-26',
+        ),
+        0,
+      );
+      expect(
+        PedometerStepTruth.cachedDailyIfSameDay(
+          cachedSteps: yesterday,
+          cachedDayKey: '2026-09-25',
+          todayKey: '2026-09-26',
+        ),
+        0,
+      );
+      expect(
+        PedometerStepTruth.cachedDailyIfSameDay(
+          cachedSteps: 120,
+          cachedDayKey: '2026-09-26',
+          todayKey: '2026-09-26',
+        ),
+        120,
+      );
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 50000 + 40,
+          healthBase: 0,
+          sessionDelta: 0,
+          stepOffset: 50000,
+          floorDayKey: '2026-09-26',
+          todayKey: '2026-09-26',
+        ),
+        40,
+      );
+    });
+
     test('overflow sentinel session does not become today steps', () {
       expect(
         PedometerStepTruth.fromSensorEvent(

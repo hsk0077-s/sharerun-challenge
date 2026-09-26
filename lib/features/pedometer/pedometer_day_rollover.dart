@@ -64,6 +64,10 @@ abstract final class PedometerDayRollover {
 
   static Map<String, Object> prefsToWrite(PedometerRolloverPlan plan) {
     return {
+      // Clear today's backup before stamping the date, so a reader cannot
+      // observe lastSavedDate==today together with yesterday's step total.
+      '${plan.dateKey}_steps': plan.steps,
+      '${plan.dateKey}_km': plan.km,
       lastSavedDateKey: plan.dateKey,
       stepOffsetKey: plan.stepOffset,
       dayStepOffsetKey(plan.dateKey): plan.stepOffset,

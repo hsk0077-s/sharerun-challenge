@@ -61,6 +61,27 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   var _hasOwnCrew = true;
   var _isSubmitting = false;
 
+  @override
+  void initState() {
+    super.initState();
+    SrcExitGuard.crewTabBack = _clearSearchOnBack;
+  }
+
+  @override
+  void dispose() {
+    if (identical(SrcExitGuard.crewTabBack, _clearSearchOnBack)) {
+      SrcExitGuard.crewTabBack = null;
+    }
+    super.dispose();
+  }
+
+  /// 검색 중이면 필터만 지우고 원래 크루 목록에 남긴다.
+  bool _clearSearchOnBack() {
+    if (!mounted || _searchQuery.isEmpty) return false;
+    setState(() => _searchQuery = '');
+    return true;
+  }
+
   List<_CrewRankItem> get _visibleRankings {
     final q = _searchQuery.trim().toLowerCase();
     if (q.isEmpty) return _allRankings;
@@ -132,6 +153,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   }
 
   void _onBack() {
+    if (_clearSearchOnBack()) return;
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
       return;
@@ -144,7 +166,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       context: context,
       builder: (ctx) => _CrewSearchDialog(initialQuery: _searchQuery),
     );
-    if (!mounted || result == null) return;
+    if (!mounted) return;
+    // 다이얼로그를 뒤로 닫으면 검색어를 비우고 전체 목록으로 돌아간다.
+    if (result == null) {
+      _clearSearchOnBack();
+      return;
+    }
     setState(() => _searchQuery = result.trim());
     _toast(
       result.trim().isEmpty

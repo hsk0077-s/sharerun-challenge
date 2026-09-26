@@ -17,6 +17,9 @@ class SrcExitGuard extends StatefulWidget {
     super.key,
   });
 
+  /// 크루 탭이 검색 중일 때 뒤로가기를 소비한다. true면 탭을 떠나지 않는다.
+  static bool Function()? crewTabBack;
+
   final Widget child;
 
   /// GoRouter [StatefulShellRoute] 셸 (있으면 우선 사용).
@@ -83,6 +86,12 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+
+        // 검색 필터가 있으면 크루 목록으로만 돌아간다.
+        if (_currentTabIndex == DashboardTabNavigation.crew &&
+            (SrcExitGuard.crewTabBack?.call() ?? false)) {
+          return;
+        }
 
         final router = GoRouter.maybeOf(context);
         // Tab-shell leftover only: after cold start / unvisited branches,

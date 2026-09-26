@@ -571,6 +571,46 @@ service cloud.firestore {
             .hasOnly(['status', 'adminStatus', 'wallet', 'updatedAt']);
     }
 
+    // Crew tab create («새 크루 창설하기»).
+    // Keep 50000 in sync with CrewFoundingWrite.shareCost.
+    // Deploy these rules or that transaction stays PERMISSION_DENIED.
+    function validCrewFoundingDebit(uid) {
+      return isOwner(uid)
+        && 'ownedCrewId' in request.resource.data
+        && request.resource.data.ownedCrewId is string
+        && request.resource.data.ownedCrewId.matches('^[A-Za-z0-9]{20}$')
+        && userAffectedKeys().hasAll(['ownedCrewId'])
+        && userAffectedKeys().hasOnly([
+          'wallet',
+          'wallet.shareBalance',
+          'ownedCrewId',
+          'updatedAt'
+        ])
+        && incomingShare() is int
+        && resourceShare() is int
+        && incomingShare() >= 0
+        && incomingShare() == resourceShare() - 50000
+        && (
+          !('wallet' in resource.data)
+          || !(resource.data.wallet is map)
+          || !('diamondBalance' in resource.data.wallet)
+          || incomingDiamond() == resource.data.wallet.diamondBalance
+        )
+        && (
+          !('wallet' in resource.data)
+          || !(resource.data.wallet is map)
+          || !('valueTokenBalance' in resource.data.wallet)
+          || incomingValue() == resource.data.wallet.valueTokenBalance
+        )
+        && request.resource.data.updatedAt == request.time
+        && !exists(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))
+        && existsAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))
+        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.ownerUid == uid
+        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.shareCost == 50000
+        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.memberCount == 1
+        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.totalValue == 0;
+    }
+
     match /admins/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if false;
@@ -585,7 +625,11 @@ service cloud.firestore {
       // Owner wallet persist (grant / harvest / SHARE spend / shop DIA-VALUE)
       // is the helpers below — deploy this file or those writes stay
       // PERMISSION_DENIED even though local #34 persist works.
-      allow update: if isAdminUserOpsUpdate()
+      // Crew founding is first so a matching create does not walk the
+      // large debug-spend helpers (expression budget). Non-crew updates
+      // fail the ownedCrewId guard and continue as before.
+      allow update: if validCrewFoundingDebit(uid)
+        || isAdminUserOpsUpdate()
         || validDebugTestWalletGrant(uid)
         || validDebugLocalHarvestShare(uid)
         || validDebugShareSpend(uid)
@@ -702,6 +746,32 @@ service cloud.firestore {
     match /stampLandmarks/{landmarkId} {
       allow read: if signedIn() || isAdmin();
       allow write: if isAdmin();
+    }
+
+    // Created only with validCrewFoundingDebit in the same transaction.
+    match /crews/{crewId} {
+      allow get: if signedIn() && resource.data.ownerUid == request.auth.uid;
+      allow list: if false;
+      allow create: if signedIn()
+        && crewId.matches('^[A-Za-z0-9]{20}$')
+        && request.resource.data.keys().hasOnly([
+          'name',
+          'ownerUid',
+          'totalValue',
+          'memberCount',
+          'shareCost',
+          'createdAt'
+        ])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 80
+        && request.resource.data.totalValue == 0
+        && request.resource.data.memberCount == 1
+        && request.resource.data.shareCost == 50000
+        && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownedCrewId == crewId;
+      allow update, delete: if false;
     }
 
     match /crewRankings/{crewId} {

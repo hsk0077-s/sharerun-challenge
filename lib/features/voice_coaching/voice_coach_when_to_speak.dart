@@ -6,9 +6,10 @@ import 'voice_coaching_cues.dart';
 /// rank are still later slices. The high-HR line is bound separately.
 ///
 /// [VoiceCoachingController.speakCue] consults this gate. Hill / rank kinds
-/// stay unbound — no grade or live-place feed here.
+/// stay unbound — no grade or live-place feed here. Steady and recovered
+/// heart-rate lines are encouragement, not this safety kind.
 enum VoiceCoachCueKind {
-  /// Watch / HR: slow down when challenge-tracker BPM is clearly high.
+  /// Watch / HR: slow down when challenge-tracker BPM is in the high band.
   heartRate,
 
   /// Course: hill ahead — conserve.
@@ -211,6 +212,10 @@ class VoiceCoachWhenToSpeak {
 VoiceCoachCueKind? voiceCoachCueKindForPhase3aId(String id) {
   if (id == VoiceCoachingCues.runHighHeartRate.id) {
     return VoiceCoachCueKind.heartRate;
+  }
+  if (id == VoiceCoachingCues.runHeartRateSteady.id ||
+      id == VoiceCoachingCues.runHeartRateRecovered.id) {
+    return VoiceCoachCueKind.encouragement;
   }
   if (id.startsWith('run.km.') ||
       id.startsWith('walk.steps.') ||

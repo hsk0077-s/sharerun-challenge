@@ -212,6 +212,14 @@ void main() {
       voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runHighHeartRate.id),
       VoiceCoachCueKind.heartRate,
     );
+    expect(
+      voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runHeartRateSteady.id),
+      VoiceCoachCueKind.encouragement,
+    );
+    expect(
+      voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runHeartRateRecovered.id),
+      VoiceCoachCueKind.encouragement,
+    );
     expect(voiceCoachCueKindForPhase3aId('hr.high'), isNull);
     expect(voiceCoachCueKindForPhase3aId('course.hill'), isNull);
     expect(voiceCoachCueKindForPhase3aId('lobby.rank'), isNull);

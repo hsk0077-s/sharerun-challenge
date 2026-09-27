@@ -75,14 +75,24 @@ abstract final class VoiceCoachingCues {
     en: 'Nice. Keep your breath.',
   );
 
-  /// Fixed slow-down bound for the challenge-tracker BPM.
+  /// Age-agnostic BPM bands for the challenge-tracker reading.
   ///
-  /// There is no age, resting HR, or max HR on the coach, so this is not a
-  /// training zone. Speak only when the BPM already shown in the run
-  /// (`RunTelemetry.currentHeartRate`) is inside the plausible band and at
-  /// or above [highHeartRateBpm]. Re-arm only after it falls to
-  /// [highHeartRateRearmBpm] so a 169/171 flutter does not repeat the line.
+  /// There is no age, resting HR, or max HR on the coach, so these are fixed
+  /// bounds — not a percent-of-max zone. Only a plausible
+  /// [minPlausibleHeartRateBpm]–[maxPlausibleHeartRateBpm] sample counts.
+  ///
+  /// * **Steady** [steadyHeartRateBpm]–169: one keep-pace line per entry.
+  ///   Rearm at or below [steadyHeartRateRearmBpm] so a 154/156 flutter
+  ///   does not repeat it. Encouragement priority (45s gate, loses to km).
+  /// * **High** ≥ [highHeartRateBpm]: one slow-down. Heart-rate priority, so
+  ///   it can interrupt. Rearm at or below [highHeartRateRearmBpm].
+  /// * **Recovered**: after that slow-down was spoken, the next sample at or
+  ///   below [highHeartRateRearmBpm] says the heart rate came down. Once per
+  ///   episode, encouragement priority, so it waits out the slow-down gap.
+  ///   146–154 is a silent deadband.
   static const minPlausibleHeartRateBpm = 30;
+  static const steadyHeartRateRearmBpm = 145;
+  static const steadyHeartRateBpm = 155;
   static const highHeartRateRearmBpm = 160;
   static const highHeartRateBpm = 170;
   static const maxPlausibleHeartRateBpm = 220;
@@ -91,6 +101,18 @@ abstract final class VoiceCoachingCues {
     id: 'run.hr.high',
     ko: '심박이 높아요. 속도를 줄여요.',
     en: 'Heart rate is high. Ease off.',
+  );
+
+  static const runHeartRateSteady = VoiceCue(
+    id: 'run.hr.steady',
+    ko: '심박이 좋아요. 이 페이스 유지해요.',
+    en: 'Heart rate looks good. Hold this pace.',
+  );
+
+  static const runHeartRateRecovered = VoiceCue(
+    id: 'run.hr.recovered',
+    ko: '심박이 내려왔어요. 페이스 유지해요.',
+    en: 'Heart rate came down. Hold this pace.',
   );
 
   static const walkStepMilestones = <int>[1000, 3000, 5000, 8000, 10000];

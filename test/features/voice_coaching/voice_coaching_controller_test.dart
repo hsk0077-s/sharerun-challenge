@@ -417,9 +417,190 @@ void main() {
     await coach.onRunProgress(
       previousKm: 0.3,
       currentKm: 0.4,
+      heartRateBpm: 150,
+    );
+    await coach.onRunProgress(
+      previousKm: 0.4,
+      currentKm: 0.5,
       heartRateBpm: 250,
     );
     expect(speaker.spoken, isEmpty);
+  });
+
+  test('steady heart rate speaks once and loses to a kilometer cue', () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+
+    await coach.onRunProgress(
+      previousKm: 0.9,
+      currentKm: 1.1,
+      heartRateBpm: 158,
+    );
+    expect(speaker.spoken, [VoiceCoachingCues.runKm(1).ko]);
+
+    now = now.add(const Duration(seconds: 46));
+    await coach.onRunProgress(
+      previousKm: 1.1,
+      currentKm: 1.2,
+      heartRateBpm: 162,
+    );
+    now = now.add(const Duration(seconds: 50));
+    await coach.onRunProgress(
+      previousKm: 1.2,
+      currentKm: 1.3,
+      heartRateBpm: 164,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runKm(1).ko,
+      VoiceCoachingCues.runHeartRateSteady.ko,
+    ]);
+  });
+
+  test('steady heart rate waits out the 45s gate and does not repeat', () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+
+    await coach.onRunStarted();
+    now = now.add(const Duration(seconds: 10));
+    await coach.onRunProgress(
+      previousKm: 0.1,
+      currentKm: 0.2,
+      heartRateBpm: 160,
+    );
+    expect(speaker.spoken, [VoiceCoachingCues.runStart.ko]);
+
+    now = now.add(const Duration(seconds: 40));
+    await coach.onRunProgress(
+      previousKm: 0.2,
+      currentKm: 0.3,
+      heartRateBpm: 163,
+    );
+    now = now.add(const Duration(seconds: 50));
+    await coach.onRunProgress(
+      previousKm: 0.3,
+      currentKm: 0.4,
+      heartRateBpm: 168,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runStart.ko,
+      VoiceCoachingCues.runHeartRateSteady.ko,
+    ]);
+  });
+
+  test('high heart rate interrupts a steady line', () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+
+    await coach.onRunProgress(
+      previousKm: 0.1,
+      currentKm: 0.2,
+      heartRateBpm: 158,
+    );
+    now = now.add(const Duration(seconds: 8));
+    await coach.onRunProgress(
+      previousKm: 0.2,
+      currentKm: 0.3,
+      heartRateBpm: 174,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runHeartRateSteady.ko,
+      VoiceCoachingCues.runHighHeartRate.ko,
+    ]);
+    expect(coach.whenToSpeak.lastSpokenKind, VoiceCoachCueKind.heartRate);
+  });
+
+  test('recovered line speaks once after the slow-down gap', () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+
+    await coach.onRunProgress(
+      previousKm: 0.1,
+      currentKm: 0.2,
+      heartRateBpm: 174,
+    );
+    now = now.add(const Duration(seconds: 10));
+    await coach.onRunProgress(
+      previousKm: 0.2,
+      currentKm: 0.3,
+      heartRateBpm: 158,
+    );
+    expect(speaker.spoken, [VoiceCoachingCues.runHighHeartRate.ko]);
+
+    now = now.add(const Duration(seconds: 40));
+    await coach.onRunProgress(
+      previousKm: 0.3,
+      currentKm: 0.4,
+      heartRateBpm: 152,
+    );
+    now = now.add(const Duration(seconds: 10));
+    await coach.onRunProgress(
+      previousKm: 0.4,
+      currentKm: 0.5,
+      heartRateBpm: 152,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runHighHeartRate.ko,
+      VoiceCoachingCues.runHeartRateRecovered.ko,
+    ]);
+  });
+
+  test('recovered line is dropped if BPM rises before the gate opens', () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+
+    await coach.onRunProgress(
+      previousKm: 0.1,
+      currentKm: 0.2,
+      heartRateBpm: 174,
+    );
+    now = now.add(const Duration(seconds: 10));
+    await coach.onRunProgress(
+      previousKm: 0.2,
+      currentKm: 0.3,
+      heartRateBpm: 150,
+    );
+    now = now.add(const Duration(seconds: 10));
+    await coach.onRunProgress(
+      previousKm: 0.3,
+      currentKm: 0.4,
+      heartRateBpm: 166,
+    );
+    now = now.add(const Duration(seconds: 40));
+    await coach.onRunProgress(
+      previousKm: 0.4,
+      currentKm: 0.5,
+      heartRateBpm: 166,
+    );
+    expect(speaker.spoken, [VoiceCoachingCues.runHighHeartRate.ko]);
+  });
+
+  test('a silenced slow-down does not later say heart rate came down', () async {
+    var enabled = false;
+    final coach = VoiceCoachingController(
+      isEnabled: () => enabled,
+      speaker: speaker,
+      now: () => DateTime.utc(2026, 9, 27, 9),
+    );
+
+    await coach.onRunProgress(
+      previousKm: 0.1,
+      currentKm: 0.2,
+      heartRateBpm: 180,
+    );
+    enabled = true;
+    await coach.onRunProgress(
+      previousKm: 0.2,
+      currentKm: 0.3,
+      heartRateBpm: 150,
+    );
+    expect(speaker.spoken, isEmpty);
+
+    await coach.onRunProgress(
+      previousKm: 0.3,
+      currentKm: 0.4,
+      heartRateBpm: 180,
+    );
+    expect(speaker.spoken, [VoiceCoachingCues.runHighHeartRate.ko]);
   });
 
   test('unmapped Phase 3a ids (future hill/rank) stay silent', () async {

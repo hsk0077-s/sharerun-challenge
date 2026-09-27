@@ -16,6 +16,7 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../data/models/tournament_model.dart';
 import '../features/challenge/providers/challenge_room_providers.dart';
+import '../features/pedometer/walking_challenge_share.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'live_running_screen.dart';
 
@@ -26,8 +27,18 @@ class ChallengeDetailScreen extends StatelessWidget {
   /// Differentiates beginner 1km vs intermediate 3km room content.
   final String? roomId;
 
-  void _onShare() {
-    debugPrint('버튼 클릭됨');
+  Future<void> _onShare(BuildContext buttonContext, String roomTitle) async {
+    final title = roomTitle.trim();
+    if (title.isEmpty) return;
+    try {
+      await WalkingChallengeShare.openSystemSheet(
+        text: 'SRC $title 방에 같이 도전해요!\n#SRC #ShareRunChallenge',
+        subject: 'SRC 챌린지 초대',
+        sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+      );
+    } catch (e, st) {
+      debugPrint('WalkingChallengeShare.room: $e\n$st');
+    }
   }
 
   void _onDonationTap() {
@@ -56,11 +67,17 @@ class ChallengeDetailScreen extends StatelessWidget {
                       iconSize: 22,
                       onPressed: () => Navigator.pop(context),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.send_rounded),
-                      color: AppColors.textBlack,
-                      iconSize: 24,
-                      onPressed: _onShare,
+                    Builder(
+                      builder: (buttonContext) {
+                        return IconButton(
+                          icon: const Icon(Icons.send_rounded),
+                          color: AppColors.textBlack,
+                          iconSize: 24,
+                          onPressed: () => unawaited(
+                            _onShare(buttonContext, copy.title),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

@@ -58,6 +58,13 @@
     <!-- Health Connect + Play Store visibility (Android 11+ package visibility). -->
     <queries>
         <package android:name="com.kakao.talk" />
+        <package android:name="org.telegram.messenger" />
+        <package android:name="jp.naver.line.android" />
+        <package android:name="com.nhn.android.band" />
+        <package android:name="com.twitter.android" />
+        <package android:name="com.whatsapp" />
+        <package android:name="com.tencent.mm" />
+        <package android:name="com.facebook.katana" />
         <package android:name="com.google.android.apps.healthdata" />
         <package android:name="com.android.vending" />
         <intent>
@@ -79,10 +86,14 @@
             <action android:name="android.intent.action.PROCESS_TEXT" />
             <data android:mimeType="text/plain" />
         </intent>
-        <!-- OS share sheet (Kakao / SMS / Telegram via ACTION_SEND). -->
+        <!-- OS share sheet (text targets via ACTION_SEND). -->
         <intent>
             <action android:name="android.intent.action.SEND" />
             <data android:mimeType="text/plain" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="*/*" />
         </intent>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />

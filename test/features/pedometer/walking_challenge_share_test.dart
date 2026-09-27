@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
+import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:share_run_challenge/screens/challenge_detail_screen.dart';
+import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,7 +47,8 @@ void main() {
     expect(WalkingChallengeShare.promoText, contains('SHARE'));
     expect(WalkingChallengeShare.promoText, contains('SRC'));
     expect(WalkingChallengeShare.promoText, contains(RegExp(r'[가-힣]')));
-    expect(WalkingChallengeShare.promoText.toLowerCase(), isNot(contains('kakao sdk')));
+    expect(WalkingChallengeShare.promoText.toLowerCase(),
+        isNot(contains('kakao sdk')));
     expect(WalkingChallengeShare.promoText, isNot(contains('오늘의 목표 달성')));
     expect(WalkingChallengeShare.subject, 'SRC 워킹챌린지');
     expect(WalkingChallengeShare.buttonTooltip, '공유');
@@ -256,5 +261,103 @@ void main() {
     expect(find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsNothing);
     expect(find.text('오늘의 목표 달성!'), findsNothing);
     expect(find.byKey(WalkingChallengeShare.buttonKey), findsOneWidget);
+  });
+
+  testWidgets('finish SNS share opens the system sheet, not the clipboard',
+      (tester) async {
+    ShareParams? sent;
+    final platformCalls = <MethodCall>[];
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      platformCalls.add(call);
+      return null;
+    });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const OnboardingRunResultScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text(AppStrings.runResultShare), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.runResultShare));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    const finishText = 'SRC 앱에서 8.35km 완주 후 기부에 동참했습니다! '
+        '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
+    expect(sent, isNotNull);
+    expect(sent!.text, finishText);
+    expect(sent!.subject, 'SRC 완주 기록');
+    expect(sent!.title, 'SRC 완주 기록');
+    expect(sent!.sharePositionOrigin, isNotNull);
+    expect(sent!.files, isNull);
+    expect(sent!.text, isNot(WalkingChallengeShare.promoText));
+    expect(find.byType(SnackBar), findsNothing);
+    expect(
+      platformCalls.where((call) => call.method.startsWith('Clipboard')),
+      isEmpty,
+    );
+  });
+
+  testWidgets('room paper-plane opens the system sheet with invite text',
+      (tester) async {
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const ChallengeDetailScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.byIcon(Icons.send_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    final roomTitle = AppStrings.challengeDetailTitle;
+    expect(sent, isNotNull);
+    expect(
+      sent!.text,
+      'SRC $roomTitle 방에 같이 도전해요!\n#SRC #ShareRunChallenge',
+    );
+    expect(sent!.subject, 'SRC 챌린지 초대');
+    expect(sent!.title, 'SRC 챌린지 초대');
+    expect(sent!.sharePositionOrigin, isNotNull);
+    expect(sent!.files, isNull);
+    expect(sent!.text, isNot(WalkingChallengeShare.promoText));
+    expect(sent!.text, isNot(WalkingChallengeShare.dailyGoalBragText));
   });
 }

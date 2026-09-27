@@ -17,12 +17,17 @@ abstract final class PedometerStepTruth {
   /// shade. A hard athletic day in the low tens of thousands still passes.
   static const plausibleDailyMax = 30000;
 
-  /// One sample this large, off a near-zero previous reading, is the boot
-  /// counter — not a walk. A real day crosses it across many samples.
-  static const sinceBootJumpMin = 10000;
+  /// Largest increase one TYPE_STEP_COUNTER sample may add.
+  ///
+  /// A real walk arrives as hardware batches of about 50–100 steps. One
+  /// jump bigger than that off a near-zero sample is the boot counter, not
+  /// steps since attach. On SM-A245N the first sample can be 0 and the next
+  /// the since-boot total (~2,000–9,999), which is under the old 10,000
+  /// cliff. A real day still crosses that total across many small samples.
+  static const hardwareBatchMax = 100;
 
   /// Previous reading at or below this is a fresh/zero baseline (0, then
-  /// ~86,626), not an anchor taken at the real since-boot total.
+  /// the since-boot total), not an anchor taken at that total.
   static const nearZeroBaselineMax = 1000;
 
   /// Already-daily counters above [plausibleDailyMax] (or negative) are
@@ -38,14 +43,11 @@ abstract final class PedometerStepTruth {
   ///
   /// [baseline] must be the previous sample, not the start-of-session anchor.
   /// A walk from 0 to 15,000 in small samples never looks like one jump.
-  static bool isSinceBootDump({
-    required int raw,
-    required int baseline,
-  }) {
+  static bool isSinceBootDump({required int raw, required int baseline}) {
     final jump = raw - baseline;
     if (jump <= 0) return false;
     if (jump > plausibleDailyMax) return true;
-    return baseline <= nearZeroBaselineMax && jump >= sinceBootJumpMin;
+    return baseline <= nearZeroBaselineMax && jump > hardwareBatchMax;
   }
 
   /// One TYPE_STEP_COUNTER sample.
@@ -91,8 +93,8 @@ abstract final class PedometerStepTruth {
   ///   the cumulative sensor. Offset `0` must not dump since-boot totals.
   ///   A small positive offset (yesterday's daily, QA init, or a rollover
   ///   that stored a step count instead of the hardware counter) is not that
-  ///   snapshot: `raw - offset` then sits tens of thousands above session /
-  ///   Health and is dropped.
+  ///   snapshot: `raw - offset` then sits more than one hardware batch above
+  ///   session / Health and is dropped.
   ///
   /// When [floorDayKey] and [todayKey] are both set and they differ, the
   /// floor, session, and offset still belong to the previous KST day.
@@ -107,9 +109,8 @@ abstract final class PedometerStepTruth {
     String? floorDayKey,
     String? todayKey,
   }) {
-    final staleDay = floorDayKey != null &&
-        todayKey != null &&
-        floorDayKey != todayKey;
+    final staleDay =
+        floorDayKey != null && todayKey != null && floorDayKey != todayKey;
     final base = staleDay ? 0 : healthBase;
     final delta = staleDay ? 0 : sessionDelta;
     final offset = staleDay ? 0 : stepOffset;
@@ -124,8 +125,10 @@ abstract final class PedometerStepTruth {
 
   /// `raw - offset` when [offset] is today's TYPE_STEP_COUNTER snapshot.
   ///
-  /// A gap of [sinceBootJumpMin] or more above the session/Health floor means
-  /// the offset is a daily total, not the hardware counter (86,626 − 450).
+  /// A gap of more than [hardwareBatchMax] above the session/Health floor
+  /// means the offset is not that snapshot, or [raw] is a since-boot dump.
+  /// The corroborated floor wins; a real Health day that already matches
+  /// still does.
   static int _dailyFromHardwareOffset({
     required int raw,
     required int offset,
@@ -133,7 +136,7 @@ abstract final class PedometerStepTruth {
   }) {
     if (offset <= 0 || raw < offset) return 0;
     final candidate = raw - offset;
-    if (candidate - sessionToday >= sinceBootJumpMin) return 0;
+    if (candidate - sessionToday > hardwareBatchMax) return 0;
     return clampDaily(candidate);
   }
 

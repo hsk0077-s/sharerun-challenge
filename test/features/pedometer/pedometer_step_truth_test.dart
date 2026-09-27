@@ -73,7 +73,17 @@ void main() {
       );
     });
 
-    test('450 steps after a hardware offset still count', () {
+    test('a hardware offset can add one batch, not an uncorroborated 450', () {
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86000 + PedometerStepTruth.hardwareBatchMax,
+          healthBase: 0,
+          sessionDelta: 0,
+          stepOffset: 86000,
+        ),
+        PedometerStepTruth.hardwareBatchMax,
+      );
+      // 450 above a zero floor is the same cliff as a since-boot dump.
       expect(
         PedometerStepTruth.fromSensorEvent(
           raw: 86450,
@@ -81,23 +91,38 @@ void main() {
           sessionDelta: 0,
           stepOffset: 86000,
         ),
+        0,
+      );
+      // Health that already matches the day still wins.
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86450,
+          healthBase: 450,
+          sessionDelta: 0,
+          stepOffset: 86000,
+        ),
         450,
       );
     });
 
-    test('athletic day under the ceiling still counts with a hardware offset', () {
-      expect(
-        PedometerStepTruth.fromSensorEvent(
-          raw: 86000 + 20000,
-          healthBase: 20000,
-          sessionDelta: 0,
-          stepOffset: 86000,
-        ),
-        20000,
-      );
-    });
+    test(
+      'athletic day under the ceiling still counts with a hardware offset',
+      () {
+        expect(
+          PedometerStepTruth.fromSensorEvent(
+            raw: 86000 + 20000,
+            healthBase: 20000,
+            sessionDelta: 0,
+            stepOffset: 86000,
+          ),
+          20000,
+        );
+      },
+    );
 
-    test('raw minus offset can raise the floor when Health is stale', () {
+    test('raw minus offset cannot outrun Health by more than one batch', () {
+      // 51,200 − 50,000 = 1,200 used to raise a stale floor of 80. That gap
+      // is a since-boot dump, not one hardware batch. The Health floor stays.
       expect(
         PedometerStepTruth.fromSensorEvent(
           raw: 51200,
@@ -105,7 +130,16 @@ void main() {
           sessionDelta: 0,
           stepOffset: 50000,
         ),
-        1200,
+        80,
+      );
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 50000 + 80 + PedometerStepTruth.hardwareBatchMax,
+          healthBase: 80,
+          sessionDelta: 0,
+          stepOffset: 50000,
+        ),
+        80 + PedometerStepTruth.hardwareBatchMax,
       );
     });
 
@@ -252,8 +286,65 @@ void main() {
     });
 
     test(
-        'single 20000 jump from zero is a dump; the same total walked gradually is not',
-        () {
+      'A24 zero then a few thousand since-boot rebases; five steps count',
+      () {
+        for (final raw in [2000, 9999]) {
+          final dump = PedometerStepTruth.acceptSensorDelta(
+            raw: raw,
+            baseline: 0,
+            previousRaw: 0,
+          );
+          expect(dump.rebase, isTrue, reason: 'raw=$raw');
+          expect(dump.delta, 0, reason: 'raw=$raw');
+        }
+
+        final oneBatch = PedometerStepTruth.acceptSensorDelta(
+          raw: PedometerStepTruth.hardwareBatchMax,
+          baseline: 0,
+          previousRaw: 0,
+        );
+        expect(oneBatch.rebase, isFalse);
+        expect(oneBatch.delta, PedometerStepTruth.hardwareBatchMax);
+
+        final overBatch = PedometerStepTruth.acceptSensorDelta(
+          raw: PedometerStepTruth.hardwareBatchMax + 1,
+          baseline: 0,
+          previousRaw: 0,
+        );
+        expect(overBatch.rebase, isTrue);
+        expect(overBatch.delta, 0);
+
+        final five = PedometerStepTruth.acceptSensorDelta(
+          raw: 5,
+          baseline: 0,
+          previousRaw: 0,
+        );
+        expect(five.rebase, isFalse);
+        expect(five.delta, 5);
+
+        const rebased = 2000;
+        final walked = PedometerStepTruth.acceptSensorDelta(
+          raw: rebased + 5,
+          baseline: rebased,
+          previousRaw: rebased,
+        );
+        expect(walked.rebase, isFalse);
+        expect(walked.delta, 5);
+
+        // Small stored offset + since-boot raw must not become today.
+        expect(
+          PedometerStepTruth.fromSensorEvent(
+            raw: 2000,
+            healthBase: 0,
+            sessionDelta: 5,
+            stepOffset: 50,
+          ),
+          5,
+        );
+      },
+    );
+
+    test('single 20000 jump from zero is a dump; the same total walked gradually is not', () {
       final dump = PedometerStepTruth.acceptSensorDelta(
         raw: 20000,
         baseline: 0,

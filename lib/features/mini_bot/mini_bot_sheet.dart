@@ -103,13 +103,14 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
 
   final _lines = <_MiniBotLine>[];
   MiniBotRead? _pending;
+  var _listening = false;
 
   @override
   void initState() {
     super.initState();
     _ownsVoice = widget.voice == null;
     _voice = widget.voice ?? FlutterTtsMiniBotVoice();
-    _speech = widget.speech ?? const MiniBotSpeechToTextHook();
+    _speech = widget.speech ?? MiniBotSpeechToTextHook();
     _lines.add(const _MiniBotLine(text: MiniBotCopy.greeting, fromUser: false));
     unawaited(_voice.speak(MiniBotCopy.greeting));
   }
@@ -118,6 +119,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   void dispose() {
     _input.dispose();
     _scroll.dispose();
+    unawaited(_speech.stop());
     if (_ownsVoice) {
       unawaited(_voice.dispose());
     } else {
@@ -140,6 +142,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   void _submit(String raw) {
     final text = raw.trim();
     if (text.isEmpty) return;
+    if (_listening) unawaited(_speech.stop());
     final read = MiniBotInterpreter.interpret(text);
     setState(() {
       _lines.add(_MiniBotLine(text: text, fromUser: true));
@@ -151,22 +154,53 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     _input.clear();
   }
 
+  void _reply(String text, {bool clearPending = false}) {
+    setState(() {
+      if (clearPending) _pending = null;
+      _lines.add(_MiniBotLine(text: text, fromUser: false));
+    });
+    unawaited(_voice.speak(text));
+    _scrollToEnd();
+  }
+
   Future<void> _onMic() async {
-    final heard = await _speech.listen();
-    if (!mounted) return;
-    final text = heard?.trim() ?? '';
-    if (text.isEmpty) {
-      setState(() {
-        _pending = null;
-        _lines.add(
-          const _MiniBotLine(text: MiniBotCopy.sttUnavailable, fromUser: false),
-        );
-      });
-      unawaited(_voice.speak(MiniBotCopy.sttUnavailable));
-      _scrollToEnd();
+    if (_listening) {
+      await _speech.stop();
       return;
     }
-    _submit(text);
+    setState(() => _listening = true);
+    await _voice.stop();
+    if (!mounted) return;
+    MiniBotListen heard;
+    try {
+      heard = await _speech.listen();
+    } catch (error) {
+      debugPrint('mini-bot mic: $error');
+      heard = const MiniBotListen.unavailable();
+    }
+    if (!mounted) return;
+    setState(() => _listening = false);
+    switch (heard.kind) {
+      case MiniBotListenKind.cancelled:
+        return;
+      case MiniBotListenKind.heard:
+        final text = heard.text?.trim() ?? '';
+        if (text.isEmpty) {
+          _reply(MiniBotCopy.sttEmpty, clearPending: true);
+          return;
+        }
+        _submit(text);
+        return;
+      case MiniBotListenKind.denied:
+        _reply(MiniBotCopy.micDenied, clearPending: true);
+        return;
+      case MiniBotListenKind.empty:
+        _reply(MiniBotCopy.sttEmpty, clearPending: true);
+        return;
+      case MiniBotListenKind.unavailable:
+        _reply(MiniBotCopy.sttUnavailable, clearPending: true);
+        return;
+    }
   }
 
   void _onCancel() {
@@ -386,9 +420,14 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                 children: [
                   IconButton.filledTonal(
                     key: const Key('mini-bot-mic'),
-                    tooltip: '말하기',
+                    tooltip: _listening ? '멈추기' : '말하기',
                     onPressed: _onMic,
-                    icon: const Icon(Icons.mic_rounded),
+                    icon: _listening
+                        ? const Icon(
+                            Icons.stop_rounded,
+                            key: Key('mini-bot-listening'),
+                          )
+                        : const Icon(Icons.mic_rounded),
                   ),
                   SizedBox(width: tokens.spacing.xs),
                   Expanded(
@@ -397,8 +436,10 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       controller: _input,
                       textInputAction: TextInputAction.send,
                       onSubmitted: _submit,
-                      decoration: const InputDecoration(
-                        hintText: '한글로 말해 주세요',
+                      decoration: InputDecoration(
+                        hintText: _listening
+                            ? MiniBotCopy.listening
+                            : '한글로 말해 주세요',
                         isDense: true,
                       ),
                     ),

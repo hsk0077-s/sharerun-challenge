@@ -68,9 +68,18 @@ abstract final class MiniBotCopy {
       '그 말은 아직 연결되지 않았어요. '
       '앱 소개, 챌린지 참가, 챌린지 로비, 심폐소생권 중에서 말해 주세요.';
 
+  static const micDenied =
+      '마이크 권한이 없어 음성을 듣지 못했어요. '
+      '한글로 입력하거나 아래 버튼을 눌러 주세요.';
+
   static const sttUnavailable =
-      '음성 인식은 다음 단계에서 연결돼요. '
-      '지금은 한글로 입력해 주세요. 말하기 버튼은 그 연결을 위한 자리예요.';
+      '지금은 음성 인식을 쓸 수 없어요. '
+      '한글로 입력하거나 아래 버튼을 눌러 주세요.';
+
+  static const sttEmpty =
+      '말씀을 알아듣지 못했어요. 다시 말하거나 한글로 입력해 주세요.';
+
+  static const listening = '듣는 중이에요. 말씀해 주세요.';
 
   static String executed(MiniBotDestination destination) {
     return switch (destination) {

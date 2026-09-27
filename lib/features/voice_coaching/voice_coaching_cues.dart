@@ -75,6 +75,24 @@ abstract final class VoiceCoachingCues {
     en: 'Nice. Keep your breath.',
   );
 
+  /// Fixed slow-down bound for the challenge-tracker BPM.
+  ///
+  /// There is no age, resting HR, or max HR on the coach, so this is not a
+  /// training zone. Speak only when the BPM already shown in the run
+  /// (`RunTelemetry.currentHeartRate`) is inside the plausible band and at
+  /// or above [highHeartRateBpm]. Re-arm only after it falls to
+  /// [highHeartRateRearmBpm] so a 169/171 flutter does not repeat the line.
+  static const minPlausibleHeartRateBpm = 30;
+  static const highHeartRateRearmBpm = 160;
+  static const highHeartRateBpm = 170;
+  static const maxPlausibleHeartRateBpm = 220;
+
+  static const runHighHeartRate = VoiceCue(
+    id: 'run.hr.high',
+    ko: '심박이 높아요. 속도를 줄여요.',
+    en: 'Heart rate is high. Ease off.',
+  );
+
   static const walkStepMilestones = <int>[1000, 3000, 5000, 8000, 10000];
 
   static VoiceCue walkSteps(int steps) {

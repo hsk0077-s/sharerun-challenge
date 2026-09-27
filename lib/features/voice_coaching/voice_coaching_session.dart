@@ -9,6 +9,7 @@ class VoiceCoachingSession {
   var _harvestSpoken = false;
   var _nearFinishSpoken = false;
   var _lastRunElapsedSeconds = 0;
+  var _highHeartRateArmed = true;
 
   VoiceCue? walkingOpened() {
     if (_walkWelcomeSpoken) return null;
@@ -84,6 +85,34 @@ class VoiceCoachingSession {
     return null;
   }
 
+  /// Slow-down line when a plausible BPM is at or above the fixed bound.
+  ///
+  /// Claims the cue synchronously so overlapping telemetry ticks cannot
+  /// both take it. [releaseHighHeartRate] gives it back when the gate
+  /// does not speak (off, mute, or the 45s gap). A reading at or below
+  /// [VoiceCoachingCues.highHeartRateRearmBpm] arms the next rise.
+  /// Null and implausible BPM leave the latch alone.
+  VoiceCue? claimHighHeartRate(int? bpm) {
+    if (bpm == null ||
+        bpm < VoiceCoachingCues.minPlausibleHeartRateBpm ||
+        bpm > VoiceCoachingCues.maxPlausibleHeartRateBpm) {
+      return null;
+    }
+    if (bpm <= VoiceCoachingCues.highHeartRateRearmBpm) {
+      _highHeartRateArmed = true;
+      return null;
+    }
+    if (bpm < VoiceCoachingCues.highHeartRateBpm || !_highHeartRateArmed) {
+      return null;
+    }
+    _highHeartRateArmed = false;
+    return VoiceCoachingCues.runHighHeartRate;
+  }
+
+  void releaseHighHeartRate() {
+    _highHeartRateArmed = true;
+  }
+
   /// One short pep each [VoiceCoachingCues.runEncourageEverySeconds].
   /// Crossing several buckets in one sample still returns a single line.
   VoiceCue? crossedSparseEncouragement(int elapsedSeconds) {
@@ -108,5 +137,6 @@ class VoiceCoachingSession {
     _runWelcomeSpoken = false;
     _nearFinishSpoken = false;
     _lastRunElapsedSeconds = 0;
+    _highHeartRateArmed = true;
   }
 }

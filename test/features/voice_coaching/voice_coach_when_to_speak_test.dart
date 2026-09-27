@@ -179,7 +179,7 @@ void main() {
     ]);
   });
 
-  test('Phase 3a ids map to distance or encouragement; HR/hill/rank stay stubbed', () {
+  test('distance and pep ids map; high-HR maps; hill/rank stay stubbed', () {
     expect(
       voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runKm(3).id),
       VoiceCoachCueKind.distance,
@@ -207,6 +207,10 @@ void main() {
     expect(
       voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runEncourage.id),
       VoiceCoachCueKind.encouragement,
+    );
+    expect(
+      voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runHighHeartRate.id),
+      VoiceCoachCueKind.heartRate,
     );
     expect(voiceCoachCueKindForPhase3aId('hr.high'), isNull);
     expect(voiceCoachCueKindForPhase3aId('course.hill'), isNull);

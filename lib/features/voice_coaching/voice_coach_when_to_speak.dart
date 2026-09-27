@@ -2,22 +2,21 @@ import 'voice_coaching_cues.dart';
 
 /// Phase 4 foundation — **not** the full pro-trainer coach.
 ///
-/// Decides *whether* a cue may speak *now*. Cue copy, watch/HR streams,
-/// course elevation, and race-lobby rank are later slices.
+/// Decides *whether* a cue may speak *now*. Course elevation and race-lobby
+/// rank are still later slices. The high-HR line is bound separately.
 ///
-/// [VoiceCoachingController.speakCue] consults this gate. HR / hill / rank
-/// kinds stay unbound — no sensor or lobby feeds here.
+/// [VoiceCoachingController.speakCue] consults this gate. Hill / rank kinds
+/// stay unbound — no grade or live-place feed here.
 enum VoiceCoachCueKind {
-  /// Watch / HR: slow down if heart rate is high.
-  /// Stub: no HR / watch stream is consumed in this PR.
+  /// Watch / HR: slow down when challenge-tracker BPM is clearly high.
   heartRate,
 
   /// Course: hill ahead — conserve.
-  /// Stub: no elevation / course feed in this PR.
+  /// Still unbound: route points are lat/lon only (no altitude or grade).
   hill,
 
   /// Race lobby ranking: place among N.
-  /// Stub: no lobby rank bind in this PR.
+  /// Still unbound: no live place feed during the run.
   rank,
 
   /// Distance context (km split, step milestone, daily goal).
@@ -207,9 +206,12 @@ class VoiceCoachWhenToSpeak {
   }
 }
 
-/// Maps existing Phase 3a cue ids so a later bind stays mechanical.
-/// HR / hill / rank ids do not exist yet — those stay stubbed.
+/// Maps cue ids onto the priority gate.
+/// Hill / rank ids do not exist yet — those stay stubbed.
 VoiceCoachCueKind? voiceCoachCueKindForPhase3aId(String id) {
+  if (id == VoiceCoachingCues.runHighHeartRate.id) {
+    return VoiceCoachCueKind.heartRate;
+  }
   if (id.startsWith('run.km.') ||
       id.startsWith('walk.steps.') ||
       id == VoiceCoachingCues.walkGoal.id ||

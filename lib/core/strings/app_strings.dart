@@ -154,10 +154,9 @@ abstract final class AppStrings {
   static const lobbyRoom1Sub = '참가자 12/20 · BEP: 283/400';
   static const lobbyRoom2Title = '크루 대항 주말 10K 매치 🔥';
   static const lobbyRoom2Sub = '참가 크루 8팀 · 주말 오전 09:00 시작';
-  static const lobbyRoom3Title = '초보 1km 챌린지 (입장 제한)';
-  static const lobbyRoom3Sub = '참가비: 30,000 SHARE · 실버 등급 이상 필요';
+  static const lobbyRoom3Title = '초보 1km 챌린지';
+  static const lobbyRoom3Sub = '참가비: 30,000 SHARE';
   static const lobbyEnterRoom = '입장하기';
-  static const lobbyGradeBlocked = '하위 등급 차단';
 
   // ── Create Challenge Room (Screen 8) ──────────────────────────────
   static const createRoomScreenTitle = '챌린지 방 개설하기';

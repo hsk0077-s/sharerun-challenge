@@ -350,7 +350,24 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                 },
               ),
             ),
-            if (_pending != null)
+            if (_pending != null) ...[
+              if (_pending!.amountLabel != null)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    tokens.spacing.md,
+                    0,
+                    tokens.spacing.md,
+                    tokens.spacing.xs,
+                  ),
+                  child: Text(
+                    _pending!.amountLabel!,
+                    key: const Key('mini-bot-amount'),
+                    style: textTheme.labelMedium?.copyWith(
+                      color: tokens.colors.ink,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: tokens.spacing.md),
                 child: Row(
@@ -367,12 +384,13 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       child: FilledButton(
                         key: const Key('mini-bot-confirm'),
                         onPressed: _onConfirm,
-                        child: const Text('이동하기'),
+                        child: Text(_pending!.confirmLabel),
                       ),
                     ),
                   ],
                 ),
               ),
+            ],
             Padding(
               padding: EdgeInsets.fromLTRB(
                 tokens.spacing.md,
@@ -385,26 +403,12 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _Chip(
-                      key: const Key('mini-bot-chip-intro'),
-                      label: MiniBotPrompts.intro,
-                      onTap: () => _submit(MiniBotPrompts.intro),
-                    ),
-                    _Chip(
-                      key: const Key('mini-bot-chip-join'),
-                      label: MiniBotPrompts.joinBeginner,
-                      onTap: () => _submit(MiniBotPrompts.joinBeginner),
-                    ),
-                    _Chip(
-                      key: const Key('mini-bot-chip-lobby'),
-                      label: MiniBotPrompts.joinLobby,
-                      onTap: () => _submit(MiniBotPrompts.joinLobby),
-                    ),
-                    _Chip(
-                      key: const Key('mini-bot-chip-cpr'),
-                      label: MiniBotPrompts.cpr,
-                      onTap: () => _submit(MiniBotPrompts.cpr),
-                    ),
+                    for (final chip in MiniBotPrompts.chips)
+                      _Chip(
+                        key: Key('mini-bot-chip-${chip.id}'),
+                        label: chip.label,
+                        onTap: () => _submit(chip.label),
+                      ),
                   ],
                 ),
               ),
@@ -437,9 +441,8 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       textInputAction: TextInputAction.send,
                       onSubmitted: _submit,
                       decoration: InputDecoration(
-                        hintText: _listening
-                            ? MiniBotCopy.listening
-                            : '한글로 말해 주세요',
+                        hintText:
+                            _listening ? MiniBotCopy.listening : '한글로 말해 주세요',
                         isDense: true,
                       ),
                     ),
@@ -494,9 +497,7 @@ class _Bubble extends StatelessWidget {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final align = line.fromUser ? Alignment.centerRight : Alignment.centerLeft;
-    final bg = line.fromUser
-        ? tokens.colors.primary
-        : tokens.colors.canvas;
+    final bg = line.fromUser ? tokens.colors.primary : tokens.colors.canvas;
     final fg = line.fromUser ? tokens.colors.onPrimary : tokens.colors.ink;
     return Align(
       alignment: align,

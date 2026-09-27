@@ -5,8 +5,13 @@ import 'package:go_router/go_router.dart';
 import '../../app/router/route_names.dart';
 import '../../core/navigation/app_route_nav.dart';
 import '../../core/navigation/dashboard_tab_navigation.dart';
+import '../../screens/battle_pass_screen.dart';
+import '../../screens/brand_sponsor_screen.dart';
 import '../../screens/challenge_detail_screen.dart';
+import '../../screens/in_app_billing_screen.dart';
+import '../../screens/personal_sponsor_screen.dart';
 import '../../screens/store_screen.dart';
+import '../../screens/subscription_management_screen.dart';
 import '../shop/providers/shop_tab_provider.dart';
 import 'mini_bot_intent.dart';
 
@@ -17,8 +22,16 @@ abstract final class MiniBotRoutes {
       MiniBotDestination.beginnerRoom =>
         RouteNames.challengeDetailForRoom(RouteNames.beginner1kmRoomId),
       MiniBotDestination.challengeLobby => RouteNames.tournament,
-      MiniBotDestination.cprStore =>
+      MiniBotDestination.cprStore ||
+      MiniBotDestination.safeGuardStore =>
         RouteNames.storeWithFocus(StoreFocus.items.name),
+      MiniBotDestination.donateStore =>
+        RouteNames.storeWithFocus(StoreFocus.donate.name),
+      MiniBotDestination.shareCharge => RouteNames.inAppBilling,
+      MiniBotDestination.personalSponsor => RouteNames.personalSponsor,
+      MiniBotDestination.brandSponsor => RouteNames.brandSponsor,
+      MiniBotDestination.subscription => RouteNames.subscriptionManagement,
+      MiniBotDestination.battlePass => RouteNames.battlePass,
       MiniBotDestination.none => null,
     };
   }
@@ -43,14 +56,46 @@ abstract final class MiniBotNavigator {
       case MiniBotDestination.challengeLobby:
         DashboardTabNavigation.go(context, DashboardTabNavigation.challenge);
       case MiniBotDestination.cprStore:
-        _openCprStore(context);
+      case MiniBotDestination.safeGuardStore:
+        _openStore(context, StoreFocus.items);
+      case MiniBotDestination.donateStore:
+        _openStore(context, StoreFocus.donate);
+      case MiniBotDestination.shareCharge:
+        _push(
+          context,
+          RouteNames.inAppBilling,
+          (_) => const InAppBillingScreen(),
+        );
+      case MiniBotDestination.personalSponsor:
+        _push(
+          context,
+          RouteNames.personalSponsor,
+          (_) => const PersonalSponsorScreen(),
+        );
+      case MiniBotDestination.brandSponsor:
+        _push(
+          context,
+          RouteNames.brandSponsor,
+          (_) => const BrandSponsorScreen(),
+        );
+      case MiniBotDestination.subscription:
+        _push(
+          context,
+          RouteNames.subscriptionManagement,
+          (_) => const SubscriptionManagementScreen(),
+        );
+      case MiniBotDestination.battlePass:
+        _push(
+          context,
+          RouteNames.battlePass,
+          (_) => const BattlePassScreen(),
+        );
     }
   }
 
-  /// Same store entry the home diamond badge already uses. The CPR card
-  /// lives in the items section. This does not debit DIA or call purchase.
-  static void _openCprStore(BuildContext context) {
-    const focus = StoreFocus.items;
+  /// Same store entry the home diamond badge already uses.
+  /// Opens the items or donate section. Does not debit or call purchase.
+  static void _openStore(BuildContext context, StoreFocus focus) {
     ProviderScope.containerOf(context)
         .read(storeFocusProvider.notifier)
         .setFocus(focus);
@@ -59,7 +104,7 @@ abstract final class MiniBotNavigator {
       try {
         context.pushNamed(
           RouteNames.store,
-          queryParameters: const {'focus': 'items'},
+          queryParameters: {'focus': focus.name},
         );
         return;
       } catch (_) {
@@ -71,7 +116,19 @@ abstract final class MiniBotNavigator {
       context,
       RouteNames.storeWithFocus(focus.name),
       extra: focus,
-      materialBuilder: (_) => const StoreScreen(initialFocus: focus),
+      materialBuilder: (_) => StoreScreen(initialFocus: focus),
+    );
+  }
+
+  static void _push(
+    BuildContext context,
+    String location,
+    WidgetBuilder builder,
+  ) {
+    AppRouteNav.push<void>(
+      context,
+      location,
+      materialBuilder: builder,
     );
   }
 }

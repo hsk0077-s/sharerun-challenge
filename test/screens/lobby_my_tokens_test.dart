@@ -115,6 +115,7 @@ void main() {
     await pumpSized(tester, const ChallengeLobbyScreen());
 
     expect(find.text(AppStrings.lobbyTitle), findsOneWidget);
+    expect(find.byKey(const Key('lobby-header-logo')), findsOneWidget);
     expect(find.text(AppStrings.lobbyCreateRoom), findsOneWidget);
     expect(find.text(AppStrings.lobbyBattlePassCta), findsOneWidget);
     expect(find.text(AppStrings.lobbySponsorRoomTitle), findsOneWidget);

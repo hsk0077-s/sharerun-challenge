@@ -156,6 +156,15 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Image.asset(
+                      'assets/images/sharerun_logo.png',
+                      key: const Key('lobby-header-logo'),
+                      width: 72,
+                      height: 72,
+                      fit: BoxFit.contain,
+                      semanticLabel: 'ShareRun',
+                    ),
+                    SizedBox(height: tokens.spacing.sm),
                     Text(
                       AppStrings.lobbyTitle,
                       style: textTheme.headlineSmall?.copyWith(

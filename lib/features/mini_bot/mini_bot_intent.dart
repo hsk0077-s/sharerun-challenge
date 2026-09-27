@@ -101,22 +101,24 @@ abstract final class MiniBotPrompts {
   static const donate = '후원';
   static const safeGuard = '세이프가드';
   static const charge = 'SHARE 충전';
-  static const sponsor = '스폰서·러너 후원';
+  static const sponsor = '스폰서';
+  static const runnerSponsor = '러너 후원';
   static const subscription = '구독';
   static const battlePass = '배틀패스';
 
-  /// Spend chips first, then the existing guide/lobby chips.
+  /// Guide chips first, then monetization. Confirm still opens the screen only.
   static const chips = <MiniBotChip>[
-    MiniBotChip(id: 'donate', label: donate),
-    MiniBotChip(id: 'cpr', label: cpr),
-    MiniBotChip(id: 'safeguard', label: safeGuard),
-    MiniBotChip(id: 'charge', label: charge),
-    MiniBotChip(id: 'join', label: joinBeginner),
-    MiniBotChip(id: 'sponsor', label: sponsor),
-    MiniBotChip(id: 'subscription', label: subscription),
-    MiniBotChip(id: 'battle-pass', label: battlePass),
     MiniBotChip(id: 'intro', label: intro),
     MiniBotChip(id: 'lobby', label: joinLobby),
+    MiniBotChip(id: 'donate', label: donate),
+    MiniBotChip(id: 'brand', label: sponsor),
+    MiniBotChip(id: 'runner', label: runnerSponsor),
+    MiniBotChip(id: 'join', label: joinBeginner),
+    MiniBotChip(id: 'charge', label: charge),
+    MiniBotChip(id: 'cpr', label: cpr),
+    MiniBotChip(id: 'safeguard', label: safeGuard),
+    MiniBotChip(id: 'subscription', label: subscription),
+    MiniBotChip(id: 'battle-pass', label: battlePass),
   ];
 }
 
@@ -188,8 +190,8 @@ abstract final class MiniBotCopy {
   static const cancelled = '알겠어요. 이동은 취소했어요.';
 
   static const unknown = '그 말은 아직 연결되지 않았어요. '
-      '후원, 심폐소생권, 세이프가드, SHARE 충전, 챌린지 참가, '
-      '스폰서·러너 후원, 구독, 배틀패스, 앱 소개, 챌린지 로비 중에서 말해 주세요.';
+      '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
+      'SHARE 충전, 심폐소생권, 세이프가드, 구독, 배틀패스 중에서 말해 주세요.';
 
   static const micDenied = '마이크 권한이 없어 음성을 듣지 못했어요. '
       '한글로 입력하거나 아래 버튼을 눌러 주세요.';
@@ -274,20 +276,20 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    if (text.contains('브랜드')) {
-      return MiniBotRead(
-        intent: MiniBotIntent.brandSponsor,
-        destination: MiniBotDestination.brandSponsor,
-        reply: MiniBotCopy.brand,
-        needsConfirm: true,
-      );
-    }
-
     if (_hasRunnerSponsor(text)) {
       return MiniBotRead(
         intent: MiniBotIntent.sponsorRunner,
         destination: MiniBotDestination.personalSponsor,
         reply: MiniBotCopy.sponsor,
+        needsConfirm: true,
+      );
+    }
+
+    if (_hasBrandSponsor(text)) {
+      return MiniBotRead(
+        intent: MiniBotIntent.brandSponsor,
+        destination: MiniBotDestination.brandSponsor,
+        reply: MiniBotCopy.brand,
         needsConfirm: true,
       );
     }
@@ -378,9 +380,13 @@ abstract final class MiniBotInterpreter {
   }
 
   static bool _hasRunnerSponsor(String text) {
-    return text.contains('스폰서') ||
-        text.contains('천사') ||
+    return text.contains('천사') ||
         (text.contains('러너') && text.contains('후원'));
+  }
+
+  /// `스폰서` alone is the brand screen. Runner phrases are matched first.
+  static bool _hasBrandSponsor(String text) {
+    return text.contains('브랜드') || text.contains('스폰서');
   }
 
   static bool _hasDonate(String text) {

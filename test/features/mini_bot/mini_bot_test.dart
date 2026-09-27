@@ -178,11 +178,18 @@ void main() {
     expect(join.amountLabel, '30,000 SHARE');
     expect(join.reply, contains('참가는 확정되지 않아요'));
 
-    final sponsor = MiniBotInterpreter.interpret('스폰서·러너 후원');
-    expect(sponsor.intent, MiniBotIntent.sponsorRunner);
-    expect(sponsor.destination, MiniBotDestination.personalSponsor);
-    expect(sponsor.confirmLabel, '후원하기');
-    expect(sponsor.amountLabel, '50,000 SHARE');
+    final runner = MiniBotInterpreter.interpret('러너 후원');
+    expect(runner.intent, MiniBotIntent.sponsorRunner);
+    expect(runner.destination, MiniBotDestination.personalSponsor);
+    expect(runner.confirmLabel, '후원하기');
+    expect(runner.amountLabel, '50,000 SHARE');
+    expect(runner.reply, contains('후원이 끝나지 않아요'));
+
+    final sponsor = MiniBotInterpreter.interpret('스폰서');
+    expect(sponsor.intent, MiniBotIntent.brandSponsor);
+    expect(sponsor.destination, MiniBotDestination.brandSponsor);
+    expect(sponsor.confirmLabel, '참가하기');
+    expect(sponsor.reply, contains('참가하지 않아요'));
 
     final subscription = MiniBotInterpreter.interpret('정기 후원');
     expect(subscription.destination, MiniBotDestination.subscription);
@@ -203,20 +210,27 @@ void main() {
     expect(
       MiniBotPrompts.chips.map((chip) => chip.label).toList(),
       [
-        '후원',
-        '심폐소생권',
-        '세이프가드',
-        'SHARE 충전',
-        '챌린지 참가',
-        '스폰서·러너 후원',
-        '구독',
-        '배틀패스',
         '앱 소개',
         '챌린지 로비',
+        '후원',
+        '스폰서',
+        '러너 후원',
+        '챌린지 참가',
+        'SHARE 충전',
+        '심폐소생권',
+        '세이프가드',
+        '구독',
+        '배틀패스',
       ],
     );
     for (final chip in MiniBotPrompts.chips) {
       final read = MiniBotInterpreter.interpret(chip.label);
+      if (chip.id == 'brand') {
+        expect(read.destination, MiniBotDestination.brandSponsor);
+      }
+      if (chip.id == 'runner') {
+        expect(read.destination, MiniBotDestination.personalSponsor);
+      }
       if (chip.id == 'intro') {
         expect(read.awaitsConfirm, isFalse);
       } else {
@@ -250,7 +264,16 @@ void main() {
     expect(voice.spoken, contains(MiniBotCopy.greeting));
     expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
 
-    await tester.tap(find.byKey(const Key('mini-bot-chip-cpr')));
+    final cprChip = find.byKey(const Key('mini-bot-chip-cpr'));
+    await tester.scrollUntilVisible(
+      cprChip,
+      160,
+      scrollable: find.descendant(
+        of: find.byKey(const Key('mini-bot-chips')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(cprChip);
     await tester.pump();
 
     expect(find.text(MiniBotCopy.cpr), findsOneWidget);
@@ -502,7 +525,7 @@ void main() {
     );
   });
 
-  testWidgets('donation chip recommends first and cancel spends nothing',
+  testWidgets('donation chip recommends a screen and cancel spends nothing',
       (tester) async {
     MiniBotRead? executed;
     await tester.pumpWidget(
@@ -522,8 +545,10 @@ void main() {
         .widgetList<ActionChip>(find.byType(ActionChip))
         .map((chip) => (chip.label as Text).data)
         .toList();
-    expect(labels.first, '후원');
-    expect(labels[1], '심폐소생권');
+    expect(labels.first, '앱 소개');
+    expect(labels[1], '챌린지 로비');
+    expect(labels[3], '스폰서');
+    expect(labels[4], '러너 후원');
 
     await tester.tap(find.byKey(const Key('mini-bot-chip-donate')));
     await tester.pump();

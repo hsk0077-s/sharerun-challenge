@@ -10,6 +10,12 @@ class VoiceCoachingSession {
   var _nearFinishSpoken = false;
   var _lastRunElapsedSeconds = 0;
   var _highHeartRateArmed = true;
+  var _highHeartRateSpoken = false;
+  var _recoveryDue = false;
+  var _recoveryClaimed = false;
+  var _steadyHeartRateArmed = true;
+  var _steadyHeartRateClaimed = false;
+  var _heartRateClaim = _HeartRateClaim.none;
 
   VoiceCue? walkingOpened() {
     if (_walkWelcomeSpoken) return null;
@@ -85,32 +91,101 @@ class VoiceCoachingSession {
     return null;
   }
 
-  /// Slow-down line when a plausible BPM is at or above the fixed bound.
+  /// One heart-rate line for this sample, or null.
   ///
-  /// Claims the cue synchronously so overlapping telemetry ticks cannot
-  /// both take it. [releaseHighHeartRate] gives it back when the gate
-  /// does not speak (off, mute, or the 45s gap). A reading at or below
-  /// [VoiceCoachingCues.highHeartRateRearmBpm] arms the next rise.
-  /// Null and implausible BPM leave the latch alone.
-  VoiceCue? claimHighHeartRate(int? bpm) {
+  /// Plausible band only. Null and out-of-range BPM leave every latch
+  /// alone. The slow-down is claimed so two ticks cannot both take it.
+  /// [releaseHeartRateCue] gives a claim back when the gate does not speak.
+  /// [confirmHeartRateCueSpoken] is what arms the recovered line — a
+  /// slow-down that stayed silent does not say the heart rate came down.
+  VoiceCue? claimHeartRateCue(int? bpm) {
     if (bpm == null ||
         bpm < VoiceCoachingCues.minPlausibleHeartRateBpm ||
         bpm > VoiceCoachingCues.maxPlausibleHeartRateBpm) {
       return null;
     }
+
+    if (bpm >= VoiceCoachingCues.highHeartRateBpm) {
+      _recoveryDue = false;
+      _recoveryClaimed = false;
+      _steadyHeartRateArmed = false;
+      if (!_highHeartRateArmed) return null;
+      _highHeartRateArmed = false;
+      _heartRateClaim = _HeartRateClaim.high;
+      return VoiceCoachingCues.runHighHeartRate;
+    }
+
     if (bpm <= VoiceCoachingCues.highHeartRateRearmBpm) {
       _highHeartRateArmed = true;
-      return null;
+      if (_highHeartRateSpoken) {
+        _highHeartRateSpoken = false;
+        _recoveryDue = true;
+      }
+    } else if (_recoveryDue) {
+      // Climbed out of the rearm band before the recovered line spoke.
+      _recoveryDue = false;
+      _recoveryClaimed = false;
     }
-    if (bpm < VoiceCoachingCues.highHeartRateBpm || !_highHeartRateArmed) {
-      return null;
+
+    if (_recoveryDue && !_recoveryClaimed) {
+      _recoveryClaimed = true;
+      _heartRateClaim = _HeartRateClaim.recovered;
+      return VoiceCoachingCues.runHeartRateRecovered;
     }
-    _highHeartRateArmed = false;
-    return VoiceCoachingCues.runHighHeartRate;
+
+    final inHighEpisode = !_highHeartRateArmed;
+    if (!inHighEpisode &&
+        !_recoveryDue &&
+        bpm <= VoiceCoachingCues.steadyHeartRateRearmBpm) {
+      _steadyHeartRateArmed = true;
+      _steadyHeartRateClaimed = false;
+    }
+
+    if (!inHighEpisode &&
+        !_recoveryDue &&
+        bpm >= VoiceCoachingCues.steadyHeartRateBpm &&
+        _steadyHeartRateArmed &&
+        !_steadyHeartRateClaimed) {
+      _steadyHeartRateClaimed = true;
+      _heartRateClaim = _HeartRateClaim.steady;
+      return VoiceCoachingCues.runHeartRateSteady;
+    }
+    return null;
   }
 
-  void releaseHighHeartRate() {
-    _highHeartRateArmed = true;
+  /// The gate spoke [claimHeartRateCue]'s last cue.
+  void confirmHeartRateCueSpoken() {
+    switch (_heartRateClaim) {
+      case _HeartRateClaim.high:
+        _highHeartRateSpoken = true;
+        _steadyHeartRateArmed = false;
+      case _HeartRateClaim.recovered:
+        _recoveryDue = false;
+        _recoveryClaimed = false;
+        _steadyHeartRateArmed = false;
+      case _HeartRateClaim.steady:
+        _steadyHeartRateArmed = false;
+        _steadyHeartRateClaimed = false;
+      case _HeartRateClaim.none:
+        break;
+    }
+    _heartRateClaim = _HeartRateClaim.none;
+  }
+
+  /// The gate did not speak the last claim. The same band can try again.
+  void releaseHeartRateCue() {
+    switch (_heartRateClaim) {
+      case _HeartRateClaim.high:
+        _highHeartRateArmed = true;
+        _highHeartRateSpoken = false;
+      case _HeartRateClaim.recovered:
+        _recoveryClaimed = false;
+      case _HeartRateClaim.steady:
+        _steadyHeartRateClaimed = false;
+      case _HeartRateClaim.none:
+        break;
+    }
+    _heartRateClaim = _HeartRateClaim.none;
   }
 
   /// One short pep each [VoiceCoachingCues.runEncourageEverySeconds].
@@ -138,5 +213,13 @@ class VoiceCoachingSession {
     _nearFinishSpoken = false;
     _lastRunElapsedSeconds = 0;
     _highHeartRateArmed = true;
+    _highHeartRateSpoken = false;
+    _recoveryDue = false;
+    _recoveryClaimed = false;
+    _steadyHeartRateArmed = true;
+    _steadyHeartRateClaimed = false;
+    _heartRateClaim = _HeartRateClaim.none;
   }
 }
+
+enum _HeartRateClaim { none, high, steady, recovered }

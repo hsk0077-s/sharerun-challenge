@@ -137,35 +137,101 @@ void main() {
       '200미터 남았어요.',
     );
     expect(session.crossedSparseEncouragement(180)?.ko, '좋아요. 호흡 유지해요.');
-    session.claimHighHeartRate(180);
+    session.claimHeartRateCue(180);
     session.resetRun();
-    expect(session.claimHighHeartRate(180)?.id, VoiceCoachingCues.runHighHeartRate.id);
+    expect(session.claimHeartRateCue(180)?.id, VoiceCoachingCues.runHighHeartRate.id);
   });
 
   test('high heart rate speaks once when BPM crosses 170', () {
     final session = VoiceCoachingSession();
-    expect(session.claimHighHeartRate(null), isNull);
-    expect(session.claimHighHeartRate(169), isNull);
-    expect(session.claimHighHeartRate(29), isNull);
-    expect(session.claimHighHeartRate(221), isNull);
-    expect(session.claimHighHeartRate(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
-    expect(session.claimHighHeartRate(185), isNull);
+    expect(session.claimHeartRateCue(null), isNull);
+    expect(session.claimHeartRateCue(154), isNull);
+    expect(session.claimHeartRateCue(29), isNull);
+    expect(session.claimHeartRateCue(221), isNull);
+    expect(session.claimHeartRateCue(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
+    expect(session.claimHeartRateCue(185), isNull);
   });
 
   test('heart rate re-arms only after a plausible drop to 160', () {
     final session = VoiceCoachingSession();
-    expect(session.claimHighHeartRate(175)?.ko, '심박이 높아요. 속도를 줄여요.');
-    expect(session.claimHighHeartRate(165), isNull);
-    expect(session.claimHighHeartRate(175), isNull);
-    expect(session.claimHighHeartRate(160), isNull);
-    expect(session.claimHighHeartRate(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
+    expect(session.claimHeartRateCue(175)?.ko, '심박이 높아요. 속도를 줄여요.');
+    expect(session.claimHeartRateCue(165), isNull);
+    expect(session.claimHeartRateCue(175), isNull);
+    expect(session.claimHeartRateCue(160), isNull);
+    expect(session.claimHeartRateCue(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
   });
 
   test('releasing an unspoken heart-rate claim lets the next sample take it', () {
     final session = VoiceCoachingSession();
-    expect(session.claimHighHeartRate(180), isNotNull);
-    session.releaseHighHeartRate();
-    expect(session.claimHighHeartRate(180)?.en, VoiceCoachingCues.runHighHeartRate.en);
+    expect(session.claimHeartRateCue(180), isNotNull);
+    session.releaseHeartRateCue();
+    expect(session.claimHeartRateCue(180)?.en, VoiceCoachingCues.runHighHeartRate.en);
+  });
+
+  test('steady band speaks once from 155 and rearms only at 145', () {
+    final session = VoiceCoachingSession();
+    expect(session.claimHeartRateCue(154), isNull);
+    expect(session.claimHeartRateCue(155)?.ko, '심박이 좋아요. 이 페이스 유지해요.');
+    session.confirmHeartRateCueSpoken();
+    expect(session.claimHeartRateCue(168), isNull);
+    expect(session.claimHeartRateCue(146), isNull);
+    expect(session.claimHeartRateCue(145), isNull);
+    expect(session.claimHeartRateCue(155)?.id, VoiceCoachingCues.runHeartRateSteady.id);
+  });
+
+  test('recovered line waits until the slow-down was spoken', () {
+    final unspoken = VoiceCoachingSession();
+    expect(unspoken.claimHeartRateCue(172)?.id, VoiceCoachingCues.runHighHeartRate.id);
+    expect(unspoken.claimHeartRateCue(158), isNull);
+    expect(unspoken.claimHeartRateCue(172)?.id, VoiceCoachingCues.runHighHeartRate.id);
+
+    final session = VoiceCoachingSession();
+    expect(session.claimHeartRateCue(172)?.id, VoiceCoachingCues.runHighHeartRate.id);
+    session.confirmHeartRateCueSpoken();
+    expect(session.claimHeartRateCue(161), isNull);
+    expect(session.claimHeartRateCue(160)?.ko, '심박이 내려왔어요. 페이스 유지해요.');
+    session.confirmHeartRateCueSpoken();
+    expect(session.claimHeartRateCue(150), isNull);
+    expect(session.claimHeartRateCue(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
+  });
+
+  test('recovered cue is cancelled if BPM climbs before it is spoken', () {
+    final session = VoiceCoachingSession();
+    session.claimHeartRateCue(174);
+    session.confirmHeartRateCueSpoken();
+    expect(
+      session.claimHeartRateCue(150)?.id,
+      VoiceCoachingCues.runHeartRateRecovered.id,
+    );
+    session.releaseHeartRateCue();
+    expect(session.claimHeartRateCue(166), isNull);
+    expect(session.claimHeartRateCue(150), isNull);
+    expect(session.claimHeartRateCue(140), isNull);
+    expect(session.claimHeartRateCue(156)?.id, VoiceCoachingCues.runHeartRateSteady.id);
+  });
+
+  test('a high episode does not offer the steady line on the way down', () {
+    final session = VoiceCoachingSession();
+    session.claimHeartRateCue(180);
+    session.confirmHeartRateCueSpoken();
+    expect(session.claimHeartRateCue(165), isNull);
+    expect(
+      session.claimHeartRateCue(155)?.id,
+      VoiceCoachingCues.runHeartRateRecovered.id,
+    );
+  });
+
+  test('implausible BPM does not rearm or speak a recovered line', () {
+    final session = VoiceCoachingSession();
+    session.claimHeartRateCue(180);
+    session.confirmHeartRateCueSpoken();
+    expect(session.claimHeartRateCue(null), isNull);
+    expect(session.claimHeartRateCue(250), isNull);
+    expect(session.claimHeartRateCue(175), isNull);
+    expect(
+      session.claimHeartRateCue(160)?.id,
+      VoiceCoachingCues.runHeartRateRecovered.id,
+    );
   });
 
   test('welcome and harvest cues speak once per session', () {

@@ -102,7 +102,7 @@ class VoiceCoachingController {
   /// Omit it on a free run — no invented finish line.
   /// [elapsedSeconds] drives the sparse pep. Omit it and that cue stays off.
   /// [heartRateBpm] is the challenge-tracker BPM. Omit it when the screen
-  /// has no heart-rate reading — no invented sensor.
+  /// has no heart-rate reading. The live GPS room does not pass one.
   Future<void> onRunProgress({
     required double previousKm,
     required double currentKm,
@@ -110,11 +110,9 @@ class VoiceCoachingController {
     double? targetKm,
     int? heartRateBpm,
   }) async {
-    final highHeartRate = session.claimHighHeartRate(heartRateBpm);
-    if (highHeartRate != null) {
-      if (!await _trySpeak(highHeartRate)) {
-        session.releaseHighHeartRate();
-      }
+    final heart = session.claimHeartRateCue(heartRateBpm);
+    if (heart != null && heart.id == VoiceCoachingCues.runHighHeartRate.id) {
+      await _finishHeartRateCue(heart);
       return;
     }
     final kilometer = session.crossedRunKilometer(
@@ -126,10 +124,27 @@ class VoiceCoachingController {
       currentKm: currentKm,
       targetKm: targetKm,
     );
+    if (kilometer != null || nearFinish != null) {
+      if (heart != null) session.releaseHeartRateCue();
+      await speakCue(kilometer ?? nearFinish);
+      return;
+    }
+    if (heart != null) {
+      await _finishHeartRateCue(heart);
+      return;
+    }
     final encouragement = elapsedSeconds == null
         ? null
         : session.crossedSparseEncouragement(elapsedSeconds);
-    await speakCue(kilometer ?? nearFinish ?? encouragement);
+    await speakCue(encouragement);
+  }
+
+  Future<void> _finishHeartRateCue(VoiceCue cue) async {
+    if (await _trySpeak(cue)) {
+      session.confirmHeartRateCueSpoken();
+    } else {
+      session.releaseHeartRateCue();
+    }
   }
 
   Future<void> onRunFinished() => speakCue(session.runFinished());

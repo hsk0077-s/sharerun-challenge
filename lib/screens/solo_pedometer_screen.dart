@@ -893,7 +893,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   Future<void> _onShareWalkingChallenge(BuildContext buttonContext) async {
     try {
-      await WalkingChallengeShare.openSystemSheet(
+      await WalkingChallengeShare.openChooser(
+        buttonContext,
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {

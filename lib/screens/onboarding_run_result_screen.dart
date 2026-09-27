@@ -102,7 +102,8 @@ class _OnboardingRunResultScreenState
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
 
     try {
-      await WalkingChallengeShare.openSystemSheet(
+      await WalkingChallengeShare.openChooser(
+        buttonContext,
         text: shareText,
         subject: 'SRC 완주 기록',
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),

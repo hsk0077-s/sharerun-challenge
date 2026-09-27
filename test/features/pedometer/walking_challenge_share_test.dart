@@ -33,6 +33,9 @@ void main() {
 
   setUp(() {
     WalkingChallengeShare.debugShareOverride = null;
+    WalkingChallengeShare.debugKakaoShareOverride = null;
+    // KakaoTalk absent: entry points keep opening the system sheet directly.
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
     SharedPreferences.setMockInitialValues({
       'is_pedometer_reset_v3_done': true,
     });
@@ -40,6 +43,8 @@ void main() {
 
   tearDown(() {
     WalkingChallengeShare.debugShareOverride = null;
+    WalkingChallengeShare.debugKakaoShareOverride = null;
+    WalkingChallengeShare.debugKakaoInstalledOverride = null;
   });
 
   test('promo text is Korean walking invite, not a brag card', () {
@@ -360,4 +365,405 @@ void main() {
     expect(sent!.text, isNot(WalkingChallengeShare.promoText));
     expect(sent!.text, isNot(WalkingChallengeShare.dailyGoalBragText));
   });
+
+  test('shareToKakao routes text to Kakao and skips the system sheet',
+      () async {
+    ShareParams? sent;
+    String? kakaoText;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    final status = await WalkingChallengeShare.shareToKakao(text: '카카오 본문');
+
+    expect(status, KakaoDirectShareStatus.sent);
+    expect(kakaoText, '카카오 본문');
+    expect(sent, isNull);
+  });
+
+  test('shareToKakao does nothing when KakaoTalk is not installed', () async {
+    var called = false;
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      called = true;
+    };
+
+    final status = await WalkingChallengeShare.shareToKakao(text: '본문');
+
+    expect(status, KakaoDirectShareStatus.notInstalled);
+    expect(called, isFalse);
+  });
+
+  test('shareToKakao reports failure without throwing', () async {
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      throw StateError('kakao down');
+    };
+
+    final status = await WalkingChallengeShare.shareToKakao();
+
+    expect(status, KakaoDirectShareStatus.failed);
+  });
+
+  test('shareToKakao clamps text to the Kakao template limit', () async {
+    String? kakaoText;
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    final long = '가' * (WalkingChallengeShare.kakaoTextLimit + 40);
+    final status = await WalkingChallengeShare.shareToKakao(text: long);
+
+    expect(status, KakaoDirectShareStatus.sent);
+    expect(kakaoText, isNotNull);
+    expect(kakaoText!.length, WalkingChallengeShare.kakaoTextLimit);
+    expect(kakaoText!.endsWith('…'), isTrue);
+    expect(kakaoText, isNot(long));
+  });
+
+  testWidgets('chooser offers Kakao and keeps the system sheet',
+      (tester) async {
+    ShareParams? sent;
+    String? kakaoText;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    await _pumpShareChooser(tester, text: '공유 본문', subject: '공유 제목');
+    await tester.tap(find.text('open-share'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(WalkingChallengeShare.kakaoChoiceKey), findsOneWidget);
+    expect(find.text(WalkingChallengeShare.kakaoChoiceLabel), findsOneWidget);
+    expect(find.byKey(WalkingChallengeShare.systemChoiceKey), findsOneWidget);
+    expect(
+      find.text(WalkingChallengeShare.otherAppsChoiceLabel),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
+    await tester.pumpAndSettle();
+
+    expect(kakaoText, '공유 본문');
+    expect(sent, isNull);
+  });
+
+  testWidgets('chooser system choice still opens the OS sheet', (tester) async {
+    ShareParams? sent;
+    String? kakaoText;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    await _pumpShareChooser(tester, text: '공유 본문', subject: '공유 제목');
+    await tester.tap(find.text('open-share'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(WalkingChallengeShare.systemChoiceKey));
+    await tester.pumpAndSettle();
+
+    expect(kakaoText, isNull);
+    expect(sent, isNotNull);
+    expect(sent!.text, '공유 본문');
+    expect(sent!.subject, '공유 제목');
+    expect(sent!.title, '공유 제목');
+    expect(sent!.files, isNull);
+  });
+
+  testWidgets(
+      'chooser hides Kakao and opens the system sheet when not installed',
+      (tester) async {
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+
+    await _pumpShareChooser(tester, text: '공유 본문', subject: '공유 제목');
+    await tester.tap(find.text('open-share'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text(WalkingChallengeShare.kakaoChoiceLabel), findsNothing);
+    expect(sent, isNotNull);
+    expect(sent!.text, '공유 본문');
+    expect(sent!.subject, '공유 제목');
+  });
+
+  testWidgets('Kakao share failure shows a snackbar and skips the system sheet',
+      (tester) async {
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      throw StateError('kakao down');
+    };
+
+    await _pumpShareChooser(tester, text: '공유 본문');
+    await tester.tap(find.text('open-share'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(sent, isNull);
+    expect(find.text(WalkingChallengeShare.kakaoShareFailedMessage),
+        findsOneWidget);
+  });
+
+  testWidgets('Walking Challenge header offers Kakao when it is installed',
+      (tester) async {
+    String? kakaoText;
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final profile = UserModel.dashboardDefault(uid: '');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          needsNicknameSetupProvider.overrideWith((ref) => false),
+          userNicknameProvider.overrideWith((ref) => '테스트워커'),
+          activeUserProfileProvider.overrideWith(
+            (ref) => Stream<UserModel>.value(profile),
+          ),
+          activeWalletProvider.overrideWith(
+            (ref) => Stream<WalletModel>.value(_wallet),
+          ),
+          walletProvider.overrideWith(_SeededWalletNotifier.new),
+          activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
+        ],
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const SoloPedometerScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+
+    await tester.tap(find.byKey(WalkingChallengeShare.buttonKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text(WalkingChallengeShare.kakaoChoiceLabel), findsOneWidget);
+    expect(
+      find.text(WalkingChallengeShare.otherAppsChoiceLabel),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(kakaoText, WalkingChallengeShare.promoText);
+    expect(sent, isNull);
+  });
+
+  testWidgets('daily-goal 자랑하기 offers Kakao with brag text', (tester) async {
+    String? kakaoText;
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    tester.view.physicalSize = const Size(390, 400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.light,
+        home: const Scaffold(
+          body: Padding(
+            padding: EdgeInsets.all(16),
+            child: WalkingDailyGoalCompleteCard(),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(kakaoText, WalkingChallengeShare.dailyGoalBragText);
+    expect(kakaoText, isNot(WalkingChallengeShare.promoText));
+    expect(sent, isNull);
+  });
+
+  testWidgets('finish SNS share keeps Kakao and the system sheet',
+      (tester) async {
+    ShareParams? sent;
+    String? kakaoText;
+    final platformCalls = <MethodCall>[];
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+      platformCalls.add(call);
+      return null;
+    });
+    addTearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const OnboardingRunResultScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.text(AppStrings.runResultShare));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text(WalkingChallengeShare.kakaoChoiceLabel), findsOneWidget);
+    expect(
+      find.text(WalkingChallengeShare.otherAppsChoiceLabel),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(WalkingChallengeShare.systemChoiceKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    const finishText = 'SRC 앱에서 8.35km 완주 후 기부에 동참했습니다! '
+        '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
+    expect(kakaoText, isNull);
+    expect(sent, isNotNull);
+    expect(sent!.text, finishText);
+    expect(sent!.subject, 'SRC 완주 기록');
+    expect(sent!.files, isNull);
+    expect(
+      platformCalls.where((call) => call.method.startsWith('Clipboard')),
+      isEmpty,
+    );
+  });
+
+  testWidgets('finish SNS share sends the finish text to Kakao',
+      (tester) async {
+    String? kakaoText;
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+    WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+    WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+      kakaoText = text;
+    };
+
+    tester.view.physicalSize = const Size(390, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const OnboardingRunResultScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.text(AppStrings.runResultShare));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    const finishText = 'SRC 앱에서 8.35km 완주 후 기부에 동참했습니다! '
+        '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
+    expect(kakaoText, finishText);
+    expect(kakaoText, isNot(WalkingChallengeShare.promoText));
+    expect(sent, isNull);
+  });
+}
+
+Future<void> _pumpShareChooser(
+  WidgetTester tester, {
+  required String text,
+  String? subject,
+}) {
+  return tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: Builder(
+          builder: (context) {
+            return TextButton(
+              onPressed: () async {
+                await WalkingChallengeShare.openChooser(
+                  context,
+                  text: text,
+                  subject: subject,
+                );
+              },
+              child: const Text('open-share'),
+            );
+          },
+        ),
+      ),
+    ),
+  );
 }

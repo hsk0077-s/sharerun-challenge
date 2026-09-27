@@ -31,7 +31,7 @@ class HealthPermissionsRationaleActivity : Activity() {
 
         root.addView(
             TextView(this).apply {
-                text = "Share Run Challenge"
+                text = "쉐어 런"
                 setTextColor(Color.parseColor("#171717"))
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 20f)
                 gravity = Gravity.CENTER

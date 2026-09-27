@@ -1,6 +1,6 @@
 {
-    "name": "share_run_challenge",
-    "short_name": "share_run_challenge",
+    "name": "쉐어 런",
+    "short_name": "쉐어 런",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

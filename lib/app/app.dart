@@ -41,7 +41,7 @@ class ShareRunChallengeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Share Run Challenge',
+      title: '쉐어 런',
       theme: SrcTheme.light,
       darkTheme: AppTheme.dark,
       supportedLocales: const [Locale('ko'), Locale('en')],

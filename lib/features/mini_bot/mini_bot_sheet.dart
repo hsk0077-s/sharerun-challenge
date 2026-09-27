@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -7,17 +8,26 @@ import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
 import 'mini_bot_voice.dart';
 
+/// Extra space under the shell mic so it sits fully above the tab bar.
+const double miniBotFabBottomClearance = 24;
+
 /// Home tab (0) and challenge lobby tab (2) only. The tab shell owns the
 /// button so the screen goldens stay the same.
 Widget? miniBotEntryForTab(int index) {
   return switch (index) {
-    0 => const MiniBotEntryButton(
-        key: Key('mini-bot-entry-home'),
-        heroTag: 'mini-bot-shell',
+    0 => const Padding(
+        padding: EdgeInsets.only(bottom: miniBotFabBottomClearance),
+        child: MiniBotEntryButton(
+          key: Key('mini-bot-entry-home'),
+          heroTag: 'mini-bot-shell',
+        ),
       ),
-    2 => const MiniBotEntryButton(
-        key: Key('mini-bot-entry-lobby'),
-        heroTag: 'mini-bot-shell',
+    2 => const Padding(
+        padding: EdgeInsets.only(bottom: miniBotFabBottomClearance),
+        child: MiniBotEntryButton(
+          key: Key('mini-bot-entry-lobby'),
+          heroTag: 'mini-bot-shell',
+        ),
       ),
     _ => null,
   };
@@ -199,179 +209,211 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
-    final bottom = MediaQuery.viewInsetsOf(context).bottom;
-    final height = MediaQuery.sizeOf(context).height * 0.78;
+    final media = MediaQuery.of(context);
+    final keyboard = media.viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottom),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Material(
-          key: const Key('mini-bot-sheet'),
-          color: tokens.colors.surface,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(tokens.radii.lg),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            height: height,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SizedBox(height: tokens.spacing.sm),
-                Center(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: tokens.colors.outline,
-                      borderRadius: tokens.radii.capsule,
-                    ),
-                  ),
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenCap = media.size.height * 0.78;
+          final maxHeight = constraints.maxHeight.isFinite
+              ? math.min(screenCap, constraints.maxHeight)
+              : screenCap;
+          return Align(
+            alignment: Alignment.bottomCenter,
+            child: _sheetBody(
+              context,
+              tokens: tokens,
+              textTheme: textTheme,
+              height: maxHeight,
+              safeBottom: media.padding.bottom,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _sheetBody(
+    BuildContext context, {
+    required SrcTokens tokens,
+    required TextTheme textTheme,
+    required double height,
+    required double safeBottom,
+  }) {
+    return Material(
+      key: const Key('mini-bot-sheet'),
+      color: tokens.colors.surface,
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(tokens.radii.lg),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        height: height,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: tokens.spacing.sm),
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: tokens.colors.outline,
+                  borderRadius: tokens.radii.capsule,
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    tokens.spacing.md,
-                    tokens.spacing.sm,
-                    tokens.spacing.xs,
-                    0,
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.mic_none_rounded, color: tokens.colors.primary),
-                      SizedBox(width: tokens.spacing.xs),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '쉐어런 미니봇',
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: tokens.colors.ink,
-                              ),
-                            ),
-                            Text(
-                              '안내 → 추천 → 확인 → 실행',
-                              style: textTheme.labelSmall?.copyWith(
-                                color: tokens.colors.muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        key: const Key('mini-bot-close'),
-                        tooltip: '닫기',
-                        onPressed: () => Navigator.of(context).maybePop(),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scroll,
-                    padding: EdgeInsets.all(tokens.spacing.md),
-                    itemCount: _lines.length,
-                    itemBuilder: (context, index) {
-                      final line = _lines[index];
-                      return _Bubble(line: line);
-                    },
-                  ),
-                ),
-                if (_pending != null)
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: tokens.spacing.md),
-                    child: Row(
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                tokens.spacing.md,
+                tokens.spacing.sm,
+                tokens.spacing.xs,
+                0,
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.mic_none_rounded, color: tokens.colors.primary),
+                  SizedBox(width: tokens.spacing.xs),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            key: const Key('mini-bot-cancel'),
-                            onPressed: _onCancel,
-                            child: const Text('취소'),
+                        Text(
+                          '쉐어런 미니봇',
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: tokens.colors.ink,
                           ),
                         ),
-                        SizedBox(width: tokens.spacing.sm),
-                        Expanded(
-                          child: FilledButton(
-                            key: const Key('mini-bot-confirm'),
-                            onPressed: _onConfirm,
-                            child: const Text('이동하기'),
+                        Text(
+                          '안내 → 추천 → 확인 → 실행',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: tokens.colors.muted,
                           ),
                         ),
                       ],
                     ),
                   ),
-                SizedBox(
-                  height: 44,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: tokens.spacing.md),
-                    children: [
-                      _Chip(
-                        key: const Key('mini-bot-chip-intro'),
-                        label: MiniBotPrompts.intro,
-                        onTap: () => _submit(MiniBotPrompts.intro),
-                      ),
-                      _Chip(
-                        key: const Key('mini-bot-chip-join'),
-                        label: MiniBotPrompts.joinBeginner,
-                        onTap: () => _submit(MiniBotPrompts.joinBeginner),
-                      ),
-                      _Chip(
-                        key: const Key('mini-bot-chip-lobby'),
-                        label: MiniBotPrompts.joinLobby,
-                        onTap: () => _submit(MiniBotPrompts.joinLobby),
-                      ),
-                      _Chip(
-                        key: const Key('mini-bot-chip-cpr'),
-                        label: MiniBotPrompts.cpr,
-                        onTap: () => _submit(MiniBotPrompts.cpr),
-                      ),
-                    ],
+                  IconButton(
+                    key: const Key('mini-bot-close'),
+                    tooltip: '닫기',
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.close_rounded),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    tokens.spacing.md,
-                    tokens.spacing.xs,
-                    tokens.spacing.md,
-                    tokens.spacing.md,
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton.filledTonal(
-                        key: const Key('mini-bot-mic'),
-                        tooltip: '말하기',
-                        onPressed: _onMic,
-                        icon: const Icon(Icons.mic_rounded),
-                      ),
-                      SizedBox(width: tokens.spacing.xs),
-                      Expanded(
-                        child: TextField(
-                          key: const Key('mini-bot-input'),
-                          controller: _input,
-                          textInputAction: TextInputAction.send,
-                          onSubmitted: _submit,
-                          decoration: const InputDecoration(
-                            hintText: '한글로 말해 주세요',
-                            isDense: true,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        key: const Key('mini-bot-send'),
-                        tooltip: '보내기',
-                        onPressed: () => _submit(_input.text),
-                        icon: Icon(Icons.send_rounded, color: tokens.colors.primary),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+            Expanded(
+              child: ListView.builder(
+                controller: _scroll,
+                padding: EdgeInsets.all(tokens.spacing.md),
+                itemCount: _lines.length,
+                itemBuilder: (context, index) {
+                  final line = _lines[index];
+                  return _Bubble(line: line);
+                },
+              ),
+            ),
+            if (_pending != null)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: tokens.spacing.md),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        key: const Key('mini-bot-cancel'),
+                        onPressed: _onCancel,
+                        child: const Text('취소'),
+                      ),
+                    ),
+                    SizedBox(width: tokens.spacing.sm),
+                    Expanded(
+                      child: FilledButton(
+                        key: const Key('mini-bot-confirm'),
+                        onPressed: _onConfirm,
+                        child: const Text('이동하기'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                tokens.spacing.md,
+                tokens.spacing.sm,
+                tokens.spacing.md,
+                0,
+              ),
+              child: SingleChildScrollView(
+                key: const Key('mini-bot-chips'),
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _Chip(
+                      key: const Key('mini-bot-chip-intro'),
+                      label: MiniBotPrompts.intro,
+                      onTap: () => _submit(MiniBotPrompts.intro),
+                    ),
+                    _Chip(
+                      key: const Key('mini-bot-chip-join'),
+                      label: MiniBotPrompts.joinBeginner,
+                      onTap: () => _submit(MiniBotPrompts.joinBeginner),
+                    ),
+                    _Chip(
+                      key: const Key('mini-bot-chip-lobby'),
+                      label: MiniBotPrompts.joinLobby,
+                      onTap: () => _submit(MiniBotPrompts.joinLobby),
+                    ),
+                    _Chip(
+                      key: const Key('mini-bot-chip-cpr'),
+                      label: MiniBotPrompts.cpr,
+                      onTap: () => _submit(MiniBotPrompts.cpr),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                tokens.spacing.md,
+                tokens.spacing.sm,
+                tokens.spacing.md,
+                tokens.spacing.md + safeBottom,
+              ),
+              child: Row(
+                children: [
+                  IconButton.filledTonal(
+                    key: const Key('mini-bot-mic'),
+                    tooltip: '말하기',
+                    onPressed: _onMic,
+                    icon: const Icon(Icons.mic_rounded),
+                  ),
+                  SizedBox(width: tokens.spacing.xs),
+                  Expanded(
+                    child: TextField(
+                      key: const Key('mini-bot-input'),
+                      controller: _input,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: _submit,
+                      decoration: const InputDecoration(
+                        hintText: '한글로 말해 주세요',
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    key: const Key('mini-bot-send'),
+                    tooltip: '보내기',
+                    onPressed: () => _submit(_input.text),
+                    icon:
+                        Icon(Icons.send_rounded, color: tokens.colors.primary),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

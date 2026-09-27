@@ -11,7 +11,6 @@ import '../core/widgets/src_exit_guard.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../data/models/tournament_model.dart';
 import '../features/challenge/providers/challenge_room_providers.dart';
-import '../features/mini_bot/mini_bot_sheet.dart';
 import 'battle_pass_screen.dart';
 import 'brand_sponsor_screen.dart';
 import 'challenge_detail_screen.dart';
@@ -267,10 +266,6 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
             ],
           ),
         ),
-      ),
-      floatingActionButton: const MiniBotEntryButton(
-        key: Key('mini-bot-entry-lobby'),
-        heroTag: 'mini-bot-lobby',
       ),
       bottomNavigationBar: embedNav
           ? DashboardBottomNav(

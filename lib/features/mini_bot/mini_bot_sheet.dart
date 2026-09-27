@@ -7,6 +7,22 @@ import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
 import 'mini_bot_voice.dart';
 
+/// Home tab (0) and challenge lobby tab (2) only. The tab shell owns the
+/// button so the screen goldens stay the same.
+Widget? miniBotEntryForTab(int index) {
+  return switch (index) {
+    0 => const MiniBotEntryButton(
+        key: Key('mini-bot-entry-home'),
+        heroTag: 'mini-bot-shell',
+      ),
+    2 => const MiniBotEntryButton(
+        key: Key('mini-bot-entry-lobby'),
+        heroTag: 'mini-bot-shell',
+      ),
+    _ => null,
+  };
+}
+
 class MiniBotEntryButton extends StatelessWidget {
   const MiniBotEntryButton({
     super.key,

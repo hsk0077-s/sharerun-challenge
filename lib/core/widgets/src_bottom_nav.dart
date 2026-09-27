@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/providers/app_providers.dart';
+import '../../features/mini_bot/mini_bot_sheet.dart';
 import '../../features/profile/providers/practice_streak_provider.dart';
 import '../strings/app_strings.dart';
 import '../theme/app_colors.dart';
@@ -43,6 +44,7 @@ class SrcBottomNav extends ConsumerWidget {
             ],
           ),
         ),
+        floatingActionButton: miniBotEntryForTab(shell.currentIndex),
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           currentIndex: shell.currentIndex,

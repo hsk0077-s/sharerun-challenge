@@ -1,12 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
+import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
+import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_intent.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_navigator.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_sheet.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_voice.dart';
 import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.dart';
+import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class _SeededWalletNotifier extends WalletNotifier {
+  @override
+  WalletState build() => WalletState.fromModel(
+        const WalletModel(
+          shareBalance: 0,
+          diamondBalance: 0,
+          valueTokenBalance: 0,
+          totalDonationValue: 0,
+        ),
+      );
+}
 
 class _RecordingVoice implements MiniBotVoice {
   final spoken = <String>[];
@@ -222,5 +241,112 @@ void main() {
     expect(find.byKey(const Key('mini-bot-sheet')), findsOneWidget);
     expect(find.text('쉐어런 미니봇'), findsOneWidget);
     expect(find.text(MiniBotCopy.greeting), findsOneWidget);
+  });
+
+  testWidgets('tab shell shows the mic button on home and the lobby only',
+      (tester) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+
+    Future<void> pumpTab(String location, Key entry) async {
+      final router = GoRouter(
+        initialLocation: location,
+        routes: [
+          StatefulShellRoute.indexedStack(
+            builder: (context, state, navigationShell) {
+              return SrcBottomNav(navigationShell: navigationShell);
+            },
+            branches: [
+              for (final path in [
+                RouteNames.mainDashboard,
+                RouteNames.shop,
+                RouteNames.tournament,
+                RouteNames.crew,
+                RouteNames.myPage,
+              ])
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: path,
+                      builder: (context, state) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            walletProvider.overrideWith(_SeededWalletNotifier.new),
+            recentActivitiesProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+            authStateChangesProvider.overrideWith(
+              (ref) => Stream.value(null),
+            ),
+          ],
+          child: MaterialApp.router(
+            theme: SrcTheme.light,
+            routerConfig: router,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(entry), findsOneWidget);
+      expect(find.byType(MiniBotEntryButton), findsOneWidget);
+    }
+
+    await pumpTab(RouteNames.mainDashboard, const Key('mini-bot-entry-home'));
+    await pumpTab(RouteNames.tournament, const Key('mini-bot-entry-lobby'));
+
+    final router = GoRouter(
+      initialLocation: RouteNames.shop,
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return SrcBottomNav(navigationShell: navigationShell);
+          },
+          branches: [
+            for (final path in [
+              RouteNames.mainDashboard,
+              RouteNames.shop,
+              RouteNames.tournament,
+              RouteNames.crew,
+              RouteNames.myPage,
+            ])
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: path,
+                    builder: (context, state) => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          walletProvider.overrideWith(_SeededWalletNotifier.new),
+          recentActivitiesProvider.overrideWith(
+            (ref) => Stream.value(const []),
+          ),
+          authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
+        ],
+        child: MaterialApp.router(
+          theme: SrcTheme.light,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(MiniBotEntryButton), findsNothing);
   });
 }

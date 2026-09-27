@@ -81,6 +81,38 @@ abstract final class PedometerStepTruth {
     return clampDaily(cachedSteps);
   }
 
+  /// In-memory walking total stamped on [memoryDayKey].
+  ///
+  /// Unlike [cachedDailyIfSameDay], a missing stamp is not today. After KST
+  /// midnight the hero must not keep yesterday (39) just because it is larger
+  /// than today's pedometer (0). The notification isolate already baselines
+  /// today; this is the UI side of that rule.
+  static int inMemoryDailyIfSameDay({
+    required int inMemorySteps,
+    required String memoryDayKey,
+    required String todayKey,
+  }) {
+    if (memoryDayKey.isEmpty || memoryDayKey != todayKey) return 0;
+    return clampDaily(inMemorySteps);
+  }
+
+  /// Prefs for [todayKey] win, except a same-day in-memory count that is
+  /// already ahead of disk. A previous KST day's memory must not win.
+  static int mergeStoredDaily({
+    required int storedToday,
+    required int inMemorySteps,
+    required String memoryDayKey,
+    required String todayKey,
+  }) {
+    final stored = clampDaily(storedToday);
+    final memory = inMemoryDailyIfSameDay(
+      inMemorySteps: inMemorySteps,
+      memoryDayKey: memoryDayKey,
+      todayKey: todayKey,
+    );
+    return memory > stored ? memory : stored;
+  }
+
   /// After `FlutterJNI was detached` / EventChannel `step_count` death,
   /// resume and init always rebind; error/done paths honor a short cooldown.
   static bool shouldRebindSensor({

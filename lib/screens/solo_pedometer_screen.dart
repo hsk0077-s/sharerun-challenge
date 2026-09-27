@@ -234,6 +234,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   var _syncing = false;
   var _healthBase = 0;
   var _baselineSteps = 0;
+  var _previousSensorRaw = 0;
   var _baselineReady = false;
   var _sessionDelta = 0;
   var _kstDayKey = '';
@@ -416,6 +417,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       if (!_baselineReady) {
         _baselineSteps = raw;
         _baselineReady = true;
+        _previousSensorRaw = raw;
         debugPrint(
           PedometerStepTruth.sourceLog(
             source: 'sensor-baseline',
@@ -428,7 +430,22 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           ),
         );
       } else {
-        _sessionDelta = math.max(0, raw - _baselineSteps);
+        final sample = PedometerStepTruth.acceptSensorDelta(
+          raw: raw,
+          baseline: _baselineSteps,
+          previousRaw: _previousSensorRaw,
+        );
+        _previousSensorRaw = raw;
+        if (sample.rebase) {
+          final folded = _healthBase + _sessionDelta;
+          if (!PedometerStepTruth.isPoisonDaily(folded)) {
+            _healthBase = folded;
+          }
+          _baselineSteps = raw;
+          _sessionDelta = 0;
+        } else {
+          _sessionDelta = sample.delta;
+        }
       }
       if (!mounted) return;
       _setMoving(true);
@@ -685,6 +702,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       return;
     }
     final effective = PedometerStepTruth.clampDaily(steps);
+    if (PedometerStepTruth.clampDaily(_steps) != _steps) {
+      _steps = PedometerStepTruth.clampDaily(_steps);
+      _healthBase = PedometerStepTruth.clampDaily(_healthBase);
+    }
     debugPrint(
       PedometerStepTruth.sourceLog(
         source: 'apply-$source',

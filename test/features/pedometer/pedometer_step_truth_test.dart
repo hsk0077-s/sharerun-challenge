@@ -145,6 +145,102 @@ void main() {
       );
     });
 
+    test('baseline 0 then raw 86626 is not today', () {
+      final dump = PedometerStepTruth.acceptSensorDelta(
+        raw: 86626,
+        baseline: 0,
+        previousRaw: 0,
+      );
+      expect(dump.rebase, isTrue);
+      expect(dump.delta, 0);
+      expect(PedometerStepTruth.isPoisonDaily(86626), isTrue);
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86626,
+          healthBase: 0,
+          sessionDelta: dump.delta,
+          stepOffset: 0,
+        ),
+        0,
+      );
+      // Ceiling backstop if a listener still passes the raw jump as session.
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86626,
+          healthBase: 0,
+          sessionDelta: 86626,
+          stepOffset: 0,
+        ),
+        0,
+      );
+    });
+
+    test('450 steps after a real since-boot baseline still count', () {
+      const baseline = 86000;
+      final sample = PedometerStepTruth.acceptSensorDelta(
+        raw: baseline + 450,
+        baseline: baseline,
+        previousRaw: baseline,
+      );
+      expect(sample.rebase, isFalse);
+      expect(sample.delta, 450);
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: baseline + 450,
+          healthBase: 0,
+          sessionDelta: sample.delta,
+          stepOffset: 0,
+        ),
+        450,
+      );
+    });
+
+    test(
+        'single 20000 jump from zero is a dump; the same total walked gradually is not',
+        () {
+      final dump = PedometerStepTruth.acceptSensorDelta(
+        raw: 20000,
+        baseline: 0,
+        previousRaw: 0,
+      );
+      expect(dump.rebase, isTrue);
+      expect(dump.delta, 0);
+      final walked = PedometerStepTruth.acceptSensorDelta(
+        raw: 20000,
+        baseline: 0,
+        previousRaw: 19500,
+      );
+      expect(walked.rebase, isFalse);
+      expect(walked.delta, 20000);
+    });
+
+    test('gradual walk from a zero baseline is not a since-boot dump', () {
+      final sample = PedometerStepTruth.acceptSensorDelta(
+        raw: 450,
+        baseline: 0,
+        previousRaw: 400,
+      );
+      expect(sample.rebase, isFalse);
+      expect(sample.delta, 450);
+    });
+
+    test('after a dump rebase, the next small delta is today', () {
+      final dump = PedometerStepTruth.acceptSensorDelta(
+        raw: 86626,
+        baseline: 0,
+        previousRaw: 0,
+      );
+      expect(dump.rebase, isTrue);
+      const rebased = 86626;
+      final walked = PedometerStepTruth.acceptSensorDelta(
+        raw: rebased + 450,
+        baseline: rebased,
+        previousRaw: rebased,
+      );
+      expect(walked.rebase, isFalse);
+      expect(walked.delta, 450);
+    });
+
     test('overflow sentinel session does not become today steps', () {
       expect(
         PedometerStepTruth.fromSensorEvent(
@@ -198,6 +294,43 @@ void main() {
           persistedToday: 1835,
         ),
         2100,
+      );
+    });
+
+    test(
+        'poisoned 86626 loses to a sane live day; real totals still max upward',
+        () {
+      expect(PedometerStepTruth.clampDaily(86626), 0);
+      expect(PedometerStepTruth.clampDaily(30001), 0);
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 450,
+          persistedToday: 86626,
+          isolateDaily: 86626,
+        ),
+        450,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 86626,
+          persistedToday: 450,
+        ),
+        450,
+      );
+      // Same-day legitimate walk still only moves upward.
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 2100,
+          persistedToday: 1835,
+        ),
+        2100,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 100,
+          persistedToday: 1835,
+        ),
+        1835,
       );
     });
 
@@ -276,6 +409,12 @@ void main() {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(4500);
       expect(copy.title, contains('챌린지 완주 성공'));
       expect(copy.body, contains('4,500/10,000보'));
+    });
+
+    test('since-boot 86,626 does not print in the shade', () {
+      final copy = WalkingChallengeNotificationCopy.fromDailySteps(86626);
+      expect(copy.body, isNot(contains('86,626')));
+      expect(copy.body, contains('0 / 4,500보'));
     });
 
     test('overflow sentinel does not print 999,999 in the shade', () {

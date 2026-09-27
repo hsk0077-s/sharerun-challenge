@@ -55,6 +55,90 @@ void main() {
     );
   });
 
+  test('near-finish speaks once when 200m remains on a known target', () {
+    final session = VoiceCoachingSession();
+    expect(
+      session.approachingFinish(
+        previousKm: 0.7,
+        currentKm: 0.85,
+        targetKm: null,
+      ),
+      isNull,
+    );
+    expect(
+      session.approachingFinish(
+        previousKm: 0.7,
+        currentKm: 0.85,
+        targetKm: 1,
+      )?.id,
+      VoiceCoachingCues.runNearFinish.id,
+    );
+    expect(
+      session.approachingFinish(
+        previousKm: 0.85,
+        currentKm: 0.9,
+        targetKm: 1,
+      ),
+      isNull,
+    );
+  });
+
+  test('near-finish stays silent if the sample already passed the line', () {
+    final session = VoiceCoachingSession();
+    expect(
+      session.approachingFinish(
+        previousKm: 0.5,
+        currentKm: 1.05,
+        targetKm: 1,
+      ),
+      isNull,
+    );
+    expect(
+      session.approachingFinish(
+        previousKm: 0.85,
+        currentKm: 0.9,
+        targetKm: 1,
+      ),
+      isNull,
+    );
+  });
+
+  test('sparse encouragement is one line per 3 minute bucket', () {
+    final session = VoiceCoachingSession();
+    expect(session.crossedSparseEncouragement(179), isNull);
+    expect(
+      session.crossedSparseEncouragement(180)?.id,
+      VoiceCoachingCues.runEncourage.id,
+    );
+    expect(session.crossedSparseEncouragement(200), isNull);
+    expect(
+      session.crossedSparseEncouragement(360)?.ko,
+      VoiceCoachingCues.runEncourage.ko,
+    );
+  });
+
+  test('resetRun lets the next race say start and near-finish again', () {
+    final session = VoiceCoachingSession();
+    expect(session.runStarted()?.id, VoiceCoachingCues.runStart.id);
+    session.approachingFinish(
+      previousKm: 2.7,
+      currentKm: 2.85,
+      targetKm: 3,
+    );
+    session.crossedSparseEncouragement(180);
+    session.resetRun();
+    expect(session.runStarted()?.id, VoiceCoachingCues.runStart.id);
+    expect(
+      session.approachingFinish(
+        previousKm: 0.7,
+        currentKm: 0.85,
+        targetKm: 1,
+      )?.ko,
+      '200미터 남았어요.',
+    );
+    expect(session.crossedSparseEncouragement(180)?.ko, '좋아요. 호흡 유지해요.');
+  });
+
   test('welcome and harvest cues speak once per session', () {
     final session = VoiceCoachingSession();
     expect(session.walkingOpened()?.id, VoiceCoachingCues.walkStart.id);

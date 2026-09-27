@@ -291,6 +291,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
           ref.read(voiceCoachingControllerProvider).onRunProgress(
                 previousKm: previousKm,
                 currentKm: event.distanceKm,
+                elapsedSeconds: event.durationSeconds,
               ),
         );
         if (event.routePoints.length > prev && event.routePoints.isNotEmpty) {

@@ -36,6 +36,8 @@ dependencies:
   in_app_purchase: any
   flutter_naver_login: ^2.1.1
   kakao_flutter_sdk_user: ^2.0.0+1
+  # Same native app key as login. Default text template; no custom template id.
+  kakao_flutter_sdk_share: 2.0.0+1
   flutter_tts: ^4.2.3
   # In-sheet mini-bot mic. 7.5.0 needs Dart 3.12; 7.4.0 stays on this SDK floor.
   speech_to_text: 7.4.0

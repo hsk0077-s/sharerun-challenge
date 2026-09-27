@@ -10,19 +10,68 @@ abstract final class PedometerStepTruth {
   /// as a stub or since-boot dump, not a step count. Never display it.
   static const overflowSentinel = 999999;
 
-  /// Generous real-day ceiling (~75 km). Above this is Health/sensor garbage.
-  static const plausibleDailyMax = 100000;
+  /// Hard KST-day ceiling (~22.5 km at this app's 0.75 m stride).
+  ///
+  /// 100_000 (~75 km) still let an 86,626 TYPE_STEP_COUNTER since-boot dump
+  /// through, and that dump then won `max()` on both the walking UI and the
+  /// shade. A hard athletic day in the low tens of thousands still passes.
+  static const plausibleDailyMax = 30000;
+
+  /// One sample this large, off a near-zero previous reading, is the boot
+  /// counter — not a walk. A real day crosses it across many samples.
+  static const sinceBootJumpMin = 10000;
+
+  /// Previous reading at or below this is a fresh/zero baseline (0, then
+  /// ~86,626), not an anchor taken at the real since-boot total.
+  static const nearZeroBaselineMax = 1000;
+
+  /// Already-daily counters above [plausibleDailyMax] (or negative) are
+  /// poison: the 999999 stub, or a since-boot total that was stored as today.
+  static bool isPoisonDaily(int steps) =>
+      steps < 0 || steps > plausibleDailyMax;
 
   /// Health Connect, isolate `_stepsKey`, and UI `_steps` are already daily.
-  /// Implausible values (the 999999 sentinel, or > [plausibleDailyMax])
-  /// become 0 so they cannot win a `max()` against a real reading.
-  static int clampDaily(int steps) {
-    if (steps < 0 || steps > plausibleDailyMax) return 0;
-    return steps;
+  /// Poison becomes 0 so it cannot win a `max()` against a real reading.
+  static int clampDaily(int steps) => isPoisonDaily(steps) ? 0 : steps;
+
+  /// True when [raw] jumped from [baseline] like a since-boot dump.
+  ///
+  /// [baseline] must be the previous sample, not the start-of-session anchor.
+  /// A walk from 0 to 15,000 in small samples never looks like one jump.
+  static bool isSinceBootDump({
+    required int raw,
+    required int baseline,
+  }) {
+    final jump = raw - baseline;
+    if (jump <= 0) return false;
+    if (jump > plausibleDailyMax) return true;
+    return baseline <= nearZeroBaselineMax && jump >= sinceBootJumpMin;
+  }
+
+  /// One TYPE_STEP_COUNTER sample.
+  ///
+  /// [delta] is `raw - baseline` when that distance is a real walk (already
+  /// clamped). [rebase] means [raw] is a since-boot dump: keep [delta] at 0
+  /// and move the caller's baseline to [raw] so the next sample can count.
+  /// [previousRaw] defaults to [baseline] (the first counted sample).
+  static ({int delta, bool rebase}) acceptSensorDelta({
+    required int raw,
+    required int baseline,
+    int? previousRaw,
+  }) {
+    final previous = previousRaw ?? baseline;
+    if (isSinceBootDump(raw: raw, baseline: previous)) {
+      return (delta: 0, rebase: true);
+    }
+    final session = raw - baseline;
+    if (session <= 0) return (delta: 0, rebase: false);
+    return (delta: clampDaily(session), rebase: false);
   }
 
   /// Highest *plausible* daily reading wins. Do not subtract a sensor offset
-  /// here. Clamp each source first so a 999999 stub cannot wipe 1,835.
+  /// here. Clamp each source first so a 999999 stub or an 86,626 since-boot
+  /// dump cannot outrank a real day. Poison (clamped to 0) loses to a sane
+  /// lower total; a real same-day count still only moves upward.
   static int dailyFromSources({
     required int liveDaily,
     int persistedToday = 0,
@@ -40,6 +89,10 @@ abstract final class PedometerStepTruth {
   ///   (Samsung TYPE_STEP_COUNTER increments on a light shake).
   /// * `raw - stepOffset` is used only when midnight (or QA init) snapshotted
   ///   the cumulative sensor. Offset `0` must not dump since-boot totals.
+  ///   A small positive offset (yesterday's daily, QA init, or a rollover
+  ///   that stored a step count instead of the hardware counter) is not that
+  ///   snapshot: `raw - offset` then sits tens of thousands above session /
+  ///   Health and is dropped.
   ///
   /// When [floorDayKey] and [todayKey] are both set and they differ, the
   /// floor, session, and offset still belong to the previous KST day.
@@ -61,8 +114,27 @@ abstract final class PedometerStepTruth {
     final delta = staleDay ? 0 : sessionDelta;
     final offset = staleDay ? 0 : stepOffset;
     final fromSession = clampDaily(base + delta);
-    final fromRaw = offset > 0 ? clampDaily(raw - offset) : 0;
+    final fromRaw = _dailyFromHardwareOffset(
+      raw: raw,
+      offset: offset,
+      sessionToday: base + delta,
+    );
     return math.max(fromSession, fromRaw);
+  }
+
+  /// `raw - offset` when [offset] is today's TYPE_STEP_COUNTER snapshot.
+  ///
+  /// A gap of [sinceBootJumpMin] or more above the session/Health floor means
+  /// the offset is a daily total, not the hardware counter (86,626 − 450).
+  static int _dailyFromHardwareOffset({
+    required int raw,
+    required int offset,
+    required int sessionToday,
+  }) {
+    if (offset <= 0 || raw < offset) return 0;
+    final candidate = raw - offset;
+    if (candidate - sessionToday >= sinceBootJumpMin) return 0;
+    return clampDaily(candidate);
   }
 
   /// Isolate / prefs cache stamped on [cachedDayKey]. A missing stamp keeps

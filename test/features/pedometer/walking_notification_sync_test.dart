@@ -43,4 +43,25 @@ void main() {
     expect(resolved.effectiveSteps, 1835);
     expect(resolved.body, contains('1,835보'));
   });
+
+  test(
+      'resolveNotification does not prefer poisoned 86626 over a sane live daily',
+      () async {
+    final today = DateTime.now().toUtc().add(const Duration(hours: 9));
+    final m = today.month.toString().padLeft(2, '0');
+    final d = today.day.toString().padLeft(2, '0');
+    final todayKey = '${today.year}-$m-$d';
+
+    SharedPreferences.setMockInitialValues({
+      '${todayKey}_steps': 86626,
+      '${todayKey}_claimed_steps': 0,
+    });
+
+    final resolved =
+        await SoloPedometerForeground.resolveNotification(rawSteps: 450);
+
+    expect(resolved.effectiveSteps, 450);
+    expect(resolved.body, contains('450'));
+    expect(resolved.body, isNot(contains('86,626')));
+  });
 }

@@ -23,6 +23,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   Timer? _healthTimer;
   var _floor = 0;
   var _baseline = 0;
+  var _previousRaw = 0;
   var _baselineReady = false;
   var _offset = 0;
   var _offsetDayKey = '';
@@ -178,17 +179,33 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   void _onSensor(StepCount event) {
     _rollFloorIfNewDay();
     final raw = event.steps;
+    var sessionDelta = 0;
     if (!_baselineReady) {
       _baseline = raw;
       _baselineReady = true;
+      _previousRaw = raw;
+    } else {
+      final sample = PedometerStepTruth.acceptSensorDelta(
+        raw: raw,
+        baseline: _baseline,
+        previousRaw: _previousRaw,
+      );
+      _previousRaw = raw;
+      if (sample.rebase) {
+        _baseline = raw;
+        _publish(
+          PedometerStepTruth.clampDaily(_floor),
+          source: 'keepalive-sensor',
+        );
+        return;
+      }
+      sessionDelta = sample.delta;
     }
     final todayKey = KstCalendar.dateKey();
     final next = PedometerStepTruth.fromSensorEvent(
       raw: raw,
       healthBase: _floor,
-      sessionDelta: _baselineReady
-          ? PedometerStepTruth.clampDaily(raw - _baseline)
-          : 0,
+      sessionDelta: sessionDelta,
       stepOffset: _offset,
       // Empty offset day means the snapshot is not today's yet. Passing it
       // makes fromSensorEvent drop raw-oldOffset (yesterday's 5377).
@@ -210,6 +227,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   }
 
   void _publish(int steps, {required String source}) {
+    final clampedFloor = PedometerStepTruth.clampDaily(_floor);
+    final floorWasPoison = clampedFloor != _floor;
+    if (floorWasPoison) _floor = clampedFloor;
     final daily = PedometerStepTruth.clampDaily(steps);
     if (daily < _floor) return;
     final raised = daily > _floor;
@@ -217,7 +237,10 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     if (raised) {
       onDaily(daily, SoloPedometerEngine.kmFromSteps(daily));
     }
-    if (raised || source.contains('resume') || source.contains('attach')) {
+    if (raised ||
+        floorWasPoison ||
+        source.contains('resume') ||
+        source.contains('attach')) {
       unawaited(
         SoloPedometerForeground.update(steps: daily, targetKm: 3.0),
       );

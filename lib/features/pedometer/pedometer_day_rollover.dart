@@ -41,13 +41,19 @@ abstract final class PedometerDayRollover {
   /// yesterday's reset.
   static bool canEvaluate(String lastSavedDate) => lastSavedDate.isNotEmpty;
 
+  /// Midnight [PedometerRolloverPlan.stepOffset] is a TYPE_STEP_COUNTER
+  /// reading. `0` means no hardware sample yet — callers must not substitute
+  /// today's step count (`steps + stepOffset`, or isolate `next` when
+  /// `_lastRaw == 0`).
+  static int hardwareSnapshot(int raw) => raw > 0 ? raw : 0;
+
   static PedometerRolloverPlan plan({
     required String todayKey,
     required int sensorTotal,
   }) {
     return PedometerRolloverPlan(
       dateKey: todayKey,
-      stepOffset: sensorTotal < 0 ? 0 : sensorTotal,
+      stepOffset: hardwareSnapshot(sensorTotal),
     );
   }
 

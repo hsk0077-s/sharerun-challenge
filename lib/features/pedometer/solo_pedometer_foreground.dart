@@ -77,8 +77,9 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     try {
-      _steps =
-          await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
+      _steps = PedometerStepTruth.clampDaily(
+        await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0,
+      );
       _anchor = _steps;
       try {
         final prefs = await SharedPreferences.getInstance();
@@ -91,8 +92,10 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         try {
           final prefs = await SharedPreferences.getInstance();
           final todayKey = KstCalendar.dateKey();
-          final persisted = prefs.getInt('${todayKey}_steps') ?? 0;
-          if (persisted > 0) {
+          final persisted = PedometerStepTruth.clampDaily(
+            prefs.getInt('${todayKey}_steps') ?? 0,
+          );
+          if (persisted > _steps) {
             _steps = persisted;
             _anchor = persisted;
             debugPrint(
@@ -142,14 +145,25 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       _sub = Pedometer.stepCountStream.listen(
         (event) {
           try {
+            final previous = _lastRaw;
             _lastRaw = event.steps;
             if (!_baselineReady) {
               _baseline = _lastRaw;
               _baselineReady = true;
               return;
             }
-            final fromSensor = _anchor + math.max(0, _lastRaw - _baseline);
-            unawaited(_commit(fromSensor.toInt()));
+            _anchor = PedometerStepTruth.clampDaily(_anchor);
+            final sample = PedometerStepTruth.acceptSensorDelta(
+              raw: _lastRaw,
+              baseline: _baseline,
+              previousRaw: previous,
+            );
+            if (sample.rebase) {
+              _baseline = _lastRaw;
+              unawaited(_commit(_anchor));
+              return;
+            }
+            unawaited(_commit(_anchor + sample.delta));
           } catch (e, st) {
             debugPrint('SoloPedometerForegroundHandler step: $e\n$st');
           }
@@ -407,8 +421,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     try {
       final saved =
           await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
-      final next =
-          math.max(computed, math.max(saved, _steps)).toInt();
+      // Same merge as the shade. Poison (86,626) clamps to 0 so a sane
+      // lower today can replace it; a real day still only moves upward.
+      final next = PedometerStepTruth.dailyFromSources(
+        liveDaily: computed,
+        persistedToday: saved,
+        isolateDaily: _steps,
+      );
       final todayIso = KstCalendar.dateKey();
       if (lastSavedDate.isEmpty) {
         lastSavedDate = todayIso;
@@ -418,7 +437,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
           await prefs.setInt('stepOffset', stepOffset);
         } catch (_) {}
       } else if (lastSavedDate != todayIso) {
-        final sensorTotal = _lastRaw > 0 ? _lastRaw : next;
+        // `_lastRaw == 0` must not store today's `next` as the hardware offset.
+        final sensorTotal = PedometerDayRollover.hardwareSnapshot(_lastRaw);
         final plan = PedometerDayRollover.plan(
           todayKey: todayIso,
           sensorTotal: sensorTotal,
@@ -714,7 +734,10 @@ abstract final class SoloPedometerForeground {
 
   static Future<int> _mergedSteps(int steps) async {
     final saved = await liveSteps();
-    return math.max(steps, saved);
+    return PedometerStepTruth.dailyFromSources(
+      liveDaily: steps,
+      persistedToday: saved,
+    );
   }
 
   static void initForegroundTask() {

@@ -31,6 +31,17 @@ void main() {
     );
   });
 
+  test('hardware snapshot is the counter, never a missing-sample daily stand-in', () {
+    expect(PedometerDayRollover.hardwareSnapshot(86626), 86626);
+    expect(PedometerDayRollover.hardwareSnapshot(0), 0);
+    expect(PedometerDayRollover.hardwareSnapshot(-1), 0);
+    final plan = PedometerDayRollover.plan(
+      todayKey: '2026-09-12',
+      sensorTotal: PedometerDayRollover.hardwareSnapshot(0),
+    );
+    expect(plan.stepOffset, 0);
+  });
+
   test('rollover plan zeros day-scoped counters and keeps sensor as offset', () {
     final plan = PedometerDayRollover.plan(
       todayKey: '2026-09-11',

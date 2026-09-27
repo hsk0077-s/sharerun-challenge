@@ -41,6 +41,62 @@ void main() {
       );
     });
 
+    test('small stepOffset plus raw 86626 is not today', () {
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86626,
+          healthBase: 0,
+          sessionDelta: 0,
+          stepOffset: 450,
+        ),
+        0,
+      );
+      // Yesterday's daily (or a QA snapshot) as offset must not beat a real walk.
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86626,
+          healthBase: 450,
+          sessionDelta: 0,
+          stepOffset: 1835,
+        ),
+        450,
+      );
+      // Still under the 30,000 ceiling: a small offset must not win.
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 20000,
+          healthBase: 0,
+          sessionDelta: 0,
+          stepOffset: 450,
+        ),
+        0,
+      );
+    });
+
+    test('450 steps after a hardware offset still count', () {
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86450,
+          healthBase: 0,
+          sessionDelta: 0,
+          stepOffset: 86000,
+        ),
+        450,
+      );
+    });
+
+    test('athletic day under the ceiling still counts with a hardware offset', () {
+      expect(
+        PedometerStepTruth.fromSensorEvent(
+          raw: 86000 + 20000,
+          healthBase: 20000,
+          sessionDelta: 0,
+          stepOffset: 86000,
+        ),
+        20000,
+      );
+    });
+
     test('raw minus offset can raise the floor when Health is stale', () {
       expect(
         PedometerStepTruth.fromSensorEvent(
@@ -331,6 +387,14 @@ void main() {
           persistedToday: 1835,
         ),
         1835,
+      );
+      // Under the ceiling, a higher same-day total is not poison.
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 450,
+          persistedToday: 20000,
+        ),
+        20000,
       );
     });
 

@@ -437,7 +437,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
           await prefs.setInt('stepOffset', stepOffset);
         } catch (_) {}
       } else if (lastSavedDate != todayIso) {
-        final sensorTotal = _lastRaw > 0 ? _lastRaw : next;
+        // `_lastRaw == 0` must not store today's `next` as the hardware offset.
+        final sensorTotal = PedometerDayRollover.hardwareSnapshot(_lastRaw);
         final plan = PedometerDayRollover.plan(
           todayKey: todayIso,
           sensorTotal: sensorTotal,

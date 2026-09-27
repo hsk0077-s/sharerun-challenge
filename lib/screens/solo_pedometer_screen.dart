@@ -498,7 +498,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final rolled = _kstDayKey.isNotEmpty && _kstDayKey != todayKey;
       if (rolled) {
         final didReset = _ensureDailyRollover(
-          sensorTotal: math.max(_steps, 0) + _stepOffset,
+          sensorTotal: _hardwareStepCounter(),
         );
         // Isolate may already have stamped lastSavedDate as today, so
         // rollover no-ops. Still drop yesterday's total before this key
@@ -562,7 +562,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       );
       if (_lastSavedDate.isNotEmpty && _lastSavedDate != todayKey) {
         _ensureDailyRollover(
-          sensorTotal: math.max(_steps, 0) + _stepOffset,
+          sensorTotal: _hardwareStepCounter(),
         );
       }
       if (_kstDayKey == todayKey && _steps > 0) {
@@ -582,6 +582,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     } finally {
       _syncing = false;
     }
+  }
+
+  /// Last TYPE_STEP_COUNTER sample. Rollover must not persist
+  /// `_steps + _stepOffset` — that sum is a daily total when the offset was
+  /// never a hardware snapshot.
+  int _hardwareStepCounter() {
+    if (_previousSensorRaw > 0) return _previousSensorRaw;
+    if (_baselineSteps > 0) return _baselineSteps;
+    return 0;
   }
 
   bool _ensureDailyRollover({required int sensorTotal}) {
@@ -680,7 +689,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   void _applyDailySteps(int steps, {required String source}) {
     if (!mounted) return;
     final rolled = _ensureDailyRollover(
-      sensorTotal: math.max(steps, _steps) + _stepOffset,
+      sensorTotal: _hardwareStepCounter(),
     );
     // The candidate was computed with yesterday's floor. Writing it now
     // is the 5377 that comes back right after the midnight 0.
@@ -763,7 +772,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     // int has no day key, so a late 5377 must not bypass that filter.
     final daily = PedometerStepTruth.clampDaily(trusted);
     _ensureDailyRollover(
-      sensorTotal: math.max(daily, _steps) + _stepOffset,
+      sensorTotal: _hardwareStepCounter(),
     );
     final shown = PedometerStepTruth.inMemoryDailyIfSameDay(
       inMemorySteps: _steps,
@@ -841,7 +850,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       _ensureDailyRollover(
-        sensorTotal: math.max(_steps, 0) + _stepOffset,
+        sensorTotal: _hardwareStepCounter(),
       );
       unawaited(_listenOsPedometer(reason: 'resume'));
       unawaited(_pullLiveStepsFromService());
@@ -981,7 +990,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       }
       final prefix = await _prefPrefix();
       final rolled = _ensureDailyRollover(
-        sensorTotal: math.max(_steps, 0) + _stepOffset,
+        sensorTotal: _hardwareStepCounter(),
       );
       if (!mounted) return;
       final sameKstDay = !rolled && _lastSavedDate == todayKey;
@@ -1560,7 +1569,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         if (!mounted) return;
         if (_lastSavedDate == PedometerKstClock.dateKey()) return;
         _ensureDailyRollover(
-          sensorTotal: math.max(live.steps, _steps) + _stepOffset,
+          sensorTotal: _hardwareStepCounter(),
         );
       });
     }

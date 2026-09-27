@@ -89,6 +89,10 @@ abstract final class PedometerStepTruth {
   ///   (Samsung TYPE_STEP_COUNTER increments on a light shake).
   /// * `raw - stepOffset` is used only when midnight (or QA init) snapshotted
   ///   the cumulative sensor. Offset `0` must not dump since-boot totals.
+  ///   A small positive offset (yesterday's daily, QA init, or a rollover
+  ///   that stored a step count instead of the hardware counter) is not that
+  ///   snapshot: `raw - offset` then sits tens of thousands above session /
+  ///   Health and is dropped.
   ///
   /// When [floorDayKey] and [todayKey] are both set and they differ, the
   /// floor, session, and offset still belong to the previous KST day.
@@ -110,8 +114,27 @@ abstract final class PedometerStepTruth {
     final delta = staleDay ? 0 : sessionDelta;
     final offset = staleDay ? 0 : stepOffset;
     final fromSession = clampDaily(base + delta);
-    final fromRaw = offset > 0 ? clampDaily(raw - offset) : 0;
+    final fromRaw = _dailyFromHardwareOffset(
+      raw: raw,
+      offset: offset,
+      sessionToday: base + delta,
+    );
     return math.max(fromSession, fromRaw);
+  }
+
+  /// `raw - offset` when [offset] is today's TYPE_STEP_COUNTER snapshot.
+  ///
+  /// A gap of [sinceBootJumpMin] or more above the session/Health floor means
+  /// the offset is a daily total, not the hardware counter (86,626 − 450).
+  static int _dailyFromHardwareOffset({
+    required int raw,
+    required int offset,
+    required int sessionToday,
+  }) {
+    if (offset <= 0 || raw < offset) return 0;
+    final candidate = raw - offset;
+    if (candidate - sessionToday >= sinceBootJumpMin) return 0;
+    return clampDaily(candidate);
   }
 
   /// Isolate / prefs cache stamped on [cachedDayKey]. A missing stamp keeps

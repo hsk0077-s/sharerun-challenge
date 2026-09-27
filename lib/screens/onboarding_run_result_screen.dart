@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/wallet_state_provider.dart';
@@ -8,6 +9,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/pedometer/walking_challenge_share.dart';
 
 /// 온보딩 플로우 기록 결과 화면 (Screen 11).
 class OnboardingRunResultScreen extends ConsumerStatefulWidget {
@@ -95,21 +97,19 @@ class _OnboardingRunResultScreenState
     );
   }
 
-  Future<void> _onShare() async {
-    final shareText =
-        'SRC 앱에서 ${_mockDistanceKm}km 완주 후 기부에 동참했습니다! '
+  Future<void> _onShare(BuildContext buttonContext) async {
+    final shareText = 'SRC 앱에서 ${_mockDistanceKm}km 완주 후 기부에 동참했습니다! '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
 
-    // share_plus is not in pubspec — clipboard fallback.
-    await Clipboard.setData(ClipboardData(text: shareText));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          '클립보드에 기록이 복사되었습니다. SNS에 붙여넣기 해주세요!',
-        ),
-      ),
-    );
+    try {
+      await WalkingChallengeShare.openSystemSheet(
+        text: shareText,
+        subject: 'SRC 완주 기록',
+        sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+      );
+    } catch (e, st) {
+      debugPrint('WalkingChallengeShare.finish: $e\n$st');
+    }
   }
 
   @override
@@ -178,26 +178,32 @@ class _OnboardingRunResultScreenState
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Material(
-                      color: AppColors.garminAuthButton,
-                      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: _onShare,
-                        child: SizedBox(
-                          height: AppShapes.buttonHeight,
-                          child: Center(
-                            child: Text(
-                              AppStrings.runResultShare,
-                              style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
+                    Builder(
+                      builder: (buttonContext) {
+                        return Material(
+                          color: AppColors.garminAuthButton,
+                          borderRadius: BorderRadius.circular(
+                            AppShapes.cardRadius,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () => unawaited(_onShare(buttonContext)),
+                            child: SizedBox(
+                              height: AppShapes.buttonHeight,
+                              child: Center(
+                                child: Text(
+                                  AppStrings.runResultShare,
+                                  style: AppTextStyles.buttonText.copyWith(
+                                    color: AppColors.textWhite,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ],
                 ),

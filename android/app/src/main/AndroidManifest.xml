@@ -90,7 +90,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="Share Run Challenge"
+        android:label="쉐어 런"
         android:usesCleartextTraffic="false"
         tools:replace="android:usesCleartextTraffic">
 
@@ -102,7 +102,7 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
-            android:label="Share Run Challenge"
+            android:label="쉐어 런"
             android:theme="@style/LaunchTheme"
             android:windowSoftInputMode="adjustResize">
 

@@ -44,7 +44,7 @@ class GpsTrackingService {
         distanceFilter: 0,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
-          notificationTitle: 'Share Run Challenge',
+          notificationTitle: '쉐어 런',
           notificationText: '실시간 러닝 GPS 추적 중',
           enableWakeLock: true,
         ),

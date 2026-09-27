@@ -71,6 +71,7 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
       },
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
+        title: '쉐어 런',
         // Light SRC theme — do NOT use AppTheme.dark (black neon) post-login.
         theme: SrcTheme.light,
         supportedLocales: const [Locale('ko'), Locale('en')],

@@ -234,9 +234,21 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                       onEnter: _onEnterRoom,
                     ),
                     SizedBox(height: tokens.spacing.sm),
-                    const _LockedRoomCard(
+                    _OpenRoomCard(
                       title: AppStrings.lobbyRoom3Title,
                       subtitle: AppStrings.lobbyRoom3Sub,
+                      onEnter: () {
+                        AppRouteNav.push<void>(
+                          context,
+                          RouteNames.challengeDetailForRoom(
+                            RouteNames.beginner1kmRoomId,
+                          ),
+                          extra: RouteNames.beginner1kmRoomId,
+                          materialBuilder: (_) => const ChallengeDetailScreen(
+                            roomId: RouteNames.beginner1kmRoomId,
+                          ),
+                        );
+                      },
                     ),
                     ..._liveTournamentCards(context, ref),
                   ],
@@ -478,67 +490,3 @@ class _FeaturedRoomCard extends StatelessWidget {
   }
 }
 
-class _LockedRoomCard extends StatelessWidget {
-  const _LockedRoomCard({
-    required this.title,
-    required this.subtitle,
-  });
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    return SrcSurfaceCard(
-      color: tokens.colors.outline.withValues(alpha: 0.45),
-      borderColor: tokens.colors.outline,
-      padding: EdgeInsets.all(tokens.spacing.md),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: tokens.colors.muted,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs + 2),
-                Text(
-                  subtitle,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: tokens.colors.muted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: tokens.spacing.sm),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.lock_outline_rounded,
-                color: tokens.colors.muted,
-                size: 22,
-              ),
-              SizedBox(height: tokens.spacing.xxs),
-              Text(
-                AppStrings.lobbyGradeBlocked,
-                style: textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: tokens.colors.muted,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}

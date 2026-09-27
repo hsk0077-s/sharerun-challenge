@@ -119,8 +119,12 @@ void main() {
     expect(find.text(AppStrings.lobbyBattlePassCta), findsOneWidget);
     expect(find.text(AppStrings.lobbySponsorRoomTitle), findsOneWidget);
     expect(find.text(AppStrings.lobbyRoom1Title), findsOneWidget);
+    expect(find.text(AppStrings.lobbyRoom3Title), findsOneWidget);
+    expect(find.text(AppStrings.lobbyRoom3Sub), findsOneWidget);
     expect(find.text(AppStrings.lobbyEnterRoom), findsWidgets);
-    expect(find.text(AppStrings.lobbyGradeBlocked), findsOneWidget);
+    expect(find.textContaining('실버'), findsNothing);
+    expect(find.text('하위 등급 차단'), findsNothing);
+    expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
     expect(find.text('실시간 개설 · 참가 가능 방'), findsOneWidget);
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
     expect(find.byKey(const Key('lobby-create-room')), findsOneWidget);
@@ -152,6 +156,29 @@ void main() {
     final sponsorTitle =
         tester.widget<Text>(find.text(AppStrings.lobbySponsorRoomTitle)).style;
     expect(sponsorTitle?.color, AppColors.angelGold);
+
+    final beginnerEnter = find.descendant(
+      of: find.ancestor(
+        of: find.text(AppStrings.lobbyRoom3Sub),
+        matching: find.byType(SrcSurfaceCard),
+      ),
+      matching: find.text(AppStrings.lobbyEnterRoom),
+    );
+    expect(beginnerEnter, findsOneWidget);
+    final intermediateEnter = find.descendant(
+      of: find.ancestor(
+        of: find.text(AppStrings.lobbyRoom1Title),
+        matching: find.byType(SrcSurfaceCard),
+      ),
+      matching: find.text(AppStrings.lobbyEnterRoom),
+    );
+    expect(intermediateEnter, findsOneWidget);
+
+    await tester.tap(beginnerEnter);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+    expect(find.text('1km 초보 챌린지'), findsOneWidget);
+    expect(find.text(AppStrings.challengeDetailTitle), findsNothing);
   });
 
   testWidgets(

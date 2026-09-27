@@ -43,11 +43,15 @@ class PedometerData {
     required this.steps,
     required this.km,
     required this.isMoving,
+    this.dayKey = '',
   });
 
   final int steps;
   final double km;
   final bool isMoving;
+
+  /// KST date the [steps] were counted on. Empty means unstamped.
+  final String dayKey;
 }
 
 final pedometerStateProvider =
@@ -110,16 +114,23 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
           }
         }
       }
-      if (state.steps > savedSteps) {
-        savedSteps = state.steps;
+      final storedToday = savedSteps;
+      savedSteps = PedometerStepTruth.mergeStoredDaily(
+        storedToday: storedToday,
+        inMemorySteps: state.steps,
+        memoryDayKey: state.dayKey,
+        todayKey: todayKey,
+      );
+      if (savedSteps == 0) {
+        savedKm = 0;
+      } else if (savedSteps != PedometerStepTruth.clampDaily(storedToday)) {
         savedKm = state.km;
       }
-      savedSteps = PedometerStepTruth.clampDaily(savedSteps);
-      if (savedSteps == 0) savedKm = 0;
       state = PedometerData(
         steps: savedSteps,
         km: savedKm,
         isMoving: false,
+        dayKey: todayKey,
       );
     } catch (e) {
       debugPrint('[PERSISTENCE] 로컬/원격 데이터 복원 실패: $e');
@@ -130,10 +141,15 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
   Future<void> updateSteps(int steps, double km, {required bool isMoving}) async {
     final daily = PedometerStepTruth.clampDaily(steps);
     final safeKm = daily > 0 ? km : 0.0;
-    state = PedometerData(steps: daily, km: safeKm, isMoving: isMoving);
+    final todayKey = _getTodayKey();
+    state = PedometerData(
+      steps: daily,
+      km: safeKm,
+      isMoving: isMoving,
+      dayKey: todayKey,
+    );
     try {
       final prefs = await SharedPreferences.getInstance();
-      final todayKey = _getTodayKey();
       // 1) 로컬 저장소 즉시 영구 기록 (빠른 렌더링 유지)
       await prefs.setInt('${todayKey}_steps', daily);
       await prefs.setDouble('${todayKey}_km', safeKm);
@@ -464,7 +480,20 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final todayKey = PedometerKstClock.dateKey();
       final rolled = _kstDayKey.isNotEmpty && _kstDayKey != todayKey;
       if (rolled) {
-        _ensureDailyRollover(sensorTotal: math.max(_steps, 0) + _stepOffset);
+        final didReset = _ensureDailyRollover(
+          sensorTotal: math.max(_steps, 0) + _stepOffset,
+        );
+        // Isolate may already have stamped lastSavedDate as today, so
+        // rollover no-ops. Still drop yesterday's total before this key
+        // becomes today — otherwise the hero keeps showing 39.
+        if (!didReset && _steps > 0) {
+          _healthBase = 0;
+          _sessionDelta = 0;
+          _baselineReady = false;
+          _steps = 0;
+          _km = 0;
+          if (mounted) setState(() {});
+        }
       }
       _kstDayKey = todayKey;
       if (total != null) {
@@ -519,7 +548,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           sensorTotal: math.max(_steps, 0) + _stepOffset,
         );
       }
-      if (_steps > 0) {
+      if (_kstDayKey == todayKey && _steps > 0) {
         unawaited(
           ref.read(pedometerStateProvider.notifier).updateSteps(
                 _steps,
@@ -639,6 +668,22 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     // The candidate was computed with yesterday's floor. Writing it now
     // is the 5377 that comes back right after the midnight 0.
     if (rolled) return;
+    // lastSavedDate may already be today (isolate stamped it) while this
+    // widget still holds yesterday's total. Drop that floor and this sample;
+    // the next event is counted against today.
+    if (_kstDayKey.isNotEmpty && _kstDayKey != PedometerKstClock.dateKey()) {
+      final todayKey = PedometerKstClock.dateKey();
+      _healthBase = 0;
+      _sessionDelta = 0;
+      _baselineReady = false;
+      setState(() {
+        _steps = 0;
+        _km = 0;
+        _kstDayKey = todayKey;
+        _weekSteps = {..._weekSteps, todayKey: 0};
+      });
+      return;
+    }
     final effective = PedometerStepTruth.clampDaily(steps);
     debugPrint(
       PedometerStepTruth.sourceLog(
@@ -699,8 +744,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     _ensureDailyRollover(
       sensorTotal: math.max(daily, _steps) + _stepOffset,
     );
-    if (daily <= _steps) {
-      unawaited(_syncForegroundNotification(_steps));
+    final shown = PedometerStepTruth.inMemoryDailyIfSameDay(
+      inMemorySteps: _steps,
+      memoryDayKey: _kstDayKey,
+      todayKey: PedometerKstClock.dateKey(),
+    );
+    if (daily <= shown) {
+      unawaited(_syncForegroundNotification(shown));
       return;
     }
     _healthBase = daily;
@@ -1493,9 +1543,21 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         );
       });
     }
+    // Yesterday's in-memory total must not paint over today's pedometer.
+    // The shade listener already baselines the new KST day (0 until steps).
+    final liveSteps = PedometerStepTruth.inMemoryDailyIfSameDay(
+      inMemorySteps: live.steps,
+      memoryDayKey: live.dayKey,
+      todayKey: todayKey,
+    );
+    final localSteps = PedometerStepTruth.inMemoryDailyIfSameDay(
+      inMemorySteps: _steps,
+      memoryDayKey: _kstDayKey,
+      todayKey: todayKey,
+    );
     final effectiveSteps = PedometerStepTruth.dailyFromSources(
-      liveDaily: live.steps,
-      persistedToday: _steps,
+      liveDaily: liveSteps,
+      persistedToday: localSteps,
     );
     final weekSteps = {
       ..._weekSteps,

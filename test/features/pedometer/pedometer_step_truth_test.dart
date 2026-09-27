@@ -53,6 +53,53 @@ void main() {
       );
     });
 
+    test('yesterday in-memory 39 does not replace today 0', () {
+      expect(
+        PedometerStepTruth.inMemoryDailyIfSameDay(
+          inMemorySteps: 39,
+          memoryDayKey: '2026-09-26',
+          todayKey: '2026-09-27',
+        ),
+        0,
+      );
+      expect(
+        PedometerStepTruth.inMemoryDailyIfSameDay(
+          inMemorySteps: 39,
+          memoryDayKey: '',
+          todayKey: '2026-09-27',
+        ),
+        0,
+      );
+      expect(
+        PedometerStepTruth.mergeStoredDaily(
+          storedToday: 0,
+          inMemorySteps: 39,
+          memoryDayKey: '2026-09-26',
+          todayKey: '2026-09-27',
+        ),
+        0,
+      );
+      // Same KST day: a live count still ahead of prefs must not be clipped.
+      expect(
+        PedometerStepTruth.mergeStoredDaily(
+          storedToday: 1835,
+          inMemorySteps: 1840,
+          memoryDayKey: '2026-09-27',
+          todayKey: '2026-09-27',
+        ),
+        1840,
+      );
+      expect(
+        PedometerStepTruth.mergeStoredDaily(
+          storedToday: 1835,
+          inMemorySteps: 100,
+          memoryDayKey: '2026-09-27',
+          todayKey: '2026-09-27',
+        ),
+        1835,
+      );
+    });
+
     test('yesterday floor is not reapplied after the KST day flips', () {
       // 5377 was yesterday in Asia/Seoul. Rollover paints 0, then this
       // sample used to win max(healthBase, raw - oldOffset) and put 5377

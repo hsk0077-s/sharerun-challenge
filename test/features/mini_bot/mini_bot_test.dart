@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,10 +47,22 @@ class _RecordingVoice implements MiniBotVoice {
 class _ScriptedSpeech extends MiniBotSpeechToText {
   _ScriptedSpeech(this.result);
 
-  final String? result;
+  final MiniBotListen result;
 
   @override
-  Future<String?> listen() async => result;
+  Future<MiniBotListen> listen() async => result;
+}
+
+class _GateSpeech extends MiniBotSpeechToText {
+  final gate = Completer<MiniBotListen>();
+
+  @override
+  Future<MiniBotListen> listen() => gate.future;
+
+  @override
+  Future<void> stop() async {
+    if (!gate.isCompleted) gate.complete(const MiniBotListen.cancelled());
+  }
 }
 
 void main() {
@@ -186,7 +200,7 @@ void main() {
         home: Scaffold(
           body: MiniBotSheet(
             voice: const SilentMiniBotVoice(),
-            speech: _ScriptedSpeech('초보 1km'),
+            speech: _ScriptedSpeech(const MiniBotListen.heard('초보 1km')),
             onExecute: (read) => executed = read,
           ),
         ),
@@ -197,6 +211,7 @@ void main() {
     await tester.tap(find.byKey(const Key('mini-bot-mic')));
     await tester.pump();
     expect(executed, isNull);
+    expect(find.text('초보 1km'), findsOneWidget);
     expect(find.text(MiniBotCopy.joinBeginner), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('mini-bot-confirm')));
@@ -204,13 +219,16 @@ void main() {
     expect(executed?.destination, MiniBotDestination.beginnerRoom);
   });
 
-  testWidgets('unwired mic explains that typing is the MVP input',
+  testWidgets('speech errors stay on the guide and keep typing',
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: SrcTheme.light,
-        home: const Scaffold(
-          body: MiniBotSheet(voice: SilentMiniBotVoice()),
+        home: Scaffold(
+          body: MiniBotSheet(
+            voice: const SilentMiniBotVoice(),
+            speech: _ScriptedSpeech(const MiniBotListen.denied()),
+          ),
         ),
       ),
     );
@@ -218,8 +236,139 @@ void main() {
 
     await tester.tap(find.byKey(const Key('mini-bot-mic')));
     await tester.pump();
-    expect(find.text(MiniBotCopy.sttUnavailable), findsOneWidget);
+    expect(find.text(MiniBotCopy.micDenied), findsOneWidget);
     expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('mini-bot-input')), '앱 소개');
+    await tester.tap(find.byKey(const Key('mini-bot-send')));
+    await tester.pump();
+    expect(find.text(MiniBotCopy.intro), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('mini-bot-chip-join')));
+    await tester.pumpAndSettle();
+    expect(find.text(MiniBotCopy.joinBeginner), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-confirm')), findsOneWidget);
+  });
+
+  testWidgets('empty or missing speech does not navigate', (tester) async {
+    Future<void> pump(MiniBotListen result) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: SrcTheme.light,
+          home: Scaffold(
+            body: MiniBotSheet(
+              key: UniqueKey(),
+              voice: const SilentMiniBotVoice(),
+              speech: _ScriptedSpeech(result),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('mini-bot-mic')));
+      await tester.pump();
+    }
+
+    await pump(const MiniBotListen.empty());
+    expect(find.text(MiniBotCopy.sttEmpty), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
+
+    await pump(const MiniBotListen.unavailable());
+    expect(find.text(MiniBotCopy.sttUnavailable), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-input')), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
+  });
+
+  testWidgets('spoken intro stays a guide and cancel keeps the sheet',
+      (tester) async {
+    MiniBotRead? executed;
+    final speech = _GateSpeech();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.light,
+        home: Scaffold(
+          body: MiniBotSheet(
+            voice: const SilentMiniBotVoice(),
+            speech: speech,
+            onExecute: (read) => executed = read,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.byKey(const Key('mini-bot-mic')));
+    await tester.pump();
+    expect(find.byKey(const Key('mini-bot-listening')), findsOneWidget);
+    expect(find.text(MiniBotCopy.listening), findsOneWidget);
+    expect(executed, isNull);
+
+    speech.gate.complete(const MiniBotListen.heard('앱 소개'));
+    await tester.pump();
+    expect(find.text(MiniBotCopy.intro), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
+    expect(find.byKey(const Key('mini-bot-listening')), findsNothing);
+
+    await tester.enterText(find.byKey(const Key('mini-bot-input')), '챌린지 로비');
+    await tester.tap(find.byKey(const Key('mini-bot-send')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('mini-bot-cancel')));
+    await tester.pump();
+    expect(executed, isNull);
+    expect(find.text(MiniBotCopy.cancelled), findsOneWidget);
+    expect(find.byKey(const Key('mini-bot-sheet')), findsOneWidget);
+  });
+
+  test('korean locale prefers an installed ko id', () {
+    expect(miniBotKoreanLocaleId(['en_US', 'ko_KR']), 'ko_KR');
+    expect(miniBotKoreanLocaleId(['en_US', 'ko-KR']), 'ko-KR');
+    expect(miniBotKoreanLocaleId(['en_US', 'ja_JP']), 'ko_KR');
+  });
+
+  test('missing recognizer does not throw and stays off the navigate path',
+      () async {
+    final heard = await MiniBotSpeechToTextHook().listen().timeout(
+          const Duration(seconds: 3),
+        );
+    expect(heard.kind, isNot(MiniBotListenKind.heard));
+    expect(
+      heard.kind,
+      anyOf(
+        MiniBotListenKind.unavailable,
+        MiniBotListenKind.denied,
+        MiniBotListenKind.empty,
+      ),
+    );
+  });
+
+  test('speech errors map to deny, silence, or unavailable', () {
+    expect(
+      MiniBotSpeechToTextHook.failureFor('error_permission').kind,
+      MiniBotListenKind.denied,
+    );
+    expect(
+      MiniBotSpeechToTextHook.failureFor(
+        'error_speech_recognizer_request_not_authorized',
+      ).kind,
+      MiniBotListenKind.denied,
+    );
+    expect(
+      MiniBotSpeechToTextHook.failureFor('error_no_match').kind,
+      MiniBotListenKind.empty,
+    );
+    expect(
+      MiniBotSpeechToTextHook.failureFor('error_speech_timeout').kind,
+      MiniBotListenKind.empty,
+    );
+    expect(
+      MiniBotSpeechToTextHook.failureFor('error_network').kind,
+      MiniBotListenKind.unavailable,
+    );
+    expect(
+      MiniBotSpeechToTextHook.failureFor('error_language_unavailable').kind,
+      MiniBotListenKind.unavailable,
+    );
   });
 
   testWidgets('home and lobby entry buttons open the sheet', (tester) async {

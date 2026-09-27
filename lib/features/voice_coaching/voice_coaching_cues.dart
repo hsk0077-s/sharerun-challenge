@@ -57,6 +57,24 @@ abstract final class VoiceCoachingCues {
     en: 'Run finished. Well done today.',
   );
 
+  /// Remaining distance that counts as "almost there" on a known race target.
+  static const runNearFinishRemainingKm = 0.2;
+
+  static const runNearFinish = VoiceCue(
+    id: 'run.near_finish',
+    ko: '200미터 남았어요.',
+    en: '200 meters to go.',
+  );
+
+  /// Wall-clock spacing for the mid-run pep. The 45s gate still applies.
+  static const runEncourageEverySeconds = 180;
+
+  static const runEncourage = VoiceCue(
+    id: 'run.encourage',
+    ko: '좋아요. 호흡 유지해요.',
+    en: 'Nice. Keep your breath.',
+  );
+
   static const walkStepMilestones = <int>[1000, 3000, 5000, 8000, 10000];
 
   static VoiceCue walkSteps(int steps) {

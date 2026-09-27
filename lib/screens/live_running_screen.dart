@@ -73,6 +73,12 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
+  /// Same 1km / 3km split this screen already uses for the room title.
+  double get _raceTargetKm =>
+      widget.roomId != null && _beginnerRoomIds.contains(widget.roomId)
+          ? 1
+          : 3;
+
   String get _paceLabel {
     final km = _distanceInMeters / 1000.0;
     if (km <= 0 || _elapsedSeconds <= 0) {
@@ -289,6 +295,8 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             ref.read(voiceCoachingControllerProvider).onRunProgress(
                   previousKm: previousKm,
                   currentKm: _distanceInMeters / 1000.0,
+                  elapsedSeconds: _elapsedSeconds,
+                  targetKm: _raceTargetKm,
                 ),
           );
         }

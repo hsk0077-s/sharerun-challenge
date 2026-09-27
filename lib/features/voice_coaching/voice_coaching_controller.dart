@@ -88,18 +88,33 @@ class VoiceCoachingController {
 
   Future<void> onHarvestCompleted() => speakCue(session.harvestCompleted());
 
-  Future<void> onRunStarted() => speakCue(session.runStarted());
+  Future<void> onRunStarted() {
+    session.resetRun();
+    return speakCue(session.runStarted());
+  }
 
+  /// [targetKm] is the race distance already shown in the room (1km / 3km).
+  /// Omit it on a free run — no invented finish line.
+  /// [elapsedSeconds] drives the sparse pep. Omit it and that cue stays off.
   Future<void> onRunProgress({
     required double previousKm,
     required double currentKm,
+    int? elapsedSeconds,
+    double? targetKm,
   }) {
-    return speakCue(
-      session.crossedRunKilometer(
-        previousKm: previousKm,
-        currentKm: currentKm,
-      ),
+    final kilometer = session.crossedRunKilometer(
+      previousKm: previousKm,
+      currentKm: currentKm,
     );
+    final nearFinish = session.approachingFinish(
+      previousKm: previousKm,
+      currentKm: currentKm,
+      targetKm: targetKm,
+    );
+    final encouragement = elapsedSeconds == null
+        ? null
+        : session.crossedSparseEncouragement(elapsedSeconds);
+    return speakCue(kilometer ?? nearFinish ?? encouragement);
   }
 
   Future<void> onRunFinished() => speakCue(session.runFinished());

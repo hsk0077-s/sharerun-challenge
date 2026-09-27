@@ -212,13 +212,15 @@ class VoiceCoachWhenToSpeak {
 VoiceCoachCueKind? voiceCoachCueKindForPhase3aId(String id) {
   if (id.startsWith('run.km.') ||
       id.startsWith('walk.steps.') ||
-      id == VoiceCoachingCues.walkGoal.id) {
+      id == VoiceCoachingCues.walkGoal.id ||
+      id == VoiceCoachingCues.runNearFinish.id) {
     return VoiceCoachCueKind.distance;
   }
   if (id == VoiceCoachingCues.walkStart.id ||
       id == VoiceCoachingCues.walkHarvest.id ||
       id == VoiceCoachingCues.runStart.id ||
       id == VoiceCoachingCues.runFinish.id ||
+      id == VoiceCoachingCues.runEncourage.id ||
       id == VoiceCoachingCues.enabledConfirm.id) {
     return VoiceCoachCueKind.encouragement;
   }

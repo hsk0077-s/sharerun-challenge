@@ -200,6 +200,14 @@ void main() {
       voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runFinish.id),
       VoiceCoachCueKind.encouragement,
     );
+    expect(
+      voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runNearFinish.id),
+      VoiceCoachCueKind.distance,
+    );
+    expect(
+      voiceCoachCueKindForPhase3aId(VoiceCoachingCues.runEncourage.id),
+      VoiceCoachCueKind.encouragement,
+    );
     expect(voiceCoachCueKindForPhase3aId('hr.high'), isNull);
     expect(voiceCoachCueKindForPhase3aId('course.hill'), isNull);
     expect(voiceCoachCueKindForPhase3aId('lobby.rank'), isNull);

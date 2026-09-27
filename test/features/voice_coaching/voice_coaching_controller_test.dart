@@ -207,6 +207,91 @@ void main() {
     expect(coach.whenToSpeak.lastSpokenKind, VoiceCoachCueKind.distance);
   });
 
+  test('near-finish preempts start; the next distance cue waits out 45s',
+      () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+
+    await coach.onRunStarted();
+    expect(speaker.spoken, [VoiceCoachingCues.runStart.ko]);
+
+    now = now.add(const Duration(seconds: 20));
+    await coach.onRunProgress(
+      previousKm: 0.7,
+      currentKm: 0.85,
+      elapsedSeconds: 20,
+      targetKm: 1,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runStart.ko,
+      VoiceCoachingCues.runNearFinish.ko,
+    ]);
+
+    now = now.add(const Duration(seconds: 10));
+    await coach.onRunProgress(
+      previousKm: 0.95,
+      currentKm: 1.02,
+      elapsedSeconds: 30,
+      targetKm: 1,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runStart.ko,
+      VoiceCoachingCues.runNearFinish.ko,
+    ]);
+    expect(coach.whenToSpeak.lastSpokenKind, VoiceCoachCueKind.distance);
+  });
+
+  test('sparse encourage is silent inside 45s and speaks on the next bucket',
+      () async {
+    var now = DateTime.utc(2026, 9, 27, 8);
+    final coach = gatedCoach(now: () => now);
+    await coach.onRunStarted();
+
+    now = now.add(const Duration(seconds: 30));
+    await coach.onRunProgress(
+      previousKm: 0.1,
+      currentKm: 0.15,
+      elapsedSeconds: 180,
+    );
+    expect(speaker.spoken, [VoiceCoachingCues.runStart.ko]);
+
+    now = now.add(const Duration(minutes: 3));
+    await coach.onRunProgress(
+      previousKm: 0.4,
+      currentKm: 0.5,
+      elapsedSeconds: 360,
+    );
+    expect(speaker.spoken, [
+      VoiceCoachingCues.runStart.ko,
+      VoiceCoachingCues.runEncourage.ko,
+    ]);
+  });
+
+  test('free run without a target does not invent a near-finish cue', () async {
+    final coach = gatedCoach(now: () => DateTime.utc(2026, 9, 27, 8));
+    await coach.onRunProgress(
+      previousKm: 0.7,
+      currentKm: 0.85,
+      elapsedSeconds: 40,
+    );
+    expect(speaker.spoken, isEmpty);
+  });
+
+  test('device mute blocks near-finish and encouragement', () async {
+    final coach = gatedCoach(
+      deviceMuted: true,
+      now: () => DateTime.utc(2026, 9, 27, 8),
+    );
+    await coach.onRunStarted();
+    await coach.onRunProgress(
+      previousKm: 0.7,
+      currentKm: 0.85,
+      elapsedSeconds: 180,
+      targetKm: 1,
+    );
+    expect(speaker.spoken, isEmpty);
+  });
+
   test('unmapped Phase 3a ids (future HR/hill/rank) stay silent', () async {
     final coach = gatedCoach(now: () => DateTime.utc(2026, 9, 13, 7));
     await coach.speakCue(

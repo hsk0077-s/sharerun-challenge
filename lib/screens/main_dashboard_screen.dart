@@ -17,6 +17,7 @@ import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/mini_bot/mini_bot_sheet.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
 import 'my_wallet_screen.dart';
@@ -290,6 +291,10 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
             ),
           ),
         ),
+      ),
+      floatingActionButton: const MiniBotEntryButton(
+        key: Key('mini-bot-entry-home'),
+        heroTag: 'mini-bot-home',
       ),
       bottomNavigationBar: embedNav
           ? DashboardBottomNav(

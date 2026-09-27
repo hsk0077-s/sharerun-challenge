@@ -137,6 +137,35 @@ void main() {
       '200미터 남았어요.',
     );
     expect(session.crossedSparseEncouragement(180)?.ko, '좋아요. 호흡 유지해요.');
+    session.claimHighHeartRate(180);
+    session.resetRun();
+    expect(session.claimHighHeartRate(180)?.id, VoiceCoachingCues.runHighHeartRate.id);
+  });
+
+  test('high heart rate speaks once when BPM crosses 170', () {
+    final session = VoiceCoachingSession();
+    expect(session.claimHighHeartRate(null), isNull);
+    expect(session.claimHighHeartRate(169), isNull);
+    expect(session.claimHighHeartRate(29), isNull);
+    expect(session.claimHighHeartRate(221), isNull);
+    expect(session.claimHighHeartRate(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
+    expect(session.claimHighHeartRate(185), isNull);
+  });
+
+  test('heart rate re-arms only after a plausible drop to 160', () {
+    final session = VoiceCoachingSession();
+    expect(session.claimHighHeartRate(175)?.ko, '심박이 높아요. 속도를 줄여요.');
+    expect(session.claimHighHeartRate(165), isNull);
+    expect(session.claimHighHeartRate(175), isNull);
+    expect(session.claimHighHeartRate(160), isNull);
+    expect(session.claimHighHeartRate(170)?.id, VoiceCoachingCues.runHighHeartRate.id);
+  });
+
+  test('releasing an unspoken heart-rate claim lets the next sample take it', () {
+    final session = VoiceCoachingSession();
+    expect(session.claimHighHeartRate(180), isNotNull);
+    session.releaseHighHeartRate();
+    expect(session.claimHighHeartRate(180)?.en, VoiceCoachingCues.runHighHeartRate.en);
   });
 
   test('welcome and harvest cues speak once per session', () {

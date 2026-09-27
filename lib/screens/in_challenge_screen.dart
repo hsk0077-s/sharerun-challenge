@@ -292,6 +292,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                 previousKm: previousKm,
                 currentKm: event.distanceKm,
                 elapsedSeconds: event.durationSeconds,
+                heartRateBpm: event.currentHeartRate,
               ),
         );
         if (event.routePoints.length > prev && event.routePoints.isNotEmpty) {

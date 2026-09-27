@@ -44,12 +44,17 @@ class VoiceCoachingController {
   }
 
   Future<void> speakCue(VoiceCue? cue, {String languageCode = 'ko'}) async {
-    if (cue == null) return;
+    await _trySpeak(cue, languageCode: languageCode);
+  }
+
+  Future<bool> _trySpeak(VoiceCue? cue, {String languageCode = 'ko'}) async {
+    if (cue == null) return false;
     final kind = voiceCoachCueKindForPhase3aId(cue.id);
-    if (kind == null) return;
+    if (kind == null) return false;
     final verdict = whenToSpeak.consider(kind: kind, context: _speakContext());
-    if (!verdict.shouldSpeak) return;
+    if (!verdict.shouldSpeak) return false;
     await _speaker.speak(cue.text(languageCode: languageCode));
+    return true;
   }
 
   Future<void> onEnabledChanged(bool enabled) async {
@@ -96,12 +101,22 @@ class VoiceCoachingController {
   /// [targetKm] is the race distance already shown in the room (1km / 3km).
   /// Omit it on a free run — no invented finish line.
   /// [elapsedSeconds] drives the sparse pep. Omit it and that cue stays off.
+  /// [heartRateBpm] is the challenge-tracker BPM. Omit it when the screen
+  /// has no heart-rate reading — no invented sensor.
   Future<void> onRunProgress({
     required double previousKm,
     required double currentKm,
     int? elapsedSeconds,
     double? targetKm,
-  }) {
+    int? heartRateBpm,
+  }) async {
+    final highHeartRate = session.claimHighHeartRate(heartRateBpm);
+    if (highHeartRate != null) {
+      if (!await _trySpeak(highHeartRate)) {
+        session.releaseHighHeartRate();
+      }
+      return;
+    }
     final kilometer = session.crossedRunKilometer(
       previousKm: previousKm,
       currentKm: currentKm,
@@ -114,7 +129,7 @@ class VoiceCoachingController {
     final encouragement = elapsedSeconds == null
         ? null
         : session.crossedSparseEncouragement(elapsedSeconds);
-    return speakCue(kilometer ?? nearFinish ?? encouragement);
+    await speakCue(kilometer ?? nearFinish ?? encouragement);
   }
 
   Future<void> onRunFinished() => speakCue(session.runFinished());

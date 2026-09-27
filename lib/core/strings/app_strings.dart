@@ -58,7 +58,7 @@ abstract final class AppStrings {
   static const deviceConnectionConnect = '기기 연결';
   static const deviceConnectionDisconnect = '연동 해제';
   static const deviceConnectionSingleActiveNote =
-      'Share Run Challenge는 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
+      '쉐어 런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
 
   // ── Garmin OAuth (Screen 4) ───────────────────────────────────────

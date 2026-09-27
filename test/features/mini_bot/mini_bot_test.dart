@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
+import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
@@ -187,8 +188,19 @@ void main() {
     await tester.pump();
 
     expect(executed?.destination, MiniBotDestination.challengeLobby);
-    expect(find.text(MiniBotCopy.executed(MiniBotDestination.challengeLobby)),
-        findsOneWidget);
+    final executedText =
+        MiniBotCopy.executed(MiniBotDestination.challengeLobby);
+    await tester.scrollUntilVisible(
+      find.text(executedText),
+      48,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('mini-bot-sheet')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.text(executedText), findsOneWidget);
   });
 
   testWidgets('mic hook feeds recognized text into the same confirm path',
@@ -312,9 +324,9 @@ void main() {
 
     await tester.enterText(find.byKey(const Key('mini-bot-input')), '챌린지 로비');
     await tester.tap(find.byKey(const Key('mini-bot-send')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('mini-bot-cancel')));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(executed, isNull);
     expect(find.text(MiniBotCopy.cancelled), findsOneWidget);
     expect(find.byKey(const Key('mini-bot-sheet')), findsOneWidget);
@@ -497,5 +509,144 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(MiniBotEntryButton), findsNothing);
+  });
+
+  testWidgets('shell mic sits above the bottom tab bar', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    const insets = FakeViewPadding(top: 47, bottom: 34);
+    tester.view.padding = insets;
+    tester.view.viewPadding = insets;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final router = GoRouter(
+      initialLocation: RouteNames.mainDashboard,
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return SrcBottomNav(navigationShell: navigationShell);
+          },
+          branches: [
+            for (final path in [
+              RouteNames.mainDashboard,
+              RouteNames.shop,
+              RouteNames.tournament,
+              RouteNames.crew,
+              RouteNames.myPage,
+            ])
+              StatefulShellBranch(
+                routes: [
+                  GoRoute(
+                    path: path,
+                    builder: (context, state) => const SizedBox.shrink(),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          walletProvider.overrideWith(_SeededWalletNotifier.new),
+          recentActivitiesProvider
+              .overrideWith((ref) => Stream.value(const [])),
+          authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
+        ],
+        child: MaterialApp.router(
+          theme: SrcTheme.light,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final fab = tester.getRect(find.byType(MiniBotEntryButton));
+    final nav = tester.getRect(find.byType(BottomNavigationBar));
+    expect(fab.overlaps(nav), isFalse);
+    expect(
+      nav.top - fab.bottom,
+      greaterThanOrEqualTo(miniBotFabBottomClearance),
+    );
+    for (final label in [
+      AppStrings.dashboardNavHome,
+      AppStrings.dashboardNavStore,
+      AppStrings.dashboardNavChallenge,
+      AppStrings.dashboardNavCrew,
+      AppStrings.dashboardNavMyPage,
+    ]) {
+      expect(
+        fab.overlaps(tester.getRect(find.text(label))),
+        isFalse,
+        reason: label,
+      );
+    }
+
+    router.go(RouteNames.tournament);
+    await tester.pumpAndSettle();
+    final lobbyFab =
+        tester.getRect(find.byKey(const Key('mini-bot-entry-lobby')));
+    final lobbyNav = tester.getRect(find.byType(BottomNavigationBar));
+    expect(lobbyFab.overlaps(lobbyNav), isFalse);
+    expect(
+      lobbyNav.top - lobbyFab.bottom,
+      greaterThanOrEqualTo(miniBotFabBottomClearance),
+    );
+  });
+
+  testWidgets('open sheet keeps chips above the speak control', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    const insets = FakeViewPadding(top: 47, bottom: 34);
+    tester.view.padding = insets;
+    tester.view.viewPadding = insets;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPadding);
+    addTearDown(tester.view.resetViewPadding);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.light,
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: const TextScaler.linear(1.3),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
+        home: const Scaffold(
+          body: SizedBox.expand(),
+          floatingActionButton: MiniBotEntryButton(
+            heroTag: 'mini-bot-sheet-layout',
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.byType(MiniBotEntryButton));
+    await tester.pumpAndSettle();
+
+    final sheet = tester.getRect(find.byKey(const Key('mini-bot-sheet')));
+    final mic = tester.getRect(find.byKey(const Key('mini-bot-mic')));
+    expect(mic.bottom, lessThanOrEqualTo(sheet.bottom));
+    for (final key in const [
+      'mini-bot-chip-intro',
+      'mini-bot-chip-join',
+    ]) {
+      final chip = tester.getRect(find.byKey(Key(key)));
+      expect(chip.overlaps(mic), isFalse, reason: key);
+      expect(mic.top - chip.bottom, greaterThanOrEqualTo(8), reason: key);
+      expect(chip.top, greaterThanOrEqualTo(sheet.top), reason: key);
+      expect(chip.bottom, lessThanOrEqualTo(sheet.bottom), reason: key);
+    }
   });
 }

@@ -6,6 +6,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../../core/config/app_env.dart';
 import '../../../data/repositories/purchase_repository.dart';
 import '../../../data/repositories/wallet_repository.dart';
+import '../models/coach_plus_product.dart';
 import '../models/iap_ui_event.dart';
 import '../models/share_iap_product.dart';
 
@@ -16,19 +17,23 @@ class IapPurchaseController {
     required WalletRepository walletRepository,
     required String? Function() readUid,
     void Function(int shareAmount)? onLocalProvisionFallback,
+    Future<void> Function(String productId)? onCoachPlusPurchased,
     InAppPurchase? iap,
   })  : _purchaseRepository = purchaseRepository,
         _walletRepository = walletRepository,
         _readUid = readUid,
         _onLocalProvisionFallback = onLocalProvisionFallback,
+        _onCoachPlusPurchased = onCoachPlusPurchased,
         _iap = iap ?? InAppPurchase.instance {
     _bindPurchaseStream();
+    _refreshCoachPlusOnAndroid();
   }
 
   final PurchaseRepository _purchaseRepository;
   final WalletRepository _walletRepository;
   final String? Function() _readUid;
   final void Function(int shareAmount)? _onLocalProvisionFallback;
+  final Future<void> Function(String productId)? _onCoachPlusPurchased;
   final InAppPurchase _iap;
 
   StreamSubscription<List<PurchaseDetails>>? _subscription;
@@ -43,6 +48,104 @@ class IapPurchaseController {
     } catch (error, stackTrace) {
       debugPrint('IAP isAvailable failed: $error\n$stackTrace');
       return false;
+    }
+  }
+
+  /// Store formatted prices for the Coach+ sheet. Empty when the store is down.
+  Future<Map<String, String>> queryCoachPlusPriceLabels() async {
+    final available = await isStoreAvailable();
+    if (!available) return const {};
+    try {
+      final response = await _iap.queryProductDetails(CoachPlusPlan.ids);
+      final labels = <String, String>{};
+      for (final plan in CoachPlusPlan.catalog) {
+        final choice = chooseCoachPlusOffer(
+          productId: plan.productId,
+          details: response.productDetails,
+          fallbackPriceLabel: plan.fallbackPriceLabel,
+        );
+        if (choice != null) labels[plan.productId] = choice.priceLabel;
+      }
+      return labels;
+    } catch (error, stackTrace) {
+      debugPrint('Coach+ queryProductDetails failed: $error\n$stackTrace');
+      return const {};
+    }
+  }
+
+  Future<void> buyCoachPlus(CoachPlusPlan plan) async {
+    final available = await isStoreAvailable();
+    if (!available) {
+      _emit(
+        const IapUiEvent(
+          kind: IapUiKind.unavailable,
+          message: 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+      );
+      return;
+    }
+
+    try {
+      final response = await _iap.queryProductDetails({plan.productId});
+      final choice = chooseCoachPlusOffer(
+        productId: plan.productId,
+        details: response.productDetails,
+        fallbackPriceLabel: plan.fallbackPriceLabel,
+      );
+      if (response.error != null || choice == null) {
+        _emit(
+          IapUiEvent(
+            kind: IapUiKind.error,
+            message: '상품(${plan.productId})을 찾지 못했습니다. Play Console / App Store Connect 등록을 확인해 주세요.',
+          ),
+        );
+        return;
+      }
+      final launched = await _iap.buyNonConsumable(
+        purchaseParam: PurchaseParam(productDetails: choice.purchase),
+      );
+      if (!launched) {
+        _emit(
+          const IapUiEvent(
+            kind: IapUiKind.error,
+            message: '결제 창을 열 수 없습니다.',
+          ),
+        );
+      }
+    } catch (error, stackTrace) {
+      debugPrint('IAP buyCoachPlus failed: $error\n$stackTrace');
+      _emit(
+        const IapUiEvent(
+          kind: IapUiKind.error,
+          message: '결제를 시작하지 못했습니다. 네트워크 상태를 확인해 주세요.',
+        ),
+      );
+    }
+  }
+
+  /// Restores store purchases. Coach+ rows grant entitlement. SHARE
+  /// consumables on this restored batch are left untouched.
+  Future<void> restorePurchases() async {
+    final available = await isStoreAvailable();
+    if (!available) {
+      _emit(
+        const IapUiEvent(
+          kind: IapUiKind.unavailable,
+          message: 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+      );
+      return;
+    }
+    try {
+      await _iap.restorePurchases();
+    } catch (error, stackTrace) {
+      debugPrint('IAP restorePurchases failed: $error\n$stackTrace');
+      _emit(
+        const IapUiEvent(
+          kind: IapUiKind.error,
+          message: '구매 복원에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+        ),
+      );
     }
   }
 
@@ -103,6 +206,14 @@ class IapPurchaseController {
 
   Future<void> _handlePurchase(PurchaseDetails purchase) async {
     try {
+      if (purchase.status == PurchaseStatus.restored &&
+          !CoachPlusPlan.isCoachPlusId(purchase.productID)) {
+        return;
+      }
+      if (CoachPlusPlan.isCoachPlusId(purchase.productID)) {
+        await _handleCoachPlusPurchase(purchase);
+        return;
+      }
       switch (purchase.status) {
         case PurchaseStatus.pending:
           _emit(
@@ -141,6 +252,53 @@ class IapPurchaseController {
         ),
       );
     }
+  }
+
+  Future<void> _handleCoachPlusPurchase(PurchaseDetails purchase) async {
+    if (purchase.status == PurchaseStatus.pending) {
+      _emit(
+        const IapUiEvent(
+          kind: IapUiKind.pending,
+          message: 'Coach+ 결제가 진행 중입니다.',
+        ),
+      );
+      return;
+    }
+    if (purchase.status == PurchaseStatus.purchased ||
+        purchase.status == PurchaseStatus.restored) {
+      try {
+        await _onCoachPlusPurchased?.call(purchase.productID);
+      } catch (error, stackTrace) {
+        debugPrint('Coach+ grant failed: $error\n$stackTrace');
+      }
+      await _completeQuietly(purchase);
+      if (purchase.status == PurchaseStatus.purchased) {
+        _emit(
+          const IapUiEvent(
+            kind: IapUiKind.verified,
+            message: 'Coach+ 구독이 활성화되었습니다.',
+          ),
+        );
+      }
+      return;
+    }
+    if (purchase.status == PurchaseStatus.error) {
+      await _completeQuietly(purchase);
+      _emit(
+        IapUiEvent(
+          kind: IapUiKind.error,
+          message: purchase.error?.message ?? 'Coach+ 결제가 실패했습니다.',
+        ),
+      );
+      return;
+    }
+    await _completeQuietly(purchase);
+    _emit(
+      const IapUiEvent(
+        kind: IapUiKind.canceled,
+        message: 'Coach+ 결제가 취소되었습니다.',
+      ),
+    );
   }
 
   Future<void> _submitReceiptForBackendVerification(
@@ -267,6 +425,22 @@ class IapPurchaseController {
     } catch (error, stackTrace) {
       debugPrint('IAP completePurchase failed: $error\n$stackTrace');
     }
+  }
+
+  /// Silent Play refresh. Restored SHARE rows are ignored in [_handlePurchase]
+  /// so this does not re-credit consumable packs. iOS is not called here
+  /// because restore can prompt for an Apple ID.
+  void _refreshCoachPlusOnAndroid() {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    unawaited(() async {
+      final available = await isStoreAvailable();
+      if (!available) return;
+      try {
+        await _iap.restorePurchases();
+      } catch (error, stackTrace) {
+        debugPrint('Coach+ Android refresh failed: $error\n$stackTrace');
+      }
+    }());
   }
 
   void _bindPurchaseStream() {

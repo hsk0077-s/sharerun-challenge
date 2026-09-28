@@ -35,7 +35,7 @@ class _InAppBillingScreenState extends ConsumerState<InAppBillingScreen> {
       final event = next.asData?.value;
       if (event == null || !mounted) return;
       setState(() => _busyProductId = '');
-      if (event.isVerified) {
+      if (event.isVerified && event.shareAmount > 0) {
         _popSuccess();
       }
     });

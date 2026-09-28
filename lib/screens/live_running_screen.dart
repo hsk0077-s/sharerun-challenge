@@ -12,6 +12,7 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import 'onboarding_run_result_screen.dart';
@@ -39,6 +40,8 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   };
 
   bool isRunning = false;
+  VoiceCoachingController? _voiceCoach;
+  int? _voiceCoachEpoch;
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionStreamSubscription;
   Timer? _timer;
@@ -292,12 +295,12 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
         });
         if (isRunning) {
           unawaited(
-            ref.read(voiceCoachingControllerProvider).onRunProgress(
-                  previousKm: previousKm,
-                  currentKm: _distanceInMeters / 1000.0,
-                  elapsedSeconds: _elapsedSeconds,
-                  targetKm: _raceTargetKm,
-                ),
+            _voiceCoachOf().onRunProgress(
+              previousKm: previousKm,
+              currentKm: _distanceInMeters / 1000.0,
+              elapsedSeconds: _elapsedSeconds,
+              targetKm: _raceTargetKm,
+            ),
           );
         }
         _mapController?.animateCamera(CameraUpdate.newLatLng(target));
@@ -320,8 +323,17 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       if (!mounted || !isRunning) return;
       setState(() => _elapsedSeconds++);
     });
+    final coach = _voiceCoachOf();
+    final started = coach.onRunStarted();
+    _voiceCoachEpoch = coach.liveSessionEpoch;
+    unawaited(started);
     unawaited(_startPositionStream());
-    unawaited(ref.read(voiceCoachingControllerProvider).onRunStarted());
+  }
+
+  VoiceCoachingController _voiceCoachOf() {
+    final coach = ref.read(voiceCoachingControllerProvider);
+    _voiceCoach = coach;
+    return coach;
   }
 
   void _stopTracking() {
@@ -334,7 +346,8 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   void _onFinish() {
     setState(() => isRunning = false);
     _stopTracking();
-    unawaited(ref.read(voiceCoachingControllerProvider).onRunFinished());
+    final coach = _voiceCoach ?? _voiceCoachOf();
+    unawaited(coach.onRunFinished());
     if (!mounted) return;
     Navigator.push(
       context,
@@ -346,6 +359,11 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   @override
   void dispose() {
+    final coach = _voiceCoach;
+    final epoch = _voiceCoachEpoch;
+    if (coach != null && epoch != null) {
+      unawaited(coach.onSessionDismissed(epoch));
+    }
     _stopTracking();
     _mapController = null;
     super.dispose();

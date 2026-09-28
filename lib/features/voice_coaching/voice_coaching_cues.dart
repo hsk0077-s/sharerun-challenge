@@ -152,11 +152,33 @@ abstract final class VoiceCoachingCues {
     };
   }
 
-  static VoiceCue runKm(int km) {
+  /// Free kilometer line. [coachPlus] is one short tone on the same event —
+  /// still a single sentence, not a guided-run script.
+  static VoiceCue runKm(int km, {bool coachPlus = false}) {
+    if (coachPlus) {
+      return VoiceCue(
+        id: 'run.km.$km',
+        ko: km == 1 ? '1킬로미터. 호흡 유지하고 가요.' : '$km킬로미터. 이 페이스 유지해요.',
+        en: km == 1
+            ? 'One kilometer. Keep your breath.'
+            : '$km kilometers. Hold this pace.',
+      );
+    }
     return VoiceCue(
       id: 'run.km.$km',
       ko: km == 1 ? '1킬로미터. 페이스 좋아요.' : '$km킬로미터 통과. 잘하고 있어요.',
       en: km == 1 ? 'One kilometer. Good pace.' : '$km kilometers. Keep it up.',
     );
+  }
+
+  /// Coach+ keeps the free cue id so the priority gate still sees distance.
+  static VoiceCue? coachPlusDistanceTone(
+    VoiceCue? cue, {
+    required bool coachPlus,
+  }) {
+    if (!coachPlus || cue == null || !cue.id.startsWith('run.km.')) return cue;
+    final km = int.tryParse(cue.id.substring('run.km.'.length));
+    if (km == null || km < 1) return cue;
+    return runKm(km, coachPlus: true);
   }
 }

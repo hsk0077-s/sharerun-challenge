@@ -23,6 +23,7 @@ import '../features/run_tracking/services/gps_tracking_service.dart';
 import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
+import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import 'run_result_screen.dart';
@@ -61,6 +62,8 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
   BitmapDescriptor? _ghostIcon;
   var _starting = true;
   var _sessionStarted = false;
+  VoiceCoachingController? _voiceCoach;
+  int? _voiceCoachEpoch;
   var _validating = false;
   String? _startError;
   GpsPermissionResult? _permissionIssue;
@@ -71,8 +74,19 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
     Future.microtask(_bootstrap);
   }
 
+  VoiceCoachingController _voiceCoachOf() {
+    final coach = ref.read(voiceCoachingControllerProvider);
+    _voiceCoach = coach;
+    return coach;
+  }
+
   @override
   void dispose() {
+    final coach = _voiceCoach;
+    final epoch = _voiceCoachEpoch;
+    if (coach != null && epoch != null) {
+      unawaited(coach.onSessionDismissed(epoch));
+    }
     unawaited(_telemetrySubscription?.cancel());
     _mapController?.dispose();
     super.dispose();
@@ -288,12 +302,12 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
         final previousKm = _telemetry.distanceKm;
         setState(() => _telemetry = event);
         unawaited(
-          ref.read(voiceCoachingControllerProvider).onRunProgress(
-                previousKm: previousKm,
-                currentKm: event.distanceKm,
-                elapsedSeconds: event.durationSeconds,
-                heartRateBpm: event.currentHeartRate,
-              ),
+          _voiceCoachOf().onRunProgress(
+            previousKm: previousKm,
+            currentKm: event.distanceKm,
+            elapsedSeconds: event.durationSeconds,
+            heartRateBpm: event.currentHeartRate,
+          ),
         );
         if (event.routePoints.length > prev && event.routePoints.isNotEmpty) {
           final p = event.routePoints.last;
@@ -315,7 +329,10 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
         _startError = null;
         _permissionIssue = null;
       });
-      unawaited(ref.read(voiceCoachingControllerProvider).onRunStarted());
+      final coach = _voiceCoachOf();
+      final started = coach.onRunStarted();
+      _voiceCoachEpoch = coach.liveSessionEpoch;
+      unawaited(started);
     } on GpsPermissionException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -335,7 +352,8 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
   }
 
   Future<void> _finishAndValidate() async {
-    unawaited(ref.read(voiceCoachingControllerProvider).onRunFinished());
+    final coach = _voiceCoachOf();
+    unawaited(coach.onRunFinished());
     setState(() => _validating = true);
     final authUser = ref.read(authStateChangesProvider).value;
     final validateBlocked = HomeStartGate.validateBlockReason(

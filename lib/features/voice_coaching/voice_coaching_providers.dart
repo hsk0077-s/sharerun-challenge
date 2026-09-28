@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../iap/providers/coach_plus_providers.dart';
+import 'voice_coach_output_mute.dart';
 import 'voice_coaching_controller.dart';
 import 'voice_coaching_cues.dart';
 import 'voice_coaching_preference_store.dart';
@@ -14,6 +15,10 @@ final voiceCoachPlanProvider = Provider<VoiceCoachPlan>(
 final voiceCoachingPreferenceStoreProvider =
     Provider<VoiceCoachingPreferenceStore>(
   (ref) => const VoiceCoachingPreferenceStore(),
+);
+
+final voiceCoachMuteProbeProvider = Provider<VoiceCoachMuteProbe>(
+  (ref) => const VoiceCoachMuteProbe(),
 );
 
 final voiceCoachingSpeakerProvider = Provider<VoiceCoachingSpeaker>((ref) {
@@ -69,6 +74,7 @@ final voiceCoachingControllerProvider = Provider<VoiceCoachingController>(
       onCoachPlusUpsell: () {
         ref.read(coachPlusUpsellCountProvider.notifier).request();
       },
+      refreshDeviceMuted: () => ref.read(voiceCoachMuteProbeProvider).isMuted(),
     );
   },
 );

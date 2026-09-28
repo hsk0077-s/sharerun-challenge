@@ -28,6 +28,7 @@ import '../features/pedometer/pedometer_step_truth.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/pedometer/walking_challenge_share.dart';
 import '../features/pedometer/walking_look.dart';
+import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_walk_banner.dart';
 import '../features/profile/providers/practice_streak_provider.dart';
@@ -645,7 +646,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       );
     }
     unawaited(_persistDailyResetState());
-    ref.read(voiceCoachingControllerProvider).session.resetWalkDay();
+    _voiceCoachOf().session.resetWalkDay();
     return true;
   }
 
@@ -749,15 +750,20 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     unawaited(_persistKm(km, steps: effective, syncRemote: false));
     unawaited(_syncForegroundNotification(effective));
     unawaited(_maybeGrantLockedRewards(effective));
+    final coach = _voiceCoachOf();
+    final beforeEpoch = coach.liveSessionEpoch;
     unawaited(
-      ref.read(voiceCoachingControllerProvider).onWalkingProgress(
-            previousSteps: previousSteps,
-            currentSteps: effective,
-            previousKm: previousKm,
-            currentKm: km,
-            targetKm: _tier.targetKm,
-          ),
+      coach.onWalkingProgress(
+        previousSteps: previousSteps,
+        currentSteps: effective,
+        previousKm: previousKm,
+        currentKm: km,
+        targetKm: _tier.targetKm,
+      ),
     );
+    if (coach.liveSessionEpoch != beforeEpoch) {
+      _voiceCoachEpoch = coach.liveSessionEpoch;
+    }
   }
 
   void _onIsolateSteps(int _) {
@@ -1328,8 +1334,22 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     } catch (_) {}
   }
 
+  VoiceCoachingController? _voiceCoach;
+  int? _voiceCoachEpoch;
+
+  VoiceCoachingController _voiceCoachOf() {
+    final coach = ref.read(voiceCoachingControllerProvider);
+    _voiceCoach = coach;
+    return coach;
+  }
+
   @override
   void dispose() {
+    final coach = _voiceCoach;
+    final epoch = _voiceCoachEpoch;
+    if (coach != null && epoch != null) {
+      unawaited(coach.onSessionDismissed(epoch));
+    }
     SoloPedometerForeground.removeLiveStepsListener(_onIsolateSteps);
     WidgetsBinding.instance.removeObserver(this);
     _stillTimer?.cancel();
@@ -1344,7 +1364,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   Future<void> _announceWalkingCoachStart() async {
     await ref.read(voiceCoachingEnabledProvider.notifier).ensureLoaded();
     if (!mounted) return;
-    await ref.read(voiceCoachingControllerProvider).onWalkingOpened();
+    final coach = _voiceCoachOf();
+    final beforeEpoch = coach.liveSessionEpoch;
+    await coach.onWalkingOpened();
+    if (coach.liveSessionEpoch != beforeEpoch) {
+      _voiceCoachEpoch = coach.liveSessionEpoch;
+    }
   }
 
   void _refreshPendingShare(int steps) {
@@ -1421,9 +1446,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         source: 'jena',
       );
       if (minted || credited > 0) {
-        unawaited(
-          ref.read(voiceCoachingControllerProvider).onHarvestCompleted(),
-        );
+        final coach = _voiceCoachOf();
+        final beforeEpoch = coach.liveSessionEpoch;
+        unawaited(coach.onHarvestCompleted());
+        if (coach.liveSessionEpoch != beforeEpoch) {
+          _voiceCoachEpoch = coach.liveSessionEpoch;
+        }
       }
     } catch (e) {
       debugPrint('[HARVEST] secured credit failed: $e');
@@ -1452,9 +1480,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           credited: toClaim,
           source: 'local',
         );
-        unawaited(
-          ref.read(voiceCoachingControllerProvider).onHarvestCompleted(),
-        );
+        final coach = _voiceCoachOf();
+        final beforeEpoch = coach.liveSessionEpoch;
+        unawaited(coach.onHarvestCompleted());
+        if (coach.liveSessionEpoch != beforeEpoch) {
+          _voiceCoachEpoch = coach.liveSessionEpoch;
+        }
       } else if (mounted) {
         setState(() {
           _collectedShareCoins = previousCollected;

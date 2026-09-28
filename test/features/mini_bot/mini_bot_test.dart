@@ -196,7 +196,15 @@ void main() {
     expect(subscription.confirmLabel, '이동하기');
     expect(subscription.reply, contains('바꾸지 않아요'));
 
-    for (final phrase in ['코치', 'Coach+', '심박 코칭', '구독 코치']) {
+    for (final phrase in [
+      '코치',
+      'Coach+',
+      '심박 코칭',
+      '코칭',
+      '심박',
+      'coach',
+      '구독 코치',
+    ]) {
       final coach = MiniBotInterpreter.interpret(phrase);
       expect(coach.intent, MiniBotIntent.coachPlus, reason: phrase);
       expect(coach.destination, MiniBotDestination.coachPlus, reason: phrase);
@@ -877,5 +885,46 @@ void main() {
       expect(chip.top, greaterThanOrEqualTo(sheet.top), reason: key);
       expect(chip.bottom, lessThanOrEqualTo(sheet.bottom), reason: key);
     }
+  });
+
+  testWidgets('coach chip confirm waits, then routes to Coach+ without charging',
+      (tester) async {
+    final voice = _RecordingVoice();
+    MiniBotRead? executed;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.light,
+        home: Scaffold(
+          body: MiniBotSheet(
+            voice: voice,
+            onExecute: (read) => executed = read,
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final chip = find.byKey(const Key('mini-bot-chip-coach-plus'));
+    await tester.scrollUntilVisible(
+      chip,
+      160,
+      scrollable: find.descendant(
+        of: find.byKey(const Key('mini-bot-chips')),
+        matching: find.byType(Scrollable),
+      ),
+    );
+    await tester.tap(chip);
+    await tester.pump();
+
+    expect(executed, isNull);
+    expect(find.text('이동하기'), findsOneWidget);
+    expect(find.textContaining('결제하지 않아요'), findsWidgets);
+
+    await tester.tap(find.byKey(const Key('mini-bot-confirm')));
+    await tester.pump();
+
+    expect(executed?.destination, MiniBotDestination.coachPlus);
+    expect(executed?.intent, MiniBotIntent.coachPlus);
+    expect(MiniBotCopy.executed(executed!.destination), contains('결제되지 않아요'));
   });
 }

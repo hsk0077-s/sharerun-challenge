@@ -447,11 +447,10 @@ abstract final class AppStrings {
   static const subscriptionDonationStatus =
       '매월 10,000 SHARE 자동 후원 중\n(다음 결제일: 2026.07.15)';
   static const subscriptionPremiumTitle = 'SRC 프리미엄 멤버십';
-  static const subscriptionPremiumBenefit1 = '모든 전면 광고 제거';
-  static const subscriptionPremiumBenefit2 = 'AI 심층 분석 리포트 무제한';
-  static const subscriptionPremiumPrice = '월 4,900원 (첫 달 무료 시작하기)';
-  static const subscriptionPaymentMethodCta =
-      '정기 결제 수단 변경하기 (카드/계좌)';
+  static const subscriptionPremiumBenefit1 = '모든 전면 광고 제거 (예정)';
+  static const subscriptionPremiumBenefit2 = 'AI 심층 분석 리포트 무제한 (예정)';
+  static const subscriptionPremiumNotice =
+      '안내용이에요. 여기서는 결제할 수 없고, 유료 상품은 Coach+예요.';
 
   // ── Hall of Fame (Screen 26) ──────────────────────────────────────
   static const hallOfFameTitle = '명예의 전당 (Hall of Fame)';

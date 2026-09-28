@@ -7,9 +7,11 @@ import 'package:go_router/go_router.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
+import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/models/iap_ui_event.dart';
 import '../features/iap/models/share_iap_product.dart';
 import '../features/iap/providers/iap_providers.dart';
+import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 
 /// src-14 Google Play 인앱 충전소.
 class InAppBillingScreen extends ConsumerStatefulWidget {
@@ -81,6 +83,8 @@ class _InAppBillingScreenState extends ConsumerState<InAppBillingScreen> {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                     children: [
+                      const _CoachPlusBillingEntry(),
+                      const SizedBox(height: 14),
                       for (final product in ShareIapProduct.catalog) ...[
                         _IapProductCard(
                           product: product,
@@ -139,6 +143,58 @@ class _InAppBillingScreenState extends ConsumerState<InAppBillingScreen> {
       }
       GoRouter.maybeOf(context)?.pop();
     } catch (_) {}
+  }
+}
+
+class _CoachPlusBillingEntry extends StatelessWidget {
+  const _CoachPlusBillingEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final monthly = CoachPlusPlan.monthly;
+    final yearly = CoachPlusPlan.yearly;
+    return Material(
+      color: AppColors.surfaceWhite.withValues(alpha: 0.78),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        key: const Key('coach-plus-billing'),
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => CoachPlusUpsellSheet.show(context),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.tealAccent, width: 1.6),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Coach+',
+                style: AppTextStyles.agreementLabel.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
+                style: AppTextStyles.caption.copyWith(fontSize: 12),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
+                '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
+                style: AppTextStyles.agreementLabel.copyWith(
+                  color: AppColors.tealAccent,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

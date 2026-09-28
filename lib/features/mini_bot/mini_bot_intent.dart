@@ -1,5 +1,6 @@
 import '../../core/challenge/challenge_entry_fee.dart';
 import '../../core/strings/app_strings.dart';
+import '../iap/models/coach_plus_product.dart';
 import '../iap/models/share_iap_product.dart';
 import '../shop/providers/shop_tab_provider.dart';
 
@@ -17,6 +18,7 @@ enum MiniBotIntent {
   sponsorRunner,
   brandSponsor,
   subscription,
+  coachPlus,
   battlePass,
   unknown,
 }
@@ -32,6 +34,7 @@ enum MiniBotDestination {
   personalSponsor,
   brandSponsor,
   subscription,
+  coachPlus,
   battlePass,
 }
 
@@ -66,6 +69,7 @@ class MiniBotRead {
           '참가하기',
         MiniBotDestination.challengeLobby ||
         MiniBotDestination.subscription ||
+        MiniBotDestination.coachPlus ||
         MiniBotDestination.battlePass ||
         MiniBotDestination.none =>
           '이동하기',
@@ -81,6 +85,7 @@ class MiniBotRead {
         MiniBotDestination.personalSponsor => MiniBotCopy.sponsorAmount,
         MiniBotDestination.brandSponsor => MiniBotCopy.brandAmount,
         MiniBotDestination.subscription => MiniBotCopy.subscriptionAmount,
+        MiniBotDestination.coachPlus => MiniBotCopy.coachPlusAmount,
         MiniBotDestination.battlePass => MiniBotCopy.battlePassAmount,
         MiniBotDestination.challengeLobby || MiniBotDestination.none => null,
       };
@@ -104,6 +109,7 @@ abstract final class MiniBotPrompts {
   static const sponsor = '스폰서';
   static const runnerSponsor = '러너 후원';
   static const subscription = '구독';
+  static const coachPlus = 'Coach+';
   static const battlePass = '배틀패스';
 
   /// Guide chips first, then monetization. Confirm still opens the screen only.
@@ -118,6 +124,7 @@ abstract final class MiniBotPrompts {
     MiniBotChip(id: 'cpr', label: cpr),
     MiniBotChip(id: 'safeguard', label: safeGuard),
     MiniBotChip(id: 'subscription', label: subscription),
+    MiniBotChip(id: 'coach-plus', label: coachPlus),
     MiniBotChip(id: 'battle-pass', label: battlePass),
   ];
 }
@@ -184,6 +191,16 @@ abstract final class MiniBotCopy {
   static String get subscription => '구독 관리 화면으로 이동할까요? $subscriptionAmount. '
       '이동만 하고, 구독이나 결제는 바꾸지 않아요.';
 
+  static String get coachPlusAmount {
+    final monthly = CoachPlusPlan.monthly;
+    final yearly = CoachPlusPlan.yearly;
+    return '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
+        '${yearly.periodLabel} ${yearly.fallbackPriceLabel}';
+  }
+
+  static String get coachPlus => 'Coach+ 안내를 열까요? 심박·상황에 맞춘 심층 코칭이에요. '
+      '$coachPlusAmount. 이동만 하고, 여기서는 결제하지 않아요.';
+
   static String get battlePass => '배틀런 패스 화면으로 이동할까요? $battlePassAmount. '
       '여기서는 패스를 구매하지 않아요. 보상 화면만 열어요.';
 
@@ -191,7 +208,7 @@ abstract final class MiniBotCopy {
 
   static const unknown = '그 말은 아직 연결되지 않았어요. '
       '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
-      'SHARE 충전, 심폐소생권, 세이프가드, 구독, 배틀패스 중에서 말해 주세요.';
+      'SHARE 충전, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.';
 
   static const micDenied = '마이크 권한이 없어 음성을 듣지 못했어요. '
       '한글로 입력하거나 아래 버튼을 눌러 주세요.';
@@ -222,6 +239,8 @@ abstract final class MiniBotCopy {
       MiniBotDestination.brandSponsor => '브랜드 스폰서 챌린지로 이동할게요. '
           '참가는 그 화면에서 직접 해 주세요. 여기서는 참가되지 않아요.',
       MiniBotDestination.subscription => '구독 관리 화면으로 이동할게요. 여기서는 구독을 바꾸지 않아요.',
+      MiniBotDestination.coachPlus => 'Coach+ 안내를 열게요. '
+          '월간·연간은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
       MiniBotDestination.battlePass => '배틀런 패스 화면으로 이동할게요. 여기서는 패스를 구매하지 않아요.',
       MiniBotDestination.none => cancelled,
     };
@@ -263,6 +282,15 @@ abstract final class MiniBotInterpreter {
         intent: MiniBotIntent.battlePass,
         destination: MiniBotDestination.battlePass,
         reply: MiniBotCopy.battlePass,
+        needsConfirm: true,
+      );
+    }
+
+    if (_hasCoachPlus(text)) {
+      return MiniBotRead(
+        intent: MiniBotIntent.coachPlus,
+        destination: MiniBotDestination.coachPlus,
+        reply: MiniBotCopy.coachPlus,
         needsConfirm: true,
       );
     }
@@ -371,6 +399,13 @@ abstract final class MiniBotInterpreter {
     return text.contains('배틀패스') ||
         text.contains('배틀 패스') ||
         text.contains('배틀런');
+  }
+
+  static bool _hasCoachPlus(String text) {
+    return text.contains('coach') ||
+        text.contains('코치') ||
+        text.contains('코칭') ||
+        text.contains('심박');
   }
 
   static bool _hasSubscription(String text) {

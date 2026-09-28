@@ -13,6 +13,8 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
+import '../features/iap/models/coach_plus_product.dart';
+import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
@@ -281,6 +283,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         valueLabel: _format(wallet.valueBalance),
                         onCharge: _onOpenBilling,
                       ),
+                      const SizedBox(height: 14),
+                      const _CoachPlusStoreEntry(),
                       const SizedBox(height: 18),
                       KeyedSubtree(
                         key: _fundingKey,
@@ -726,6 +730,65 @@ class _ItemBuyCard extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CoachPlusStoreEntry extends StatelessWidget {
+  const _CoachPlusStoreEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final monthly = CoachPlusPlan.monthly;
+    final yearly = CoachPlusPlan.yearly;
+    return Material(
+      color: AppColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        key: const Key('coach-plus-store'),
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => CoachPlusUpsellSheet.show(context),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Coach+',
+                      style: AppTextStyles.agreementLabel.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '심박·상황에 맞춘 심층 코칭',
+                      style: AppTextStyles.caption.copyWith(fontSize: 12),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
+                      '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
+                      style: AppTextStyles.agreementLabel.copyWith(
+                        color: AppColors.tealAccent,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.tealAccent,
               ),
             ],
           ),

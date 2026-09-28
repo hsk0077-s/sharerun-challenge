@@ -20,8 +20,6 @@ class SubscriptionManagementScreen extends StatefulWidget {
 
 class _SubscriptionManagementScreenState
     extends State<SubscriptionManagementScreen> {
-  static const _saveNavy = Color(0xFF1A2B4A);
-
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -29,11 +27,6 @@ class _SubscriptionManagementScreenState
   );
 
   var _donationEnabled = true;
-  var _premiumEnabled = false;
-
-  void _onChangePayment() {
-    debugPrint('버튼 클릭됨');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +35,6 @@ class _SubscriptionManagementScreenState
       body: SRCGradientBackground(
         gradient: _screenGradient,
         child: SafeArea(
-          bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -62,46 +54,10 @@ class _SubscriptionManagementScreenState
                             setState(() => _donationEnabled = value),
                       ),
                       const SizedBox(height: 20),
-                      _PremiumMembershipCard(
-                        enabled: _premiumEnabled,
-                        onChanged: (value) =>
-                            setState(() => _premiumEnabled = value),
-                      ),
+                      const _PremiumMembershipCard(),
                       const SizedBox(height: 20),
                       const _CoachPlusSubscriptionCard(),
                     ],
-                  ),
-                ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.sizeOf(context).width * 0.9,
-                      height: AppShapes.buttonHeight,
-                      child: Material(
-                        color: _saveNavy,
-                        borderRadius: BorderRadius.circular(
-                          AppShapes.cardRadius,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: InkWell(
-                          onTap: _onChangePayment,
-                          child: Center(
-                            child: Text(
-                              AppStrings.subscriptionPaymentMethodCta,
-                              style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -242,54 +198,38 @@ class _DonationSubscriptionCard extends StatelessWidget {
 }
 
 class _PremiumMembershipCard extends StatelessWidget {
-  const _PremiumMembershipCard({
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final bool enabled;
-  final ValueChanged<bool> onChanged;
+  const _PremiumMembershipCard();
 
   @override
   Widget build(BuildContext context) {
-    return _SubscriptionWhiteCard(
+    return const _SubscriptionWhiteCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Expanded(
-                child: Text(
-                  AppStrings.subscriptionPremiumTitle,
-                  style: TextStyle(
-                    fontFamily: 'Pretendard',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textBlack,
-                    height: 1.3,
-                  ),
-                ),
-              ),
-              CupertinoSwitch(
-                value: enabled,
-                activeTrackColor: AppColors.primaryMint,
-                onChanged: onChanged,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const _BenefitRow(text: AppStrings.subscriptionPremiumBenefit1),
-          const SizedBox(height: 6),
-          const _BenefitRow(text: AppStrings.subscriptionPremiumBenefit2),
-          const Spacer(),
-          const Text(
-            AppStrings.subscriptionPremiumPrice,
+          Text(
+            AppStrings.subscriptionPremiumTitle,
             style: TextStyle(
               fontFamily: 'Pretendard',
-              fontSize: 14,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.primaryMintDark,
+              color: AppColors.textBlack,
+              height: 1.3,
+            ),
+          ),
+          SizedBox(height: 10),
+          _BenefitRow(text: AppStrings.subscriptionPremiumBenefit1),
+          SizedBox(height: 4),
+          _BenefitRow(text: AppStrings.subscriptionPremiumBenefit2),
+          Spacer(),
+          Text(
+            AppStrings.subscriptionPremiumNotice,
+            key: Key('premium-notice'),
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textGrey,
+              height: 1.35,
             ),
           ),
         ],
@@ -306,45 +246,58 @@ class _CoachPlusSubscriptionCard extends StatelessWidget {
     final monthly = CoachPlusPlan.monthly;
     final yearly = CoachPlusPlan.yearly;
     return _SubscriptionWhiteCard(
-      child: InkWell(
-        key: const Key('coach-plus-subscription'),
-        onTap: () => CoachPlusUpsellSheet.show(context),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Coach+',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textBlack,
-                height: 1.3,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: const Key('coach-plus-subscription'),
+          onTap: () => CoachPlusUpsellSheet.show(context),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Coach+',
+                      style: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textBlack,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.primaryMintDark,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              '무료 기본 러닝 안내\n심박·상황에 맞춘 심층 코칭',
-              style: TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: AppColors.textGrey,
-                height: 1.45,
+              const SizedBox(height: 8),
+              const Text(
+                '무료 기본 러닝 안내\n심박·상황에 맞춘 심층 코칭',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textGrey,
+                  height: 1.35,
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
-              '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
-              style: const TextStyle(
-                fontFamily: 'Pretendard',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryMintDark,
+              const Spacer(),
+              Text(
+                '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
+                '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
+                style: const TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primaryMintDark,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

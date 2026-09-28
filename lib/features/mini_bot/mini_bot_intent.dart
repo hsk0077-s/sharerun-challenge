@@ -153,11 +153,8 @@ abstract final class MiniBotCopy {
 
   static String get brandAmount => AppStrings.brandSponsorEntryFee;
 
-  static String get subscriptionAmount {
-    final monthly = AppStrings.subscriptionDonationStatus.split('\n').first;
-    final premium = AppStrings.subscriptionPremiumPrice.split('(').first.trim();
-    return '$monthly · $premium';
-  }
+  static String get subscriptionAmount =>
+      AppStrings.subscriptionDonationStatus.split('\n').first;
 
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';
@@ -403,8 +400,8 @@ abstract final class MiniBotInterpreter {
 
   static bool _hasCoachPlus(String text) {
     return text.contains('coach') ||
-        text.contains('코치') ||
         text.contains('코칭') ||
+        text.contains('코치') ||
         text.contains('심박');
   }
 

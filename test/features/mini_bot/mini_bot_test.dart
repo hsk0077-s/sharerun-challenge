@@ -196,6 +196,24 @@ void main() {
     expect(subscription.confirmLabel, '이동하기');
     expect(subscription.reply, contains('바꾸지 않아요'));
 
+    for (final phrase in ['코치', 'Coach+', '심박 코칭', '구독 코치']) {
+      final coach = MiniBotInterpreter.interpret(phrase);
+      expect(coach.intent, MiniBotIntent.coachPlus, reason: phrase);
+      expect(coach.destination, MiniBotDestination.coachPlus, reason: phrase);
+      expect(coach.awaitsConfirm, isTrue, reason: phrase);
+      expect(coach.confirmLabel, '이동하기', reason: phrase);
+      expect(coach.reply, contains('결제하지 않아요'), reason: phrase);
+      expect(
+        MiniBotCopy.executed(coach.destination),
+        contains('결제되지 않아요'),
+        reason: phrase,
+      );
+    }
+    expect(
+      MiniBotInterpreter.interpret('구독').destination,
+      MiniBotDestination.subscription,
+    );
+
     final pass = MiniBotInterpreter.interpret('배틀패스');
     expect(pass.destination, MiniBotDestination.battlePass);
     expect(pass.reply, contains('구매하지 않아요'));
@@ -220,6 +238,7 @@ void main() {
         '심폐소생권',
         '세이프가드',
         '구독',
+        'Coach+',
         '배틀패스',
       ],
     );

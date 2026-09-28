@@ -6,6 +6,8 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/iap/models/coach_plus_product.dart';
+import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 
 /// 구독 및 정기 후원 관리 화면 (Screen 25).
 class SubscriptionManagementScreen extends StatefulWidget {
@@ -65,6 +67,8 @@ class _SubscriptionManagementScreenState
                         onChanged: (value) =>
                             setState(() => _premiumEnabled = value),
                       ),
+                      const SizedBox(height: 20),
+                      const _CoachPlusSubscriptionCard(),
                     ],
                   ),
                 ),
@@ -289,6 +293,59 @@ class _PremiumMembershipCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CoachPlusSubscriptionCard extends StatelessWidget {
+  const _CoachPlusSubscriptionCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final monthly = CoachPlusPlan.monthly;
+    final yearly = CoachPlusPlan.yearly;
+    return _SubscriptionWhiteCard(
+      child: InkWell(
+        key: const Key('coach-plus-subscription'),
+        onTap: () => CoachPlusUpsellSheet.show(context),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Coach+',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textBlack,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '무료 기본 러닝 안내\n심박·상황에 맞춘 심층 코칭',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textGrey,
+                height: 1.45,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
+              '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primaryMintDark,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

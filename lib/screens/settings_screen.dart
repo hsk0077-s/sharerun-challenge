@@ -25,6 +25,7 @@ import '../data/repositories/auth_repository.dart'
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/onboarding/widgets/nickname_change_sheet.dart';
+import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
 
@@ -425,6 +426,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         .setEnabled(value),
                   );
                 },
+              ),
+              ListTile(
+                key: const Key('coach-plus-settings'),
+                leading: const Icon(
+                  Icons.favorite_outline,
+                  color: AppColors.tealAccent,
+                ),
+                title: Text(
+                  'Coach+',
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
+                  style: AppTextStyles.caption,
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => CoachPlusUpsellSheet.show(context),
               ),
               const Divider(height: 1, color: AppColors.borderLight),
               ListTile(

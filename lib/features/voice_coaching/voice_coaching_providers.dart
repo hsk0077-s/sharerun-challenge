@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../iap/providers/coach_plus_providers.dart';
 import 'voice_coaching_controller.dart';
 import 'voice_coaching_cues.dart';
 import 'voice_coaching_preference_store.dart';
 import 'voice_coaching_speaker.dart';
 
-/// Always the free coach in this PR. Paid/DIA plans can replace this later.
+/// Free start / km / pep plan. Heart-rate lines use [coachPlusActiveProvider].
 final voiceCoachPlanProvider = Provider<VoiceCoachPlan>(
   (ref) => VoiceCoachPlan.free,
 );
@@ -64,6 +65,10 @@ final voiceCoachingControllerProvider = Provider<VoiceCoachingController>(
     return VoiceCoachingController(
       isEnabled: () => ref.read(voiceCoachingEnabledProvider),
       speaker: ref.watch(voiceCoachingSpeakerProvider),
+      isCoachPlusActive: () => ref.read(coachPlusActiveProvider),
+      onCoachPlusUpsell: () {
+        ref.read(coachPlusUpsellCountProvider.notifier).request();
+      },
     );
   },
 );

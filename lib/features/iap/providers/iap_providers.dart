@@ -7,6 +7,7 @@ import '../../../data/repositories/purchase_repository.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../models/iap_ui_event.dart';
 import '../services/iap_purchase_controller.dart';
+import 'coach_plus_providers.dart';
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>(
   (ref) => PurchaseRepository(ref.watch(firestoreServiceProvider)),
@@ -35,6 +36,9 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
               assetType: 'SHARE',
             ),
       );
+    },
+    onCoachPlusPurchased: (productId) {
+      return ref.read(coachPlusActiveProvider.notifier).grant(productId);
     },
   );
   ref.onDispose(controller.dispose);

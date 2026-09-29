@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'pedometer_harvest_ledger.dart';
+
 /// Walking-challenge daily steps and the shade notification must share one
 /// number. Midnight [stepOffset] applies only to raw TYPE_STEP_COUNTER, never
 /// to Health-today, isolate, or already-persisted daily counters.
@@ -221,34 +223,52 @@ abstract final class PedometerStepTruth {
 }
 
 /// Foreground shade copy. [dailySteps] is the same counter as the walking UI.
+///
+/// SHARE here is harvestable, not already credited: 1 per 100 steps, daily
+/// cap [PedometerHarvestLedger.dailyShareCap]. Never say it was acquired
+/// before a harvest.
 abstract final class WalkingChallengeNotificationCopy {
   static const dailyGoal = 4500;
-  static const bonusGoal = 10000;
 
-  static ({String title, String body}) fromDailySteps(int dailySteps) {
+  static const harvestRule = '(100걸음당 1, 하루 최대 60)';
+
+  /// Approximate unharvested SHARE for [dailySteps]. Already-claimed steps
+  /// are excluded when [claimedSteps] is known; otherwise this is the
+  /// upper bound ("약").
+  static String harvestHint(int dailySteps, {int claimedSteps = 0}) {
     final currentSteps = PedometerStepTruth.clampDaily(dailySteps);
-    if (currentSteps >= dailyGoal) {
-      return (
-        title: '챌린지 완주 성공! 🎉',
-        body:
-            '60 SHARE 획득 완료! 만보 보너스(+20 SHARE)를 향해 전진 중 (${_comma(currentSteps)}/$_bonusGoalComma보)',
-      );
-    }
-    if (currentSteps >= 1500) {
-      return (
-        title: '숲길 걷는 중 👟',
-        body:
-            '현재 ${_comma(currentSteps)}보 · 마일스톤 진행 중 (다음 목표: ${_comma(dailyGoal)}보)',
-      );
-    }
-    return (
-      title: '셰어런 챌린지 대기 중 🎯',
-      body:
-          '오늘의 숲길 산책을 시작해 보세요! (${_comma(currentSteps)} / ${_comma(dailyGoal)}보)',
+    final approx = PedometerHarvestLedger.pendingShareFloor(
+      steps: currentSteps,
+      claimedSteps: claimedSteps,
     );
+    return '${_comma(currentSteps)}보 · 줍기 가능 약 $approx SHARE $harvestRule';
   }
 
-  static const _bonusGoalComma = '10,000';
+  static ({String title, String body}) fromDailySteps(
+    int dailySteps, {
+    int claimedSteps = 0,
+  }) {
+    final currentSteps = PedometerStepTruth.clampDaily(dailySteps);
+    final body = harvestHint(currentSteps, claimedSteps: claimedSteps);
+    if (currentSteps >= dailyGoal) {
+      return (title: '오늘 걸음 이어가는 중 🚶', body: body);
+    }
+    if (currentSteps >= 1500) {
+      return (title: '숲길 걷는 중 👟', body: body);
+    }
+    return (title: '셰어런 챌린지 대기 중 🎯', body: body);
+  }
+
+  /// Morning, lunch, and evening alarms repeat every day at the same clock
+  /// time, so they must not freeze a pending total captured when scheduled.
+  static String goldenMorningBody() =>
+      '오늘 걸음은 100걸음당 1 SHARE, 하루 최대 60까지 주울 수 있어요.';
+
+  static String goldenLunchBody() =>
+      '아직 안 주운 SHARE가 있으면 걷기 화면에서 주울 수 있어요. 100걸음당 1, 하루 최대 60.';
+
+  static String goldenEveningBody() =>
+      '아직 안 주운 SHARE는 자정에 초기화돼요. 이미 지갑에 넣은 잔액은 그대로예요.';
 
   static String _comma(int n) {
     final raw = n.abs().toString();

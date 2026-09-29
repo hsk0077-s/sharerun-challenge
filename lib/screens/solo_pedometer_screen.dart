@@ -843,9 +843,6 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         WalkingChallengeNotificationService.syncDailyPushes(
           enabled: _isNotificationEnabled,
           nickname: ref.read(userNicknameProvider),
-          pendingShare: _computePendingShare(
-            math.max(ref.read(pedometerStateProvider).steps, _steps),
-          ),
         ),
       );
     });
@@ -1710,7 +1707,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                             if (running.isSnail) ...[
                               SizedBox(height: tokens.spacing.sm),
                               Text(
-                                '👼 3km만 걸어도 특별히 60 SHARE 혜택!',
+                                '👼 ${WalkingChallengeNotificationCopy.harvestHint(running.targetSteps)}',
                                 textAlign: TextAlign.center,
                                 style: textTheme.bodySmall?.copyWith(
                                   fontWeight: FontWeight.w800,
@@ -1875,47 +1872,23 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
-  Future<bool> _creditLockedShare(int amount) async {
-    if (mounted) {
-      setState(() => _collectedShareCoins += amount);
-    } else {
-      _collectedShareCoins += amount;
-    }
-    await _persistRewardLocks();
-    if (!mounted) return false;
-    await ref.read(userProfileProvider.notifier).creditShare(amount);
-    return mounted;
-  }
-
-  /// 구간 마일스톤 3회 + 만보 보너스, 각 20 SHARE 1회.
+  /// 4,500보(또는 3km) 첫 도달 때 실천 스트릭만 기록한다.
+  /// 예전 20 SHARE 구간·만보 보너스는 지갑에 가산되지 않아 호출하지 않는다.
   Future<void> _maybeGrantLockedRewards(int currentSteps) async {
-    if (!mounted || _rewardGrantInFlight) return;
+    if (!mounted || _rewardGrantInFlight || _hasReceivedMilestone3) return;
     _rewardGrantInFlight = true;
     try {
       final km = SoloPedometerEngine.kmFromSteps(currentSteps);
-      if (!_hasReceivedMilestone1 && currentSteps >= 1500) {
-        _hasReceivedMilestone1 = true;
-        if (!await _creditLockedShare(20)) return;
-      }
-      if (!_hasReceivedMilestone2 && currentSteps >= 3000) {
-        _hasReceivedMilestone2 = true;
-        if (!await _creditLockedShare(20)) return;
-      }
-      if (!_hasReceivedMilestone3 &&
-          (currentSteps >= 4500 || km >= 3.0)) {
-        _hasReceivedMilestone3 = true;
-        if (!await _creditLockedShare(20)) return;
-        final today = PedometerKstClock.dateKey();
-        if (_streakReportedForDay != today) {
-          _streakReportedForDay = today;
-          unawaited(
-            ref.read(practiceStreakProvider.notifier).completeChallenge(),
-          );
-        }
-      }
-      if (!_hasReceivedBonus && currentSteps >= 10000) {
-        _hasReceivedBonus = true;
-        if (!await _creditLockedShare(20)) return;
+      if (currentSteps < 4500 && km < 3.0) return;
+      _hasReceivedMilestone3 = true;
+      await _persistRewardLocks();
+      if (!mounted) return;
+      final today = PedometerKstClock.dateKey();
+      if (_streakReportedForDay != today) {
+        _streakReportedForDay = today;
+        unawaited(
+          ref.read(practiceStreakProvider.notifier).completeChallenge(),
+        );
       }
     } catch (e, st) {
       debugPrint('_maybeGrantLockedRewards: $e\n$st');

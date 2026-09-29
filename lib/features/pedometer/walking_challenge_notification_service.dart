@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../app/router/route_names.dart';
 import '../onboarding/src_onboarding_controller.dart';
+import 'pedometer_step_truth.dart';
 import 'solo_pedometer_foreground.dart';
 
 const _goldenChannelId = 'src_walking_golden_hour';
@@ -88,7 +89,6 @@ abstract final class WalkingChallengeNotificationService {
   static Future<void> syncDailyPushes({
     required bool enabled,
     required String nickname,
-    required double pendingShare,
   }) async {
     try {
       await ensureInitialized();
@@ -99,27 +99,26 @@ abstract final class WalkingChallengeNotificationService {
         return;
       }
       final name = _displayName(nickname);
-      final coins = pendingShare.ceil();
       await _scheduleDaily(
         id: _morningId,
         hour: 8,
         minute: 30,
-        title: '🏃‍♂️ $name님, 오늘 아침 걸음 정산!',
-        body: '아침 걸음이 벌써 $coins SHARE로 피어났어요. 사라지기 전에 지금 수집해 보세요.',
+        title: '🏃‍♂️ $name님, 오늘 아침 걸음',
+        body: WalkingChallengeNotificationCopy.goldenMorningBody(),
       );
       await _scheduleDaily(
         id: _lunchId,
         hour: 13,
         minute: 30,
-        title: '🏃‍♂️ $name님, 가뿐한 오후의 혜택',
-        body: '가볍게 걸은 걸음이 벌써 $coins SHARE로 피어났어요. 사라지기 전에 지금 수집해 보세요.',
+        title: '🏃‍♂️ $name님, 오후의 걷기',
+        body: WalkingChallengeNotificationCopy.goldenLunchBody(),
       );
       await _scheduleDaily(
         id: _eveningId,
         hour: 21,
         minute: 30,
-        title: '🚨 $name님, 미수집 코인 소멸 경보!',
-        body: '오늘 모은 $coins SHARE가 잠시 후 자정에 완전히 소멸해요! 지금 즉시 터치하여 보관하세요.',
+        title: '🚨 $name님, 아직 안 주운 SHARE',
+        body: WalkingChallengeNotificationCopy.goldenEveningBody(),
       );
     } catch (e, st) {
       debugPrint('WalkingChallengeNotificationService sync: $e\n$st');

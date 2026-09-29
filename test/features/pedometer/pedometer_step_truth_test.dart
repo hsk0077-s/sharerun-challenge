@@ -547,35 +547,91 @@ void main() {
   });
 
   group('WalkingChallengeNotificationCopy', () {
-    test('0 daily steps uses the waiting / 4,500 copy with matching count', () {
+    test('0 daily steps names the harvest rule with a zero count', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(0);
       expect(copy.title, contains('셰어런 챌린지 대기 중'));
-      expect(copy.body, contains('0 / 4,500보'));
+      expect(
+        copy.body,
+        '0보 · 줍기 가능 약 0 SHARE (100걸음당 1, 하루 최대 60)',
+      );
+      expect(copy.body, isNot(contains('획득')));
     });
 
-    test('1,835 daily steps stays on the same 4,500 track (not 0)', () {
+    test('1,835 daily steps is about 18 SHARE, still the live count', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(1835);
       expect(copy.title, contains('숲길 걷는 중'));
-      expect(copy.body, contains('1,835보'));
-      expect(copy.body, isNot(contains('(0 /')));
+      expect(
+        copy.body,
+        '1,835보 · 줍기 가능 약 18 SHARE (100걸음당 1, 하루 최대 60)',
+      );
+      expect(copy.body, isNot(contains('0보')));
     });
 
-    test('4,500 daily steps switches to finish copy', () {
+    test('4,500 steps is about 45 SHARE, not an acquired 60 or +20 bonus', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(4500);
-      expect(copy.title, contains('챌린지 완주 성공'));
-      expect(copy.body, contains('4,500/10,000보'));
+      expect(copy.title, contains('오늘 걸음 이어가는 중'));
+      expect(
+        copy.body,
+        '4,500보 · 줍기 가능 약 45 SHARE (100걸음당 1, 하루 최대 60)',
+      );
+      expect(copy.body, isNot(contains('획득')));
+      expect(copy.body, isNot(contains('+20')));
+      expect(copy.body, isNot(contains('만보')));
+      expect(copy.body, isNot(contains('60 SHARE 획득')));
+    });
+
+    test('already-claimed steps are not still described as harvestable', () {
+      final copy = WalkingChallengeNotificationCopy.fromDailySteps(
+        4500,
+        claimedSteps: 4500,
+      );
+      expect(copy.body, contains('4,500보'));
+      expect(copy.body, contains('약 0 SHARE'));
+    });
+
+    test('the hint stops at the daily 60 SHARE cap', () {
+      final copy = WalkingChallengeNotificationCopy.fromDailySteps(10000);
+      expect(copy.body, contains('10,000보'));
+      expect(copy.body, contains('약 60 SHARE'));
+      expect(copy.body, isNot(contains('+20')));
+      expect(copy.body, isNot(contains('100 SHARE')));
     });
 
     test('since-boot 86,626 does not print in the shade', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(86626);
       expect(copy.body, isNot(contains('86,626')));
-      expect(copy.body, contains('0 / 4,500보'));
+      expect(
+        copy.body,
+        '0보 · 줍기 가능 약 0 SHARE (100걸음당 1, 하루 최대 60)',
+      );
     });
 
     test('overflow sentinel does not print 999,999 in the shade', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(999999);
       expect(copy.body, isNot(contains('999,999')));
-      expect(copy.body, contains('0 / 4,500보'));
+      expect(
+        copy.body,
+        '0보 · 줍기 가능 약 0 SHARE (100걸음당 1, 하루 최대 60)',
+      );
+    });
+
+    test('golden evening resets unharvested SHARE, not the wallet balance', () {
+      final evening = WalkingChallengeNotificationCopy.goldenEveningBody();
+      expect(evening, contains('아직 안 주운 SHARE'));
+      expect(evening, contains('자정'));
+      expect(evening, contains('잔액은 그대로'));
+      expect(evening, isNot(contains('완전히 소멸')));
+      expect(evening, isNot(contains(RegExp(r'\d+ SHARE'))));
+
+      final morning = WalkingChallengeNotificationCopy.goldenMorningBody();
+      final lunch = WalkingChallengeNotificationCopy.goldenLunchBody();
+      expect(morning, contains('100걸음당 1'));
+      expect(morning, contains('하루 최대 60'));
+      expect(lunch, contains('아직 안 주운 SHARE'));
+      expect(morning, isNot(contains('소멸')));
+      expect(lunch, isNot(contains('소멸')));
+      expect(morning, isNot(contains('피어났')));
+      expect(lunch, isNot(contains('피어났')));
     });
   });
 }

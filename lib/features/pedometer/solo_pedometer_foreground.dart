@@ -33,18 +33,12 @@ const _smartPushDateKey = 'src_smart_push_date';
 const _smartPushMorningKey = 'src_smart_push_fired_morning';
 const _smartPushLunchKey = 'src_smart_push_fired_lunch';
 const _smartPushEveningKey = 'src_smart_push_fired_evening';
-const _smartPushSnipe1Key = 'src_smart_push_sniped_m1';
-const _smartPushSnipe2Key = 'src_smart_push_sniped_m2';
-const _smartPushSnipe3Key = 'src_smart_push_sniped_m3';
 const _smartPushEnabledKey = 'walking_challenge_benefit_notif';
 const _smartPushChannelId = 'src_walking_smart_time';
 const _smartPushChannelName = '워킹챌린지 스마트 타임 푸시';
 const _smartMorningId = 801;
 const _smartLunchId = 1231;
 const _smartEveningId = 1801;
-const _snipeMilestone1Id = 1201;
-const _snipeMilestone2Id = 2701;
-const _snipeMilestone3Id = 4201;
 
 @pragma('vm:entry-point')
 void startSoloPedometerForegroundCallback() {
@@ -64,9 +58,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   var firedMorning = false;
   var firedLunch = false;
   var firedEvening = false;
-  var snipedMilestone1 = false;
-  var snipedMilestone2 = false;
-  var snipedMilestone3 = false;
   var isPushEnabled = true;
   var _smartFlagsHydrated = false;
   var _sensorRebindInFlight = false;
@@ -234,9 +225,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         firedMorning = false;
         firedLunch = false;
         firedEvening = false;
-        snipedMilestone1 = false;
-        snipedMilestone2 = false;
-        snipedMilestone3 = false;
         lastFiredDateKey = todayKey;
         await _persistSmartPushFlags(now);
       }
@@ -253,9 +241,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       if (!firedMorning && now.hour >= 8) {
         await _showSmartPush(
           id: _smartMorningId,
-          title: '☀️ 굿모닝! 다음 대회 참가가 코앞이에요.',
-          body:
-              '오늘 하루 4,500보 완주하고 60 SHARE 모으면 대회 참가비가 훌쩍 가까워집니다. 힘차게 출발할까요?',
+          title: '☀️ 굿모닝! 오늘 걸음을 주워 보세요.',
+          body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
         );
         firedMorning = true;
         dirty = true;
@@ -266,8 +253,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
           await _showSmartPush(
             id: _smartLunchId,
             title: '🍱 점심 식사 후 가벼운 산책 어떠세요?',
-            body:
-                '아직 첫 번째 보상에 도달하지 못했어요. 커피 한잔 들고 가볍게 걸으며 쉐어를 모아볼까요?',
+            body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
           );
         }
         firedLunch = true;
@@ -276,49 +262,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
 
       if (!firedEvening && now.hour >= 18) {
         if (currentSteps < 4500) {
-          final remain = 4500 - currentSteps;
           await _showSmartPush(
             id: _smartEveningId,
-            title: '🚨 비상! 연속 완주 불꽃이 꺼지기 직전!',
-            body:
-                '남은 $remain보 걷고 오늘의 60 SHARE 꽉 채워가세요. 놓치면 대회 참가가 늦춰져요!',
+          title: '오늘 걸음은 이렇게 주울 수 있어요',
+          body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
           );
         }
         firedEvening = true;
-        dirty = true;
-      }
-
-      if (currentSteps >= 1200 &&
-          currentSteps < 1500 &&
-          !snipedMilestone1) {
-        await _showSmartPush(
-          id: _snipeMilestone1Id,
-          title: '👀 앗! 첫 번째 보상까지 딱 300보!',
-          body: '조금만 더 걸으면 20 SHARE가 지갑에 쏙! 멈추지 마세요 🏃‍♂️',
-        );
-        snipedMilestone1 = true;
-        dirty = true;
-      }
-      if (currentSteps >= 2700 &&
-          currentSteps < 3000 &&
-          !snipedMilestone2) {
-        await _showSmartPush(
-          id: _snipeMilestone2Id,
-          title: '🔥 페이스가 아주 좋아요!',
-          body: '두 번째 보상 20 SHARE까지 300보 남았습니다. 화이팅!',
-        );
-        snipedMilestone2 = true;
-        dirty = true;
-      }
-      if (currentSteps >= 4200 &&
-          currentSteps < 4500 &&
-          !snipedMilestone3) {
-        await _showSmartPush(
-          id: _snipeMilestone3Id,
-          title: '🏆 완주가 눈앞에 보입니다!',
-          body: '마지막 300보! 오늘의 메인 챌린지 60 SHARE를 전부 싹쓸이하세요!',
-        );
-        snipedMilestone3 = true;
         dirty = true;
       }
 
@@ -343,9 +293,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       firedMorning = prefs.getBool(_smartPushMorningKey) ?? false;
       firedLunch = prefs.getBool(_smartPushLunchKey) ?? false;
       firedEvening = prefs.getBool(_smartPushEveningKey) ?? false;
-      snipedMilestone1 = prefs.getBool(_smartPushSnipe1Key) ?? false;
-      snipedMilestone2 = prefs.getBool(_smartPushSnipe2Key) ?? false;
-      snipedMilestone3 = prefs.getBool(_smartPushSnipe3Key) ?? false;
       isPushEnabled = prefs.getBool(_smartPushEnabledKey) ?? true;
     } catch (e, st) {
       debugPrint('SoloPedometerForegroundHandler smart hydrate: $e\n$st');
@@ -360,9 +307,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       await prefs.setBool(_smartPushMorningKey, firedMorning);
       await prefs.setBool(_smartPushLunchKey, firedLunch);
       await prefs.setBool(_smartPushEveningKey, firedEvening);
-      await prefs.setBool(_smartPushSnipe1Key, snipedMilestone1);
-      await prefs.setBool(_smartPushSnipe2Key, snipedMilestone2);
-      await prefs.setBool(_smartPushSnipe3Key, snipedMilestone3);
     } catch (e, st) {
       debugPrint('SoloPedometerForegroundHandler smart persist: $e\n$st');
     }
@@ -449,9 +393,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         firedMorning = false;
         firedLunch = false;
         firedEvening = false;
-        snipedMilestone1 = false;
-        snipedMilestone2 = false;
-        snipedMilestone3 = false;
         _steps = 0;
         _anchor = 0;
         if (_baselineReady) _baseline = _lastRaw;
@@ -608,8 +549,10 @@ abstract final class SoloPedometerForeground {
       liveDaily: rawSteps,
       persistedToday: persistedToday,
     );
-    final copy =
-        WalkingChallengeNotificationCopy.fromDailySteps(effectiveSteps);
+    final copy = WalkingChallengeNotificationCopy.fromDailySteps(
+      effectiveSteps,
+      claimedSteps: claimedSteps,
+    );
     debugPrint(
       PedometerStepTruth.sourceLog(
         source: 'notif-resolve',

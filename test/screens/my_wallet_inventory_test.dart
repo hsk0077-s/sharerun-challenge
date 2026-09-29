@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
+import 'package:share_run_challenge/core/auth/local_auth_session.dart';
+import 'package:share_run_challenge/core/constants/economy_constants.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
 import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.dart';
+import 'package:share_run_challenge/features/wallet/debug_local_wallet_store.dart';
+import 'package:share_run_challenge/features/wallet/providers/debug_local_share_history_provider.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/my_wallet_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,6 +36,30 @@ class _SeededShopNotifier extends ShopTabNotifier {
 
   @override
   ShopTabState build() => _initial;
+}
+
+class _SeededSession extends PersistedAuthSessionNotifier {
+  @override
+  LocalAuthSession? build() =>
+      const LocalAuthSession(uid: 'wallet-user', isGuest: false);
+}
+
+class _QuietProfile extends UserProfileNotifier {
+  @override
+  UserProfile build() => UserModel.dashboardDefault(uid: 'wallet-user');
+}
+
+class _SeededHistory extends DebugLocalShareHistory {
+  @override
+  List<DebugLocalShareTx> build() => const [
+        DebugLocalShareTx(
+          id: 'tx-join',
+          title: '대회 참가',
+          amount: -30000,
+          assetType: 'SHARE',
+          timestampMs: 0,
+        ),
+      ];
 }
 
 Widget _scopedWallet({required ShopTabState shop}) {
@@ -102,5 +131,87 @@ void main() {
 
     expect(find.byKey(const Key('wallet-inventory-section')), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryEmpty), findsOneWidget);
+  });
+
+  testWidgets('My Wallet shows real grade zero and no demo receipts',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(_scopedWallet(shop: const ShopTabState()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(
+      find.text(
+        AppStrings.myWalletGradeProgress(
+          0,
+          EconomyConstants.trialRunsRequired,
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.text(
+        AppStrings.myWalletGradeProgress(
+          3,
+          EconomyConstants.trialRunsRequired,
+        ),
+      ),
+      findsNothing,
+    );
+    expect(find.text(AppStrings.notificationPaymentEmpty), findsOneWidget);
+    expect(find.text('+500 SHARE'), findsNothing);
+    expect(find.text('-100 VALUE'), findsNothing);
+    expect(find.textContaining('보유 SHARE: 90,000'), findsOneWidget);
+  });
+
+  testWidgets('My Wallet recent history uses the payment ledger',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final profile = UserModel.dashboardDefault(uid: 'test-wallet')
+        .copyWith(nickname: '테스트러너');
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          needsNicknameSetupProvider.overrideWith((ref) => false),
+          userNicknameProvider.overrideWith((ref) => '테스트러너'),
+          activeUserProfileProvider.overrideWith(
+            (ref) => Stream<UserModel>.value(profile),
+          ),
+          activeWalletProvider.overrideWith(
+            (ref) => Stream<WalletModel>.value(_wallet),
+          ),
+          walletProvider.overrideWith(_SeededWalletNotifier.new),
+          shopTabProvider.overrideWith(
+            () => _SeededShopNotifier(const ShopTabState()),
+          ),
+          hasPendingJenaAppealProvider.overrideWith((ref) => false),
+          persistedAuthSessionProvider.overrideWith(_SeededSession.new),
+          userProfileProvider.overrideWith(_QuietProfile.new),
+          debugLocalShareHistoryProvider.overrideWith(_SeededHistory.new),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: SrcTheme.light,
+          home: const MyWalletScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('대회 참가'), findsOneWidget);
+    expect(find.text('-30000 SHARE'), findsOneWidget);
+    expect(find.text(AppStrings.notificationPaymentJustNow), findsOneWidget);
+    expect(find.text(AppStrings.notificationPaymentReceipt), findsOneWidget);
+    expect(find.text(AppStrings.notificationPaymentEmpty), findsNothing);
+    expect(find.text('+500 SHARE'), findsNothing);
   });
 }

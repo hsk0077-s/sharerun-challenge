@@ -103,14 +103,6 @@ abstract final class AppStrings {
   static const myWalletCharge = '충전하기';
   static const myWalletUse = '사용하기';
   static const myWalletRecentTransactions = '최근 거래 내역';
-  static const myWalletTxChallengeReward = '3km 챌린지 완주 보상';
-  static const myWalletTxChallengeDate = '2023.10.26';
-  static const myWalletTxChallengeAmount = '+500 SHARE';
-  static const myWalletTxChallengeStatus = '기부 완료';
-  static const myWalletTxUnicef = '유니세프 기부';
-  static const myWalletTxUnicefDate = '2023.10.25';
-  static const myWalletTxUnicefAmount = '-100 VALUE';
-  static const myWalletTxUnicefStatus = '챌린지 참가';
 
   static String myWalletShareLabel(String amount) => '보유 SHARE: $amount';
   static String myWalletShareKrw(String krw) => '(~ $krw KRW)';

@@ -73,11 +73,11 @@ void main() {
     _initialValue = 0;
     _creditCalls = 0;
     _debited = 0;
-    _receiptGate = Completer<void>();
   });
 
   testWidgets('empty leaderboard and insufficient VALUE does not mint',
       (tester) async {
+    _receiptGate = Completer<void>();
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -103,6 +103,7 @@ void main() {
 
   testWidgets('enough VALUE debits once and does not claim a ranking',
       (tester) async {
+    _receiptGate = Completer<void>();
     _initialValue = 1000;
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;

@@ -1,10 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../core/config/app_env.dart';
 import '../core/constants/economy_constants.dart';
+import '../core/constants/firestore_paths.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
@@ -14,6 +20,8 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/wallet/debug_local_wallet_store.dart';
+import '../features/wallet/providers/debug_local_share_history_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/wallet_inventory_section.dart';
 import 'in_app_billing_screen.dart';
@@ -23,8 +31,6 @@ import 'settings_screen.dart';
 /// 나의 지갑 — 마이페이지 헤더 + 홈 지갑 카드 + 거래 카드 DS.
 class MyWalletScreen extends ConsumerWidget {
   const MyWalletScreen({super.key});
-
-  static const _demoGradeDone = 3;
 
   static void open(BuildContext context) {
     final router = GoRouter.maybeOf(context);
@@ -50,7 +56,6 @@ class MyWalletScreen extends ConsumerWidget {
     final displayName = SrcOnboardingController.isUnsetNickname(nickname)
         ? AppStrings.dashboardNickname
         : nickname;
-    final wallet = ref.watch(activeWalletProvider).asData?.value;
     final onboarding = ref.watch(onboardingProvider);
     final gradeDone = onboarding.preliminaryPaceSeconds.length
         .clamp(0, EconomyConstants.trialRunsRequired);
@@ -59,9 +64,6 @@ class MyWalletScreen extends ConsumerWidget {
     final share = walletState.shareBalance;
     final diamond = walletState.diamondBalance;
     final value = walletState.valueBalance;
-    final gradeCompleted = wallet == null && gradeDone == 0
-        ? _demoGradeDone
-        : gradeDone;
 
     return Scaffold(
       backgroundColor: AppColors.myWalletBackground,
@@ -91,7 +93,7 @@ class MyWalletScreen extends ConsumerWidget {
                       share: share,
                       diamond: diamond,
                       value: value,
-                      gradeCompleted: gradeCompleted,
+                      gradeCompleted: gradeDone,
                       gradeTotal: EconomyConstants.trialRunsRequired,
                       onGradeTap: () => _openGradeEval(context),
                       onCharge: () => _openBilling(context),
@@ -105,21 +107,7 @@ class MyWalletScreen extends ConsumerWidget {
                       style: MyWalletText.title18,
                     ),
                     const SizedBox(height: 12),
-                    const WalletTransactionCard(
-                      title: AppStrings.myWalletTxChallengeReward,
-                      date: AppStrings.myWalletTxChallengeDate,
-                      amount: AppStrings.myWalletTxChallengeAmount,
-                      status: AppStrings.myWalletTxChallengeStatus,
-                      leading: Icons.emoji_events_outlined,
-                    ),
-                    const SizedBox(height: 10),
-                    const WalletTransactionCard(
-                      title: AppStrings.myWalletTxUnicef,
-                      date: AppStrings.myWalletTxUnicefDate,
-                      amount: AppStrings.myWalletTxUnicefAmount,
-                      status: AppStrings.myWalletTxUnicefStatus,
-                      leading: Icons.volunteer_activism_outlined,
-                    ),
+                    const _WalletRecentHistory(),
                   ],
                 ),
               ),
@@ -560,6 +548,173 @@ class _MintActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Recent receipts from the same read path as the notification payment tab:
+/// Firestore `users/{uid}/wallet_transactions` merged with the local ledger.
+/// Does not write balances or history.
+class _WalletRecentHistory extends ConsumerStatefulWidget {
+  const _WalletRecentHistory();
+
+  @override
+  ConsumerState<_WalletRecentHistory> createState() =>
+      _WalletRecentHistoryState();
+}
+
+class _WalletRecentHistoryState extends ConsumerState<_WalletRecentHistory> {
+  List<DebugLocalShareTx> _prefsHistory = const [];
+  String? _prefsUid;
+
+  void _schedulePrefsRead(String uid) {
+    if (_prefsUid == uid) return;
+    _prefsUid = uid;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted || _prefsUid != uid) return;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final rows = DebugLocalWalletStore.parseHistory(
+          prefs.getString(DebugLocalWalletStore.historyKey(uid)),
+        );
+        if (!mounted || _prefsUid != uid) return;
+        setState(() => _prefsHistory = rows);
+      } catch (e) {
+        debugPrint('[WALLET] history prefs read: $e');
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = _historyUid(ref);
+    final providerLocal = ref.watch(debugLocalShareHistoryProvider);
+    if (AppEnv.useLocalMockData || uid.isEmpty) {
+      return const _WalletHistoryEmpty();
+    }
+    _schedulePrefsRead(uid);
+    final local = DebugLocalWalletStore.mergeHistory(
+      remote: providerLocal,
+      local: _prefsHistory,
+    );
+    if (Firebase.apps.isEmpty) {
+      return _historyBody(local);
+    }
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance
+          .collection(FirestorePaths.users)
+          .doc(uid)
+          .collection('wallet_transactions')
+          .orderBy('timestamp', descending: true)
+          .snapshots(),
+      builder: (context, snapshot) {
+        final remote = <DebugLocalShareTx>[];
+        final snapData = snapshot.data;
+        if (snapData != null) {
+          for (final doc in snapData.docs) {
+            remote.add(_txFromFirestore(doc.id, doc.data()));
+          }
+        }
+        final rows = DebugLocalWalletStore.mergeHistory(
+          remote: remote,
+          local: local,
+        );
+        final waiting = snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData &&
+            local.isEmpty;
+        if (waiting) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Center(
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.pulseCyan,
+                ),
+              ),
+            ),
+          );
+        }
+        return _historyBody(rows);
+      },
+    );
+  }
+
+  static DebugLocalShareTx _txFromFirestore(
+    String id,
+    Map<String, dynamic> data,
+  ) {
+    final titleRaw = data['title'];
+    final title = titleRaw is String && titleRaw.isNotEmpty
+        ? titleRaw
+        : AppStrings.notificationPaymentUnknown;
+    final amountRaw = data['amount'];
+    final amount = amountRaw is num ? amountRaw.toInt() : 0;
+    final assetRaw = data['assetType'];
+    final assetType =
+        assetRaw is String && assetRaw.isNotEmpty ? assetRaw : 'SHARE';
+    final tsRaw = data['timestamp'];
+    final timestampMs =
+        tsRaw is Timestamp ? tsRaw.toDate().millisecondsSinceEpoch : 0;
+    return DebugLocalShareTx(
+      id: id,
+      title: title,
+      amount: amount,
+      assetType: assetType,
+      timestampMs: timestampMs,
+    );
+  }
+}
+
+class _WalletHistoryEmpty extends StatelessWidget {
+  const _WalletHistoryEmpty();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      AppStrings.notificationPaymentEmpty,
+      style: MyWalletText.muted14,
+    );
+  }
+}
+
+Widget _historyBody(List<DebugLocalShareTx> rows) {
+  if (rows.isEmpty) return const _WalletHistoryEmpty();
+  return Column(
+    children: [
+      for (var i = 0; i < rows.length; i++) ...[
+        if (i > 0) const SizedBox(height: 10),
+        WalletTransactionCard(
+          title: rows[i].title,
+          date: rows[i].timestampMs > 0
+              ? _formatWalletHistoryDate(rows[i].timestamp.toLocal())
+              : AppStrings.notificationPaymentJustNow,
+          amount: _historyAmount(rows[i]),
+          status: AppStrings.notificationPaymentReceipt,
+          leading: Icons.receipt_long_outlined,
+        ),
+      ],
+    ],
+  );
+}
+
+String _historyAmount(DebugLocalShareTx tx) {
+  final sign = tx.amount < 0 ? '' : '+';
+  return '$sign${tx.amount} ${tx.assetType}';
+}
+
+String _formatWalletHistoryDate(DateTime date) {
+  final mm = date.month.toString().padLeft(2, '0');
+  final dd = date.day.toString().padLeft(2, '0');
+  final hh = date.hour.toString().padLeft(2, '0');
+  final min = date.minute.toString().padLeft(2, '0');
+  return '${date.year}-$mm-$dd $hh:$min';
+}
+
+String _historyUid(WidgetRef ref) {
+  final authUid = ref.watch(authStateChangesProvider).asData?.value?.uid ?? '';
+  if (authUid.isNotEmpty) return authUid;
+  return ref.watch(persistedAuthSessionProvider)?.uid ?? '';
 }
 
 class WalletTransactionCard extends StatelessWidget {

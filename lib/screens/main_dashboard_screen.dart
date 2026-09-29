@@ -11,6 +11,7 @@ import '../core/strings/app_strings.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/mini_bot/mini_bot_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/nickname_setup_sheet.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
@@ -291,6 +292,8 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
           ),
         ),
       ),
+      floatingActionButton:
+          embedNav ? miniBotEntryForTab(_currentNavIndex) : null,
       bottomNavigationBar: embedNav
           ? DashboardBottomNav(
               currentIndex: _currentNavIndex,

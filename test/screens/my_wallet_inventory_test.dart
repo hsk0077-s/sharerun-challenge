@@ -9,6 +9,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
 import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.dart';
 import 'package:share_run_challenge/features/wallet/debug_local_wallet_store.dart';
 import 'package:share_run_challenge/features/wallet/providers/debug_local_share_history_provider.dart';
@@ -41,6 +42,11 @@ class _SeededSession extends PersistedAuthSessionNotifier {
   @override
   LocalAuthSession? build() =>
       const LocalAuthSession(uid: 'wallet-user', isGuest: false);
+}
+
+class _QuietProfile extends UserProfileNotifier {
+  @override
+  UserProfile build() => UserModel.dashboardDefault(uid: 'wallet-user');
 }
 
 class _SeededHistory extends DebugLocalShareHistory {
@@ -188,6 +194,7 @@ void main() {
           ),
           hasPendingJenaAppealProvider.overrideWith((ref) => false),
           persistedAuthSessionProvider.overrideWith(_SeededSession.new),
+          userProfileProvider.overrideWith(_QuietProfile.new),
           debugLocalShareHistoryProvider.overrideWith(_SeededHistory.new),
         ],
         child: MaterialApp(

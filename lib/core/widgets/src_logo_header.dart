@@ -4,24 +4,17 @@ import '../strings/app_strings.dart';
 import '../theme/app_shapes.dart';
 import '../theme/app_text_styles.dart';
 
-/// 로그인 목업 상단 — 저장된 `src_logo.jpeg`(SRC+하트) + 타이틀/서브타이틀.
-/// 좌우 흰 여백·하단 ShareRunChallenge 영문은 크롭으로 제외합니다.
+/// 로그인 상단 — 스플래시·로비와 같은 `sharerun_logo.png` + 타이틀/서브타이틀.
 class SRCLogoHeader extends StatelessWidget {
   const SRCLogoHeader({super.key});
 
-  static const assetPath = 'assets/images/src_logo.jpeg';
-
-  /// 원본 1024×559 — 잉크 영역(~50%)만 보이도록 좌우 여백 제거.
-  static const double _widthCropFactor = 0.52;
-
-  /// 상단 SRC+하트만 노출 (하단 영문 로고 텍스트 제외).
-  static const double _visibleHeightFactor = 0.62;
+  /// 로비 헤더·스플래시와 동일한 네온 러너 마크.
+  static const assetPath = 'assets/images/sharerun_logo.png';
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final visibleWidth = screenWidth * AppShapes.loginLogoWidthFactor;
-    final imageWidth = visibleWidth / _widthCropFactor;
+    final logoSize = screenWidth * AppShapes.loginLogoWidthFactor;
 
     return Padding(
       padding: const EdgeInsets.only(top: AppShapes.loginHeaderTopPadding),
@@ -31,23 +24,17 @@ class SRCLogoHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            ClipRect(
-              child: Align(
-                alignment: Alignment.topCenter,
-                widthFactor: _widthCropFactor,
-                heightFactor: _visibleHeightFactor,
-                child: Image.asset(
-                  assetPath,
-                  width: imageWidth,
-                  fit: BoxFit.fitWidth,
-                  filterQuality: FilterQuality.high,
-                  semanticLabel: 'SRC logo',
-                  errorBuilder: (_, __, ___) => Icon(
-                    Icons.favorite,
-                    size: visibleWidth * 0.45,
-                    color: const Color(0xFF76C8A7),
-                  ),
-                ),
+            Image.asset(
+              assetPath,
+              width: logoSize,
+              height: logoSize,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              semanticLabel: 'ShareRun',
+              errorBuilder: (_, __, ___) => Icon(
+                Icons.favorite,
+                size: logoSize * 0.45,
+                color: const Color(0xFF76C8A7),
               ),
             ),
             const SizedBox(height: AppShapes.loginLogoToTitleGap),

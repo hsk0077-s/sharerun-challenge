@@ -4,7 +4,7 @@
 abstract final class AppStrings {
   // ── Login (Screen 1) ──────────────────────────────────────────────
   static const loginLogoMark = 'SRC';
-  static const loginTitle = '셰어 런 챌린지 (SRC)';
+  static const loginTitle = '쉐어 런';
   static const loginSubtitle = '세계를 향한 나눔의 질주';
 
   static const loginGoogle = 'Google로 계속하기';

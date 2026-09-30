@@ -5,6 +5,7 @@ from app.models.secured_actions import (
     CollectDiamondBoxRequest,
     DebugTestGrantRequest,
     HarvestPedometerRequest,
+    InviteCodeResult,
     JoinTournamentRequest,
     RefundRequest,
     SecuredActionResult,
@@ -102,6 +103,11 @@ def apply_referral_code(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.apply_referral_code(uid=uid, referral_code=request.referral_code)
+
+
+@router.post("/referrals/code", response_model=InviteCodeResult)
+def get_or_create_invite_code(uid: str = Depends(require_uid)) -> InviteCodeResult:
+    return service.get_or_create_invite_code(uid=uid)
 
 
 @router.post("/shop/purchase", response_model=SecuredActionResult)

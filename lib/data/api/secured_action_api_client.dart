@@ -139,6 +139,16 @@ class SecuredActionApiClient {
     );
   }
 
+  /// Server-issued invite code. Same code on every call; no UI yet.
+  Future<String> getOrCreateInviteCode() async {
+    final json = await _post('/actions/referrals/code', const {});
+    final code = json['referral_code'];
+    if (code is! String || code.isEmpty) {
+      throw StateError('Invite code missing from server response.');
+    }
+    return code;
+  }
+
   Future<Map<String, dynamic>> _post(
     String path,
     Map<String, dynamic> body,

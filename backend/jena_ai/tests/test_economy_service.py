@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
+import hashlib
 
 from app.services.economy_service import EconomyService
+
+_INVITE_ALPHABET = set("ABCDEFGHJKMNPQRSTUVWXYZ23456789")
 
 
 def test_compute_mining_reward_within_daily_cap() -> None:
@@ -146,3 +149,18 @@ def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> No
         )
         == 0
     )
+
+
+def test_generate_referral_code_is_sha256_prefix() -> None:
+    code = EconomyService().generate_referral_code("uid-1")
+    assert code == hashlib.sha256(b"uid-1").hexdigest()[:8].upper()
+
+
+def test_generate_invite_code_is_short_and_unambiguous() -> None:
+    service = EconomyService()
+    codes = {service.generate_invite_code() for _ in range(40)}
+    assert len(codes) > 1
+    for code in codes:
+        assert len(code) == 8
+        assert set(code) <= _INVITE_ALPHABET
+        assert not set(code) & set("01IOL")

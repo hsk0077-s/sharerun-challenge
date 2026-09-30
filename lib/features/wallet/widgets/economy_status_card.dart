@@ -66,16 +66,6 @@ class EconomyStatusCard extends StatelessWidget {
             progress: economy.referralProgress,
             color: Colors.purpleAccent,
           ),
-          if (economy.referralCode != null) ...[
-            const SizedBox(height: 14),
-            Text(
-              '내 추천 코드: ${economy.referralCode}',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
         ],
       ),
     );

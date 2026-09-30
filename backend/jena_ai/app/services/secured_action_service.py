@@ -9,6 +9,7 @@ from app.models.secured_actions import (
     CollectDiamondBoxRequest,
     DebugTestGrantRequest,
     HarvestPedometerRequest,
+    InviteCodeResult,
     JoinTournamentRequest,
     RefundRequest,
     SecuredActionResult,
@@ -31,7 +32,13 @@ from app.services.mercy_rule_service import MercyRuleService
 from app.services.running_validation_service import RunningValidationService
 
 
+class InviteCodeCollision(Exception):
+    """`referralCodes/{code}` is already owned by a different user."""
+
+
 class SecuredActionService:
+    _INVITE_CODE_ATTEMPTS = 8
+
     def __init__(self, firebase_service: FirebaseService | None = None) -> None:
         self._firebase_service = firebase_service
         self._running_validation_service = RunningValidationService()
@@ -78,6 +85,24 @@ class SecuredActionService:
         return self._apply_referral_code_tx(
             transaction, uid, referral_code.strip().upper(), user_ref
         )
+
+    def get_or_create_invite_code(self, uid: str) -> InviteCodeResult:
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        for _ in range(self._INVITE_CODE_ATTEMPTS):
+            code = self._economy_service.generate_invite_code()
+            transaction = self.firebase_service.db.transaction()
+            try:
+                issued = self._commit_invite_code(transaction, uid, user_ref, code)
+            except InviteCodeCollision:
+                continue
+            return InviteCodeResult(referral_code=issued)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Could not allocate a unique invite code.",
+        )
+
+    def _commit_invite_code(self, transaction, uid: str, user_ref, code: str) -> str:
+        return _commit_invite_code_tx(transaction, self, uid, user_ref, code)
 
     def purchase_shop_item(
         self,
@@ -544,6 +569,57 @@ class SecuredActionService:
             status="applied",
             reason="Referral code saved. Referrer reward pays after 5 trial runs.",
         )
+
+    def _allocate_invite_code(self, transaction, uid: str, user_ref, code: str) -> str:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        user = user_snapshot.to_dict() or {}
+        existing = self._stored_invite_code(user)
+        if existing:
+            existing_ref = self.firebase_service.db.collection("referralCodes").document(
+                existing
+            )
+            existing_snapshot = existing_ref.get(transaction=transaction)
+            if not existing_snapshot.exists:
+                transaction.set(
+                    existing_ref,
+                    {"uid": uid, "createdAt": SERVER_TIMESTAMP},
+                )
+                return existing
+            owner = (existing_snapshot.to_dict() or {}).get("uid")
+            if owner == uid:
+                return existing
+
+        code_ref = self.firebase_service.db.collection("referralCodes").document(code)
+        code_snapshot = code_ref.get(transaction=transaction)
+        if code_snapshot.exists:
+            owner = (code_snapshot.to_dict() or {}).get("uid")
+            if owner != uid:
+                raise InviteCodeCollision()
+        else:
+            transaction.set(
+                code_ref,
+                {"uid": uid, "createdAt": SERVER_TIMESTAMP},
+            )
+        transaction.update(
+            user_ref,
+            {
+                "economy.referralCode": code,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        return code
+
+    @staticmethod
+    def _stored_invite_code(user: dict) -> str | None:
+        economy = user.get("economy") or {}
+        code = economy.get("referralCode")
+        if not isinstance(code, str):
+            return None
+        stripped = code.strip()
+        return stripped or None
 
     def _pay_referral_reward_tx(
         self,
@@ -1458,3 +1534,10 @@ class SecuredActionService:
         if self._firebase_service is None:
             self._firebase_service = FirebaseService()
         return self._firebase_service
+
+
+@firestore.transactional
+def _commit_invite_code_tx(transaction, service, uid: str, user_ref, code: str) -> str:
+    # Module-level so the first argument is the Transaction. Decorating a
+    # method puts `self` first, which this helper rejects.
+    return service._allocate_invite_code(transaction, uid, user_ref, code)

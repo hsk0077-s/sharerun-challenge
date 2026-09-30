@@ -75,6 +75,10 @@ class Web3TransferRequest(BaseModel):
     )
 
 
+class InviteCodeResult(BaseModel):
+    referral_code: str
+
+
 class SecuredActionResult(BaseModel):
     accepted: bool
     status: str

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import hashlib
+import secrets
 
 from app.constants.economy_constants import (
     DAILY_CAP_KM,
@@ -16,6 +17,10 @@ from app.constants.economy_constants import (
 )
 
 _KST = timezone(timedelta(hours=9))
+
+# Uppercase letters and digits, excluding ambiguous 0/O/1/I/L.
+_INVITE_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+_INVITE_CODE_LENGTH = 8
 
 
 @dataclass(frozen=True)
@@ -66,6 +71,11 @@ class EconomyService:
     def generate_referral_code(self, uid: str) -> str:
         digest = hashlib.sha256(uid.encode("utf-8")).hexdigest()
         return digest[:8].upper()
+
+    def generate_invite_code(self) -> str:
+        return "".join(
+            secrets.choice(_INVITE_CODE_ALPHABET) for _ in range(_INVITE_CODE_LENGTH)
+        )
 
     def compute_mining_reward(
         self,

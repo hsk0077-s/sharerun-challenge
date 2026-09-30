@@ -7,6 +7,7 @@ import '../core/auth/local_auth_session.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
+import '../core/theme/app_text_styles.dart';
 import '../core/widgets/social_brand_icons.dart';
 import '../core/widgets/src_button.dart';
 import '../core/widgets/src_gradient_background.dart';
@@ -26,6 +27,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _referralController = TextEditingController();
   var _kakaoBusy = false;
+  var _referralFieldVisible = false;
 
   @override
   void dispose() {
@@ -212,11 +214,31 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         const Spacer(flex: 2),
 
-                        SRCTextField(
-                          label: AppStrings.loginReferralLabel,
-                          hintText: AppStrings.loginReferralHint,
-                          controller: _referralController,
-                        ),
+                        if (_referralFieldVisible)
+                          SRCTextField(
+                            label: AppStrings.loginReferralLabel,
+                            hintText: AppStrings.loginReferralHint,
+                            controller: _referralController,
+                          )
+                        else
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                foregroundColor: AppColors.primaryMint,
+                              ),
+                              onPressed: () => setState(
+                                () => _referralFieldVisible = true,
+                              ),
+                              child: const Text(
+                                '초대 코드가 있으신가요?',
+                                style: AppTextStyles.link,
+                              ),
+                            ),
+                          ),
                         const SizedBox(height: 28),
                       ],
                     ),

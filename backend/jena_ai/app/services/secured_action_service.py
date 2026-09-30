@@ -578,7 +578,19 @@ class SecuredActionService:
         user = user_snapshot.to_dict() or {}
         existing = self._stored_invite_code(user)
         if existing:
-            return existing
+            existing_ref = self.firebase_service.db.collection("referralCodes").document(
+                existing
+            )
+            existing_snapshot = existing_ref.get(transaction=transaction)
+            if not existing_snapshot.exists:
+                transaction.set(
+                    existing_ref,
+                    {"uid": uid, "createdAt": SERVER_TIMESTAMP},
+                )
+                return existing
+            owner = (existing_snapshot.to_dict() or {}).get("uid")
+            if owner == uid:
+                return existing
 
         code_ref = self.firebase_service.db.collection("referralCodes").document(code)
         code_snapshot = code_ref.get(transaction=transaction)

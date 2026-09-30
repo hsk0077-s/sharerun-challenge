@@ -94,7 +94,7 @@ def test_get_or_create_is_idempotent_and_retries_collisions() -> None:
     assert db.store["users/u2"]["economy"]["referralCode"] == "K7MNPQ23"
 
 
-def test_existing_code_is_not_regenerated() -> None:
+def test_existing_code_is_indexed_and_not_replaced() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {
         "economy": {"referralCode": "deadbeef", "referralPayoutCount": 2}
@@ -105,8 +105,33 @@ def test_existing_code_is_not_regenerated() -> None:
     result = service.get_or_create_invite_code("u1")
 
     assert result.referral_code == "deadbeef"
-    assert not any(path.startswith("referralCodes/") for path in db.store)
+    assert db.store["referralCodes/deadbeef"]["uid"] == "u1"
+    assert "referralCodes/AB23CD45" not in db.store
+    assert db.store["users/u1"]["economy"]["referralCode"] == "deadbeef"
     assert db.store["users/u1"]["economy"]["referralPayoutCount"] == 2
+
+    db.store["referralCodes/deadbeef"]["createdAt"] = "kept"
+    again = service.get_or_create_invite_code("u1")
+    assert again.referral_code == "deadbeef"
+    assert db.store["referralCodes/deadbeef"] == {"uid": "u1", "createdAt": "kept"}
+
+
+def test_collided_existing_code_is_replaced() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = {
+        "economy": {"referralCode": "deadbeef", "referralPayoutCount": 2}
+    }
+    db.store["referralCodes/deadbeef"] = {"uid": "u2", "createdAt": "theirs"}
+    service = _service(db)
+    service._economy_service.generate_invite_code = lambda: "AB23CD45"
+
+    result = service.get_or_create_invite_code("u1")
+
+    assert result.referral_code == "AB23CD45"
+    assert db.store["users/u1"]["economy"]["referralCode"] == "AB23CD45"
+    assert db.store["users/u1"]["economy"]["referralPayoutCount"] == 2
+    assert db.store["referralCodes/deadbeef"] == {"uid": "u2", "createdAt": "theirs"}
+    assert db.store["referralCodes/AB23CD45"]["uid"] == "u1"
 
 
 def test_owned_index_doc_is_reused_without_rewriting_it() -> None:

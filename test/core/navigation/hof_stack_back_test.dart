@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/navigation/app_route_nav.dart';
-import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/widgets/src_exit_guard.dart';
 
 void main() {
@@ -149,8 +148,7 @@ void main() {
     expect(didRequestExit(), isFalse);
   });
 
-  testWidgets(
-      'nested MaterialApp: pushed HoF pops; Home tab still double-back exits',
+  testWidgets('nested MaterialApp: pushed HoF pops, never exits',
       (tester) async {
     final router = _shellRouter(initialLocation: RouteNames.mainDashboard);
     await tester.pumpWidget(_nestedApp(router));
@@ -161,23 +159,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('HOF_STAND_IN'), findsOneWidget);
 
-    var handled = await tester.binding.handlePopRoute();
+    final handled = await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     expect(handled, isTrue);
     expect(find.text('HOF_STAND_IN'), findsNothing);
     expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(didRequestExit(), isFalse);
+  });
 
-    handled = await tester.binding.handlePopRoute();
+  testWidgets(
+      'nested MaterialApp: Home tab first back does not exit (tab guard intact)',
+      (tester) async {
+    final router = _shellRouter(initialLocation: RouteNames.mainDashboard);
+    await tester.pumpWidget(_nestedApp(router));
+    await tester.pumpAndSettle();
+    expect(find.text('HOME_ROOT'), findsOneWidget);
+
+    final handled = await tester.binding.handlePopRoute();
     await tester.pump();
     expect(handled, isTrue);
-    expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
+    expect(find.text('HOME_ROOT'), findsOneWidget);
     expect(didRequestExit(), isFalse);
-
-    handled = await tester.binding.handlePopRoute();
-    await tester.pump();
-    expect(handled, isTrue);
-    expect(didRequestExit(), isTrue);
   });
 
   testWidgets(

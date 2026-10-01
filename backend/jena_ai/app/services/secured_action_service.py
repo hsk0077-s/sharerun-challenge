@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from math import asin, cos, radians, sin, sqrt
 
 from fastapi import HTTPException, status
@@ -11,6 +12,7 @@ from app.models.secured_actions import (
     HarvestPedometerRequest,
     InviteCodeResult,
     JoinTournamentRequest,
+    RedeemReferralResult,
     RefundRequest,
     SecuredActionResult,
     SettleTournamentFailureRequest,
@@ -38,6 +40,7 @@ class InviteCodeCollision(Exception):
 
 class SecuredActionService:
     _INVITE_CODE_ATTEMPTS = 8
+    _REFERRAL_REDEEM_WINDOW = timedelta(days=7)
 
     def __init__(self, firebase_service: FirebaseService | None = None) -> None:
         self._firebase_service = firebase_service
@@ -100,6 +103,138 @@ class SecuredActionService:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Could not allocate a unique invite code.",
         )
+
+    def redeem_referral_code(self, uid: str, code: str) -> RedeemReferralResult:
+        # Records who invited this user. Does not credit SRV.
+        normalized = self._normalize_referral_code(code)
+        if normalized is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="invalid",
+            )
+        created_at = self._auth_account_created_at(uid)
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        transaction = self.firebase_service.db.transaction()
+        return self._commit_redeem_referral(
+            transaction, uid, user_ref, normalized, created_at
+        )
+
+    def _commit_redeem_referral(
+        self,
+        transaction,
+        uid: str,
+        user_ref,
+        code: str,
+        created_at: datetime | None,
+    ) -> RedeemReferralResult:
+        return _commit_redeem_referral_tx(
+            transaction, self, uid, user_ref, code, created_at
+        )
+
+    @staticmethod
+    def _normalize_referral_code(code: str | None) -> str | None:
+        normalized = (code or "").strip().upper()
+        if not normalized or len(normalized) > 32 or not normalized.isalnum():
+            return None
+        return normalized
+
+    def _auth_account_created_at(self, uid: str) -> datetime | None:
+        # Auth creation time is not client-writable. users.createdAt is
+        # allowed on client create, so it is not the 7-day clock.
+        try:
+            auth_user = firebase_auth.get_user(uid)
+        except firebase_auth.UserNotFoundError as error:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            ) from error
+        metadata = getattr(auth_user, "user_metadata", None)
+        millis = getattr(metadata, "creation_timestamp", None) if metadata else None
+        if not millis:
+            return None
+        return datetime.fromtimestamp(int(millis) / 1000, tz=timezone.utc)
+
+    def _apply_redeem_referral(
+        self,
+        transaction,
+        uid: str,
+        user_ref,
+        code: str,
+        created_at: datetime | None,
+        now: datetime | None = None,
+    ) -> RedeemReferralResult:
+        normalized = self._normalize_referral_code(code)
+        if normalized is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="invalid",
+            )
+
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+
+        code_ref = self.firebase_service.db.collection("referralCodes").document(
+            normalized
+        )
+        code_snapshot = code_ref.get(transaction=transaction)
+        if not code_snapshot.exists:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="invalid",
+            )
+        owner = (code_snapshot.to_dict() or {}).get("uid")
+        if not isinstance(owner, str) or not owner.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="invalid",
+            )
+        if owner == uid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="self",
+            )
+
+        user = user_snapshot.to_dict() or {}
+        economy = user.get("economy") or {}
+        referred_by = economy.get("referredBy")
+        if isinstance(referred_by, str) and referred_by.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="already",
+            )
+
+        current = now or datetime.now(timezone.utc)
+        if created_at is not None:
+            created = created_at
+            if created.tzinfo is None:
+                created = created.replace(tzinfo=timezone.utc)
+            if current.tzinfo is None:
+                current = current.replace(tzinfo=timezone.utc)
+            if current - created > self._REFERRAL_REDEEM_WINDOW:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="expired",
+                )
+
+        transaction.update(
+            user_ref,
+            {
+                "economy.referredBy": owner,
+                "economy.referredByCode": normalized,
+                "economy.referredAt": SERVER_TIMESTAMP,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            code_ref.collection("referrals").document(uid),
+            {"createdAt": SERVER_TIMESTAMP},
+        )
+        transaction.update(code_ref, {"redeemCount": firestore.Increment(1)})
+        return RedeemReferralResult(referred_by=owner, code=normalized)
 
     def _commit_invite_code(self, transaction, uid: str, user_ref, code: str) -> str:
         return _commit_invite_code_tx(transaction, self, uid, user_ref, code)
@@ -1541,3 +1676,17 @@ def _commit_invite_code_tx(transaction, service, uid: str, user_ref, code: str) 
     # Module-level so the first argument is the Transaction. Decorating a
     # method puts `self` first, which this helper rejects.
     return service._allocate_invite_code(transaction, uid, user_ref, code)
+
+
+@firestore.transactional
+def _commit_redeem_referral_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+    code: str,
+    created_at: datetime | None,
+) -> RedeemReferralResult:
+    return service._apply_redeem_referral(
+        transaction, uid, user_ref, code, created_at
+    )

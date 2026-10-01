@@ -79,6 +79,15 @@ class InviteCodeResult(BaseModel):
     referral_code: str
 
 
+class RedeemReferralRequest(BaseModel):
+    code: str = Field(min_length=1, max_length=32)
+
+
+class RedeemReferralResult(BaseModel):
+    referred_by: str
+    code: str
+
+
 class SecuredActionResult(BaseModel):
     accepted: bool
     status: str

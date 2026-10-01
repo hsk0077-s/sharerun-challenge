@@ -51,6 +51,7 @@ class EconomyStateModel {
     required this.referredByUid,
     required this.referralPayoutCount,
     required this.dailyMining,
+    this.referredBy,
   });
 
   final bool signupRewardClaimed;
@@ -59,6 +60,7 @@ class EconomyStateModel {
   final bool firstTierGranted;
   final String? referralCode;
   final String? referredByUid;
+  final String? referredBy;
   final int referralPayoutCount;
   final DailyMiningModel dailyMining;
 
@@ -77,6 +79,7 @@ class EconomyStateModel {
       firstTierGranted: false,
       referralCode: null,
       referredByUid: null,
+      referredBy: null,
       referralPayoutCount: 0,
       dailyMining: DailyMiningModel.empty(),
     );
@@ -95,6 +98,7 @@ class EconomyStateModel {
       firstTierGranted: economy['firstTierGranted'] as bool? ?? false,
       referralCode: economy['referralCode'] as String?,
       referredByUid: economy['referredByUid'] as String?,
+      referredBy: economy['referredBy'] as String?,
       referralPayoutCount:
           (economy['referralPayoutCount'] as num?)?.toInt() ?? 0,
       dailyMining: DailyMiningModel.fromJson(dailyMining),

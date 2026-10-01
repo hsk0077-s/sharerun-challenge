@@ -139,6 +139,14 @@ class SecuredActionApiClient {
     );
   }
 
+  /// Records who invited this user. Does not credit a reward.
+  Future<void> redeemReferralCode(String code) async {
+    await _post(
+      '/actions/referrals/redeem',
+      {'code': code},
+    );
+  }
+
   /// Server-issued invite code. Same code on every call; no UI yet.
   Future<String> getOrCreateInviteCode() async {
     final json = await _post('/actions/referrals/code', const {});

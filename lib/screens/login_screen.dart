@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../core/auth/local_auth_session.dart';
 import '../core/strings/app_strings.dart';
@@ -62,6 +65,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         );
   }
 
+  /// Signup/login still succeeds when redeem fails.
+  Future<void> _redeemEnteredReferral() async {
+    final code = _referralController.text.trim();
+    if (code.isEmpty) return;
+    try {
+      final uid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
+      if (uid.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.referralRedeemFailed)),
+        );
+        return;
+      }
+      await ref.read(userRepositoryProvider).ensureUserDocument(uid: uid);
+      await ref
+          .read(securedActionApiClientProvider)
+          .redeemReferralCode(code)
+          .timeout(const Duration(seconds: 12));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.referralRedeemSuccess)),
+      );
+    } on TimeoutException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.referralRedeemFailed)),
+      );
+    } catch (e, st) {
+      debugPrint('redeemReferralCode: $e\n$st');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(ApiErrorMessage.from(e))),
+      );
+    }
+  }
+
   Future<void> _onGoogle() async {
     try {
       final authRepo = ref.read(authRepositoryProvider);
@@ -76,6 +115,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             duration: Duration(milliseconds: 1300),
           ),
         );
+        await _redeemEnteredReferral();
+        if (!mounted) return;
         final termsAccepted =
             ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
         Navigator.of(context).pushReplacementNamed(
@@ -101,6 +142,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('네이버 로그인에 성공했습니다!')),
         );
+        await _redeemEnteredReferral();
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed(RouteNames.termsAgreement);
       }
     } catch (e) {
@@ -124,6 +167,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('카카오 로그인에 성공했습니다!')),
         );
+        await _redeemEnteredReferral();
+        if (!mounted) return;
         Navigator.of(context).pushReplacementNamed(RouteNames.termsAgreement);
       }
     } catch (e) {

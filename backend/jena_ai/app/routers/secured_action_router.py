@@ -7,6 +7,8 @@ from app.models.secured_actions import (
     HarvestPedometerRequest,
     InviteCodeResult,
     JoinTournamentRequest,
+    RedeemReferralRequest,
+    RedeemReferralResult,
     RefundRequest,
     SecuredActionResult,
     SettleTournamentFailureRequest,
@@ -108,6 +110,14 @@ def apply_referral_code(
 @router.post("/referrals/code", response_model=InviteCodeResult)
 def get_or_create_invite_code(uid: str = Depends(require_uid)) -> InviteCodeResult:
     return service.get_or_create_invite_code(uid=uid)
+
+
+@router.post("/referrals/redeem", response_model=RedeemReferralResult)
+def redeem_referral_code(
+    request: RedeemReferralRequest,
+    uid: str = Depends(require_uid),
+) -> RedeemReferralResult:
+    return service.redeem_referral_code(uid=uid, code=request.code)
 
 
 @router.post("/shop/purchase", response_model=SecuredActionResult)

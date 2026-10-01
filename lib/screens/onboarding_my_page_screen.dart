@@ -18,6 +18,7 @@ import '../features/profile/my_page_activity_stats.dart';
 import '../features/profile/widgets/activity_list_card.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/my_page_invite_code_card.dart';
+import '../features/profile/widgets/my_page_referral_code_entry.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import 'settings_screen.dart';
 import 'snail_to_cheetah_book_page.dart';
@@ -86,6 +87,7 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                       const _ProfileCard(),
                       const SizedBox(height: 14),
                       const MyPageInviteCodeCard(),
+                      const MyPageReferralCodeEntry(),
                       const SizedBox(height: 14),
                       const AngelChronicleCard(),
                       const SizedBox(height: 14),

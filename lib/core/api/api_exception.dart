@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import '../strings/app_strings.dart';
+
 class ApiException implements Exception {
   const ApiException({
     required this.statusCode,
@@ -80,6 +82,10 @@ abstract final class ApiErrorMessage {
       'User or activity not found.' => '사용자 또는 활동 정보를 찾을 수 없습니다.',
       'Email verification is required.' => '이메일 인증을 완료해 주세요.',
       'Invalid Firebase ID token.' => '로그인 인증이 만료되었습니다. 다시 로그인해 주세요.',
+      'invalid' => AppStrings.referralRedeemInvalid,
+      'self' => AppStrings.referralRedeemSelf,
+      'already' => AppStrings.referralRedeemAlready,
+      'expired' => AppStrings.referralRedeemExpired,
       _ => detail,
     };
   }

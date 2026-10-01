@@ -24,7 +24,8 @@ void main() {
     expect(resolved.title, isNot(contains('대기 중')));
   });
 
-  test('resolveNotification hydrates 0 live from walking-screen prefs', () async {
+  test('resolveNotification hydrates 0 live from walking-screen prefs',
+      () async {
     final today = DateTime.now().toUtc().add(const Duration(hours: 9));
     final m = today.month.toString().padLeft(2, '0');
     final d = today.day.toString().padLeft(2, '0');
@@ -63,5 +64,83 @@ void main() {
     expect(resolved.effectiveSteps, 450);
     expect(resolved.body, contains('450'));
     expect(resolved.body, isNot(contains('86,626')));
+  });
+
+  test(
+      'resolveNotification health 4706 replaces prefs 29999; no health keeps it',
+      () async {
+    final today = DateTime.now().toUtc().add(const Duration(hours: 9));
+    final m = today.month.toString().padLeft(2, '0');
+    final d = today.day.toString().padLeft(2, '0');
+    final todayKey = '${today.year}-$m-$d';
+    SharedPreferences.setMockInitialValues({
+      '${todayKey}_steps': 29999,
+      '${todayKey}_claimed_steps': 0,
+    });
+
+    final capped = await SoloPedometerForeground.resolveNotification(
+      rawSteps: 29999,
+      healthToday: 4706,
+    );
+    expect(capped.effectiveSteps, 4706);
+    expect(
+      capped.effectiveSteps,
+      lessThanOrEqualTo(4706 + 2000),
+    );
+    expect(capped.body, contains('4,706'));
+
+    final kept = await SoloPedometerForeground.resolveNotification(
+      rawSteps: 29999,
+    );
+    expect(kept.effectiveSteps, 29999);
+    expect(kept.body, contains('29,999'));
+  });
+
+  test('plain step update after heal still carries positive Health', () {
+    SoloPedometerForeground.debugResetKnownHealth();
+    expect(SoloPedometerForeground.debugTaskPayload(29999, null), 29999);
+    expect(
+      SoloPedometerForeground.debugTaskPayload(4706, 4706),
+      <Object>[4706, 4706],
+    );
+    expect(
+      SoloPedometerForeground.debugTaskPayload(29999, null),
+      <Object>[29999, 4706],
+    );
+    expect(
+      SoloPedometerForeground.debugTaskPayload(29999, 0),
+      <Object>[29999, 4706],
+    );
+    SoloPedometerForeground.debugResetKnownHealth();
+  });
+
+  test('isolate commit after heal does not re-raise to 29999', () {
+    final healed = SoloPedometerForegroundHandler();
+    expect(
+      healed.debugMergeCommit(
+        computed: 4706,
+        saved: 29999,
+        healthToday: 4706,
+      ),
+      4706,
+    );
+    expect(
+      healed.debugMergeCommit(computed: 29999, saved: 29999),
+      4706,
+    );
+    expect(
+      healed.debugMergeCommit(computed: 29999, saved: 29999, healthToday: 0),
+      4706,
+    );
+
+    final plain = SoloPedometerForegroundHandler();
+    expect(
+      plain.debugMergeCommit(computed: 29999, saved: 29999),
+      29999,
+    );
+    expect(
+      plain.debugMergeCommit(computed: 100, saved: 29999, healthToday: 0),
+      29999,
+    );
   });
 }

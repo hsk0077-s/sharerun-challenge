@@ -519,12 +519,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         if (rolled) {
           return;
         }
-        _lastHealthToday = total;
+        final health = total > 0 ? total : _lastHealthToday;
         final next = PedometerStepTruth.dailyFromSources(
           liveDaily: total,
           persistedToday: _steps,
           isolateDaily: await SoloPedometerForeground.liveSteps(),
-          healthToday: total,
+          healthToday: health,
         );
         debugPrint(
           PedometerStepTruth.sourceLog(
@@ -544,7 +544,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         final healthFloor = PedometerStepTruth.clampDaily(_healthBase);
         final healed = PedometerStepTruth.healthReplacesStored(
           stored: _steps,
-          healthToday: total,
+          healthToday: health,
           merged: next,
         );
         if (healed || next > healthFloor) {
@@ -557,13 +557,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             PedometerStepTruth.clampDaily(total),
           );
         }
+        if (total > 0) _lastHealthToday = total;
         _applyDailySteps(
           next,
           source: 'health',
           healed: healed,
-          healthToday: total,
+          healthToday: health,
         );
-        unawaited(_syncForegroundNotification(_steps));
+        unawaited(_syncForegroundNotification(_steps, healthToday: health));
         return;
       }
       debugPrint(
@@ -731,10 +732,29 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       });
       return;
     }
-    final effective = PedometerStepTruth.clampDaily(steps);
+    var effective = PedometerStepTruth.clampDaily(steps);
     if (PedometerStepTruth.clampDaily(_steps) != _steps) {
       _steps = PedometerStepTruth.clampDaily(_steps);
       _healthBase = PedometerStepTruth.clampDaily(_healthBase);
+    }
+    final positiveHealth = (healthToday != null && healthToday > 0)
+        ? healthToday
+        : (_lastHealthToday != null && _lastHealthToday! > 0
+            ? _lastHealthToday
+            : null);
+    var replaceStored = healed;
+    if (positiveHealth != null) {
+      effective = PedometerStepTruth.dailyFromSources(
+        liveDaily: effective,
+        persistedToday: _steps,
+        healthToday: positiveHealth,
+      );
+      replaceStored = replaceStored ||
+          PedometerStepTruth.healthReplacesStored(
+            stored: _steps,
+            healthToday: positiveHealth,
+            merged: effective,
+          );
     }
     debugPrint(
       PedometerStepTruth.sourceLog(
@@ -747,7 +767,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       ),
     );
     if (effective == _steps) return;
-    if (!healed && effective < _steps) return;
+    if (!replaceStored && effective < _steps) return;
     final previousSteps = _steps;
     final previousKm = _km;
     final km = SoloPedometerEngine.kmFromSteps(effective);
@@ -759,8 +779,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _weekSteps = {..._weekSteps, todayKey: effective};
       if (_selectedDayKey.isEmpty) _selectedDayKey = todayKey;
     });
-    if (healed) {
-      // Prefs must land before the shade reads them, or max() puts 29,655 back.
+    if (replaceStored) {
+      // Prefs must land before the shade reads them, or max() puts 29,999 back.
       unawaited(() async {
         await ref.read(pedometerStateProvider.notifier).updateSteps(
               effective,
@@ -769,7 +789,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             );
         if (!mounted) return;
         _spawnCoinsForKm(km);
-        _refreshPendingShare(effective, healthToday: healthToday);
+        _refreshPendingShare(effective, healthToday: positiveHealth);
         await _persistKm(km, steps: effective, syncRemote: false);
       }());
     } else {
@@ -781,9 +801,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             ),
       );
       _spawnCoinsForKm(km);
-      _refreshPendingShare(effective);
+      _refreshPendingShare(effective, healthToday: positiveHealth);
       unawaited(_persistKm(km, steps: effective, syncRemote: false));
-      unawaited(_syncForegroundNotification(effective));
+      unawaited(
+        _syncForegroundNotification(effective, healthToday: positiveHealth),
+      );
     }
     unawaited(_maybeGrantLockedRewards(effective));
     final coach = _voiceCoachOf();
@@ -1679,12 +1701,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final effectiveSteps = PedometerStepTruth.dailyFromSources(
       liveDaily: liveSteps,
       persistedToday: localSteps,
+      healthToday: _lastHealthToday,
     );
     final weekSteps = {
       ..._weekSteps,
       todayKey: PedometerStepTruth.dailyFromSources(
         liveDaily: effectiveSteps,
         persistedToday: _weekSteps[todayKey] ?? 0,
+        healthToday: _lastHealthToday,
       ),
     };
     final effectiveKm =

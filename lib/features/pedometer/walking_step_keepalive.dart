@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:health/health.dart';
 import 'package:pedometer/pedometer.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../onboarding/src_onboarding_controller.dart';
 import 'kst_calendar.dart';
+import 'pedometer_health_cap.dart';
 import 'pedometer_step_truth.dart';
 import 'solo_pedometer_engine.dart';
 import 'solo_pedometer_foreground.dart';
@@ -55,6 +55,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     _anchorFloor = 0;
     _baselineReady = false;
     _healthToday = null;
+    PedometerHealthCap.forget();
     _offset = 0;
     _offsetDayKey = '';
   }
@@ -106,7 +107,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   Future<void> syncFromSources({required String reason}) async {
     try {
       _rollFloorIfNewDay();
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await PedometerHealthCap.fresh();
       final todayKey = KstCalendar.dateKey();
       final savedDay = prefs.getString('lastSavedDate') ?? '';
       final persisted = PedometerStepTruth.cachedDailyIfSameDay(
@@ -133,7 +134,20 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
       } catch (e, st) {
         debugPrint('WalkingStepKeepAlive health: $e\n$st');
       }
-      if (healthToday != null && healthToday > 0) _healthToday = healthToday;
+      final persistedHealth = PedometerHealthCap.fromPrefs(
+        prefs,
+        todayKey: todayKey,
+      );
+      if (healthToday != null && healthToday > 0) {
+        _healthToday = healthToday;
+        await PedometerHealthCap.persist(
+          prefs,
+          todayKey: todayKey,
+          health: healthToday,
+        );
+      } else if (_healthToday == null || _healthToday! <= 0) {
+        _healthToday = persistedHealth;
+      }
       final healthForMerge =
           (healthToday != null && healthToday > 0) ? healthToday : _healthToday;
       final daily = PedometerStepTruth.dailyFromSources(

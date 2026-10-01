@@ -16,6 +16,7 @@ import '../../app/router/route_names.dart';
 import '../../core/theme/app_colors.dart';
 import 'kst_calendar.dart';
 import 'pedometer_day_rollover.dart';
+import 'pedometer_health_cap.dart';
 import 'pedometer_step_truth.dart';
 
 const _channelId = 'src_walking_coin_pickup';
@@ -76,17 +77,17 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0,
       );
       _anchor = _steps;
+      int? persistedHealth;
       try {
-        final prefs = await SharedPreferences.getInstance();
+        final prefs = await PedometerHealthCap.fresh();
         lastSavedDate = prefs.getString('lastSavedDate') ?? '';
         stepOffset = prefs.getInt('stepOffset') ?? 0;
-      } catch (e, st) {
-        debugPrint('SoloPedometerForegroundHandler load date: $e\n$st');
-      }
-      if (_steps <= 0) {
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          final todayKey = KstCalendar.dateKey();
+        final todayKey = KstCalendar.dateKey();
+        persistedHealth = PedometerHealthCap.fromPrefs(
+          prefs,
+          todayKey: todayKey,
+        );
+        if (_steps <= 0) {
           final persisted = PedometerStepTruth.clampDaily(
             prefs.getInt('${todayKey}_steps') ?? 0,
           );
@@ -101,11 +102,18 @@ class SoloPedometerForegroundHandler extends TaskHandler {
               ),
             );
           }
-        } catch (e, st) {
-          debugPrint('SoloPedometerForegroundHandler hydrate: $e\n$st');
         }
+      } catch (e, st) {
+        debugPrint('SoloPedometerForegroundHandler load date: $e\n$st');
       }
-      await _publish(_steps);
+      final capped = _capCommit(
+        computed: _steps,
+        saved: _steps,
+        persistedHealth: persistedHealth,
+      );
+      _steps = capped.next;
+      _anchor = capped.next;
+      await _publish(_steps, healthToday: capped.health);
       _listenSensor(reason: 'onStart');
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
@@ -389,8 +397,14 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     required int computed,
     required int saved,
     int? healthToday,
+    int? persistedHealth,
   }) {
-    final health = _healthForMerge(healthToday);
+    final remembered = _healthForMerge(healthToday);
+    final health = PedometerHealthCap.effective(
+      live: remembered,
+      persisted: persistedHealth,
+    );
+    if (health != null && health > 0) _healthToday = health;
     final next = PedometerStepTruth.dailyFromSources(
       liveDaily: computed,
       persistedToday: saved,
@@ -401,19 +415,41 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   }
 
   /// Merge used by [_commit], without the foreground-task plugin.
+  ///
+  /// [persistedHealth] is the last positive Health stored for today. A new
+  /// isolate has no memory of the heal, so a stale 29,999 commit still uses it.
   @visibleForTesting
   int debugMergeCommit({
     required int computed,
     required int saved,
     int? healthToday,
+    int? persistedHealth,
   }) {
     final next = _capCommit(
       computed: computed,
       saved: saved,
       healthToday: healthToday,
+      persistedHealth: persistedHealth,
     ).next;
     _steps = next;
     return next;
+  }
+
+  Future<int?> _readPersistedHealth({int? incoming}) async {
+    try {
+      final prefs = await PedometerHealthCap.fresh();
+      final todayKey = KstCalendar.dateKey();
+      if (incoming != null && incoming > 0) {
+        await PedometerHealthCap.persist(
+          prefs,
+          todayKey: todayKey,
+          health: incoming,
+        );
+      }
+      return PedometerHealthCap.fromPrefs(prefs, todayKey: todayKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _commit(int computed, {int? healthToday}) async {
@@ -423,11 +459,14 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       // Same merge as the shade. Poison (86,626) clamps to 0 so a sane
       // lower today can replace it; a real day still only moves upward.
       // A Health today total may also replace a stored day more than
-      // [PedometerStepTruth.healthLeadMax] above it.
+      // [PedometerStepTruth.healthLeadMax] above it. The persisted cap
+      // still applies when this isolate has no live Health reading.
+      final persistedHealth = await _readPersistedHealth(incoming: healthToday);
       final capped = _capCommit(
         computed: computed,
         saved: saved,
         healthToday: healthToday,
+        persistedHealth: persistedHealth,
       );
       final next = capped.next;
       final todayIso = KstCalendar.dateKey();
@@ -454,10 +493,12 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         _steps = 0;
         _anchor = 0;
         _healthToday = null;
+        PedometerHealthCap.forget();
         if (_baselineReady) _baseline = _lastRaw;
         await _persistSmartPushFlags(DateTime.now());
         try {
-          final prefs = await SharedPreferences.getInstance();
+          final prefs = await PedometerHealthCap.fresh();
+          await PedometerHealthCap.clear(prefs);
           for (final entry in PedometerDayRollover.prefsToWrite(plan).entries) {
             final value = entry.value;
             if (value is int) {
@@ -481,6 +522,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       if (next > _steps && _baselineReady && next > computed) {
         _anchor = next;
         _baseline = _lastRaw;
+      }
+      // A heal down from 29,999 must move the anchor too. Leaving it there
+      // makes the next sensor sample `_anchor + delta` and the cap freezes
+      // today at the Health total.
+      if (capped.health != null && next < _steps) {
+        _anchor = next;
+        if (_baselineReady) _baseline = _lastRaw;
       }
       final changed = next != _steps;
       _steps = next;
@@ -602,17 +650,21 @@ abstract final class SoloPedometerForeground {
     required int rawSteps,
     int? healthToday,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await PedometerHealthCap.fresh();
     final todayKey = KstCalendar.dateKey();
     final claimedSteps = prefs.getInt('${todayKey}_claimed_steps') ?? 0;
     // UI / isolate store *daily* steps. Midnight sensor offset must not be
     // subtracted again — that zeroed the shade while the walking screen
     // still showed the persisted daily count (e.g. 1,835 vs 0 / 4,500).
     final persistedToday = prefs.getInt('${todayKey}_steps') ?? 0;
+    final health = PedometerHealthCap.effective(
+      live: healthToday,
+      persisted: PedometerHealthCap.fromPrefs(prefs, todayKey: todayKey),
+    );
     final effectiveSteps = PedometerStepTruth.dailyFromSources(
       liveDaily: rawSteps,
       persistedToday: persistedToday,
-      healthToday: healthToday,
+      healthToday: health,
     );
     final copy = WalkingChallengeNotificationCopy.fromDailySteps(
       effectiveSteps,
@@ -760,6 +812,33 @@ abstract final class SoloPedometerForeground {
     _knownHealthDay = '';
   }
 
+  /// Persists a positive reading, then keeps it for this KST day even when
+  /// the next call has no live Health (background read failed or returned 0).
+  static Future<int?> _healthForTask(int? healthToday) async {
+    if (healthToday != null && healthToday > 0) {
+      try {
+        final prefs = await PedometerHealthCap.fresh();
+        await PedometerHealthCap.persist(
+          prefs,
+          todayKey: KstCalendar.dateKey(),
+          health: healthToday,
+        );
+      } catch (_) {}
+    }
+    final remembered = knownHealthForSend(healthToday);
+    if (remembered != null && remembered > 0) return remembered;
+    try {
+      final prefs = await PedometerHealthCap.fresh();
+      final stored = PedometerHealthCap.fromPrefs(
+        prefs,
+        todayKey: KstCalendar.dateKey(),
+      );
+      return knownHealthForSend(stored);
+    } catch (_) {
+      return remembered;
+    }
+  }
+
   /// Payload [update] and [start] send. After a positive Health reading, a
   /// plain step update still carries that Health.
   @visibleForTesting
@@ -826,7 +905,7 @@ abstract final class SoloPedometerForeground {
       } catch (e, st) {
         debugPrint('SoloPedometerForeground notification perm: $e\n$st');
       }
-      final health = knownHealthForSend(healthToday);
+      final health = await _healthForTask(healthToday);
       final merged = await _mergedSteps(steps, healthToday: health);
       final resolved = await resolveNotification(
         rawSteps: merged,
@@ -899,7 +978,7 @@ abstract final class SoloPedometerForeground {
         );
         return;
       }
-      final health = knownHealthForSend(healthToday);
+      final health = await _healthForTask(healthToday);
       final merged = await _mergedSteps(steps, healthToday: health);
       await FlutterForegroundTask.saveData(key: _keepAliveKey, value: true);
       await FlutterForegroundTask.saveData(key: _targetKmKey, value: targetKm);
@@ -958,8 +1037,9 @@ abstract final class SoloPedometerForeground {
               false;
       if (!keep) return;
       if (await FlutterForegroundTask.isRunningService) return;
-      final savedSteps =
-          steps ?? await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
+      final savedSteps = steps ??
+          await FlutterForegroundTask.getData<int>(key: _stepsKey) ??
+          0;
       final savedKm = targetKm ??
           await FlutterForegroundTask.getData<double>(key: _targetKmKey) ??
           3.0;

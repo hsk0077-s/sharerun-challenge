@@ -34,7 +34,8 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   var _offsetDayKey = '';
   var _floorDayKey = '';
 
-  /// Last non-null Health Connect today total. Kept so a later null read
+  /// Last positive Health Connect today total. Zero is an empty aggregate,
+  /// not a measurement, so it is not stored. A later empty or failed read
   /// cannot max the inflated store back on top of a heal.
   int? _healthToday;
   var _listening = false;
@@ -132,8 +133,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
       } catch (e, st) {
         debugPrint('WalkingStepKeepAlive health: $e\n$st');
       }
-      if (healthToday != null) _healthToday = healthToday;
-      final healthForMerge = healthToday ?? _healthToday;
+      if (healthToday != null && healthToday > 0) _healthToday = healthToday;
+      final healthForMerge =
+          (healthToday != null && healthToday > 0) ? healthToday : _healthToday;
       final daily = PedometerStepTruth.dailyFromSources(
         liveDaily: healthToday ?? 0,
         persistedToday: persisted,
@@ -325,7 +327,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     int persisted = 0,
     int isolate = 0,
   }) {
-    if (healthToday != null) _healthToday = healthToday;
+    if (healthToday != null && healthToday > 0) _healthToday = healthToday;
     final daily = PedometerStepTruth.dailyFromSources(
       liveDaily: healthToday ?? 0,
       persistedToday: persisted,

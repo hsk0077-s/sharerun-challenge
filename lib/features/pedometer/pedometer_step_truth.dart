@@ -19,6 +19,11 @@ abstract final class PedometerStepTruth {
   /// shade. A hard athletic day in the low tens of thousands still passes.
   static const plausibleDailyMax = 30000;
 
+  /// Stored or isolate today totals this far above a non-null Health Connect
+  /// reading are not sensor lag. They lose the max (29,655 vs Health 4,706).
+  /// Null health does not use this gap and must not zero a sensor day.
+  static const healthLeadMax = 2000;
+
   /// Largest increase one TYPE_STEP_COUNTER sample may add.
   ///
   /// A real walk arrives as hardware batches of about 50–100 steps. One
@@ -76,15 +81,55 @@ abstract final class PedometerStepTruth {
   /// here. Clamp each source first so a 999999 stub or an 86,626 since-boot
   /// dump cannot outrank a real day. Poison (clamped to 0) loses to a sane
   /// lower total; a real same-day count still only moves upward.
+  ///
+  /// When [healthToday] is non-null, a candidate more than [healthLeadMax]
+  /// above that reading is dropped. Health itself stays in the max, so a
+  /// stored 29,655 becomes 4,706 instead of 0. Omit [healthToday] when the
+  /// query failed.
   static int dailyFromSources({
     required int liveDaily,
     int persistedToday = 0,
     int isolateDaily = 0,
+    int? healthToday,
   }) {
+    if (healthToday == null) {
+      return math.max(
+        clampDaily(liveDaily),
+        math.max(clampDaily(persistedToday), clampDaily(isolateDaily)),
+      );
+    }
+    final health = clampDaily(healthToday);
     return math.max(
-      clampDaily(liveDaily),
-      math.max(clampDaily(persistedToday), clampDaily(isolateDaily)),
+      health,
+      math.max(
+        _withinHealthLead(liveDaily, health),
+        math.max(
+          _withinHealthLead(persistedToday, health),
+          _withinHealthLead(isolateDaily, health),
+        ),
+      ),
     );
+  }
+
+  /// True only for the Health gap heal: [stored] is too far above a real
+  /// Health today total, and [merged] is the lower value that should replace
+  /// it. Every other downward move stays rejected.
+  static bool healthReplacesStored({
+    required int stored,
+    required int? healthToday,
+    required int merged,
+  }) {
+    if (healthToday == null) return false;
+    final health = clampDaily(healthToday);
+    final current = clampDaily(stored);
+    if (current <= health + healthLeadMax) return false;
+    return clampDaily(merged) < current;
+  }
+
+  static int _withinHealthLead(int steps, int health) {
+    final daily = clampDaily(steps);
+    if (daily > health + healthLeadMax) return 0;
+    return daily;
   }
 
   /// Pedometer event → today's steps.

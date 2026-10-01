@@ -33,13 +33,11 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     SoloPedometerForeground.attachRouter(_router);
     _stepKeepAlive = WalkingStepKeepAlive(
       onDaily: (steps, km) {
-        unawaited(
-          ref.read(pedometerStateProvider.notifier).updateSteps(
-                steps,
-                km,
-                isMoving: false,
-              ),
-        );
+        return ref.read(pedometerStateProvider.notifier).updateSteps(
+              steps,
+              km,
+              isMoving: false,
+            );
       },
     );
     unawaited(_stepKeepAlive!.attach());

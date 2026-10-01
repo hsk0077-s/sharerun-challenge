@@ -489,6 +489,51 @@ void main() {
       );
     });
 
+    test('Health 4706 replaces stored 29655; null health does not', () {
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 4706,
+          persistedToday: 29655,
+          isolateDaily: 29655,
+          healthToday: 4706,
+        ),
+        4706,
+      );
+      expect(
+        PedometerStepTruth.healthReplacesStored(
+          stored: 29655,
+          healthToday: 4706,
+          merged: 4706,
+        ),
+        isTrue,
+      );
+      // One batch of lag still wins. Null health must not zero the day.
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 6000,
+          persistedToday: 4706,
+          healthToday: 4706,
+        ),
+        6000,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 4706,
+          persistedToday: 29655,
+          isolateDaily: 29655,
+        ),
+        29655,
+      );
+      expect(
+        PedometerStepTruth.healthReplacesStored(
+          stored: 29655,
+          healthToday: null,
+          merged: 4706,
+        ),
+        isFalse,
+      );
+    });
+
     test('999999 overflow stub cannot wipe a real persisted day', () {
       expect(PedometerStepTruth.clampDaily(999999), 0);
       expect(PedometerStepTruth.clampDaily(100001), 0);

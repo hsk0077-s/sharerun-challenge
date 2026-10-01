@@ -529,6 +529,59 @@ void main() {
       );
     });
 
+    test('Health 4706 replaces stored 29999; null or zero health keeps it', () {
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 29999,
+          persistedToday: 29999,
+          isolateDaily: 29999,
+          healthToday: 4706,
+        ),
+        4706,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 6000,
+          persistedToday: 4706,
+          healthToday: 4706,
+        ),
+        6000,
+      );
+      expect(
+        PedometerStepTruth.healthReplacesStored(
+          stored: 29999,
+          healthToday: 4706,
+          merged: 4706,
+        ),
+        isTrue,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 29999,
+          persistedToday: 29999,
+          isolateDaily: 29999,
+        ),
+        29999,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 29999,
+          persistedToday: 29999,
+          isolateDaily: 29999,
+          healthToday: 0,
+        ),
+        29999,
+      );
+      expect(
+        PedometerStepTruth.healthReplacesStored(
+          stored: 29999,
+          healthToday: null,
+          merged: 4706,
+        ),
+        isFalse,
+      );
+    });
+
     test('Health 4706 replaces stored 29655; null health does not', () {
       expect(
         PedometerStepTruth.dailyFromSources(

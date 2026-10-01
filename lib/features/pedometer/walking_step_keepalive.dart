@@ -225,6 +225,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
           _publish(
             PedometerStepTruth.clampDaily(_floor),
             source: 'keepalive-sensor',
+            healthToday: _healthToday,
           ),
         );
         return;
@@ -253,7 +254,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
         ui: _floor,
       ),
     );
-    unawaited(_publish(next, source: 'keepalive-sensor'));
+    unawaited(
+      _publish(next, source: 'keepalive-sensor', healthToday: _healthToday),
+    );
   }
 
   Future<void> _publish(
@@ -264,7 +267,14 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     final clampedFloor = PedometerStepTruth.clampDaily(_floor);
     final floorWasPoison = clampedFloor != _floor;
     if (floorWasPoison) _floor = clampedFloor;
-    final daily = PedometerStepTruth.clampDaily(steps);
+    var daily = PedometerStepTruth.clampDaily(steps);
+    if (healthToday != null && healthToday > 0) {
+      daily = PedometerStepTruth.dailyFromSources(
+        liveDaily: daily,
+        persistedToday: _floor,
+        healthToday: healthToday,
+      );
+    }
     final healed = PedometerStepTruth.healthReplacesStored(
       stored: _floor,
       healthToday: healthToday,
@@ -290,7 +300,8 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
       final update = SoloPedometerForeground.update(
         steps: daily,
         targetKm: 3.0,
-        healthToday: healed ? healthToday : null,
+        healthToday:
+            (healthToday != null && healthToday > 0) ? healthToday : null,
       );
       if (healed) {
         await update;
@@ -335,5 +346,15 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
       healthToday: healthToday,
     );
     return _publish(daily, source: 'keepalive-poll', healthToday: healthToday);
+  }
+
+  /// Sensor path: uses the last positive Health, not the argument of this call.
+  @visibleForTesting
+  Future<void> debugPublishSensor(int steps) {
+    return _publish(
+      steps,
+      source: 'keepalive-sensor',
+      healthToday: _healthToday,
+    );
   }
 }

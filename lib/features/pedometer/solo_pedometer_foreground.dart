@@ -52,6 +52,10 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   var _lastRaw = 0;
   var _baselineReady = false;
   var _steps = 0;
+
+  /// Last positive Health Connect today total. Sensor commits and plain ints
+  /// keep using it so a later 29,999 cannot climb back over that reading.
+  int? _healthToday;
   var lastFiredDateKey = '';
   var lastSavedDate = '';
   var stepOffset = 0;
@@ -191,8 +195,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       unawaited(_commit(data.toInt()));
       return;
     }
-    // Heal payload: [merged daily, Health Connect today]. A plain int still
-    // only moves upward.
+    // [merged daily, Health Connect today]. A plain int keeps the last
+    // positive Health, if this isolate has seen one.
     if (data is List && data.length >= 2 && data.first is num) {
       final health = data[1];
       unawaited(
@@ -278,8 +282,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         if (currentSteps < 4500) {
           await _showSmartPush(
             id: _smartEveningId,
-          title: '오늘 걸음은 이렇게 주울 수 있어요',
-          body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
+            title: '오늘 걸음은 이렇게 주울 수 있어요',
+            body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
           );
         }
         firedEvening = true;
@@ -375,6 +379,43 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     );
   }
 
+  /// Remembers a positive Health reading. Zero and null leave the last one.
+  int? _healthForMerge(int? incoming) {
+    if (incoming != null && incoming > 0) _healthToday = incoming;
+    return _healthToday;
+  }
+
+  ({int next, int? health}) _capCommit({
+    required int computed,
+    required int saved,
+    int? healthToday,
+  }) {
+    final health = _healthForMerge(healthToday);
+    final next = PedometerStepTruth.dailyFromSources(
+      liveDaily: computed,
+      persistedToday: saved,
+      isolateDaily: _steps,
+      healthToday: health,
+    );
+    return (next: next, health: health);
+  }
+
+  /// Merge used by [_commit], without the foreground-task plugin.
+  @visibleForTesting
+  int debugMergeCommit({
+    required int computed,
+    required int saved,
+    int? healthToday,
+  }) {
+    final next = _capCommit(
+      computed: computed,
+      saved: saved,
+      healthToday: healthToday,
+    ).next;
+    _steps = next;
+    return next;
+  }
+
   Future<void> _commit(int computed, {int? healthToday}) async {
     try {
       final saved =
@@ -383,12 +424,12 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       // lower today can replace it; a real day still only moves upward.
       // A Health today total may also replace a stored day more than
       // [PedometerStepTruth.healthLeadMax] above it.
-      final next = PedometerStepTruth.dailyFromSources(
-        liveDaily: computed,
-        persistedToday: saved,
-        isolateDaily: _steps,
+      final capped = _capCommit(
+        computed: computed,
+        saved: saved,
         healthToday: healthToday,
       );
+      final next = capped.next;
       final todayIso = KstCalendar.dateKey();
       if (lastSavedDate.isEmpty) {
         lastSavedDate = todayIso;
@@ -412,6 +453,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         firedEvening = false;
         _steps = 0;
         _anchor = 0;
+        _healthToday = null;
         if (_baselineReady) _baseline = _lastRaw;
         await _persistSmartPushFlags(DateTime.now());
         try {
@@ -443,7 +485,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       final changed = next != _steps;
       _steps = next;
       if (!changed) return;
-      await _publish(_steps, healthToday: healthToday);
+      await _publish(_steps, healthToday: capped.health);
       FlutterForegroundTask.sendDataToMain(_steps);
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForegroundHandler commit: $e\n$st');
@@ -498,6 +540,8 @@ abstract final class SoloPedometerForeground {
     backgroundColor: AppColors.primaryMint,
   );
   static var _ensuring = false;
+  static int? _knownHealthToday;
+  static String _knownHealthDay = '';
   static var _uiBound = false;
   static var _launchConsumed = false;
   static DateTime? _lastOpenAt;
@@ -696,6 +740,43 @@ abstract final class SoloPedometerForeground {
     }
   }
 
+  /// Last positive Health for this KST day. A later null or zero keeps it.
+  @visibleForTesting
+  static int? knownHealthForSend(int? healthToday) {
+    final today = KstCalendar.dateKey();
+    if (_knownHealthDay != today) {
+      _knownHealthDay = today;
+      _knownHealthToday = null;
+    }
+    if (healthToday != null && healthToday > 0) {
+      _knownHealthToday = healthToday;
+    }
+    return _knownHealthToday;
+  }
+
+  @visibleForTesting
+  static void debugResetKnownHealth() {
+    _knownHealthToday = null;
+    _knownHealthDay = '';
+  }
+
+  /// Payload [update] and [start] send. After a positive Health reading, a
+  /// plain step update still carries that Health.
+  @visibleForTesting
+  static Object debugTaskPayload(int merged, int? healthToday) {
+    final health = knownHealthForSend(healthToday);
+    if (health != null && health > 0) return <Object>[merged, health];
+    return merged;
+  }
+
+  static void _sendTaskSteps(int merged, int? health) {
+    if (health != null && health > 0) {
+      FlutterForegroundTask.sendDataToTask(<Object>[merged, health]);
+    } else {
+      FlutterForegroundTask.sendDataToTask(merged);
+    }
+  }
+
   static Future<int> _mergedSteps(int steps, {int? healthToday}) async {
     final saved = await liveSteps();
     return PedometerStepTruth.dailyFromSources(
@@ -745,10 +826,11 @@ abstract final class SoloPedometerForeground {
       } catch (e, st) {
         debugPrint('SoloPedometerForeground notification perm: $e\n$st');
       }
-      final merged = await _mergedSteps(steps, healthToday: healthToday);
+      final health = knownHealthForSend(healthToday);
+      final merged = await _mergedSteps(steps, healthToday: health);
       final resolved = await resolveNotification(
         rawSteps: merged,
-        healthToday: healthToday,
+        healthToday: health,
       );
       await FlutterForegroundTask.saveData(key: _keepAliveKey, value: true);
       await FlutterForegroundTask.saveData(key: _targetKmKey, value: targetKm);
@@ -779,11 +861,7 @@ abstract final class SoloPedometerForeground {
           notificationIcon: launcherIcon,
           notificationInitialRoute: RouteNames.soloPedometerPath,
         );
-        if (healthToday == null) {
-          FlutterForegroundTask.sendDataToTask(merged);
-        } else {
-          FlutterForegroundTask.sendDataToTask(<Object>[merged, healthToday]);
-        }
+        _sendTaskSteps(merged, health);
         return;
       }
       await FlutterForegroundTask.startService(
@@ -794,6 +872,7 @@ abstract final class SoloPedometerForeground {
         notificationInitialRoute: RouteNames.soloPedometerPath,
         callback: startSoloPedometerForegroundCallback,
       );
+      _sendTaskSteps(merged, health);
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForeground start: $e\n$st');
     } catch (e, st) {
@@ -820,7 +899,8 @@ abstract final class SoloPedometerForeground {
         );
         return;
       }
-      final merged = await _mergedSteps(steps, healthToday: healthToday);
+      final health = knownHealthForSend(healthToday);
+      final merged = await _mergedSteps(steps, healthToday: health);
       await FlutterForegroundTask.saveData(key: _keepAliveKey, value: true);
       await FlutterForegroundTask.saveData(key: _targetKmKey, value: targetKm);
       await FlutterForegroundTask.saveData(key: _stepsKey, value: merged);
@@ -842,7 +922,7 @@ abstract final class SoloPedometerForeground {
       }
       final resolved = await resolveNotification(
         rawSteps: merged,
-        healthToday: healthToday,
+        healthToday: health,
       );
       await FlutterForegroundTask.saveData(
         key: _pendingKey,
@@ -855,11 +935,7 @@ abstract final class SoloPedometerForeground {
         notificationIcon: launcherIcon,
         notificationInitialRoute: RouteNames.soloPedometerPath,
       );
-      if (healthToday == null) {
-        FlutterForegroundTask.sendDataToTask(merged);
-      } else {
-        FlutterForegroundTask.sendDataToTask(<Object>[merged, healthToday]);
-      }
+      _sendTaskSteps(merged, health);
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForeground update: $e\n$st');
     } catch (e, st) {

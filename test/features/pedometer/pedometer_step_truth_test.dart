@@ -3,7 +3,8 @@ import 'package:share_run_challenge/features/pedometer/pedometer_step_truth.dart
 
 void main() {
   group('PedometerStepTruth.fromSensorEvent', () {
-    test('shake/session increment is not killed by a midnight sensor offset', () {
+    test('shake/session increment is not killed by a midnight sensor offset',
+        () {
       // Repro: UI 1,835, offset snapshotted at sensor 1,835 (reboot / QA init).
       // Old path: (healthBase + delta) - offset => 5, rejected vs UI 1,835.
       expect(
@@ -344,7 +345,9 @@ void main() {
       },
     );
 
-    test('single 20000 jump from zero is a dump; the same total walked gradually is not', () {
+    test(
+        'single 20000 jump from zero is a dump; the same total walked gradually is not',
+        () {
       final dump = PedometerStepTruth.acceptSensorDelta(
         raw: 20000,
         baseline: 0,
@@ -486,6 +489,43 @@ void main() {
           persistedToday: 20000,
         ),
         20000,
+      );
+    });
+
+    test('Health 0 keeps stored 4700; Health 4706 replaces stored 29655', () {
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 0,
+          persistedToday: 4700,
+          isolateDaily: 4700,
+          healthToday: 0,
+        ),
+        4700,
+      );
+      expect(
+        PedometerStepTruth.healthReplacesStored(
+          stored: 4700,
+          healthToday: 0,
+          merged: 0,
+        ),
+        isFalse,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 4706,
+          persistedToday: 29655,
+          isolateDaily: 29655,
+          healthToday: 4706,
+        ),
+        4706,
+      );
+      expect(
+        PedometerStepTruth.healthReplacesStored(
+          stored: 29655,
+          healthToday: 4706,
+          merged: 4706,
+        ),
+        isTrue,
       );
     });
 

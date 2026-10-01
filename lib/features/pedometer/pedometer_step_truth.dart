@@ -82,16 +82,18 @@ abstract final class PedometerStepTruth {
   /// dump cannot outrank a real day. Poison (clamped to 0) loses to a sane
   /// lower total; a real same-day count still only moves upward.
   ///
-  /// When [healthToday] is non-null, a candidate more than [healthLeadMax]
-  /// above that reading is dropped. Health itself stays in the max, so a
-  /// stored 29,655 becomes 4,706 instead of 0. Omit [healthToday] when the
-  /// query failed.
+  /// When [healthToday] is a positive reading, a candidate more than
+  /// [healthLeadMax] above it is dropped. Health itself stays in the max, so
+  /// a stored 29,655 becomes 4,706 instead of 0. Omit [healthToday] when the
+  /// query failed. Zero and below are an empty aggregate, not a measurement,
+  /// and are treated the same as omitted.
   static int dailyFromSources({
     required int liveDaily,
     int persistedToday = 0,
     int isolateDaily = 0,
     int? healthToday,
   }) {
+    if (healthToday != null && healthToday <= 0) healthToday = null;
     if (healthToday == null) {
       return math.max(
         clampDaily(liveDaily),
@@ -113,13 +115,14 @@ abstract final class PedometerStepTruth {
 
   /// True only for the Health gap heal: [stored] is too far above a real
   /// Health today total, and [merged] is the lower value that should replace
-  /// it. Every other downward move stays rejected.
+  /// it. Every other downward move stays rejected. Zero and below are not a
+  /// real total.
   static bool healthReplacesStored({
     required int stored,
     required int? healthToday,
     required int merged,
   }) {
-    if (healthToday == null) return false;
+    if (healthToday == null || healthToday <= 0) return false;
     final health = clampDaily(healthToday);
     final current = clampDaily(stored);
     if (current <= health + healthLeadMax) return false;

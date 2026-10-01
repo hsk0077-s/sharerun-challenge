@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../core/constants/economy_constants.dart';
@@ -10,6 +9,7 @@ import '../../../core/theme/theme.dart';
 import '../../../screens/solo_pedometer_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../pedometer/pedometer_harvest_ledger.dart';
+import '../../pedometer/pedometer_health_cap.dart';
 import '../my_page_activity_stats.dart';
 import '../providers/practice_streak_provider.dart';
 
@@ -108,7 +108,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
 
   Future<void> _hydrateStepsFromPrefs() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await PedometerHealthCap.fresh();
       final uid = ref.read(firebaseAuthProvider).currentUser?.uid ??
           ref.read(activeUserProfileProvider).asData?.value.uid ??
           '';
@@ -116,6 +116,10 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
       final prefix = PedometerHarvestLedger.prefix(uid: uid, dateKey: today);
       final backup = prefs.getInt(PedometerKstClock.backupStepsKey(today)) ?? 0;
       final legacy = prefs.getInt('$prefix.steps') ?? 0;
+      final steps = PedometerHealthCap.cap(
+        backup > legacy ? backup : legacy,
+        PedometerHealthCap.fromPrefs(prefs, todayKey: today),
+      );
       final claimed = PedometerHarvestLedger.coalesceClaimed(
         current: _claimedSteps,
         fromTodayKey:
@@ -129,9 +133,8 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
           todayKey: today,
         ),
         fromSession: PedometerHarvestLedger.sessionClaimed(today),
-        steps: backup > legacy ? backup : legacy,
+        steps: steps,
       );
-      final steps = backup > legacy ? backup : legacy;
       if (!mounted) return;
       if (_storedSteps == steps && _claimedSteps == claimed) return;
       setState(() {

@@ -24,6 +24,7 @@ import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/debug_local_harvest.dart';
 import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
+import '../features/pedometer/pedometer_health_cap.dart';
 import '../features/pedometer/pedometer_step_truth.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/pedometer/walking_challenge_share.dart';
@@ -78,11 +79,16 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
   /// SharedPreferences(로컬) + Firestore(클라우드) 이중 복원 엔진
   Future<void> _loadPersistedData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await PedometerHealthCap.fresh();
       final todayKey = _getTodayKey();
+      final capHealth = PedometerHealthCap.fromPrefs(
+        prefs,
+        todayKey: todayKey,
+      );
       // 1. 먼저 로컬 SharedPreferences 확인
       int savedSteps = prefs.getInt('${todayKey}_steps') ?? 0;
       double savedKm = prefs.getDouble('${todayKey}_km') ?? 0.0;
+      var injectedCloud = false;
       // 2. 만약 기기 변경 등으로 로컬 걸음수가 0보라면, 클라우드(Firestore)에서 오늘치 데이터 조회 및 복원
       if (savedSteps == 0) {
         final userProfile = _ref.read(userProfileProvider);
@@ -104,9 +110,7 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
               } else {
                 savedSteps = (data['steps'] as num?)?.toInt() ?? 0;
                 savedKm = (data['km'] as num?)?.toDouble() ?? 0.0;
-                // 로컬 SharedPreferences에 클라우드 데이터 강제 주입
-                await prefs.setInt('${todayKey}_steps', savedSteps);
-                await prefs.setDouble('${todayKey}_km', savedKm);
+                injectedCloud = true;
                 debugPrint(
                   '[CLOUD RECOVERY] 새 기기에서 오늘자 걸음 수 ($savedSteps보) 원격 복원 완료.',
                 );
@@ -115,6 +119,17 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
           }
         }
       }
+      final capped = PedometerHealthCap.cap(savedSteps, capHealth);
+      if (capped != savedSteps) {
+        savedSteps = capped;
+        savedKm = savedSteps > 0
+            ? SoloPedometerEngine.kmFromSteps(savedSteps)
+            : 0.0;
+        injectedCloud = true;
+      }
+      if (injectedCloud) {
+        await _writeTodayStores(prefs, todayKey, savedSteps, savedKm);
+      }
       final storedToday = savedSteps;
       savedSteps = PedometerStepTruth.mergeStoredDaily(
         storedToday: storedToday,
@@ -122,10 +137,13 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
         memoryDayKey: state.dayKey,
         todayKey: todayKey,
       );
+      savedSteps = PedometerHealthCap.cap(savedSteps, capHealth);
       if (savedSteps == 0) {
         savedKm = 0;
       } else if (savedSteps != PedometerStepTruth.clampDaily(storedToday)) {
-        savedKm = state.km;
+        savedKm = savedSteps == state.steps
+            ? state.km
+            : SoloPedometerEngine.kmFromSteps(savedSteps);
       }
       state = PedometerData(
         steps: savedSteps,
@@ -138,45 +156,73 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
     }
   }
 
-  /// 로컬 백업 완료 후 즉시 클라우드 Firestore 비동기 실시간 동기화
+  /// 로컬 백업 완료 후 즉시 클라우드 Firestore 비동기 실시간 동기화.
+  ///
+  /// The value is capped by the last positive Health for today before it
+  /// touches prefs, the legacy prefix key, the week list, or Firestore.
+  /// Firestore `set` replaces today's fields. It does not keep a numeric max.
   Future<void> updateSteps(int steps, double km, {required bool isMoving}) async {
-    final daily = PedometerStepTruth.clampDaily(steps);
-    final safeKm = daily > 0 ? km : 0.0;
     final todayKey = _getTodayKey();
+    var daily = PedometerStepTruth.clampDaily(steps);
+    var safeKm = daily > 0 ? km : 0.0;
+    SharedPreferences? prefs;
+    try {
+      prefs = await PedometerHealthCap.fresh();
+      final capHealth = PedometerHealthCap.fromPrefs(
+        prefs,
+        todayKey: todayKey,
+      );
+      final capped = PedometerHealthCap.cap(daily, capHealth);
+      if (capped != daily) {
+        daily = capped;
+        safeKm = daily > 0 ? SoloPedometerEngine.kmFromSteps(daily) : 0.0;
+      }
+    } catch (e) {
+      debugPrint('[PERSISTENCE] 상한 조회 실패: $e');
+    }
     state = PedometerData(
       steps: daily,
       km: safeKm,
       isMoving: isMoving,
       dayKey: todayKey,
     );
+    if (prefs == null) return;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      // 1) 로컬 저장소 즉시 영구 기록 (빠른 렌더링 유지)
-      await prefs.setInt('${todayKey}_steps', daily);
-      await prefs.setDouble('${todayKey}_km', safeKm);
-      await _updateWeeklyHistory(prefs, todayKey, daily);
-      // 2) 클라우드 영구 백업 (기기 변경 대비)
-      final userProfile = _ref.read(userProfileProvider);
-      final uid = userProfile.uid;
-      if (uid.isEmpty) return;
-      // 비동기로 백그라운드에서 동기화하여 UI 스레드 지연을 원천 차단
-      unawaited(
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .collection('daily_metrics')
-            .doc(todayKey)
-            .set({
-          'steps': daily,
-          'km': safeKm,
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true)).catchError((Object e) {
-          debugPrint('[CLOUD SYNC ERR] Firestore 걸음 수 백업 실패: $e');
-        }),
-      );
+      await _writeTodayStores(prefs, todayKey, daily, safeKm);
     } catch (e) {
       debugPrint('[PERSISTENCE] 이중 동기화 실패: $e');
     }
+  }
+
+  /// Overwrites every today-step store with [daily]. Not a max merge.
+  Future<void> _writeTodayStores(
+    SharedPreferences prefs,
+    String todayKey,
+    int daily,
+    double km,
+  ) async {
+    await prefs.setInt('${todayKey}_steps', daily);
+    await prefs.setDouble('${todayKey}_km', km);
+    await _updateWeeklyHistory(prefs, todayKey, daily);
+    final uid = _ref.read(userProfileProvider).uid;
+    final prefix = PedometerHarvestLedger.prefix(uid: uid, dateKey: todayKey);
+    await prefs.setInt('$prefix.steps', daily);
+    await prefs.setDouble('$prefix.km', km);
+    if (uid.isEmpty) return;
+    unawaited(
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('daily_metrics')
+          .doc(todayKey)
+          .set({
+        'steps': daily,
+        'km': km,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)).catchError((Object e) {
+        debugPrint('[CLOUD SYNC ERR] Firestore 걸음 수 백업 실패: $e');
+      }),
+    );
   }
 
   String _getTodayKey() => PedometerKstClock.dateKey();
@@ -496,6 +542,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         requestIfMissing: requestIfMissing,
       );
       if (!mounted) return;
+      await _loadPersistedHealthCap();
+      if (!mounted) return;
       final todayKey = PedometerKstClock.dateKey();
       final rolled = _kstDayKey.isNotEmpty && _kstDayKey != todayKey;
       if (rolled) {
@@ -557,7 +605,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             PedometerStepTruth.clampDaily(total),
           );
         }
-        if (total > 0) _lastHealthToday = total;
+        if (total > 0) {
+          _lastHealthToday = total;
+          unawaited(_persistHealthCap(total));
+        }
         _applyDailySteps(
           next,
           source: 'health',
@@ -630,6 +681,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     // fromSensorEvent maxes it back in while raw-offset is still ~0.
     _healthBase = 0;
     _lastHealthToday = null;
+    PedometerHealthCap.forget();
     _sessionDelta = 0;
     _baselineReady = false;
     _km = plan.km;
@@ -670,6 +722,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     try {
       final prefs = await SharedPreferences.getInstance();
       final ymd = PedometerKstClock.dateKey();
+      await PedometerHealthCap.clear(prefs);
       await prefs.setInt(PedometerKstClock.backupStepsKey(ymd), _steps);
       await prefs.setDouble(PedometerKstClock.backupKmKey(ymd), _km);
       await prefs.setString('lastSavedDate', _lastSavedDate);
@@ -737,11 +790,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _steps = PedometerStepTruth.clampDaily(_steps);
       _healthBase = PedometerStepTruth.clampDaily(_healthBase);
     }
+    final cachedHealth = PedometerHealthCap.cached(PedometerKstClock.dateKey());
     final positiveHealth = (healthToday != null && healthToday > 0)
         ? healthToday
         : (_lastHealthToday != null && _lastHealthToday! > 0
             ? _lastHealthToday
-            : null);
+            : cachedHealth);
+    if (positiveHealth != null &&
+        (_lastHealthToday == null || _lastHealthToday! <= 0)) {
+      _lastHealthToday = positiveHealth;
+    }
     var replaceStored = healed;
     if (positiveHealth != null) {
       effective = PedometerStepTruth.dailyFromSources(
@@ -830,6 +888,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   Future<void> _onIsolateStepsTrusted() async {
     if (!mounted) return;
+    await _loadPersistedHealthCap();
+    if (!mounted) return;
     final trusted = await SoloPedometerForeground.liveSteps();
     if (!mounted) return;
     // `liveSteps` drops a cache stamped on a previous KST day. The pushed
@@ -893,6 +953,29 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     } catch (e, st) {
       debugPrint('initForegroundTask: $e\n$st');
     }
+  }
+
+  Future<void> _loadPersistedHealthCap() async {
+    if (_lastHealthToday != null && _lastHealthToday! > 0) return;
+    try {
+      final prefs = await PedometerHealthCap.fresh();
+      final cap = PedometerHealthCap.fromPrefs(
+        prefs,
+        todayKey: PedometerKstClock.dateKey(),
+      );
+      if (cap != null) _lastHealthToday = cap;
+    } catch (_) {}
+  }
+
+  Future<void> _persistHealthCap(int health) async {
+    try {
+      final prefs = await PedometerHealthCap.fresh();
+      await PedometerHealthCap.persist(
+        prefs,
+        todayKey: PedometerKstClock.dateKey(),
+        health: health,
+      );
+    } catch (_) {}
   }
 
   Future<void> _syncForegroundNotification(
@@ -1178,6 +1261,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final steps = PedometerStepTruth.dailyFromSources(
       liveDaily: ref.read(pedometerStateProvider).steps,
       persistedToday: _steps,
+      healthToday:
+          _lastHealthToday ?? PedometerHealthCap.cached(_getTodayKey()),
     );
     ref.read(walkingPendingShareProvider.notifier).state =
         _computePendingShare(steps);
@@ -1195,8 +1280,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   Future<void> _restoreTodayFromPrefs() async {
     try {
       await ref.read(pedometerStateProvider.notifier).ensureCloudRecovery();
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await PedometerHealthCap.fresh();
       final todayKey = PedometerKstClock.dateKey();
+      final capHealth = PedometerHealthCap.fromPrefs(
+        prefs,
+        todayKey: todayKey,
+      );
+      if (capHealth != null) _lastHealthToday = capHealth;
       final primarySteps =
           prefs.getInt(PedometerKstClock.backupStepsKey(todayKey)) ?? 0;
       final primaryKm =
@@ -1237,10 +1327,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       final savedLastDate = prefs.getString('lastSavedDate') ?? '';
       final savedOffset = prefs.getInt('stepOffset') ?? 0;
       if (!mounted) return;
-      final restoredSteps = PedometerStepTruth.clampDaily(
-        math.max(primarySteps, legacySteps),
+      final restoredSteps = PedometerHealthCap.cap(
+        PedometerStepTruth.clampDaily(math.max(primarySteps, legacySteps)),
+        capHealth,
       );
-      final restoredKm = restoredSteps > 0 ? math.max(primaryKm, legacyKm) : 0.0;
+      final restoredKm = capHealth != null
+          ? SoloPedometerEngine.kmFromSteps(restoredSteps)
+          : (restoredSteps > 0 ? math.max(primaryKm, legacyKm) : 0.0);
       final km = restoredKm > 0
           ? restoredKm
           : SoloPedometerEngine.kmFromSteps(restoredSteps);
@@ -1256,11 +1349,20 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         week[day.key] =
             prefs.getInt(PedometerKstClock.backupStepsKey(day.key)) ?? 0;
       }
-      week[todayKey] = math.max(week[todayKey] ?? 0, steps);
+      week[todayKey] = PedometerHealthCap.cap(
+        math.max(week[todayKey] ?? 0, steps),
+        capHealth,
+      );
       setState(() {
-        if (steps > _steps) _steps = steps;
-        if (steps > _healthBase) _healthBase = steps;
-        if (km > _km) _km = km;
+        if (capHealth != null) {
+          _steps = steps;
+          _healthBase = steps;
+          _km = km;
+        } else {
+          if (steps > _steps) _steps = steps;
+          if (steps > _healthBase) _healthBase = steps;
+          if (km > _km) _km = km;
+        }
         _kstDayKey = todayKey;
         _weekSteps = week;
         if (_selectedDayKey.isEmpty) _selectedDayKey = todayKey;
@@ -1470,6 +1572,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final liveSteps = PedometerStepTruth.dailyFromSources(
       liveDaily: pedometerState.steps,
       persistedToday: _steps,
+      healthToday: _lastHealthToday,
     );
     final claimedNow = _claimedFor(liveSteps);
     final int toClaim = PedometerHarvestLedger.pendingShareFloor(
@@ -1698,17 +1801,19 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       memoryDayKey: _kstDayKey,
       todayKey: todayKey,
     );
+    final shownHealth =
+        _lastHealthToday ?? PedometerHealthCap.cached(todayKey);
     final effectiveSteps = PedometerStepTruth.dailyFromSources(
       liveDaily: liveSteps,
       persistedToday: localSteps,
-      healthToday: _lastHealthToday,
+      healthToday: shownHealth,
     );
     final weekSteps = {
       ..._weekSteps,
       todayKey: PedometerStepTruth.dailyFromSources(
         liveDaily: effectiveSteps,
         persistedToday: _weekSteps[todayKey] ?? 0,
-        healthToday: _lastHealthToday,
+        healthToday: shownHealth,
       ),
     };
     final effectiveKm =

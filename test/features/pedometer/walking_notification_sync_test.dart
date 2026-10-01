@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/features/pedometer/pedometer_health_cap.dart';
 import 'package:share_run_challenge/features/pedometer/solo_pedometer_foreground.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -141,6 +142,125 @@ void main() {
     expect(
       plain.debugMergeCommit(computed: 100, saved: 29999, healthToday: 0),
       29999,
+    );
+  });
+
+  test(
+      'healed isolate with stale 29999 stays under the persisted cap, then a new day clears it',
+      () async {
+    final healed = SoloPedometerForegroundHandler();
+    expect(
+      healed.debugMergeCommit(
+        computed: 4706,
+        saved: 29999,
+        healthToday: 4706,
+      ),
+      4706,
+    );
+
+    final stale = SoloPedometerForegroundHandler();
+    expect(
+      stale.debugMergeCommit(
+        computed: 29999,
+        saved: 29999,
+        persistedHealth: 4706,
+      ),
+      lessThanOrEqualTo(6706),
+    );
+    expect(
+      stale.debugMergeCommit(
+        computed: 29999,
+        saved: 29999,
+        healthToday: null,
+        persistedHealth: 4706,
+      ),
+      lessThanOrEqualTo(6706),
+    );
+    expect(
+      stale.debugMergeCommit(
+        computed: 29999,
+        saved: 29999,
+        healthToday: 0,
+      ),
+      lessThanOrEqualTo(6706),
+    );
+
+    final today = DateTime.now().toUtc().add(const Duration(hours: 9));
+    final todayKey =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    SharedPreferences.setMockInitialValues({
+      PedometerHealthCap.dayKey: todayKey,
+      PedometerHealthCap.stepsKey: 4706,
+      '${todayKey}_steps': 29999,
+    });
+    final prefs = await SharedPreferences.getInstance();
+    expect(
+      PedometerHealthCap.fromPrefs(prefs, todayKey: todayKey),
+      4706,
+    );
+    expect(
+      PedometerHealthCap.fromPrefs(prefs, todayKey: '2000-01-01'),
+      isNull,
+    );
+    expect(PedometerHealthCap.cap(29999, null), 29999);
+
+    final nextDay = SoloPedometerForegroundHandler();
+    expect(
+      nextDay.debugMergeCommit(
+        computed: 29999,
+        saved: 29999,
+        persistedHealth: null,
+      ),
+      29999,
+    );
+  });
+
+  test('shade stays under the persisted cap when live health is missing',
+      () async {
+    final today = DateTime.now().toUtc().add(const Duration(hours: 9));
+    final todayKey =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    SharedPreferences.setMockInitialValues({
+      '${todayKey}_steps': 29999,
+      '${todayKey}_claimed_steps': 0,
+      PedometerHealthCap.dayKey: todayKey,
+      PedometerHealthCap.stepsKey: 4706,
+    });
+
+    final resolved =
+        await SoloPedometerForeground.resolveNotification(rawSteps: 29999);
+
+    expect(resolved.effectiveSteps, lessThanOrEqualTo(6706));
+    expect(resolved.body, isNot(contains('29,999')));
+  });
+
+  test('stale prefs cache does not keep 29999 after reload', () async {
+    PedometerHealthCap.forget();
+    final today = DateTime.now().toUtc().add(const Duration(hours: 9));
+    final todayKey =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    SharedPreferences.setMockInitialValues({
+      '${todayKey}_steps': 29999,
+    });
+    final stale = await SharedPreferences.getInstance();
+    expect(stale.getInt('${todayKey}_steps'), 29999);
+
+    SharedPreferences.setMockInitialValues({
+      '${todayKey}_steps': 4706,
+      PedometerHealthCap.dayKey: todayKey,
+      PedometerHealthCap.stepsKey: 4706,
+    });
+    expect(stale.getInt('${todayKey}_steps'), 29999);
+    await stale.reload();
+    final health = PedometerHealthCap.fromPrefs(stale, todayKey: todayKey);
+    expect(health, 4706);
+    expect(
+      PedometerHealthCap.cap(stale.getInt('${todayKey}_steps') ?? 0, health),
+      lessThanOrEqualTo(6706),
+    );
+    expect(
+      PedometerHealthCap.fromPrefs(stale, todayKey: '2000-01-01'),
+      isNull,
     );
   });
 }

@@ -16,18 +16,27 @@ import 'solo_pedometer_foreground.dart';
 class WalkingStepKeepAlive with WidgetsBindingObserver {
   WalkingStepKeepAlive({required this.onDaily});
 
-  final void Function(int steps, double km) onDaily;
+  final Future<void> Function(int steps, double km) onDaily;
 
   final Health _health = Health();
   StreamSubscription<StepCount>? _sub;
   Timer? _healthTimer;
   var _floor = 0;
+
+  /// Daily total captured when the sensor baseline was taken. Session delta
+  /// is cumulative since that sample, so it must not be added to a floor
+  /// that already includes earlier batches.
+  var _anchorFloor = 0;
   var _baseline = 0;
   var _previousRaw = 0;
   var _baselineReady = false;
   var _offset = 0;
   var _offsetDayKey = '';
   var _floorDayKey = '';
+
+  /// Last non-null Health Connect today total. Kept so a later null read
+  /// cannot max the inflated store back on top of a heal.
+  int? _healthToday;
   var _listening = false;
   DateTime? _lastRebindAt;
 
@@ -42,7 +51,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     if (_floorDayKey == today) return;
     _floorDayKey = today;
     _floor = 0;
+    _anchorFloor = 0;
     _baselineReady = false;
+    _healthToday = null;
     _offset = 0;
     _offsetDayKey = '';
   }
@@ -84,7 +95,11 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   Future<void> _onIsolateTrusted() async {
     _rollFloorIfNewDay();
     final trusted = await SoloPedometerForeground.liveSteps();
-    _publish(trusted, source: 'isolate');
+    final daily = PedometerStepTruth.dailyFromSources(
+      liveDaily: trusted,
+      healthToday: _healthToday,
+    );
+    await _publish(daily, source: 'isolate', healthToday: _healthToday);
   }
 
   Future<void> syncFromSources({required String reason}) async {
@@ -108,20 +123,22 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
         _offsetDayKey = '';
       }
       final isolate = await SoloPedometerForeground.liveSteps();
-      var healthToday = 0;
+      int? healthToday;
       try {
         healthToday = await PedometerKstClock.queryTodaySteps(
-              _health,
-              requestIfMissing: false,
-            ) ??
-            0;
+          _health,
+          requestIfMissing: false,
+        );
       } catch (e, st) {
         debugPrint('WalkingStepKeepAlive health: $e\n$st');
       }
+      if (healthToday != null) _healthToday = healthToday;
+      final healthForMerge = healthToday ?? _healthToday;
       final daily = PedometerStepTruth.dailyFromSources(
-        liveDaily: healthToday,
+        liveDaily: healthToday ?? 0,
         persistedToday: persisted,
         isolateDaily: isolate,
+        healthToday: healthForMerge,
       );
       debugPrint(
         '${PedometerStepTruth.sourceLog(
@@ -133,7 +150,11 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
           ui: persisted,
         )} isolate=$isolate',
       );
-      _publish(daily, source: 'keepalive-$reason');
+      await _publish(
+        daily,
+        source: 'keepalive-$reason',
+        healthToday: healthForMerge,
+      );
     } catch (e, st) {
       debugPrint('WalkingStepKeepAlive sync: $e\n$st');
     }
@@ -177,13 +198,17 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
   }
 
   void _onSensor(StepCount event) {
+    _onSensorRaw(event.steps);
+  }
+
+  void _onSensorRaw(int raw) {
     _rollFloorIfNewDay();
-    final raw = event.steps;
     var sessionDelta = 0;
     if (!_baselineReady) {
       _baseline = raw;
       _baselineReady = true;
       _previousRaw = raw;
+      _anchorFloor = PedometerStepTruth.clampDaily(_floor);
     } else {
       final sample = PedometerStepTruth.acceptSensorDelta(
         raw: raw,
@@ -193,9 +218,12 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
       _previousRaw = raw;
       if (sample.rebase) {
         _baseline = raw;
-        _publish(
-          PedometerStepTruth.clampDaily(_floor),
-          source: 'keepalive-sensor',
+        _anchorFloor = PedometerStepTruth.clampDaily(_floor);
+        unawaited(
+          _publish(
+            PedometerStepTruth.clampDaily(_floor),
+            source: 'keepalive-sensor',
+          ),
         );
         return;
       }
@@ -204,7 +232,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     final todayKey = KstCalendar.dateKey();
     final next = PedometerStepTruth.fromSensorEvent(
       raw: raw,
-      healthBase: _floor,
+      healthBase: _anchorFloor,
       sessionDelta: sessionDelta,
       stepOffset: _offset,
       // Empty offset day means the snapshot is not today's yet. Passing it
@@ -218,32 +246,92 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
         daily: next,
         raw: raw,
         offset: _offset,
-        healthBase: _floor,
-        sessionDelta: raw - _baseline,
+        healthBase: _anchorFloor,
+        sessionDelta: sessionDelta,
         ui: _floor,
       ),
     );
-    _publish(next, source: 'keepalive-sensor');
+    unawaited(_publish(next, source: 'keepalive-sensor'));
   }
 
-  void _publish(int steps, {required String source}) {
+  Future<void> _publish(
+    int steps, {
+    required String source,
+    int? healthToday,
+  }) async {
     final clampedFloor = PedometerStepTruth.clampDaily(_floor);
     final floorWasPoison = clampedFloor != _floor;
     if (floorWasPoison) _floor = clampedFloor;
     final daily = PedometerStepTruth.clampDaily(steps);
-    if (daily < _floor) return;
+    final healed = PedometerStepTruth.healthReplacesStored(
+      stored: _floor,
+      healthToday: healthToday,
+      merged: daily,
+    );
+    if (daily < _floor && !healed) return;
     final raised = daily > _floor;
+    // Health, prefs, and the isolate may move the floor. The next sample
+    // must baseline again so its cumulative delta is not added on top.
+    if (!source.contains('sensor') && (raised || healed)) {
+      _baselineReady = false;
+    }
     _floor = daily;
-    if (raised) {
-      onDaily(daily, SoloPedometerEngine.kmFromSteps(daily));
+    if (raised || healed) {
+      final write = onDaily(daily, SoloPedometerEngine.kmFromSteps(daily));
+      if (healed) await write;
     }
     if (raised ||
+        healed ||
         floorWasPoison ||
         source.contains('resume') ||
         source.contains('attach')) {
-      unawaited(
-        SoloPedometerForeground.update(steps: daily, targetKm: 3.0),
+      final update = SoloPedometerForeground.update(
+        steps: daily,
+        targetKm: 3.0,
+        healthToday: healed ? healthToday : null,
       );
+      if (healed) {
+        await update;
+      } else {
+        unawaited(update);
+      }
     }
+  }
+
+  /// Marks the offset as today's so sensor samples are not dropped as stale.
+  @visibleForTesting
+  void debugAnchorToday() {
+    _offset = 0;
+    _offsetDayKey = KstCalendar.dateKey();
+  }
+
+  @visibleForTesting
+  int get debugFloor => _floor;
+
+  /// First raw is the baseline. Later raws are cumulative counter samples.
+  @visibleForTesting
+  void debugIngestRaw(int raw) {
+    _onSensorRaw(raw);
+  }
+
+  @visibleForTesting
+  void debugSeedFloor(int floor) {
+    _floor = floor;
+  }
+
+  @visibleForTesting
+  Future<void> debugPublishHealth({
+    required int? healthToday,
+    int persisted = 0,
+    int isolate = 0,
+  }) {
+    if (healthToday != null) _healthToday = healthToday;
+    final daily = PedometerStepTruth.dailyFromSources(
+      liveDaily: healthToday ?? 0,
+      persistedToday: persisted,
+      isolateDaily: isolate,
+      healthToday: healthToday,
+    );
+    return _publish(daily, source: 'keepalive-poll', healthToday: healthToday);
   }
 }

@@ -234,6 +234,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   var _flyingCoins = <FloatingCoin>[];
   var _syncing = false;
   var _healthBase = 0;
+  int? _lastHealthToday;
   var _baselineSteps = 0;
   var _previousSensorRaw = 0;
   var _baselineReady = false;
@@ -518,10 +519,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         if (rolled) {
           return;
         }
+        _lastHealthToday = total;
         final next = PedometerStepTruth.dailyFromSources(
           liveDaily: total,
           persistedToday: _steps,
           isolateDaily: await SoloPedometerForeground.liveSteps(),
+          healthToday: total,
         );
         debugPrint(
           PedometerStepTruth.sourceLog(
@@ -534,11 +537,17 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             ui: _steps,
           ),
         );
-        // Only re-anchor the pedometer session when Health raises the floor.
+        // Only re-anchor the pedometer session when Health raises the floor,
+        // or when Health knocks out a stored total more than 2,000 above it.
         // A periodic poll that always reset the baseline swallowed Samsung
         // shake/step events (first event after each poll became a no-op).
         final healthFloor = PedometerStepTruth.clampDaily(_healthBase);
-        if (next > healthFloor) {
+        final healed = PedometerStepTruth.healthReplacesStored(
+          stored: _steps,
+          healthToday: total,
+          merged: next,
+        );
+        if (healed || next > healthFloor) {
           _healthBase = next;
           _sessionDelta = 0;
           _baselineReady = false;
@@ -548,7 +557,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
             PedometerStepTruth.clampDaily(total),
           );
         }
-        _applyDailySteps(next, source: 'health');
+        _applyDailySteps(
+          next,
+          source: 'health',
+          healed: healed,
+          healthToday: total,
+        );
         unawaited(_syncForegroundNotification(_steps));
         return;
       }
@@ -614,6 +628,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     // Yesterday's already-daily floor must not survive the 0 flash.
     // fromSensorEvent maxes it back in while raw-offset is still ~0.
     _healthBase = 0;
+    _lastHealthToday = null;
     _sessionDelta = 0;
     _baselineReady = false;
     _km = plan.km;
@@ -687,7 +702,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
-  void _applyDailySteps(int steps, {required String source}) {
+  void _applyDailySteps(
+    int steps, {
+    required String source,
+    bool healed = false,
+    int? healthToday,
+  }) {
     if (!mounted) return;
     final rolled = _ensureDailyRollover(
       sensorTotal: _hardwareStepCounter(),
@@ -726,7 +746,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         ui: _steps,
       ),
     );
-    if (effective <= _steps) return;
+    if (effective == _steps) return;
+    if (!healed && effective < _steps) return;
     final previousSteps = _steps;
     final previousKm = _km;
     final km = SoloPedometerEngine.kmFromSteps(effective);
@@ -738,17 +759,32 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _weekSteps = {..._weekSteps, todayKey: effective};
       if (_selectedDayKey.isEmpty) _selectedDayKey = todayKey;
     });
-    unawaited(
-      ref.read(pedometerStateProvider.notifier).updateSteps(
-            effective,
-            km,
-            isMoving: _isMoving,
-          ),
-    );
-    _spawnCoinsForKm(km);
-    _refreshPendingShare(effective);
-    unawaited(_persistKm(km, steps: effective, syncRemote: false));
-    unawaited(_syncForegroundNotification(effective));
+    if (healed) {
+      // Prefs must land before the shade reads them, or max() puts 29,655 back.
+      unawaited(() async {
+        await ref.read(pedometerStateProvider.notifier).updateSteps(
+              effective,
+              km,
+              isMoving: _isMoving,
+            );
+        if (!mounted) return;
+        _spawnCoinsForKm(km);
+        _refreshPendingShare(effective, healthToday: healthToday);
+        await _persistKm(km, steps: effective, syncRemote: false);
+      }());
+    } else {
+      unawaited(
+        ref.read(pedometerStateProvider.notifier).updateSteps(
+              effective,
+              km,
+              isMoving: _isMoving,
+            ),
+      );
+      _spawnCoinsForKm(km);
+      _refreshPendingShare(effective);
+      unawaited(_persistKm(km, steps: effective, syncRemote: false));
+      unawaited(_syncForegroundNotification(effective));
+    }
     unawaited(_maybeGrantLockedRewards(effective));
     final coach = _voiceCoachOf();
     final beforeEpoch = coach.liveSessionEpoch;
@@ -776,7 +812,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     if (!mounted) return;
     // `liveSteps` drops a cache stamped on a previous KST day. The pushed
     // int has no day key, so a late 5377 must not bypass that filter.
-    final daily = PedometerStepTruth.clampDaily(trusted);
+    final daily = PedometerStepTruth.dailyFromSources(
+      liveDaily: trusted,
+      healthToday: _lastHealthToday,
+    );
     _ensureDailyRollover(
       sensorTotal: _hardwareStepCounter(),
     );
@@ -786,7 +825,24 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       todayKey: PedometerKstClock.dateKey(),
     );
     if (daily <= shown) {
-      unawaited(_syncForegroundNotification(shown));
+      final healed = PedometerStepTruth.healthReplacesStored(
+        stored: shown,
+        healthToday: _lastHealthToday,
+        merged: daily,
+      );
+      if (!healed) {
+        unawaited(_syncForegroundNotification(shown));
+        return;
+      }
+      _healthBase = daily;
+      _sessionDelta = 0;
+      _baselineReady = false;
+      _applyDailySteps(
+        daily,
+        source: 'isolate',
+        healed: true,
+        healthToday: _lastHealthToday,
+      );
       return;
     }
     _healthBase = daily;
@@ -817,7 +873,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
-  Future<void> _syncForegroundNotification(int steps) async {
+  Future<void> _syncForegroundNotification(
+    int steps, {
+    int? healthToday,
+  }) async {
     try {
       _scheduleGoldenPushes();
       if (!_isNotificationEnabled) return;
@@ -827,6 +886,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         healthBase: _healthBase,
         claimedSteps: _claimedSteps,
         pendingShare: _computePendingShare(steps),
+        healthToday: healthToday,
       );
     } on PlatformException catch (e, st) {
       debugPrint('_syncForegroundNotification PlatformException: $e\n$st');
@@ -1369,9 +1429,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     }
   }
 
-  void _refreshPendingShare(int steps) {
+  void _refreshPendingShare(int steps, {int? healthToday}) {
     _updatePendingAmount();
-    unawaited(_syncForegroundNotification(steps));
+    unawaited(
+      _syncForegroundNotification(steps, healthToday: healthToday),
+    );
   }
 
   String _harvestUid() {

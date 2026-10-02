@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
-import { ensureAdminAuth } from '../../lib/adminAuth';
+import { ensureAdminAuth, signOutAdmin } from '../../lib/adminAuth';
 import { getDb, USERS_COLLECTION } from '../../lib/firebase';
 
 export default function Header() {
@@ -44,6 +44,13 @@ export default function Header() {
         )}
 
         <span>Profile</span>
+        <button
+          type="button"
+          onClick={() => void signOutAdmin()}
+          className="px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
+        >
+          로그아웃
+        </button>
       </div>
     </header>
   );

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/theme/src_theme.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
+import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
 import '../screens/solo_pedometer_screen.dart';
 import 'router/dashboard_router.dart';
@@ -32,6 +33,7 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     _router = ref.read(dashboardRouterProvider);
     SoloPedometerForeground.attachRouter(_router);
     _stepKeepAlive = WalkingStepKeepAlive(
+      today: TodaySteps.instance,
       onDaily: (steps, km) {
         return ref.read(pedometerStateProvider.notifier).updateSteps(
               steps,

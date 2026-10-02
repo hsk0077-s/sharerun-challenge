@@ -48,10 +48,7 @@ void startSoloPedometerForegroundCallback() {
 
 class SoloPedometerForegroundHandler extends TaskHandler {
   StreamSubscription<StepCount>? _sub;
-  var _anchor = 0;
-  var _baseline = 0;
   var _lastRaw = 0;
-  var _baselineReady = false;
   var _steps = 0;
 
   /// Last positive Health Connect today total. Sensor commits and plain ints
@@ -73,47 +70,13 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
     try {
-      _steps = PedometerStepTruth.clampDaily(
-        await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0,
-      );
-      _anchor = _steps;
-      int? persistedHealth;
       try {
         final prefs = await PedometerHealthCap.fresh();
         lastSavedDate = prefs.getString('lastSavedDate') ?? '';
         stepOffset = prefs.getInt('stepOffset') ?? 0;
-        final todayKey = KstCalendar.dateKey();
-        persistedHealth = PedometerHealthCap.fromPrefs(
-          prefs,
-          todayKey: todayKey,
-        );
-        if (_steps <= 0) {
-          final persisted = PedometerStepTruth.clampDaily(
-            prefs.getInt('${todayKey}_steps') ?? 0,
-          );
-          if (persisted > _steps) {
-            _steps = persisted;
-            _anchor = persisted;
-            debugPrint(
-              PedometerStepTruth.sourceLog(
-                source: 'isolate-hydrate',
-                daily: persisted,
-                ui: persisted,
-              ),
-            );
-          }
-        }
       } catch (e, st) {
         debugPrint('SoloPedometerForegroundHandler load date: $e\n$st');
       }
-      final capped = _capCommit(
-        computed: _steps,
-        saved: _steps,
-        persistedHealth: persistedHealth,
-      );
-      _steps = capped.next;
-      _anchor = capped.next;
-      await _publish(_steps, healthToday: capped.health);
       _listenSensor(reason: 'onStart');
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForegroundHandler onStart: $e\n$st');
@@ -136,7 +99,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     _lastSensorRebindAt = now;
     try {
       unawaited(_sub?.cancel());
-      _baselineReady = false;
       debugPrint(
         '${PedometerStepTruth.sourceLog(
           source: 'isolate-rebind',
@@ -148,25 +110,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       _sub = Pedometer.stepCountStream.listen(
         (event) {
           try {
-            final previous = _lastRaw;
             _lastRaw = event.steps;
-            if (!_baselineReady) {
-              _baseline = _lastRaw;
-              _baselineReady = true;
-              return;
-            }
-            _anchor = PedometerStepTruth.clampDaily(_anchor);
-            final sample = PedometerStepTruth.acceptSensorDelta(
-              raw: _lastRaw,
-              baseline: _baseline,
-              previousRaw: previous,
-            );
-            if (sample.rebase) {
-              _baseline = _lastRaw;
-              unawaited(_commit(_anchor));
-              return;
-            }
-            unawaited(_commit(_anchor + sample.delta));
+            FlutterForegroundTask.sendDataToMain(<Object>['raw', event.steps]);
           } catch (e, st) {
             debugPrint('SoloPedometerForegroundHandler step: $e\n$st');
           }
@@ -193,27 +138,23 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   @override
   void onRepeatEvent(DateTime timestamp) {
     if (_sub == null) _listenSensor(reason: 'onStart');
-    unawaited(_commit(_steps.toInt()));
-    unawaited(_maybeFireSmartPushes(_steps));
+    unawaited(_commit());
+    unawaited(_smartFromOwnerPrefs());
   }
 
   @override
-  void onReceiveData(Object data) {
-    if (data is num) {
-      unawaited(_commit(data.toInt()));
-      return;
-    }
-    // [merged daily, Health Connect today]. A plain int keeps the last
-    // positive Health, if this isolate has seen one.
-    if (data is List && data.length >= 2 && data.first is num) {
-      final health = data[1];
-      unawaited(
-        _commit(
-          (data.first as num).toInt(),
-          healthToday: health is num ? health.toInt() : null,
-        ),
-      );
-    }
+  void onReceiveData(Object data) {}
+
+  Future<void> _smartFromOwnerPrefs() async {
+    var steps = 0;
+    try {
+      final prefs = await PedometerHealthCap.fresh();
+      final todayKey = KstCalendar.dateKey();
+      final stored = prefs.getInt('${todayKey}_steps') ?? 0;
+      final health = PedometerHealthCap.fromPrefs(prefs, todayKey: todayKey);
+      steps = PedometerHealthCap.cap(stored, health);
+    } catch (_) {}
+    await _maybeFireSmartPushes(steps);
   }
 
   @override
@@ -435,40 +376,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     return next;
   }
 
-  Future<int?> _readPersistedHealth({int? incoming}) async {
+  Future<void> _commit() async {
     try {
-      final prefs = await PedometerHealthCap.fresh();
-      final todayKey = KstCalendar.dateKey();
-      if (incoming != null && incoming > 0) {
-        await PedometerHealthCap.persist(
-          prefs,
-          todayKey: todayKey,
-          health: incoming,
-        );
-      }
-      return PedometerHealthCap.fromPrefs(prefs, todayKey: todayKey);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  Future<void> _commit(int computed, {int? healthToday}) async {
-    try {
-      final saved =
-          await FlutterForegroundTask.getData<int>(key: _stepsKey) ?? 0;
-      // Same merge as the shade. Poison (86,626) clamps to 0 so a sane
-      // lower today can replace it; a real day still only moves upward.
-      // A Health today total may also replace a stored day more than
-      // [PedometerStepTruth.healthLeadMax] above it. The persisted cap
-      // still applies when this isolate has no live Health reading.
-      final persistedHealth = await _readPersistedHealth(incoming: healthToday);
-      final capped = _capCommit(
-        computed: computed,
-        saved: saved,
-        healthToday: healthToday,
-        persistedHealth: persistedHealth,
-      );
-      final next = capped.next;
       final todayIso = KstCalendar.dateKey();
       if (lastSavedDate.isEmpty) {
         lastSavedDate = todayIso;
@@ -491,10 +400,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         firedLunch = false;
         firedEvening = false;
         _steps = 0;
-        _anchor = 0;
         _healthToday = null;
         PedometerHealthCap.forget();
-        if (_baselineReady) _baseline = _lastRaw;
         await _persistSmartPushFlags(DateTime.now());
         try {
           final prefs = await PedometerHealthCap.fresh();
@@ -519,22 +426,8 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         FlutterForegroundTask.sendDataToMain(0);
         return;
       }
-      if (next > _steps && _baselineReady && next > computed) {
-        _anchor = next;
-        _baseline = _lastRaw;
-      }
-      // A heal down from 29,999 must move the anchor too. Leaving it there
-      // makes the next sensor sample `_anchor + delta` and the cap freezes
-      // today at the Health total.
-      if (capped.health != null && next < _steps) {
-        _anchor = next;
-        if (_baselineReady) _baseline = _lastRaw;
-      }
-      final changed = next != _steps;
-      _steps = next;
-      if (!changed) return;
-      await _publish(_steps, healthToday: capped.health);
-      FlutterForegroundTask.sendDataToMain(_steps);
+      // Same-day totals are decided in the main isolate. Do not write the
+      // task key or the notification from this isolate's own anchor.
     } on PlatformException catch (e, st) {
       debugPrint('SoloPedometerForegroundHandler commit: $e\n$st');
     } catch (e, st) {
@@ -595,6 +488,10 @@ abstract final class SoloPedometerForeground {
   static DateTime? _lastOpenAt;
   static GoRouter? _uiRouter;
   static void Function(int steps)? onLiveSteps;
+
+  /// Raw TYPE_STEP_COUNTER sample from the foreground isolate. The main
+  /// isolate's [TodaySteps] owner decides the daily total.
+  static void Function(int raw)? onRawSample;
   static final List<void Function(int steps)> _liveListeners = [];
 
   static void addLiveStepsListener(void Function(int steps) listener) {
@@ -724,6 +621,13 @@ abstract final class SoloPedometerForeground {
   static void _onTaskData(Object data) {
     if (data == _openCommand) {
       openWalkingChallenge();
+      return;
+    }
+    if (data is List &&
+        data.length >= 2 &&
+        data.first == 'raw' &&
+        data[1] is int) {
+      onRawSample?.call(data[1] as int);
       return;
     }
     if (data is int) {

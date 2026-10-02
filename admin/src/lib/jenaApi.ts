@@ -64,3 +64,36 @@ export function fetchReferrals(
   const query = params.toString();
   return jenaGet<ReferralList>(`/admin/referrals${query ? `?${query}` : ''}`, idToken);
 }
+
+export type DailyStepRow = {
+  uid: string;
+  day: string;
+  steps: number;
+  source: string | null;
+  lastHealth: number | null;
+  updatedAt: string | null;
+  anomaly: boolean;
+};
+
+export type DailyStepsPage = {
+  start: string;
+  end: string;
+  uid: string | null;
+  truncated: boolean;
+  rows: DailyStepRow[];
+};
+
+export function fetchDailySteps(
+  idToken: string,
+  filter: { uid?: string; from?: string; to?: string }
+): Promise<DailyStepsPage> {
+  const params = new URLSearchParams();
+  if (filter.uid) params.set('uid', filter.uid);
+  if (filter.from) params.set('from', filter.from);
+  if (filter.to) params.set('to', filter.to);
+  const query = params.toString();
+  return jenaGet<DailyStepsPage>(
+    `/admin/daily-steps${query ? `?${query}` : ''}`,
+    idToken
+  );
+}

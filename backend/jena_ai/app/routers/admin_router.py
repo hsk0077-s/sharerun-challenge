@@ -3,11 +3,13 @@ from fastapi import APIRouter, Depends, Header, Query
 from app.models.admin_api import (
     AuditPingRequest,
     AuditPingResult,
+    DailyStepsResult,
     ReferralListResult,
     WhoAmIResult,
 )
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
+from app.services.admin_daily_steps_service import admin_daily_steps_service
 from app.services.admin_referral_service import admin_referral_service
 
 
@@ -55,3 +57,13 @@ def list_referrals(
     _actor: dict = Depends(require_admin_user),
 ) -> ReferralListResult:
     return admin_referral_service.list_referrals(limit=limit, cursor=cursor)
+
+
+@router.get("/daily-steps", response_model=DailyStepsResult)
+def list_daily_steps(
+    uid: str | None = None,
+    start: str | None = Query(default=None, alias="from"),
+    end: str | None = Query(default=None, alias="to"),
+    _actor: dict = Depends(require_admin_user),
+) -> DailyStepsResult:
+    return admin_daily_steps_service.list_steps(uid=uid, start=start, end=end)

@@ -45,3 +45,21 @@ class ReferralListResult(BaseModel):
     users: list[ReferralUserRow]
     nextCursor: str | None
     limit: int
+
+
+class DailyStepRow(BaseModel):
+    uid: str
+    day: str
+    steps: int
+    source: str | None
+    lastHealth: int | None
+    updatedAt: str | None
+    anomaly: bool
+
+
+class DailyStepsResult(BaseModel):
+    start: str
+    end: str
+    uid: str | None
+    truncated: bool
+    rows: list[DailyStepRow]

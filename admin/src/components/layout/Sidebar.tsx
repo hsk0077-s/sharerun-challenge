@@ -19,6 +19,7 @@ export default function Sidebar() {
         <NavLink to="/finance" className={navClass}>재무/환불 관리</NavLink>
         <NavLink to="/sponsor" className={navClass}>B2B 스폰서 룸 승인</NavLink>
         <NavLink to="/referrals" className={navClass}>추천인</NavLink>
+        <NavLink to="/steps" className={navClass}>일별 걸음</NavLink>
       </nav>
     </aside>
   );

@@ -7,12 +7,40 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_ENV_FILE = _REPO_ROOT / ".env"
-_LOADED = load_dotenv(_ENV_FILE, override=False)
+# Checkout: <repo>/backend/jena_ai/app/config.py -> parents[3] is <repo>.
+# Cloud Run copies app/ to /app/app/config.py, which has no parents[3].
+_REPO_ROOT_DEPTH = 3
 
 
-def repo_root() -> Path:
+def repo_root_from(config_file: Path) -> Path | None:
+    parents = config_file.resolve().parents
+    if len(parents) <= _REPO_ROOT_DEPTH:
+        return None
+    return parents[_REPO_ROOT_DEPTH]
+
+
+def dotenv_path(config_file: Path) -> Path | None:
+    root = repo_root_from(config_file)
+    if root is None:
+        return None
+    env_file = root / ".env"
+    if not env_file.is_file():
+        return None
+    return env_file
+
+
+def load_repo_dotenv(config_file: Path | None = None) -> bool:
+    env_file = dotenv_path(config_file or Path(__file__))
+    if env_file is None:
+        return False
+    return bool(load_dotenv(env_file, override=False))
+
+
+_REPO_ROOT = repo_root_from(Path(__file__))
+load_repo_dotenv()
+
+
+def repo_root() -> Path | None:
     return _REPO_ROOT
 
 

@@ -16,7 +16,7 @@ abstract final class AppStrings {
   static const loginReferralHint = '추천 코드를 입력하세요...';
   static const referralRedeemEntry = '초대 코드 입력';
   static const referralRedeemSubmit = '등록';
-  static const referralRedeemSuccess = '초대 코드가 등록됐어요';
+  static const referralRedeemSuccess = '1,000 SHARE 지급';
   static const referralRedeemInvalid = '없는 초대 코드예요';
   static const referralRedeemSelf = '본인 코드는 입력할 수 없어요';
   static const referralRedeemAlready = '이미 초대 코드를 입력했어요';

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../core/api/api_exception.dart';
+import '../../../core/constants/economy_constants.dart';
 import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
 
@@ -83,11 +84,13 @@ class _MyPageReferralCodeEntryState
 
   @override
   Widget build(BuildContext context) {
-    final referredBy =
-        ref.watch(activeUserProfileProvider).value?.economy.referredBy;
+    final economy = ref.watch(activeUserProfileProvider).value?.economy;
+    final referredBy = economy?.referredBy;
     final signedUpAt =
         ref.watch(authStateChangesProvider).value?.metadata.creationTime;
     final hasReferrer = referredBy != null && referredBy.trim().isNotEmpty;
+    final runs = (economy?.trialRunCount ?? 0)
+        .clamp(0, EconomyConstants.trialRunsRequired);
     final done = _done || hasReferrer;
     final open = referralRedeemWindowOpen(
       signedUpAt: signedUpAt,
@@ -101,7 +104,7 @@ class _MyPageReferralCodeEntryState
       padding: EdgeInsets.only(top: tokens.spacing.sm),
       child: done
           ? Text(
-              AppStrings.referralRedeemDone,
+              '${AppStrings.referralRedeemDone} · $runs/${EconomyConstants.trialRunsRequired} 런',
               key: MyPageReferralCodeEntry.doneKey,
               style: textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,

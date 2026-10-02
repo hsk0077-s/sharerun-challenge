@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, limit, query } from 'firebase/firestore';
-import { ensureAdminAuth } from '../../lib/adminAuth';
+import { ensureAdminAuth, signOutAdmin } from '../../lib/adminAuth';
 import { getDb, USERS_COLLECTION } from '../../lib/firebase';
+import { fetchWhoAmI } from '../../lib/jenaApi';
 
 export default function Header() {
   // GCP(Firestore) 연결 상태를 추적하는 상태 변수 ('checking', 'online', 'offline')
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [jenaLabel, setJenaLabel] = useState('Jena: 확인 중...');
 
   useEffect(() => {
     const checkServerHealth = async () => {
@@ -19,6 +21,27 @@ export default function Header() {
     };
 
     checkServerHealth();
+  }, []);
+
+  useEffect(() => {
+    const loadWhoami = async () => {
+      try {
+        const user = await ensureAdminAuth();
+        if (!user) {
+          setJenaLabel('Jena: 로그인 필요');
+          return;
+        }
+        const me = await fetchWhoAmI(await user.getIdToken());
+        setJenaLabel(`Jena: ${me.email || me.uid}`);
+      } catch (err) {
+        setJenaLabel(
+          err instanceof Error && err.message === 'forbidden'
+            ? 'Jena: 권한 없음'
+            : 'Jena: 연결 실패'
+        );
+      }
+    };
+    void loadWhoami();
   }, []);
 
   return (
@@ -43,7 +66,15 @@ export default function Header() {
           </span>
         )}
 
+        <span className="px-2 py-1 bg-gray-700 text-gray-200 rounded">{jenaLabel}</span>
         <span>Profile</span>
+        <button
+          type="button"
+          onClick={() => void signOutAdmin()}
+          className="px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded"
+        >
+          로그아웃
+        </button>
       </div>
     </header>
   );

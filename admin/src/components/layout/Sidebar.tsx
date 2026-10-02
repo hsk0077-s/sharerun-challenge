@@ -18,6 +18,7 @@ export default function Sidebar() {
         <NavLink to="/abuse" className={navClass}>Jena 어뷰징 심사</NavLink>
         <NavLink to="/finance" className={navClass}>재무/환불 관리</NavLink>
         <NavLink to="/sponsor" className={navClass}>B2B 스폰서 룸 승인</NavLink>
+        <NavLink to="/referrals" className={navClass}>추천인</NavLink>
       </nav>
     </aside>
   );

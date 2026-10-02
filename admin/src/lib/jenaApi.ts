@@ -13,12 +13,54 @@ export function jenaBaseUrl(): string {
   return base.replace(/\/$/, '');
 }
 
-export async function fetchWhoAmI(idToken: string): Promise<JenaWhoAmI> {
-  const response = await fetch(`${jenaBaseUrl()}/admin/whoami`, {
+export type ReferralPayoutMarker = {
+  amount: number;
+  createdAt: string | null;
+  payeeUid: string | null;
+};
+
+export type ReferralUserRow = {
+  uid: string;
+  referralCode: string | null;
+  referredBy: string | null;
+  referredByUid: string | null;
+  trialRunCount: number;
+  trialRunsRequired: number;
+  referralPayoutCount: number;
+  referralPayoutMax: number;
+  payouts: {
+    redeem: ReferralPayoutMarker | null;
+    trial_referee: ReferralPayoutMarker | null;
+    trial_referrer: ReferralPayoutMarker | null;
+  };
+};
+
+export type ReferralList = {
+  users: ReferralUserRow[];
+  nextCursor: string | null;
+  limit: number;
+};
+
+async function jenaGet<T>(path: string, idToken: string): Promise<T> {
+  const response = await fetch(`${jenaBaseUrl()}${path}`, {
     headers: { Authorization: `Bearer ${idToken}` },
   });
   if (!response.ok) {
     throw new Error(response.status === 401 || response.status === 403 ? 'forbidden' : 'jena');
   }
-  return response.json() as Promise<JenaWhoAmI>;
+  return response.json() as Promise<T>;
+}
+
+export function fetchWhoAmI(idToken: string): Promise<JenaWhoAmI> {
+  return jenaGet<JenaWhoAmI>('/admin/whoami', idToken);
+}
+
+export function fetchReferrals(
+  idToken: string,
+  cursor?: string | null
+): Promise<ReferralList> {
+  const params = new URLSearchParams();
+  if (cursor) params.set('cursor', cursor);
+  const query = params.toString();
+  return jenaGet<ReferralList>(`/admin/referrals${query ? `?${query}` : ''}`, idToken);
 }

@@ -1,8 +1,14 @@
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends, Header, Query
 
-from app.models.admin_api import AuditPingRequest, AuditPingResult, WhoAmIResult
+from app.models.admin_api import (
+    AuditPingRequest,
+    AuditPingResult,
+    ReferralListResult,
+    WhoAmIResult,
+)
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
+from app.services.admin_referral_service import admin_referral_service
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -40,3 +46,12 @@ def audit_ping(
         reason=(body.reason if body and body.reason else "ping"),
     )
     return AuditPingResult(accepted=True, log_id=log_id, action="audit_ping")
+
+
+@router.get("/referrals", response_model=ReferralListResult)
+def list_referrals(
+    limit: int = Query(default=40, ge=1, le=80),
+    cursor: str | None = None,
+    _actor: dict = Depends(require_admin_user),
+) -> ReferralListResult:
+    return admin_referral_service.list_referrals(limit=limit, cursor=cursor)

@@ -21,6 +21,7 @@ export default function Sidebar() {
         <NavLink to="/referrals" className={navClass}>추천인</NavLink>
         <NavLink to="/steps" className={navClass}>일별 걸음</NavLink>
         <NavLink to="/wallet-anomalies" className={navClass}>지갑 이상</NavLink>
+        <NavLink to="/runs" className={navClass}>런 검증</NavLink>
       </nav>
     </aside>
   );

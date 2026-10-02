@@ -36,6 +36,15 @@ void main() {
     expect(restarted.steps, lessThanOrEqualTo(6706));
   });
 
+  test('onHealth raises 1503 to the Health Connect total 4696', () async {
+    final today = TodaySteps();
+    today.debugAnchorToday();
+    today.debugSeed(1503);
+    await today.onHealth(4696);
+    expect(today.steps, 4696);
+    expect(today.health, 4696);
+  });
+
   test('midnight rollover clears today and yesterday health cap', () {
     var day = '2026-10-02';
     final today = TodaySteps();

@@ -64,6 +64,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   var _smartFlagsHydrated = false;
   var _sensorRebindInFlight = false;
   DateTime? _lastSensorRebindAt;
+  DateTime? _lastHealthPing;
   static final _smartPlugin = FlutterLocalNotificationsPlugin();
   static var _smartPluginReady = false;
 
@@ -140,6 +141,27 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     if (_sub == null) _listenSensor(reason: 'onStart');
     unawaited(_commit());
     unawaited(_smartFromOwnerPrefs());
+    _pingHealth(timestamp);
+  }
+
+  /// Asks the main isolate to re-read today's Health Connect total. This
+  /// isolate cannot call the Health plugin, and it does not write the
+  /// notification. [TodaySteps] stays the only writer.
+  void _pingHealth(DateTime now) {
+    if (!SoloPedometerForeground.shouldRequestHealthRefresh(
+      now: now,
+      last: _lastHealthPing,
+    )) {
+      return;
+    }
+    _lastHealthPing = now;
+    try {
+      FlutterForegroundTask.sendDataToMain(
+        <Object>[SoloPedometerForeground.healthRefreshCommand],
+      );
+    } catch (e, st) {
+      debugPrint('SoloPedometerForegroundHandler health ping: $e\n$st');
+    }
   }
 
   @override
@@ -492,6 +514,21 @@ abstract final class SoloPedometerForeground {
   /// Raw TYPE_STEP_COUNTER sample from the foreground isolate. The main
   /// isolate's [TodaySteps] owner decides the daily total.
   static void Function(int raw)? onRawSample;
+
+  /// Foreground-service tick. The main isolate re-reads Health Connect and
+  /// [TodaySteps] republishes the notification. No second writer.
+  static const healthRefreshCommand = 'health';
+  static const healthRefreshInterval = Duration(seconds: 15);
+  static Future<void> Function()? onHealthRefresh;
+
+  static bool shouldRequestHealthRefresh({
+    required DateTime now,
+    required DateTime? last,
+  }) {
+    if (last == null) return true;
+    return now.difference(last) >= healthRefreshInterval;
+  }
+
   static final List<void Function(int steps)> _liveListeners = [];
 
   static void addLiveStepsListener(void Function(int steps) listener) {
@@ -621,6 +658,11 @@ abstract final class SoloPedometerForeground {
   static void _onTaskData(Object data) {
     if (data == _openCommand) {
       openWalkingChallenge();
+      return;
+    }
+    if (data is List && data.isNotEmpty && data.first == healthRefreshCommand) {
+      final refresh = onHealthRefresh;
+      if (refresh != null) unawaited(refresh());
       return;
     }
     if (data is List &&

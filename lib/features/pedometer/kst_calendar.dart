@@ -20,7 +20,12 @@ abstract final class KstCalendar {
     return '$year-$m-$d';
   }
 
-  /// KST 당일 00:00 (UTC) ~ [now]. Health plugins want local DateTimes.
+  /// Full KST day `[00:00, next midnight)`.
+  ///
+  /// Samsung Health writes one StepsRecord for the local day. Health Connect
+  /// aggregate prorates a record that only partly overlaps the query, so an
+  /// end of [now] returns `steps * elapsed/1440` (07:41 KST → 4,696 × 461/1440
+  /// = 1,503). The next midnight keeps the whole record inside the window.
   static ({DateTime startDate, DateTime endDate}) todayRange([DateTime? now]) {
     final current = now ?? DateTime.now();
     final kstNow = toKst(current);
@@ -29,7 +34,8 @@ abstract final class KstCalendar {
       kstNow.month,
       kstNow.day,
     ).subtract(offset);
-    return (startDate: startUtc.toLocal(), endDate: current);
+    final endUtc = startUtc.add(const Duration(days: 1));
+    return (startDate: startUtc.toLocal(), endDate: endUtc.toLocal());
   }
 
   /// One KST calendar day, `[start, next midnight)`.

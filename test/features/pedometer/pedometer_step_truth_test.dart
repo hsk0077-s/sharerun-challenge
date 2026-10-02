@@ -492,6 +492,35 @@ void main() {
       );
     });
 
+    test('Health Connect 4696 replaces a prorated sensor total of 1503', () {
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 1503,
+          persistedToday: 1503,
+          isolateDaily: 1503,
+          healthToday: 4696,
+        ),
+        4696,
+      );
+      // One batch above Health still wins. The +2000 lead stays.
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 5000,
+          persistedToday: 4696,
+          healthToday: 4696,
+        ),
+        5000,
+      );
+      expect(
+        PedometerStepTruth.dailyFromSources(
+          liveDaily: 29655,
+          persistedToday: 4696,
+          healthToday: 4696,
+        ),
+        4696,
+      );
+    });
+
     test('Health 0 keeps stored 4700; Health 4706 replaces stored 29655', () {
       expect(
         PedometerStepTruth.dailyFromSources(

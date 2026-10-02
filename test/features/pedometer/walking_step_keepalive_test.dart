@@ -1,11 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/features/pedometer/walking_step_keepalive.dart';
 
+Future<void> ignoreCommit(
+  int steps,
+  double km, {
+  required String dayKey,
+  required String source,
+  int? lastHealth,
+}) async {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('fixed baseline then three +100 batches is 300, not 600', () {
-    final keep = WalkingStepKeepAlive(onDaily: (steps, km) async {});
+    final keep = WalkingStepKeepAlive(onDaily: ignoreCommit);
     keep.debugAnchorToday();
     keep.debugIngestRaw(5000);
     expect(keep.debugFloor, 0);
@@ -20,7 +28,13 @@ void main() {
   test('Health 4706 replaces a stored 29655 floor and null health does not',
       () async {
     final reported = <int>[];
-    final keep = WalkingStepKeepAlive(onDaily: (steps, _) async {
+    final keep = WalkingStepKeepAlive(onDaily: (
+      steps,
+      _, {
+      required String dayKey,
+      required String source,
+      int? lastHealth,
+    }) async {
       reported.add(steps);
     });
     keep.debugSeedFloor(29655);
@@ -45,7 +59,13 @@ void main() {
 
   test('sensor publish after Health 4706 does not re-raise 29999', () async {
     final reported = <int>[];
-    final keep = WalkingStepKeepAlive(onDaily: (steps, _) async {
+    final keep = WalkingStepKeepAlive(onDaily: (
+      steps,
+      _, {
+      required String dayKey,
+      required String source,
+      int? lastHealth,
+    }) async {
       reported.add(steps);
     });
     keep.debugSeedFloor(29999);
@@ -63,7 +83,7 @@ void main() {
   });
 
   test('sensor publish without health keeps a stored 29999', () async {
-    final keep = WalkingStepKeepAlive(onDaily: (steps, km) async {});
+    final keep = WalkingStepKeepAlive(onDaily: ignoreCommit);
     keep.debugSeedFloor(29999);
     await keep.debugPublishSensor(100);
     expect(keep.debugFloor, 29999);

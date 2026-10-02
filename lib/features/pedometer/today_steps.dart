@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'daily_metrics_account.dart';
 import 'kst_calendar.dart';
 import 'pedometer_health_cap.dart';
 import 'pedometer_step_truth.dart';
@@ -18,7 +19,13 @@ class TodaySteps {
 
   static final instance = TodaySteps();
 
-  Future<void> Function(int steps, double km)? onCommit;
+  Future<void> Function(
+    int steps,
+    double km, {
+    required String dayKey,
+    required String source,
+    int? lastHealth,
+  })? onCommit;
 
   var _steps = 0;
   var _anchorFloor = 0;
@@ -149,7 +156,7 @@ class TodaySteps {
     _offsetDayKey = '';
     PedometerHealthCap.forget();
     if (notify) _notify();
-    unawaited(_write(0));
+    unawaited(_write(0, source: 'sensor'));
     return true;
   }
 
@@ -183,14 +190,23 @@ class TodaySteps {
     if (!raised && !healed) return;
     _steps = daily;
     _notify();
-    await _write(daily, healthToday: healthToday);
+    await _write(daily, source: source, healthToday: healthToday);
   }
 
-  Future<void> _write(int daily, {int? healthToday}) async {
-    final commit =
-        onCommit?.call(daily, SoloPedometerEngine.kmFromSteps(daily));
+  Future<void> _write(
+    int daily, {
+    required String source,
+    int? healthToday,
+  }) async {
     final health =
         (healthToday != null && healthToday > 0) ? healthToday : _health;
+    final commit = onCommit?.call(
+      daily,
+      SoloPedometerEngine.kmFromSteps(daily),
+      dayKey: _today,
+      source: DailyMetricsAccount.normalizeSource(source, lastHealth: health),
+      lastHealth: health,
+    );
     try {
       final update = SoloPedometerForeground.update(
         steps: daily,

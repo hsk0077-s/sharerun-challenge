@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
 import 'package:health/health.dart';
 import 'package:pedometer/pedometer.dart';
 
 import '../onboarding/src_onboarding_controller.dart';
+import 'daily_metrics_account.dart';
 import 'kst_calendar.dart';
 import 'pedometer_health_cap.dart';
 import 'pedometer_step_truth.dart';
@@ -24,7 +26,13 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     this.today.onCommit = onDaily;
   }
 
-  final Future<void> Function(int steps, double km) onDaily;
+  final Future<void> Function(
+    int steps,
+    double km, {
+    required String dayKey,
+    required String source,
+    int? lastHealth,
+  }) onDaily;
   final TodaySteps today;
 
   final Health _health = Health();
@@ -71,6 +79,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
 
   Future<void> syncFromSources({required String reason}) async {
     try {
+      await DailyMetricsAccount.pullIntoPrefs(
+        uid: FirebaseAuth.instance.currentUser?.uid ?? '',
+      );
       final prefs = await PedometerHealthCap.fresh();
       final todayKey = KstCalendar.dateKey();
       final savedDay = prefs.getString('lastSavedDate') ?? '';

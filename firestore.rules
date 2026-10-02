@@ -660,12 +660,77 @@ service cloud.firestore {
         allow create, update, delete: if false;
       }
 
+      // Owner-only per-account day. steps is an int in 0..30000.
+      // A positive day cannot be replaced by 0. A lower total is allowed
+      // only when lastHealth backs a heal (today's Health + 2,000 lead).
+      // Deploy with: firebase deploy --only firestore:rules
       match /daily_metrics/{dayKey} {
+        function validDailyMetric() {
+          let keys = request.resource.data.keys();
+          return keys.hasAll(['steps', 'updatedAt'])
+            && keys.hasOnly([
+              'steps',
+              'km',
+              'updatedAt',
+              'source',
+              'lastHealth',
+              'deviceId',
+              'deviceModel'
+            ])
+            && request.resource.data.steps is int
+            && request.resource.data.steps >= 0
+            && request.resource.data.steps <= 30000
+            && (
+              !keys.hasAny(['source'])
+              || request.resource.data.source in ['health_connect', 'sensor']
+            )
+            && (
+              !keys.hasAny(['lastHealth'])
+              || (
+                request.resource.data.lastHealth is int
+                && request.resource.data.lastHealth > 0
+                && request.resource.data.lastHealth <= 30000
+              )
+            )
+            && (
+              !keys.hasAny(['km'])
+              || request.resource.data.km is number
+            )
+            && (
+              !keys.hasAny(['deviceId'])
+              || (
+                request.resource.data.deviceId is string
+                && request.resource.data.deviceId.size() <= 64
+              )
+            )
+            && (
+              !keys.hasAny(['deviceModel'])
+              || (
+                request.resource.data.deviceModel is string
+                && request.resource.data.deviceModel.size() <= 64
+              )
+            );
+        }
+
+        function dailyMetricNotClobbered() {
+          return !exists(/databases/$(database)/documents/users/$(uid)/daily_metrics/$(dayKey))
+            || !('steps' in resource.data)
+            || !(resource.data.steps is int)
+            || request.resource.data.steps >= resource.data.steps
+            || (
+              request.resource.data.steps > 0
+              && request.resource.data.keys().hasAny(['lastHealth'])
+              && request.resource.data.lastHealth is int
+              && request.resource.data.lastHealth > 0
+              && request.resource.data.steps
+                <= request.resource.data.lastHealth + 2000
+            );
+        }
+
         allow read: if isOwner(uid);
         allow create, update: if isOwner(uid)
-          && request.resource.data.keys().hasOnly(['steps', 'km', 'updatedAt'])
-          && request.resource.data.steps is int
-          && request.resource.data.km is number;
+          && validDailyMetric()
+          && dailyMetricNotClobbered();
         allow delete: if false;
       }
 

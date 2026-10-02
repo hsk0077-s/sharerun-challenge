@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +21,7 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/pedometer/solo_pedometer_engine.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/debug_local_harvest.dart';
+import '../features/pedometer/daily_metrics_account.dart';
 import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
 import '../features/pedometer/pedometer_health_cap.dart';
@@ -80,46 +80,17 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
   /// SharedPreferences(로컬) + Firestore(클라우드) 이중 복원 엔진
   Future<void> _loadPersistedData() async {
     try {
-      final prefs = await PedometerHealthCap.fresh();
       final todayKey = _getTodayKey();
+      final uid = _ref.read(userProfileProvider).uid;
+      await DailyMetricsAccount.pullIntoPrefs(uid: uid, todayKey: todayKey);
+      final prefs = await PedometerHealthCap.fresh();
       final capHealth = PedometerHealthCap.fromPrefs(
         prefs,
         todayKey: todayKey,
       );
-      // 1. 먼저 로컬 SharedPreferences 확인
       int savedSteps = prefs.getInt('${todayKey}_steps') ?? 0;
       double savedKm = prefs.getDouble('${todayKey}_km') ?? 0.0;
       var injectedCloud = false;
-      // 2. 만약 기기 변경 등으로 로컬 걸음수가 0보라면, 클라우드(Firestore)에서 오늘치 데이터 조회 및 복원
-      if (savedSteps == 0) {
-        final userProfile = _ref.read(userProfileProvider);
-        final uid = userProfile.uid;
-        if (uid.isNotEmpty) {
-          final docSnapshot = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(uid)
-              .collection('daily_metrics')
-              .doc(todayKey)
-              .get();
-          if (docSnapshot.exists) {
-            final data = docSnapshot.data();
-            if (data != null) {
-              final latestLocal = prefs.getInt('${todayKey}_steps') ?? 0;
-              if (latestLocal > 0) {
-                savedSteps = latestLocal;
-                savedKm = prefs.getDouble('${todayKey}_km') ?? savedKm;
-              } else {
-                savedSteps = (data['steps'] as num?)?.toInt() ?? 0;
-                savedKm = (data['km'] as num?)?.toDouble() ?? 0.0;
-                injectedCloud = true;
-                debugPrint(
-                  '[CLOUD RECOVERY] 새 기기에서 오늘자 걸음 수 ($savedSteps보) 원격 복원 완료.',
-                );
-              }
-            }
-          }
-        }
-      }
       final capped = PedometerHealthCap.cap(savedSteps, capHealth);
       if (capped != savedSteps) {
         savedSteps = capped;
@@ -129,7 +100,13 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
         injectedCloud = true;
       }
       if (injectedCloud) {
-        await _writeTodayStores(prefs, todayKey, savedSteps, savedKm);
+        await _writeTodayStores(
+          prefs,
+          todayKey,
+          savedSteps,
+          savedKm,
+          syncRemote: false,
+        );
       }
       final storedToday = savedSteps;
       savedSteps = PedometerStepTruth.mergeStoredDaily(
@@ -161,9 +138,18 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
   ///
   /// The value is capped by the last positive Health for today before it
   /// touches prefs, the legacy prefix key, the week list, or Firestore.
-  /// Firestore `set` replaces today's fields. It does not keep a numeric max.
-  Future<void> updateSteps(int steps, double km, {required bool isMoving}) async {
+  /// A 0 and a different KST day do not write. Today may shrink only when
+  /// [lastHealth] heals an inflated store.
+  Future<void> updateSteps(
+    int steps,
+    double km, {
+    required bool isMoving,
+    String dayKey = '',
+    String source = 'sensor',
+    int? lastHealth,
+  }) async {
     final todayKey = _getTodayKey();
+    if (dayKey.isNotEmpty && dayKey != todayKey) return;
     var daily = PedometerStepTruth.clampDaily(steps);
     var safeKm = daily > 0 ? km : 0.0;
     SharedPreferences? prefs;
@@ -187,21 +173,33 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
       isMoving: isMoving,
       dayKey: todayKey,
     );
-    if (prefs == null) return;
+    if (daily <= 0 || prefs == null) return;
     try {
-      await _writeTodayStores(prefs, todayKey, daily, safeKm);
+      await _writeTodayStores(
+        prefs,
+        todayKey,
+        daily,
+        safeKm,
+        source: source,
+        lastHealth: lastHealth,
+      );
     } catch (e) {
       debugPrint('[PERSISTENCE] 이중 동기화 실패: $e');
     }
   }
 
-  /// Overwrites every today-step store with [daily]. Not a max merge.
+  /// Writes today's local cache, then the account day in Firestore.
+  /// Zero steps never call this. The remote merge keeps a larger past day
+  /// and may lower today only for a Health heal.
   Future<void> _writeTodayStores(
     SharedPreferences prefs,
     String todayKey,
     int daily,
-    double km,
-  ) async {
+    double km, {
+    bool syncRemote = true,
+    String source = 'sensor',
+    int? lastHealth,
+  }) async {
     await prefs.setInt('${todayKey}_steps', daily);
     await prefs.setDouble('${todayKey}_km', km);
     await _updateWeeklyHistory(prefs, todayKey, daily);
@@ -209,20 +207,16 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
     final prefix = PedometerHarvestLedger.prefix(uid: uid, dateKey: todayKey);
     await prefs.setInt('$prefix.steps', daily);
     await prefs.setDouble('$prefix.km', km);
-    if (uid.isEmpty) return;
+    if (!syncRemote || uid.isEmpty || daily <= 0) return;
     unawaited(
-      FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('daily_metrics')
-          .doc(todayKey)
-          .set({
-        'steps': daily,
-        'km': km,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true)).catchError((Object e) {
-        debugPrint('[CLOUD SYNC ERR] Firestore 걸음 수 백업 실패: $e');
-      }),
+      DailyMetricsAccount.commit(
+        uid: uid,
+        todayKey: todayKey,
+        dayKey: todayKey,
+        steps: daily,
+        source: source,
+        lastHealth: lastHealth,
+      ),
     );
   }
 

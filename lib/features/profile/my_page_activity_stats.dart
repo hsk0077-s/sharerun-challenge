@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/providers/app_providers.dart';
 import '../../core/constants/economy_constants.dart';
 import '../../data/models/activity_model.dart';
+import '../pedometer/daily_metrics_account.dart';
 import '../pedometer/kst_calendar.dart';
 
 /// My Page attendance for 불꽃 유지, 연속 출석, 러닝 로그, and the week chart.
@@ -77,6 +78,15 @@ class MyPagePedometerDaysNotifier extends Notifier<MyPagePedometerDays> {
 
   @override
   MyPagePedometerDays build() {
+    DailyMetricsAccount.onCacheUpdated = () {
+      if (!ref.mounted) return;
+      unawaited(reload());
+    };
+    ref.onDispose(() {
+      if (DailyMetricsAccount.onCacheUpdated != null) {
+        DailyMetricsAccount.onCacheUpdated = null;
+      }
+    });
     unawaited(reload());
     return const MyPagePedometerDays();
   }

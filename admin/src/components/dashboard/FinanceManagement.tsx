@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { CheckCircle, XCircle, Wallet, ShieldCheck } from 'lucide-react';
 import { useFirestoreUsers } from '../../hooks/useFirestoreUsers';
-import { updateUserValueBalance } from '../../lib/firestoreUsers';
 import {
   subscribePaymentIntents,
   subscribeWalletTransactions,
@@ -128,26 +127,9 @@ export default function FinanceManagement() {
   }, [requests, selectedId]);
 
   const selected = requests.find((r) => r.id === selectedId) ?? null;
-  const canAutoApprove =
-    selected &&
-    selected.checks.within7Days.pass &&
-    selected.checks.noItemUse.pass;
 
   const removeRequest = (id: string) => {
     setDismissed((prev) => new Set(prev).add(id));
-  };
-
-  const handleApprove = async () => {
-    if (!selected) return;
-    const id = selected.id;
-    removeRequest(id);
-    try {
-      if (selected.user_id) {
-        await updateUserValueBalance(selected.user_id, 0);
-      }
-    } catch (err) {
-      console.error('환불 승인 에러:', err);
-    }
   };
 
   const handleReject = async () => {
@@ -288,19 +270,19 @@ export default function FinanceManagement() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-6">
-                <button
-                  type="button"
-                  onClick={handleApprove}
-                  disabled={!canAutoApprove}
-                  className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-bold text-sm transition-colors ${
-                    canAutoApprove
-                      ? 'bg-emerald-400 hover:bg-emerald-300 text-black'
-                      : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  <CheckCircle size={18} />
-                  결제 취소 승인 (수수료 없이 원결제 수단 환불)
-                </button>
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    disabled
+                    className="flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-bold text-sm bg-gray-700 text-gray-500 cursor-not-allowed"
+                  >
+                    <CheckCircle size={18} />
+                    결제 취소 승인 (수수료 없이 원결제 수단 환불)
+                  </button>
+                  <p className="text-[11px] text-center text-gray-500">
+                    서버 관리자 API 준비 후 활성화
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={handleReject}

@@ -18,7 +18,6 @@ import {
 import { useFirestoreUsers } from '../../hooks/useFirestoreUsers';
 import {
   updateUserStatus,
-  updateUserValueBalance,
   type AdminUser,
 } from '../../lib/firestoreUsers';
 import {
@@ -186,20 +185,6 @@ export default function AbuseAudit() {
         (a) => a.userId === selected.id || a.userId === selected.user_id
       ) ?? null
     : null;
-
-  const handleApprove = async (userId: string) => {
-    const next = cases.filter((c) => c.id !== userId);
-    setSelectedId(next[0]?.id ?? null);
-    try {
-      await updateUserStatus(userId, 'ACTIVE');
-      await updateUserValueBalance(
-        userId,
-        (selected?.value_balance ?? 0) + 100
-      );
-    } catch (err) {
-      console.error('승인 처리 에러:', err);
-    }
-  };
 
   const handleBan = async (userId: string) => {
     const next = cases.filter((c) => c.id !== userId);
@@ -414,14 +399,19 @@ export default function AbuseAudit() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => handleApprove(selected.id)}
-                  className="flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm transition-colors"
-                >
-                  <CheckCircle size={18} />
-                  소명 승인 (기록 인정 및 100 밸류 토큰 강제지급)
-                </button>
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    disabled
+                    className="flex items-center justify-center gap-2 rounded-xl px-4 py-3.5 bg-gray-700 text-gray-500 font-bold text-sm cursor-not-allowed"
+                  >
+                    <CheckCircle size={18} />
+                    소명 승인 (기록 인정 및 100 밸류 토큰 강제지급)
+                  </button>
+                  <p className="text-[11px] text-center text-gray-500">
+                    서버 관리자 API 준비 후 활성화
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => handleBan(selected.id)}

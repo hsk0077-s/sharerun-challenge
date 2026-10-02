@@ -1,26 +1,11 @@
 import { useState } from 'react';
 import { Search, Filter, MoreHorizontal, UserPlus, ShieldAlert, Coins, CheckCircle } from 'lucide-react';
 import { useFirestoreUsers } from '../../hooks/useFirestoreUsers';
-import { updateUserStatus, updateUserValueBalance } from '../../lib/firestoreUsers';
+import { updateUserStatus } from '../../lib/firestoreUsers';
 
 export default function UserManagement() {
   const { users, loading, error, setUsersLocal } = useFirestoreUsers();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
-
-  // [절대 실패 없는 통제 로직 1] VALUE 100 지급 — Firestore wallet.valueTokenBalance
-  const handleAddValue = async (userId: string, currentValue: number) => {
-    const safeValue = typeof currentValue === 'number' ? currentValue : Number(currentValue);
-    const newValue = safeValue + 100;
-    setUsersLocal((prev) =>
-      prev.map((user) => (user.id === userId ? { ...user, value_balance: newValue } : user))
-    );
-    setActiveMenu(null);
-    try {
-      await updateUserValueBalance(userId, newValue);
-    } catch (err) {
-      console.error('VALUE 지급 에러:', err);
-    }
-  };
 
   // [절대 실패 없는 통제 로직 2] 유저 상태 변경 — Firestore status/adminStatus
   const handleStatusChange = async (userId: string, newStatus: string) => {
@@ -140,12 +125,17 @@ export default function UserManagement() {
 
                         {activeMenu === user.id && (
                           <div className="absolute right-10 top-10 w-40 bg-gray-800 border border-gray-600 rounded-lg shadow-xl z-50 overflow-hidden text-sm">
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleAddValue(user.id, user.value_balance); }}
-                              className="w-full text-left px-4 py-2 hover:bg-gray-700 flex items-center gap-2 text-emerald-400"
+                            <button
+                              type="button"
+                              disabled
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-full text-left px-4 py-2 flex items-center gap-2 text-gray-500 cursor-not-allowed"
                             >
                               <Coins size={14} /> +100 VALUE
                             </button>
+                            <p className="px-4 pb-2 text-[11px] leading-snug text-gray-500">
+                              서버 관리자 API 준비 후 활성화
+                            </p>
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleStatusChange(user.id, 'ACTIVE'); }}
                               className="w-full text-left px-4 py-2 hover:bg-gray-700 flex items-center gap-2 text-white"

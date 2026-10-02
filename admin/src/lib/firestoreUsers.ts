@@ -134,17 +134,6 @@ export function subscribeUsers(handlers: UsersListenerHandlers): Unsubscribe {
   };
 }
 
-export async function updateUserValueBalance(
-  uid: string,
-  valueBalance: number
-): Promise<void> {
-  await ensureAdminAuth();
-  await updateDoc(doc(getDb(), USERS_COLLECTION, uid), {
-    'wallet.valueTokenBalance': valueBalance,
-    updatedAt: new Date().toISOString(),
-  });
-}
-
 export async function updateUserStatus(
   uid: string,
   status: string

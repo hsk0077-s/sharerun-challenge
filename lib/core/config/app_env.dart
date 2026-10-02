@@ -27,25 +27,62 @@ abstract final class AppEnv {
     _loaded = true;
   }
 
-  static String _get(String key, {required String defaultValue}) {
-    final fromDotenv =
-        dotenv.isInitialized ? dotenv.maybeGet(key) : null;
+  // `String.fromEnvironment` only sees a const literal. A runtime key is ''.
+  static const _jenaBaseUrlDefine = String.fromEnvironment('JENA_BASE_URL');
+  static const _googleWebClientIdDefine =
+      String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+  static const _firebaseProjectIdDefine =
+      String.fromEnvironment('FIREBASE_PROJECT_ID');
+  static const _firebaseApiKeyDefine =
+      String.fromEnvironment('FIREBASE_API_KEY');
+  static const _firebaseAppIdDefine = String.fromEnvironment('FIREBASE_APP_ID');
+  static const _firebaseMessagingSenderIdDefine =
+      String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID');
+  static const _firebaseEmulatorHostDefine =
+      String.fromEnvironment('FIREBASE_EMULATOR_HOST');
+  static const _firebaseAuthEmulatorPortDefine =
+      String.fromEnvironment('FIREBASE_AUTH_EMULATOR_PORT');
+  static const _firebaseFirestoreEmulatorPortDefine =
+      String.fromEnvironment('FIREBASE_FIRESTORE_EMULATOR_PORT');
+  static const _localDevModeDefine = String.fromEnvironment('LOCAL_DEV_MODE');
+  static const _useFirebaseEmulatorDefine =
+      String.fromEnvironment('USE_FIREBASE_EMULATOR');
+  static const _androidEmulatorDefine =
+      String.fromEnvironment('ANDROID_EMULATOR');
+
+  static String _get(
+    String key, {
+    required String defaultValue,
+    String fromDefine = '',
+  }) {
+    final fromDotenv = dotenv.isInitialized ? dotenv.maybeGet(key) : null;
     if (fromDotenv != null && fromDotenv.isNotEmpty) {
       return fromDotenv;
     }
-    final fromDefine = String.fromEnvironment(key);
     if (fromDefine.isNotEmpty) {
       return fromDefine;
     }
     return defaultValue;
   }
 
-  static bool _bool(String key, {required bool defaultValue}) {
-    final raw = _get(key, defaultValue: defaultValue ? 'true' : 'false');
+  static bool _bool(
+    String key, {
+    required bool defaultValue,
+    String fromDefine = '',
+  }) {
+    final raw = _get(
+      key,
+      defaultValue: defaultValue ? 'true' : 'false',
+      fromDefine: fromDefine,
+    );
     return raw.toLowerCase() == 'true' || raw == '1';
   }
 
-  static bool get localDevMode => _bool('LOCAL_DEV_MODE', defaultValue: kDebugMode);
+  static bool get localDevMode => _bool(
+        'LOCAL_DEV_MODE',
+        defaultValue: kDebugMode,
+        fromDefine: _localDevModeDefine,
+      );
 
   /// Auth/Firestore emulators are debug-only. Release/profile must mint
   /// production ID tokens so Cloud Run `verify_id_token` accepts them —
@@ -53,7 +90,11 @@ abstract final class AppEnv {
   /// [kDebugMode] is false.
   static bool get useFirebaseEmulator => resolveUseFirebaseEmulator(
         debugMode: kDebugMode,
-        configured: _bool('USE_FIREBASE_EMULATOR', defaultValue: false),
+        configured: _bool(
+          'USE_FIREBASE_EMULATOR',
+          defaultValue: false,
+          fromDefine: _useFirebaseEmulatorDefine,
+        ),
       );
 
   static bool resolveUseFirebaseEmulator({
@@ -68,25 +109,44 @@ abstract final class AppEnv {
   static bool get allowAnonymousBootstrap =>
       _bool('ALLOW_ANONYMOUS_BOOTSTRAP', defaultValue: false);
 
-  static String get firebaseProjectId =>
-      _get('FIREBASE_PROJECT_ID', defaultValue: 'demo-src-local');
+  static String get firebaseProjectId => _get(
+        'FIREBASE_PROJECT_ID',
+        defaultValue: 'demo-src-local',
+        fromDefine: _firebaseProjectIdDefine,
+      );
 
-  static String get firebaseApiKey =>
-      _get('FIREBASE_API_KEY', defaultValue: 'demo-api-key');
+  static String get firebaseApiKey => _get(
+        'FIREBASE_API_KEY',
+        defaultValue: 'demo-api-key',
+        fromDefine: _firebaseApiKeyDefine,
+      );
 
-  static String get firebaseAppId =>
-      _get('FIREBASE_APP_ID', defaultValue: '1:demo-src-local:android:local');
+  static String get firebaseAppId => _get(
+        'FIREBASE_APP_ID',
+        defaultValue: '1:demo-src-local:android:local',
+        fromDefine: _firebaseAppIdDefine,
+      );
 
-  static String get firebaseMessagingSenderId =>
-      _get('FIREBASE_MESSAGING_SENDER_ID', defaultValue: '123456789012');
+  static String get firebaseMessagingSenderId => _get(
+        'FIREBASE_MESSAGING_SENDER_ID',
+        defaultValue: '123456789012',
+        fromDefine: _firebaseMessagingSenderIdDefine,
+      );
 
   /// Web OAuth client ID for Google Sign-In on Android.
   /// Required when `google-services.json` is absent.
-  static String get googleWebClientId =>
-      _get('GOOGLE_WEB_CLIENT_ID', defaultValue: '');
+  static String get googleWebClientId => _get(
+        'GOOGLE_WEB_CLIENT_ID',
+        defaultValue: '',
+        fromDefine: _googleWebClientIdDefine,
+      );
 
   static String get firebaseEmulatorHost {
-    final configured = _get('FIREBASE_EMULATOR_HOST', defaultValue: '');
+    final configured = _get(
+      'FIREBASE_EMULATOR_HOST',
+      defaultValue: '',
+      fromDefine: _firebaseEmulatorHostDefine,
+    );
     if (configured.isNotEmpty) {
       return configured;
     }
@@ -100,11 +160,22 @@ abstract final class AppEnv {
   }
 
   static int get firebaseAuthEmulatorPort =>
-      int.tryParse(_get('FIREBASE_AUTH_EMULATOR_PORT', defaultValue: '9099')) ??
+      int.tryParse(
+        _get(
+          'FIREBASE_AUTH_EMULATOR_PORT',
+          defaultValue: '9099',
+          fromDefine: _firebaseAuthEmulatorPortDefine,
+        ),
+      ) ??
       9099;
 
-  static int get firebaseFirestoreEmulatorPort => int.tryParse(
-        _get('FIREBASE_FIRESTORE_EMULATOR_PORT', defaultValue: '8085'),
+  static int get firebaseFirestoreEmulatorPort =>
+      int.tryParse(
+        _get(
+          'FIREBASE_FIRESTORE_EMULATOR_PORT',
+          defaultValue: '8085',
+          fromDefine: _firebaseFirestoreEmulatorPortDefine,
+        ),
       ) ??
       8085;
 
@@ -121,8 +192,12 @@ abstract final class AppEnv {
     bool? androidEmulator,
   }) {
     final android = isAndroid ?? (!kIsWeb && Platform.isAndroid);
-    final emulator =
-        androidEmulator ?? _bool('ANDROID_EMULATOR', defaultValue: false);
+    final emulator = androidEmulator ??
+        _bool(
+          'ANDROID_EMULATOR',
+          defaultValue: false,
+          fromDefine: _androidEmulatorDefine,
+        );
     if (android && emulator) {
       return 'http://10.0.2.2:8080';
     }
@@ -130,13 +205,12 @@ abstract final class AppEnv {
   }
 
   /// Public Cloud Run URL for release/profile when `JENA_BASE_URL` is unset
-  /// or still a debug loopback. Not a secret. Set via
-  /// `--dart-define=JENA_CLOUD_RUN_BASE_URL=https://<service>` or replace
-  /// the empty default after:
-  /// `gcloud run services describe src-jena-ai --region asia-northeast3 --format='value(status.url)'`
+  /// or still a debug loopback. Not a secret. Override with
+  /// `--dart-define=JENA_CLOUD_RUN_BASE_URL=https://<service>`.
+  /// Debug builds ignore this unless `JENA_BASE_URL` is set.
   static const String shippedJenaCloudRunUrl = String.fromEnvironment(
     'JENA_CLOUD_RUN_BASE_URL',
-    defaultValue: '',
+    defaultValue: 'https://src-jena-ai-1089697395275.asia-northeast3.run.app',
   );
 
   static bool isLoopbackJenaUrl(String url) {
@@ -190,10 +264,12 @@ abstract final class AppEnv {
 
   static String get jenaBaseUrl => resolveJenaBaseUrl(
         debugMode: kDebugMode,
-        configured: _get('JENA_BASE_URL', defaultValue: ''),
-        productionUrl: shippedJenaCloudRunUrl.isNotEmpty
-            ? shippedJenaCloudRunUrl
-            : _get('JENA_CLOUD_RUN_BASE_URL', defaultValue: ''),
+        configured: _get(
+          'JENA_BASE_URL',
+          defaultValue: '',
+          fromDefine: _jenaBaseUrlDefine,
+        ),
+        productionUrl: shippedJenaCloudRunUrl,
       );
 
   static const _demoFirebaseProjectId = 'demo-src-local';

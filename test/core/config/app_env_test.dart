@@ -14,7 +14,8 @@ void main() {
     expect(AppEnv.useFirebaseEmulator, isFalse);
   });
 
-  test('jena default prefers loopback on physical Android; emulator keeps 10.0.2.2',
+  test(
+      'jena default prefers loopback on physical Android; emulator keeps 10.0.2.2',
       () {
     expect(
       AppEnv.defaultJenaBaseUrl(isAndroid: true, androidEmulator: false),
@@ -27,6 +28,38 @@ void main() {
     expect(
       AppEnv.defaultJenaBaseUrl(isAndroid: false, androidEmulator: false),
       'http://127.0.0.1:8080',
+    );
+  });
+
+  test('debug stays on loopback unless JENA_BASE_URL is passed', () {
+    const cloudRun =
+        'https://src-jena-ai-1089697395275.asia-northeast3.run.app';
+    expect(AppEnv.shippedJenaCloudRunUrl, cloudRun);
+    expect(AppEnv.isLoopbackJenaUrl(AppEnv.jenaBaseUrl), isTrue);
+    expect(
+      AppEnv.resolveJenaBaseUrl(
+        debugMode: true,
+        configured: '',
+        productionUrl: cloudRun,
+        isAndroid: true,
+        androidEmulator: false,
+      ),
+      'http://127.0.0.1:8080',
+    );
+    expect(
+      AppEnv.resolveJenaBaseUrl(
+        debugMode: true,
+        configured: cloudRun,
+        productionUrl: cloudRun,
+      ),
+      cloudRun,
+    );
+    expect(
+      AppEnv.resolveJenaBaseUrl(
+        debugMode: false,
+        productionUrl: AppEnv.shippedJenaCloudRunUrl,
+      ),
+      cloudRun,
     );
   });
 

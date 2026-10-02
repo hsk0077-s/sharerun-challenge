@@ -86,6 +86,16 @@ class DebugTestWalletGrantHost extends ConsumerStatefulWidget {
     );
   }
 
+  /// USB loopback only. A debug build pointed at Cloud Run must show
+  /// `users/{uid}.wallet`, not this 1,000,000 seed.
+  static bool shouldSeedDebugGrantForJena({
+    required bool debugMode,
+    required String jenaBaseUrl,
+  }) {
+    if (!debugMode) return false;
+    return AppEnv.isLoopbackJenaUrl(jenaBaseUrl);
+  }
+
   /// Apply 1M to the same [WalletNotifier] Home watches. Does not need Jena.
   static void applyLocalGrantToNotifier(WalletNotifier notifier) {
     const amount = DebugWalletGrant.amount;
@@ -185,6 +195,17 @@ class _DebugTestWalletGrantHostState
 
   Future<void> _tryGrantOnce() async {
     if (!kDebugMode || _inFlight || _consumed) return;
+    if (!DebugTestWalletGrantHost.shouldSeedDebugGrantForJena(
+      debugMode: kDebugMode,
+      jenaBaseUrl: AppEnv.jenaBaseUrl,
+    )) {
+      _consumed = true;
+      debugPrint(
+        '[DEBUG LOCAL] skip 1M grant; Jena is not loopback '
+        '(${AppEnv.jenaBaseUrl})',
+      );
+      return;
+    }
     final uid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
     if (uid.isEmpty) return;
 

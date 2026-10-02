@@ -47,6 +47,38 @@ void main() {
     );
   });
 
+  test('1M seed runs only for a debug loopback Jena', () {
+    expect(
+      DebugTestWalletGrantHost.shouldSeedDebugGrantForJena(
+        debugMode: true,
+        jenaBaseUrl: 'http://127.0.0.1:8080',
+      ),
+      isTrue,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldSeedDebugGrantForJena(
+        debugMode: true,
+        jenaBaseUrl: 'http://10.0.2.2:8080',
+      ),
+      isTrue,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldSeedDebugGrantForJena(
+        debugMode: true,
+        jenaBaseUrl:
+            'https://src-jena-ai-1089697395275.asia-northeast3.run.app',
+      ),
+      isFalse,
+    );
+    expect(
+      DebugTestWalletGrantHost.shouldSeedDebugGrantForJena(
+        debugMode: false,
+        jenaBaseUrl: 'http://127.0.0.1:8080',
+      ),
+      isFalse,
+    );
+  });
+
   test('local grant payload writes 1M wallet and testGrant1mDone', () {
     expect(DebugWalletGrant.amount, 1000000);
     expect(DebugWalletGrant.prefsKey, 'testGrant1mDone');

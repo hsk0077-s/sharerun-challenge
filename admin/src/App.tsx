@@ -9,6 +9,7 @@ import FinanceManagement from './components/dashboard/FinanceManagement';
 import SponsorApproval from './components/dashboard/SponsorApproval';
 import Referrals from './components/dashboard/Referrals';
 import DailySteps from './components/dashboard/DailySteps';
+import WalletAnomalies from './components/dashboard/WalletAnomalies';
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="/sponsor" element={<SponsorApproval />} />
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/steps" element={<DailySteps />} />
+              <Route path="/wallet-anomalies" element={<WalletAnomalies />} />
             </Routes>
           </main>
         </div>

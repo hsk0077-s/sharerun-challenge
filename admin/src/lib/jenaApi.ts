@@ -97,3 +97,36 @@ export function fetchDailySteps(
     idToken
   );
 }
+
+export type WalletAnomalyRow = {
+  uid: string;
+  reason: string;
+  detail: string;
+  shareBalance: number | null;
+  diamondBalance: number | null;
+  valueTokenBalance: number | null;
+  receiptId: string | null;
+  amount: number | null;
+  assetType: string | null;
+};
+
+export type WalletAnomalyList = {
+  rows: WalletAnomalyRow[];
+  nextCursor: string | null;
+  limit: number;
+  truncated: boolean;
+};
+
+export function fetchWalletAnomalies(
+  idToken: string,
+  filter: { uid?: string; cursor?: string | null }
+): Promise<WalletAnomalyList> {
+  const params = new URLSearchParams();
+  if (filter.uid) params.set('uid', filter.uid);
+  if (filter.cursor) params.set('cursor', filter.cursor);
+  const query = params.toString();
+  return jenaGet<WalletAnomalyList>(
+    `/admin/wallet-anomalies${query ? `?${query}` : ''}`,
+    idToken
+  );
+}

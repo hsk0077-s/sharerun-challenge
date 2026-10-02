@@ -5,12 +5,14 @@ from app.models.admin_api import (
     AuditPingResult,
     DailyStepsResult,
     ReferralListResult,
+    WalletAnomalyListResult,
     WhoAmIResult,
 )
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
 from app.services.admin_daily_steps_service import admin_daily_steps_service
 from app.services.admin_referral_service import admin_referral_service
+from app.services.admin_wallet_anomaly_service import admin_wallet_anomaly_service
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -67,3 +69,17 @@ def list_daily_steps(
     _actor: dict = Depends(require_admin_user),
 ) -> DailyStepsResult:
     return admin_daily_steps_service.list_steps(uid=uid, start=start, end=end)
+
+
+@router.get("/wallet-anomalies", response_model=WalletAnomalyListResult)
+def list_wallet_anomalies(
+    uid: str | None = None,
+    limit: int = Query(default=20, ge=1, le=40),
+    cursor: str | None = None,
+    _actor: dict = Depends(require_admin_user),
+) -> WalletAnomalyListResult:
+    return admin_wallet_anomaly_service.list_anomalies(
+        uid=uid,
+        limit=limit,
+        cursor=cursor,
+    )

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "share-run-challenge"
+  },
+  "targets": {
+    "share-run-challenge": {
+      "hosting": {
+        "admin": [
+          "src-admin"
+        ]
+      }
+    }
+  }
+}

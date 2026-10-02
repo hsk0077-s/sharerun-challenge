@@ -1,9 +1,11 @@
 import {
   collection,
+  doc,
   limit,
   onSnapshot,
   orderBy,
   query,
+  updateDoc,
   where,
   type Unsubscribe,
 } from 'firebase/firestore';
@@ -56,8 +58,20 @@ export type AdminActivity = {
   jenaVerified: boolean;
   jenaDecision: string | null;
   jenaReason: string | null;
+  validationFinalized: boolean;
   updatedAt: string;
   completedAt: string;
+};
+
+export type AdminAppeal = {
+  id: string;
+  userId: string;
+  userNickname: string;
+  activityId: string;
+  reasonDetail: string;
+  proofImageUri: string;
+  status: string;
+  createdAt: string;
 };
 
 export type AdminPaymentIntent = {
@@ -171,8 +185,13 @@ export function subscribeActivities(
           ? null
           : num(data.averagePaceSecondsPerKm),
       jenaVerified: Boolean(data.jenaVerified ?? data.Jena_Verified),
-      jenaDecision: (data.jenaDecision as string) || null,
-      jenaReason: (data.jenaReason as string) || null,
+      jenaDecision: typeof data.jenaDecision === 'string' && data.jenaDecision.trim()
+        ? data.jenaDecision.trim()
+        : null,
+      jenaReason: typeof data.jenaReason === 'string' && data.jenaReason.trim()
+        ? data.jenaReason.trim()
+        : null,
+      validationFinalized: data.validationFinalized === true,
       updatedAt: toIso(data.updatedAt),
       completedAt: toIso(data.completedAt),
     }),
@@ -228,4 +247,38 @@ export function subscribeWalletTransactions(
     }),
     handlers
   );
+}
+
+function readText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+export function subscribeAppeals(
+  handlers: Handlers<AdminAppeal>,
+  opts?: { limitCount?: number }
+): Unsubscribe {
+  const lim = opts?.limitCount ?? 80;
+  return subscribeCollection(
+    () => query(collection(getDb(), 'appeals'), limit(lim)),
+    (id, data) => ({
+      id,
+      userId: readText(data.userId),
+      userNickname: readText(data.userNickname),
+      activityId: readText(data.activityId),
+      reasonDetail: readText(data.reasonDetail),
+      proofImageUri: readText(data.proofImageUri),
+      status: readText(data.status),
+      createdAt: toIso(data.createdAt),
+    }),
+    handlers
+  );
+}
+
+/** Appeals rules allow `isAdmin()` to update. Status only — not wallet or users. */
+export async function updateAppealStatus(
+  appealId: string,
+  status: 'approved' | 'rejected'
+): Promise<void> {
+  await ensureAdminAuth();
+  await updateDoc(doc(getDb(), 'appeals', appealId), { status });
 }

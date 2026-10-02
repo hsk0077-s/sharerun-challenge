@@ -63,3 +63,22 @@ class DailyStepsResult(BaseModel):
     uid: str | None
     truncated: bool
     rows: list[DailyStepRow]
+
+
+class WalletAnomalyRow(BaseModel):
+    uid: str
+    reason: str
+    detail: str
+    shareBalance: int | None = None
+    diamondBalance: int | None = None
+    valueTokenBalance: int | None = None
+    receiptId: str | None = None
+    amount: int | None = None
+    assetType: str | None = None
+
+
+class WalletAnomalyListResult(BaseModel):
+    rows: list[WalletAnomalyRow]
+    nextCursor: str | None
+    limit: int
+    truncated: bool

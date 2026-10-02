@@ -883,5 +883,11 @@ service cloud.firestore {
     match /referralCodes/{code} {
       allow read, write: if false;
     }
+
+    // Referral SHARE payout markers. Clients cannot create or delete these,
+    // and cannot credit wallet.shareBalance on this path.
+    match /referralPayouts/{payoutId} {
+      allow read, write: if false;
+    }
   }
 }

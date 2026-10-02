@@ -19,6 +19,10 @@ class _MemoryDoc:
         self._store = store
         self.path = path
 
+    @property
+    def id(self) -> str:
+        return self.path.rsplit("/", 1)[-1]
+
     def get(self, transaction=None):
         data = self._store.get(self.path)
         snapshot = MagicMock()
@@ -35,12 +39,18 @@ class _MemoryCollection:
         self._store = store
         self._name = name
 
-    def document(self, doc_id: str) -> _MemoryDoc:
+    def document(self, doc_id: str | None = None) -> _MemoryDoc:
+        if not doc_id:
+            doc_id = f"auto{len(self._store)}"
         return _MemoryDoc(self._store, f"{self._name}/{doc_id}")
 
 
 class _MemoryTxn:
-    def set(self, ref: _MemoryDoc, data: dict) -> None:
+    def set(self, ref: _MemoryDoc, data: dict, merge: bool = False) -> None:
+        if merge and ref.path in ref._store:
+            current = ref._store[ref.path]
+            current.update(deepcopy(data))
+            return
         ref._store[ref.path] = deepcopy(data)
 
     def update(self, ref: _MemoryDoc, data: dict) -> None:
@@ -107,7 +117,7 @@ def _redeem(service: SecuredActionService, uid: str, code: str, created_at):
     )
 
 
-def test_redeem_stores_referrer_without_paying() -> None:
+def test_redeem_pays_referee_1000_share_once() -> None:
     db = _MemoryDb()
     db.store["users/u2"] = {
         "economy": {"referralCode": "KEEP", "referralPayoutCount": 1},
@@ -127,14 +137,22 @@ def test_redeem_stores_referrer_without_paying() -> None:
     assert economy["referralCode"] == "KEEP"
     assert economy["referralPayoutCount"] == 1
     assert "referredByUid" not in economy
-    assert db.store["users/u2"]["wallet"]["shareBalance"] == 40
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 1_040
+    marker = db.store["referralPayouts/u2_redeem"]
+    assert marker["amount"] == 1_000
+    assert marker["payeeUid"] == "u2"
+    assert db.store["users/u2/wallet_transactions/referral_u2_redeem"]["amount"] == 1_000
+    assert db.store["walletTransactions/referral_u2_u2_redeem"]["shareAmount"] == 1_000
+    with pytest.raises(HTTPException) as again:
+        service.redeem_referral_code("u2", "AB23CD45")
+    assert again.value.detail == "already"
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 1_040
     assert db.store["referralCodes/AB23CD45"]["uid"] == "u1"
     assert db.store["referralCodes/AB23CD45"]["createdAt"] == "kept"
     assert db.store["referralCodes/AB23CD45"]["redeemCount"] == 1
     assert db.store["referralCodes/AB23CD45/referrals/u2"] == {
         "createdAt": SERVER_TIMESTAMP
     }
-    assert not any(path.startswith("walletTransactions/") for path in db.store)
 
 
 def test_redeem_increments_existing_count() -> None:

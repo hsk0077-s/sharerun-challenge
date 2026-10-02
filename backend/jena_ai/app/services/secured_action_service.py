@@ -22,6 +22,9 @@ from app.models.secured_actions import (
 )
 from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
+    REFERRAL_REDEEM_SHARE,
+    REFERRAL_TRIAL_REFEREE_SHARE,
+    REFERRAL_TRIAL_REFERRER_SHARE,
     TEST_WALLET_GRANT_AMOUNT,
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
     TEST_WALLET_GRANT_ELIGIBLE_FLAG,
@@ -69,8 +72,10 @@ class SecuredActionService:
             request.activity_id
         )
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._persist_validation_tx(
-            transaction, uid, request, result, activity_ref, user_ref
+        # Module wrapper: a method decorator does not bind `self`, so the
+        # transaction body never ran. Same shape as referral redeem.
+        return _commit_validation_tx(
+            transaction, self, uid, request, result, activity_ref, user_ref
         )
 
     def claim_signup_reward(self, uid: str) -> SecuredActionResult:
@@ -105,7 +110,7 @@ class SecuredActionService:
         )
 
     def redeem_referral_code(self, uid: str, code: str) -> RedeemReferralResult:
-        # Records who invited this user. Does not credit SRV.
+        # Records who invited this user and credits SHARE. Does not credit SRV.
         normalized = self._normalize_referral_code(code)
         if normalized is None:
             raise HTTPException(
@@ -220,6 +225,18 @@ class SecuredActionService:
                     detail="expired",
                 )
 
+        trial_complete = bool(economy.get("trialMilestoneRewardClaimed")) or (
+            self._economy_service.trial_milestone_reached(
+                int(economy.get("trialRunCount") or 0)
+            )
+        )
+        payouts = self._plan_redeem_referral_payouts(
+            transaction,
+            referee_uid=uid,
+            referee_ref=user_ref,
+            referrer_uid=owner,
+            include_trial=trial_complete,
+        )
         transaction.update(
             user_ref,
             {
@@ -234,6 +251,7 @@ class SecuredActionService:
             {"createdAt": SERVER_TIMESTAMP},
         )
         transaction.update(code_ref, {"redeemCount": firestore.Increment(1)})
+        self._write_referral_payouts(transaction, payouts)
         return RedeemReferralResult(referred_by=owner, code=normalized)
 
     def _commit_invite_code(self, transaction, uid: str, user_ref, code: str) -> str:
@@ -257,7 +275,6 @@ class SecuredActionService:
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return self._transfer_value_to_web3_tx(transaction, uid, request, user_ref)
 
-    @firestore.transactional
     def _persist_validation_tx(
         self,
         transaction,
@@ -308,6 +325,24 @@ class SecuredActionService:
 
             if self._economy_service.should_count_trial_run(economy):
                 trial_run_count = self._economy_service.next_trial_run_count(economy)
+
+        # Reads before the activity write. 5th verified run is the trial trigger.
+        referral_payouts: list[dict] = []
+        referred_by = economy.get("referredBy")
+        if (
+            result.verified
+            and self._economy_service.should_count_trial_run(economy)
+            and self._economy_service.trial_milestone_reached(trial_run_count)
+            and isinstance(referred_by, str)
+            and referred_by.strip()
+            and referred_by != uid
+        ):
+            referral_payouts = self._plan_trial_referral_payouts(
+                transaction,
+                referee_uid=uid,
+                referee_ref=user_ref,
+                referrer_uid=referred_by,
+            )
 
         route = [
             point.model_dump() if hasattr(point, "model_dump") else point.dict()
@@ -378,13 +413,8 @@ class SecuredActionService:
                     tx_type="trial_milestone_reward",
                 )
                 user_updates["tier"] = max(int(user.get("tier") or 1), 1)
-                referred_by = economy.get("referredByUid")
-                if referred_by:
-                    self._pay_referral_reward_tx(
-                        transaction,
-                        invitee_uid=uid,
-                        referrer_uid=referred_by,
-                    )
+                if referral_payouts:
+                    self._write_referral_payouts(transaction, referral_payouts)
 
         if economy_updates:
             user_updates["economy"] = {**economy, **economy_updates}
@@ -702,7 +732,7 @@ class SecuredActionService:
         return SecuredActionResult(
             accepted=True,
             status="applied",
-            reason="Referral code saved. Referrer reward pays after 5 trial runs.",
+            reason="Referral code saved.",
         )
 
     def _allocate_invite_code(self, transaction, uid: str, user_ref, code: str) -> str:
@@ -756,40 +786,177 @@ class SecuredActionService:
         stripped = code.strip()
         return stripped or None
 
-    def _pay_referral_reward_tx(
+    _REFERRAL_SHARE_TITLES = {
+        "redeem": "초대 코드 등록",
+        "trial_referee": "체험 런 5회 완료",
+        "trial_referrer": "친구 체험 런 5회",
+    }
+
+    def _referral_payout_ref(self, referee_uid: str, payout_type: str):
+        return self.firebase_service.db.collection("referralPayouts").document(
+            f"{referee_uid}_{payout_type}"
+        )
+
+    def _plan_redeem_referral_payouts(
         self,
         transaction,
         *,
-        invitee_uid: str,
+        referee_uid: str,
+        referee_ref,
         referrer_uid: str,
-    ) -> None:
-        if not referrer_uid or referrer_uid == invitee_uid:
-            return
-
-        referrer_ref = self.firebase_service.db.collection("users").document(referrer_uid)
-        referrer_snapshot = referrer_ref.get(transaction=transaction)
-        if not referrer_snapshot.exists:
-            return
-
-        referrer = referrer_snapshot.to_dict() or {}
-        referrer_economy = referrer.get("economy") or {}
-        if not self._economy_service.can_pay_referrer(referrer_economy):
-            return
-
-        reward = self._economy_service.referral_reward_amount()
-        self._credit_value_tx(
+        include_trial: bool,
+    ) -> list[dict]:
+        payouts: list[dict] = []
+        redeem = self._payout_if_unpaid(
             transaction,
-            uid=referrer_uid,
-            user_ref=referrer_ref,
-            amount=reward,
-            tx_type="referral_reward",
-            extra_fields={"inviteeUid": invitee_uid},
+            referee_uid=referee_uid,
+            payout_type="redeem",
+            payee_uid=referee_uid,
+            payee_ref=referee_ref,
+            amount=REFERRAL_REDEEM_SHARE,
         )
-        transaction.update(
-            referrer_ref,
+        if redeem is not None:
+            payouts.append(redeem)
+        if include_trial:
+            payouts.extend(
+                self._plan_trial_referral_payouts(
+                    transaction,
+                    referee_uid=referee_uid,
+                    referee_ref=referee_ref,
+                    referrer_uid=referrer_uid,
+                )
+            )
+        return payouts
+
+    def _plan_trial_referral_payouts(
+        self,
+        transaction,
+        *,
+        referee_uid: str,
+        referee_ref,
+        referrer_uid: str,
+    ) -> list[dict]:
+        payouts: list[dict] = []
+        referee = self._payout_if_unpaid(
+            transaction,
+            referee_uid=referee_uid,
+            payout_type="trial_referee",
+            payee_uid=referee_uid,
+            payee_ref=referee_ref,
+            amount=REFERRAL_TRIAL_REFEREE_SHARE,
+        )
+        if referee is not None:
+            payouts.append(referee)
+
+        marker_ref = self._referral_payout_ref(referee_uid, "trial_referrer")
+        if marker_ref.get(transaction=transaction).exists:
+            return payouts
+
+        referrer_ref = self.firebase_service.db.collection("users").document(
+            referrer_uid
+        )
+        referrer_snapshot = referrer_ref.get(transaction=transaction)
+        amount = 0
+        bump = False
+        if referrer_snapshot.exists:
+            referrer_economy = (referrer_snapshot.to_dict() or {}).get("economy") or {}
+            if self._economy_service.can_pay_referrer(referrer_economy):
+                amount = REFERRAL_TRIAL_REFERRER_SHARE
+                bump = True
+        payouts.append(
             {
-                "economy.referralPayoutCount": firestore.Increment(1),
-                "updatedAt": SERVER_TIMESTAMP,
+                "referee_uid": referee_uid,
+                "type": "trial_referrer",
+                "payee_uid": referrer_uid,
+                "payee_ref": referrer_ref,
+                "amount": amount,
+                "title": self._REFERRAL_SHARE_TITLES["trial_referrer"],
+                "marker_ref": marker_ref,
+                "bump_referrer_count": bump,
+            }
+        )
+        return payouts
+
+    def _payout_if_unpaid(
+        self,
+        transaction,
+        *,
+        referee_uid: str,
+        payout_type: str,
+        payee_uid: str,
+        payee_ref,
+        amount: int,
+    ) -> dict | None:
+        marker_ref = self._referral_payout_ref(referee_uid, payout_type)
+        if marker_ref.get(transaction=transaction).exists:
+            return None
+        return {
+            "referee_uid": referee_uid,
+            "type": payout_type,
+            "payee_uid": payee_uid,
+            "payee_ref": payee_ref,
+            "amount": amount,
+            "title": self._REFERRAL_SHARE_TITLES[payout_type],
+            "marker_ref": marker_ref,
+            "bump_referrer_count": False,
+        }
+
+    def _write_referral_payouts(self, transaction, payouts: list[dict]) -> None:
+        for payout in payouts:
+            transaction.set(
+                payout["marker_ref"],
+                {
+                    "refereeUid": payout["referee_uid"],
+                    "payeeUid": payout["payee_uid"],
+                    "type": payout["type"],
+                    "amount": payout["amount"],
+                    "createdAt": SERVER_TIMESTAMP,
+                },
+            )
+            if payout["amount"] <= 0:
+                continue
+            transaction.update(
+                payout["payee_ref"],
+                {
+                    "wallet.shareBalance": firestore.Increment(payout["amount"]),
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
+            if payout["bump_referrer_count"]:
+                transaction.update(
+                    payout["payee_ref"],
+                    {
+                        "economy.referralPayoutCount": firestore.Increment(1),
+                        "updatedAt": SERVER_TIMESTAMP,
+                    },
+                )
+            self._write_share_receipt(transaction, payout)
+
+    def _write_share_receipt(self, transaction, payout: dict) -> None:
+        referee_uid = payout["referee_uid"]
+        payee_uid = payout["payee_uid"]
+        payout_type = payout["type"]
+        receipt_id = f"referral_{referee_uid}_{payout_type}"
+        transaction.set(
+            payout["payee_ref"].collection("wallet_transactions").document(receipt_id),
+            {
+                "id": receipt_id,
+                "uid": payee_uid,
+                "title": payout["title"],
+                "amount": payout["amount"],
+                "assetType": "SHARE",
+                "timestamp": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            self.firebase_service.db.collection("walletTransactions").document(
+                f"referral_{payee_uid}_{referee_uid}_{payout_type}"
+            ),
+            {
+                "uid": payee_uid,
+                "type": f"referral_{payout_type}",
+                "shareAmount": payout["amount"],
+                "createdAt": SERVER_TIMESTAMP,
             },
         )
 
@@ -1676,6 +1843,21 @@ def _commit_invite_code_tx(transaction, service, uid: str, user_ref, code: str) 
     # Module-level so the first argument is the Transaction. Decorating a
     # method puts `self` first, which this helper rejects.
     return service._allocate_invite_code(transaction, uid, user_ref, code)
+
+
+@firestore.transactional
+def _commit_validation_tx(
+    transaction,
+    service,
+    uid: str,
+    request: ValidateRunRequest,
+    result: ValidationResult,
+    activity_ref,
+    user_ref,
+) -> ValidationResult:
+    return service._persist_validation_tx(
+        transaction, uid, request, result, activity_ref, user_ref
+    )
 
 
 @firestore.transactional

@@ -43,6 +43,8 @@ export type AdminTournament = {
   minParticipantsBep: number;
   status: string;
   sponsorName: string;
+  sponsorPrizeSupportShare: number;
+  sponsorDonationSupportShare: number;
   requiredTier: number;
   entryFeeShare: number;
   winnerRewardValue: number;
@@ -144,7 +146,9 @@ export function subscribeTournaments(
       maxParticipants: Math.trunc(num(data.maxParticipants)),
       minParticipantsBep: Math.trunc(num(data.minParticipantsBep)),
       status: (data.status as string) || 'recruiting',
-      sponsorName: (data.sponsorName as string) || 'SRC Sponsor',
+      sponsorName: typeof data.sponsorName === 'string' ? data.sponsorName.trim() : '',
+      sponsorPrizeSupportShare: Math.trunc(num(data.sponsorPrizeSupportShare)),
+      sponsorDonationSupportShare: Math.trunc(num(data.sponsorDonationSupportShare)),
       requiredTier: Math.trunc(num(data.requiredTier, 1)),
       entryFeeShare: Math.trunc(num(data.entryFeeShare)),
       winnerRewardValue: Math.trunc(num(data.winnerRewardValue)),

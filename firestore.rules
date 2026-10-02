@@ -889,5 +889,11 @@ service cloud.firestore {
     match /referralPayouts/{payoutId} {
       allow read, write: if false;
     }
+
+    // Jena admin API writes these with the Admin SDK. Clients cannot.
+    match /adminAuditLogs/{logId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
   }
 }

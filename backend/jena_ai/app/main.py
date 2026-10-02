@@ -1,9 +1,11 @@
 import os
 
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from app import config  # noqa: F401 — loads .env on import
 
+from app.routers.admin_router import router as admin_router
 from app.routers.ops_router import router as ops_router
 from app.routers.payment_router import router as payment_router
 from app.routers.secured_action_router import router as secured_action_router
@@ -12,6 +14,14 @@ from app.routers.validation_router import router as validation_router
 app = FastAPI(
     title="SRC Jena AI Engine",
     version="0.1.0",
+)
+
+# Browser admin calls /admin with an ID token. No cookies.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
@@ -41,6 +51,7 @@ def health_ready() -> dict[str, str]:
     return {"status": "ready"}
 
 
+app.include_router(admin_router)
 app.include_router(validation_router)
 app.include_router(payment_router)
 app.include_router(secured_action_router)

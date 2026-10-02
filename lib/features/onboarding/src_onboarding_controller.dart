@@ -965,6 +965,35 @@ abstract final class PedometerKstClock {
       return null;
     }
   }
+
+  /// Positive Health Connect total for a past KST day. Zero is not a reading.
+  static Future<int?> queryDaySteps(
+    Health health,
+    String dayKey, {
+    bool requestIfMissing = false,
+  }) async {
+    try {
+      if (requestIfMissing) {
+        await requestAuthorization(health);
+      } else {
+        await health.configure();
+      }
+      final range = KstCalendar.dayInterval(dayKey);
+      if (range == null) return null;
+      final total = await health.getTotalStepsInInterval(
+        range.startDate,
+        range.endDate,
+      );
+      if (total == null || total <= 0) return null;
+      return total;
+    } on PlatformException catch (e, st) {
+      debugPrint('PedometerKstClock queryDaySteps: $e\n$st');
+      return null;
+    } catch (e, st) {
+      debugPrint('PedometerKstClock queryDaySteps: $e\n$st');
+      return null;
+    }
+  }
 }
 
 /// 만보기 화면이 백그라운드→포그라운드로 복귀할 때 OS 헬스 걸음을 덮어쓴다.

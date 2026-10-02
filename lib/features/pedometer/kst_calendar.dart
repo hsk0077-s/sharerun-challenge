@@ -32,6 +32,19 @@ abstract final class KstCalendar {
     return (startDate: startUtc.toLocal(), endDate: current);
   }
 
+  /// One KST calendar day, `[start, next midnight)`.
+  static ({DateTime startDate, DateTime endDate})? dayInterval(String dayKey) {
+    final parts = dayKey.split('-');
+    if (parts.length != 3) return null;
+    final year = int.tryParse(parts[0]);
+    final month = int.tryParse(parts[1]);
+    final day = int.tryParse(parts[2]);
+    if (year == null || month == null || day == null) return null;
+    final startUtc = DateTime.utc(year, month, day).subtract(offset);
+    final endUtc = startUtc.add(const Duration(days: 1));
+    return (startDate: startUtc.toLocal(), endDate: endUtc.toLocal());
+  }
+
   /// KST 기준 이번 주 월요일~일요일.
   static List<({int year, int month, int day, String key})> thisWeekDays([
     DateTime? now,

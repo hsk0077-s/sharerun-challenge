@@ -201,4 +201,47 @@ void main() {
     );
     expect(DailyMetricsAccount.debugDocs[today]!.steps, 4000);
   });
+
+  test('empty week days come from health, and 0 does not upload', () async {
+    const friday = '2026-10-02';
+    SharedPreferences.setMockInitialValues({
+      '2026-09-28_steps': 8000,
+    });
+    DailyMetricsAccount.debugUseMemory = true;
+    final asked = <String>[];
+
+    await DailyMetricsAccount.backfillMissingDays(
+      uid: 'account',
+      todayKey: friday,
+      dayKeys: DailyMetricsAccount.weekDaysBefore(friday),
+      readSteps: (day) async {
+        asked.add(day);
+        if (day == '2026-09-30') return 5940;
+        if (day == '2026-10-01') return 0;
+        return null;
+      },
+    );
+
+    expect(
+      DailyMetricsAccount.weekDaysBefore(friday),
+      ['2026-09-28', '2026-09-29', '2026-09-30', '2026-10-01'],
+    );
+    expect(asked, isNot(contains('2026-09-28')));
+    expect(asked, containsAll(['2026-09-29', '2026-09-30', '2026-10-01']));
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getInt('2026-09-28_steps'), 8000);
+    expect(prefs.getInt('2026-09-30_steps'), 5940);
+    expect(prefs.getInt('2026-10-01_steps'), isNull);
+    expect(prefs.getInt('${friday}_steps'), isNull);
+    expect(DailyMetricsAccount.debugDocs['2026-09-30']!.steps, 5940);
+    expect(
+      DailyMetricsAccount.debugDocs['2026-09-30']!.source,
+      'health_connect',
+    );
+    expect(DailyMetricsAccount.debugDocs.containsKey('2026-10-01'), isFalse);
+    expect(DailyMetricsAccount.debugDocs.containsKey('2026-09-28'), isFalse);
+    final history = prefs.getStringList('pedometer_weekly_history') ?? [];
+    expect(history, contains('2026-09-30:5940'));
+    expect(history, contains('2026-09-28:8000'));
+  });
 }

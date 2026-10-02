@@ -340,6 +340,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         debugPrint('initPedometerSystem requestAuthorization: $e\n$st');
       }
       if (!mounted) return;
+      await _backfillWeekFromHealth();
+      if (!mounted) return;
+      await _loadWeeklyHistory();
+      if (!mounted) return;
       await syncBackgroundSteps();
       if (!mounted) return;
       await _loadClaimedData();
@@ -1048,6 +1052,21 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       _updatePendingAmount();
     } catch (e) {
       debugPrint('[PERSISTENCE] 데이터 로딩 실패: $e');
+    }
+  }
+
+  /// Past week days missing from the account cache, taken from Health Connect.
+  Future<void> _backfillWeekFromHealth() async {
+    try {
+      final todayKey = _getTodayKey();
+      await DailyMetricsAccount.backfillMissingDays(
+        uid: _harvestUid(),
+        todayKey: todayKey,
+        dayKeys: DailyMetricsAccount.weekDaysBefore(todayKey),
+        readSteps: (day) => PedometerKstClock.queryDaySteps(_health, day),
+      );
+    } catch (e) {
+      debugPrint('_backfillWeekFromHealth: $e');
     }
   }
 

@@ -1,0 +1,44 @@
+---
+description: Anti-timeout guard — chunked edits, pinzet patches, context minimum, src↔admin API naming sync
+alwaysApply: true
+---
+
+# Anti-Timeout Guard (SRC Admin)
+
+Prevents chat disconnect (`A background task finished, but the chat couldn't resume`) during large UI/backend work.
+
+## 1. Task Chunking (강제)
+
+- Max **3 files** created or edited per assistant turn. Stop and ask for Accept before the next batch.
+- If a change would rewrite **>150 lines** in one file: **forbidden**. Use pinzet (`StrReplace`) on the target function/block only.
+- Prefer incremental batches over one mega-response. Never dump whole file rewrites for large components.
+
+```text
+❌ BAD: Write 400-line Overview.tsx in one shot + edit 5 other files
+✅ GOOD: Pinzet Card C block only → summarize → wait Accept → next ≤3 files
+```
+
+## 2. Self-Summarization (캐시)
+
+After editing **2+ files** in a turn, before starting another file:
+
+1. List changed paths + 1-line purpose each
+2. List remaining TODOs / unfinished UI pages
+3. Keep that summary short so the next turn can resume without re-reading the whole tree
+
+## 3. Context Minimum (대역폭)
+
+- Do **not** bulk-read `node_modules/`, unused assets, or unrelated image dumps.
+- Open only `@`-referenced / task-relevant source files.
+- Prefer `Grep`/`Glob` over reading large directories.
+
+## 4. Admin ↔ App Naming Consistency
+
+When touching data sync between **src (app)** and **src어드민 (this repo)**:
+
+- Cross-check **variable names** and **API endpoint paths** before coding (`/api/users`, status enums like `ACTIVE` | `UNDER_REVIEW` | `SUSPENDED`, fields like `value_balance`, `user_id`, `nickname`).
+- Do not invent divergent DTO field names; match existing `api` client usage in `src/api/axios.ts` and dashboard consumers.
+
+## Resume Protocol
+
+On session recovery: diagnose recent file mtimes → state completed vs gap → continue from the next pending batch (≤3 files), never re-overwrite completed pinzet work.

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AdminGate from './components/auth/AdminGate';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Overview from './components/dashboard/Overview';
@@ -10,6 +11,7 @@ import SponsorApproval from './components/dashboard/SponsorApproval';
 export default function App() {
   return (
     <BrowserRouter>
+      <AdminGate>
       <div className="flex h-screen bg-gray-900 overflow-hidden">
         {/* 좌측 사이드바 고정 */}
         <Sidebar />
@@ -30,6 +32,7 @@ export default function App() {
           </main>
         </div>
       </div>
+      </AdminGate>
     </BrowserRouter>
   );
 }

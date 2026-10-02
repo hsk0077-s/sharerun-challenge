@@ -273,6 +273,55 @@ abstract final class DailyMetricsAccount {
     await prefs.setStringList('pedometer_weekly_history', history);
   }
 
+  /// This week's KST days before [todayKey]. Today and later days are excluded.
+  static List<String> weekDaysBefore(String todayKey) {
+    final noon = _noon(todayKey);
+    if (noon == null) return const [];
+    return [
+      for (final day in KstCalendar.thisWeekDays(noon))
+        if (day.key.compareTo(todayKey) < 0) day.key,
+    ];
+  }
+
+  /// Fills week days that are still empty from a positive Health aggregate
+  /// and uploads them. Zero is ignored. A larger local or server total stays.
+  static Future<void> backfillMissingDays({
+    required String uid,
+    required String todayKey,
+    required List<String> dayKeys,
+    required Future<int?> Function(String dayKey) readSteps,
+  }) async {
+    if (uid.isEmpty || dayKeys.isEmpty) return;
+    final prefs = await PedometerHealthCap.fresh();
+    var wrote = false;
+    for (final day in dayKeys) {
+      if (day.compareTo(todayKey) >= 0) continue;
+      final local = prefs.getInt('${day}_steps') ?? 0;
+      if (local > 0) continue;
+      int? reading;
+      try {
+        reading = await readSteps(day);
+      } catch (e) {
+        debugPrint('[CLOUD RECOVERY] health day $day: $e');
+        continue;
+      }
+      final steps = PedometerStepTruth.clampDaily(reading ?? 0);
+      if (steps <= 0) continue;
+      await commit(
+        uid: uid,
+        todayKey: todayKey,
+        dayKey: day,
+        steps: steps,
+        source: 'health_connect',
+      );
+      await _cacheDay(prefs, day, steps);
+      wrote = true;
+    }
+    if (!wrote) return;
+    await _writeWeekList(prefs, todayKey);
+    onCacheUpdated?.call();
+  }
+
   /// Writes one day. Returns false when the write is refused (0, or no change).
   static Future<bool> commit({
     required String uid,

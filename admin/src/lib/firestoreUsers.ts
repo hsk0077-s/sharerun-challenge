@@ -15,9 +15,15 @@ export type AdminUser = {
   id: string;
   user_id: string;
   nickname: string;
+  /** Firestore `users/{uid}.email`. Empty when the field is absent. */
+  email: string;
   value_balance: number;
   status: 'ACTIVE' | 'UNDER_REVIEW' | 'SUSPENDED' | string;
   created_at: string;
+  /** `createdAt` only. Null when the field is missing — never "today". */
+  joined_at: string | null;
+  /** `accountStatus` only. Null when the field is missing. */
+  account_status: string | null;
   share_balance?: number;
   diamond_balance?: number;
 };
@@ -51,6 +57,25 @@ function toIso(value: unknown): string {
   return new Date().toISOString();
 }
 
+/** `createdAt` for the user table. Missing or unreadable → null, not today. */
+function readJoinedAt(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed || null;
+  }
+  if (value && typeof value === 'object' && 'toDate' in value) {
+    try {
+      const date = (value as { toDate: () => Date }).toDate();
+      if (date instanceof Date && !Number.isNaN(date.getTime())) {
+        return date.toISOString();
+      }
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
 /** Firestore `users/{uid}` 문서 → 어드민 테이블 행 */
 export function mapFirestoreUser(
   docId: string,
@@ -67,6 +92,13 @@ export function mapFirestoreUser(
     (typeof data.displayName === 'string' && data.displayName.trim()) ||
     'Unknown';
 
+  const email = typeof data.email === 'string' ? data.email.trim() : '';
+  const accountStatusRaw = data.accountStatus;
+  const account_status =
+    typeof accountStatusRaw === 'string' && accountStatusRaw.trim()
+      ? accountStatusRaw.trim()
+      : null;
+
   const statusRaw =
     (typeof data.status === 'string' && data.status) ||
     (typeof data.adminStatus === 'string' && data.adminStatus) ||
@@ -78,6 +110,7 @@ export function mapFirestoreUser(
     id: docId,
     user_id: (typeof data.uid === 'string' && data.uid) || docId,
     nickname,
+    email,
     value_balance: readWalletInt(wallet, [
       'valueTokenBalance',
       'valueToken',
@@ -93,6 +126,8 @@ export function mapFirestoreUser(
     ]),
     status,
     created_at: toIso(data.createdAt ?? data.created_at ?? data.termsAcceptedAt),
+    joined_at: readJoinedAt(data.createdAt),
+    account_status,
   };
 }
 

@@ -10,6 +10,7 @@ import SponsorApproval from './components/dashboard/SponsorApproval';
 import Referrals from './components/dashboard/Referrals';
 import DailySteps from './components/dashboard/DailySteps';
 import WalletAnomalies from './components/dashboard/WalletAnomalies';
+import Runs from './components/dashboard/Runs';
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/steps" element={<DailySteps />} />
               <Route path="/wallet-anomalies" element={<WalletAnomalies />} />
+              <Route path="/runs" element={<Runs />} />
             </Routes>
           </main>
         </div>

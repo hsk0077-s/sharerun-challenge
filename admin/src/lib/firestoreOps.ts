@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  getDoc,
   limit,
   onSnapshot,
   orderBy,
@@ -276,6 +277,69 @@ export function subscribeAppeals(
     }),
     handlers
   );
+}
+
+export type AdminRun = {
+  id: string;
+  userId: string;
+  distanceKm: number | null;
+  durationSeconds: number | null;
+  jenaDecision: string | null;
+  jenaReason: string | null;
+  validationFinalized: boolean;
+  updatedAt: string;
+};
+
+function optionalNumber(value: unknown): number | null {
+  if (value == null || value === '') return null;
+  const n = num(value, Number.NaN);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** Recent activities. Admin rules already allow this read. Does not write. */
+export function subscribeRecentRuns(
+  handlers: Handlers<AdminRun>,
+  opts?: { limitCount?: number }
+): Unsubscribe {
+  const lim = opts?.limitCount ?? 40;
+  return subscribeCollection(
+    () =>
+      query(collection(getDb(), 'activities'), orderBy('updatedAt', 'desc'), limit(lim)),
+    (id, data) => ({
+      id,
+      userId: readText(data.userId),
+      distanceKm: optionalNumber(data.distanceKm),
+      durationSeconds:
+        data.durationSeconds == null ? null : Math.trunc(num(data.durationSeconds)),
+      jenaDecision: readText(data.jenaDecision) || null,
+      jenaReason: readText(data.jenaReason) || null,
+      validationFinalized: data.validationFinalized === true,
+      updatedAt: toIso(data.updatedAt),
+    }),
+    handlers
+  );
+}
+
+/** `users/{uid}.economy.trialRunCount`. Missing user → null. Missing field → 0. */
+export async function fetchTrialRunCounts(
+  uids: string[]
+): Promise<Record<string, number | null>> {
+  await ensureAdminAuth();
+  const unique = [...new Set(uids.map((uid) => uid.trim()).filter(Boolean))];
+  const entries = await Promise.all(
+    unique.map(async (uid) => {
+      const snap = await getDoc(doc(getDb(), 'users', uid));
+      if (!snap.exists()) return [uid, null] as const;
+      const economy = snap.data().economy;
+      const raw =
+        economy && typeof economy === 'object'
+          ? (economy as Record<string, unknown>).trialRunCount
+          : undefined;
+      const count = optionalNumber(raw);
+      return [uid, count == null ? 0 : Math.trunc(count)] as const;
+    })
+  );
+  return Object.fromEntries(entries);
 }
 
 /** Appeals rules allow `isAdmin()` to update. Status only — not wallet or users. */

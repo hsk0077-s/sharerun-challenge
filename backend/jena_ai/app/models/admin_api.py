@@ -15,3 +15,33 @@ class AuditPingResult(BaseModel):
     accepted: bool
     log_id: str
     action: str
+
+
+class ReferralPayoutMarker(BaseModel):
+    amount: int
+    createdAt: str | None
+    payeeUid: str | None
+
+
+class ReferralPayouts(BaseModel):
+    redeem: ReferralPayoutMarker | None
+    trial_referee: ReferralPayoutMarker | None
+    trial_referrer: ReferralPayoutMarker | None
+
+
+class ReferralUserRow(BaseModel):
+    uid: str
+    referralCode: str | None
+    referredBy: str | None
+    referredByUid: str | None
+    trialRunCount: int
+    trialRunsRequired: int
+    referralPayoutCount: int
+    referralPayoutMax: int
+    payouts: ReferralPayouts
+
+
+class ReferralListResult(BaseModel):
+    users: list[ReferralUserRow]
+    nextCursor: str | None
+    limit: int

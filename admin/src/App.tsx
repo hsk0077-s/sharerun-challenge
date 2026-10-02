@@ -7,6 +7,7 @@ import UserManagement from './components/dashboard/UserManagement';
 import AbuseAudit from './components/dashboard/AbuseAudit';
 import FinanceManagement from './components/dashboard/FinanceManagement';
 import SponsorApproval from './components/dashboard/SponsorApproval';
+import Referrals from './components/dashboard/Referrals';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/abuse" element={<AbuseAudit />} />
               <Route path="/finance" element={<FinanceManagement />} />
               <Route path="/sponsor" element={<SponsorApproval />} />
+              <Route path="/referrals" element={<Referrals />} />
             </Routes>
           </main>
         </div>

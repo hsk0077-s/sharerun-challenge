@@ -1047,8 +1047,9 @@ class SecuredActionService:
         )
         user_ref = self.firebase_service.db.collection("users").document(uid)
         participant_ref = tournament_ref.collection("participants").document(uid)
-        return self._join_tournament_tx(
-            transaction, uid, request, user_ref, tournament_ref, participant_ref
+        # Module wrapper: a method decorator does not bind `self`.
+        return _commit_join_tx(
+            transaction, self, uid, request, user_ref, tournament_ref, participant_ref
         )
 
     def settle_tournament_failure(
@@ -1071,7 +1072,6 @@ class SecuredActionService:
             participant_ref,
         )
 
-    @firestore.transactional
     def _join_tournament_tx(
         self,
         transaction,
@@ -1149,8 +1149,8 @@ class SecuredActionService:
                 "uid": uid,
                 "tournamentId": tournament_ref.id,
                 "type": "tournament_entry",
-                "shareAmount": entry_fee,
-                "diamondAmount": diamond_deposit,
+                "shareAmount": -entry_fee,
+                "diamondAmount": -diamond_deposit,
                 "charityTarget": selected_charity if diamond_deposit > 0 else None,
                 "createdAt": SERVER_TIMESTAMP,
             },
@@ -1869,6 +1869,21 @@ def _commit_harvest_tx(
 ) -> SecuredActionResult:
     return service._harvest_pedometer_share_tx(
         transaction, uid, request, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_join_tx(
+    transaction,
+    service,
+    uid: str,
+    request: JoinTournamentRequest,
+    user_ref,
+    tournament_ref,
+    participant_ref,
+) -> SecuredActionResult:
+    return service._join_tournament_tx(
+        transaction, uid, request, user_ref, tournament_ref, participant_ref
     )
 
 

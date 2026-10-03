@@ -89,7 +89,7 @@ class MyWalletScreen extends ConsumerWidget {
                       gradeCompleted: gradeDone,
                       gradeTotal: EconomyConstants.trialRunsRequired,
                       onGradeTap: () => _openGradeEval(context),
-                      onCharge: () => _openBilling(context),
+                      onCharge: () => _openChargePicker(context),
                       onUse: () => _openStore(context, ref),
                     ),
                     const SizedBox(height: 24),
@@ -124,6 +124,37 @@ class MyWalletScreen extends ConsumerWidget {
       context,
       RouteNames.settings,
       materialBuilder: (_) => const SettingsScreen(),
+    );
+  }
+
+  void _openChargePicker(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text(AppStrings.myWalletChargeShare),
+                subtitle: const Text(AppStrings.myWalletChargeShareHint),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _openBilling(context);
+                },
+              ),
+              const ListTile(
+                title: Text(AppStrings.myWalletChargeDia),
+                subtitle: Text(AppStrings.myWalletChargeDiaHint),
+              ),
+              const ListTile(
+                title: Text(AppStrings.myWalletChargeValue),
+                subtitle: Text(AppStrings.myWalletChargeValueHint),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

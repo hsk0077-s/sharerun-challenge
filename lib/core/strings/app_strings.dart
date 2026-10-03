@@ -110,7 +110,15 @@ abstract final class AppStrings {
   static const dashboardNavMyPage = '마이페이지';
 
   static const myWalletCharge = '충전하기';
-  static const myWalletUse = '사용하기';
+  static const myWalletUse = '상점 가기';
+  static const myWalletChargeShare = 'SHARE';
+  static const myWalletChargeShareHint = '충전소에서 구매할 수 있어요';
+  static const myWalletChargeDia = '다이아몬드';
+  static const myWalletChargeDiaHint = '연속 달리기로 모을 수 있어요';
+  static const myWalletChargeValue = '밸류(VALUE)';
+  static const myWalletChargeValueHint = '달리기로 모을 수 있어요';
+  static const myWalletItemDuringRun = '달리기 중 사용 가능';
+  static const myWalletItemDuringTournament = '대회에서 사용 가능';
   static const myWalletRecentTransactions = '최근 거래 내역';
 
   static String myWalletShareLabel(String amount) => '보유 SHARE: $amount';

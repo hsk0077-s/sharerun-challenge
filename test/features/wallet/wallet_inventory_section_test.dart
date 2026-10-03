@@ -37,6 +37,9 @@ void main() {
     expect(find.text(AppStrings.itemInventorySafeGuardTitle), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryCount(1)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryCount(2)), findsOneWidget);
+    expect(find.text(AppStrings.myWalletItemDuringRun), findsOneWidget);
+    expect(find.text(AppStrings.myWalletItemDuringTournament), findsOneWidget);
+    expect(find.text(AppStrings.itemInventoryUse), findsNothing);
     expect(find.text(AppStrings.myWalletInventoryEmpty), findsNothing);
     expect(find.text(AppStrings.myWalletInventoryOpen), findsOneWidget);
   });
@@ -55,6 +58,8 @@ void main() {
     expect(find.text(AppStrings.storeItemSharePack), findsNothing);
     expect(find.text(AppStrings.myWalletInventoryCount(3)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryCount(1)), findsOneWidget);
+    expect(find.text(AppStrings.myWalletItemDuringRun), findsOneWidget);
+    expect(find.text(AppStrings.myWalletItemDuringTournament), findsOneWidget);
   });
 
   testWidgets('wallet inventory empty state', (tester) async {

@@ -29,6 +29,7 @@ class WalletInventorySection extends ConsumerWidget {
           color: AppColors.error,
           title: AppStrings.itemInventoryCprTitle,
           count: shop.cprCount,
+          note: AppStrings.myWalletItemDuringRun,
         ),
       if (shop.safeGuardCount > 0)
         _InventoryRow(
@@ -36,6 +37,7 @@ class WalletInventorySection extends ConsumerWidget {
           color: AppColors.success,
           title: AppStrings.itemInventorySafeGuardTitle,
           count: shop.safeGuardCount,
+          note: AppStrings.myWalletItemDuringTournament,
         ),
       if (shop.ghostPaceCount > 0)
         _InventoryRow(
@@ -43,6 +45,7 @@ class WalletInventorySection extends ConsumerWidget {
           color: AppColors.tealAccent,
           title: serverShopItemTitle(ServerShopInventory.ghostPaceId) ?? '',
           count: shop.ghostPaceCount,
+          note: AppStrings.myWalletItemDuringRun,
         ),
       if (shop.battlePassCount > 0)
         _InventoryRow(
@@ -50,6 +53,7 @@ class WalletInventorySection extends ConsumerWidget {
           color: AppColors.progressYellow,
           title: serverShopItemTitle(ServerShopInventory.battlePassId) ?? '',
           count: shop.battlePassCount,
+          note: AppStrings.myWalletItemDuringTournament,
         ),
     ];
 
@@ -95,12 +99,21 @@ class WalletInventorySection extends ConsumerWidget {
                     Icon(row.icon, size: 20, color: row.color),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: Text(
-                        row.title,
-                        style: AppTextStyles.agreementLabel.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            row.title,
+                            style: AppTextStyles.agreementLabel.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            row.note,
+                            style: AppTextStyles.caption.copyWith(fontSize: 12),
+                          ),
+                        ],
                       ),
                     ),
                     Text(
@@ -126,12 +139,14 @@ class _InventoryRow {
     required this.color,
     required this.title,
     required this.count,
+    required this.note,
   });
 
   final IconData icon;
   final Color color;
   final String title;
   final int count;
+  final String note;
 }
 
 abstract final class MyWalletInventoryTitle {

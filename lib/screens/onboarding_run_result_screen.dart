@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../app/providers/wallet_state_provider.dart';
 import '../core/strings/app_strings.dart';
@@ -10,10 +13,21 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/pedometer/walking_challenge_share.dart';
+import '../features/run_result/run_finish_image_share.dart';
+import '../features/run_result/run_finish_share_card.dart';
+import '../features/run_result/run_finish_theme_store.dart';
 
 /// 온보딩 플로우 기록 결과 화면 (Screen 11).
 class OnboardingRunResultScreen extends ConsumerStatefulWidget {
   const OnboardingRunResultScreen({super.key});
+
+  static const photoGalleryKey = Key('run-finish-photo-gallery');
+  static const photoCameraKey = Key('run-finish-photo-camera');
+  static const photoCameraLabel = '사진 찍기';
+  static const photoGalleryLabel = '갤러리에서 고르기';
+
+  /// Test hook. Production uses [ImagePicker] and keeps the bytes in memory.
+  static Future<Uint8List?> Function(ImageSource source)? debugPickPhoto;
 
   @override
   ConsumerState<OnboardingRunResultScreen> createState() =>
@@ -28,6 +42,18 @@ class _OnboardingRunResultScreenState
   static const _mockDistanceKm = '8.35';
 
   var _rewardsApplied = false;
+  var _styleIndex = 0;
+  var _themeReady = false;
+  var _instagramInstalled = false;
+  var _tiktokInstalled = false;
+  var _sharingImage = false;
+
+  /// Scenery for this visit only. Never saved, never uploaded.
+  ImageProvider? _photo;
+  var _usingPhoto = false;
+  final _finishedOn = DateTime.now();
+  final _styleController = PageController(viewportFraction: 0.8);
+  final _cardKey = GlobalKey();
 
   @override
   void initState() {
@@ -36,6 +62,106 @@ class _OnboardingRunResultScreenState
       await _applyRunRewards();
       await _saveRunDataToFirebase();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_loadShareTargets());
+    });
+    unawaited(_restoreTheme());
+  }
+
+  Future<void> _restoreTheme() async {
+    final theme = await RunFinishThemeStore.load();
+    if (!mounted) return;
+    setState(() {
+      _styleIndex = RunFinishCardTheme.colorThemes.indexOf(theme);
+      _usingPhoto = false;
+      _themeReady = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_styleController.hasClients) return;
+      if (_styleController.page?.round() == theme.index) return;
+      _styleController.jumpToPage(theme.index);
+    });
+  }
+
+  void _onThemeSelected(int index) {
+    setState(() {
+      _styleIndex = index;
+      _usingPhoto = false;
+    });
+    if (_themeReady) {
+      unawaited(
+        RunFinishThemeStore.save(RunFinishCardTheme.colorThemes[index]),
+      );
+    }
+    if (!_styleController.hasClients) return;
+    if (_styleController.page?.round() == index) return;
+    _styleController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _styleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadShareTargets() async {
+    final instagram = await RunFinishImageShare.instagramInstalled();
+    final tiktok = await RunFinishImageShare.tiktokInstalled();
+    if (!mounted) return;
+    setState(() {
+      _instagramInstalled = instagram;
+      _tiktokInstalled = tiktok;
+    });
+  }
+
+  RunFinishShareCard _shareCard(RunFinishCardTheme style) {
+    return RunFinishShareCard(
+      style: style,
+      distanceKm: _mockDistanceKm,
+      time: AppStrings.runResultFinalTimeValue,
+      pace: AppStrings.runResultAvgPaceValue,
+      date: _finishedOn,
+      photo: style == RunFinishCardTheme.photo ? _photo : null,
+    );
+  }
+
+  RunFinishCardTheme get _captureStyle {
+    if (_usingPhoto && _photo != null) return RunFinishCardTheme.photo;
+    return RunFinishCardTheme.colorThemes[_styleIndex];
+  }
+
+  Future<void> _pickRunPhoto(ImageSource source) async {
+    try {
+      final hook = OnboardingRunResultScreen.debugPickPhoto;
+      final Uint8List? bytes;
+      if (hook != null) {
+        bytes = await hook(source);
+      } else {
+        final file = await ImagePicker().pickImage(
+          source: source,
+          maxWidth: 1440,
+          imageQuality: 85,
+        );
+        if (file == null) return;
+        bytes = await file.readAsBytes();
+      }
+      if (!mounted || bytes == null || bytes.isEmpty) return;
+      setState(() {
+        _photo = MemoryImage(bytes!);
+        _usingPhoto = true;
+      });
+    } catch (e, st) {
+      debugPrint('run finish photo: $e\n$st');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('사진을 불러오지 못했어요.')),
+      );
+    }
   }
 
   Future<void> _applyRunRewards() async {
@@ -97,6 +223,63 @@ class _OnboardingRunResultScreenState
     );
   }
 
+  Future<File?> _capturePoster() async {
+    if (_sharingImage) return null;
+    setState(() => _sharingImage = true);
+    try {
+      return await RunFinishImageShare.capture(_cardKey);
+    } catch (e, st) {
+      debugPrint('RunFinishImageShare.capture: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text(RunFinishImageShare.captureFailedMessage)),
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _sharingImage = false);
+    }
+  }
+
+  Future<void> _shareSheet(BuildContext buttonContext, File file) async {
+    try {
+      await RunFinishImageShare.shareImageFile(
+        path: file.path,
+        sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+      );
+    } catch (e, st) {
+      debugPrint('RunFinishImageShare.sheet: $e\n$st');
+    }
+  }
+
+  Future<void> _onInstagram() async {
+    final file = await _capturePoster();
+    if (file == null || !mounted) return;
+    final opened = await RunFinishImageShare.shareInstagramStory(file.path);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(RunFinishImageShare.instagramFailedMessage)),
+      );
+    }
+  }
+
+  Future<void> _onTikTok(BuildContext buttonContext) async {
+    final file = await _capturePoster();
+    if (file == null || !mounted) return;
+    final targeted = await RunFinishImageShare.shareTikTok(file.path);
+    if (!targeted && buttonContext.mounted) {
+      await _shareSheet(buttonContext, file);
+    }
+  }
+
+  Future<void> _onMore(BuildContext buttonContext) async {
+    final file = await _capturePoster();
+    if (file == null || !buttonContext.mounted) return;
+    await _shareSheet(buttonContext, file);
+  }
+
   Future<void> _onShare(BuildContext buttonContext) async {
     final shareText = 'SRC 앱에서 ${_mockDistanceKm}km 완주 후 기부에 동참했습니다! '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
@@ -119,83 +302,95 @@ class _OnboardingRunResultScreenState
       backgroundColor: AppColors.bgGradientEnd,
       body: SRCGradientBackground(
         child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Stack(
             children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    16,
-                    AppShapes.termsHorizontalPadding,
-                    16,
-                  ),
-                  child: Column(
-                    children: [
-                      const _CelebrationGraphic(),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppStrings.runResultTitle,
-                        style: AppTextStyles.header1.copyWith(fontSize: 28),
-                        textAlign: TextAlign.center,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppShapes.termsHorizontalPadding,
+                        16,
+                        AppShapes.termsHorizontalPadding,
+                        16,
                       ),
-                      const SizedBox(height: 24),
-                      const _RecordCard(),
-                      const SizedBox(height: 14),
-                      const _RewardCard(),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppShapes.termsHorizontalPadding,
-                  8,
-                  AppShapes.termsHorizontalPadding,
-                  16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Material(
-                      color: AppColors.primaryMint,
-                      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: _onDonate,
-                        child: SizedBox(
-                          height: AppShapes.buttonHeight,
-                          child: Center(
-                            child: Text(
-                              AppStrings.runResultDonate,
-                              style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textBlack,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      child: Column(
+                        children: [
+                          const _CelebrationGraphic(),
+                          const SizedBox(height: 16),
+                          Text(
+                            AppStrings.runResultTitle,
+                            style: AppTextStyles.header1.copyWith(fontSize: 28),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
+                          const SizedBox(height: 20),
+                          RunFinishSharePreview(
+                            controller: _styleController,
+                            styleIndex: _styleIndex,
+                            cardFor: _shareCard,
+                            onStyleChanged: _onThemeSelected,
+                            photoActive: _usingPhoto && _photo != null,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _ImageShareButton(
+                                  key: OnboardingRunResultScreen.photoCameraKey,
+                                  label: OnboardingRunResultScreen
+                                      .photoCameraLabel,
+                                  onTap: () => unawaited(
+                                    _pickRunPhoto(ImageSource.camera),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _ImageShareButton(
+                                  key:
+                                      OnboardingRunResultScreen.photoGalleryKey,
+                                  label: OnboardingRunResultScreen
+                                      .photoGalleryLabel,
+                                  onTap: () => unawaited(
+                                    _pickRunPhoto(ImageSource.gallery),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          const _RecordCard(),
+                          const SizedBox(height: 14),
+                          const _RewardCard(),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Builder(
-                      builder: (buttonContext) {
-                        return Material(
-                          color: AppColors.garminAuthButton,
-                          borderRadius: BorderRadius.circular(
-                            AppShapes.cardRadius,
-                          ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppShapes.termsHorizontalPadding,
+                      8,
+                      AppShapes.termsHorizontalPadding,
+                      16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Material(
+                          color: AppColors.primaryMint,
+                          borderRadius:
+                              BorderRadius.circular(AppShapes.cardRadius),
                           clipBehavior: Clip.antiAlias,
                           child: InkWell(
-                            onTap: () => unawaited(_onShare(buttonContext)),
+                            onTap: _onDonate,
                             child: SizedBox(
                               height: AppShapes.buttonHeight,
                               child: Center(
                                 child: Text(
-                                  AppStrings.runResultShare,
+                                  AppStrings.runResultDonate,
                                   style: AppTextStyles.buttonText.copyWith(
-                                    color: AppColors.textWhite,
+                                    color: AppColors.textBlack,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -203,13 +398,171 @@ class _OnboardingRunResultScreenState
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 10),
+                        Builder(
+                          builder: (buttonContext) {
+                            return Material(
+                              color: AppColors.garminAuthButton,
+                              borderRadius: BorderRadius.circular(
+                                AppShapes.cardRadius,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => unawaited(_onShare(buttonContext)),
+                                child: SizedBox(
+                                  height: AppShapes.buttonHeight,
+                                  child: Center(
+                                    child: Text(
+                                      AppStrings.runResultShare,
+                                      style: AppTextStyles.buttonText.copyWith(
+                                        color: AppColors.textWhite,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _ImageShareRow(
+                          instagram: _instagramInstalled,
+                          tiktok: _tiktokInstalled,
+                          enabled: !_sharingImage,
+                          onInstagram: _onInstagram,
+                          onTikTok: _onTikTok,
+                          onMore: _onMore,
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              // Laid out at full poster size, clipped by the stack so it
+              // never covers the finish screen. toImage reads this layer.
+              Positioned(
+                left: 0,
+                top: 0,
+                width: 0,
+                height: 0,
+                child: IgnorePointer(
+                  child: ExcludeSemantics(
+                    child: OverflowBox(
+                      alignment: Alignment.topLeft,
+                      minWidth: RunFinishShareCard.canvasWidth,
+                      maxWidth: RunFinishShareCard.canvasWidth,
+                      minHeight: RunFinishShareCard.canvasHeight,
+                      maxHeight: RunFinishShareCard.canvasHeight,
+                      child: RepaintBoundary(
+                        key: _cardKey,
+                        child: _shareCard(_captureStyle),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageShareRow extends StatelessWidget {
+  const _ImageShareRow({
+    required this.instagram,
+    required this.tiktok,
+    required this.enabled,
+    required this.onInstagram,
+    required this.onTikTok,
+    required this.onMore,
+  });
+
+  final bool instagram;
+  final bool tiktok;
+  final bool enabled;
+  final Future<void> Function() onInstagram;
+  final Future<void> Function(BuildContext context) onTikTok;
+  final Future<void> Function(BuildContext context) onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    final buttons = <Widget>[
+      if (instagram)
+        _ImageShareButton(
+          key: RunFinishImageShare.instagramButtonKey,
+          label: RunFinishImageShare.instagramLabel,
+          onTap: enabled ? () => unawaited(onInstagram()) : null,
+        ),
+      if (tiktok)
+        Builder(
+          builder: (buttonContext) {
+            return _ImageShareButton(
+              key: RunFinishImageShare.tiktokButtonKey,
+              label: RunFinishImageShare.tiktokLabel,
+              onTap: enabled ? () => unawaited(onTikTok(buttonContext)) : null,
+            );
+          },
+        ),
+      Builder(
+        builder: (buttonContext) {
+          return _ImageShareButton(
+            key: RunFinishImageShare.moreButtonKey,
+            label: RunFinishImageShare.moreLabel,
+            onTap: enabled ? () => unawaited(onMore(buttonContext)) : null,
+          );
+        },
+      ),
+    ];
+    return Row(
+      children: [
+        for (var i = 0; i < buttons.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(child: buttons[i]),
+        ],
+      ],
+    );
+  }
+}
+
+class _ImageShareButton extends StatelessWidget {
+  const _ImageShareButton({
+    required this.label,
+    required this.onTap,
+    super.key,
+  });
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 48,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+            border: Border.all(color: AppColors.borderLight),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.buttonText.copyWith(
+              color: AppColors.textBlack,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

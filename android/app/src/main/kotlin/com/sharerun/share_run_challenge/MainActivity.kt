@@ -27,6 +27,7 @@ class MainActivity : FlutterFragmentActivity() {
             val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
             result.success(audio.getStreamVolume(AudioManager.STREAM_MUSIC))
         }
+        RunFinishImageShare.register(this, flutterEngine)
     }
 
     override fun getInitialRoute(): String? {

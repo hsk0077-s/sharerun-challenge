@@ -732,7 +732,26 @@ void main() {
       currentKm: 0.3,
       heartRateBpm: 175,
     );
-    expect(speaker.spoken, [
+    expect(speaker.spoken, [VoiceCoachingCues.runStart.ko]);
+
+    final confirmedSpeaker = _RecordingSpeaker();
+    final confirmed = ProviderContainer(
+      overrides: [
+        voiceCoachingSpeakerProvider.overrideWithValue(confirmedSpeaker),
+        coachPlusFromProfileProvider.overrideWithValue(true),
+        coachPlusServerGrantProvider.overrideWithValue((_) async {}),
+      ],
+    );
+    addTearDown(confirmed.dispose);
+    await confirmed.read(voiceCoachingEnabledProvider.notifier).ensureLoaded();
+    final confirmedCoach = confirmed.read(voiceCoachingControllerProvider);
+    await confirmedCoach.onRunStarted();
+    await confirmedCoach.onRunProgress(
+      previousKm: 0.2,
+      currentKm: 0.3,
+      heartRateBpm: 175,
+    );
+    expect(confirmedSpeaker.spoken, [
       VoiceCoachingCues.runStart.ko,
       VoiceCoachingCues.runHighHeartRate.ko,
     ]);

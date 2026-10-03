@@ -34,26 +34,20 @@ bool coachPlusActiveOnProfile(UserModel? profile, DateTime now) {
   return now.isBefore(until);
 }
 
-/// True while Coach+ (or the debug override) is active.
+/// True while the server profile (or the debug override) says Coach+ is active.
 final coachPlusActiveProvider =
     NotifierProvider<CoachPlusActiveNotifier, bool>(CoachPlusActiveNotifier.new);
 
 class CoachPlusActiveNotifier extends Notifier<bool> {
-  var _grantedThisSession = false;
-
   @override
   bool build() {
     if (coachPlusForceDebug) return true;
-    final fromServer = ref.watch(coachPlusFromProfileProvider);
-    return fromServer || _grantedThisSession;
+    return ref.watch(coachPlusFromProfileProvider);
   }
 
   Future<void> grant(String productId) async {
     if (!CoachPlusPlan.isCoachPlusId(productId)) return;
     await ref.read(coachPlusServerGrantProvider)(productId);
-    if (!ref.mounted || coachPlusForceDebug) return;
-    _grantedThisSession = true;
-    state = true;
   }
 }
 

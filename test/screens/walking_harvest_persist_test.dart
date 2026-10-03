@@ -6,6 +6,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/pedometer/account_daily_steps_provider.dart';
 import 'package:share_run_challenge/features/pedometer/kst_calendar.dart';
 import 'package:share_run_challenge/features/pedometer/pedometer_harvest_ledger.dart';
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
@@ -71,6 +72,9 @@ void main() {
             ),
             walletProvider.overrideWith(_SeededWalletNotifier.new),
             activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
+            accountDailyStepsProvider.overrideWith(
+              (ref, dayKey) => Stream.value(1200),
+            ),
           ],
           child: MaterialApp(
             debugShowCheckedModeBanner: false,
@@ -90,12 +94,13 @@ void main() {
       var sawSteps = false;
       for (var i = 0; i < 20; i++) {
         await tester.pump(const Duration(milliseconds: 50));
-        if (find.text('2,950').evaluate().isNotEmpty) {
+        if (find.text('1,200').evaluate().isNotEmpty) {
           sawSteps = true;
           break;
         }
       }
-      expect(sawSteps, isTrue, reason: 'today steps should restore');
+      expect(sawSteps, isTrue, reason: 'today steps show the account record');
+      expect(find.text('2,950'), findsNothing);
       expect(find.text('29 SHARE 줍기'), findsNothing);
       expect(find.text('코인 쌓이는 중...'), findsOneWidget);
       expect(find.textContaining('오늘의 채굴 : 0 / 60'), findsOneWidget);

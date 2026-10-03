@@ -7,6 +7,7 @@ import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:share_run_challenge/features/pedometer/account_daily_steps_provider.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
@@ -38,6 +39,9 @@ Widget _scopedWalking() {
       ),
       walletProvider.overrideWith(_SeededWalletNotifier.new),
       activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
+      accountDailyStepsProvider.overrideWith(
+        (ref, dayKey) => Stream.value(0),
+      ),
     ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,

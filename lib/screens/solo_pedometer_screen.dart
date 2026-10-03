@@ -1448,8 +1448,6 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     );
     if (toClaim <= 0) return;
     _harvestInFlight = true;
-    final previousClaimed = claimedNow;
-    final previousCollected = _collectedShareCoins;
     final nextClaimed = PedometerHarvestLedger.claimedAfterHarvest(
       steps: liveSteps,
       claimedSteps: claimedNow,
@@ -1462,18 +1460,6 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       } catch (e, st) {
         debugPrint('harvest haptic: $e\n$st');
       }
-      _claimedSteps = nextClaimed;
-      if (mounted) {
-        setState(() => _mascotPickupNonce += 1);
-      }
-      // Commit before listeners and before foreground prefs.reload().
-      // Back-navigation must not reopen the same 줍기 floor.
-      await _persistClaimedWatermark(nextClaimed);
-      if (mounted) {
-        ref.read(walkingPendingShareProvider.notifier).state =
-            _computePendingShare(liveSteps);
-        unawaited(_syncForegroundNotification(liveSteps));
-      }
       final uid = _harvestUid();
       try {
       if (uid.isEmpty) {
@@ -1484,18 +1470,34 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           );
       final credited = result.creditedShare(fallback: toClaim);
       final minted = result.mintedShare && credited > 0;
+      final accepted = result.status == 'harvested' ||
+          result.status == 'already_harvested' ||
+          result.status == 'daily_cap_reached';
       if (minted || result.shareBalance != null) {
         ref.read(walletProvider.notifier).applyShareFromServer(
               shareBalance: result.shareBalance,
               shareCredited: minted ? credited : 0,
             );
       }
+      if (accepted) {
+        _claimedSteps = nextClaimed;
+        if (minted && mounted) {
+          setState(() => _mascotPickupNonce += 1);
+        }
+        if (mounted) {
+          ref.read(walkingPendingShareProvider.notifier).state =
+              _computePendingShare(liveSteps);
+          unawaited(_syncForegroundNotification(liveSteps));
+        }
+      }
       ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
-      await _persistHarvestWalletUi(
-        uid: uid,
-        credited: minted ? credited : 0,
-        source: 'jena',
-      );
+      if (accepted) {
+        await _persistHarvestWalletUi(
+          uid: uid,
+          credited: minted ? credited : 0,
+          source: 'jena',
+        );
+      }
       if (minted || credited > 0) {
         final coach = _voiceCoachOf();
         final beforeEpoch = coach.liveSessionEpoch;
@@ -1515,6 +1517,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               shareCredited: toClaim,
             );
         final walletShare = ref.read(walletProvider).shareBalance;
+        _claimedSteps = nextClaimed;
         try {
           await ref.read(walletRepositoryProvider).creditLocalDebugHarvestShare(
                 uid: uid,
@@ -1538,21 +1541,11 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           _voiceCoachEpoch = coach.liveSessionEpoch;
         }
       } else if (mounted) {
-        setState(() {
-          _collectedShareCoins = previousCollected;
-          _claimedSteps = previousClaimed;
-        });
-        _updatePendingAmount();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('셰어 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
           ),
         );
-        await _persistClaimedWatermark(previousClaimed);
-      } else {
-        // Screen is already gone. Keep the watermark committed above so
-        // the next open does not offer the same 줍기 again.
-        _collectedShareCoins = previousCollected;
       }
       }
     } finally {
@@ -1690,19 +1683,20 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final selectedKey =
         _selectedDayKey.isEmpty ? PedometerKstClock.dateKey() : _selectedDayKey;
     final claimedSteps = _claimedFor(effectiveSteps);
-    final currentPendingShare = PedometerHarvestLedger.pendingShareExact(
-      steps: effectiveSteps,
-      claimedSteps: claimedSteps,
-    );
     final pendingCoinsInt = PedometerHarvestLedger.pendingShareFloor(
       steps: effectiveSteps,
       claimedSteps: claimedSteps,
     );
     final hasPendingCoins = pendingCoinsInt >= 1;
-    final isMaxDailyReached = PedometerHarvestLedger.todayMinedShare(
-          claimedSteps: claimedSteps,
-        ) >=
-        PedometerHarvestLedger.dailyShareCap;
+    final harvestProfile =
+        ref.watch(activeUserProfileProvider).asData?.value;
+    final serverMined = PedometerHarvestLedger.displayHarvestedShare(
+      dateKey: harvestProfile?.pedometerHarvestDateKey ?? '',
+      harvestedShare: harvestProfile?.pedometerHarvestedShare ?? 0,
+      todayKey: todayKey,
+    );
+    final isMaxDailyReached =
+        serverMined >= PedometerHarvestLedger.dailyShareCap;
 
     return PopScope(
       canPop: false,
@@ -1738,7 +1732,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                         stepCount: _comma(effectiveSteps),
                         km: effectiveKm,
                         kcal: effectiveSteps * 0.045,
-                        pendingShare: currentPendingShare,
+                        pendingShare: pendingCoinsInt.toDouble(),
                         tierLabel: '[${running.koreanName}] 산책 중',
                       ),
                     ),
@@ -1795,7 +1789,6 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               ),
               _WalkingHarvestDock(
                 isMaxDailyReached: isMaxDailyReached,
-                currentPendingShare: currentPendingShare,
                 hasPendingCoins: hasPendingCoins,
                 pendingCoinsInt: pendingCoinsInt,
                 onClaim: () => unawaited(_onHarvestCoins()),
@@ -1813,10 +1806,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final walletShare = ref.watch(walletProvider).shareBalance;
-    final todayCollectedCoins = PedometerHarvestLedger.todayMinedShare(
-      claimedSteps: _claimedFor(
-        math.max(_steps, ref.read(pedometerStateProvider).steps),
-      ),
+    final harvestProfile =
+        ref.watch(activeUserProfileProvider).asData?.value;
+    final todayCollectedCoins = PedometerHarvestLedger.displayHarvestedShare(
+      dateKey: harvestProfile?.pedometerHarvestDateKey ?? '',
+      harvestedShare: harvestProfile?.pedometerHarvestedShare ?? 0,
+      todayKey: PedometerKstClock.dateKey(),
     );
     return SrcSurfaceCard(
       key: const Key('walking-share-account'),
@@ -2237,7 +2232,7 @@ class _WalkingHeroCanvas extends StatelessWidget {
                       SizedBox(width: tokens.spacing.xs),
                       Expanded(
                         child: _HeroStatChip(
-                          label: '${pendingShare.toStringAsFixed(2)} SHARE',
+                          label: '${pendingShare.floor()} SHARE',
                           emphasize: true,
                         ),
                       ),
@@ -2321,14 +2316,12 @@ class _HeroStatChip extends StatelessWidget {
 class _WalkingHarvestDock extends StatelessWidget {
   const _WalkingHarvestDock({
     required this.isMaxDailyReached,
-    required this.currentPendingShare,
     required this.hasPendingCoins,
     required this.pendingCoinsInt,
     required this.onClaim,
   });
 
   final bool isMaxDailyReached;
-  final double currentPendingShare;
   final bool hasPendingCoins;
   final int pendingCoinsInt;
   final VoidCallback onClaim;
@@ -2372,7 +2365,7 @@ class _WalkingHarvestDock extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '줍기 대기 : ${currentPendingShare.toStringAsFixed(2)} SHARE',
+                  '줍기 대기 : $pendingCoinsInt SHARE',
                   style: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: tokens.colors.donation,

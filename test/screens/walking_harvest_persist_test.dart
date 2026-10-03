@@ -98,7 +98,7 @@ void main() {
       expect(sawSteps, isTrue, reason: 'today steps should restore');
       expect(find.text('29 SHARE 줍기'), findsNothing);
       expect(find.text('코인 쌓이는 중...'), findsOneWidget);
-      expect(find.textContaining('오늘의 채굴 : 29 / 60'), findsOneWidget);
+      expect(find.textContaining('오늘의 채굴 : 0 / 60'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(milliseconds: 50));

@@ -87,6 +87,33 @@ void main() {
     );
   });
 
+  test('displayed mined SHARE is the server field for today only', () {
+    expect(
+      PedometerHarvestLedger.displayHarvestedShare(
+        dateKey: '2026-10-03',
+        harvestedShare: 50,
+        todayKey: '2026-10-03',
+      ),
+      50,
+    );
+    expect(
+      PedometerHarvestLedger.displayHarvestedShare(
+        dateKey: '2026-10-02',
+        harvestedShare: 50,
+        todayKey: '2026-10-03',
+      ),
+      0,
+    );
+    expect(
+      PedometerHarvestLedger.displayHarvestedShare(
+        dateKey: '2026-10-03',
+        harvestedShare: 999,
+        todayKey: '2026-10-03',
+      ),
+      60,
+    );
+  });
+
   test('today mined and pending never exceed the daily 60 SHARE cap', () {
     expect(
       PedometerHarvestLedger.todayMinedShare(claimedSteps: 999999),

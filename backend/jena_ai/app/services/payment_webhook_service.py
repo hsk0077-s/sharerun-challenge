@@ -38,9 +38,9 @@ class PaymentWebhookService:
             request.payment_intent_id
         )
         transaction = db.transaction()
-        return self._apply_webhook_in_transaction(transaction, intent_ref, request)
+        # Module wrapper: a method decorator does not bind `self`.
+        return _commit_webhook_tx(transaction, self, intent_ref, request)
 
-    @firestore.transactional
     def _apply_webhook_in_transaction(
         self,
         transaction,
@@ -237,7 +237,10 @@ class PaymentWebhookService:
                 "tournamentId": tournament_id,
                 "type": "sponsor_payment_verified",
                 "option": option,
-                "shareAmount": request.amount,
+                # Not a user-wallet delta. shareAmount stays 0 so a ledger
+                # sum still reconstructs wallet.shareBalance.
+                "shareAmount": 0,
+                "sponsorAmount": request.amount,
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
@@ -330,3 +333,13 @@ class PaymentWebhookService:
         if self._firebase_service is None:
             self._firebase_service = FirebaseService()
         return self._firebase_service
+
+
+@firestore.transactional
+def _commit_webhook_tx(
+    transaction,
+    service: PaymentWebhookService,
+    intent_ref,
+    request: PaymentWebhookRequest,
+) -> PaymentWebhookResult:
+    return service._apply_webhook_in_transaction(transaction, intent_ref, request)

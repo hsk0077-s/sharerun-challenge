@@ -264,7 +264,7 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._purchase_shop_item_tx(transaction, uid, item_id, user_ref)
+        return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
 
     def transfer_value_to_web3(
         self,
@@ -960,7 +960,6 @@ class SecuredActionService:
             },
         )
 
-    @firestore.transactional
     def _purchase_shop_item_tx(
         self,
         transaction,
@@ -1012,7 +1011,7 @@ class SecuredActionService:
             {
                 "uid": uid,
                 "type": "shop_purchase",
-                "diamondAmount": cost,
+                "diamondAmount": -cost,
                 "itemId": item_id,
                 "createdAt": SERVER_TIMESTAMP,
             },
@@ -1870,6 +1869,17 @@ def _commit_harvest_tx(
     return service._harvest_pedometer_share_tx(
         transaction, uid, request, user_ref
     )
+
+
+@firestore.transactional
+def _commit_shop_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._purchase_shop_item_tx(transaction, uid, item_id, user_ref)
 
 
 @firestore.transactional

@@ -48,6 +48,40 @@ _COACH_PLUS_DAYS = {
     "coach_plus_yearly": 370,
 }
 
+# Client detail copy has no Firestore doc. First join writes these defaults.
+# Beginner prize/donation are the shown "3만 원"; intermediate, "50만 원".
+_BEGINNER_BUILTIN_ROOM = {
+    "title": "1km 초보 챌린지",
+    "targetDistanceKm": 1.0,
+    "entryFeeShare": 30000,
+    "status": "recruiting",
+    "maxParticipants": 200,
+    "minParticipantsBep": 100,
+    "winnerRewardValue": 30000,
+    "donationValue": 30000,
+    "requiredTier": 1,
+}
+_INTERMEDIATE_BUILTIN_ROOM = {
+    "title": "3km 중급 챌린지 (골드 방)",
+    "targetDistanceKm": 3.0,
+    "entryFeeShare": 60000,
+    "status": "recruiting",
+    "maxParticipants": 400,
+    "minParticipantsBep": 100,
+    "winnerRewardValue": 500000,
+    "donationValue": 500000,
+    "requiredTier": 1,
+}
+_BUILTIN_ROOMS = {
+    "beginner-1km-room": _BEGINNER_BUILTIN_ROOM,
+    "beginner-1km-room-01": _BEGINNER_BUILTIN_ROOM,
+    "intermediate-3km-room": _INTERMEDIATE_BUILTIN_ROOM,
+    "demo-intermediate-3km": _INTERMEDIATE_BUILTIN_ROOM,
+    "crew-challenge-room": _INTERMEDIATE_BUILTIN_ROOM,
+}
+# PR #64: the beginner lobby stays open to every tier.
+_OPEN_TIER_ROOM_IDS = frozenset({"beginner-1km-room", "beginner-1km-room-01"})
+
 
 class InviteCodeCollision(Exception):
     """`referralCodes/{code}` is already owned by a different user."""
@@ -1624,11 +1658,20 @@ class SecuredActionService:
         tournament_snapshot = tournament_ref.get(transaction=transaction)
         participant_snapshot = participant_ref.get(transaction=transaction)
 
-        if not user_snapshot.exists or not tournament_snapshot.exists:
+        builtin = (
+            None
+            if tournament_snapshot.exists
+            else _BUILTIN_ROOMS.get(tournament_ref.id)
+        )
+        if not user_snapshot.exists or (
+            not tournament_snapshot.exists and builtin is None
+        ):
             raise HTTPException(status_code=404, detail="User or tournament not found.")
 
         user = user_snapshot.to_dict() or {}
-        tournament = tournament_snapshot.to_dict() or {}
+        tournament = (
+            dict(builtin) if builtin is not None else (tournament_snapshot.to_dict() or {})
+        )
         share, diamonds, value = self._wallet_balances(user)
         if participant_snapshot.exists:
             return self._already_joined_result(
@@ -1646,7 +1689,7 @@ class SecuredActionService:
 
         if tournament.get("status", "recruiting") != "recruiting":
             raise HTTPException(status_code=400, detail="Tournament is not recruiting.")
-        if required_tier < user_tier:
+        if required_tier < user_tier and tournament_ref.id not in _OPEN_TIER_ROOM_IDS:
             raise HTTPException(status_code=403, detail="Lower-tier room is locked.")
         if self._tournament_is_full(tournament):
             raise HTTPException(status_code=409, detail="Tournament is full.")
@@ -1664,13 +1707,19 @@ class SecuredActionService:
 
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(user_ref, user_updates)
-        transaction.update(
-            tournament_ref,
-            {
-                "participantCount": firestore.Increment(1),
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-        )
+        if builtin is not None:
+            transaction.set(
+                tournament_ref,
+                {**tournament, "participantCount": 1, "updatedAt": SERVER_TIMESTAMP},
+            )
+        else:
+            transaction.update(
+                tournament_ref,
+                {
+                    "participantCount": firestore.Increment(1),
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
         transaction.set(
             participant_ref,
             {

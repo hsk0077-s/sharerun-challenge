@@ -13,6 +13,9 @@ from app.models.secured_actions import (
     SecuredActionResult,
     SettleTournamentFailureRequest,
     CoachPlusActivateRequest,
+    CreateChallengeRoomRequest,
+    CreateChallengeRoomResult,
+    CrewFoundRequest,
     CrewSpendRequest,
     ShopPurchaseRequest,
     ValidateRunRequest,
@@ -159,6 +162,24 @@ def spend_crew_action(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.spend_crew_action(uid=uid, action=request.action)
+
+
+@router.post("/crew/found", response_model=SecuredActionResult)
+def found_crew(
+    request: CrewFoundRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.found_crew(uid=uid, name=request.name)
+
+
+@router.post("/tournaments/create-room", response_model=CreateChallengeRoomResult)
+def create_challenge_room(
+    request: CreateChallengeRoomRequest,
+    uid: str = Depends(require_uid),
+) -> CreateChallengeRoomResult:
+    return service.create_challenge_room(
+        uid=uid, title=request.title, distance_km=request.distance_km
+    )
 
 
 @router.post("/shop/use", response_model=SecuredActionResult)

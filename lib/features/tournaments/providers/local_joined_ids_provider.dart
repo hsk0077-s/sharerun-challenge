@@ -24,10 +24,7 @@ final localJoinedTournamentIdsProvider =
   LocalJoinedTournamentIds.new,
 );
 
-/// Firestore participants ∪ debug-local joins. Use this for Join gates / UI.
+/// Rooms this account has joined on the server. Phone-only ids are not shown.
 final effectiveJoinedTournamentIdsProvider = Provider<Set<String>>((ref) {
-  final remote = ref.watch(joinedTournamentIdsProvider).value ?? const {};
-  final local = ref.watch(localJoinedTournamentIdsProvider);
-  if (local.isEmpty) return remote;
-  return {...remote, ...local};
+  return ref.watch(joinedTournamentIdsProvider).value ?? const {};
 });

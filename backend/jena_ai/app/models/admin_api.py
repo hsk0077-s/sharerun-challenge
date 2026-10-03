@@ -82,3 +82,29 @@ class WalletAnomalyListResult(BaseModel):
     nextCursor: str | None
     limit: int
     truncated: bool
+
+
+class WalletLedgerEntry(BaseModel):
+    id: str
+    timeKst: str | None
+    type: str
+    currency: str
+    amount: int
+    relatedId: str | None
+
+
+class WalletLedgerCurrency(BaseModel):
+    currency: str
+    balance: int
+    ledgerSum: int
+    mismatch: bool
+    seedGap: bool
+
+
+class WalletLedgerResult(BaseModel):
+    uid: str
+    nickname: str | None
+    email: str | None
+    truncated: bool
+    currencies: list[WalletLedgerCurrency]
+    entries: list[WalletLedgerEntry]

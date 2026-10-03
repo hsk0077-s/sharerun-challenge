@@ -130,3 +130,40 @@ export function fetchWalletAnomalies(
     idToken
   );
 }
+
+export type WalletLedgerEntry = {
+  id: string;
+  timeKst: string | null;
+  type: string;
+  currency: string;
+  amount: number;
+  relatedId: string | null;
+};
+
+export type WalletLedgerCurrency = {
+  currency: string;
+  balance: number;
+  ledgerSum: number;
+  mismatch: boolean;
+  seedGap: boolean;
+};
+
+export type WalletLedger = {
+  uid: string;
+  nickname: string | null;
+  email: string | null;
+  truncated: boolean;
+  currencies: WalletLedgerCurrency[];
+  entries: WalletLedgerEntry[];
+};
+
+export async function fetchWalletLedger(idToken: string, uid: string): Promise<WalletLedger> {
+  const response = await fetch(
+    `${jenaBaseUrl()}/admin/wallet-ledger?uid=${encodeURIComponent(uid)}`,
+    { headers: { Authorization: `Bearer ${idToken}` } }
+  );
+  if (response.status === 404) throw new Error('missing');
+  if (response.status === 401 || response.status === 403) throw new Error('forbidden');
+  if (!response.ok) throw new Error('jena');
+  return response.json() as Promise<WalletLedger>;
+}

@@ -48,15 +48,11 @@ class WalletState {
 class WalletNotifier extends Notifier<WalletState> {
   Completer<void> _ready = Completer<void>();
   int? _durableDebugShare;
-  int? _durableDia;
-  int? _durableValue;
 
   @override
   WalletState build() {
     _ready = Completer<void>();
     _durableDebugShare = null;
-    _durableDia = null;
-    _durableValue = null;
     ref.onDispose(() {
       if (!_ready.isCompleted) _ready.complete();
     });
@@ -87,16 +83,10 @@ class WalletNotifier extends Notifier<WalletState> {
     _durableDebugShare = share;
   }
 
-  void rememberDurableWallet({
-    int? share,
-    int? diamond,
-    int? value,
-  }) {
+  void rememberDurableWallet({int? share}) {
     if (share != null && share >= 0 && kDebugMode) {
       _durableDebugShare = share;
     }
-    if (diamond != null && diamond >= 0) _durableDia = diamond;
-    if (value != null && value >= 0) _durableValue = value;
   }
 
   String _uid() {
@@ -128,26 +118,8 @@ class WalletNotifier extends Notifier<WalletState> {
           state = state.copyWith(shareBalance: resolved);
         }
       }
-      if (snap.diamond != null && snap.diamond! > 0) {
-        final resolved = DebugLocalWalletStore.resolveDurableCurrency(
-          incoming: state.diamondBalance,
-          durable: snap.diamond!,
-        );
-        rememberDurableWallet(diamond: resolved);
-        if (state.diamondBalance != resolved) {
-          state = state.copyWith(diamondBalance: resolved);
-        }
-      }
-      if (snap.value != null && snap.value! > 0) {
-        final resolved = DebugLocalWalletStore.resolveDurableCurrency(
-          incoming: state.valueBalance,
-          durable: snap.value!,
-        );
-        rememberDurableWallet(value: resolved);
-        if (state.valueBalance != resolved) {
-          state = state.copyWith(valueBalance: resolved);
-        }
-      }
+      // DIA/VALUE display is the Firestore wallet only. Per-phone prefs must
+      // not overlay users/{uid}.wallet on launch.
     } catch (e) {
       debugPrint('hydrateDurableBalances: $e');
     }
@@ -174,8 +146,6 @@ class WalletNotifier extends Notifier<WalletState> {
       state,
       WalletState.fromModel(model),
       durableShare: _durableDebugShare,
-      durableDiamond: _durableDia,
-      durableValue: _durableValue,
     );
     if (!_ready.isCompleted) _ready.complete();
   }
@@ -195,8 +165,6 @@ class WalletNotifier extends Notifier<WalletState> {
     WalletState current,
     WalletState incoming, {
     int? durableShare,
-    int? durableDiamond,
-    int? durableValue,
   }) {
     if (incoming.isEmpty && !current.isEmpty) {
       return current;
@@ -221,24 +189,14 @@ class WalletNotifier extends Notifier<WalletState> {
     )) {
       share = current.shareBalance;
     }
-    var diamond = incoming.diamondBalance == 0 && current.diamondBalance > 0
+    // A share-only or empty-field snapshot must not zero a real DIA/VALUE.
+    // A non-zero Firestore number is the account balance on every phone.
+    final diamond = incoming.diamondBalance == 0 && current.diamondBalance > 0
         ? current.diamondBalance
         : incoming.diamondBalance;
-    if (durableDiamond != null) {
-      diamond = DebugLocalWalletStore.resolveDurableCurrency(
-        incoming: diamond,
-        durable: durableDiamond,
-      );
-    }
-    var value = incoming.valueBalance == 0 && current.valueBalance > 0
+    final value = incoming.valueBalance == 0 && current.valueBalance > 0
         ? current.valueBalance
         : incoming.valueBalance;
-    if (durableValue != null) {
-      value = DebugLocalWalletStore.resolveDurableCurrency(
-        incoming: value,
-        durable: durableValue,
-      );
-    }
     return WalletState(
       shareBalance: share,
       diamondBalance: diamond,
@@ -402,18 +360,12 @@ class WalletNotifier extends Notifier<WalletState> {
   }
 
   void _rememberBalancesDurable() {
-    rememberDurableWallet(
-      share: kDebugMode ? state.shareBalance : null,
-      diamond: state.diamondBalance,
-      value: state.valueBalance,
-    );
+    rememberDurableWallet(share: kDebugMode ? state.shareBalance : null);
     final uid = _uid();
     if (uid.isEmpty) return;
     DebugLocalWalletStore.rememberInMemory(
       uid: uid,
       share: kDebugMode ? state.shareBalance : null,
-      diamond: state.diamondBalance,
-      value: state.valueBalance,
     );
     unawaited(_persistDurablePrefs(uid));
   }
@@ -425,8 +377,6 @@ class WalletNotifier extends Notifier<WalletState> {
         prefs: prefs,
         uid: uid,
         share: kDebugMode ? state.shareBalance : null,
-        diamond: state.diamondBalance,
-        value: state.valueBalance,
       );
     } catch (e) {
       debugPrint('persistDurablePrefs: $e');

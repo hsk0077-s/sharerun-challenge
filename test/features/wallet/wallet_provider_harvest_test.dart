@@ -511,33 +511,23 @@ void main() {
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 
-  test('shop DIA spend survives a stale 1M remote without wiping grant', () {
+  test('Firestore DIA/VALUE snapshot replaces a local shop spend', () {
     const spent = WalletState(
       shareBalance: 1000000,
       diamondBalance: 999970,
       valueBalance: 1000000,
     );
-    const staleGrant = WalletState(
+    const server = WalletState(
       shareBalance: 1000000,
       diamondBalance: 1000000,
       valueBalance: 1000000,
     );
-    final kept = WalletNotifier.mergeRemote(
-      spent,
-      staleGrant,
-      durableDiamond: 999970,
-      durableValue: 1000000,
-    );
-    expect(kept.shareBalance, 1000000);
-    expect(kept.diamondBalance, 999970);
-    expect(kept.valueBalance, 1000000);
+    final shown = WalletNotifier.mergeRemote(spent, server);
+    expect(shown.shareBalance, 1000000);
+    expect(shown.diamondBalance, 1000000);
+    expect(shown.valueBalance, 1000000);
 
-    final firstGrant = WalletNotifier.mergeRemote(
-      const WalletState(),
-      staleGrant,
-      durableDiamond: 0,
-      durableValue: 0,
-    );
+    final firstGrant = WalletNotifier.mergeRemote(const WalletState(), server);
     expect(firstGrant.diamondBalance, 1000000);
     expect(firstGrant.valueBalance, 1000000);
   });
@@ -549,17 +539,12 @@ void main() {
       diamondBalance: 1000000,
       valueBalance: 999500,
     );
-    final merged = WalletNotifier.mergeRemote(
-      spent,
-      const WalletState(),
-      durableDiamond: 1000000,
-      durableValue: 999500,
-    );
+    final merged = WalletNotifier.mergeRemote(spent, const WalletState());
     expect(merged.diamondBalance, 1000000);
     expect(merged.valueBalance, 999500);
   });
 
-  test('debitDia is sync and stays deducted after stale grant merge', () {
+  test('debitDia is sync until a Firestore snapshot restores DIA', () {
     const remote = WalletModel(
       shareBalance: 1000000,
       diamondBalance: 1000000,
@@ -582,7 +567,7 @@ void main() {
 
     notifier.replaceFromRemote(remote);
     expect(container.read(walletProvider).shareBalance, 1000000);
-    expect(container.read(walletProvider).diamondBalance, 999970);
+    expect(container.read(walletProvider).diamondBalance, 1000000);
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 

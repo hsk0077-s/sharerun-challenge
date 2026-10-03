@@ -238,26 +238,7 @@ class _DebugTestWalletGrantHostState
             notifier.applyWalletSnapshot(shareBalance: resolved);
           }
         }
-        if (snap.diamond != null && snap.diamond! > 0) {
-          final resolved = DebugLocalWalletStore.resolveDurableCurrency(
-            incoming: ref.read(walletProvider).diamondBalance,
-            durable: snap.diamond!,
-          );
-          notifier.rememberDurableWallet(diamond: resolved);
-          if (ref.read(walletProvider).diamondBalance != resolved) {
-            notifier.applyWalletSnapshot(diamondBalance: resolved);
-          }
-        }
-        if (snap.value != null && snap.value! > 0) {
-          final resolved = DebugLocalWalletStore.resolveDurableCurrency(
-            incoming: ref.read(walletProvider).valueBalance,
-            durable: snap.value!,
-          );
-          notifier.rememberDurableWallet(value: resolved);
-          if (ref.read(walletProvider).valueBalance != resolved) {
-            notifier.applyWalletSnapshot(valueBalance: resolved);
-          }
-        }
+        // DIA/VALUE display follows the Firestore wallet, not device prefs.
         if (snap.paidIds.isNotEmpty) {
           ref
               .read(localJoinedTournamentIdsProvider.notifier)

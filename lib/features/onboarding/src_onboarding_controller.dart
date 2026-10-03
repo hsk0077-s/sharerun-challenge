@@ -1644,7 +1644,7 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
     );
     try {
       final nickname = validateNickname(rawNickname);
-      final uid = _requireUid();
+      _requireUid();
       final fee = EconomyConstants.nicknameChangeFeeDia;
       final wallet = ref.read(walletProvider);
 
@@ -1655,17 +1655,12 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
         );
       }
 
-      ref.read(walletProvider.notifier).debitDia(fee);
-      await ref.read(userRepositoryProvider).updateNicknameWithDiaFee(
-            uid: uid,
-            nickname: nickname,
-            diaFee: fee,
-          );
-      await ref.read(walletRepositoryProvider).logClientWalletTransaction(
-            uid: uid,
-            title: '닉네임 변경 다이아 소모 🪙',
-            amount: -fee,
-            assetType: 'DIA',
+      final result =
+          await ref.read(securedActionApiClientProvider).changeNickname(nickname);
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
           );
 
       state = state.copyWith(

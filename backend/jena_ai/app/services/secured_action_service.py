@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from math import asin, cos, radians, sin, sqrt
 import re
 
@@ -842,6 +842,17 @@ class SecuredActionService:
             return self._harvest_result(
                 status="already_claimed",
                 reason="Streak diamond reward was already claimed this week.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+
+        streak_days = self._walk_streak_days(transaction, uid)
+        if streak_days <= 0 or streak_days % _STREAK_BONUS_DAYS != 0:
+            return self._harvest_result(
+                status="not_eligible",
+                reason="Streak bonus needs 7 consecutive account days.",
                 share_credited=0,
                 share_balance=share,
                 diamond_balance=diamonds,
@@ -1946,6 +1957,28 @@ class SecuredActionService:
         # transaction never ran and the wallet was not credited.
         return _commit_harvest_tx(transaction, self, uid, request, user_ref)
 
+    def _walk_streak_days(self, transaction, uid: str) -> int:
+        """Consecutive qualifying daily_metrics days, ending today or yesterday."""
+        today = date.fromisoformat(self._economy_service.kst_today_key())
+        parent = (
+            self.firebase_service.db.collection("users")
+            .document(uid)
+            .collection("daily_metrics")
+        )
+        start = today
+        today_snap = parent.document(today.isoformat()).get(transaction=transaction)
+        if not _day_has_activity(today_snap):
+            start = today - timedelta(days=1)
+        count = 0
+        day = start
+        for _ in range(_STREAK_LOOKBACK_DAYS):
+            snap = parent.document(day.isoformat()).get(transaction=transaction)
+            if not _day_has_activity(snap):
+                break
+            count += 1
+            day -= timedelta(days=1)
+        return count
+
     @staticmethod
     def _wallet_balances(user: dict) -> tuple[int, int, int]:
         wallet = user.get("wallet") or {}
@@ -2598,6 +2631,23 @@ def _challenge_entry_fee(km: int) -> int:
 
 def _challenge_bep(km: int) -> int:
     return {1: 50, 3: 100, 5: 150, 10: 200}.get(km, 250)
+
+
+_STREAK_BONUS_DAYS = 7
+_STREAK_LOOKBACK_DAYS = 400
+
+
+def _day_has_activity(snapshot) -> bool:
+    if not snapshot.exists:
+        return False
+    data = snapshot.to_dict() or {}
+    return _positive_number(data.get("steps")) or _positive_number(data.get("km"))
+
+
+def _positive_number(value: object) -> bool:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    return value > 0
 
 
 def _wallet_int(wallet: dict, key: str) -> int | None:

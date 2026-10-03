@@ -273,7 +273,7 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._transfer_value_to_web3_tx(transaction, uid, request, user_ref)
+        return _commit_web3_transfer_tx(transaction, self, uid, request, user_ref)
 
     def _persist_validation_tx(
         self,
@@ -587,7 +587,6 @@ class SecuredActionService:
             },
         )
 
-    @firestore.transactional
     def _transfer_value_to_web3_tx(
         self,
         transaction,
@@ -1868,6 +1867,19 @@ def _commit_harvest_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._harvest_pedometer_share_tx(
+        transaction, uid, request, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_web3_transfer_tx(
+    transaction,
+    service,
+    uid: str,
+    request: Web3TransferRequest,
+    user_ref,
+) -> SecuredActionResult:
+    return service._transfer_value_to_web3_tx(
         transaction, uid, request, user_ref
     )
 

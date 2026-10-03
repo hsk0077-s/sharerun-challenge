@@ -1586,9 +1586,8 @@ class SecuredActionService:
     def request_refund(self, uid: str, request: RefundRequest) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._request_refund_tx(transaction, uid, request, user_ref)
+        return _commit_refund_tx(transaction, self, uid, request, user_ref)
 
-    @firestore.transactional
     def _request_refund_tx(
         self,
         transaction,
@@ -1617,7 +1616,7 @@ class SecuredActionService:
             {
                 "uid": uid,
                 "type": "cash_refund_requested",
-                "shareAmount": request.share_amount,
+                "shareAmount": -request.share_amount,
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
@@ -1931,6 +1930,17 @@ def _commit_signup_reward_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._claim_signup_reward_tx(transaction, uid, user_ref)
+
+
+@firestore.transactional
+def _commit_refund_tx(
+    transaction,
+    service,
+    uid: str,
+    request: RefundRequest,
+    user_ref,
+) -> SecuredActionResult:
+    return service._request_refund_tx(transaction, uid, request, user_ref)
 
 
 @firestore.transactional

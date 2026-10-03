@@ -1272,11 +1272,10 @@ class SecuredActionService:
         collected_ref = user_ref.collection("collectedDiamondBoxes").document(
             request.box_id
         )
-        return self._collect_diamond_box_tx(
-            transaction, uid, request, user_ref, box_ref, collected_ref
+        return _commit_diamond_box_tx(
+            transaction, self, uid, request, user_ref, box_ref, collected_ref
         )
 
-    @firestore.transactional
     def _collect_diamond_box_tx(
         self,
         transaction,
@@ -1869,6 +1868,21 @@ def _commit_harvest_tx(
 ) -> SecuredActionResult:
     return service._harvest_pedometer_share_tx(
         transaction, uid, request, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_diamond_box_tx(
+    transaction,
+    service,
+    uid: str,
+    request: CollectDiamondBoxRequest,
+    user_ref,
+    box_ref,
+    collected_ref,
+) -> SecuredActionResult:
+    return service._collect_diamond_box_tx(
+        transaction, uid, request, user_ref, box_ref, collected_ref
     )
 
 

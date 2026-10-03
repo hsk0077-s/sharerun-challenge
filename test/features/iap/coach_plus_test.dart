@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/features/iap/models/coach_plus_product.dart';
+import 'package:share_run_challenge/features/iap/providers/coach_plus_providers.dart';
 import 'package:share_run_challenge/features/iap/services/coach_plus_entitlement_store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,6 +59,25 @@ void main() {
     expect(
       await store.readActive(now: now.add(const Duration(days: 1))),
       isTrue,
+    );
+  });
+
+  test('profile window is the same on every phone', () {
+    final now = DateTime.utc(2026, 10, 3, 12);
+    final inactive = UserModel.dashboardDefault(uid: 'u1');
+    expect(coachPlusActiveOnProfile(inactive, now), isFalse);
+
+    final active = inactive.copyWith(
+      coachPlusProductId: CoachPlusPlan.monthly.productId,
+      coachPlusActiveUntil: now.add(const Duration(days: 1)).toIso8601String(),
+    );
+    expect(coachPlusActiveOnProfile(active, now), isTrue);
+    expect(
+      coachPlusActiveOnProfile(
+        active,
+        now.add(const Duration(days: 2)),
+      ),
+      isFalse,
     );
   });
 

@@ -63,6 +63,10 @@ class ShopPurchaseRequest(BaseModel):
     item_id: str = Field(min_length=3)
 
 
+class CoachPlusActivateRequest(BaseModel):
+    product_id: str = Field(min_length=3)
+
+
 class Web3TransferRequest(BaseModel):
     destination_address: str = Field(
         pattern=r"^0x[a-fA-F0-9]{40}$",

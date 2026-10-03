@@ -37,6 +37,12 @@ from app.services.mercy_rule_service import MercyRuleService
 from app.services.running_validation_service import RunningValidationService
 
 
+_COACH_PLUS_DAYS = {
+    "coach_plus_monthly": 32,
+    "coach_plus_yearly": 370,
+}
+
+
 class InviteCodeCollision(Exception):
     """`referralCodes/{code}` is already owned by a different user."""
 
@@ -274,6 +280,44 @@ class SecuredActionService:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_web3_transfer_tx(transaction, self, uid, request, user_ref)
+
+    def activate_coach_plus(self, uid: str, product_id: str) -> SecuredActionResult:
+        if product_id not in _COACH_PLUS_DAYS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Unknown Coach+ product.",
+            )
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_coach_plus_tx(transaction, self, product_id, user_ref)
+
+    def _activate_coach_plus_tx(
+        self,
+        transaction,
+        product_id: str,
+        user_ref,
+    ) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        until = datetime.now(timezone.utc) + timedelta(
+            days=_COACH_PLUS_DAYS[product_id]
+        )
+        transaction.update(
+            user_ref,
+            {
+                "coachPlus": {
+                    "productId": product_id,
+                    "activeUntil": until.isoformat(),
+                },
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="coach_plus_active",
+            reason="Coach+ entitlement saved. Wallet was not changed.",
+        )
 
     def _persist_validation_tx(
         self,
@@ -1953,6 +1997,16 @@ def _commit_web3_transfer_tx(
     return service._transfer_value_to_web3_tx(
         transaction, uid, request, user_ref
     )
+
+
+@firestore.transactional
+def _commit_coach_plus_tx(
+    transaction,
+    service,
+    product_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._activate_coach_plus_tx(transaction, product_id, user_ref)
 
 
 @firestore.transactional

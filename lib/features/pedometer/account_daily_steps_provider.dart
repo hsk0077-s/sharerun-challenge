@@ -9,9 +9,43 @@ import 'pedometer_step_truth.dart';
 ///
 /// The phone still uploads through DailyMetricsAccount.commit. The walking
 /// screen shows this document, not max(server, this phone's sensor).
+class AccountDayMetric {
+  const AccountDayMetric({
+    required this.dayKey,
+    required this.steps,
+    this.km = 0,
+  });
+
+  final String dayKey;
+  final int steps;
+  final double km;
+}
+
 abstract final class AccountDailySteps {
+  static final _dayKey = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+
   static int stepsOf(Map<String, dynamic>? data) {
     return PedometerStepTruth.clampDaily((data?['steps'] as num?)?.toInt() ?? 0);
+  }
+
+  static AccountDayMetric? dayOf(String dayKey, Map<String, dynamic>? data) {
+    if (!_dayKey.hasMatch(dayKey) || data == null) return null;
+    final steps = stepsOf(data);
+    final kmRaw = data['km'];
+    final km = kmRaw is num && kmRaw > 0 ? kmRaw.toDouble() : 0.0;
+    if (steps <= 0 && km <= 0) return null;
+    return AccountDayMetric(dayKey: dayKey, steps: steps, km: km);
+  }
+
+  static List<AccountDayMetric> daysOf(
+    Iterable<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) {
+    final rows = <AccountDayMetric>[];
+    for (final doc in docs) {
+      final row = dayOf(doc.id, doc.data());
+      if (row != null) rows.add(row);
+    }
+    return rows;
   }
 }
 
@@ -30,6 +64,22 @@ final accountDailyStepsProvider = StreamProvider.family<int, String>((ref, dayKe
       .doc(dayKey)
       .snapshots()
       .map((snap) => AccountDailySteps.stepsOf(snap.data()));
+});
+
+/// Every account day in `users/{uid}/daily_metrics`. My Page reads this,
+/// not the phone's `{date}_steps` prefs.
+final accountDailyMetricsProvider = StreamProvider<List<AccountDayMetric>>((ref) {
+  if (!_firestoreReady()) return Stream.value(const []);
+  final authUid = ref.watch(authStateChangesProvider).asData?.value?.uid ?? '';
+  final sessionUid = ref.watch(persistedAuthSessionProvider)?.uid ?? '';
+  final uid = authUid.isNotEmpty ? authUid : sessionUid;
+  if (uid.isEmpty) return Stream.value(const []);
+  return FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .collection('daily_metrics')
+      .snapshots()
+      .map((snap) => AccountDailySteps.daysOf(snap.docs));
 });
 
 bool _firestoreReady() {

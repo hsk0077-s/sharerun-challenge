@@ -9,7 +9,6 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
-import '../features/wallet/widgets/share_insufficient_dialog.dart';
 
 /// 크루 방장 관리 대시보드 (Screen 19).
 class CrewManagerScreen extends ConsumerStatefulWidget {
@@ -51,23 +50,19 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   }
 
   bool _spendDia(int amount, String actionLabel) {
-    final wallet = ref.read(walletProvider);
-    if (wallet.diamondBalance < amount) {
-      _toast('DIA가 부족합니다. 상점에서 구매해 주세요. ($actionLabel)');
-      return false;
-    }
-    ref.read(walletProvider.notifier).debitDia(amount);
-    return true;
+    _toast(
+      '$actionLabel은 이 화면에서 적용하지 않습니다. '
+      '$amount DIA 차감은 서버 원장에 기록된 뒤에만 됩니다.',
+    );
+    return false;
   }
 
   bool _spendShare(int amount, String actionLabel) {
-    final wallet = ref.read(walletProvider);
-    if (wallet.shareBalance < amount) {
-      ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
-      return false;
-    }
-    ref.read(walletProvider.notifier).subtractShare(amount);
-    return true;
+    _toast(
+      '$actionLabel은 이 화면에서 적용하지 않습니다. '
+      '$amount SHARE 차감은 서버 원장에 기록된 뒤에만 됩니다.',
+    );
+    return false;
   }
 
   Future<void> _onPushNotice() async {

@@ -14,6 +14,7 @@ from app.models.secured_actions import (
     JoinTournamentRequest,
     RedeemReferralResult,
     RefundRequest,
+    CreateChallengeRoomResult,
     SecuredActionResult,
     SettleTournamentFailureRequest,
     ValidateRunRequest,
@@ -294,6 +295,24 @@ class SecuredActionService:
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_crew_spend_tx(transaction, self, uid, action, user_ref)
 
+    def found_crew(self, uid: str, name: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        crew_ref = self.firebase_service.db.collection("crews").document()
+        return _commit_crew_found_tx(
+            transaction, self, uid, name, user_ref, crew_ref
+        )
+
+    def create_challenge_room(
+        self, uid: str, title: str, distance_km: int
+    ) -> CreateChallengeRoomResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        room_ref = self.firebase_service.db.collection("tournaments").document()
+        return _commit_create_room_tx(
+            transaction, self, uid, title, distance_km, user_ref, room_ref
+        )
+
     def use_shop_item(self, uid: str, item_id: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
@@ -533,6 +552,7 @@ class SecuredActionService:
         "expand": ("diamond", 300, "crew_member_expand"),
         "deposit": ("share", 10000, "crew_deposit"),
     }
+    CREW_CREATE_SHARE = 50000
     CREW_GIFT_ITEMS = (
         ("record_cpr_ticket", "기록 심폐소생권"),
         ("record_safe_guard", "기록 마감 세이프 가드"),
@@ -1321,6 +1341,132 @@ class SecuredActionService:
                 else _wallet_int(wallet, "diamondBalance")
             ),
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def _found_crew_tx(
+        self,
+        transaction,
+        uid: str,
+        name: str,
+        user_ref,
+        crew_ref,
+    ) -> SecuredActionResult:
+        trimmed = name.strip()
+        if not trimmed or len(trimmed) > 80:
+            raise HTTPException(status_code=400, detail="Invalid crew name.")
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        share = int(wallet.get("shareBalance") or 0)
+        cost = self.CREW_CREATE_SHARE
+        if share < cost:
+            raise HTTPException(status_code=400, detail="Insufficient Share balance.")
+        transaction.update(
+            user_ref,
+            {
+                "wallet.shareBalance": share - cost,
+                "ownedCrewId": crew_ref.id,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            crew_ref,
+            {
+                "name": trimmed,
+                "ownerUid": uid,
+                "totalValue": 0,
+                "memberCount": 1,
+                "shareCost": cost,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "crew_create",
+                "shareAmount": -cost,
+                "crewId": crew_ref.id,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="created",
+            reason="Crew created.",
+            share_balance=share - cost,
+            diamond_balance=_wallet_int(wallet, "diamondBalance"),
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def _create_challenge_room_tx(
+        self,
+        transaction,
+        uid: str,
+        title: str,
+        distance_km: int,
+        user_ref,
+        room_ref,
+    ) -> CreateChallengeRoomResult:
+        trimmed = title.strip()
+        if not trimmed or len(trimmed) > 80:
+            raise HTTPException(status_code=400, detail="Invalid room title.")
+        fee = _challenge_entry_fee(distance_km)
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        share = int(wallet.get("shareBalance") or 0)
+        if share < fee:
+            raise HTTPException(status_code=400, detail="Insufficient Share balance.")
+        bep = _challenge_bep(distance_km)
+        capacity = min(400, max(20, bep * 2))
+        transaction.update(
+            user_ref,
+            {"wallet.shareBalance": share - fee, "updatedAt": SERVER_TIMESTAMP},
+        )
+        transaction.set(
+            room_ref,
+            {
+                "title": trimmed,
+                "targetDistanceKm": float(distance_km),
+                "entryFeeShare": fee,
+                "winnerRewardValue": int(fee * 0.4),
+                "donationValue": int(fee * 0.2),
+                "minParticipantsBep": bep,
+                "maxParticipants": capacity,
+                "participantCount": 1,
+                "requiredTier": 1,
+                "status": "recruiting",
+                "sponsorName": "UNICEF",
+                "sponsorBillboardMessages": [],
+                "createdByUid": uid,
+                "userCreated": True,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "challenge_room_create",
+                "shareAmount": -fee,
+                "tournamentId": room_ref.id,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return CreateChallengeRoomResult(
+            accepted=True,
+            status="created",
+            reason="Challenge room created.",
+            share_balance=share - fee,
+            diamond_balance=_wallet_int(wallet, "diamondBalance"),
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+            tournament_id=room_ref.id,
+            entry_fee_share=fee,
         )
 
     def _use_shop_item_tx(
@@ -2326,6 +2472,24 @@ def _commit_trial_reward_tx(
     return service._claim_trial_reward_tx(transaction, uid, user_ref)
 
 
+def _challenge_entry_fee(km: int) -> int:
+    if km == 1:
+        return 30000
+    if km == 3:
+        return 60000
+    if km == 5:
+        return 70000
+    if km == 10:
+        return 100000
+    if km > 10:
+        return 100000 + ((km - 10) // 5) * 50000
+    return 30000
+
+
+def _challenge_bep(km: int) -> int:
+    return {1: 50, 3: 100, 5: 150, 10: 200}.get(km, 250)
+
+
 def _wallet_int(wallet: dict, key: str) -> int | None:
     raw = wallet.get(key)
     if raw is None:
@@ -2342,6 +2506,33 @@ def _commit_use_shop_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._use_shop_item_tx(transaction, uid, item_id, user_ref)
+
+
+@firestore.transactional
+def _commit_crew_found_tx(
+    transaction,
+    service,
+    uid: str,
+    name: str,
+    user_ref,
+    crew_ref,
+) -> SecuredActionResult:
+    return service._found_crew_tx(transaction, uid, name, user_ref, crew_ref)
+
+
+@firestore.transactional
+def _commit_create_room_tx(
+    transaction,
+    service,
+    uid: str,
+    title: str,
+    distance_km: int,
+    user_ref,
+    room_ref,
+) -> CreateChallengeRoomResult:
+    return service._create_challenge_room_tx(
+        transaction, uid, title, distance_km, user_ref, room_ref
+    )
 
 
 @firestore.transactional

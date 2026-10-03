@@ -12,6 +12,18 @@ import '../models/pedometer_harvest_result.dart';
 import '../models/tournament_join_result.dart';
 import '../models/winner_reward_action.dart';
 
+class ChallengeRoomCreateResult {
+  const ChallengeRoomCreateResult({
+    required this.wallet,
+    required this.tournamentId,
+    required this.entryFeeShare,
+  });
+
+  final PedometerHarvestResult wallet;
+  final String tournamentId;
+  final int entryFeeShare;
+}
+
 class SecuredActionApiClient {
   SecuredActionApiClient({
     required this.baseUri,
@@ -148,6 +160,33 @@ class SecuredActionApiClient {
   /// Decrements one account inventory doc. Rejects when quantity is already 0.
   Future<void> useShopItem(String itemId) async {
     await _post('/actions/shop/use', {'item_id': itemId});
+  }
+
+  /// Creates a crew and debits the server founding cost.
+  Future<PedometerHarvestResult> foundCrew(String name) async {
+    final json = await _post('/actions/crew/found', {'name': name});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Creates a challenge room and debits the server entry fee for that distance.
+  Future<ChallengeRoomCreateResult> createChallengeRoom({
+    required String title,
+    required int distanceKm,
+  }) async {
+    final json = await _post('/actions/tournaments/create-room', {
+      'title': title,
+      'distance_km': distanceKm,
+    });
+    final id = json['tournament_id'];
+    final fee = json['entry_fee_share'];
+    if (id is! String || id.isEmpty || fee is! num) {
+      throw StateError('Challenge room missing from server response.');
+    }
+    return ChallengeRoomCreateResult(
+      wallet: PedometerHarvestResult.fromJson(json),
+      tournamentId: id,
+      entryFeeShare: fee.toInt(),
+    );
   }
 
   /// Debits a server-owned crew price. The client does not send the amount.

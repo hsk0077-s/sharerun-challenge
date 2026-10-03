@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -119,12 +120,14 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         }
         ref.read(walletProvider.notifier).subtractShare(_createCrewShareCost);
       } else {
-        await ref.read(crewRepositoryProvider).createCrewWithShareDebit(
-              uid: uid,
-              name: AppStrings.runningCrewMyCrewName,
-              shareCost: _createCrewShareCost,
+        final result = await ref.read(securedActionApiClientProvider).foundCrew(
+              AppStrings.runningCrewMyCrewName,
             );
-        ref.read(walletProvider.notifier).subtractShare(_createCrewShareCost);
+        ref.read(walletProvider.notifier).applyWalletSnapshot(
+              shareBalance: result.shareBalance,
+              diamondBalance: result.diamondBalance,
+              valueBalance: result.valueTokenBalance,
+            );
       }
 
       if (!mounted) return;
@@ -136,6 +139,10 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         materialBuilder: (_) => const CrewManagerScreen(),
       );
     } on InsufficientShareException {
+      if (mounted) setState(() => _isSubmitting = false);
+      if (!mounted) return;
+      await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
+    } on ApiException {
       if (mounted) setState(() => _isSubmitting = false);
       if (!mounted) return;
       await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);

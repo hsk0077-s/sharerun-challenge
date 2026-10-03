@@ -67,6 +67,15 @@ class CrewSpendRequest(BaseModel):
     action: str = Field(min_length=3, max_length=16)
 
 
+class CrewFoundRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+
+
+class CreateChallengeRoomRequest(BaseModel):
+    title: str = Field(min_length=1, max_length=80)
+    distance_km: int = Field(ge=1, le=200)
+
+
 class CoachPlusActivateRequest(BaseModel):
     product_id: str = Field(min_length=3)
 
@@ -106,3 +115,8 @@ class SecuredActionResult(BaseModel):
     share_balance: int | None = None
     diamond_balance: int | None = None
     value_token_balance: int | None = None
+
+
+class CreateChallengeRoomResult(SecuredActionResult):
+    tournament_id: str
+    entry_fee_share: int

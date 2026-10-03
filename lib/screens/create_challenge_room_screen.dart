@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../core/challenge/challenge_entry_fee.dart';
 import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -76,6 +77,7 @@ class _CreateChallengeRoomScreenState
       final useRemote =
           !AppEnv.useLocalMockData && uid != null && uid.isNotEmpty;
 
+      final TournamentModel room;
       if (!useRemote) {
         if (!_hasLocalShare(_entryFee)) {
           if (mounted) setState(() => _isSubmitting = false);
@@ -83,16 +85,35 @@ class _CreateChallengeRoomScreenState
           return;
         }
         wallet.subtractShare(_entryFee);
-      }
-
-      final room = await _insertChallengeRoom(
-        title: title,
-        createdByUid: uid ?? 'local-guest',
-        persistRemote: useRemote,
-      );
-
-      if (useRemote) {
-        wallet.subtractShare(_entryFee);
+        room = _localRoom(title: title, createdByUid: 'local-guest');
+      } else {
+        final created =
+            await ref.read(securedActionApiClientProvider).createChallengeRoom(
+                  title: title,
+                  distanceKm: _selectedDistanceKm,
+                );
+        wallet.applyWalletSnapshot(
+          shareBalance: created.wallet.shareBalance,
+          diamondBalance: created.wallet.diamondBalance,
+          valueBalance: created.wallet.valueTokenBalance,
+        );
+        room = TournamentModel(
+          id: created.tournamentId,
+          title: title,
+          targetDistanceKm: _selectedDistanceKm.toDouble(),
+          entryFeeShare: created.entryFeeShare,
+          winnerRewardValue: (created.entryFeeShare * 0.4).round(),
+          donationValue: (created.entryFeeShare * 0.2).round(),
+          minParticipantsBep: TournamentRepository.defaultBepForDistance(
+            _selectedDistanceKm,
+          ),
+          maxParticipants: 400,
+          participantCount: 1,
+          requiredTier: 1,
+          status: TournamentStatus.recruiting,
+          sponsorName: 'UNICEF',
+          sponsorBillboardMessages: const [],
+        );
       }
 
       ref.read(localUserRoomsProvider.notifier).prepend(room);
@@ -103,6 +124,10 @@ class _CreateChallengeRoomScreenState
       );
       AppRouteNav.pop(context);
     } on InsufficientShareException {
+      if (mounted) setState(() => _isSubmitting = false);
+      if (!mounted) return;
+      await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
+    } on ApiException {
       if (mounted) setState(() => _isSubmitting = false);
       if (!mounted) return;
       await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
@@ -118,22 +143,6 @@ class _CreateChallengeRoomScreenState
 
   bool _hasLocalShare(int amount) {
     return ref.read(walletProvider).shareBalance >= amount;
-  }
-
-  Future<TournamentModel> _insertChallengeRoom({
-    required String title,
-    required String createdByUid,
-    required bool persistRemote,
-  }) async {
-    if (!persistRemote) {
-      return _localRoom(title: title, createdByUid: createdByUid);
-    }
-    return ref.read(tournamentRepositoryProvider).createUserChallengeRoom(
-          title: title,
-          distanceKm: _selectedDistanceKm,
-          entryFeeShare: _entryFee,
-          createdByUid: createdByUid,
-        );
   }
 
   TournamentModel _localRoom({

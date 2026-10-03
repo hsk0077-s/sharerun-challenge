@@ -14,6 +14,8 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import 'onboarding_run_result_screen.dart';
 
@@ -415,6 +417,15 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
                 8,
               ),
               child: const _EffortTipBox(),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppShapes.termsHorizontalPadding,
+              ),
+              child: ServerItemUseButton(
+                itemId: ServerShopInventory.ghostPaceId,
+                label: '고스트 페이스 매칭',
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(

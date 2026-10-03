@@ -6,6 +6,30 @@ import { getDb, USERS_COLLECTION } from '../../lib/firebase';
 
 type AdminCheck = 'checking' | 'yes' | 'no' | 'error';
 
+const REMEMBERED_EMAIL_KEY = 'src-admin.rememberedEmail';
+
+function rememberedEmail(): string {
+  try {
+    return localStorage.getItem(REMEMBERED_EMAIL_KEY)?.trim() ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function storeRememberedEmail(value: string, enabled: boolean) {
+  try {
+    if (!enabled) {
+      localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+      return;
+    }
+    const next = value.trim();
+    if (next) localStorage.setItem(REMEMBERED_EMAIL_KEY, next);
+    else localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+  } catch {
+    /* private mode still allows login */
+  }
+}
+
 function errorCode(err: unknown): string {
   if (err && typeof err === 'object' && 'code' in err) {
     return String((err as { code: unknown }).code);
@@ -36,7 +60,9 @@ function Frame({ children }: { children: ReactNode }) {
 }
 
 function LoginScreen() {
-  const [email, setEmail] = useState('');
+  const storedEmail = rememberedEmail();
+  const [email, setEmail] = useState(storedEmail);
+  const [remember, setRemember] = useState(storedEmail.length > 0);
   const [secret, setSecret] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -68,7 +94,11 @@ function LoginScreen() {
           autoComplete="username"
           required
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={(event) => {
+            const next = event.target.value;
+            setEmail(next);
+            if (remember) storeRememberedEmail(next, true);
+          }}
           placeholder="이메일"
           className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
         />
@@ -90,6 +120,18 @@ function LoginScreen() {
           {busy ? '확인 중...' : '로그인'}
         </button>
       </form>
+      <label className="flex items-center gap-2 text-sm text-gray-300">
+        <input
+          type="checkbox"
+          checked={remember}
+          onChange={(event) => {
+            const checked = event.target.checked;
+            setRemember(checked);
+            storeRememberedEmail(email, checked);
+          }}
+        />
+        아이디 기억하기
+      </label>
     </Frame>
   );
 }

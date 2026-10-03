@@ -25,6 +25,7 @@ from app.constants.economy_constants import (
     REFERRAL_REDEEM_SHARE,
     REFERRAL_TRIAL_REFEREE_SHARE,
     REFERRAL_TRIAL_REFERRER_SHARE,
+    STREAK_BONUS_DIA,
     TEST_WALLET_GRANT_AMOUNT,
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
     TEST_WALLET_GRANT_ELIGIBLE_FLAG,
@@ -88,6 +89,11 @@ class SecuredActionService:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_signup_reward_tx(transaction, self, uid, user_ref)
+
+    def claim_streak_bonus(self, uid: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_streak_bonus_tx(transaction, self, uid, user_ref)
 
     def apply_referral_code(
         self,
@@ -713,6 +719,53 @@ class SecuredActionService:
             accepted=True,
             status="claimed",
             reason=f"Signup reward of {reward} SRV credited.",
+        )
+
+    def _claim_streak_bonus_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        user = user_snapshot.to_dict() or {}
+        share, diamonds, value = self._wallet_balances(user)
+        week = self._economy_service.kst_week_key()
+        if (user.get("streakBonusWeekKey") or "") == week:
+            return self._harvest_result(
+                status="already_claimed",
+                reason="Streak diamond reward was already claimed this week.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+
+        reward = STREAK_BONUS_DIA
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.update(
+            user_ref,
+            {
+                "wallet.diamondBalance": firestore.Increment(reward),
+                "streakBonusWeekKey": week,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "streak_bonus",
+                "diamondAmount": reward,
+                "weekKey": week,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return self._harvest_result(
+            status="claimed",
+            reason=f"Streak bonus of {reward} DIA credited.",
+            share_credited=0,
+            share_balance=share,
+            diamond_balance=diamonds + reward,
+            value_token_balance=value,
         )
 
     @firestore.transactional
@@ -2007,6 +2060,16 @@ def _commit_coach_plus_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._activate_coach_plus_tx(transaction, product_id, user_ref)
+
+
+@firestore.transactional
+def _commit_streak_bonus_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._claim_streak_bonus_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

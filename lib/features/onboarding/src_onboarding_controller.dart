@@ -1818,6 +1818,14 @@ final activeUserTierStructProvider = Provider<UserTier?>((ref) {
 abstract final class RetentionCalendar {
   static String dateKey(DateTime d) => KstCalendar.dateKey(d);
 
+  /// Monday of the KST week. Call throttle only — the server writes the marker.
+  static String weekKey(DateTime d) {
+    final kst = KstCalendar.toKst(d);
+    final monday = DateTime.utc(kst.year, kst.month, kst.day)
+        .subtract(Duration(days: kst.weekday - 1));
+    return KstCalendar.dateKeyFromYmd(monday.year, monday.month, monday.day);
+  }
+
   static DateTime dateOnly(DateTime d) {
     final kst = KstCalendar.toKst(d);
     return DateTime.utc(kst.year, kst.month, kst.day);
@@ -2011,6 +2019,7 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
   var _shoeTierSent = 0;
   var _goldenDate = '';
   var _jenaId = '';
+  var _streakWeek = '';
 
   @override
   List<RetentionPushPayload> build() {
@@ -2053,6 +2062,7 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
       profile: profile,
       activities: activities,
     );
+    final week = RetentionCalendar.weekKey(now);
     final shoeSent = profile.shoeAlertTierSent > _shoeTierSent
         ? profile.shoeAlertTierSent
         : _shoeTierSent;
@@ -2079,6 +2089,25 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
     }
     if ((profile.safeRunningShoeMileage - shoe).abs() > 0.05) {
       persist['runningShoeMileage'] = shoe;
+    }
+
+    final weekDone = RetentionMetrics.markedWeekdays(activities, now).length >=
+        EconomyConstants.streakBonusDays;
+    if (weekDone &&
+        _streakWeek != week &&
+        profile.streakBonusWeekKey != week) {
+      try {
+        final result =
+            await ref.read(securedActionApiClientProvider).claimStreakBonus();
+        _streakWeek = week;
+        ref.read(walletProvider.notifier).applyWalletSnapshot(
+              shareBalance: result.shareBalance,
+              diamondBalance: result.diamondBalance,
+              valueBalance: result.valueTokenBalance,
+            );
+      } catch (error) {
+        debugPrint('claimStreakBonus: $error');
+      }
     }
 
     final payloads = RetentionAlertEngine.evaluate(

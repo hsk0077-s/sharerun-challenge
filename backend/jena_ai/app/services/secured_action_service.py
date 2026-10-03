@@ -1346,9 +1346,9 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._harvest_pedometer_share_tx(
-            transaction, uid, request, user_ref
-        )
+        # Module wrapper: a method decorator does not bind `self`, so this
+        # transaction never ran and the wallet was not credited.
+        return _commit_harvest_tx(transaction, self, uid, request, user_ref)
 
     @staticmethod
     def _wallet_balances(user: dict) -> tuple[int, int, int]:
@@ -1379,7 +1379,6 @@ class SecuredActionService:
             value_token_balance=value_token_balance,
         )
 
-    @firestore.transactional
     def _harvest_pedometer_share_tx(
         self,
         transaction,
@@ -1857,6 +1856,19 @@ def _commit_validation_tx(
 ) -> ValidationResult:
     return service._persist_validation_tx(
         transaction, uid, request, result, activity_ref, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_harvest_tx(
+    transaction,
+    service,
+    uid: str,
+    request: HarvestPedometerRequest,
+    user_ref,
+) -> SecuredActionResult:
+    return service._harvest_pedometer_share_tx(
+        transaction, uid, request, user_ref
     )
 
 

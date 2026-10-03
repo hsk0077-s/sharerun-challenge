@@ -1,5 +1,3 @@
-import 'dart:async' show unawaited;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -91,20 +89,13 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                       const SizedBox(height: 14),
                       const AngelChronicleCard(),
                       const SizedBox(height: 14),
-                      const _MyPageActivityScope(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            DailyStreakCard(),
-                            SizedBox(height: 14),
-                            _CalendarCard(),
-                            SizedBox(height: 14),
-                            ActivityListCard(),
-                            SizedBox(height: 14),
-                            _StatsChartCard(),
-                          ],
-                        ),
-                      ),
+                      const DailyStreakCard(),
+                      const SizedBox(height: 14),
+                      const _CalendarCard(),
+                      const SizedBox(height: 14),
+                      const ActivityListCard(),
+                      const SizedBox(height: 14),
+                      const _StatsChartCard(),
                     ],
                   ),
                 ),
@@ -318,56 +309,6 @@ class _TierCharacterAvatar extends StatelessWidget {
         errorBuilder: (_, __, ___) => ChibiTierAvatar(tier: tier, size: 72),
       ),
     );
-  }
-}
-
-class _MyPageActivityScope extends ConsumerStatefulWidget {
-  const _MyPageActivityScope({required this.child});
-
-  final Widget child;
-
-  @override
-  ConsumerState<_MyPageActivityScope> createState() =>
-      _MyPageActivityScopeState();
-}
-
-class _MyPageActivityScopeState extends ConsumerState<_MyPageActivityScope>
-    with WidgetsBindingObserver {
-  var _visible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _visible) {
-      unawaited(ref.read(myPagePedometerDaysProvider.notifier).reload());
-    }
-  }
-
-  void _reloadIfShown(bool visible) {
-    if (!visible || _visible) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(ref.read(myPagePedometerDaysProvider.notifier).reload());
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final visible = TickerMode.valuesOf(context).enabled;
-    _reloadIfShown(visible);
-    _visible = visible;
-    return widget.child;
   }
 }
 

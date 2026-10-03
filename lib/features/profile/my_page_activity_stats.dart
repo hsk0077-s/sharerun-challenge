@@ -1,22 +1,17 @@
-import 'dart:async' show unawaited;
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../app/providers/app_providers.dart';
 import '../../core/constants/economy_constants.dart';
 import '../../data/models/activity_model.dart';
-import '../pedometer/daily_metrics_account.dart';
+import '../pedometer/account_daily_steps_provider.dart';
 import '../pedometer/kst_calendar.dart';
 
 /// My Page attendance for 불꽃 유지, 연속 출석, 러닝 로그, and the week chart.
 ///
-/// A KST calendar day counts when this device has a recorded run or walk:
-/// a non-rejected activity with distance > 0, or pedometer `{yyyy-MM-dd}_steps`
-/// / `{yyyy-MM-dd}_km` (and `pedometer_weekly_history`) greater than zero.
-/// The same rule feeds all four surfaces. Per day, kilometres are the larger
-/// of activity distance and pedometer kilometres so a walk is not added on
-/// top of a run that the step counter also saw.
+/// A KST day counts from the account: a non-rejected activity with distance
+/// > 0, or `users/{uid}/daily_metrics/{day}` steps/km greater than zero.
+/// Per day, kilometres are the larger of activity distance and the server
+/// walk kilometres so a walk is not added on top of a run.
 ///
 /// Consecutive streak ends at today, or at yesterday when today has no
 /// record yet. This display streak does not change wallet bonuses.
@@ -62,97 +57,20 @@ class MyPageActivityStats {
   String get monthDistanceLabel => '${monthKm.toStringAsFixed(1)} KM';
 }
 
-class MyPagePedometerDays {
-  const MyPagePedometerDays({
-    this.stepsByDate = const {},
-    this.kmByDate = const {},
-  });
-
-  final Map<String, int> stepsByDate;
-  final Map<String, double> kmByDate;
-}
-
-class MyPagePedometerDaysNotifier extends Notifier<MyPagePedometerDays> {
-  static final _stepsKey = RegExp(r'^(\d{4}-\d{2}-\d{2})_steps$');
-  static final _kmKey = RegExp(r'^(\d{4}-\d{2}-\d{2})_km$');
-
-  @override
-  MyPagePedometerDays build() {
-    DailyMetricsAccount.onCacheUpdated = () {
-      if (!ref.mounted) return;
-      unawaited(reload());
-    };
-    ref.onDispose(() {
-      if (DailyMetricsAccount.onCacheUpdated != null) {
-        DailyMetricsAccount.onCacheUpdated = null;
-      }
-    });
-    unawaited(reload());
-    return const MyPagePedometerDays();
-  }
-
-  Future<void> reload() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      if (!ref.mounted) return;
-      final steps = <String, int>{};
-      final km = <String, double>{};
-      for (final key in prefs.getKeys()) {
-        final stepMatch = _stepsKey.firstMatch(key);
-        if (stepMatch != null) {
-          final value = _readInt(prefs, key);
-          if (value > 0) steps[stepMatch.group(1)!] = value;
-          continue;
-        }
-        final kmMatch = _kmKey.firstMatch(key);
-        if (kmMatch != null) {
-          final value = _readDouble(prefs, key);
-          if (value > 0) km[kmMatch.group(1)!] = value;
-        }
-      }
-      final history =
-          prefs.getStringList('pedometer_weekly_history') ?? const <String>[];
-      for (final item in history) {
-        final split = item.split(':');
-        if (split.length != 2) continue;
-        final date = split[0];
-        if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(date)) continue;
-        final value = int.tryParse(split[1]) ?? 0;
-        if (value <= 0) continue;
-        final previous = steps[date] ?? 0;
-        if (value > previous) steps[date] = value;
-      }
-      state = MyPagePedometerDays(stepsByDate: steps, kmByDate: km);
-    } catch (_) {}
-  }
-
-  static int _readInt(SharedPreferences prefs, String key) {
-    final value = prefs.get(key);
-    if (value is int) return value;
-    if (value is double) return value.round();
-    return 0;
-  }
-
-  static double _readDouble(SharedPreferences prefs, String key) {
-    final value = prefs.get(key);
-    if (value is double) return value;
-    if (value is int) return value.toDouble();
-    return 0;
-  }
-}
-
-final myPagePedometerDaysProvider =
-    NotifierProvider<MyPagePedometerDaysNotifier, MyPagePedometerDays>(
-  MyPagePedometerDaysNotifier.new,
-);
-
 final myPageActivityStatsProvider = Provider<MyPageActivityStats>((ref) {
   final activities = ref.watch(recentActivitiesProvider).value ?? const [];
-  final pedometer = ref.watch(myPagePedometerDaysProvider);
+  final days =
+      ref.watch(accountDailyMetricsProvider).asData?.value ?? const [];
+  final stepsByDate = <String, int>{};
+  final kmByDate = <String, double>{};
+  for (final day in days) {
+    if (day.steps > 0) stepsByDate[day.dayKey] = day.steps;
+    if (day.km > 0) kmByDate[day.dayKey] = day.km;
+  }
   return MyPageActivityMath.compute(
     activities: activities,
-    stepsByDate: pedometer.stepsByDate,
-    kmByDate: pedometer.kmByDate,
+    stepsByDate: stepsByDate,
+    kmByDate: kmByDate,
     now: DateTime.now(),
   );
 });

@@ -10,6 +10,7 @@ import 'package:share_run_challenge/data/models/tournament_participation_model.d
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/pedometer/account_daily_steps_provider.dart';
 import 'package:share_run_challenge/features/pedometer/kst_calendar.dart';
 import 'package:share_run_challenge/features/profile/my_page_activity_stats.dart';
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
@@ -50,6 +51,7 @@ class _SeededWalletNotifier extends WalletNotifier {
 Widget _scopedApp({
   required Widget home,
   List<ActivityModel> activities = const [],
+  Map<String, int> stepsByDate = const {},
 }) {
   final profile =
       UserModel.dashboardDefault(uid: '').copyWith(nickname: '테스트러너');
@@ -66,6 +68,12 @@ Widget _scopedApp({
       walletProvider.overrideWith(_SeededWalletNotifier.new),
       recentActivitiesProvider.overrideWith(
         (ref) => Stream.value(activities),
+      ),
+      accountDailyMetricsProvider.overrideWith(
+        (ref) => Stream.value([
+          for (final entry in stepsByDate.entries)
+            AccountDayMetric(dayKey: entry.key, steps: entry.value),
+        ]),
       ),
       tournamentRoomsProvider.overrideWith(
         (ref) => Stream<List<TournamentModel>>.value(const [_room]),
@@ -97,13 +105,18 @@ void main() {
     Widget home, {
     Size size = const Size(390, 1200),
     List<ActivityModel> activities = const [],
+    Map<String, int> stepsByDate = const {},
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
-      _scopedApp(home: home, activities: activities),
+      _scopedApp(
+        home: home,
+        activities: activities,
+        stepsByDate: stepsByDate,
+      ),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
@@ -341,11 +354,12 @@ void main() {
   testWidgets('My page log shows a walk when no run was saved that day',
       (tester) async {
     final today = KstCalendar.dateKey();
-    SharedPreferences.setMockInitialValues({
-      '${today}_steps': 2000,
-    });
 
-    await pumpSized(tester, const OnboardingMyPageScreen());
+    await pumpSized(
+      tester,
+      const OnboardingMyPageScreen(),
+      stepsByDate: {today: 2000},
+    );
     await tester.pump();
 
     expect(find.text('걷기'), findsOneWidget);

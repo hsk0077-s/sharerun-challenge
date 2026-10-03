@@ -4,9 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../core/constants/economy_constants.dart';
 import '../../onboarding/src_onboarding_controller.dart';
-import '../../wallet/providers/wallet_provider.dart';
 
 /// 워킹 챌린지 완주 스트릭 — `last_streak_date` / `streak_count`.
 @immutable
@@ -120,19 +118,10 @@ class PracticeStreakNotifier extends Notifier<PracticeStreakState> {
     await prefs.setInt(countKey, count);
     await prefs.setString(lastDateKey, lastDate);
 
-    var diaRewardPending = false;
-    if (count > 0 && count % EconomyConstants.streakBonusDays == 0) {
-      ref
-          .read(walletProvider.notifier)
-          .creditDia(EconomyConstants.streakBonusDia);
-      diaRewardPending = true;
-    }
-
     state = PracticeStreakState(
       count: count,
       lastDate: lastDate,
       ready: true,
-      diaRewardPending: diaRewardPending,
     );
   }
 

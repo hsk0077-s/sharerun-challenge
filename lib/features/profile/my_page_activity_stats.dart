@@ -6,10 +6,12 @@ import '../../data/models/activity_model.dart';
 import '../pedometer/account_daily_steps_provider.dart';
 import '../pedometer/kst_calendar.dart';
 
-/// My Page attendance for 불꽃 유지, 연속 출석, 러닝 로그, and the week chart.
+/// Everything on My Page below 천사연대기: 불꽃 유지, 연속 출석 calendar,
+/// 러닝 로그, and the week chart (month distance and pace).
 ///
-/// A KST day counts from the account: a non-rejected activity with distance
-/// > 0, or `users/{uid}/daily_metrics/{day}` steps/km greater than zero.
+/// Those four sections read only this provider. A KST day counts from the
+/// account: a non-rejected activity with distance > 0, or
+/// `users/{uid}/daily_metrics/{day}` steps/km greater than zero.
 /// Per day, kilometres are the larger of activity distance and the server
 /// walk kilometres so a walk is not added on top of a run.
 ///

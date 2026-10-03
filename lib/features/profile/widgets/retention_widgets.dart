@@ -11,7 +11,6 @@ import '../../onboarding/src_onboarding_controller.dart';
 import '../../pedometer/pedometer_harvest_ledger.dart';
 import '../../pedometer/pedometer_health_cap.dart';
 import '../my_page_activity_stats.dart';
-import '../providers/practice_streak_provider.dart';
 
 /// 지갑 카드 내부 일일 5km 채굴 게이지.
 class DailyCapGauge extends StatelessWidget {
@@ -246,18 +245,6 @@ class DailyStreakCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(retentionAlertControllerProvider);
-    final streakState = ref.watch(practiceStreakProvider);
-    if (streakState.diaRewardPending) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
-        final current = ref.read(practiceStreakProvider);
-        if (!current.diaRewardPending) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('+10 Dia 획득!')),
-        );
-        ref.read(practiceStreakProvider.notifier).consumeDiaReward();
-      });
-    }
     final stats = ref.watch(myPageActivityStatsProvider);
     final streak = stats.streakDays;
     final marked = stats.stampedWeekdays;

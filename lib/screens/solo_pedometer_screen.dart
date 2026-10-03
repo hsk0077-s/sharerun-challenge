@@ -21,6 +21,7 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/pedometer/solo_pedometer_engine.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/debug_local_harvest.dart';
+import '../features/pedometer/account_daily_steps_provider.dart';
 import '../features/pedometer/daily_metrics_account.dart';
 import '../features/pedometer/pedometer_day_rollover.dart';
 import '../features/pedometer/pedometer_harvest_ledger.dart';
@@ -1668,16 +1669,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       persistedToday: localSteps,
       healthToday: shownHealth,
     );
+    // Hero and today's journal cell. Pickup math below stays on this phone.
+    final displayedSteps =
+        ref.watch(accountDailyStepsProvider(todayKey)).asData?.value ?? 0;
     final weekSteps = {
       ..._weekSteps,
-      todayKey: PedometerStepTruth.dailyFromSources(
-        liveDaily: effectiveSteps,
-        persistedToday: _weekSteps[todayKey] ?? 0,
-        healthToday: shownHealth,
-      ),
+      todayKey: displayedSteps,
     };
-    final effectiveKm =
-        double.parse((effectiveSteps * 0.00075).toStringAsFixed(2));
+    final displayedKm =
+        double.parse((displayedSteps * 0.00075).toStringAsFixed(2));
     final buddySize = MediaQuery.sizeOf(context).shortestSide * 0.42;
     final weekDays = PedometerKstClock.thisWeekDays();
     final selectedKey =
@@ -1723,15 +1723,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                         onShare: _onShareWalkingChallenge,
                         gauge: _buildHybridProgressGauge(
                           tier: running,
-                          currentKm: effectiveKm,
-                          currentSteps: effectiveSteps,
+                          currentKm: displayedKm,
+                          currentSteps: displayedSteps,
                           characterSize: buddySize,
                           moving: _isMoving,
                           pickupNonce: _mascotPickupNonce,
                         ),
-                        stepCount: _comma(effectiveSteps),
-                        km: effectiveKm,
-                        kcal: effectiveSteps * 0.045,
+                        stepCount: _comma(displayedSteps),
+                        km: displayedKm,
+                        kcal: displayedSteps * 0.045,
                         pendingShare: pendingCoinsInt.toDouble(),
                         tierLabel: '[${running.koreanName}] 산책 중',
                       ),

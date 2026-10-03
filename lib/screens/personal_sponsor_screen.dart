@@ -12,7 +12,7 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/user_profile_notifier.dart';
-import '../features/profile/widgets/gender_profile_avatar.dart';
+import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'hall_of_fame_screen.dart';
 
@@ -99,16 +99,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                nextTier.avatarAssetPath,
-                width: 88,
-                height: 88,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Text(
-                  nextTier.emoji,
-                  style: const TextStyle(fontSize: 42),
-                ),
-              ),
+              AngelWingAvatar(tier: nextTier, avatarSize: 88),
               const SizedBox(height: 8),
               Text(
                 promoted
@@ -372,51 +363,18 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
       donationCount: count,
       cumulativeDonationAmount: amount,
     );
-    final stackH = switch (tier) {
-      AngelTier.seraphim => 176.0,
-      AngelTier.cherubim => 148.0,
-      _ => 120.0,
-    };
 
     return Column(
       children: [
-        SizedBox(
-          height: stackH,
-          child: AnimatedBuilder(
-            animation: _glow,
-            builder: (context, child) {
-              final pulse = 0.22 + _glow.value * 0.28;
-              return Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  if (tier.neonAura)
-                    Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.tealAccent.withValues(alpha: pulse),
-                            blurRadius: 22,
-                            spreadRadius: 8,
-                          ),
-                          if (tier.goldNickname)
-                            BoxShadow(
-                              color: AppColors.angelGold.withValues(alpha: pulse),
-                              blurRadius: 18,
-                              spreadRadius: 4,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ..._wingLayer(tier),
-                  const GenderProfileAvatar(size: 72),
-                ],
-              );
-            },
-          ),
+        AnimatedBuilder(
+          animation: _glow,
+          builder: (context, _) {
+            return AngelWingAvatar(
+              tier: tier,
+              avatarSize: 72,
+              neonGlowAlpha: tier.neonAura ? 0.22 + _glow.value * 0.28 : null,
+            );
+          },
         ),
         const SizedBox(height: 8),
         Text(
@@ -480,61 +438,6 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
         ),
       ],
     );
-  }
-
-  List<Widget> _wingLayer(AngelTier tier) {
-    if (tier.isPreAngel) return const [];
-    final asset = tier.avatarAssetPath;
-    Widget wing(double size, {double opacity = 1}) {
-      return Opacity(
-        opacity: opacity,
-        child: Image.asset(
-          asset,
-          width: size,
-          height: size,
-          fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => Text(
-            '🪽',
-            style: TextStyle(fontSize: size * 0.42),
-          ),
-        ),
-      );
-    }
-
-    switch (tier) {
-      case AngelTier.cupid:
-        return [
-          Positioned(right: 18, top: 18, child: wing(36)),
-        ];
-      case AngelTier.guardian:
-        return [
-          Positioned(left: 8, child: wing(52, opacity: 0.92)),
-          Positioned(right: 8, child: wing(52, opacity: 0.92)),
-        ];
-      case AngelTier.archangel:
-        return [
-          Positioned(left: 0, child: wing(64)),
-          Positioned(right: 0, child: wing(64)),
-        ];
-      case AngelTier.cherubim:
-        return [
-          Positioned(left: 4, top: 8, child: wing(48)),
-          Positioned(right: 4, top: 8, child: wing(48)),
-          Positioned(left: 4, bottom: 8, child: wing(48)),
-          Positioned(right: 4, bottom: 8, child: wing(48)),
-        ];
-      case AngelTier.seraphim:
-        return [
-          Positioned(left: -6, top: 4, child: wing(58)),
-          Positioned(right: -6, top: 4, child: wing(58)),
-          Positioned(left: -10, child: wing(72)),
-          Positioned(right: -10, child: wing(72)),
-          Positioned(left: -6, bottom: 0, child: wing(58)),
-          Positioned(right: -6, bottom: 0, child: wing(58)),
-        ];
-      case AngelTier.preAngel:
-        return const [];
-    }
   }
 
   static String _nudgeLabel(AngelTier tier, int count, int amount) {

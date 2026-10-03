@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
@@ -15,7 +14,6 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
-import '../features/profile/user_profile_notifier.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
@@ -37,7 +35,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   static const _currentNavIndex = DashboardTabNavigation.shop;
   final _fundingKey = GlobalKey();
   final _itemsKey = GlobalKey();
-  var _isSubmitting = false;
 
   @override
   void initState() {
@@ -103,74 +100,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  Future<void> _onDonate() async {
-    if (_isSubmitting) return;
-    final wallet = ref.read(walletProvider);
-    const amount = ShopTabNotifier.donateValueAmount;
-    if (wallet.valueBalance < amount) {
-      _toast(
-        'VALUE가 부족합니다. (보유 ${_format(wallet.valueBalance)} / 필요 ${_format(amount)})',
-      );
-      return;
-    }
-    setState(() => _isSubmitting = true);
-    try {
-      ref.read(walletProvider.notifier).debitValue(amount);
-      ref.read(shopTabProvider.notifier).addDonation(amount);
-      await ref
-          .read(userProfileNotifierProvider.notifier)
-          .donateValue(amount);
-      final progress = ref.read(shopTabProvider).fundingProgress;
-      final left = ref.read(walletProvider).valueBalance;
-      _toast(
-        '기부 완료: -${_format(amount)} VALUE · 잔액 ${_format(left)} · 펀딩 ${(progress * 100).round()}%',
-      );
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
+  void _onDonate() {
+    _toast(
+      '이 화면에서는 VALUE를 차감하지 않습니다. '
+      '기부는 서버 원장에 기록된 뒤에만 잔액이 줄어듭니다.',
+    );
   }
 
-  Future<void> _onBuyItem(ShopItemSku sku, String title) async {
-    if (_isSubmitting) return;
-    final wallet = ref.read(walletProvider);
-    const cost = ShopTabNotifier.itemDiaCost;
-    if (wallet.diamondBalance < cost) {
-      _toast('DIA가 부족합니다. (보유 ${wallet.diamondBalance} / 필요 $cost)');
-      return;
-    }
-    setState(() => _isSubmitting = true);
-    try {
-      ref.read(walletProvider.notifier).debitDia(cost);
-      ref.read(shopTabProvider.notifier).addItem(sku);
-      final authUid = ref.read(authStateChangesProvider).asData?.value?.uid ?? '';
-      final profileUid = ref.read(userProfileProvider).uid;
-      final uid = authUid.isNotEmpty ? authUid : profileUid;
-      await ref.read(walletRepositoryProvider).logClientWalletTransaction(
-            uid: uid,
-            title: switch (sku) {
-              ShopItemSku.cpr => '심폐소생권(CPR) 아이템 구매 🎁',
-              ShopItemSku.safeGuard => '세이프가드 구매 🎁',
-              ShopItemSku.starBoost => '스타 부스트 구매 🎁',
-              ShopItemSku.sharePack => 'SHARE 팩 구매 🎁',
-            },
-            amount: -cost,
-            assetType: 'DIA',
-          );
-      await ref.read(userProfileNotifierProvider.notifier).persistShopPurchase(
-            diamondFee: cost,
-            markCpr: sku == ShopItemSku.cpr,
-          );
-      final owned = switch (sku) {
-        ShopItemSku.cpr => ref.read(shopTabProvider).cprCount,
-        ShopItemSku.safeGuard => ref.read(shopTabProvider).safeGuardCount,
-        ShopItemSku.starBoost => ref.read(shopTabProvider).starBoostCount,
-        ShopItemSku.sharePack => ref.read(shopTabProvider).sharePackCount,
-      };
-      final leftDia = ref.read(walletProvider).diamondBalance;
-      _toast('$title 구매 완료 (−$cost DIA) · 보관함 $owned · DIA 잔액 $leftDia');
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
+  void _onBuyItem(String title) {
+    _toast(
+      '$title은 이 화면에서 지급하지 않습니다. '
+      'DIA 차감은 서버 원장에 기록된 뒤에만 적용됩니다.',
+    );
   }
 
   void _onOpenInventory() {
@@ -292,7 +233,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           highlighted: highlightDonate,
                           child: _UnicefFundingCard(
                             progress: shop.fundingProgress,
-                            onDonate: _isSubmitting ? null : _onDonate,
+                            onDonate: _onDonate,
                           ),
                         ),
                       ),
@@ -323,12 +264,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       iconColor: AppColors.error,
                                       title: AppStrings.storeItemCpr,
                                       ownedCount: shop.cprCount,
-                                      onBuy: _isSubmitting
-                                          ? null
-                                          : () => _onBuyItem(
-                                                ShopItemSku.cpr,
-                                                AppStrings.storeItemCpr,
-                                              ),
+                                      onBuy: () => _onBuyItem(AppStrings.storeItemCpr),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -338,12 +274,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       iconColor: AppColors.success,
                                       title: AppStrings.storeItemSafeGuard,
                                       ownedCount: shop.safeGuardCount,
-                                      onBuy: _isSubmitting
-                                          ? null
-                                          : () => _onBuyItem(
-                                                ShopItemSku.safeGuard,
-                                                AppStrings.storeItemSafeGuard,
-                                              ),
+                                      onBuy: () => _onBuyItem(AppStrings.storeItemSafeGuard),
                                     ),
                                   ),
                                 ],

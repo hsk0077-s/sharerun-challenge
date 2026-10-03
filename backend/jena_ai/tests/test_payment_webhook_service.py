@@ -26,6 +26,42 @@ def test_signature_payload_matches_pg_contract() -> None:
     assert service._signature_payload(request) == "intent-test.pg-test.10000.paid"
 
 
+def test_handle_webhook_uses_module_transaction(monkeypatch) -> None:
+    class _Db:
+        def transaction(self):
+            return object()
+
+        def collection(self, name):
+            return self
+
+        def document(self, doc_id=None):
+            return object()
+
+    service = PaymentWebhookService(
+        firebase_service=type("FS", (), {"db": _Db()})()
+    )
+    service.webhook_secret = "dev-secret"
+    signature = hmac.new(
+        b"dev-secret",
+        b"intent-test.pg-test.10000.paid",
+        hashlib.sha256,
+    ).hexdigest()
+    seen: dict = {}
+
+    def fake(transaction, service_arg, intent_ref, request):
+        seen["intent"] = request.payment_intent_id
+        seen["service"] = service_arg
+        return "ok"
+
+    monkeypatch.setattr(
+        "app.services.payment_webhook_service._commit_webhook_tx",
+        fake,
+    )
+    assert service.handle_webhook(_request(signature=signature)) == "ok"
+    assert seen["intent"] == "intent-test"
+    assert seen["service"] is service
+
+
 def test_signature_validation_accepts_matching_hmac() -> None:
     service = PaymentWebhookService()
     service.webhook_secret = "dev-secret"

@@ -1,5 +1,6 @@
 """Weekly streak DIA credit and its ledger row share one transaction."""
 
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 from app.services.economy_service import EconomyService
@@ -9,10 +10,21 @@ from app.services.secured_action_service import (
 )
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
+_KST = timezone(timedelta(hours=9))
+
 
 def _claim(service: SecuredActionService):
     user_ref = service.firebase_service.db.collection("users").document("u1")
     return _commit_streak_bonus_tx.to_wrap(_MemoryTxn(), service, "u1", user_ref)
+
+
+def _seed_days(db: _MemoryDb, days: int) -> None:
+    end = datetime.now(_KST).date()
+    for offset in range(days):
+        day = (end - timedelta(days=offset)).isoformat()
+        steps = 0 if offset == 0 else 100
+        km = 1.2 if offset == 0 else 0
+        db.store[f"users/u1/daily_metrics/{day}"] = {"steps": steps, "km": km}
 
 
 def test_streak_credits_ten_dia_once_per_week(monkeypatch) -> None:
@@ -25,6 +37,7 @@ def test_streak_credits_ten_dia_once_per_week(monkeypatch) -> None:
     db.store["users/u1"] = {
         "wallet": {"diamondBalance": 4, "shareBalance": 1_000_000},
     }
+    _seed_days(db, 7)
     service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
 
     result = _claim(service)
@@ -67,3 +80,22 @@ def test_streak_credits_ten_dia_once_per_week(monkeypatch) -> None:
         sum(1 for path in db.store if path.startswith("walletTransactions/"))
         == 2
     )
+
+
+def test_short_streak_writes_no_ledger() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = {
+        "wallet": {"diamondBalance": 4, "shareBalance": 1_000_000},
+    }
+    _seed_days(db, 6)
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+
+    result = _claim(service)
+
+    assert result.status == "not_eligible"
+    assert result.diamond_balance == 4
+    assert result.share_balance == 1_000_000
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 4
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 1_000_000
+    assert "streakBonusWeekKey" not in db.store["users/u1"]
+    assert not any(path.startswith("walletTransactions/") for path in db.store)

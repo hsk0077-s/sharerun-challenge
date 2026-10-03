@@ -1779,22 +1779,44 @@ final persistedUsernameProvider =
   PersistedUsernameNotifier.new,
 );
 
-/// 홈 헤더 실시간 닉네임.
+/// Shown name. A set server nickname wins so two phones show the same account.
+String displayedAccountNickname({
+  required String profileNickname,
+  required String persistedNickname,
+  required bool persistedReady,
+  required String controllerNickname,
+}) {
+  final profile = profileNickname.trim();
+  if (profile.isNotEmpty &&
+      !SrcOnboardingController.isUnsetNickname(profile)) {
+    return profile;
+  }
+  if (persistedReady) {
+    final persisted = persistedNickname.trim();
+    if (persisted.isNotEmpty &&
+        !SrcOnboardingController.isUnsetNickname(persisted)) {
+      return persisted;
+    }
+  }
+  final controller = controllerNickname.trim();
+  if (controller.isNotEmpty &&
+      !SrcOnboardingController.isUnsetNickname(controller)) {
+    return controller;
+  }
+  return profile;
+}
+
+/// 홈 헤더 실시간 닉네임. 서버 프로필이 있으면 그 이름을 쓴다.
 final userNicknameProvider = Provider<String>((ref) {
-  final persisted = ref.watch(persistedUsernameProvider);
-  if (persisted.ready &&
-      persisted.value.isNotEmpty &&
-      !SrcOnboardingController.isUnsetNickname(persisted.value)) {
-    return persisted.value.trim();
-  }
-  final fromController =
-      ref.watch(srcOnboardingControllerProvider).displayNickname.trim();
-  if (fromController.isNotEmpty &&
-      !SrcOnboardingController.isUnsetNickname(fromController)) {
-    return fromController;
-  }
   final profile = ref.watch(activeUserProfileProvider).asData?.value;
-  return profile?.nickname.trim() ?? '';
+  final persisted = ref.watch(persistedUsernameProvider);
+  return displayedAccountNickname(
+    profileNickname: profile?.nickname ?? '',
+    persistedNickname: persisted.value,
+    persistedReady: persisted.ready,
+    controllerNickname:
+        ref.watch(srcOnboardingControllerProvider).displayNickname,
+  );
 });
 
 /// 닉네임 미설정 시 홈 전면 시트 강제 표시.

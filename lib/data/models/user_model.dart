@@ -81,6 +81,8 @@ class UserModel {
     this.preferredRunHour = 19,
     this.hasCPR = false,
     this.isSponsored = false,
+    this.pedometerHarvestedShare = 0,
+    this.pedometerHarvestDateKey = '',
   });
 
   final String uid;
@@ -138,6 +140,12 @@ class UserModel {
   /// 스폰서/글로벌 기부 참여 여부. 앱 재설치 후 Firestore에서 복원.
   final bool isSponsored;
 
+  /// Server `pedometerHarvest.harvestedShare` for [pedometerHarvestDateKey].
+  final int pedometerHarvestedShare;
+
+  /// Server `pedometerHarvest.dateKey` (KST). Empty when the field is absent.
+  final String pedometerHarvestDateKey;
+
   /// Convenience alias used by dashboard wallet bindings.
   int get share => wallet.shareBalance;
 
@@ -179,6 +187,23 @@ class UserModel {
 
   bool get isFemale => gender == 'female';
 
+  static Map<String, dynamic>? _pedometerHarvest(Map<String, dynamic> json) {
+    final raw = json['pedometerHarvest'];
+    return switch (raw) {
+      final Map<String, dynamic> m => m,
+      final Map m => Map<String, dynamic>.from(m),
+      _ => null,
+    };
+  }
+
+  static int _pedometerHarvestedShare(Map<String, dynamic> json) {
+    return nonNegativeInt(_pedometerHarvest(json)?['harvestedShare']);
+  }
+
+  static String _pedometerHarvestDateKey(Map<String, dynamic> json) {
+    return (_pedometerHarvest(json)?['dateKey'] as String?)?.trim() ?? '';
+  }
+
   static int _preferredHour(Object? raw) {
     if (raw == null) return 19;
     final hour = UserModel.nonNegativeInt(raw);
@@ -218,6 +243,8 @@ class UserModel {
     int? preferredRunHour,
     bool? hasCPR,
     bool? isSponsored,
+    int? pedometerHarvestedShare,
+    String? pedometerHarvestDateKey,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -248,6 +275,10 @@ class UserModel {
       preferredRunHour: preferredRunHour ?? this.preferredRunHour,
       hasCPR: hasCPR ?? this.hasCPR,
       isSponsored: isSponsored ?? this.isSponsored,
+      pedometerHarvestedShare:
+          pedometerHarvestedShare ?? this.pedometerHarvestedShare,
+      pedometerHarvestDateKey:
+          pedometerHarvestDateKey ?? this.pedometerHarvestDateKey,
     );
   }
 
@@ -357,6 +388,8 @@ class UserModel {
         preferredRunHour: _preferredHour(json['preferredRunHour']),
         hasCPR: json['hasCPR'] == true,
         isSponsored: json['isSponsored'] == true,
+        pedometerHarvestedShare: _pedometerHarvestedShare(json),
+        pedometerHarvestDateKey: _pedometerHarvestDateKey(json),
       );
     } catch (_) {
       return UserModel.dashboardDefault(

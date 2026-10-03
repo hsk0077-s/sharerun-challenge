@@ -1824,13 +1824,6 @@ final activeUserTierStructProvider = Provider<UserTier?>((ref) {
 abstract final class RetentionCalendar {
   static String dateKey(DateTime d) => KstCalendar.dateKey(d);
 
-  static String weekKey(DateTime d) {
-    final kst = KstCalendar.toKst(d);
-    final monday = DateTime.utc(kst.year, kst.month, kst.day)
-        .subtract(Duration(days: kst.weekday - 1));
-    return KstCalendar.dateKeyFromYmd(monday.year, monday.month, monday.day);
-  }
-
   static DateTime dateOnly(DateTime d) {
     final kst = KstCalendar.toKst(d);
     return DateTime.utc(kst.year, kst.month, kst.day);
@@ -2024,7 +2017,6 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
   var _shoeTierSent = 0;
   var _goldenDate = '';
   var _jenaId = '';
-  var _streakWeek = '';
 
   @override
   List<RetentionPushPayload> build() {
@@ -2067,7 +2059,6 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
       profile: profile,
       activities: activities,
     );
-    final week = RetentionCalendar.weekKey(now);
     final shoeSent = profile.shoeAlertTierSent > _shoeTierSent
         ? profile.shoeAlertTierSent
         : _shoeTierSent;
@@ -2077,19 +2068,13 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
     final jenaSent = _jenaId.isNotEmpty
         ? _jenaId
         : profile.lastJenaPendingNotifiedId;
-    final streakWeekSent = _streakWeek.isNotEmpty
-        ? _streakWeek
-        : profile.streakBonusWeekKey;
+    final streakWeekSent = profile.streakBonusWeekKey;
     final gated = profile.copyWith(
       shoeAlertTierSent: shoeSent,
       goldenHourAlertDateKey: goldenSent,
       lastJenaPendingNotifiedId: jenaSent,
       streakBonusWeekKey: streakWeekSent,
     );
-    final weekDone =
-        RetentionMetrics.markedWeekdays(activities, now).length >=
-            EconomyConstants.streakBonusDays;
-
     final repo = ref.read(userRepositoryProvider);
     final persist = <String, Object?>{};
     if ((profile.safeDailyDistance - daily).abs() > 0.05) {
@@ -2100,20 +2085,6 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
     }
     if ((profile.safeRunningShoeMileage - shoe).abs() > 0.05) {
       persist['runningShoeMileage'] = shoe;
-    }
-
-    if (weekDone && gated.streakBonusWeekKey != week) {
-      persist['streakBonusWeekKey'] = week;
-      _streakWeek = week;
-      try {
-        await repo.addDiamondBalance(
-          uid: profile.uid,
-          diamondAmount: EconomyConstants.streakBonusDia,
-        );
-        ref.read(walletProvider.notifier).creditDia(
-              EconomyConstants.streakBonusDia,
-            );
-      } catch (_) {}
     }
 
     final payloads = RetentionAlertEngine.evaluate(

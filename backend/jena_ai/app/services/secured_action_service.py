@@ -30,6 +30,7 @@ from app.constants.economy_constants import (
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
     TEST_WALLET_GRANT_ELIGIBLE_FLAG,
     TEST_WALLET_GRANT_FLAG,
+    TRIAL_COMPLETION_REWARD_SRV,
 )
 from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
@@ -94,6 +95,11 @@ class SecuredActionService:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_streak_bonus_tx(transaction, self, uid, user_ref)
+
+    def claim_trial_reward(self, uid: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_trial_reward_tx(transaction, self, uid, user_ref)
 
     def apply_referral_code(
         self,
@@ -765,6 +771,52 @@ class SecuredActionService:
             share_credited=0,
             share_balance=share,
             diamond_balance=diamonds + reward,
+            value_token_balance=value,
+        )
+
+    def _claim_trial_reward_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        user = user_snapshot.to_dict() or {}
+        economy = user.get("economy") or {}
+        share, diamonds, value = self._wallet_balances(user)
+        if economy.get("trialMilestoneRewardClaimed") is True:
+            return self._harvest_result(
+                status="already_claimed",
+                reason="Trial completion reward was already claimed.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+
+        reward = TRIAL_COMPLETION_REWARD_SRV
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.update(
+            user_ref,
+            {
+                "wallet.shareBalance": firestore.Increment(reward),
+                "economy.trialMilestoneRewardClaimed": True,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "trial_completion_reward",
+                "shareAmount": reward,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return self._harvest_result(
+            status="claimed",
+            reason=f"Trial completion reward of {reward} SHARE credited.",
+            share_credited=reward,
+            share_balance=share + reward,
+            diamond_balance=diamonds,
             value_token_balance=value,
         )
 
@@ -2070,6 +2122,16 @@ def _commit_streak_bonus_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._claim_streak_bonus_tx(transaction, uid, user_ref)
+
+
+@firestore.transactional
+def _commit_trial_reward_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._claim_trial_reward_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

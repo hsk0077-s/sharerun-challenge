@@ -1525,13 +1525,21 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
       final avg = sum ~/ paces.length;
       final tier = UserTier.fromAveragePaceSeconds(avg);
 
-      await ref.read(userRepositoryProvider).completePreliminaryEvaluation(
-            uid: uid,
-            tierRank: tier.rankScore,
-            tierCode: tier.firestoreCode,
-            averagePaceSeconds: avg,
-            trialShareReward: EconomyConstants.trialCompletionRewardSrv,
-          );
+      final trialReward =
+          await ref.read(userRepositoryProvider).completePreliminaryEvaluation(
+                uid: uid,
+                tierRank: tier.rankScore,
+                tierCode: tier.firestoreCode,
+                averagePaceSeconds: avg,
+                trialShareReward: EconomyConstants.trialCompletionRewardSrv,
+              );
+      if (trialReward != null) {
+        ref.read(walletProvider.notifier).applyWalletSnapshot(
+              shareBalance: trialReward.shareBalance,
+              diamondBalance: trialReward.diamondBalance,
+              valueBalance: trialReward.valueTokenBalance,
+            );
+      }
 
       // 추천인 300 토큰 지연 지급 — 최대 10명 한도 락 해제 지시 (비동기 인계).
       // 실패해도 본인 온보딩 완료는 유지.

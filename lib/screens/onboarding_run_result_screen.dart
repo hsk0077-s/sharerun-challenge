@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +11,9 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/pedometer/walking_challenge_share.dart';
+import '../features/run_result/run_finish_image_share.dart';
+import '../features/run_result/run_finish_share_card.dart';
+import '../features/run_result/run_finish_theme_store.dart';
 
 /// 온보딩 플로우 기록 결과 화면 (Screen 11).
 class OnboardingRunResultScreen extends ConsumerStatefulWidget {
@@ -28,6 +32,14 @@ class _OnboardingRunResultScreenState
   static const _mockDistanceKm = '8.35';
 
   var _rewardsApplied = false;
+  var _styleIndex = 0;
+  var _themeReady = false;
+  var _instagramInstalled = false;
+  var _tiktokInstalled = false;
+  var _sharingImage = false;
+  final _finishedOn = DateTime.now();
+  final _styleController = PageController(viewportFraction: 0.8);
+  final _cardKey = GlobalKey();
 
   @override
   void initState() {
@@ -36,6 +48,65 @@ class _OnboardingRunResultScreenState
       await _applyRunRewards();
       await _saveRunDataToFirebase();
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_loadShareTargets());
+    });
+    unawaited(_restoreTheme());
+  }
+
+  Future<void> _restoreTheme() async {
+    final theme = await RunFinishThemeStore.load();
+    if (!mounted) return;
+    setState(() {
+      _styleIndex = theme.index;
+      _themeReady = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_styleController.hasClients) return;
+      if (_styleController.page?.round() == theme.index) return;
+      _styleController.jumpToPage(theme.index);
+    });
+  }
+
+  void _onThemeSelected(int index) {
+    setState(() => _styleIndex = index);
+    if (_themeReady) {
+      unawaited(RunFinishThemeStore.save(RunFinishCardTheme.values[index]));
+    }
+    if (!_styleController.hasClients) return;
+    if (_styleController.page?.round() == index) return;
+    _styleController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _styleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadShareTargets() async {
+    final instagram = await RunFinishImageShare.instagramInstalled();
+    final tiktok = await RunFinishImageShare.tiktokInstalled();
+    if (!mounted) return;
+    setState(() {
+      _instagramInstalled = instagram;
+      _tiktokInstalled = tiktok;
+    });
+  }
+
+  RunFinishShareCard _shareCard(RunFinishCardTheme style) {
+    return RunFinishShareCard(
+      style: style,
+      distanceKm: _mockDistanceKm,
+      time: AppStrings.runResultFinalTimeValue,
+      pace: AppStrings.runResultAvgPaceValue,
+      date: _finishedOn,
+    );
   }
 
   Future<void> _applyRunRewards() async {
@@ -97,6 +168,61 @@ class _OnboardingRunResultScreenState
     );
   }
 
+  Future<File?> _capturePoster() async {
+    if (_sharingImage) return null;
+    setState(() => _sharingImage = true);
+    try {
+      return await RunFinishImageShare.capture(_cardKey);
+    } catch (e, st) {
+      debugPrint('RunFinishImageShare.capture: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(RunFinishImageShare.captureFailedMessage)),
+        );
+      }
+      return null;
+    } finally {
+      if (mounted) setState(() => _sharingImage = false);
+    }
+  }
+
+  Future<void> _shareSheet(BuildContext buttonContext, File file) async {
+    try {
+      await RunFinishImageShare.shareImageFile(
+        path: file.path,
+        sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+      );
+    } catch (e, st) {
+      debugPrint('RunFinishImageShare.sheet: $e\n$st');
+    }
+  }
+
+  Future<void> _onInstagram() async {
+    final file = await _capturePoster();
+    if (file == null || !mounted) return;
+    final opened = await RunFinishImageShare.shareInstagramStory(file.path);
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(RunFinishImageShare.instagramFailedMessage)),
+      );
+    }
+  }
+
+  Future<void> _onTikTok(BuildContext buttonContext) async {
+    final file = await _capturePoster();
+    if (file == null || !mounted) return;
+    final targeted = await RunFinishImageShare.shareTikTok(file.path);
+    if (!targeted && buttonContext.mounted) {
+      await _shareSheet(buttonContext, file);
+    }
+  }
+
+  Future<void> _onMore(BuildContext buttonContext) async {
+    final file = await _capturePoster();
+    if (file == null || !buttonContext.mounted) return;
+    await _shareSheet(buttonContext, file);
+  }
+
   Future<void> _onShare(BuildContext buttonContext) async {
     final shareText = 'SRC 앱에서 ${_mockDistanceKm}km 완주 후 기부에 동참했습니다! '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
@@ -119,7 +245,9 @@ class _OnboardingRunResultScreenState
       backgroundColor: AppColors.bgGradientEnd,
       body: SRCGradientBackground(
         child: SafeArea(
-          child: Column(
+          child: Stack(
+            children: [
+              Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
@@ -139,7 +267,14 @@ class _OnboardingRunResultScreenState
                         style: AppTextStyles.header1.copyWith(fontSize: 28),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
+                      RunFinishSharePreview(
+                        controller: _styleController,
+                        styleIndex: _styleIndex,
+                        cardFor: _shareCard,
+                        onStyleChanged: _onThemeSelected,
+                      ),
+                      const SizedBox(height: 20),
                       const _RecordCard(),
                       const SizedBox(height: 14),
                       const _RewardCard(),
@@ -206,10 +341,144 @@ class _OnboardingRunResultScreenState
                         );
                       },
                     ),
+                    const SizedBox(height: 8),
+                    _ImageShareRow(
+                      instagram: _instagramInstalled,
+                      tiktok: _tiktokInstalled,
+                      enabled: !_sharingImage,
+                      onInstagram: _onInstagram,
+                      onTikTok: _onTikTok,
+                      onMore: _onMore,
+                    ),
                   ],
                 ),
               ),
             ],
+              ),
+              // Laid out at full poster size, clipped by the stack so it
+              // never covers the finish screen. toImage reads this layer.
+              Positioned(
+                left: 0,
+                top: 0,
+                width: 0,
+                height: 0,
+                child: IgnorePointer(
+                  child: ExcludeSemantics(
+                    child: OverflowBox(
+                      alignment: Alignment.topLeft,
+                      minWidth: RunFinishShareCard.canvasWidth,
+                      maxWidth: RunFinishShareCard.canvasWidth,
+                      minHeight: RunFinishShareCard.canvasHeight,
+                      maxHeight: RunFinishShareCard.canvasHeight,
+                      child: RepaintBoundary(
+                        key: _cardKey,
+                        child: _shareCard(
+                          RunFinishCardTheme.values[_styleIndex],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageShareRow extends StatelessWidget {
+  const _ImageShareRow({
+    required this.instagram,
+    required this.tiktok,
+    required this.enabled,
+    required this.onInstagram,
+    required this.onTikTok,
+    required this.onMore,
+  });
+
+  final bool instagram;
+  final bool tiktok;
+  final bool enabled;
+  final Future<void> Function() onInstagram;
+  final Future<void> Function(BuildContext context) onTikTok;
+  final Future<void> Function(BuildContext context) onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    final buttons = <Widget>[
+      if (instagram)
+        _ImageShareButton(
+          key: RunFinishImageShare.instagramButtonKey,
+          label: RunFinishImageShare.instagramLabel,
+          onTap: enabled ? () => unawaited(onInstagram()) : null,
+        ),
+      if (tiktok)
+        Builder(
+          builder: (buttonContext) {
+            return _ImageShareButton(
+              key: RunFinishImageShare.tiktokButtonKey,
+              label: RunFinishImageShare.tiktokLabel,
+              onTap: enabled ? () => unawaited(onTikTok(buttonContext)) : null,
+            );
+          },
+        ),
+      Builder(
+        builder: (buttonContext) {
+          return _ImageShareButton(
+            key: RunFinishImageShare.moreButtonKey,
+            label: RunFinishImageShare.moreLabel,
+            onTap: enabled ? () => unawaited(onMore(buttonContext)) : null,
+          );
+        },
+      ),
+    ];
+    return Row(
+      children: [
+        for (var i = 0; i < buttons.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(child: buttons[i]),
+        ],
+      ],
+    );
+  }
+}
+
+class _ImageShareButton extends StatelessWidget {
+  const _ImageShareButton({
+    required this.label,
+    required this.onTap,
+    super.key,
+  });
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surfaceWhite,
+      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 48,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+            border: Border.all(color: AppColors.borderLight),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.buttonText.copyWith(
+              color: AppColors.textBlack,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

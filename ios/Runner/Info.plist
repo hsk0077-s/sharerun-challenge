@@ -66,6 +66,10 @@
 		<string>kakaolink</string>
 		<string>kakaoplus</string>
 		<string>kakaotalk</string>
+		<string>instagram-stories</string>
+		<string>instagram</string>
+		<string>tiktok</string>
+		<string>snssdk1233</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

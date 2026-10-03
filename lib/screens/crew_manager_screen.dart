@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
-import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
 
@@ -103,11 +104,24 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     _toast('크루 프로필이 변경되었습니다. (−$_profileChangeDia DIA)');
   }
 
-  void _onGiftCpr() {
-    if (!_spendDia(_giftCprDia, '심폐소생권 선물')) return;
-    ref.read(shopTabProvider.notifier).addItem(ShopItemSku.cpr);
-    ref.read(shopTabProvider.notifier).addItem(ShopItemSku.safeGuard);
-    _toast('크루원에게 심폐소생권·세이프가드 선물을 지급했습니다. (−$_giftCprDia DIA)');
+  Future<void> _onGiftCpr() async {
+    try {
+      final result =
+          await ref.read(securedActionApiClientProvider).grantCrewItems();
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      _toast('크루원에게 심폐소생권·세이프가드 선물을 지급했습니다. (−$_giftCprDia DIA)');
+    } on ApiException {
+      if (!mounted) return;
+      _toast('DIA가 부족합니다. 상점에서 구매해 주세요. (심폐소생권 선물)');
+    } catch (error) {
+      if (!mounted) return;
+      _toast('선물을 지급하지 못했습니다.');
+    }
   }
 
   void _onGiftDeposit() {

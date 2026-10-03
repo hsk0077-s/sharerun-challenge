@@ -139,6 +139,18 @@ class SecuredActionApiClient {
     await _post('/actions/onboarding/claim-signup', const {});
   }
 
+  /// Buys one catalog item. DIA debit and shopInventory live in one server transaction.
+  Future<PedometerHarvestResult> purchaseShopItem(String itemId) async {
+    final json = await _post('/actions/shop/purchase', {'item_id': itemId});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Debits the server crew-gift price and grants CPR plus Safeguard.
+  Future<PedometerHarvestResult> grantCrewItems() async {
+    final json = await _post('/actions/shop/crew-gift', const {});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
   /// Once per KST week. Credits [EconomyConstants.streakBonusDia] on the server.
   Future<PedometerHarvestResult> claimStreakBonus() async {
     final json = await _post('/actions/rewards/streak', const {});

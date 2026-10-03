@@ -159,27 +159,6 @@ class ShopTabNotifier extends Notifier<ShopTabState> {
     );
   }
 
-  void addItem(ShopItemSku sku, {int qty = 1}) {
-    if (qty <= 0) return;
-    switch (sku) {
-      case ShopItemSku.cpr:
-        state = state.copyWith(cprCount: state.cprCount + qty);
-      case ShopItemSku.safeGuard:
-        state = state.copyWith(safeGuardCount: state.safeGuardCount + qty);
-      case ShopItemSku.starBoost:
-        state = state.copyWith(starBoostCount: state.starBoostCount + qty);
-      case ShopItemSku.sharePack:
-        state = state.copyWith(sharePackCount: state.sharePackCount + qty);
-    }
-    unawaited(_persist());
-  }
-
-  /// Firestore `hasCPR` 복원 — 로컬 인벤토리가 비어 있을 때만 채운다.
-  void restoreCprOwned() {
-    if (state.cprCount > 0) return;
-    state = state.copyWith(cprCount: 1);
-    unawaited(_persist());
-  }
 
   bool useItem(ShopItemSku sku) {
     switch (sku) {

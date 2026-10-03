@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
+import '../features/wallet/providers/wallet_provider.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../core/config/app_env.dart';
-import '../core/api/api_exception.dart';
 import '../core/auth/email_verification_guard.dart';
 import '../core/constants/impact_constants.dart';
 import '../core/constants/payment_constants.dart';
@@ -261,11 +262,27 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   Future<void> _purchaseShopItem(ShopItemModel item) async {
     setState(() => purchasingItemId = item.id);
     try {
-      if (!mounted) {
-        return;
-      }
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .purchaseShopItem(item.id);
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.title} 구매는 Mock 모드에서 UI만 표시됩니다.')),
+        SnackBar(content: Text('${item.title}을 구매했습니다.')),
+      );
+    } on ApiException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('DIA가 부족합니다.')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${item.title}을 구매하지 못했습니다.')),
       );
     } finally {
       if (mounted) {

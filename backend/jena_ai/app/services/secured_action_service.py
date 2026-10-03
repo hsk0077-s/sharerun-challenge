@@ -284,6 +284,11 @@ class SecuredActionService:
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
 
+    def grant_crew_items(self, uid: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_crew_gift_tx(transaction, self, uid, user_ref)
+
     def transfer_value_to_web3(
         self,
         uid: str,
@@ -509,6 +514,13 @@ class SecuredActionService:
             "diamondCost": 15,
         },
     }
+
+    # Crew gift price lives here. The client does not send an amount.
+    CREW_GIFT_DIA = 30
+    CREW_GIFT_ITEMS = (
+        ("record_cpr_ticket", "기록 심폐소생권"),
+        ("record_safe_guard", "기록 마감 세이프 가드"),
+    )
 
     def _credit_value_tx(
         self,
@@ -1167,6 +1179,71 @@ class SecuredActionService:
             accepted=True,
             status="purchased",
             reason=f"Purchased {catalog_item['title']}.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=diamond_balance - cost,
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def _grant_crew_items_tx(
+        self,
+        transaction,
+        uid: str,
+        user_ref,
+    ) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user = user_snapshot.to_dict() or {}
+        wallet = user.get("wallet") or {}
+        diamond_balance = int(wallet.get("diamondBalance") or 0)
+        cost = self.CREW_GIFT_DIA
+        if diamond_balance < cost:
+            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        transaction.update(
+            user_ref,
+            {
+                "wallet.diamondBalance": diamond_balance - cost,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        granted = []
+        for item_id, title in self.CREW_GIFT_ITEMS:
+            inventory_ref = user_ref.collection("shopInventory").document(item_id)
+            inventory_snapshot = inventory_ref.get(transaction=transaction)
+            current_qty = 0
+            if inventory_snapshot.exists:
+                current_qty = int(
+                    (inventory_snapshot.to_dict() or {}).get("quantity") or 0
+                )
+            transaction.set(
+                inventory_ref,
+                {
+                    "itemId": item_id,
+                    "title": title,
+                    "quantity": current_qty + 1,
+                    "purchasedAt": SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+            granted.append(item_id)
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "crew_item_gift",
+                "diamondAmount": -cost,
+                "itemIds": granted,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="granted",
+            reason="Crew items granted.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=diamond_balance - cost,
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
     def _validation_result_from_activity(self, activity: dict) -> ValidationResult:
@@ -2132,6 +2209,23 @@ def _commit_trial_reward_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._claim_trial_reward_tx(transaction, uid, user_ref)
+
+
+def _wallet_int(wallet: dict, key: str) -> int | None:
+    raw = wallet.get(key)
+    if raw is None:
+        return None
+    return int(raw)
+
+
+@firestore.transactional
+def _commit_crew_gift_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._grant_crew_items_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

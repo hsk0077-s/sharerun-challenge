@@ -10,7 +10,6 @@ import '../../core/config/app_env.dart';
 import '../../core/strings/app_strings.dart';
 import '../../data/models/user_model.dart';
 import '../onboarding/src_onboarding_controller.dart';
-import '../shop/providers/shop_tab_provider.dart';
 import '../wallet/debug_local_wallet_store.dart';
 import '../wallet/providers/debug_local_share_history_provider.dart';
 import '../wallet/providers/wallet_provider.dart';
@@ -107,9 +106,6 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       );
     }
     ref.read(walletProvider.notifier).replaceFromRemote(profile.wallet);
-    if (profile.hasCPR) {
-      ref.read(shopTabProvider.notifier).restoreCprOwned();
-    }
   }
 
   /// SHARE sponsorship updates donation totals locally first. A stale
@@ -372,7 +368,6 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     if (uid == null || uid.isEmpty) return;
     if (markCpr) {
       state = state.copyWith(hasCPR: true);
-      ref.read(shopTabProvider.notifier).restoreCprOwned();
     }
     try {
       await ref.read(userRepositoryProvider).mergeEconomyState(

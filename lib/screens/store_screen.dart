@@ -3,7 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../core/api/api_exception.dart';
+import '../data/models/shop_item_model.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
@@ -108,11 +111,29 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  void _onBuyItem(String title) {
-    _toast(
-      '$title은 이 화면에서 지급하지 않습니다. '
-      'DIA 차감은 서버 원장에 기록된 뒤에만 적용됩니다.',
-    );
+  ShopItemModel _shopItem(String id) {
+    return ShopItemModel.catalog.firstWhere((item) => item.id == id);
+  }
+
+  Future<void> _onBuyItem(ShopItemModel item) async {
+    try {
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .purchaseShopItem(item.id);
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      _toast('${item.title}을 구매했습니다.');
+    } on ApiException {
+      if (!mounted) return;
+      _toast('DIA가 부족합니다. 상점에서 구매해 주세요.');
+    } catch (error) {
+      if (!mounted) return;
+      _toast('${item.title}을 구매하지 못했습니다.');
+    }
   }
 
   void _onOpenInventory() {
@@ -267,7 +288,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       iconColor: AppColors.error,
                                       title: AppStrings.storeItemCpr,
                                       ownedCount: inventory.cprCount,
-                                      onBuy: () => _onBuyItem(AppStrings.storeItemCpr),
+                                      onBuy: () => _onBuyItem(_shopItem('record_cpr_ticket')),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -277,7 +298,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       iconColor: AppColors.success,
                                       title: AppStrings.storeItemSafeGuard,
                                       ownedCount: inventory.safeGuardCount,
-                                      onBuy: () => _onBuyItem(AppStrings.storeItemSafeGuard),
+                                      onBuy: () => _onBuyItem(_shopItem('record_safe_guard')),
                                     ),
                                   ),
                                 ],

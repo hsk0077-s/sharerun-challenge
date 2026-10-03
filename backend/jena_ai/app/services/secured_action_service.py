@@ -26,6 +26,7 @@ from app.models.secured_actions import (
 from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
     HALL_OF_FAME_DONATE_VALUE,
+    PEDOMETER_HOURLY_STEP_CAP,
     REFERRAL_REDEEM_SHARE,
     REFERRAL_SHARE_LOCK_DAYS,
     REFERRAL_TRIAL_REFEREE_SHARE,
@@ -2285,8 +2286,10 @@ class SecuredActionService:
         user = user_snapshot.to_dict() or {}
         current_share, current_dia, current_value = self._wallet_balances(user)
         today = self._economy_service.kst_today_key()
+        hour_key = self._economy_service.kst_hour_key()
+        raw_harvest = user.get("pedometerHarvest") or {}
         harvest = self._economy_service.normalize_pedometer_harvest(
-            user.get("pedometerHarvest"),
+            raw_harvest,
             today,
         )
         prev_claimed = int(harvest["claimedSteps"])
@@ -2302,8 +2305,27 @@ class SecuredActionService:
                 value_token_balance=current_value,
             )
 
+        same_hour = (
+            raw_harvest.get("dateKey") == today
+            and raw_harvest.get("hourKey") == hour_key
+        )
+        hour_steps = int(raw_harvest.get("hourSteps") or 0) if same_hour else 0
+        accepted_delta = min(
+            claimed - prev_claimed,
+            max(0, PEDOMETER_HOURLY_STEP_CAP - hour_steps),
+        )
+        if accepted_delta <= 0:
+            return self._harvest_result(
+                status="hourly_cap_reached",
+                reason="Walking challenge hourly step cap reached.",
+                share_credited=0,
+                share_balance=current_share,
+                diamond_balance=current_dia,
+                value_token_balance=current_value,
+            )
+        accepted_claimed = prev_claimed + accepted_delta
         share = self._economy_service.pedometer_harvest_share(
-            claimed_steps=claimed,
+            claimed_steps=accepted_claimed,
             prev_claimed_steps=prev_claimed,
             harvested_share=harvested,
         )
@@ -2313,8 +2335,10 @@ class SecuredActionService:
         # Dotted SHARE fields only — never replace the wallet map (DIA/VALUE).
         updates = {
             "pedometerHarvest.dateKey": today,
-            "pedometerHarvest.claimedSteps": claimed,
+            "pedometerHarvest.claimedSteps": accepted_claimed,
             "pedometerHarvest.harvestedShare": harvested + share,
+            "pedometerHarvest.hourKey": hour_key,
+            "pedometerHarvest.hourSteps": hour_steps + accepted_delta,
             "updatedAt": SERVER_TIMESTAMP,
             **moved["updates"],
         }

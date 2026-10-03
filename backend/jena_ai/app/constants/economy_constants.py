@@ -22,6 +22,9 @@ STREAK_BONUS_DIA = 10
 # Walking challenge harvest: 0.1 SHARE per 10 steps (1 SHARE / 100 steps).
 PEDOMETER_SHARE_PER_STEP = 0.01
 PEDOMETER_DAILY_HARVEST_SHARE_CAP = 60
+# Spoofed claimed_steps cannot move the daily watermark by more than this
+# in one KST hour. Honest days stay under the 6,000-step SHARE cap.
+PEDOMETER_HOURLY_STEP_CAP = 12_000
 
 # Hall of Fame donation. Server ledger only; the device must not debit VALUE.
 HALL_OF_FAME_DONATE_VALUE = 500

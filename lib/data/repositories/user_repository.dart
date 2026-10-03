@@ -5,6 +5,7 @@ import '../../core/async/stream_guards.dart';
 import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
+import '../models/pedometer_harvest_result.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
@@ -325,17 +326,23 @@ class UserRepository {
     return Future<void>.value();
   }
 
-  /// Trial completion rewards and tier grants are minted by run validation.
-  Future<void> completePreliminaryEvaluation({
+  /// 예비 평가 완료 500 SHARE. 서버가 계정당 한 번만 원장에 적습니다.
+  /// [trialShareReward]는 호출부 상수이며, 지급액은 서버가 정합니다.
+  Future<PedometerHarvestResult?> completePreliminaryEvaluation({
     required String uid,
     required int tierRank,
     required String tierCode,
     required int averagePaceSeconds,
     required int trialShareReward,
   }) async {
-    debugPrint(
-      'completePreliminaryEvaluation skipped (server-owned economy): uid=$uid',
-    );
+    final api = _securedActionApiClient;
+    if (api == null) {
+      debugPrint(
+        'completePreliminaryEvaluation skipped: secured API client missing uid=$uid',
+      );
+      return null;
+    }
+    return api.claimTrialReward();
   }
 
   /// Referral payouts are applied by the secured run-validation / referral APIs.

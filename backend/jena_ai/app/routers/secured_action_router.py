@@ -105,6 +105,11 @@ def claim_streak_bonus(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.claim_streak_bonus(uid=uid)
 
 
+@router.post("/onboarding/claim-trial", response_model=SecuredActionResult)
+def claim_trial_reward(uid: str = Depends(require_uid)) -> SecuredActionResult:
+    return service.claim_trial_reward(uid=uid)
+
+
 @router.post("/referrals/apply", response_model=SecuredActionResult)
 def apply_referral_code(
     request: ApplyReferralRequest,

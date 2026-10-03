@@ -7,6 +7,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/auth/health_data_consent_store.dart';
+import '../core/strings/app_strings.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/widgets/async_value_section.dart';
 import '../core/widgets/currency_badge.dart';
@@ -529,12 +530,12 @@ class _ActiveChallengeCard extends StatelessWidget {
           const Spacer(),
           Text(
             isJoined
-                ? 'Joined · +${room.winnerRewardValue} Value on verified finish'
+                ? AppStrings.winnerRewardNoConversion
                 : locked
                     ? 'Tier ${room.requiredTier} room locked'
                     : full
                         ? 'Room full'
-                        : '+${room.winnerRewardValue} Value on verified finish',
+                        : AppStrings.winnerRewardNoConversion,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: textTheme.labelMedium?.copyWith(

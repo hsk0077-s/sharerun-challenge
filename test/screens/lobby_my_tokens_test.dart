@@ -207,7 +207,8 @@ void main() {
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
     expect(find.text('Sponsor: UNICEF Partner'), findsOneWidget);
     expect(find.text('100 SHARE'), findsOneWidget);
-    expect(find.textContaining('+500 밸류'), findsOneWidget);
+    expect(find.text(AppStrings.winnerRewardNoConversion), findsOneWidget);
+    expect(find.textContaining('+500 밸류'), findsNothing);
     expect(find.text('Donation pool: 200 Value'), findsOneWidget);
     expect(find.text('Join with Share'), findsOneWidget);
     expect(find.textContaining('My Tournaments'), findsOneWidget);
@@ -223,7 +224,7 @@ void main() {
       AppColors.tealAccent,
     );
     expect(
-      tester.widget<Text>(find.textContaining('+500 밸류')).style?.color,
+      tester.widget<Text>(find.text(AppStrings.winnerRewardNoConversion)).style?.color,
       AppColors.angelGold,
     );
     expect(

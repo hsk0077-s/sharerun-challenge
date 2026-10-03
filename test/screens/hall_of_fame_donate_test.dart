@@ -7,7 +7,10 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/core/api/api_exception.dart';
+import 'package:share_run_challenge/data/models/pedometer_harvest_result.dart';
 import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
+import 'package:share_run_challenge/features/wallet/hall_of_fame_donate.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/hall_of_fame_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,21 +38,13 @@ class _SpyWallet extends WalletNotifier {
 class _QuietProfile extends UserProfileNotifier {
   @override
   UserProfile build() => UserModel.dashboardDefault(uid: '');
-
-  @override
-  Future<void> writeTransactionReceipt({
-    required String title,
-    required int amount,
-    required String assetType,
-  }) {
-    return _receiptGate.future;
-  }
 }
 
 int _initialValue = 0;
 int _creditCalls = 0;
 int _debited = 0;
-late Completer<void> _receiptGate;
+int _donateCalls = 0;
+late Completer<PedometerHarvestResult> _donateGate;
 
 Widget _screen() {
   return ProviderScope(
@@ -57,6 +52,12 @@ Widget _screen() {
       walletProvider.overrideWith(_SpyWallet.new),
       userProfileNotifierProvider.overrideWith(_QuietProfile.new),
       userNicknameProvider.overrideWith((ref) => ''),
+      hallOfFameDonateProvider.overrideWith((ref) {
+        return () {
+          _donateCalls++;
+          return _donateGate.future;
+        };
+      }),
     ],
     child: MaterialApp(
       theme: SrcTheme.light,
@@ -73,11 +74,15 @@ void main() {
     _initialValue = 0;
     _creditCalls = 0;
     _debited = 0;
+    _donateCalls = 0;
+    _donateGate = Completer<PedometerHarvestResult>();
   });
 
   testWidgets('empty leaderboard and insufficient VALUE does not mint',
       (tester) async {
-    _receiptGate = Completer<void>();
+    _donateGate.completeError(
+      const ApiException(statusCode: 400, detail: 'Insufficient SRV (Value Token) balance.'),
+    );
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -99,11 +104,11 @@ void main() {
     expect(find.text('VALUE가 부족합니다.'), findsOneWidget);
     expect(_creditCalls, 0);
     expect(_debited, 0);
+    expect(_donateCalls, 1);
   });
 
   testWidgets('enough VALUE debits once and does not claim a ranking',
       (tester) async {
-    _receiptGate = Completer<void>();
     _initialValue = 1000;
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
@@ -120,14 +125,20 @@ void main() {
     await tester.pump();
 
     expect(_creditCalls, 0);
-    expect(_debited, 500);
+    expect(_debited, 0);
+    expect(_donateCalls, 1);
 
-    _receiptGate.complete();
+    _donateGate.complete(
+      const PedometerHarvestResult(
+        status: 'donated',
+        valueTokenBalance: 500,
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.textContaining('이 기기에서 500 VALUE를 차감했습니다'), findsOneWidget);
-    expect(find.textContaining('반영되지 않습니다'), findsOneWidget);
+    expect(find.textContaining('서버 원장에서 500 VALUE를 기부했습니다'), findsOneWidget);
     expect(find.textContaining('잔액 500'), findsOneWidget);
+    expect(find.textContaining('이 기기에서'), findsNothing);
     expect(find.textContaining('기부 완료'), findsNothing);
   });
 }

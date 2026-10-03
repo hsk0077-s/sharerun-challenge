@@ -24,6 +24,7 @@ from app.models.secured_actions import (
 )
 from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
+    HALL_OF_FAME_DONATE_VALUE,
     REFERRAL_REDEEM_SHARE,
     REFERRAL_TRIAL_REFEREE_SHARE,
     REFERRAL_TRIAL_REFERRER_SHARE,
@@ -334,9 +335,18 @@ class SecuredActionService:
         uid: str,
         request: Web3TransferRequest,
     ) -> SecuredActionResult:
+        # On-chain transfer is not live. Do not open a transaction or debit VALUE.
+        del uid, request
+        return SecuredActionResult(
+            accepted=False,
+            status="coming_soon",
+            reason="준비 중",
+        )
+
+    def donate_hall_of_fame(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_web3_transfer_tx(transaction, self, uid, request, user_ref)
+        return _commit_hall_of_fame_donate_tx(transaction, self, uid, user_ref)
 
     def activate_coach_plus(self, uid: str, product_id: str) -> SecuredActionResult:
         if product_id not in _COACH_PLUS_DAYS:
@@ -703,41 +713,40 @@ class SecuredActionService:
             },
         )
 
-    def _transfer_value_to_web3_tx(
+    def _donate_hall_of_fame_tx(
         self,
         transaction,
         uid: str,
-        request: Web3TransferRequest,
         user_ref,
     ) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
-
+        user = user_snapshot.to_dict() or {}
+        share, diamonds, value = self._wallet_balances(user)
+        amount = HALL_OF_FAME_DONATE_VALUE
         self._debit_value_tx(
             transaction,
             uid=uid,
             user_ref=user_ref,
-            amount=request.amount_srv,
-            tx_type="web3_transfer",
-            extra_fields={
-                "destinationAddress": request.destination_address,
-                "transferChannel": request.transfer_channel,
-            },
+            amount=amount,
+            tx_type="hall_of_fame_donation",
         )
-        channel_label = (
-            "외부 지갑"
-            if request.transfer_channel == "external_wallet"
-            else "DEX"
+        donation = int((user.get("wallet") or {}).get("totalDonationValue") or 0)
+        transaction.update(
+            user_ref,
+            {
+                "wallet.totalDonationValue": donation + amount,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
         )
         return SecuredActionResult(
             accepted=True,
-            status="transferred",
-            reason=(
-                f"{request.amount_srv} SRV가 {channel_label} "
-                f"({request.destination_address[:10]}...)로 전송되었습니다. "
-                "앱 내 현금 환전은 제공하지 않습니다."
-            ),
+            status="donated",
+            reason=f"{amount} VALUE donated to the Hall of Fame.",
+            share_balance=share,
+            diamond_balance=diamonds,
+            value_token_balance=value - amount,
         )
 
     def _claim_signup_reward_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
@@ -2485,16 +2494,13 @@ def _commit_refund_tx(
 
 
 @firestore.transactional
-def _commit_web3_transfer_tx(
+def _commit_hall_of_fame_donate_tx(
     transaction,
     service,
     uid: str,
-    request: Web3TransferRequest,
     user_ref,
 ) -> SecuredActionResult:
-    return service._transfer_value_to_web3_tx(
-        transaction, uid, request, user_ref
-    )
+    return service._donate_hall_of_fame_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

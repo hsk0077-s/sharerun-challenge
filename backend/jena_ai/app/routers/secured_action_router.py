@@ -205,3 +205,8 @@ def transfer_value_to_web3(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.transfer_value_to_web3(uid=uid, request=request)
+
+
+@router.post("/hall-of-fame/donate", response_model=SecuredActionResult)
+def donate_hall_of_fame(uid: str = Depends(require_uid)) -> SecuredActionResult:
+    return service.donate_hall_of_fame(uid=uid)

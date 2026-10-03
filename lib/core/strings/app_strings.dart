@@ -211,7 +211,7 @@ abstract final class AppStrings {
   static const challengeDetailDonationTarget =
       '타겟 기부처: 유니세프(결식아동)';
   static const challengeDetailValueTip =
-      '과금 없이 목표 달성 시: +500 밸류(VALUE) 토큰 지급';
+      '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
   static const challengeDetailCprTickets = '심폐소생권 보유: 0/3';
   static const challengeDetailJoin = '대회 참가';
 
@@ -415,7 +415,9 @@ abstract final class AppStrings {
   static const web3WalletGasFee = '전송 수수료(가스비): 10 VALUE';
   static const web3WalletVaspWarning =
       '특정금융정보법(VASP)에 따라 앱 내 현금 환전은 지원하지 않으며, 외부 개인 지갑으로만 전송 가능합니다.';
-  static const web3WalletTransferCta = '내 Web3 지갑으로 전송하기 (Transfer)';
+  static const web3WalletTransferCta = '준비 중';
+  static const winnerRewardNoConversion =
+      '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
 
   // ── Stamp Tour (Screen 23) ──────────────────────────────────────────
   static const stampTourTitle = '스탬프 투어 & 미션';

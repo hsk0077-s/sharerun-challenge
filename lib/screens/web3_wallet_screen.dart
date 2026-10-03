@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
-import '../core/api/api_exception.dart';
-import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -15,8 +13,8 @@ import '../features/wallet/providers/wallet_provider.dart';
 
 /// Web3 지갑 연결 및 토큰 전송 화면 (Screen 22).
 ///
-/// VALUE는 앱 내 Off-chain 마일리지로만 관리하며 원화 환전 API는 제공하지 않는다.
-/// 전송하기는 외부 MetaMask 주소로 Transfer만 수행한다.
+/// VALUE는 앱 내 Off-chain 마일리지로만 관리한다.
+/// MetaMask 전송은 출시 빌드에서 준비 중이며 VALUE를 차감하지 않는다.
 class Web3WalletScreen extends ConsumerStatefulWidget {
   const Web3WalletScreen({super.key});
 
@@ -49,69 +47,10 @@ class _Web3WalletScreenState extends ConsumerState<Web3WalletScreen> {
   }
 
   Future<void> _onTransfer() async {
-    if (_transferring) return;
-
-    final wallet = ref.read(walletProvider);
-    final remote = ref.read(activeWalletProvider).asData?.value;
-    final balance = remote?.valueTokenBalance ?? wallet.valueBalance;
-    final transferAmount = (balance - Web3WalletScreen._gasFeeValue)
-        .clamp(0, 1 << 31)
-        .toInt();
-
-    if (transferAmount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('전송 가능한 VALUE가 부족합니다. (가스비 10 VALUE 필요)'),
-        ),
-      );
-      return;
-    }
-
-    setState(() => _transferring = true);
-    try {
-      if (AppEnv.useLocalMockData) {
-        ref.read(walletProvider.notifier).debitValue(
-              transferAmount + Web3WalletScreen._gasFeeValue,
-            );
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '[Mock] ${_format(transferAmount)} VALUE 외부 전송 완료 '
-              '(가스비 ${Web3WalletScreen._gasFeeValue} VALUE). '
-              '앱 내 원화 환전은 제공하지 않습니다.',
-            ),
-          ),
-        );
-        return;
-      }
-
-      await ref.read(walletRepositoryProvider).transferValueToWeb3(
-            destinationAddress: Web3WalletScreen._externalAddress,
-            amountSrv: transferAmount,
-            transferChannel: 'external_wallet',
-          );
-      ref.read(walletProvider.notifier).debitValue(
-            transferAmount + Web3WalletScreen._gasFeeValue,
-          );
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '${_format(transferAmount)} VALUE가 외부 지갑으로 전송 요청되었습니다. '
-            '앱 내 현금 환전은 제공하지 않습니다.',
-          ),
-        ),
-      );
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Web3 전송 실패: ${ApiErrorMessage.from(error)}')),
-      );
-    } finally {
-      if (mounted) setState(() => _transferring = false);
-    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text(AppStrings.web3WalletTransferCta)),
+    );
   }
 
   @override

@@ -130,46 +130,18 @@ class _Web3TransferSectionState extends State<Web3TransferSection> {
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: widget.transferring ? null : _submit,
-            icon: widget.transferring
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.send_rounded),
-            label: Text(
-              widget.transferring
-                  ? '전송 중...'
-                  : _channel == Web3TransferChannel.externalWallet
-                      ? '외부 지갑으로 전송'
-                      : 'DEX로 전송',
-            ),
+            onPressed: _comingSoon,
+            icon: const Icon(Icons.hourglass_empty_rounded),
+            label: const Text('준비 중'),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _submit() async {
-    final address = _addressController.text.trim();
-    final amount = int.tryParse(_amountController.text.trim()) ?? 0;
-    if (!RegExp(r'^0x[a-fA-F0-9]{40}$').hasMatch(address)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('올바른 Ethereum 지갑 주소(0x...)를 입력해 주세요.')),
-      );
-      return;
-    }
-    if (amount <= 0 || amount > widget.valueTokenBalance) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('전송 수량을 확인해 주세요.')),
-      );
-      return;
-    }
-
-    await widget.onTransfer(
-      destinationAddress: address,
-      amountSrv: amount,
-      channel: _channel,
+  void _comingSoon() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('준비 중')),
     );
   }
 }

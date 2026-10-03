@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/api/api_exception.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
-import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
+import '../features/wallet/hall_of_fame_donate.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 
 /// 명예의 전당 화면 (Screen 26).
@@ -29,8 +30,7 @@ class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
     colors: [Color(0xFFE0F7FA), Colors.white],
   );
 
-  /// No server VALUE donation exists for this screen. Latch so a second tap
-  /// cannot debit again while the local receipt write is in flight.
+  /// Latch so a second tap cannot donate again while the server write is in flight.
   var _donating = false;
 
   Future<void> _onDonate() async {
@@ -38,25 +38,29 @@ class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
     _donating = true;
     setState(() {});
     try {
-      final balance = ref.read(walletProvider).valueBalance;
-      if (balance < _donateValue) {
+      final result = await ref.read(hallOfFameDonateProvider)();
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      final left = result.valueTokenBalance;
+      _snack(
+        left == null
+            ? '서버 원장에서 $_donateValue VALUE를 기부했습니다.'
+            : '서버 원장에서 $_donateValue VALUE를 기부했습니다. 잔액 $left',
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      if (error.statusCode == 400) {
         _snack('VALUE가 부족합니다.');
         return;
       }
-      ref.read(walletProvider.notifier).debitValue(_donateValue);
-      await ref
-          .read(userProfileNotifierProvider.notifier)
-          .writeTransactionReceipt(
-            title: AppStrings.hallOfFameDonateHistoryTitle,
-            amount: -_donateValue,
-            assetType: 'VALUE',
-          );
+      _snack('기부에 실패했습니다.');
+    } catch (_) {
       if (!mounted) return;
-      final left = ref.read(walletProvider).valueBalance;
-      _snack(
-        '이 기기에서 $_donateValue VALUE를 차감했습니다. '
-        '명예의 전당 순위에는 반영되지 않습니다. · 잔액 $left',
-      );
+      _snack('기부에 실패했습니다.');
     } finally {
       _donating = false;
       if (mounted) setState(() {});

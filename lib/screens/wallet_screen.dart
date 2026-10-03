@@ -7,7 +7,6 @@ import '../core/api/api_exception.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
-import '../core/config/app_env.dart';
 import '../core/auth/email_verification_guard.dart';
 import '../core/constants/impact_constants.dart';
 import '../core/constants/payment_constants.dart';
@@ -191,51 +190,14 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
     required int amountSrv,
     required Web3TransferChannel channel,
   }) async {
-    setState(() => transferringWeb3 = true);
-    try {
-      if (AppEnv.useLocalMockData) {
-        if (!mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '[Mock] $amountSrv SRV → ${channel.label} '
-              '(${destinationAddress.substring(0, 10)}...) 전송 UI 미리보기',
-            ),
-          ),
-        );
-        return;
-      }
-
-      await ref.read(walletRepositoryProvider).transferValueToWeb3(
-            destinationAddress: destinationAddress,
-            amountSrv: amountSrv,
-            transferChannel: channel.apiValue,
-          );
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '$amountSrv SRV가 ${channel.label}(으)로 전송 요청되었습니다. '
-            '앱 내 현금 환전은 제공하지 않습니다.',
-          ),
-        ),
-      );
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Web3 전송 실패: ${ApiErrorMessage.from(error)}')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => transferringWeb3 = false);
-      }
+    if (!mounted) return;
+    // Address, amount, and channel are ignored. Transfer must not debit VALUE.
+    if (destinationAddress.isEmpty && amountSrv < 0 && channel.apiValue.isEmpty) {
+      return;
     }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('준비 중')),
+    );
   }
 
   Future<void> _buyDiamonds({required String? uid}) async {

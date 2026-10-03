@@ -38,6 +38,7 @@ import '../../screens/run_result_screen.dart';
 import '../../screens/run_tracking_screen.dart';
 import '../../screens/running_crew_screen.dart';
 import '../../screens/settings_screen.dart';
+import '../../screens/dia_pack_store_screen.dart';
 import '../../screens/share_dia_exchange_screen.dart';
 import '../../screens/solo_pedometer_screen.dart';
 import '../../screens/sponsor_payment_screen.dart';
@@ -371,6 +372,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.shareToDia,
       pageBuilder: _fadePage(const ShareDiaExchangeScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.diaPackStore,
+      pageBuilder: _fadePage(const DiaPackStoreScreen()),
     ),
     GoRoute(
       path: RouteNames.web3Wallet,

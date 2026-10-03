@@ -45,6 +45,12 @@ from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
 from app.services.mercy_rule_service import MercyRuleService
+from app.services.play_billing import (
+    consume_play_product_purchase,
+    dia_pack_by_id,
+    purchase_token_hash,
+    verify_play_product_purchase,
+)
 from app.services.wallet_funding import (
     assign_free_balances,
     exchange_spendable,
@@ -367,6 +373,34 @@ class SecuredActionService:
         return _commit_share_to_dia_tx(
             transaction, self, uid, dia_amount, user_ref
         )
+
+    def grant_dia_pack(
+        self,
+        uid: str,
+        product_id: str,
+        purchase_token: str,
+    ) -> SecuredActionResult:
+        pack = dia_pack_by_id(product_id)
+        if pack is None:
+            raise HTTPException(status_code=400, detail="Unknown DIA pack.")
+        verify_play_product_purchase(product_id, purchase_token)
+        token_hash = purchase_token_hash(purchase_token)
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        purchase_ref = self.firebase_service.db.collection("playPurchases").document(
+            token_hash
+        )
+        result = _commit_dia_pack_tx(
+            transaction,
+            self,
+            uid,
+            pack,
+            user_ref,
+            purchase_ref,
+        )
+        if result.status in {"granted", "already_granted"}:
+            consume_play_product_purchase(product_id, purchase_token)
+        return result
 
     def donate_hall_of_fame(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
@@ -893,6 +927,82 @@ class SecuredActionService:
             lock_reason=None,
             share_balance=share,
             diamond_balance=diamonds,
+            value_token_balance=value,
+        )
+
+    def _grant_dia_pack_tx(
+        self,
+        transaction,
+        uid: str,
+        pack: dict,
+        user_ref,
+        purchase_ref,
+    ) -> SecuredActionResult:
+        existing = purchase_ref.get(transaction=transaction)
+        if existing.exists:
+            prior = existing.to_dict() or {}
+            if prior.get("uid") != uid:
+                raise HTTPException(status_code=409, detail="Purchase token already used.")
+            user_snapshot = user_ref.get(transaction=transaction)
+            user = user_snapshot.to_dict() or {} if user_snapshot.exists else {}
+            share, diamonds, value = self._wallet_balances(user)
+            return SecuredActionResult(
+                accepted=True,
+                status="already_granted",
+                reason="DIA pack purchase was already recorded.",
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user = user_snapshot.to_dict() or {}
+        wallet = user.get("wallet") or {}
+        base = int(pack["baseDia"])
+        bonus = int(pack["bonusDia"])
+        updates: dict = {"updatedAt": SERVER_TIMESTAMP}
+        ledger: dict = {}
+        if base:
+            paid = move_currency(wallet, diamond=base, paid_credit=True)
+            updates.update(paid["updates"])
+            ledger.update(paid["ledger"])
+        if bonus:
+            free = move_currency(wallet, diamond=bonus)
+            updates.update(free["updates"])
+            ledger["diamondFreeAmount"] = free["ledger"].get("diamondFreeAmount", bonus)
+            ledger["diamondPaidAmount"] = ledger.get("diamondPaidAmount", 0)
+        share, diamonds, value = self._wallet_balances({"wallet": wallet})
+        total = base + bonus
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.update(user_ref, updates)
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "dia_pack_purchase",
+                "productId": pack["productId"],
+                "priceKrw": pack["priceKrw"],
+                "diamondAmount": total,
+                "createdAt": SERVER_TIMESTAMP,
+                **ledger,
+            },
+        )
+        transaction.set(
+            purchase_ref,
+            {
+                "uid": uid,
+                "productId": pack["productId"],
+                "diamondAmount": total,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="granted",
+            reason=f"{total} DIA granted from {pack['productId']}.",
+            diamond_balance=diamonds,
+            share_balance=share,
             value_token_balance=value,
         )
 
@@ -2735,6 +2845,20 @@ def _commit_share_to_dia_tx(
 ) -> ShareToDiaView:
     return service._exchange_share_to_dia_tx(
         transaction, uid, dia_amount, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_dia_pack_tx(
+    transaction,
+    service,
+    uid: str,
+    pack: dict,
+    user_ref,
+    purchase_ref,
+) -> SecuredActionResult:
+    return service._grant_dia_pack_tx(
+        transaction, uid, pack, user_ref, purchase_ref
     )
 
 

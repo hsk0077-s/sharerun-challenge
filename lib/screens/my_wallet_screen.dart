@@ -276,55 +276,10 @@ class _WalletProfileRow extends StatelessWidget {
                   style: MyWalletText.title18,
                 ),
               ),
-              const SizedBox(width: 8),
-              const _GoldBadge(),
             ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class _GoldBadge extends StatelessWidget {
-  const _GoldBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.goldBadge,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.angelGold.withValues(alpha: 0.28),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.workspace_premium_rounded,
-            size: 14,
-            color: Color(0xFFB45309),
-          ),
-          SizedBox(width: 3),
-          Text(
-            AppStrings.dashboardGoldBadge,
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF92400E),
-              height: 1.1,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

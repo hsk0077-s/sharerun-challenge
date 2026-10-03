@@ -123,6 +123,7 @@ void main() {
     expect(find.text(AppStrings.myWalletInventoryCount(1)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryCount(2)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryEmpty), findsNothing);
+    expect(find.text(AppStrings.dashboardGoldBadge), findsNothing);
   });
 
   testWidgets('My Wallet empty inventory still lists the section',

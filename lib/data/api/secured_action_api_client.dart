@@ -139,6 +139,12 @@ class SecuredActionApiClient {
     await _post('/actions/onboarding/claim-signup', const {});
   }
 
+  /// Once per KST week. Credits [EconomyConstants.streakBonusDia] on the server.
+  Future<PedometerHarvestResult> claimStreakBonus() async {
+    final json = await _post('/actions/rewards/streak', const {});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
   Future<void> applyReferralCode(String referralCode) async {
     await _post(
       '/actions/referrals/apply',

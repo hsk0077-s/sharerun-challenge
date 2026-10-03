@@ -660,6 +660,14 @@ service cloud.firestore {
         allow create, update, delete: if false;
       }
 
+      // Owner read of the shop purchase inventory. Admin SDK writes the
+      // quantity in the purchase transaction. Clients must not mint items.
+      // Deploy with: firebase deploy --only firestore:rules
+      match /shopInventory/{itemId} {
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+      }
+
       // Owner-only per-account day. steps is an int in 0..30000.
       // A positive day cannot be replaced by 0. A lower total is allowed
       // only when lastHealth backs a heal (today's Health + 2,000 lead).

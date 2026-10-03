@@ -14,6 +14,7 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
@@ -168,6 +169,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     });
     final wallet = ref.watch(walletProvider);
     final shop = ref.watch(shopTabProvider);
+    final inventory = ref.watch(serverShopInventoryProvider).asData?.value ??
+        const ServerShopInventory();
     final focus = widget.initialFocus ?? ref.watch(storeFocusProvider);
     final highlightDonate = focus == StoreFocus.donate;
     final highlightItems = focus == StoreFocus.items;
@@ -263,7 +266,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       icon: Icons.monitor_heart_outlined,
                                       iconColor: AppColors.error,
                                       title: AppStrings.storeItemCpr,
-                                      ownedCount: shop.cprCount,
+                                      ownedCount: inventory.cprCount,
                                       onBuy: () => _onBuyItem(AppStrings.storeItemCpr),
                                     ),
                                   ),
@@ -273,7 +276,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       icon: Icons.shield_outlined,
                                       iconColor: AppColors.success,
                                       title: AppStrings.storeItemSafeGuard,
-                                      ownedCount: shop.safeGuardCount,
+                                      ownedCount: inventory.safeGuardCount,
                                       onBuy: () => _onBuyItem(AppStrings.storeItemSafeGuard),
                                     ),
                                   ),

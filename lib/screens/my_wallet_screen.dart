@@ -54,7 +54,6 @@ class MyWalletScreen extends ConsumerWidget {
     final gradeDone = onboarding.preliminaryPaceSeconds.length
         .clamp(0, EconomyConstants.trialRunsRequired);
     final walletState = ref.watch(walletProvider);
-    final shop = ref.watch(shopTabProvider);
     final share = walletState.shareBalance;
     final diamond = walletState.diamondBalance;
     final value = walletState.valueBalance;
@@ -94,7 +93,7 @@ class MyWalletScreen extends ConsumerWidget {
                       onUse: () => _openStore(context, ref),
                     ),
                     const SizedBox(height: 24),
-                    WalletInventorySection(shop: shop),
+                    const WalletInventorySection(),
                     const SizedBox(height: 24),
                     const Text(
                       AppStrings.myWalletRecentTransactions,

@@ -1679,11 +1679,10 @@ class SecuredActionService:
         activity_ref = self.firebase_service.db.collection("activities").document(
             request.activity_id
         )
-        return self._apply_winner_reward_tx(
-            transaction, uid, request, user_ref, activity_ref
+        return _commit_winner_tx(
+            transaction, self, uid, request, user_ref, activity_ref
         )
 
-    @firestore.transactional
     def _apply_winner_reward_tx(
         self,
         transaction,
@@ -1738,7 +1737,7 @@ class SecuredActionService:
                 "uid": uid,
                 "activityId": activity_ref.id,
                 "type": request.action,
-                "valueAmount": reward,
+                "valueAmount": -donation,
                 "claimedValue": retained,
                 "donatedValue": donation,
                 "donationTarget": "UNICEF" if donation > 0 else None,
@@ -1869,6 +1868,20 @@ def _commit_harvest_tx(
 ) -> SecuredActionResult:
     return service._harvest_pedometer_share_tx(
         transaction, uid, request, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_winner_tx(
+    transaction,
+    service,
+    uid: str,
+    request: WinnerRewardRequest,
+    user_ref,
+    activity_ref,
+) -> SecuredActionResult:
+    return service._apply_winner_reward_tx(
+        transaction, uid, request, user_ref, activity_ref
     )
 
 

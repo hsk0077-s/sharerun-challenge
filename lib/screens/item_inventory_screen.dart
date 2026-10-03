@@ -8,7 +8,7 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
-import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 
 /// 인게임 아이템 보관함 화면 (Screen 20).
@@ -39,23 +39,24 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
     DashboardTabNavigation.go(context, index);
   }
 
-  void _onUseItem(ShopItemSku sku, String title) {
-    final used = ref.read(shopTabProvider.notifier).useItem(sku);
-    if (!used) {
+  void _onUseItem(String itemId, String title) {
+    final owned =
+        ref.read(serverShopInventoryProvider).asData?.value.countFor(itemId) ??
+            0;
+    if (owned <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$title 보유량이 없습니다. 상점에서 구매해 주세요.')),
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$title 사용 완료')),
-    );
+    // Quantity stays on the server doc. This screen does not spend it.
   }
 
   @override
   Widget build(BuildContext context) {
     final wallet = ref.watch(walletProvider);
-    final shop = ref.watch(shopTabProvider);
+    final shop = ref.watch(serverShopInventoryProvider).asData?.value ??
+        const ServerShopInventory();
 
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,
@@ -107,7 +108,7 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                         quantity: '보유량: ${shop.cprCount}',
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
-                          ShopItemSku.cpr,
+                          ServerShopInventory.cprId,
                           AppStrings.itemInventoryCprTitle,
                         ),
                       ),
@@ -122,44 +123,10 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                         quantity: '보유량: ${shop.safeGuardCount}',
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
-                          ShopItemSku.safeGuard,
+                          ServerShopInventory.safeGuardId,
                           AppStrings.itemInventorySafeGuardTitle,
                         ),
                       ),
-                      if (shop.starBoostCount > 0) ...[
-                        const SizedBox(height: 12),
-                        _InventoryItemCard(
-                          icon: const Icon(
-                            Icons.star_rounded,
-                            size: 40,
-                            color: AppColors.progressYellow,
-                          ),
-                          title: AppStrings.storeItemStarBoost,
-                          quantity: '보유량: ${shop.starBoostCount}',
-                          useButtonColor: _useButtonMint,
-                          onUse: () => _onUseItem(
-                            ShopItemSku.starBoost,
-                            AppStrings.storeItemStarBoost,
-                          ),
-                        ),
-                      ],
-                      if (shop.sharePackCount > 0) ...[
-                        const SizedBox(height: 12),
-                        _InventoryItemCard(
-                          icon: const Icon(
-                            Icons.monetization_on_outlined,
-                            size: 40,
-                            color: AppColors.progressYellow,
-                          ),
-                          title: AppStrings.storeItemSharePack,
-                          quantity: '보유량: ${shop.sharePackCount}',
-                          useButtonColor: _useButtonMint,
-                          onUse: () => _onUseItem(
-                            ShopItemSku.sharePack,
-                            AppStrings.storeItemSharePack,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),

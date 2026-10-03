@@ -11,6 +11,7 @@ import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/data/models/wallet_transaction_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
+import 'package:share_run_challenge/features/shop/providers/server_shop_inventory_provider.dart';
 import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.dart';
 import 'package:share_run_challenge/features/wallet/debug_local_wallet_store.dart';
 import 'package:share_run_challenge/features/wallet/providers/debug_local_share_history_provider.dart';
@@ -63,7 +64,7 @@ class _SeededHistory extends DebugLocalShareHistory {
       ];
 }
 
-Widget _scopedWallet({required ShopTabState shop}) {
+Widget _scopedWallet({required ServerShopInventory inventory}) {
   final profile =
       UserModel.dashboardDefault(uid: 'test-wallet').copyWith(nickname: '테스트러너');
   return ProviderScope(
@@ -77,7 +78,12 @@ Widget _scopedWallet({required ShopTabState shop}) {
         (ref) => Stream<WalletModel>.value(_wallet),
       ),
       walletProvider.overrideWith(_SeededWalletNotifier.new),
-      shopTabProvider.overrideWith(() => _SeededShopNotifier(shop)),
+      serverShopInventoryProvider.overrideWith(
+        (ref) => Stream.value(inventory),
+      ),
+      shopTabProvider.overrideWith(
+        () => _SeededShopNotifier(const ShopTabState()),
+      ),
       hasPendingJenaAppealProvider.overrideWith((ref) => false),
     ],
     child: MaterialApp(
@@ -95,7 +101,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('My Wallet shows owned shop items from shopTabProvider',
+  testWidgets('My Wallet shows owned shop items from the server inventory',
       (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
@@ -104,7 +110,7 @@ void main() {
 
     await tester.pumpWidget(
       _scopedWallet(
-        shop: const ShopTabState(cprCount: 1, safeGuardCount: 2),
+        inventory: const ServerShopInventory(cprCount: 1, safeGuardCount: 2),
       ),
     );
     await tester.pump();
@@ -126,7 +132,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_scopedWallet(shop: const ShopTabState()));
+    await tester.pumpWidget(_scopedWallet(inventory: const ServerShopInventory()));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
@@ -141,7 +147,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_scopedWallet(shop: const ShopTabState()));
+    await tester.pumpWidget(
+      _scopedWallet(inventory: const ServerShopInventory()),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
@@ -190,6 +198,9 @@ void main() {
             (ref) => Stream<WalletModel>.value(_wallet),
           ),
           walletProvider.overrideWith(_SeededWalletNotifier.new),
+          serverShopInventoryProvider.overrideWith(
+            (ref) => Stream.value(const ServerShopInventory()),
+          ),
           shopTabProvider.overrideWith(
             () => _SeededShopNotifier(const ShopTabState()),
           ),

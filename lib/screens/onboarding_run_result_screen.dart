@@ -441,8 +441,10 @@ class _OnboardingRunResultScreenState
                   ),
                 ],
               ),
-              // Laid out at full poster size, clipped by the stack so it
-              // never covers the finish screen. toImage reads this layer.
+              // Full 1080×1920 poster for export. The stack does not clip a
+              // zero-size child, so without the shift this layer covers the
+              // phone and the window cuts off the right side. toImage reads
+              // the boundary before the shift, at pixelRatio 1.
               Positioned(
                 left: 0,
                 top: 0,
@@ -456,9 +458,15 @@ class _OnboardingRunResultScreenState
                       maxWidth: RunFinishShareCard.canvasWidth,
                       minHeight: RunFinishShareCard.canvasHeight,
                       maxHeight: RunFinishShareCard.canvasHeight,
-                      child: RepaintBoundary(
-                        key: _cardKey,
-                        child: _shareCard(_captureStyle),
+                      child: Transform.translate(
+                        offset: const Offset(
+                          -(RunFinishShareCard.canvasWidth + 8),
+                          -(RunFinishShareCard.canvasHeight + 8),
+                        ),
+                        child: RepaintBoundary(
+                          key: _cardKey,
+                          child: _shareCard(_captureStyle),
+                        ),
                       ),
                     ),
                   ),

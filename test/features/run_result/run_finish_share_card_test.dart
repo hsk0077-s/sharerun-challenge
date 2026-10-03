@@ -271,15 +271,42 @@ void main() {
         .renderObjectList<RenderRepaintBoundary>(find.byType(RepaintBoundary))
         .where((boundary) => boundary.size == const Size(1080, 1920));
     expect(posters, isNotEmpty);
-    final image = posters.first.toImageSync();
+    final poster = posters.first;
+    final screen =
+        Offset.zero & (tester.view.physicalSize / tester.view.devicePixelRatio);
+    expect(
+      (poster.localToGlobal(Offset.zero) & poster.size).overlaps(screen),
+      isFalse,
+    );
+
+    final frames = tester.renderObjectList<RenderFittedBox>(
+      find.descendant(
+        of: find.byKey(RunFinishSharePreview.pagerKey),
+        matching: find.byType(FittedBox),
+      ),
+    );
+    expect(frames, isNotEmpty);
+    final frame = frames.first;
+    expect(frame.child!.size, const Size(1080, 1920));
+    expect(frame.size.width, lessThan(frame.child!.size.width));
+    expect(frame.size.width, lessThanOrEqualTo(screen.width));
+
+    final image = poster.toImageSync(pixelRatio: 1);
     expect(image.width, 1080);
     expect(image.height, 1920);
+    final raw = await tester.runAsync(
+      () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+    );
     final bytes = await tester.runAsync(
       () => image.toByteData(format: ui.ImageByteFormat.png),
     );
     image.dispose();
     expect(bytes, isNotNull);
     expect(bytes!.lengthInBytes, greaterThan(8));
+    final pixels = raw!.buffer.asUint8List();
+    // Past the phone width: the exported poster still has the right edge.
+    final right = ((400 * 1080) + 1070) * 4;
+    expect(pixels[right + 3], greaterThan(200));
   });
 
   testWidgets('Hangul renders as an outline, not a box', (tester) async {

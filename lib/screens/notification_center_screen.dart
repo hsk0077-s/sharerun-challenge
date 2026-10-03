@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
@@ -16,9 +15,8 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../data/models/wallet_transaction_model.dart';
 import '../features/profile/user_profile_notifier.dart';
-import '../features/wallet/debug_local_wallet_store.dart';
-import '../features/wallet/providers/debug_local_share_history_provider.dart';
 import 'appeal_center_screen.dart';
 import 'solo_pedometer_screen.dart';
 
@@ -424,125 +422,51 @@ void _openRetentionRoute(
   }
 }
 
-class _RealtimePaymentHistoryList extends ConsumerStatefulWidget {
+/// Payment tab. Same server ledger as My Wallet (`walletTransactions`).
+class _RealtimePaymentHistoryList extends ConsumerWidget {
   const _RealtimePaymentHistoryList();
 
   static const _debitColor = Color(0xFFFF453A);
   static const _creditColor = Color(0xFF30D158);
 
   @override
-  ConsumerState<_RealtimePaymentHistoryList> createState() =>
-      _RealtimePaymentHistoryListState();
-}
-
-class _RealtimePaymentHistoryListState
-    extends ConsumerState<_RealtimePaymentHistoryList> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _hydrateLocalHistory();
-    });
-  }
-
-  Future<void> _hydrateLocalHistory() async {
-    final uid = _signedInUid(ref);
-    if (uid.isEmpty) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final snap = DebugLocalWalletStore.hydrateFromPrefs(prefs, uid);
-      if (!mounted || snap.history.isEmpty) return;
-      ref.read(debugLocalShareHistoryProvider.notifier).replace(snap.history);
-    } catch (e) {
-      debugPrint('[HISTORY] local hydrate: $e');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final uid = _signedInUid(ref);
-    final local = ref.watch(debugLocalShareHistoryProvider);
-    if (AppEnv.useLocalMockData || uid.isEmpty) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (AppEnv.useLocalMockData) {
       return const _PaymentHistoryEmpty();
     }
-    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: FirebaseFirestore.instance
-          .collection(FirestorePaths.users)
-          .doc(uid)
-          .collection('wallet_transactions')
-          .orderBy('timestamp', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData &&
-            local.isEmpty) {
-          return const Center(
-            child: CircularProgressIndicator(color: AppColors.pulseCyan),
-          );
-        }
-        final remote = <DebugLocalShareTx>[];
-        final snapData = snapshot.data;
-        if (snapData != null) {
-          for (final doc in snapData.docs) {
-            remote.add(_txFromFirestore(doc.id, doc.data()));
-          }
-        }
-        final rows = DebugLocalWalletStore.mergeHistory(
-          remote: remote,
-          local: local,
-        );
-        if (rows.isEmpty) {
-          return const _PaymentHistoryEmpty();
-        }
+    final history = ref.watch(recentWalletTransactionsProvider);
+    return history.when(
+      data: (rows) {
+        if (rows.isEmpty) return const _PaymentHistoryEmpty();
         return ListView.builder(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           itemCount: rows.length,
           itemBuilder: (context, index) {
-            return _PaymentHistoryTile(tx: rows[index]);
+            return _PaymentHistoryTile(row: rows[index]);
           },
         );
       },
-    );
-  }
-
-  static DebugLocalShareTx _txFromFirestore(
-    String id,
-    Map<String, dynamic> data,
-  ) {
-    final titleRaw = data['title'];
-    final title = titleRaw is String && titleRaw.isNotEmpty
-        ? titleRaw
-        : AppStrings.notificationPaymentUnknown;
-    final amountRaw = data['amount'];
-    final amount = amountRaw is num ? amountRaw.toInt() : 0;
-    final assetRaw = data['assetType'];
-    final assetType =
-        assetRaw is String && assetRaw.isNotEmpty ? assetRaw : 'SHARE';
-    final tsRaw = data['timestamp'];
-    final timestampMs =
-        tsRaw is Timestamp ? tsRaw.toDate().millisecondsSinceEpoch : 0;
-    return DebugLocalShareTx(
-      id: id,
-      title: title,
-      amount: amount,
-      assetType: assetType,
-      timestampMs: timestampMs,
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppColors.pulseCyan),
+      ),
+      error: (_, __) => const _PaymentHistoryEmpty(),
     );
   }
 }
 
 class _PaymentHistoryTile extends StatelessWidget {
-  const _PaymentHistoryTile({required this.tx});
+  const _PaymentHistoryTile({required this.row});
 
-  final DebugLocalShareTx tx;
+  final WalletTransactionModel row;
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = tx.timestampMs > 0
-        ? _formatWalletTxDate(tx.timestamp.toLocal())
+    final createdAt = row.createdAt;
+    final dateStr = createdAt != null
+        ? _formatWalletTxDate(createdAt.toLocal())
         : AppStrings.notificationPaymentJustNow;
-    final isNegative = tx.amount < 0;
-    final amountLabel = '${isNegative ? '' : '+'}${tx.amount} ${tx.assetType}';
+    final amountLabel = row.amountSummary;
+    final isNegative = amountLabel.contains('-');
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -569,7 +493,7 @@ class _PaymentHistoryTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  tx.title,
+                  row.displayLabel,
                   style: AppTextStyles.agreementLabel.copyWith(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,

@@ -15,6 +15,7 @@ from app.models.secured_actions import (
     JoinTournamentRequest,
     RedeemReferralResult,
     RefundRequest,
+    ShareToDiaView,
     CreateChallengeRoomResult,
     SecuredActionResult,
     SettleTournamentFailureRequest,
@@ -26,8 +27,13 @@ from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
     HALL_OF_FAME_DONATE_VALUE,
     REFERRAL_REDEEM_SHARE,
+    REFERRAL_SHARE_LOCK_DAYS,
     REFERRAL_TRIAL_REFEREE_SHARE,
     REFERRAL_TRIAL_REFERRER_SHARE,
+    SHARE_PER_DIA,
+    SHARE_TO_DIA_SIGNUP_LOCK_DAYS,
+    SHARE_TO_DIA_UNIT,
+    SHARE_TO_DIA_WEEKLY_CAP,
     STREAK_BONUS_DIA,
     TEST_WALLET_GRANT_AMOUNT,
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
@@ -39,7 +45,11 @@ from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
 from app.services.mercy_rule_service import MercyRuleService
-from app.services.wallet_funding import assign_free_balances, move_currency
+from app.services.wallet_funding import (
+    assign_free_balances,
+    exchange_spendable,
+    move_currency,
+)
 from app.services.running_validation_service import RunningValidationService
 
 
@@ -344,6 +354,20 @@ class SecuredActionService:
             reason="준비 중",
         )
 
+    def quote_share_to_dia(self, uid: str) -> ShareToDiaView:
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        snapshot = user_ref.get()
+        if not snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        return self._share_to_dia_view(uid, snapshot.to_dict() or {})
+
+    def exchange_share_to_dia(self, uid: str, dia_amount: int) -> ShareToDiaView:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_share_to_dia_tx(
+            transaction, self, uid, dia_amount, user_ref
+        )
+
     def donate_hall_of_fame(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
@@ -527,6 +551,9 @@ class SecuredActionService:
                 user_updates["tier"] = max(int(user.get("tier") or 1), 1)
                 if referral_payouts:
                     self._write_referral_payouts(transaction, referral_payouts)
+
+        if result.verified:
+            economy_updates["lastVerifiedRunWeek"] = self._economy_service.kst_week_key()
 
         if economy_updates:
             user_updates["economy"] = {**economy, **economy_updates}
@@ -712,6 +739,161 @@ class SecuredActionService:
                 "activityId": activity_id,
                 "createdAt": SERVER_TIMESTAMP,
             },
+        )
+
+    def _share_to_dia_view(
+        self,
+        uid: str,
+        user: dict,
+        *,
+        dia_amount: int | None = None,
+        now: datetime | None = None,
+    ) -> ShareToDiaView:
+        current = now or datetime.now(timezone.utc)
+        share, diamonds, value = self._wallet_balances(user)
+        wallet = user.get("wallet") or {}
+        spendable, locked = exchange_spendable(wallet, current)
+        week = self._economy_service.kst_week_key(current)
+        used = (
+            int(user.get("shareToDiaWeekDia") or 0)
+            if user.get("shareToDiaWeekKey") == week
+            else 0
+        )
+        remaining = max(0, SHARE_TO_DIA_WEEKLY_CAP - used)
+        reason = self._share_to_dia_lock_reason(
+            uid,
+            user,
+            spendable=spendable,
+            locked_share=locked,
+            remaining=remaining,
+            dia_amount=dia_amount,
+            now=current,
+        )
+        return ShareToDiaView(
+            accepted=reason is None,
+            status="quote" if dia_amount is None else "blocked",
+            reason=reason or "SHARE를 DIA로 교환할 수 있습니다.",
+            rate_share_per_dia=SHARE_PER_DIA,
+            unit_dia=SHARE_TO_DIA_UNIT,
+            weekly_cap_dia=SHARE_TO_DIA_WEEKLY_CAP,
+            remaining_dia=remaining,
+            spendable_share=spendable,
+            locked_share=locked,
+            lock_reason=reason,
+            share_balance=share,
+            diamond_balance=diamonds,
+            value_token_balance=value,
+        )
+
+    def _share_to_dia_lock_reason(
+        self,
+        uid: str,
+        user: dict,
+        *,
+        spendable: int,
+        locked_share: int,
+        remaining: int,
+        dia_amount: int | None,
+        now: datetime,
+    ) -> str | None:
+        created = self._auth_account_created_at(uid)
+        if created is None or now - created < timedelta(
+            days=SHARE_TO_DIA_SIGNUP_LOCK_DAYS
+        ):
+            return "가입 후 7일이 지나야 교환할 수 있습니다."
+        try:
+            self._ensure_email_verified(uid)
+        except HTTPException:
+            return "이메일 인증이 필요합니다."
+        economy = user.get("economy") or {}
+        if economy.get("lastVerifiedRunWeek") != self._economy_service.kst_week_key(
+            now
+        ):
+            return "이번 주 검증 러닝 1회 후 교환할 수 있습니다."
+        if remaining <= 0:
+            return "이번 주 교환 한도 20 DIA를 모두 사용했습니다."
+        if dia_amount is None:
+            unit_cost = SHARE_PER_DIA * SHARE_TO_DIA_UNIT
+            if spendable < unit_cost and locked_share > 0:
+                return "추천 보상 SHARE는 받은 날부터 30일 동안 교환할 수 없습니다."
+            if spendable < unit_cost:
+                return "교환 가능한 SHARE가 부족합니다."
+            return None
+        if dia_amount % SHARE_TO_DIA_UNIT != 0:
+            return "DIA는 10개 단위로 교환합니다."
+        if dia_amount > remaining:
+            return "이번 주 교환 한도를 초과했습니다."
+        cost = dia_amount * SHARE_PER_DIA
+        if spendable < cost and locked_share > 0 and spendable + locked_share >= cost:
+            return "추천 보상 SHARE는 받은 날부터 30일 동안 교환할 수 없습니다."
+        if spendable < cost:
+            return "교환 가능한 SHARE가 부족합니다."
+        return None
+
+    def _exchange_share_to_dia_tx(
+        self,
+        transaction,
+        uid: str,
+        dia_amount: int,
+        user_ref,
+    ) -> ShareToDiaView:
+        # DIA is not transferable between accounts. This only converts SHARE.
+        snapshot = user_ref.get(transaction=transaction)
+        if not snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user = snapshot.to_dict() or {}
+        now = datetime.now(timezone.utc)
+        view = self._share_to_dia_view(uid, user, dia_amount=dia_amount, now=now)
+        if view.lock_reason:
+            raise HTTPException(status_code=400, detail=view.lock_reason)
+        wallet = user.get("wallet") or {}
+        cost = dia_amount * SHARE_PER_DIA
+        moved = move_currency(
+            wallet,
+            share=-cost,
+            diamond=dia_amount,
+            for_exchange=True,
+            now=now,
+        )
+        week = self._economy_service.kst_week_key(now)
+        used = view.weekly_cap_dia - view.remaining_dia
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.update(
+            user_ref,
+            {
+                **moved["updates"],
+                "shareToDiaWeekKey": week,
+                "shareToDiaWeekDia": used + dia_amount,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "share_to_dia",
+                "shareAmount": -cost,
+                "diamondAmount": dia_amount,
+                "weekKey": week,
+                "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
+            },
+        )
+        share, diamonds, value = self._wallet_balances({"wallet": wallet})
+        return ShareToDiaView(
+            accepted=True,
+            status="exchanged",
+            reason=f"{cost} SHARE를 {dia_amount} DIA로 교환했습니다.",
+            rate_share_per_dia=SHARE_PER_DIA,
+            unit_dia=SHARE_TO_DIA_UNIT,
+            weekly_cap_dia=SHARE_TO_DIA_WEEKLY_CAP,
+            remaining_dia=view.remaining_dia - dia_amount,
+            spendable_share=max(0, view.spendable_share - cost),
+            locked_share=view.locked_share,
+            lock_reason=None,
+            share_balance=share,
+            diamond_balance=diamonds,
+            value_token_balance=value,
         )
 
     def _donate_hall_of_fame_tx(
@@ -1140,7 +1322,14 @@ class SecuredActionService:
                 continue
             payee_snapshot = payout["payee_ref"].get(transaction=transaction)
             payee_wallet = (payee_snapshot.to_dict() or {}).get("wallet") or {}
-            moved = move_currency(payee_wallet, share=payout["amount"])
+            unlock_at = datetime.now(timezone.utc) + timedelta(
+                days=REFERRAL_SHARE_LOCK_DAYS
+            )
+            moved = move_currency(
+                payee_wallet,
+                share=payout["amount"],
+                lock_until=unlock_at,
+            )
             payout["ledger"] = moved["ledger"]
             transaction.update(
                 payout["payee_ref"],
@@ -2534,6 +2723,19 @@ def _commit_refund_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._request_refund_tx(transaction, uid, request, user_ref)
+
+
+@firestore.transactional
+def _commit_share_to_dia_tx(
+    transaction,
+    service,
+    uid: str,
+    dia_amount: int,
+    user_ref,
+) -> ShareToDiaView:
+    return service._exchange_share_to_dia_tx(
+        transaction, uid, dia_amount, user_ref
+    )
 
 
 @firestore.transactional

@@ -109,6 +109,26 @@ class RedeemReferralResult(BaseModel):
     code: str
 
 
+class ShareToDiaRequest(BaseModel):
+    dia_amount: int = Field(gt=0, le=20)
+
+
+class ShareToDiaView(BaseModel):
+    accepted: bool
+    status: str
+    reason: str
+    rate_share_per_dia: int = 120
+    unit_dia: int = 10
+    weekly_cap_dia: int = 20
+    remaining_dia: int = 0
+    spendable_share: int = 0
+    locked_share: int = 0
+    lock_reason: str | None = None
+    share_balance: int | None = None
+    diamond_balance: int | None = None
+    value_token_balance: int | None = None
+
+
 class SecuredActionResult(BaseModel):
     accepted: bool
     status: str

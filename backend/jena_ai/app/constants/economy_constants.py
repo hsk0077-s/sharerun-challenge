@@ -26,6 +26,13 @@ PEDOMETER_DAILY_HARVEST_SHARE_CAP = 60
 # Hall of Fame donation. Server ledger only; the device must not debit VALUE.
 HALL_OF_FAME_DONATE_VALUE = 500
 
+# SHARE → DIA. One way. Referral SHARE cannot be exchanged for 30 days.
+SHARE_PER_DIA = 120
+SHARE_TO_DIA_UNIT = 10
+SHARE_TO_DIA_WEEKLY_CAP = 20
+SHARE_TO_DIA_SIGNUP_LOCK_DAYS = 7
+REFERRAL_SHARE_LOCK_DAYS = 30
+
 # Debug one-shot QA grant. Play Store / release clients never send the
 # baked debug-client secret. UID allowlist remains an optional extra gate.
 TEST_WALLET_GRANT_AMOUNT = 1_000_000

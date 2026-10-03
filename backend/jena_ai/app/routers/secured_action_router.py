@@ -20,6 +20,7 @@ from app.models.secured_actions import (
     CrewSpendRequest,
     ShopPurchaseRequest,
     ValidateRunRequest,
+    DiaPackGrantRequest,
     ShareToDiaRequest,
     ShareToDiaView,
     Web3TransferRequest,
@@ -225,3 +226,15 @@ def exchange_share_to_dia(
     uid: str = Depends(require_uid),
 ) -> ShareToDiaView:
     return service.exchange_share_to_dia(uid=uid, dia_amount=request.dia_amount)
+
+
+@router.post("/wallet/dia-pack/grant", response_model=SecuredActionResult)
+def grant_dia_pack(
+    request: DiaPackGrantRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.grant_dia_pack(
+        uid=uid,
+        product_id=request.product_id,
+        purchase_token=request.purchase_token,
+    )

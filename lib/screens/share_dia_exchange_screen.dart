@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/api/api_exception.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart';
+import '../app/router/route_names.dart';
 import '../data/models/share_to_dia_view.dart';
+import 'dia_pack_store_screen.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/share_to_dia_actions.dart';
 
@@ -154,6 +156,15 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => AppRouteNav.push(
+                      context,
+                      RouteNames.diaPackStore,
+                      materialBuilder: (_) => const DiaPackStoreScreen(),
+                    ),
+                    child: const Text('DIA 팩 · 준비 중'),
+                  ),
+                  const SizedBox(height: 8),
                   FilledButton(
                     onPressed: locked || _exchanging ? null : _exchange,
                     child: Text(_exchanging ? '교환 중...' : '교환'),

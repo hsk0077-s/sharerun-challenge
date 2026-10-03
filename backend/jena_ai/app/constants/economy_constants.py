@@ -33,6 +33,16 @@ SHARE_TO_DIA_WEEKLY_CAP = 20
 SHARE_TO_DIA_SIGNUP_LOCK_DAYS = 7
 REFERRAL_SHARE_LOCK_DAYS = 30
 
+# Google Play DIA packs. Bonus DIA is free; the base amount is paid.
+DIA_PACKS = (
+    {"productId": "dia_pack_12", "priceKrw": 1200, "baseDia": 12, "bonusDia": 0},
+    {"productId": "dia_pack_60", "priceKrw": 5900, "baseDia": 59, "bonusDia": 1},
+    {"productId": "dia_pack_130", "priceKrw": 12000, "baseDia": 120, "bonusDia": 10},
+    {"productId": "dia_pack_370", "priceKrw": 33000, "baseDia": 330, "bonusDia": 40},
+    {"productId": "dia_pack_700", "priceKrw": 59000, "baseDia": 590, "bonusDia": 110},
+    {"productId": "dia_pack_1500", "priceKrw": 119000, "baseDia": 1190, "bonusDia": 310},
+)
+
 # Debug one-shot QA grant. Play Store / release clients never send the
 # baked debug-client secret. UID allowlist remains an optional extra gate.
 TEST_WALLET_GRANT_AMOUNT = 1_000_000

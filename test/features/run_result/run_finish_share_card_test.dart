@@ -1,14 +1,15 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
+import 'package:share_run_challenge/core/widgets/src_logo_header.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_image_share.dart';
@@ -18,6 +19,14 @@ import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUpAll(() async {
+    final loader = FontLoader(RunFinishShareCard.fontFamily)
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-Regular.otf'))
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-SemiBold.otf'))
+      ..addFont(rootBundle.load('assets/fonts/Pretendard-Black.otf'));
+    await loader.load();
+  });
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -66,6 +75,8 @@ void main() {
     expect(find.text('52:14'), findsOneWidget);
     expect(find.text('6:15'), findsOneWidget);
     expect(find.text('10월 3일 토요일'), findsOneWidget);
+    expect(find.text(RunFinishShareCard.headline), findsOneWidget);
+    expect(find.text('km'), findsOneWidget);
     expect(find.text(RunFinishShareCard.appName), findsOneWidget);
     expect(find.byKey(RunFinishShareCard.logoKey), findsOneWidget);
     expect(find.byKey(RunFinishShareCard.donationKey), findsNothing);
@@ -266,39 +277,93 @@ void main() {
     expect(bytes!.lengthInBytes, greaterThan(8));
   });
 
-  testWidgets('captured poster is 1080x1920 png', (tester) async {
-    final file = await _renderPoster(
+  testWidgets('Hangul renders as an outline, not a box', (tester) async {
+    final ratio = await _inkFillRatio(
       tester,
-      RunFinishShareCard(
-        style: RunFinishCardTheme.dark,
-        distanceKm: '8.35',
-        time: '52:14',
-        pace: '6:15 /KM',
-        date: _sampleDate,
+      const Text(
+        '런',
+        style: TextStyle(
+          fontFamily: RunFinishShareCard.fontFamily,
+          fontSize: 140,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFF111111),
+        ),
       ),
     );
+    expect(ratio, greaterThan(0.04));
+    expect(ratio, lessThan(0.72), reason: 'glyph looks like a solid box');
+  });
+
+  testWidgets('logo asset paints into the poster', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      RepaintBoundary(
+        key: key,
+        child: Image.asset(SRCLogoHeader.assetPath, width: 96, height: 96),
+      ),
+    );
+    await tester.pump();
+    final context = tester.element(find.byType(Image));
+    await tester.runAsync(
+      () => precacheImage(const AssetImage(SRCLogoHeader.assetPath), context),
+    );
+    await tester.pump();
+    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final image = boundary.toImageSync();
+    final bytes = await tester.runAsync(
+      () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+    );
+    final width = image.width;
+    final height = image.height;
+    image.dispose();
+    expect(bytes, isNotNull);
+    var green = 0;
+    final data = bytes!;
+    for (var i = 0; i < width * height; i++) {
+      final r = data.getUint8(i * 4);
+      final g = data.getUint8(i * 4 + 1);
+      final b = data.getUint8(i * 4 + 2);
+      if (g > 90 && g > r + 25 && g > b + 10) green++;
+    }
+    expect(green, greaterThan(40));
+  });
+
+  testWidgets('example poster lays out with the donation badge', (tester) async {
+    await _pumpCard(tester, _exampleCard(RunFinishCardTheme.mint));
+    expect(find.text('5.24'), findsOneWidget);
+    expect(find.text('28:15'), findsOneWidget);
+    expect(find.text("5'23\""), findsOneWidget);
+    expect(find.text('/km'), findsOneWidget);
+    expect(find.text('이 달리기로 3,200원 기부에 함께했어요'), findsOneWidget);
+    expect(find.text(RunFinishShareCard.headline), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('captured poster is 1080x1920 png', (tester) async {
+    final file = await _renderPoster(tester, _exampleCard(RunFinishCardTheme.dark));
     _expectPngSize(file, 1080, 1920);
 
     if (Platform.environment['SHARE_CARD_SAMPLES'] == '1') {
       final out = Directory('/opt/cursor/artifacts/share-card');
       out.createSync(recursive: true);
       for (final theme in RunFinishCardTheme.values) {
-        final rendered = await _renderPoster(
-          tester,
-          RunFinishShareCard(
-            style: theme,
-            distanceKm: '8.35',
-            time: '52:14',
-            pace: '6:15 /KM',
-            date: _sampleDate,
-            donationWon: 3200,
-          ),
-        );
+        final rendered = await _renderPoster(tester, _exampleCard(theme));
         _expectPngSize(rendered, 1080, 1920);
         rendered.copySync('${out.path}/theme-${theme.name}.png');
       }
     }
   });
+}
+
+RunFinishShareCard _exampleCard(RunFinishCardTheme theme) {
+  return RunFinishShareCard(
+    style: theme,
+    distanceKm: '5.24',
+    time: '28:15',
+    pace: "5'23\"/km",
+    date: _sampleDate,
+    donationWon: 3200,
+  );
 }
 
 final _sampleDate = DateTime(2026, 10, 3);
@@ -369,23 +434,104 @@ Future<File> _renderPoster(WidgetTester tester, RunFinishShareCard card) async {
     ),
   );
   await tester.pump();
+  final context = tester.element(find.byType(RunFinishShareCard));
+  await tester.runAsync(
+    () => precacheImage(const AssetImage(SRCLogoHeader.assetPath), context),
+  );
+  await tester.pump();
   // toImageSync deadlocks inside runAsync (it waits on the raster thread
   // while the test binding holds the UI isolate). Rasterize here, encode there.
   final boundary =
       key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = boundary.toImageSync();
+  final raw = await tester.runAsync(
+    () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+  );
   final bytes = await tester.runAsync(
     () => image.toByteData(format: ui.ImageByteFormat.png),
   );
+  final width = image.width;
+  final height = image.height;
   image.dispose();
   expect(bytes, isNotNull);
+  expect(raw, isNotNull);
   final file = File(
     '${Directory.systemTemp.path}/share_run_finish_${card.style.name}.png',
   );
   file.writeAsBytesSync(
     bytes!.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes),
   );
+  _expectNoOverflowStripe(raw!, width, height);
   return file;
+}
+
+Future<double> _inkFillRatio(WidgetTester tester, Widget child) async {
+  final key = GlobalKey();
+  await tester.pumpWidget(
+    Directionality(
+      textDirection: TextDirection.ltr,
+      child: RepaintBoundary(
+        key: key,
+        child: ColoredBox(
+          color: const Color(0xFFFFFFFF),
+          child: SizedBox(width: 240, height: 240, child: Center(child: child)),
+        ),
+      ),
+    ),
+  );
+  await tester.pump();
+  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final image = boundary.toImageSync();
+  final bytes = await tester.runAsync(
+    () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
+  );
+  final width = image.width;
+  final height = image.height;
+  image.dispose();
+  final data = bytes!;
+  var minX = width;
+  var minY = height;
+  var maxX = 0;
+  var maxY = 0;
+  var ink = 0;
+  for (var y = 0; y < height; y++) {
+    for (var x = 0; x < width; x++) {
+      final i = (y * width + x) * 4;
+      final r = data.getUint8(i);
+      final g = data.getUint8(i + 1);
+      final b = data.getUint8(i + 2);
+      if (r < 245 || g < 245 || b < 245) {
+        ink++;
+        if (x < minX) minX = x;
+        if (y < minY) minY = y;
+        if (x > maxX) maxX = x;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (ink == 0) return 0;
+  final area = (maxX - minX + 1) * (maxY - minY + 1);
+  return ink / area;
+}
+
+void _expectNoOverflowStripe(ByteData data, int width, int height) {
+  var worst = 0;
+  var worstY = -1;
+  for (var y = 0; y < height; y++) {
+    var yellow = 0;
+    for (var x = 0; x < width; x += 4) {
+      final i = (y * width + x) * 4;
+      final r = data.getUint8(i);
+      final g = data.getUint8(i + 1);
+      final b = data.getUint8(i + 2);
+      if (r > 250 && g > 250 && b < 16) yellow++;
+    }
+    if (yellow > worst) {
+      worst = yellow;
+      worstY = y;
+    }
+  }
+  expect(worst, lessThan(12), reason: 'overflow stripe at y=$worstY');
 }
 
 void _expectPngSize(File file, int width, int height) {

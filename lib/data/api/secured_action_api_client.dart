@@ -145,6 +145,11 @@ class SecuredActionApiClient {
     return PedometerHarvestResult.fromJson(json);
   }
 
+  /// Decrements one account inventory doc. Rejects when quantity is already 0.
+  Future<void> useShopItem(String itemId) async {
+    await _post('/actions/shop/use', {'item_id': itemId});
+  }
+
   /// Debits the server crew-gift price and grants CPR plus Safeguard.
   Future<PedometerHarvestResult> grantCrewItems() async {
     final json = await _post('/actions/shop/crew-gift', const {});

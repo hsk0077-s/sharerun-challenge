@@ -289,6 +289,11 @@ class SecuredActionService:
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_crew_gift_tx(transaction, self, uid, user_ref)
 
+    def use_shop_item(self, uid: str, item_id: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_use_shop_tx(transaction, self, uid, item_id, user_ref)
+
     def transfer_value_to_web3(
         self,
         uid: str,
@@ -1244,6 +1249,44 @@ class SecuredActionService:
             share_balance=_wallet_int(wallet, "shareBalance"),
             diamond_balance=diamond_balance - cost,
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def _use_shop_item_tx(
+        self,
+        transaction,
+        uid: str,
+        item_id: str,
+        user_ref,
+    ) -> SecuredActionResult:
+        if item_id not in self.SHOP_CATALOG:
+            raise HTTPException(status_code=404, detail="Shop item not found.")
+        inventory_ref = user_ref.collection("shopInventory").document(item_id)
+        inventory_snapshot = inventory_ref.get(transaction=transaction)
+        current_qty = 0
+        if inventory_snapshot.exists:
+            current_qty = int((inventory_snapshot.to_dict() or {}).get("quantity") or 0)
+        if current_qty < 1:
+            raise HTTPException(status_code=400, detail="No item to use.")
+        transaction.set(
+            inventory_ref,
+            {"quantity": current_qty - 1},
+            merge=True,
+        )
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "shop_item_use",
+                "itemId": item_id,
+                "quantityAmount": -1,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="used",
+            reason="Item used.",
         )
 
     def _validation_result_from_activity(self, activity: dict) -> ValidationResult:
@@ -2216,6 +2259,17 @@ def _wallet_int(wallet: dict, key: str) -> int | None:
     if raw is None:
         return None
     return int(raw)
+
+
+@firestore.transactional
+def _commit_use_shop_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._use_shop_item_tx(transaction, uid, item_id, user_ref)
 
 
 @firestore.transactional

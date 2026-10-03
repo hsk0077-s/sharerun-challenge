@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -39,7 +41,7 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
     DashboardTabNavigation.go(context, index);
   }
 
-  void _onUseItem(String itemId, String title) {
+  Future<void> _onUseItem(String itemId, String title) async {
     final owned =
         ref.read(serverShopInventoryProvider).asData?.value.countFor(itemId) ??
             0;
@@ -49,7 +51,23 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
       );
       return;
     }
-    // Quantity stays on the server doc. This screen does not spend it.
+    try {
+      await ref.read(securedActionApiClientProvider).useShopItem(itemId);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$title 사용 완료')),
+      );
+    } on ApiException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$title 보유량이 없습니다. 상점에서 구매해 주세요.')),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$title 을 사용하지 못했습니다.')),
+      );
+    }
   }
 
   @override

@@ -71,6 +71,10 @@ class CrewFoundRequest(BaseModel):
     name: str = Field(min_length=1, max_length=80)
 
 
+class NicknameChangeRequest(BaseModel):
+    nickname: str = Field(min_length=2, max_length=12)
+
+
 class CreateChallengeRoomRequest(BaseModel):
     title: str = Field(min_length=1, max_length=80)
     distance_km: int = Field(ge=1, le=200)

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from math import asin, cos, radians, sin, sqrt
+import re
 
 from fastapi import HTTPException, status
 from firebase_admin import auth as firebase_auth
@@ -39,6 +40,8 @@ from app.services.economy_service import EconomyService
 from app.services.mercy_rule_service import MercyRuleService
 from app.services.running_validation_service import RunningValidationService
 
+
+_NICKNAME_PATTERN = re.compile(r"^[가-힣a-zA-Z0-9]{2,12}$")
 
 _COACH_PLUS_DAYS = {
     "coach_plus_monthly": 32,
@@ -294,6 +297,14 @@ class SecuredActionService:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_crew_spend_tx(transaction, self, uid, action, user_ref)
+
+    def change_nickname(self, uid: str, nickname: str) -> SecuredActionResult:
+        compact = re.sub(r"\s+", "", nickname.strip())
+        if _NICKNAME_PATTERN.fullmatch(compact) is None:
+            raise HTTPException(status_code=400, detail="Invalid nickname.")
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_nickname_tx(transaction, self, uid, compact, user_ref)
 
     def found_crew(self, uid: str, name: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
@@ -553,6 +564,7 @@ class SecuredActionService:
         "deposit": ("share", 10000, "crew_deposit"),
     }
     CREW_CREATE_SHARE = 50000
+    NICKNAME_CHANGE_DIA = 100
     CREW_GIFT_ITEMS = (
         ("record_cpr_ticket", "기록 심폐소생권"),
         ("record_safe_guard", "기록 마감 세이프 가드"),
@@ -1340,6 +1352,49 @@ class SecuredActionService:
                 if asset == "diamond"
                 else _wallet_int(wallet, "diamondBalance")
             ),
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def _change_nickname_tx(
+        self,
+        transaction,
+        uid: str,
+        nickname: str,
+        user_ref,
+    ) -> SecuredActionResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        diamond = int(wallet.get("diamondBalance") or 0)
+        cost = self.NICKNAME_CHANGE_DIA
+        if diamond < cost:
+            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        transaction.update(
+            user_ref,
+            {
+                "wallet.diamondBalance": diamond - cost,
+                "nickname": nickname,
+                "nicknameUpdatedAt": SERVER_TIMESTAMP,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "nickname_change",
+                "diamondAmount": -cost,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="renamed",
+            reason="Nickname updated.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=diamond - cost,
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
@@ -2506,6 +2561,17 @@ def _commit_use_shop_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._use_shop_item_tx(transaction, uid, item_id, user_ref)
+
+
+@firestore.transactional
+def _commit_nickname_tx(
+    transaction,
+    service,
+    uid: str,
+    nickname: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._change_nickname_tx(transaction, uid, nickname, user_ref)
 
 
 @firestore.transactional

@@ -6,6 +6,7 @@ from app.models.secured_actions import (
     DebugTestGrantRequest,
     HarvestPedometerRequest,
     InviteCodeResult,
+    NicknameChangeRequest,
     JoinTournamentRequest,
     RedeemReferralRequest,
     RedeemReferralResult,
@@ -162,6 +163,14 @@ def spend_crew_action(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.spend_crew_action(uid=uid, action=request.action)
+
+
+@router.post("/profile/nickname", response_model=SecuredActionResult)
+def change_nickname(
+    request: NicknameChangeRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.change_nickname(uid=uid, nickname=request.nickname)
 
 
 @router.post("/crew/found", response_model=SecuredActionResult)

@@ -162,6 +162,12 @@ class SecuredActionApiClient {
     await _post('/actions/shop/use', {'item_id': itemId});
   }
 
+  /// Debits 100 DIA and stores the nickname in one server transaction.
+  Future<PedometerHarvestResult> changeNickname(String nickname) async {
+    final json = await _post('/actions/profile/nickname', {'nickname': nickname});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
   /// Creates a crew and debits the server founding cost.
   Future<PedometerHarvestResult> foundCrew(String name) async {
     final json = await _post('/actions/crew/found', {'name': name});

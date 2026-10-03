@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../app/theme/app_colors.dart';
-import '../features/wallet/providers/wallet_provider.dart';
 
-class ChargeScreen extends ConsumerWidget {
+class ChargeScreen extends StatelessWidget {
   const ChargeScreen({required this.requiredAmount, super.key});
 
   /// The SHARE (coupon) amount, in KRW, that must be charged.
   final int requiredAmount;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgGradientStart,
       appBar: AppBar(
@@ -96,7 +93,7 @@ class ChargeScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                onPressed: () => _pay(context, ref),
+                onPressed: () => _pay(context),
                 child: Text(
                   '$requiredAmount원 안전 결제하기',
                   style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
@@ -109,16 +106,15 @@ class ChargeScreen extends ConsumerWidget {
     );
   }
 
-  void _pay(BuildContext context, WidgetRef ref) {
-    ref.read(walletProvider.notifier).chargeShare(requiredAmount);
+  void _pay(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '결제 시뮬레이션 성공! $requiredAmount SHARE가 충전되었습니다.',
+          '이 화면에서는 $requiredAmount SHARE를 충전하지 않습니다. '
+          '잔액은 서버 원장에 기록된 값만 표시됩니다.',
         ),
       ),
     );
-    context.pop();
   }
 }
 

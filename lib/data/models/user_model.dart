@@ -83,6 +83,8 @@ class UserModel {
     this.isSponsored = false,
     this.coachPlusProductId = '',
     this.coachPlusActiveUntil = '',
+    this.pedometerHarvestedShare = 0,
+    this.pedometerHarvestDateKey = '',
   });
 
   final String uid;
@@ -146,6 +148,12 @@ class UserModel {
   /// ISO timestamp from the server. Empty when Coach+ is not active.
   final String coachPlusActiveUntil;
 
+  /// Server `pedometerHarvest.harvestedShare` for [pedometerHarvestDateKey].
+  final int pedometerHarvestedShare;
+
+  /// Server `pedometerHarvest.dateKey` (KST). Empty when the field is absent.
+  final String pedometerHarvestDateKey;
+
   /// Convenience alias used by dashboard wallet bindings.
   int get share => wallet.shareBalance;
 
@@ -186,6 +194,23 @@ class UserModel {
   }
 
   bool get isFemale => gender == 'female';
+
+  static Map<String, dynamic>? _pedometerHarvest(Map<String, dynamic> json) {
+    final raw = json['pedometerHarvest'];
+    return switch (raw) {
+      final Map<String, dynamic> m => m,
+      final Map m => Map<String, dynamic>.from(m),
+      _ => null,
+    };
+  }
+
+  static int _pedometerHarvestedShare(Map<String, dynamic> json) {
+    return nonNegativeInt(_pedometerHarvest(json)?['harvestedShare']);
+  }
+
+  static String _pedometerHarvestDateKey(Map<String, dynamic> json) {
+    return (_pedometerHarvest(json)?['dateKey'] as String?)?.trim() ?? '';
+  }
 
   static int _preferredHour(Object? raw) {
     if (raw == null) return 19;
@@ -246,6 +271,8 @@ class UserModel {
     bool? isSponsored,
     String? coachPlusProductId,
     String? coachPlusActiveUntil,
+    int? pedometerHarvestedShare,
+    String? pedometerHarvestDateKey,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -278,6 +305,10 @@ class UserModel {
       isSponsored: isSponsored ?? this.isSponsored,
       coachPlusProductId: coachPlusProductId ?? this.coachPlusProductId,
       coachPlusActiveUntil: coachPlusActiveUntil ?? this.coachPlusActiveUntil,
+      pedometerHarvestedShare:
+          pedometerHarvestedShare ?? this.pedometerHarvestedShare,
+      pedometerHarvestDateKey:
+          pedometerHarvestDateKey ?? this.pedometerHarvestDateKey,
     );
   }
 
@@ -389,6 +420,8 @@ class UserModel {
         isSponsored: json['isSponsored'] == true,
         coachPlusProductId: _coachPlusProductId(json['coachPlus']),
         coachPlusActiveUntil: _coachPlusActiveUntil(json['coachPlus']),
+        pedometerHarvestedShare: _pedometerHarvestedShare(json),
+        pedometerHarvestDateKey: _pedometerHarvestDateKey(json),
       );
     } catch (_) {
       return UserModel.dashboardDefault(

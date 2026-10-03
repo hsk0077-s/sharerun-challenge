@@ -8,6 +8,7 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
+import 'package:share_run_challenge/data/models/wallet_transaction_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
 import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.dart';
@@ -54,7 +55,7 @@ class _SeededHistory extends DebugLocalShareHistory {
   List<DebugLocalShareTx> build() => const [
         DebugLocalShareTx(
           id: 'tx-join',
-          title: '대회 참가',
+          title: '로컬에만 있는 영수증',
           amount: -30000,
           assetType: 'SHARE',
           timestampMs: 0,
@@ -196,6 +197,19 @@ void main() {
           persistedAuthSessionProvider.overrideWith(_SeededSession.new),
           userProfileProvider.overrideWith(_QuietProfile.new),
           debugLocalShareHistoryProvider.overrideWith(_SeededHistory.new),
+          recentWalletTransactionsProvider.overrideWith(
+            (ref) => Stream<List<WalletTransactionModel>>.value(const [
+              WalletTransactionModel(
+                id: 'ledger-join',
+                type: 'tournament_entry',
+                shareAmount: -30000,
+                valueAmount: 0,
+                diamondAmount: 0,
+                createdAt: null,
+                tournamentId: 't1',
+              ),
+            ]),
+          ),
         ],
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -208,7 +222,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('대회 참가'), findsOneWidget);
-    expect(find.text('-30000 SHARE'), findsOneWidget);
+    expect(find.text('-30000 Share'), findsOneWidget);
+    expect(find.text('로컬에만 있는 영수증'), findsNothing);
     expect(find.text(AppStrings.notificationPaymentJustNow), findsOneWidget);
     expect(find.text(AppStrings.notificationPaymentReceipt), findsOneWidget);
     expect(find.text(AppStrings.notificationPaymentEmpty), findsNothing);

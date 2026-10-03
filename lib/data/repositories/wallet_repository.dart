@@ -26,38 +26,17 @@ class WalletRepository {
     );
   }
 
-  /// 소비/충전 완료 후 `users/{uid}/wallet_transactions`에 영구 기록한다.
-  /// 업로드 실패는 본 결제를 롤백하지 않는다.
+  /// Client receipts are not the ledger. History reads `walletTransactions`.
   Future<void> logClientWalletTransaction({
     required String uid,
     required String title,
     required int amount,
     required String assetType,
   }) async {
-    if (uid.isEmpty) return;
-    try {
-      await _firestoreService
-          .collection(FirestorePaths.userWalletTransactions(uid))
-          .add({
-        'id': '${_receiptPrefix(assetType)}'
-            '${DateTime.now().millisecondsSinceEpoch}',
-        'title': title,
-        'amount': amount,
-        'assetType': assetType,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      debugPrint('[FIRESTORE TRANSACTION] $assetType 영수증 발행 완료');
-    } catch (e) {
-      debugPrint('[FIRESTORE TRANSACTION] $assetType 영수증 발행 실패: $e');
-    }
-  }
-
-  String _receiptPrefix(String assetType) {
-    return switch (assetType) {
-      'DIA' => 'TX_DIA_',
-      'VALUE' => 'TX_VALUE_',
-      _ => 'TX_SHARE_',
-    };
+    debugPrint(
+      'logClientWalletTransaction skipped (server ledger): '
+      'uid=$uid $assetType $amount $title',
+    );
   }
 
   Stream<WalletModel> watchWallet(String uid) {

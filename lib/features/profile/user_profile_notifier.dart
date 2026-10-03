@@ -45,7 +45,6 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     // Pass uid from auth/session providers — never from `state`, which is
     // uninitialized until this `build()` returns (cold-start ErrorWidget).
     listenToFirestoreProfile(uid: _currentUid() ?? initial.uid);
-    unawaited(_hydrateDurableDonations());
     return initial;
   }
 
@@ -108,10 +107,7 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     ref.read(walletProvider.notifier).replaceFromRemote(profile.wallet);
   }
 
-  /// SHARE sponsorship updates donation totals locally first. A stale
-  /// `users/{uid}` snapshot must not snap the My-page bar back down.
-  /// Remote webhook totals may still increase. Durable prefs cover restart
-  /// when `recordDonation` is permission-denied.
+  /// Donation totals on screen are the server profile. Phone totals do not win.
   static UserModel retainOptimisticDonationTotals({
     required UserModel local,
     required UserModel remote,
@@ -119,30 +115,7 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     int? durableDonationAmount,
     bool durableSponsored = false,
   }) {
-    final count = _maxNonNegative([
-      local.safeDonationCount,
-      remote.safeDonationCount,
-      durableDonationCount ?? 0,
-    ]);
-    final amount = _maxNonNegative([
-      local.safeCumulativeDonationAmount,
-      remote.safeCumulativeDonationAmount,
-      durableDonationAmount ?? 0,
-    ]);
-    return remote.copyWith(
-      donationCount: count,
-      cumulativeDonationAmount: amount,
-      isSponsored:
-          local.isSponsored || remote.isSponsored || durableSponsored,
-    );
-  }
-
-  static int _maxNonNegative(List<int> values) {
-    var best = 0;
-    for (final value in values) {
-      if (value > best) best = value;
-    }
-    return best;
+    return remote;
   }
 
   void _rememberDurableDonations({
@@ -157,32 +130,6 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       _durableDonationAmount = amount;
     }
     if (sponsored) _durableSponsored = true;
-  }
-
-  Future<void> _hydrateDurableDonations() async {
-    final uid = _currentUid();
-    if (uid == null || uid.isEmpty) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final count = prefs.getInt('$_donationCountPrefix$uid');
-      final amount = prefs.getInt('$_donationAmountPrefix$uid');
-      final sponsored = prefs.getBool('$_sponsoredPrefix$uid') ?? false;
-      if (count == null && amount == null && !sponsored) return;
-      _rememberDurableDonations(
-        count: count ?? 0,
-        amount: amount ?? 0,
-        sponsored: sponsored,
-      );
-      state = retainOptimisticDonationTotals(
-        local: state,
-        remote: state,
-        durableDonationCount: _durableDonationCount,
-        durableDonationAmount: _durableDonationAmount,
-        durableSponsored: _durableSponsored,
-      );
-    } catch (e) {
-      debugPrint('hydrateDurableDonations: $e');
-    }
   }
 
   Future<void> _persistDurableDonations() async {

@@ -47,7 +47,7 @@ void main() {
     expect(container.read(walletProvider).valueBalance, 1000000);
   });
 
-  test('stale cloud profile does not snap donation totals back down', () {
+  test('donation totals on screen are the server profile', () {
     final local = UserModel.dashboardDefault(uid: 'u1').copyWith(
       donationCount: 1,
       cumulativeDonationAmount: 50000,
@@ -59,10 +59,9 @@ void main() {
       local: local,
       remote: remote,
     );
-    expect(merged.donationCount, 1);
-    expect(merged.cumulativeDonationAmount, 50000);
-    expect(merged.isSponsored, isTrue);
-    expect(merged.angelTier, isNot(remote.angelTier));
+    expect(merged.donationCount, remote.donationCount);
+    expect(merged.cumulativeDonationAmount, remote.cumulativeDonationAmount);
+    expect(merged.isSponsored, remote.isSponsored);
   });
 
   test('higher remote donation totals still win', () {
@@ -85,7 +84,7 @@ void main() {
     expect(merged.cumulativeDonationAmount, 150000);
   });
 
-  test('durable donation totals survive a zeroed local and remote profile', () {
+  test('phone donation prefs do not raise a blank server profile', () {
     final blank = UserModel.dashboardDefault(uid: 'u1');
     final merged = UserProfileNotifier.retainOptimisticDonationTotals(
       local: blank,
@@ -94,10 +93,9 @@ void main() {
       durableDonationAmount: 50000,
       durableSponsored: true,
     );
-    expect(merged.donationCount, 1);
-    expect(merged.cumulativeDonationAmount, 50000);
-    expect(merged.isSponsored, isTrue);
-    expect(merged.angelTier, AngelTier.guardian);
+    expect(merged.donationCount, 0);
+    expect(merged.cumulativeDonationAmount, 0);
+    expect(merged.isSponsored, isFalse);
   });
 
   test('50k SHARE sponsor updates angel count/total and they stay', () async {
@@ -126,8 +124,7 @@ void main() {
       local: after,
       remote: UserModel.dashboardDefault(uid: ''),
     );
-    expect(snapped.donationCount, 1);
-    expect(snapped.cumulativeDonationAmount, 50000);
-    expect(snapped.angelTier, AngelTier.guardian);
+    expect(snapped.donationCount, 0);
+    expect(snapped.cumulativeDonationAmount, 0);
   });
 }

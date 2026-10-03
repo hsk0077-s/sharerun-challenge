@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../app/providers/wallet_state_provider.dart';
 import '../core/strings/app_strings.dart';
@@ -18,6 +20,14 @@ import '../features/run_result/run_finish_theme_store.dart';
 /// 온보딩 플로우 기록 결과 화면 (Screen 11).
 class OnboardingRunResultScreen extends ConsumerStatefulWidget {
   const OnboardingRunResultScreen({super.key});
+
+  static const photoGalleryKey = Key('run-finish-photo-gallery');
+  static const photoCameraKey = Key('run-finish-photo-camera');
+  static const photoCameraLabel = '사진 찍기';
+  static const photoGalleryLabel = '갤러리에서 고르기';
+
+  /// Test hook. Production uses [ImagePicker] and keeps the bytes in memory.
+  static Future<Uint8List?> Function(ImageSource source)? debugPickPhoto;
 
   @override
   ConsumerState<OnboardingRunResultScreen> createState() =>
@@ -37,6 +47,10 @@ class _OnboardingRunResultScreenState
   var _instagramInstalled = false;
   var _tiktokInstalled = false;
   var _sharingImage = false;
+
+  /// Scenery for this visit only. Never saved, never uploaded.
+  ImageProvider? _photo;
+  var _usingPhoto = false;
   final _finishedOn = DateTime.now();
   final _styleController = PageController(viewportFraction: 0.8);
   final _cardKey = GlobalKey();
@@ -59,7 +73,8 @@ class _OnboardingRunResultScreenState
     final theme = await RunFinishThemeStore.load();
     if (!mounted) return;
     setState(() {
-      _styleIndex = theme.index;
+      _styleIndex = RunFinishCardTheme.colorThemes.indexOf(theme);
+      _usingPhoto = false;
       _themeReady = true;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -70,9 +85,14 @@ class _OnboardingRunResultScreenState
   }
 
   void _onThemeSelected(int index) {
-    setState(() => _styleIndex = index);
+    setState(() {
+      _styleIndex = index;
+      _usingPhoto = false;
+    });
     if (_themeReady) {
-      unawaited(RunFinishThemeStore.save(RunFinishCardTheme.values[index]));
+      unawaited(
+        RunFinishThemeStore.save(RunFinishCardTheme.colorThemes[index]),
+      );
     }
     if (!_styleController.hasClients) return;
     if (_styleController.page?.round() == index) return;
@@ -106,7 +126,42 @@ class _OnboardingRunResultScreenState
       time: AppStrings.runResultFinalTimeValue,
       pace: AppStrings.runResultAvgPaceValue,
       date: _finishedOn,
+      photo: style == RunFinishCardTheme.photo ? _photo : null,
     );
+  }
+
+  RunFinishCardTheme get _captureStyle {
+    if (_usingPhoto && _photo != null) return RunFinishCardTheme.photo;
+    return RunFinishCardTheme.colorThemes[_styleIndex];
+  }
+
+  Future<void> _pickRunPhoto(ImageSource source) async {
+    try {
+      final hook = OnboardingRunResultScreen.debugPickPhoto;
+      final Uint8List? bytes;
+      if (hook != null) {
+        bytes = await hook(source);
+      } else {
+        final file = await ImagePicker().pickImage(
+          source: source,
+          maxWidth: 1440,
+          imageQuality: 85,
+        );
+        if (file == null) return;
+        bytes = await file.readAsBytes();
+      }
+      if (!mounted || bytes == null || bytes.isEmpty) return;
+      setState(() {
+        _photo = MemoryImage(bytes!);
+        _usingPhoto = true;
+      });
+    } catch (e, st) {
+      debugPrint('run finish photo: $e\n$st');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('사진을 불러오지 못했어요.')),
+      );
+    }
   }
 
   Future<void> _applyRunRewards() async {
@@ -177,7 +232,8 @@ class _OnboardingRunResultScreenState
       debugPrint('RunFinishImageShare.capture: $e\n$st');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(RunFinishImageShare.captureFailedMessage)),
+          const SnackBar(
+              content: Text(RunFinishImageShare.captureFailedMessage)),
         );
       }
       return null;
@@ -203,7 +259,8 @@ class _OnboardingRunResultScreenState
     final opened = await RunFinishImageShare.shareInstagramStory(file.path);
     if (!opened && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(RunFinishImageShare.instagramFailedMessage)),
+        const SnackBar(
+            content: Text(RunFinishImageShare.instagramFailedMessage)),
       );
     }
   }
@@ -248,89 +305,92 @@ class _OnboardingRunResultScreenState
           child: Stack(
             children: [
               Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    16,
-                    AppShapes.termsHorizontalPadding,
-                    16,
-                  ),
-                  child: Column(
-                    children: [
-                      const _CelebrationGraphic(),
-                      const SizedBox(height: 16),
-                      Text(
-                        AppStrings.runResultTitle,
-                        style: AppTextStyles.header1.copyWith(fontSize: 28),
-                        textAlign: TextAlign.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppShapes.termsHorizontalPadding,
+                        16,
+                        AppShapes.termsHorizontalPadding,
+                        16,
                       ),
-                      const SizedBox(height: 20),
-                      RunFinishSharePreview(
-                        controller: _styleController,
-                        styleIndex: _styleIndex,
-                        cardFor: _shareCard,
-                        onStyleChanged: _onThemeSelected,
-                      ),
-                      const SizedBox(height: 20),
-                      const _RecordCard(),
-                      const SizedBox(height: 14),
-                      const _RewardCard(),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppShapes.termsHorizontalPadding,
-                  8,
-                  AppShapes.termsHorizontalPadding,
-                  16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Material(
-                      color: AppColors.primaryMint,
-                      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-                      clipBehavior: Clip.antiAlias,
-                      child: InkWell(
-                        onTap: _onDonate,
-                        child: SizedBox(
-                          height: AppShapes.buttonHeight,
-                          child: Center(
-                            child: Text(
-                              AppStrings.runResultDonate,
-                              style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textBlack,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                      child: Column(
+                        children: [
+                          const _CelebrationGraphic(),
+                          const SizedBox(height: 16),
+                          Text(
+                            AppStrings.runResultTitle,
+                            style: AppTextStyles.header1.copyWith(fontSize: 28),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
+                          const SizedBox(height: 20),
+                          RunFinishSharePreview(
+                            controller: _styleController,
+                            styleIndex: _styleIndex,
+                            cardFor: _shareCard,
+                            onStyleChanged: _onThemeSelected,
+                            photoActive: _usingPhoto && _photo != null,
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _ImageShareButton(
+                                  key: OnboardingRunResultScreen.photoCameraKey,
+                                  label: OnboardingRunResultScreen
+                                      .photoCameraLabel,
+                                  onTap: () => unawaited(
+                                    _pickRunPhoto(ImageSource.camera),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: _ImageShareButton(
+                                  key:
+                                      OnboardingRunResultScreen.photoGalleryKey,
+                                  label: OnboardingRunResultScreen
+                                      .photoGalleryLabel,
+                                  onTap: () => unawaited(
+                                    _pickRunPhoto(ImageSource.gallery),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          const _RecordCard(),
+                          const SizedBox(height: 14),
+                          const _RewardCard(),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Builder(
-                      builder: (buttonContext) {
-                        return Material(
-                          color: AppColors.garminAuthButton,
-                          borderRadius: BorderRadius.circular(
-                            AppShapes.cardRadius,
-                          ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppShapes.termsHorizontalPadding,
+                      8,
+                      AppShapes.termsHorizontalPadding,
+                      16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Material(
+                          color: AppColors.primaryMint,
+                          borderRadius:
+                              BorderRadius.circular(AppShapes.cardRadius),
                           clipBehavior: Clip.antiAlias,
                           child: InkWell(
-                            onTap: () => unawaited(_onShare(buttonContext)),
+                            onTap: _onDonate,
                             child: SizedBox(
                               height: AppShapes.buttonHeight,
                               child: Center(
                                 child: Text(
-                                  AppStrings.runResultShare,
+                                  AppStrings.runResultDonate,
                                   style: AppTextStyles.buttonText.copyWith(
-                                    color: AppColors.textWhite,
+                                    color: AppColors.textBlack,
                                     fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -338,22 +398,48 @@ class _OnboardingRunResultScreenState
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 10),
+                        Builder(
+                          builder: (buttonContext) {
+                            return Material(
+                              color: AppColors.garminAuthButton,
+                              borderRadius: BorderRadius.circular(
+                                AppShapes.cardRadius,
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: InkWell(
+                                onTap: () => unawaited(_onShare(buttonContext)),
+                                child: SizedBox(
+                                  height: AppShapes.buttonHeight,
+                                  child: Center(
+                                    child: Text(
+                                      AppStrings.runResultShare,
+                                      style: AppTextStyles.buttonText.copyWith(
+                                        color: AppColors.textWhite,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _ImageShareRow(
+                          instagram: _instagramInstalled,
+                          tiktok: _tiktokInstalled,
+                          enabled: !_sharingImage,
+                          onInstagram: _onInstagram,
+                          onTikTok: _onTikTok,
+                          onMore: _onMore,
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    _ImageShareRow(
-                      instagram: _instagramInstalled,
-                      tiktok: _tiktokInstalled,
-                      enabled: !_sharingImage,
-                      onInstagram: _onInstagram,
-                      onTikTok: _onTikTok,
-                      onMore: _onMore,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
               ),
               // Laid out at full poster size, clipped by the stack so it
               // never covers the finish screen. toImage reads this layer.
@@ -372,9 +458,7 @@ class _OnboardingRunResultScreenState
                       maxHeight: RunFinishShareCard.canvasHeight,
                       child: RepaintBoundary(
                         key: _cardKey,
-                        child: _shareCard(
-                          RunFinishCardTheme.values[_styleIndex],
-                        ),
+                        child: _shareCard(_captureStyle),
                       ),
                     ),
                   ),

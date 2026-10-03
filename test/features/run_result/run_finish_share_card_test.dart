@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,6 +40,7 @@ void main() {
     RunFinishImageShare.debugCaptureOverride = null;
     WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
     WalkingChallengeShare.debugShareOverride = null;
+    OnboardingRunResultScreen.debugPickPhoto = null;
   });
 
   tearDown(() {
@@ -47,6 +50,7 @@ void main() {
     RunFinishImageShare.debugTikTokShare = null;
     RunFinishImageShare.debugSystemShare = null;
     RunFinishImageShare.debugCaptureOverride = null;
+    OnboardingRunResultScreen.debugPickPhoto = null;
   });
 
   test('donation line is omitted when this run has no won amount', () {
@@ -260,7 +264,8 @@ void main() {
     expect(sent, isNull);
   });
 
-  testWidgets('offscreen poster is story size and can be captured', (tester) async {
+  testWidgets('offscreen poster is story size and can be captured',
+      (tester) async {
     await _pumpFinish(tester);
     final posters = tester
         .renderObjectList<RenderRepaintBoundary>(find.byType(RepaintBoundary))
@@ -308,7 +313,8 @@ void main() {
       () => precacheImage(const AssetImage(SRCLogoHeader.assetPath), context),
     );
     await tester.pump();
-    final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+    final boundary =
+        key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = boundary.toImageSync();
     final bytes = await tester.runAsync(
       () => image.toByteData(format: ui.ImageByteFormat.rawRgba),
@@ -328,7 +334,60 @@ void main() {
     expect(green, greaterThan(40));
   });
 
-  testWidgets('example poster lays out with the donation badge', (tester) async {
+  testWidgets('photo is optional and a color dot switches back',
+      (tester) async {
+    ImageSource? picked;
+    OnboardingRunResultScreen.debugPickPhoto = (source) async {
+      picked = source;
+      return _scenicBytes();
+    };
+    SharedPreferences.setMockInitialValues({
+      RunFinishThemeStore.prefsKey: 'photo',
+    });
+    await _pumpFinish(tester);
+
+    expect(find.text('다크'), findsOneWidget);
+    expect(find.text('내 사진'), findsNothing);
+    expect(find.byKey(RunFinishShareCard.photoKey), findsNothing);
+    expect(
+        find.text(OnboardingRunResultScreen.photoCameraLabel), findsOneWidget);
+    expect(
+      find.text(OnboardingRunResultScreen.photoGalleryLabel),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(
+      find.byKey(OnboardingRunResultScreen.photoGalleryKey),
+    );
+    await tester.tap(find.byKey(OnboardingRunResultScreen.photoGalleryKey));
+    await tester.pump();
+    expect(picked, ImageSource.gallery);
+    expect(find.text('내 사진'), findsOneWidget);
+    expect(find.byKey(RunFinishShareCard.photoKey), findsWidgets);
+
+    var prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(RunFinishThemeStore.prefsKey), 'photo');
+
+    await tester.ensureVisible(find.byKey(const Key('run-finish-theme-pink')));
+    await tester.tap(find.byKey(const Key('run-finish-theme-pink')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('핑크'), findsOneWidget);
+    expect(find.text('내 사진'), findsNothing);
+    expect(find.byKey(RunFinishShareCard.photoKey), findsNothing);
+    prefs = await SharedPreferences.getInstance();
+    expect(prefs.getString(RunFinishThemeStore.prefsKey), 'pink');
+
+    picked = null;
+    await tester.tap(find.byKey(OnboardingRunResultScreen.photoCameraKey));
+    await tester.pump();
+    expect(picked, ImageSource.camera);
+    expect(find.text('내 사진'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('example poster lays out with the donation badge',
+      (tester) async {
     await _pumpCard(tester, _exampleCard(RunFinishCardTheme.mint));
     expect(find.text('5.24'), findsOneWidget);
     expect(find.text('28:15'), findsOneWidget);
@@ -340,7 +399,8 @@ void main() {
   });
 
   testWidgets('captured poster is 1080x1920 png', (tester) async {
-    final file = await _renderPoster(tester, _exampleCard(RunFinishCardTheme.dark));
+    final file =
+        await _renderPoster(tester, _exampleCard(RunFinishCardTheme.dark));
     _expectPngSize(file, 1080, 1920);
 
     if (Platform.environment['SHARE_CARD_SAMPLES'] == '1') {
@@ -363,7 +423,17 @@ RunFinishShareCard _exampleCard(RunFinishCardTheme theme) {
     pace: "5'23\"/km",
     date: _sampleDate,
     donationWon: 3200,
+    photo:
+        theme == RunFinishCardTheme.photo ? MemoryImage(_scenicBytes()) : null,
   );
+}
+
+Uint8List? _scenic;
+
+Uint8List _scenicBytes() {
+  return _scenic ??= File(
+    'test/fixtures/share_card_scenic.png',
+  ).readAsBytesSync();
 }
 
 final _sampleDate = DateTime(2026, 10, 3);
@@ -435,9 +505,11 @@ Future<File> _renderPoster(WidgetTester tester, RunFinishShareCard card) async {
   );
   await tester.pump();
   final context = tester.element(find.byType(RunFinishShareCard));
-  await tester.runAsync(
-    () => precacheImage(const AssetImage(SRCLogoHeader.assetPath), context),
-  );
+  await tester.runAsync(() async {
+    await precacheImage(const AssetImage(SRCLogoHeader.assetPath), context);
+    final photo = card.photo;
+    if (photo != null) await precacheImage(photo, context);
+  });
   await tester.pump();
   // toImageSync deadlocks inside runAsync (it waits on the raster thread
   // while the test binding holds the UI isolate). Rasterize here, encode there.
@@ -480,7 +552,8 @@ Future<double> _inkFillRatio(WidgetTester tester, Widget child) async {
     ),
   );
   await tester.pump();
-  final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+  final boundary =
+      key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
   final image = boundary.toImageSync();
   final bytes = await tester.runAsync(
     () => image.toByteData(format: ui.ImageByteFormat.rawRgba),

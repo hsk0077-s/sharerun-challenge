@@ -11,7 +11,17 @@ enum RunFinishCardTheme {
   blue,
   pink,
   yellow,
-  mint;
+  mint,
+  photo;
+
+  /// Color faces only. A photo is optional and is never the opening theme.
+  static const colorThemes = <RunFinishCardTheme>[
+    dark,
+    blue,
+    pink,
+    yellow,
+    mint
+  ];
 
   String get label => switch (this) {
         dark => '다크',
@@ -19,6 +29,7 @@ enum RunFinishCardTheme {
         pink => '핑크',
         yellow => '옐로',
         mint => '민트',
+        photo => '내 사진',
       };
 
   /// Dot under the preview. Mint is the mint→purple face.
@@ -28,6 +39,7 @@ enum RunFinishCardTheme {
         pink => const Color(0xFFF2A0C0),
         yellow => const Color(0xFFFFC857),
         mint => const Color(0xFF6B4C9A),
+        photo => const Color(0xFF3E7A45),
       };
 }
 
@@ -63,6 +75,7 @@ class RunFinishShareCard extends StatelessWidget {
     required this.date,
     this.donationWon,
     this.route,
+    this.photo,
     super.key,
   });
 
@@ -80,6 +93,7 @@ class RunFinishShareCard extends StatelessWidget {
   static const logoKey = Key('run-finish-logo');
   static const appNameKey = Key('run-finish-app-name');
   static const headlineKey = Key('run-finish-headline');
+  static const photoKey = Key('run-finish-photo');
 
   static const appName = '쉐어 런';
   static const headline = '오늘의 러닝';
@@ -94,6 +108,9 @@ class RunFinishShareCard extends StatelessWidget {
 
   /// Normalized 0–1 points. Omitted when the finish screen has no route.
   final List<Offset>? route;
+
+  /// Scenery for [RunFinishCardTheme.photo]. Session-only; never uploaded.
+  final ImageProvider? photo;
 
   _PaceParts get _paceParts {
     var trimmed = pace.trim();
@@ -116,6 +133,7 @@ class RunFinishShareCard extends StatelessWidget {
     final donation = runFinishDonationLine(donationWon);
     final media = MediaQuery.maybeOf(context) ?? const MediaQueryData();
     final paceParts = _paceParts;
+    final hasPhoto = style == RunFinishCardTheme.photo && photo != null;
 
     return DefaultTextStyle(
       style: const TextStyle(
@@ -129,18 +147,27 @@ class RunFinishShareCard extends StatelessWidget {
           height: canvasHeight,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: palette.background,
-                stops: const [0.0, 0.48, 1.0],
-              ),
+              color: const Color(0xFF07110E),
+              gradient: hasPhoto
+                  ? null
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: palette.background,
+                      stops: const [0.0, 0.48, 1.0],
+                    ),
+              image: hasPhoto
+                  ? DecorationImage(image: photo!, fit: BoxFit.cover)
+                  : null,
             ),
             child: Stack(
               fit: StackFit.expand,
               children: [
-                CustomPaint(painter: _AtmospherePainter(palette)),
-                if (!_hasRoute)
+                if (hasPhoto)
+                  const _PhotoScrim(key: RunFinishShareCard.photoKey),
+                if (!hasPhoto)
+                  CustomPaint(painter: _AtmospherePainter(palette)),
+                if (!hasPhoto && !_hasRoute)
                   CustomPaint(painter: _TrackFieldPainter(palette.decor)),
                 if (_hasRoute)
                   CustomPaint(
@@ -635,7 +662,7 @@ class _CardPalette {
 
   static _CardPalette of(RunFinishCardTheme style) {
     return switch (style) {
-      RunFinishCardTheme.dark => const _CardPalette(
+      RunFinishCardTheme.photo || RunFinishCardTheme.dark => const _CardPalette(
           background: [Color(0xFF07110E), Color(0xFF123028), Color(0xFF0C241C)],
           glow: Color(0xFF76C8A7),
           glowAlpha: 0.42,
@@ -721,6 +748,33 @@ class _CardPalette {
           badgeInk: Color(0xFF2A1C08),
         ),
     };
+  }
+}
+
+/// Darkens the top and bottom of a scenery photo so the type stays light.
+class _PhotoScrim extends StatelessWidget {
+  const _PhotoScrim({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xD907110E),
+            Color(0xB307110E),
+            Color(0x7307110E),
+            Color(0x1407110E),
+            Color(0x1407110E),
+            Color(0x9907110E),
+            Color(0xE607110E),
+          ],
+          stops: [0.0, 0.16, 0.40, 0.52, 0.76, 0.84, 1.0],
+        ),
+      ),
+    );
   }
 }
 
@@ -980,6 +1034,7 @@ class RunFinishSharePreview extends StatelessWidget {
     required this.styleIndex,
     required this.cardFor,
     required this.onStyleChanged,
+    this.photoActive = false,
     super.key,
   });
 
@@ -989,6 +1044,7 @@ class RunFinishSharePreview extends StatelessWidget {
   final int styleIndex;
   final RunFinishShareCard Function(RunFinishCardTheme style) cardFor;
   final ValueChanged<int> onStyleChanged;
+  final bool photoActive;
 
   @override
   Widget build(BuildContext context) {
@@ -997,58 +1053,50 @@ class RunFinishSharePreview extends StatelessWidget {
         final pageWidth =
             constraints.maxWidth * controller.viewportFraction - 16;
         final height = pageWidth * 16 / 9;
+        final colors = RunFinishCardTheme.colorThemes;
         return Column(
           children: [
             SizedBox(
               height: height,
-              child: PageView.builder(
-                key: pagerKey,
-                controller: controller,
-                itemCount: RunFinishCardTheme.values.length,
-                onPageChanged: onStyleChanged,
-                itemBuilder: (context, index) {
-                  final style = RunFinishCardTheme.values[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(22),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x24000000),
-                            blurRadius: 18,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(22),
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: cardFor(style),
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  PageView.builder(
+                    key: pagerKey,
+                    controller: controller,
+                    itemCount: colors.length,
+                    onPageChanged: onStyleChanged,
+                    itemBuilder: (context, index) {
+                      return _PreviewFrame(child: cardFor(colors[index]));
+                    },
+                  ),
+                  if (photoActive)
+                    _PreviewFrame(child: cardFor(RunFinishCardTheme.photo)),
+                ],
               ),
             ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (var i = 0; i < RunFinishCardTheme.values.length; i++)
+                for (var i = 0; i < colors.length; i++)
                   _ThemeDot(
-                    theme: RunFinishCardTheme.values[i],
-                    selected: i == styleIndex,
+                    theme: colors[i],
+                    selected: !photoActive && i == styleIndex,
                     onTap: () => onStyleChanged(i),
                   ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
-              RunFinishCardTheme.values[styleIndex].label,
-              key: Key('run-finish-style-$styleIndex'),
+              photoActive
+                  ? RunFinishCardTheme.photo.label
+                  : colors[styleIndex].label,
+              key: Key(
+                photoActive
+                    ? 'run-finish-style-photo'
+                    : 'run-finish-style-$styleIndex',
+              ),
               style: const TextStyle(
                 fontFamily: RunFinishShareCard.fontFamily,
                 fontSize: 13,
@@ -1060,6 +1108,38 @@ class RunFinishSharePreview extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _PreviewFrame extends StatelessWidget {
+  const _PreviewFrame({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x24000000),
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1104,12 +1184,21 @@ class _ThemeDot extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: theme == RunFinishCardTheme.mint ? null : theme.dot,
-                gradient: theme == RunFinishCardTheme.mint
-                    ? const LinearGradient(
-                        colors: [Color(0xFF1E6A58), Color(0xFF6B4C9A)],
-                      )
-                    : null,
+                color: theme == RunFinishCardTheme.mint ||
+                        theme == RunFinishCardTheme.photo
+                    ? null
+                    : theme.dot,
+                gradient: switch (theme) {
+                  RunFinishCardTheme.mint => const LinearGradient(
+                      colors: [Color(0xFF1E6A58), Color(0xFF6B4C9A)],
+                    ),
+                  RunFinishCardTheme.photo => const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF7EB6E8), Color(0xFF3E7A45)],
+                    ),
+                  _ => null,
+                },
               ),
             ),
           ),

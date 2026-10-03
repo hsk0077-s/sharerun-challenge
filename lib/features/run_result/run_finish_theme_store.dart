@@ -9,7 +9,7 @@ abstract final class RunFinishThemeStore {
   static Future<RunFinishCardTheme> load() async {
     try {
       final name = (await SharedPreferences.getInstance()).getString(prefsKey);
-      for (final theme in RunFinishCardTheme.values) {
+      for (final theme in RunFinishCardTheme.colorThemes) {
         if (theme.name == name) return theme;
       }
     } catch (_) {}
@@ -17,6 +17,7 @@ abstract final class RunFinishThemeStore {
   }
 
   static Future<void> save(RunFinishCardTheme theme) async {
+    if (theme == RunFinishCardTheme.photo) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(prefsKey, theme.name);

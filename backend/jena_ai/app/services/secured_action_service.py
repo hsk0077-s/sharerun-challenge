@@ -81,7 +81,7 @@ class SecuredActionService:
     def claim_signup_reward(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._claim_signup_reward_tx(transaction, uid, user_ref)
+        return _commit_signup_reward_tx(transaction, self, uid, user_ref)
 
     def apply_referral_code(
         self,
@@ -264,7 +264,7 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._purchase_shop_item_tx(transaction, uid, item_id, user_ref)
+        return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
 
     def transfer_value_to_web3(
         self,
@@ -624,7 +624,6 @@ class SecuredActionService:
             ),
         )
 
-    @firestore.transactional
     def _claim_signup_reward_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
@@ -959,7 +958,6 @@ class SecuredActionService:
             },
         )
 
-    @firestore.transactional
     def _purchase_shop_item_tx(
         self,
         transaction,
@@ -1011,7 +1009,7 @@ class SecuredActionService:
             {
                 "uid": uid,
                 "type": "shop_purchase",
-                "diamondAmount": cost,
+                "diamondAmount": -cost,
                 "itemId": item_id,
                 "createdAt": SERVER_TIMESTAMP,
             },
@@ -1046,8 +1044,9 @@ class SecuredActionService:
         )
         user_ref = self.firebase_service.db.collection("users").document(uid)
         participant_ref = tournament_ref.collection("participants").document(uid)
-        return self._join_tournament_tx(
-            transaction, uid, request, user_ref, tournament_ref, participant_ref
+        # Module wrapper: a method decorator does not bind `self`.
+        return _commit_join_tx(
+            transaction, self, uid, request, user_ref, tournament_ref, participant_ref
         )
 
     def settle_tournament_failure(
@@ -1070,7 +1069,6 @@ class SecuredActionService:
             participant_ref,
         )
 
-    @firestore.transactional
     def _join_tournament_tx(
         self,
         transaction,
@@ -1148,8 +1146,8 @@ class SecuredActionService:
                 "uid": uid,
                 "tournamentId": tournament_ref.id,
                 "type": "tournament_entry",
-                "shareAmount": entry_fee,
-                "diamondAmount": diamond_deposit,
+                "shareAmount": -entry_fee,
+                "diamondAmount": -diamond_deposit,
                 "charityTarget": selected_charity if diamond_deposit > 0 else None,
                 "createdAt": SERVER_TIMESTAMP,
             },
@@ -1271,11 +1269,10 @@ class SecuredActionService:
         collected_ref = user_ref.collection("collectedDiamondBoxes").document(
             request.box_id
         )
-        return self._collect_diamond_box_tx(
-            transaction, uid, request, user_ref, box_ref, collected_ref
+        return _commit_diamond_box_tx(
+            transaction, self, uid, request, user_ref, box_ref, collected_ref
         )
 
-    @firestore.transactional
     def _collect_diamond_box_tx(
         self,
         transaction,
@@ -1588,9 +1585,8 @@ class SecuredActionService:
     def request_refund(self, uid: str, request: RefundRequest) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._request_refund_tx(transaction, uid, request, user_ref)
+        return _commit_refund_tx(transaction, self, uid, request, user_ref)
 
-    @firestore.transactional
     def _request_refund_tx(
         self,
         transaction,
@@ -1619,7 +1615,7 @@ class SecuredActionService:
             {
                 "uid": uid,
                 "type": "cash_refund_requested",
-                "shareAmount": request.share_amount,
+                "shareAmount": -request.share_amount,
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
@@ -1678,11 +1674,10 @@ class SecuredActionService:
         activity_ref = self.firebase_service.db.collection("activities").document(
             request.activity_id
         )
-        return self._apply_winner_reward_tx(
-            transaction, uid, request, user_ref, activity_ref
+        return _commit_winner_tx(
+            transaction, self, uid, request, user_ref, activity_ref
         )
 
-    @firestore.transactional
     def _apply_winner_reward_tx(
         self,
         transaction,
@@ -1737,7 +1732,7 @@ class SecuredActionService:
                 "uid": uid,
                 "activityId": activity_ref.id,
                 "type": request.action,
-                "valueAmount": reward,
+                "valueAmount": -donation,
                 "claimedValue": retained,
                 "donatedValue": donation,
                 "donationTarget": "UNICEF" if donation > 0 else None,
@@ -1869,6 +1864,82 @@ def _commit_harvest_tx(
     return service._harvest_pedometer_share_tx(
         transaction, uid, request, user_ref
     )
+
+
+@firestore.transactional
+def _commit_shop_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._purchase_shop_item_tx(transaction, uid, item_id, user_ref)
+
+
+@firestore.transactional
+def _commit_join_tx(
+    transaction,
+    service,
+    uid: str,
+    request: JoinTournamentRequest,
+    user_ref,
+    tournament_ref,
+    participant_ref,
+) -> SecuredActionResult:
+    return service._join_tournament_tx(
+        transaction, uid, request, user_ref, tournament_ref, participant_ref
+    )
+
+
+@firestore.transactional
+def _commit_winner_tx(
+    transaction,
+    service,
+    uid: str,
+    request: WinnerRewardRequest,
+    user_ref,
+    activity_ref,
+) -> SecuredActionResult:
+    return service._apply_winner_reward_tx(
+        transaction, uid, request, user_ref, activity_ref
+    )
+
+
+@firestore.transactional
+def _commit_diamond_box_tx(
+    transaction,
+    service,
+    uid: str,
+    request: CollectDiamondBoxRequest,
+    user_ref,
+    box_ref,
+    collected_ref,
+) -> SecuredActionResult:
+    return service._collect_diamond_box_tx(
+        transaction, uid, request, user_ref, box_ref, collected_ref
+    )
+
+
+@firestore.transactional
+def _commit_signup_reward_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._claim_signup_reward_tx(transaction, uid, user_ref)
+
+
+@firestore.transactional
+def _commit_refund_tx(
+    transaction,
+    service,
+    uid: str,
+    request: RefundRequest,
+    user_ref,
+) -> SecuredActionResult:
+    return service._request_refund_tx(transaction, uid, request, user_ref)
 
 
 @firestore.transactional

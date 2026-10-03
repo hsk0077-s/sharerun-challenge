@@ -43,6 +43,17 @@ abstract final class PedometerHarvestLedger {
   static String prefix({required String uid, required String dateKey}) =>
       'solo_pedo_${uid}_$dateKey';
 
+  /// Today's mined SHARE from the server harvest doc, not local steps.
+  static int displayHarvestedShare({
+    required String dateKey,
+    required int harvestedShare,
+    required String todayKey,
+  }) {
+    if (dateKey.isEmpty || dateKey != todayKey) return 0;
+    if (harvestedShare <= 0) return 0;
+    return harvestedShare > dailyShareCap ? dailyShareCap : harvestedShare;
+  }
+
   /// SHARE already counted toward today's walking benefit.
   static int todayMinedShare({required int claimedSteps}) {
     if (claimedSteps <= 0) return 0;

@@ -1525,12 +1525,6 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
       final avg = sum ~/ paces.length;
       final tier = UserTier.fromAveragePaceSeconds(avg);
 
-      if (!state.trialRewardApplied) {
-        ref
-            .read(walletProvider.notifier)
-            .chargeShare(EconomyConstants.trialCompletionRewardSrv);
-      }
-
       await ref.read(userRepositoryProvider).completePreliminaryEvaluation(
             uid: uid,
             tierRank: tier.rankScore,

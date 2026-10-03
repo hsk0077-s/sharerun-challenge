@@ -130,6 +130,7 @@ abstract final class RouteNames {
   static const crewManager = '/crew-manager';
   static const refund = '/refund';
   static const web3Wallet = '/web3-wallet';
+  static const shareToDia = '/share-to-dia';
   static const stampTour = '/stamp-tour';
   static const hallOfFame = '/hall-of-fame';
   static const appeal = '/appeal';

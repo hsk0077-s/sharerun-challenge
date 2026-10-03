@@ -20,6 +20,8 @@ from app.models.secured_actions import (
     CrewSpendRequest,
     ShopPurchaseRequest,
     ValidateRunRequest,
+    ShareToDiaRequest,
+    ShareToDiaView,
     Web3TransferRequest,
     WinnerRewardRequest,
 )
@@ -210,3 +212,16 @@ def transfer_value_to_web3(
 @router.post("/hall-of-fame/donate", response_model=SecuredActionResult)
 def donate_hall_of_fame(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.donate_hall_of_fame(uid=uid)
+
+
+@router.post("/wallet/share-to-dia/quote", response_model=ShareToDiaView)
+def quote_share_to_dia(uid: str = Depends(require_uid)) -> ShareToDiaView:
+    return service.quote_share_to_dia(uid=uid)
+
+
+@router.post("/wallet/share-to-dia", response_model=ShareToDiaView)
+def exchange_share_to_dia(
+    request: ShareToDiaRequest,
+    uid: str = Depends(require_uid),
+) -> ShareToDiaView:
+    return service.exchange_share_to_dia(uid=uid, dia_amount=request.dia_amount)

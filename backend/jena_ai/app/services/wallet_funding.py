@@ -2,7 +2,10 @@
 
 Missing bucket fields mean the existing balance is free. Spends take free
 first. Cash refunds take paid first so unused paid currency can be returned.
+Referral SHARE can be locked inside the free bucket so it is not exchangeable.
 """
+
+from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
@@ -14,12 +17,22 @@ def move_currency(
     diamond: int = 0,
     paid_credit: bool = False,
     paid_first: bool = False,
+    for_exchange: bool = False,
+    lock_until: datetime | None = None,
+    now: datetime | None = None,
 ) -> dict:
     """Apply a signed delta. Mutates ``wallet`` and returns updates + ledger split."""
+    current = now or datetime.now(timezone.utc)
+    locked, locks = _active_locks(wallet, current)
     state = resolved_buckets(wallet)
+    locked = min(locked, state["free_share"])
+    unlocked = state["free_share"] - locked
     ledger: dict[str, int] = {}
-    updates: dict[str, int] = {}
+    updates: dict = {}
     if share:
+        hidden = locked if share < 0 and for_exchange else 0
+        if hidden:
+            state["free_share"] -= hidden
         free_delta, paid_delta = _apply(
             state,
             "free_share",
@@ -29,12 +42,29 @@ def move_currency(
             paid_first=paid_first,
             label="Share",
         )
+        if hidden:
+            state["free_share"] += hidden
+        elif share < 0:
+            spent_locked = max(0, -free_delta - unlocked)
+            locked -= spent_locked
+            locks = _consume_locks(locks, spent_locked)
+        if share > 0 and lock_until is not None:
+            locks = [
+                *locks,
+                {"amount": share, "unlockAt": lock_until.isoformat()},
+            ]
+            locked += share
         state["share"] += share
         ledger["shareFreeAmount"] = free_delta
         ledger["sharePaidAmount"] = paid_delta
         updates["wallet.shareBalance"] = state["share"]
         updates["wallet.freeShareBalance"] = state["free_share"]
         updates["wallet.paidShareBalance"] = state["paid_share"]
+        if locks or int(wallet.get("lockedReferralShare") or 0):
+            updates["wallet.lockedReferralShare"] = locked
+            updates["wallet.referralShareLocks"] = locks
+            wallet["lockedReferralShare"] = locked
+            wallet["referralShareLocks"] = locks
     if diamond:
         free_delta, paid_delta = _apply(
             state,
@@ -154,6 +184,64 @@ def _apply(
     state[free_key] -= take_free
     state[paid_key] -= take_paid
     return -take_free, -take_paid
+
+
+def exchange_spendable(wallet: dict, now: datetime | None = None) -> tuple[int, int]:
+    """SHARE that can be exchanged, and referral SHARE still inside the 30-day lock."""
+    current = now or datetime.now(timezone.utc)
+    state = resolved_buckets(wallet)
+    locked, _locks = _active_locks(wallet, current)
+    locked = min(locked, state["free_share"])
+    return state["free_share"] - locked + state["paid_share"], locked
+
+
+def _active_locks(wallet: dict, now: datetime) -> tuple[int, list]:
+    kept = []
+    locked = 0
+    for row in wallet.get("referralShareLocks") or []:
+        if not isinstance(row, dict):
+            continue
+        amount = int(row.get("amount") or 0)
+        if amount <= 0:
+            continue
+        unlock_at = _parse_time(row.get("unlockAt"))
+        if unlock_at is not None and unlock_at <= now:
+            continue
+        kept.append({"amount": amount, "unlockAt": row.get("unlockAt")})
+        locked += amount
+    if not kept and int(wallet.get("lockedReferralShare") or 0) > 0:
+        locked = int(wallet.get("lockedReferralShare") or 0)
+    return locked, kept
+
+
+def _consume_locks(locks: list, amount: int) -> list:
+    if amount <= 0:
+        return locks
+    kept = []
+    left = amount
+    for row in locks:
+        row_amount = int(row.get("amount") or 0)
+        if left <= 0:
+            kept.append(row)
+            continue
+        if row_amount <= left:
+            left -= row_amount
+            continue
+        kept.append({**row, "amount": row_amount - left})
+        left = 0
+    return kept
+
+
+def _parse_time(value: object) -> datetime | None:
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 def _write(wallet: dict, state: dict) -> None:

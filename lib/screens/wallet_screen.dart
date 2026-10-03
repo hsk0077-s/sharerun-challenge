@@ -201,24 +201,8 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   }
 
   Future<void> _buyDiamonds({required String? uid}) async {
-    if (uid == null) {
-      return;
-    }
-    setState(() => buyingDiamonds = true);
-    try {
-      if (!mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Diamond 충전 결제는 Mock 모드에서 UI 미리보기만 제공됩니다.'),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => buyingDiamonds = false);
-      }
-    }
+    if (uid == null || !mounted) return;
+    await context.push(RouteNames.shareToDia);
   }
 
   Future<void> _purchaseShopItem(ShopItemModel item) async {

@@ -9,6 +9,7 @@ import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../models/pedometer_harvest_result.dart';
+import '../models/share_to_dia_view.dart';
 import '../models/tournament_join_result.dart';
 import '../models/winner_reward_action.dart';
 
@@ -121,6 +122,18 @@ class SecuredActionApiClient {
         'transfer_channel': transferChannel,
       },
     );
+  }
+
+  Future<ShareToDiaView> quoteShareToDia() async {
+    final json = await _post('/actions/wallet/share-to-dia/quote', const {});
+    return ShareToDiaView.fromJson(json);
+  }
+
+  Future<ShareToDiaView> exchangeShareToDia(int diaAmount) async {
+    final json = await _post('/actions/wallet/share-to-dia', {
+      'dia_amount': diaAmount,
+    });
+    return ShareToDiaView.fromJson(json);
   }
 
   /// Debits 500 VALUE on the server ledger. The device must not debit first.

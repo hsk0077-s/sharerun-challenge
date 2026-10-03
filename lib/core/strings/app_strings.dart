@@ -220,7 +220,11 @@ abstract final class AppStrings {
       '타겟 기부처: 유니세프(결식아동)';
   static const challengeDetailValueTip =
       '과금 없이 목표 달성 시: +500 밸류(VALUE) 토큰 지급';
-  static const challengeDetailCprTickets = '심폐소생권 보유: 0/3';
+  static const challengeDetailCprMaxPerRace = 3;
+  static String challengeDetailCprTickets(int count) =>
+      '심폐소생권 보유: $count/$challengeDetailCprMaxPerRace';
+  static const challengeDetailCprUse = '심폐소생권 사용';
+  static const challengeDetailCprBuyHint = '상점에서 구매';
   static const challengeDetailJoin = '대회 참가';
 
   // ── Live Running (Screen 10) ────────────────────────────────────────

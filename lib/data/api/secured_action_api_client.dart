@@ -128,6 +128,13 @@ class SecuredActionApiClient {
     await _post('/actions/account/delete', const {});
   }
 
+  Future<void> activateCoachPlus(String productId) async {
+    await _post(
+      '/actions/coach-plus/activate',
+      {'product_id': productId},
+    );
+  }
+
   Future<void> claimSignupReward() async {
     await _post('/actions/onboarding/claim-signup', const {});
   }

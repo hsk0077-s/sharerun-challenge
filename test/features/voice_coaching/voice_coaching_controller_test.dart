@@ -39,6 +39,8 @@ void main() {
     container = ProviderContainer(
       overrides: [
         voiceCoachingSpeakerProvider.overrideWithValue(speaker),
+        coachPlusFromProfileProvider.overrideWithValue(false),
+        coachPlusServerGrantProvider.overrideWithValue((_) async {}),
       ],
     );
   });

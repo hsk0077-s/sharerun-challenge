@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/providers/app_providers.dart';
+import '../../../data/models/user_model.dart';
 import '../models/coach_plus_product.dart';
 import '../services/coach_plus_entitlement_store.dart';
 
@@ -7,36 +9,50 @@ final coachPlusEntitlementStoreProvider = Provider<CoachPlusEntitlementStore>(
   (ref) => const CoachPlusEntitlementStore(),
 );
 
+/// Writes the account entitlement. Tests replace this so they do not call
+/// the network. Production always hits the server.
+typedef CoachPlusServerGrant = Future<void> Function(String productId);
+
+final coachPlusServerGrantProvider = Provider<CoachPlusServerGrant>((ref) {
+  return (productId) {
+    return ref.read(securedActionApiClientProvider).activateCoachPlus(productId);
+  };
+});
+
+/// True when this account's server profile says Coach+ is still inside the
+/// window the server stored. Device prefs are not the source of truth.
+final coachPlusFromProfileProvider = Provider<bool>((ref) {
+  final profile = ref.watch(activeUserProfileProvider).asData?.value;
+  return coachPlusActiveOnProfile(profile, DateTime.now());
+});
+
+bool coachPlusActiveOnProfile(UserModel? profile, DateTime now) {
+  if (profile == null) return false;
+  if (!CoachPlusPlan.isCoachPlusId(profile.coachPlusProductId)) return false;
+  final until = DateTime.tryParse(profile.coachPlusActiveUntil);
+  if (until == null) return false;
+  return now.isBefore(until);
+}
+
 /// True while Coach+ (or the debug override) is active.
 final coachPlusActiveProvider =
     NotifierProvider<CoachPlusActiveNotifier, bool>(CoachPlusActiveNotifier.new);
 
 class CoachPlusActiveNotifier extends Notifier<bool> {
-  var _generation = 0;
+  var _grantedThisSession = false;
 
   @override
   bool build() {
     if (coachPlusForceDebug) return true;
-    _hydrate();
-    return false;
-  }
-
-  Future<void> _hydrate() async {
-    if (coachPlusForceDebug) return;
-    final generation = _generation;
-    final active =
-        await ref.read(coachPlusEntitlementStoreProvider).readActive();
-    if (!ref.mounted || coachPlusForceDebug || generation != _generation) {
-      return;
-    }
-    state = active;
+    final fromServer = ref.watch(coachPlusFromProfileProvider);
+    return fromServer || _grantedThisSession;
   }
 
   Future<void> grant(String productId) async {
     if (!CoachPlusPlan.isCoachPlusId(productId)) return;
-    _generation += 1;
-    await ref.read(coachPlusEntitlementStoreProvider).grant(productId);
-    if (!ref.mounted) return;
+    await ref.read(coachPlusServerGrantProvider)(productId);
+    if (!ref.mounted || coachPlusForceDebug) return;
+    _grantedThisSession = true;
     state = true;
   }
 }

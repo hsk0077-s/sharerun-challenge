@@ -81,6 +81,8 @@ class UserModel {
     this.preferredRunHour = 19,
     this.hasCPR = false,
     this.isSponsored = false,
+    this.coachPlusProductId = '',
+    this.coachPlusActiveUntil = '',
   });
 
   final String uid;
@@ -138,6 +140,12 @@ class UserModel {
   /// 스폰서/글로벌 기부 참여 여부. 앱 재설치 후 Firestore에서 복원.
   final bool isSponsored;
 
+  /// Server Coach+ product id. Empty when the account has no entitlement.
+  final String coachPlusProductId;
+
+  /// ISO timestamp from the server. Empty when Coach+ is not active.
+  final String coachPlusActiveUntil;
+
   /// Convenience alias used by dashboard wallet bindings.
   int get share => wallet.shareBalance;
 
@@ -185,6 +193,24 @@ class UserModel {
     return hour > 23 ? 19 : hour;
   }
 
+  static String _coachPlusProductId(Object? raw) {
+    final map = _stringMap(raw);
+    return (map?['productId'] as String?)?.trim() ?? '';
+  }
+
+  static String _coachPlusActiveUntil(Object? raw) {
+    final map = _stringMap(raw);
+    return (map?['activeUntil'] as String?)?.trim() ?? '';
+  }
+
+  static Map<String, dynamic>? _stringMap(Object? raw) {
+    return switch (raw) {
+      final Map<String, dynamic> map => map,
+      final Map map => Map<String, dynamic>.from(map),
+      _ => null,
+    };
+  }
+
   static String normalizeGender(String? raw) {
     final value = (raw ?? '').trim().toLowerCase();
     if (value == 'female' || value == 'f' || value == '여' || value == '여성') {
@@ -218,6 +244,8 @@ class UserModel {
     int? preferredRunHour,
     bool? hasCPR,
     bool? isSponsored,
+    String? coachPlusProductId,
+    String? coachPlusActiveUntil,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -248,6 +276,8 @@ class UserModel {
       preferredRunHour: preferredRunHour ?? this.preferredRunHour,
       hasCPR: hasCPR ?? this.hasCPR,
       isSponsored: isSponsored ?? this.isSponsored,
+      coachPlusProductId: coachPlusProductId ?? this.coachPlusProductId,
+      coachPlusActiveUntil: coachPlusActiveUntil ?? this.coachPlusActiveUntil,
     );
   }
 
@@ -357,6 +387,8 @@ class UserModel {
         preferredRunHour: _preferredHour(json['preferredRunHour']),
         hasCPR: json['hasCPR'] == true,
         isSponsored: json['isSponsored'] == true,
+        coachPlusProductId: _coachPlusProductId(json['coachPlus']),
+        coachPlusActiveUntil: _coachPlusActiveUntil(json['coachPlus']),
       );
     } catch (_) {
       return UserModel.dashboardDefault(

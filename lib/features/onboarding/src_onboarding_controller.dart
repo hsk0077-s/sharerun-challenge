@@ -885,7 +885,7 @@ abstract final class NicknameValidator {
   }
 }
 
-/// 만보기 Health 쿼리 — KST(UTC+9) 당일 00:00~현재, 통합 걸음만 단건 조회.
+/// 만보기 Health 쿼리 — KST(UTC+9) 당일 00:00~다음 자정, 통합 걸음만 단건 조회.
 abstract final class PedometerKstClock {
   static const kstOffset = KstCalendar.offset;
   static const _stepTypes = [HealthDataType.STEPS];

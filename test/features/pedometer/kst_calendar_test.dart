@@ -9,11 +9,22 @@ void main() {
     expect(KstCalendar.dateKey(atMidnight), '2026-09-09');
   });
 
-  test('KST todayRange starts at previous UTC 15:00', () {
+  test('KST todayRange is the full local day, not now', () {
+    // 2026-09-09 10:30 KST.
     final now = DateTime.utc(2026, 9, 9, 1, 30);
     final range = KstCalendar.todayRange(now);
     expect(range.startDate.toUtc(), DateTime.utc(2026, 9, 8, 15));
-    expect(range.endDate.toUtc(), now);
+    expect(range.endDate.toUtc(), DateTime.utc(2026, 9, 9, 15));
+  });
+
+  test('07:41 KST window contains the whole Samsung day-blob', () {
+    // 2026-10-03 07:41 KST. Ending at now prorated 4,696 to 1,503.
+    final now = DateTime.utc(2026, 10, 2, 22, 41);
+    final range = KstCalendar.todayRange(now);
+    expect(KstCalendar.dateKey(now), '2026-10-03');
+    expect(range.startDate.toUtc(), DateTime.utc(2026, 10, 2, 15));
+    expect(range.endDate.toUtc(), DateTime.utc(2026, 10, 3, 15));
+    expect(range.endDate.isAfter(now), isTrue);
   });
 
   test('thisWeekDays is Monday-Sunday in KST', () {

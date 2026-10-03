@@ -6,6 +6,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('health refresh is requested on the first tick, then every 15s', () {
+    final t0 = DateTime.utc(2026, 10, 2, 22, 41);
+    expect(
+      SoloPedometerForeground.shouldRequestHealthRefresh(now: t0, last: null),
+      isTrue,
+    );
+    expect(
+      SoloPedometerForeground.shouldRequestHealthRefresh(
+        now: t0.add(const Duration(seconds: 14)),
+        last: t0,
+      ),
+      isFalse,
+    );
+    expect(
+      SoloPedometerForeground.shouldRequestHealthRefresh(
+        now: t0.add(SoloPedometerForeground.healthRefreshInterval),
+        last: t0,
+      ),
+      isTrue,
+    );
+  });
+
   test(
       'resolveNotification keeps 1,835 when midnight offset equals daily steps',
       () async {

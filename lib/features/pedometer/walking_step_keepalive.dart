@@ -46,6 +46,7 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     _listening = true;
     WidgetsBinding.instance.addObserver(this);
     SoloPedometerForeground.onRawSample = today.onRaw;
+    SoloPedometerForeground.onHealthRefresh = refreshHealth;
     SoloPedometerForeground.addLiveStepsListener(_onIsolate);
     await syncFromSources(reason: 'attach');
     await _listenSensor(reason: 'attach');
@@ -59,6 +60,9 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     if (SoloPedometerForeground.onRawSample == today.onRaw) {
       SoloPedometerForeground.onRawSample = null;
+    }
+    if (SoloPedometerForeground.onHealthRefresh == refreshHealth) {
+      SoloPedometerForeground.onHealthRefresh = null;
     }
     SoloPedometerForeground.removeLiveStepsListener(_onIsolate);
     _healthTimer?.cancel();
@@ -139,6 +143,22 @@ class WalkingStepKeepAlive with WidgetsBindingObserver {
       );
     } catch (e, st) {
       debugPrint('WalkingStepKeepAlive sync: $e\n$st');
+    }
+  }
+
+  /// Notification tick. Today's Health Connect total only — no Firestore pull.
+  /// Resume still uses [syncFromSources], which reads the same full-day window.
+  Future<void> refreshHealth() async {
+    try {
+      final healthToday = await PedometerKstClock.queryTodaySteps(
+        _health,
+        requestIfMissing: false,
+      );
+      if (healthToday != null && healthToday > 0) {
+        await today.onHealth(healthToday);
+      }
+    } catch (e, st) {
+      debugPrint('WalkingStepKeepAlive health refresh: $e\n$st');
     }
   }
 

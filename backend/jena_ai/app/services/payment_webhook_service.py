@@ -8,6 +8,7 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from app.models.payment_webhook import PaymentWebhookRequest, PaymentWebhookResult
 from app.services.firebase_service import FirebaseService
+from app.services.wallet_funding import move_currency
 
 SHARE_TOP_UP_AMOUNTS_KRW = {10000}
 SPONSOR_PAYMENT_AMOUNTS_SHARE = {1000, 3000, 5000}
@@ -137,14 +138,14 @@ class PaymentWebhookService:
             )
 
         wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
-        current_share = int(wallet.get("shareBalance") or 0)
         share_amount = request.amount
+        moved = move_currency(wallet, share=share_amount, paid_credit=True)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
 
         transaction.update(
             user_ref,
             {
-                "wallet.shareBalance": current_share + share_amount,
+                **moved["updates"],
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -157,6 +158,7 @@ class PaymentWebhookService:
                 "type": "share_top_up",
                 "shareAmount": share_amount,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         transaction.update(

@@ -150,6 +150,12 @@ class SecuredActionApiClient {
     await _post('/actions/shop/use', {'item_id': itemId});
   }
 
+  /// Debits a server-owned crew price. The client does not send the amount.
+  Future<PedometerHarvestResult> spendCrewAction(String action) async {
+    final json = await _post('/actions/crew/spend', {'action': action});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
   /// Debits the server crew-gift price and grants CPR plus Safeguard.
   Future<PedometerHarvestResult> grantCrewItems() async {
     final json = await _post('/actions/shop/crew-gift', const {});

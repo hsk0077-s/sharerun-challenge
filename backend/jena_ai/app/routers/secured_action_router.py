@@ -13,6 +13,7 @@ from app.models.secured_actions import (
     SecuredActionResult,
     SettleTournamentFailureRequest,
     CoachPlusActivateRequest,
+    CrewSpendRequest,
     ShopPurchaseRequest,
     ValidateRunRequest,
     Web3TransferRequest,
@@ -150,6 +151,14 @@ def purchase_shop_item(
 @router.post("/shop/crew-gift", response_model=SecuredActionResult)
 def grant_crew_items(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.grant_crew_items(uid=uid)
+
+
+@router.post("/crew/spend", response_model=SecuredActionResult)
+def spend_crew_action(
+    request: CrewSpendRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.spend_crew_action(uid=uid, action=request.action)
 
 
 @router.post("/shop/use", response_model=SecuredActionResult)

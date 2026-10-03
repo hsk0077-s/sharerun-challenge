@@ -51,24 +51,30 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     );
   }
 
-  bool _spendDia(int amount, String actionLabel) {
-    final wallet = ref.read(walletProvider);
-    if (wallet.diamondBalance < amount) {
-      _toast('DIA가 부족합니다. 상점에서 구매해 주세요. ($actionLabel)');
+  Future<bool> _spendOnServer(String action, String actionLabel) async {
+    try {
+      final result =
+          await ref.read(securedActionApiClientProvider).spendCrewAction(action);
+      if (!mounted) return false;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      return true;
+    } on ApiException {
+      if (!mounted) return false;
+      if (action == 'deposit') {
+        ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
+      } else {
+        _toast('DIA가 부족합니다. 상점에서 구매해 주세요. ($actionLabel)');
+      }
+      return false;
+    } catch (_) {
+      if (!mounted) return false;
+      _toast('$actionLabel을 처리하지 못했습니다.');
       return false;
     }
-    ref.read(walletProvider.notifier).debitDia(amount);
-    return true;
-  }
-
-  bool _spendShare(int amount, String actionLabel) {
-    final wallet = ref.read(walletProvider);
-    if (wallet.shareBalance < amount) {
-      ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
-      return false;
-    }
-    ref.read(walletProvider.notifier).subtractShare(amount);
-    return true;
   }
 
   Future<void> _onPushNotice() async {
@@ -76,7 +82,6 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   }
 
   Future<void> _onProfileChange() async {
-    if (!_spendDia(_profileChangeDia, '프로필 변경')) return;
     final controller = TextEditingController(text: _crewName);
     final next = await showDialog<String>(
       context: context,
@@ -100,6 +105,8 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     );
     controller.dispose();
     if (!mounted || next == null || next.isEmpty) return;
+    if (!await _spendOnServer('profile', '프로필 변경')) return;
+    if (!mounted) return;
     setState(() => _crewName = next);
     _toast('크루 프로필이 변경되었습니다. (−$_profileChangeDia DIA)');
   }
@@ -124,18 +131,19 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     }
   }
 
-  void _onGiftDeposit() {
-    if (!_spendShare(_giftDepositShare, '예치금 대납')) return;
+  Future<void> _onGiftDeposit() async {
+    if (!await _spendOnServer('deposit', '예치금 대납')) return;
     _toast('크루 대항전 예치금을 대납했습니다. (−$_giftDepositShare SHARE)');
   }
 
-  void _onGiftPass() {
-    if (!_spendDia(_giftPassDia, '챌린지 패스')) return;
+  Future<void> _onGiftPass() async {
+    if (!await _spendOnServer('pass', '챌린지 패스')) return;
     _toast('크루 전용 챌린지 패스·스킨을 구매했습니다. (−$_giftPassDia DIA)');
   }
 
-  void _onExpandMembers() {
-    if (!_spendDia(_expandMembersDia, '인원 확장')) return;
+  Future<void> _onExpandMembers() async {
+    if (!await _spendOnServer('expand', '인원 확장')) return;
+    if (!mounted) return;
     setState(() => _memberLimit += 10);
     _toast('인원 한도가 $_memberLimit명으로 확장되었습니다. (−$_expandMembersDia DIA)');
   }

@@ -63,6 +63,10 @@ class ShopPurchaseRequest(BaseModel):
     item_id: str = Field(min_length=3)
 
 
+class CrewSpendRequest(BaseModel):
+    action: str = Field(min_length=3, max_length=16)
+
+
 class CoachPlusActivateRequest(BaseModel):
     product_id: str = Field(min_length=3)
 

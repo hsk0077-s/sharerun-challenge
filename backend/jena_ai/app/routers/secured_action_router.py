@@ -18,6 +18,8 @@ from app.models.secured_actions import (
     CreateChallengeRoomResult,
     CrewFoundRequest,
     CrewSpendRequest,
+    ShopCatalogItem,
+    ShopCatalogView,
     ShopPurchaseRequest,
     ValidateRunRequest,
     DiaPackGrantRequest,
@@ -191,6 +193,21 @@ def create_challenge_room(
 ) -> CreateChallengeRoomResult:
     return service.create_challenge_room(
         uid=uid, title=request.title, distance_km=request.distance_km
+    )
+
+
+@router.post("/shop/catalog", response_model=ShopCatalogView)
+def shop_catalog(uid: str = Depends(require_uid)) -> ShopCatalogView:
+    del uid
+    return ShopCatalogView(
+        items=[
+            ShopCatalogItem(
+                id=row["id"],
+                title=row["title"],
+                diamond_cost=row["diamondCost"],
+            )
+            for row in service.shop_catalog()
+        ]
     )
 
 

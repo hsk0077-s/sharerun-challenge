@@ -25,6 +25,21 @@ class ChallengeRoomCreateResult {
   final int entryFeeShare;
 }
 
+class ShopCatalogPrice {
+  const ShopCatalogPrice({required this.id, required this.diamondCost});
+
+  final String id;
+  final int diamondCost;
+
+  factory ShopCatalogPrice.fromJson(Map<String, dynamic> json) {
+    final cost = json['diamond_cost'];
+    return ShopCatalogPrice(
+      id: json['id'] as String? ?? '',
+      diamondCost: cost is num ? cost.toInt() : 0,
+    );
+  }
+}
+
 class SecuredActionApiClient {
   SecuredActionApiClient({
     required this.baseUri,
@@ -168,6 +183,16 @@ class SecuredActionApiClient {
 
   Future<void> claimSignupReward() async {
     await _post('/actions/onboarding/claim-signup', const {});
+  }
+
+  Future<List<ShopCatalogPrice>> fetchShopCatalog() async {
+    final json = await _post('/actions/shop/catalog', const {});
+    final rows = json['items'];
+    if (rows is! List) return const [];
+    return [
+      for (final row in rows)
+        if (row is Map<String, dynamic>) ShopCatalogPrice.fromJson(row),
+    ];
   }
 
   /// Buys one catalog item. DIA debit and shopInventory live in one server transaction.

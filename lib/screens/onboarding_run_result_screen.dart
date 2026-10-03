@@ -15,6 +15,8 @@ import '../core/widgets/src_gradient_background.dart';
 import '../features/pedometer/walking_challenge_share.dart';
 import '../features/run_result/run_finish_image_share.dart';
 import '../features/run_result/run_finish_share_card.dart';
+import '../features/run_result/run_finish_share_flow.dart';
+import '../features/run_result/run_finish_share_targets.dart';
 import '../features/run_result/run_finish_theme_store.dart';
 
 /// 온보딩 플로우 기록 결과 화면 (Screen 11).
@@ -35,7 +37,8 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingRunResultScreenState
-    extends ConsumerState<OnboardingRunResultScreen> {
+    extends ConsumerState<OnboardingRunResultScreen>
+    with WidgetsBindingObserver {
   static const _shareReward = 200;
   static const _valueReward = 100;
   static const _donationAmount = 100;
@@ -44,9 +47,11 @@ class _OnboardingRunResultScreenState
   var _rewardsApplied = false;
   var _styleIndex = 0;
   var _themeReady = false;
-  var _instagramInstalled = false;
-  var _tiktokInstalled = false;
   var _sharingImage = false;
+  var _armResume = false;
+  var _nextIndex = 0;
+  List<RunFinishShareTarget> _queue = const [];
+  File? _poster;
 
   /// Scenery for this visit only. Never saved, never uploaded.
   ImageProvider? _photo;
@@ -58,15 +63,30 @@ class _OnboardingRunResultScreenState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     Future.microtask(() async {
       await _applyRunRewards();
       await _saveRunDataToFirebase();
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      unawaited(_loadShareTargets());
-    });
     unawaited(_restoreTheme());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !_armResume) return;
+    _armResume = false;
+    if (!mounted) return;
+    setState(() {
+      _nextIndex += 1;
+      if (_nextIndex >= _queue.length) _clearQueue();
+    });
+  }
+
+  void _clearQueue() {
+    _queue = const [];
+    _poster = null;
+    _nextIndex = 0;
+    _armResume = false;
   }
 
   Future<void> _restoreTheme() async {
@@ -105,18 +125,9 @@ class _OnboardingRunResultScreenState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _styleController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadShareTargets() async {
-    final instagram = await RunFinishImageShare.instagramInstalled();
-    final tiktok = await RunFinishImageShare.tiktokInstalled();
-    if (!mounted) return;
-    setState(() {
-      _instagramInstalled = instagram;
-      _tiktokInstalled = tiktok;
-    });
   }
 
   RunFinishShareCard _shareCard(RunFinishCardTheme style) {
@@ -253,31 +264,74 @@ class _OnboardingRunResultScreenState
     }
   }
 
-  Future<void> _onInstagram() async {
-    final file = await _capturePoster();
-    if (file == null || !mounted) return;
-    final opened = await RunFinishImageShare.shareInstagramStory(file.path);
-    if (!opened && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(RunFinishImageShare.instagramFailedMessage)),
-      );
+  Future<void> _handOff(
+      RunFinishShareTarget target, BuildContext origin) async {
+    final file = _poster;
+    if (file == null) return;
+    if (target == RunFinishShareTarget.more) {
+      if (origin.mounted) await _shareSheet(origin, file);
+      return;
     }
+    final opened = await RunFinishImageShare.shareTarget(
+      id: target.id,
+      path: file.path,
+    );
+    if (!opened && origin.mounted) await _shareSheet(origin, file);
   }
 
-  Future<void> _onTikTok(BuildContext buttonContext) async {
-    final file = await _capturePoster();
-    if (file == null || !mounted) return;
-    final targeted = await RunFinishImageShare.shareTikTok(file.path);
-    if (!targeted && buttonContext.mounted) {
-      await _shareSheet(buttonContext, file);
+  Future<void> _onCardShare(BuildContext origin) async {
+    final mode = await showRunFinishShareMode(
+      origin,
+      await RunFinishSharePrefs.loadMode(),
+    );
+    if (mode == null || !origin.mounted) return;
+    await RunFinishSharePrefs.saveMode(mode);
+    final targets = orderedShareTargets(
+      installedIds: await RunFinishImageShare.installedTargets(),
+      savedOrder: await RunFinishSharePrefs.loadOrder(),
+    );
+    if (!origin.mounted) return;
+    if (mode == RunFinishShareMode.one) {
+      final target = await showRunFinishOnePicker(origin, targets);
+      if (target == null || !mounted) return;
+      final file = await _capturePoster();
+      if (file == null || !origin.mounted) return;
+      _poster = file;
+      await _handOff(target, origin);
+      return;
     }
+    final saved = await RunFinishSharePrefs.loadOrder();
+    if (!origin.mounted) return;
+    final chosen = await showRunFinishSequencePicker(
+      origin,
+      targets: targets,
+      checkedIds: saved.toSet(),
+    );
+    if (chosen == null || chosen.isEmpty || !mounted) return;
+    await RunFinishSharePrefs.saveOrder([for (final item in chosen) item.id]);
+    final file = await _capturePoster();
+    if (file == null || !origin.mounted) return;
+    setState(() {
+      _poster = file;
+      _queue = chosen;
+      _nextIndex = 0;
+      _armResume = true;
+    });
+    await _handOff(chosen.first, origin);
   }
 
-  Future<void> _onMore(BuildContext buttonContext) async {
-    final file = await _capturePoster();
-    if (file == null || !buttonContext.mounted) return;
-    await _shareSheet(buttonContext, file);
+  Future<void> _onSequenceNext(BuildContext origin) async {
+    if (_nextIndex >= _queue.length) return;
+    final target = _queue[_nextIndex];
+    setState(() => _armResume = true);
+    await _handOff(target, origin);
+  }
+
+  void _onSequenceSkip() {
+    setState(() {
+      _nextIndex += 1;
+      if (_nextIndex >= _queue.length) _clearQueue();
+    });
   }
 
   Future<void> _onShare(BuildContext buttonContext) async {
@@ -427,14 +481,27 @@ class _OnboardingRunResultScreenState
                             );
                           },
                         ),
+                        if (_queue.isNotEmpty &&
+                            !_armResume &&
+                            _nextIndex < _queue.length) ...[
+                          const SizedBox(height: 8),
+                          RunFinishSequenceBanner(
+                            label: _queue[_nextIndex].label,
+                            progress: '${_nextIndex + 1}/${_queue.length}',
+                            onNext: () => unawaited(
+                              _onSequenceNext(context),
+                            ),
+                            onSkip: _onSequenceSkip,
+                            onStop: () => setState(_clearQueue),
+                          ),
+                        ],
                         const SizedBox(height: 8),
-                        _ImageShareRow(
-                          instagram: _instagramInstalled,
-                          tiktok: _tiktokInstalled,
-                          enabled: !_sharingImage,
-                          onInstagram: _onInstagram,
-                          onTikTok: _onTikTok,
-                          onMore: _onMore,
+                        _ImageShareButton(
+                          key: runFinishCardShareKey,
+                          label: '카드 올리기',
+                          onTap: _sharingImage
+                              ? null
+                              : () => unawaited(_onCardShare(context)),
                         ),
                       ],
                     ),
@@ -468,63 +535,6 @@ class _OnboardingRunResultScreenState
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ImageShareRow extends StatelessWidget {
-  const _ImageShareRow({
-    required this.instagram,
-    required this.tiktok,
-    required this.enabled,
-    required this.onInstagram,
-    required this.onTikTok,
-    required this.onMore,
-  });
-
-  final bool instagram;
-  final bool tiktok;
-  final bool enabled;
-  final Future<void> Function() onInstagram;
-  final Future<void> Function(BuildContext context) onTikTok;
-  final Future<void> Function(BuildContext context) onMore;
-
-  @override
-  Widget build(BuildContext context) {
-    final buttons = <Widget>[
-      if (instagram)
-        _ImageShareButton(
-          key: RunFinishImageShare.instagramButtonKey,
-          label: RunFinishImageShare.instagramLabel,
-          onTap: enabled ? () => unawaited(onInstagram()) : null,
-        ),
-      if (tiktok)
-        Builder(
-          builder: (buttonContext) {
-            return _ImageShareButton(
-              key: RunFinishImageShare.tiktokButtonKey,
-              label: RunFinishImageShare.tiktokLabel,
-              onTap: enabled ? () => unawaited(onTikTok(buttonContext)) : null,
-            );
-          },
-        ),
-      Builder(
-        builder: (buttonContext) {
-          return _ImageShareButton(
-            key: RunFinishImageShare.moreButtonKey,
-            label: RunFinishImageShare.moreLabel,
-            onTap: enabled ? () => unawaited(onMore(buttonContext)) : null,
-          );
-        },
-      ),
-    ];
-    return Row(
-      children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          Expanded(child: buttons[i]),
-        ],
-      ],
     );
   }
 }

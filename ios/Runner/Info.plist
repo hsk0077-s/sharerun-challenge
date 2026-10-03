@@ -72,6 +72,11 @@
 		<string>instagram</string>
 		<string>tiktok</string>
 		<string>snssdk1233</string>
+		<string>fb</string>
+		<string>line</string>
+		<string>twitter</string>
+		<string>whatsapp</string>
+		<string>tg</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

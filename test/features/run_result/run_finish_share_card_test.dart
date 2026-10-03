@@ -16,6 +16,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_image_share.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_share_card.dart';
+import 'package:share_run_challenge/features/run_result/run_finish_share_flow.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_theme_store.dart';
 import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 
@@ -38,6 +39,8 @@ void main() {
     RunFinishImageShare.debugTikTokShare = null;
     RunFinishImageShare.debugSystemShare = null;
     RunFinishImageShare.debugCaptureOverride = null;
+    RunFinishImageShare.debugInstalledTargets = null;
+    RunFinishImageShare.debugShareTarget = null;
     WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
     WalkingChallengeShare.debugShareOverride = null;
     OnboardingRunResultScreen.debugPickPhoto = null;
@@ -50,6 +53,8 @@ void main() {
     RunFinishImageShare.debugTikTokShare = null;
     RunFinishImageShare.debugSystemShare = null;
     RunFinishImageShare.debugCaptureOverride = null;
+    RunFinishImageShare.debugInstalledTargets = null;
+    RunFinishImageShare.debugShareTarget = null;
     OnboardingRunResultScreen.debugPickPhoto = null;
   });
 
@@ -126,27 +131,41 @@ void main() {
 
   testWidgets('finish screen hides store buttons until the app is installed',
       (tester) async {
-    RunFinishImageShare.debugInstagramInstalled = () async => false;
-    RunFinishImageShare.debugTikTokInstalled = () async => false;
+    RunFinishImageShare.debugInstalledTargets = () async => const [];
     await _pumpFinish(tester);
 
     expect(find.text(AppStrings.runResultShare), findsOneWidget);
+    expect(find.textContaining('초대'), findsNothing);
+    await tester.tap(find.byKey(runFinishCardShareKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(runFinishModeOneKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
     expect(find.text(RunFinishImageShare.moreLabel), findsOneWidget);
     expect(find.text(RunFinishImageShare.instagramLabel), findsNothing);
     expect(find.text(RunFinishImageShare.tiktokLabel), findsNothing);
-    expect(find.textContaining('초대'), findsNothing);
   });
 
   testWidgets('finish screen shows Instagram and TikTok when installed',
       (tester) async {
-    RunFinishImageShare.debugInstagramInstalled = () async => true;
-    RunFinishImageShare.debugTikTokInstalled = () async => true;
+    RunFinishImageShare.debugInstalledTargets = () async => const [
+          'story',
+          'tiktok',
+        ];
     await _pumpFinish(tester);
+    await tester.tap(find.byKey(runFinishCardShareKey));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(runFinishModeOneKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.text(RunFinishImageShare.instagramLabel), findsOneWidget);
     expect(find.text(RunFinishImageShare.tiktokLabel), findsOneWidget);
     expect(find.text(RunFinishImageShare.moreLabel), findsOneWidget);
+    expect(find.text('Facebook'), findsNothing);
   });
 
   testWidgets('swipe selects the next poster style', (tester) async {
@@ -188,9 +207,16 @@ void main() {
       file.writeAsBytesSync(const [137, 80, 78, 71]);
       return file;
     };
+    RunFinishImageShare.debugInstalledTargets = () async => const [];
     await _pumpFinish(tester);
 
-    await tester.tap(find.byKey(RunFinishImageShare.moreButtonKey));
+    await tester.tap(find.byKey(runFinishCardShareKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(runFinishModeOneKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const Key('run-finish-target-more')));
     await tester.pump();
     await tester.pump();
 
@@ -207,9 +233,8 @@ void main() {
       (tester) async {
     ShareParams? sent;
     String? tiktokPath;
-    RunFinishImageShare.debugInstagramInstalled = () async => false;
-    RunFinishImageShare.debugTikTokInstalled = () async => true;
-    RunFinishImageShare.debugTikTokShare = (path) async {
+    RunFinishImageShare.debugInstalledTargets = () async => const ['tiktok'];
+    RunFinishImageShare.debugShareTarget = (id, path) async {
       tiktokPath = path;
       return false;
     };
@@ -225,7 +250,13 @@ void main() {
     await _pumpFinish(tester);
     await tester.pump();
 
-    await tester.tap(find.byKey(RunFinishImageShare.tiktokButtonKey));
+    await tester.tap(find.byKey(runFinishCardShareKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(runFinishModeOneKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const Key('run-finish-target-tiktok')));
     await tester.pump();
     await tester.pump();
 
@@ -238,11 +269,10 @@ void main() {
   testWidgets('Instagram story receives the png path', (tester) async {
     String? instagramPath;
     ShareParams? sent;
-    RunFinishImageShare.debugInstagramInstalled = () async => true;
-    RunFinishImageShare.debugTikTokInstalled = () async => false;
-    RunFinishImageShare.debugInstagramShare = (path) async {
+    RunFinishImageShare.debugInstalledTargets = () async => const ['story'];
+    RunFinishImageShare.debugShareTarget = (id, path) async {
       instagramPath = path;
-      return true;
+      return id == 'story';
     };
     RunFinishImageShare.debugSystemShare = (params) async {
       sent = params;
@@ -256,7 +286,13 @@ void main() {
     await _pumpFinish(tester);
     await tester.pump();
 
-    await tester.tap(find.byKey(RunFinishImageShare.instagramButtonKey));
+    await tester.tap(find.byKey(runFinishCardShareKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(runFinishModeOneKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.byKey(const Key('run-finish-target-story')));
     await tester.pump();
     await tester.pump();
 

@@ -43,6 +43,12 @@ abstract final class RunFinishImageShare {
   @visibleForTesting
   static Future<File> Function(GlobalKey key)? debugCaptureOverride;
 
+  @visibleForTesting
+  static Future<List<String>> Function()? debugInstalledTargets;
+
+  @visibleForTesting
+  static Future<bool> Function(String id, String path)? debugShareTarget;
+
   static Future<bool> instagramInstalled() async {
     final hook = debugInstagramInstalled;
     if (hook != null) return hook();
@@ -83,6 +89,37 @@ abstract final class RunFinishImageShare {
     if (hook != null) return hook(path);
     try {
       return await channel.invokeMethod<bool>('shareTikTok', {'path': path}) ??
+          false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<List<String>> installedTargets() async {
+    final hook = debugInstalledTargets;
+    if (hook != null) return hook();
+    try {
+      final raw = await channel.invokeMethod<List<Object?>>('installedTargets');
+      return [
+        for (final item in raw ?? const <Object?>[]) item.toString(),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// True when [id] accepted the image. False asks the caller to use the sheet.
+  static Future<bool> shareTarget({
+    required String id,
+    required String path,
+  }) async {
+    final hook = debugShareTarget;
+    if (hook != null) return hook(id, path);
+    try {
+      return await channel.invokeMethod<bool>('shareTarget', {
+            'id': id,
+            'path': path,
+          }) ??
           false;
     } catch (_) {
       return false;

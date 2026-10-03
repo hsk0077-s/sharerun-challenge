@@ -623,9 +623,20 @@ class SecuredActionService:
         },
         "battle_run_pass": {
             "title": "배틀런 챌린지 패스",
-            "diamondCost": 15,
+            "diamondCost": 120,
         },
     }
+
+    @classmethod
+    def shop_catalog(cls) -> list[dict]:
+        return [
+            {
+                "id": item_id,
+                "title": item["title"],
+                "diamondCost": int(item["diamondCost"]),
+            }
+            for item_id, item in cls.SHOP_CATALOG.items()
+        ]
 
     # Crew prices live here. The client does not send an amount.
     CREW_GIFT_DIA = 30

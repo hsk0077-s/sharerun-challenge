@@ -147,6 +147,11 @@ def purchase_shop_item(
     return service.purchase_shop_item(uid=uid, item_id=request.item_id)
 
 
+@router.post("/shop/crew-gift", response_model=SecuredActionResult)
+def grant_crew_items(uid: str = Depends(require_uid)) -> SecuredActionResult:
+    return service.grant_crew_items(uid=uid)
+
+
 @router.post("/web3/transfer", response_model=SecuredActionResult)
 def transfer_value_to_web3(
     request: Web3TransferRequest,

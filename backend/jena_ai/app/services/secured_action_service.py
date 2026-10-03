@@ -81,7 +81,7 @@ class SecuredActionService:
     def claim_signup_reward(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._claim_signup_reward_tx(transaction, uid, user_ref)
+        return _commit_signup_reward_tx(transaction, self, uid, user_ref)
 
     def apply_referral_code(
         self,
@@ -625,7 +625,6 @@ class SecuredActionService:
             ),
         )
 
-    @firestore.transactional
     def _claim_signup_reward_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
@@ -1922,6 +1921,16 @@ def _commit_diamond_box_tx(
     return service._collect_diamond_box_tx(
         transaction, uid, request, user_ref, box_ref, collected_ref
     )
+
+
+@firestore.transactional
+def _commit_signup_reward_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+) -> SecuredActionResult:
+    return service._claim_signup_reward_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

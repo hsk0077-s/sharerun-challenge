@@ -170,6 +170,7 @@ void main() {
 
     handled = await tester.binding.handlePopRoute();
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
     expect(handled, isTrue);
     expect(find.text(AppStrings.exitGuardMessage), findsOneWidget);
     expect(didRequestExit(), isFalse);

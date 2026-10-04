@@ -11,7 +11,10 @@ import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/models/iap_ui_event.dart';
 import '../features/iap/models/share_iap_product.dart';
 import '../features/iap/providers/iap_providers.dart';
+import '../app/router/route_names.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import 'dia_pack_store_screen.dart';
+import 'share_dia_exchange_screen.dart';
 
 /// src-14 Google Play 인앱 충전소.
 class InAppBillingScreen extends ConsumerStatefulWidget {
@@ -85,6 +88,10 @@ class _InAppBillingScreenState extends ConsumerState<InAppBillingScreen> {
                     children: [
                       const _CoachPlusBillingEntry(),
                       const SizedBox(height: 14),
+                      const _DiaExchangeEntry(),
+                      const SizedBox(height: 14),
+                      const _DiaPackStoreEntry(),
+                      const SizedBox(height: 14),
                       for (final product in ShareIapProduct.catalog) ...[
                         _IapProductCard(
                           product: product,
@@ -143,6 +150,98 @@ class _InAppBillingScreenState extends ConsumerState<InAppBillingScreen> {
       }
       GoRouter.maybeOf(context)?.pop();
     } catch (_) {}
+  }
+}
+
+class _DiaExchangeEntry extends StatelessWidget {
+  const _DiaExchangeEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surfaceWhite.withValues(alpha: 0.78),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        key: const Key('dia-share-exchange'),
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          final router = GoRouter.maybeOf(context);
+          if (router != null) {
+            context.push(RouteNames.shareToDia);
+            return;
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const ShareDiaExchangeScreen(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.tealAccent, width: 1.6),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'DIA · SHARE로 교환',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              ),
+              SizedBox(height: 4),
+              Text('120 SHARE = 1 DIA · 주간 한도 안에서 교환'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DiaPackStoreEntry extends StatelessWidget {
+  const _DiaPackStoreEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surfaceWhite.withValues(alpha: 0.78),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        key: const Key('dia-pack-store'),
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          final router = GoRouter.maybeOf(context);
+          if (router != null) {
+            context.push(RouteNames.diaPackStore);
+            return;
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const DiaPackStoreScreen(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.tealAccent, width: 1.6),
+          ),
+          child: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'DIA 팩',
+                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              ),
+              SizedBox(height: 4),
+              Text('Play 상품 준비 중 · 결제해도 DIA가 지급되지 않습니다'),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

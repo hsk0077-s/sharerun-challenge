@@ -39,7 +39,7 @@ class ShopItemModel {
       id: 'battle_run_pass',
       title: '배틀런 챌린지 패스',
       description: '프리미엄 배틀런 시즌 입장권 및 주간 보너스 SRV를 제공합니다.',
-      diamondCost: 15,
+      diamondCost: 120,
       iconName: 'emoji_events',
     ),
   ];

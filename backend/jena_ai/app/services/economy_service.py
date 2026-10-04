@@ -41,6 +41,13 @@ class EconomyService:
             current = current.replace(tzinfo=timezone.utc)
         return current.astimezone(_KST).date().isoformat()
 
+    def kst_hour_key(self, now: datetime | None = None) -> str:
+        """KST hour bucket YYYY-MM-DDTHH for the pedometer step cap."""
+        current = now or datetime.now(timezone.utc)
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        return current.astimezone(_KST).strftime("%Y-%m-%dT%H")
+
     def kst_week_key(self, now: datetime | None = None) -> str:
         """Monday of the KST week, YYYY-MM-DD. Idempotency marker for streak DIA."""
         current = now or datetime.now(timezone.utc)

@@ -9,6 +9,7 @@ import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../models/pedometer_harvest_result.dart';
+import '../models/share_to_dia_view.dart';
 import '../models/tournament_join_result.dart';
 import '../models/winner_reward_action.dart';
 
@@ -22,6 +23,21 @@ class ChallengeRoomCreateResult {
   final PedometerHarvestResult wallet;
   final String tournamentId;
   final int entryFeeShare;
+}
+
+class ShopCatalogPrice {
+  const ShopCatalogPrice({required this.id, required this.diamondCost});
+
+  final String id;
+  final int diamondCost;
+
+  factory ShopCatalogPrice.fromJson(Map<String, dynamic> json) {
+    final cost = json['diamond_cost'];
+    return ShopCatalogPrice(
+      id: json['id'] as String? ?? '',
+      diamondCost: cost is num ? cost.toInt() : 0,
+    );
+  }
 }
 
 class SecuredActionApiClient {
@@ -123,6 +139,18 @@ class SecuredActionApiClient {
     );
   }
 
+  Future<ShareToDiaView> quoteShareToDia() async {
+    final json = await _post('/actions/wallet/share-to-dia/quote', const {});
+    return ShareToDiaView.fromJson(json);
+  }
+
+  Future<ShareToDiaView> exchangeShareToDia(int diaAmount) async {
+    final json = await _post('/actions/wallet/share-to-dia', {
+      'dia_amount': diaAmount,
+    });
+    return ShareToDiaView.fromJson(json);
+  }
+
   /// Debits 500 VALUE on the server ledger. The device must not debit first.
   Future<PedometerHarvestResult> donateHallOfFame() async {
     final json = await _post('/actions/hall-of-fame/donate', const {});
@@ -155,6 +183,16 @@ class SecuredActionApiClient {
 
   Future<void> claimSignupReward() async {
     await _post('/actions/onboarding/claim-signup', const {});
+  }
+
+  Future<List<ShopCatalogPrice>> fetchShopCatalog() async {
+    final json = await _post('/actions/shop/catalog', const {});
+    final rows = json['items'];
+    if (rows is! List) return const [];
+    return [
+      for (final row in rows)
+        if (row is Map<String, dynamic>) ShopCatalogPrice.fromJson(row),
+    ];
   }
 
   /// Buys one catalog item. DIA debit and shopInventory live in one server transaction.

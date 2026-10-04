@@ -17,6 +17,8 @@ import '../core/widgets/src_gradient_background.dart';
 import '../data/models/tournament_model.dart';
 import '../features/challenge/providers/challenge_room_providers.dart';
 import '../features/pedometer/walking_challenge_share.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'live_running_screen.dart';
 
@@ -204,12 +206,12 @@ class ChallengeDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Align(
+                      const ServerItemUseButton(
+                        itemId: ServerShopInventory.cprId,
+                        label: AppStrings.challengeDetailCprUse,
+                        emptyHint: AppStrings.challengeDetailCprBuyHint,
+                        maxUses: AppStrings.challengeDetailCprMaxPerRace,
                         alignment: Alignment.centerRight,
-                        child: Text(
-                          copy.cprTickets,
-                          style: AppTextStyles.caption.copyWith(fontSize: 12),
-                        ),
                       ),
                       const SizedBox(height: 8),
                       _ChallengeJoinPayButton(
@@ -244,7 +246,6 @@ class _ChallengeDetailCopy {
     required this.recruitment,
     required this.donationTarget,
     required this.valueTip,
-    required this.cprTickets,
     required this.joinLabel,
     required this.radiusMeters,
     required this.entryFeeShare,
@@ -260,7 +261,6 @@ class _ChallengeDetailCopy {
   final String recruitment;
   final String donationTarget;
   final String valueTip;
-  final String cprTickets;
   final String joinLabel;
   final double radiusMeters;
   final int entryFeeShare;
@@ -285,7 +285,6 @@ class _ChallengeDetailCopy {
         recruitment: '모집 인원: 120 / 200명 (최소 BEP: 100명)',
         donationTarget: AppStrings.challengeDetailDonationTarget,
         valueTip: AppStrings.challengeDetailValueTip,
-        cprTickets: AppStrings.challengeDetailCprTickets,
         joinLabel: AppStrings.challengeDetailJoin,
         radiusMeters: 1000,
         entryFeeShare: fee,
@@ -305,7 +304,6 @@ class _ChallengeDetailCopy {
       recruitment: AppStrings.challengeDetailRecruitment,
       donationTarget: AppStrings.challengeDetailDonationTarget,
       valueTip: AppStrings.challengeDetailValueTip,
-      cprTickets: AppStrings.challengeDetailCprTickets,
       joinLabel: AppStrings.challengeDetailJoin,
       radiusMeters: 3000,
       entryFeeShare: fee,

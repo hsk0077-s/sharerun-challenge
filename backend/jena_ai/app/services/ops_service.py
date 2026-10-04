@@ -11,6 +11,7 @@ from app.models.ops_result import (
 )
 from app.services.firebase_service import FirebaseService
 from app.services.notification_service import send_tournament_topic_notification
+from app.services.wallet_funding import move_currency
 
 logger = logging.getLogger(__name__)
 
@@ -76,11 +77,14 @@ class OpsService:
 
             user_ref = db.collection("users").document(uid)
             tx_ref = db.collection("walletTransactions").document()
+            user_snapshot = user_ref.get()
+            wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+            moved = move_currency(wallet, share=entry_fee)
 
             batch.update(
                 user_ref,
                 {
-                    "wallet.shareBalance": firestore.Increment(entry_fee),
+                    **moved["updates"],
                     "updatedAt": SERVER_TIMESTAMP,
                 },
             )
@@ -102,6 +106,7 @@ class OpsService:
                     "shareAmount": entry_fee,
                     "fee": 0,
                     "createdAt": SERVER_TIMESTAMP,
+                    **moved["ledger"],
                 },
             )
 

@@ -15,6 +15,7 @@ from app.models.secured_actions import (
     JoinTournamentRequest,
     RedeemReferralResult,
     RefundRequest,
+    ShareToDiaView,
     CreateChallengeRoomResult,
     SecuredActionResult,
     SettleTournamentFailureRequest,
@@ -25,9 +26,15 @@ from app.models.secured_actions import (
 from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
     HALL_OF_FAME_DONATE_VALUE,
+    PEDOMETER_HOURLY_STEP_CAP,
     REFERRAL_REDEEM_SHARE,
+    REFERRAL_SHARE_LOCK_DAYS,
     REFERRAL_TRIAL_REFEREE_SHARE,
     REFERRAL_TRIAL_REFERRER_SHARE,
+    SHARE_PER_DIA,
+    SHARE_TO_DIA_SIGNUP_LOCK_DAYS,
+    SHARE_TO_DIA_UNIT,
+    SHARE_TO_DIA_WEEKLY_CAP,
     STREAK_BONUS_DIA,
     TEST_WALLET_GRANT_AMOUNT,
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
@@ -39,6 +46,17 @@ from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
 from app.services.mercy_rule_service import MercyRuleService
+from app.services.play_billing import (
+    consume_play_product_purchase,
+    dia_pack_by_id,
+    purchase_token_hash,
+    verify_play_product_purchase,
+)
+from app.services.wallet_funding import (
+    assign_free_balances,
+    exchange_spendable,
+    move_currency,
+)
 from app.services.running_validation_service import RunningValidationService
 
 
@@ -377,6 +395,48 @@ class SecuredActionService:
             reason="준비 중",
         )
 
+    def quote_share_to_dia(self, uid: str) -> ShareToDiaView:
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        snapshot = user_ref.get()
+        if not snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        return self._share_to_dia_view(uid, snapshot.to_dict() or {})
+
+    def exchange_share_to_dia(self, uid: str, dia_amount: int) -> ShareToDiaView:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_share_to_dia_tx(
+            transaction, self, uid, dia_amount, user_ref
+        )
+
+    def grant_dia_pack(
+        self,
+        uid: str,
+        product_id: str,
+        purchase_token: str,
+    ) -> SecuredActionResult:
+        pack = dia_pack_by_id(product_id)
+        if pack is None:
+            raise HTTPException(status_code=400, detail="Unknown DIA pack.")
+        verify_play_product_purchase(product_id, purchase_token)
+        token_hash = purchase_token_hash(purchase_token)
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        purchase_ref = self.firebase_service.db.collection("playPurchases").document(
+            token_hash
+        )
+        result = _commit_dia_pack_tx(
+            transaction,
+            self,
+            uid,
+            pack,
+            user_ref,
+            purchase_ref,
+        )
+        if result.status in {"granted", "already_granted"}:
+            consume_play_product_purchase(product_id, purchase_token)
+        return result
+
     def donate_hall_of_fame(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
@@ -561,6 +621,9 @@ class SecuredActionService:
                 if referral_payouts:
                     self._write_referral_payouts(transaction, referral_payouts)
 
+        if result.verified:
+            economy_updates["lastVerifiedRunWeek"] = self._economy_service.kst_week_key()
+
         if economy_updates:
             user_updates["economy"] = {**economy, **economy_updates}
 
@@ -595,9 +658,20 @@ class SecuredActionService:
         },
         "battle_run_pass": {
             "title": "배틀런 챌린지 패스",
-            "diamondCost": 15,
+            "diamondCost": 120,
         },
     }
+
+    @classmethod
+    def shop_catalog(cls) -> list[dict]:
+        return [
+            {
+                "id": item_id,
+                "title": item["title"],
+                "diamondCost": int(item["diamondCost"]),
+            }
+            for item_id, item in cls.SHOP_CATALOG.items()
+        ]
 
     # Crew prices live here. The client does not send an amount.
     CREW_GIFT_DIA = 30
@@ -747,6 +821,237 @@ class SecuredActionService:
             },
         )
 
+    def _share_to_dia_view(
+        self,
+        uid: str,
+        user: dict,
+        *,
+        dia_amount: int | None = None,
+        now: datetime | None = None,
+    ) -> ShareToDiaView:
+        current = now or datetime.now(timezone.utc)
+        share, diamonds, value = self._wallet_balances(user)
+        wallet = user.get("wallet") or {}
+        spendable, locked = exchange_spendable(wallet, current)
+        week = self._economy_service.kst_week_key(current)
+        used = (
+            int(user.get("shareToDiaWeekDia") or 0)
+            if user.get("shareToDiaWeekKey") == week
+            else 0
+        )
+        remaining = max(0, SHARE_TO_DIA_WEEKLY_CAP - used)
+        reason = self._share_to_dia_lock_reason(
+            uid,
+            user,
+            spendable=spendable,
+            locked_share=locked,
+            remaining=remaining,
+            dia_amount=dia_amount,
+            now=current,
+        )
+        return ShareToDiaView(
+            accepted=reason is None,
+            status="quote" if dia_amount is None else "blocked",
+            reason=reason or "SHARE를 DIA로 교환할 수 있습니다.",
+            rate_share_per_dia=SHARE_PER_DIA,
+            unit_dia=SHARE_TO_DIA_UNIT,
+            weekly_cap_dia=SHARE_TO_DIA_WEEKLY_CAP,
+            remaining_dia=remaining,
+            spendable_share=spendable,
+            locked_share=locked,
+            lock_reason=reason,
+            share_balance=share,
+            diamond_balance=diamonds,
+            value_token_balance=value,
+        )
+
+    def _share_to_dia_lock_reason(
+        self,
+        uid: str,
+        user: dict,
+        *,
+        spendable: int,
+        locked_share: int,
+        remaining: int,
+        dia_amount: int | None,
+        now: datetime,
+    ) -> str | None:
+        created = self._auth_account_created_at(uid)
+        if created is None or now - created < timedelta(
+            days=SHARE_TO_DIA_SIGNUP_LOCK_DAYS
+        ):
+            return "가입 후 7일이 지나야 교환할 수 있습니다."
+        try:
+            self._ensure_email_verified(uid)
+        except HTTPException:
+            return "이메일 인증이 필요합니다."
+        economy = user.get("economy") or {}
+        if economy.get("lastVerifiedRunWeek") != self._economy_service.kst_week_key(
+            now
+        ):
+            return "이번 주 검증 러닝 1회 후 교환할 수 있습니다."
+        if remaining <= 0:
+            return "이번 주 교환 한도 20 DIA를 모두 사용했습니다."
+        if dia_amount is None:
+            unit_cost = SHARE_PER_DIA * SHARE_TO_DIA_UNIT
+            if spendable < unit_cost and locked_share > 0:
+                return "추천 보상 SHARE는 받은 날부터 30일 동안 교환할 수 없습니다."
+            if spendable < unit_cost:
+                return "교환 가능한 SHARE가 부족합니다."
+            return None
+        if dia_amount % SHARE_TO_DIA_UNIT != 0:
+            return "DIA는 10개 단위로 교환합니다."
+        if dia_amount > remaining:
+            return "이번 주 교환 한도를 초과했습니다."
+        cost = dia_amount * SHARE_PER_DIA
+        if spendable < cost and locked_share > 0 and spendable + locked_share >= cost:
+            return "추천 보상 SHARE는 받은 날부터 30일 동안 교환할 수 없습니다."
+        if spendable < cost:
+            return "교환 가능한 SHARE가 부족합니다."
+        return None
+
+    def _exchange_share_to_dia_tx(
+        self,
+        transaction,
+        uid: str,
+        dia_amount: int,
+        user_ref,
+    ) -> ShareToDiaView:
+        # DIA is not transferable between accounts. This only converts SHARE.
+        snapshot = user_ref.get(transaction=transaction)
+        if not snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user = snapshot.to_dict() or {}
+        now = datetime.now(timezone.utc)
+        view = self._share_to_dia_view(uid, user, dia_amount=dia_amount, now=now)
+        if view.lock_reason:
+            raise HTTPException(status_code=400, detail=view.lock_reason)
+        wallet = user.get("wallet") or {}
+        cost = dia_amount * SHARE_PER_DIA
+        moved = move_currency(
+            wallet,
+            share=-cost,
+            diamond=dia_amount,
+            for_exchange=True,
+            now=now,
+        )
+        week = self._economy_service.kst_week_key(now)
+        used = view.weekly_cap_dia - view.remaining_dia
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.update(
+            user_ref,
+            {
+                **moved["updates"],
+                "shareToDiaWeekKey": week,
+                "shareToDiaWeekDia": used + dia_amount,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "share_to_dia",
+                "shareAmount": -cost,
+                "diamondAmount": dia_amount,
+                "weekKey": week,
+                "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
+            },
+        )
+        share, diamonds, value = self._wallet_balances({"wallet": wallet})
+        return ShareToDiaView(
+            accepted=True,
+            status="exchanged",
+            reason=f"{cost} SHARE를 {dia_amount} DIA로 교환했습니다.",
+            rate_share_per_dia=SHARE_PER_DIA,
+            unit_dia=SHARE_TO_DIA_UNIT,
+            weekly_cap_dia=SHARE_TO_DIA_WEEKLY_CAP,
+            remaining_dia=view.remaining_dia - dia_amount,
+            spendable_share=max(0, view.spendable_share - cost),
+            locked_share=view.locked_share,
+            lock_reason=None,
+            share_balance=share,
+            diamond_balance=diamonds,
+            value_token_balance=value,
+        )
+
+    def _grant_dia_pack_tx(
+        self,
+        transaction,
+        uid: str,
+        pack: dict,
+        user_ref,
+        purchase_ref,
+    ) -> SecuredActionResult:
+        existing = purchase_ref.get(transaction=transaction)
+        if existing.exists:
+            prior = existing.to_dict() or {}
+            if prior.get("uid") != uid:
+                raise HTTPException(status_code=409, detail="Purchase token already used.")
+            user_snapshot = user_ref.get(transaction=transaction)
+            user = user_snapshot.to_dict() or {} if user_snapshot.exists else {}
+            share, diamonds, value = self._wallet_balances(user)
+            return SecuredActionResult(
+                accepted=True,
+                status="already_granted",
+                reason="DIA pack purchase was already recorded.",
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user = user_snapshot.to_dict() or {}
+        wallet = user.get("wallet") or {}
+        base = int(pack["baseDia"])
+        bonus = int(pack["bonusDia"])
+        updates: dict = {"updatedAt": SERVER_TIMESTAMP}
+        ledger: dict = {}
+        if base:
+            paid = move_currency(wallet, diamond=base, paid_credit=True)
+            updates.update(paid["updates"])
+            ledger.update(paid["ledger"])
+        if bonus:
+            free = move_currency(wallet, diamond=bonus)
+            updates.update(free["updates"])
+            ledger["diamondFreeAmount"] = free["ledger"].get("diamondFreeAmount", bonus)
+            ledger["diamondPaidAmount"] = ledger.get("diamondPaidAmount", 0)
+        share, diamonds, value = self._wallet_balances({"wallet": wallet})
+        total = base + bonus
+        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
+        transaction.update(user_ref, updates)
+        transaction.set(
+            tx_ref,
+            {
+                "uid": uid,
+                "type": "dia_pack_purchase",
+                "productId": pack["productId"],
+                "priceKrw": pack["priceKrw"],
+                "diamondAmount": total,
+                "createdAt": SERVER_TIMESTAMP,
+                **ledger,
+            },
+        )
+        transaction.set(
+            purchase_ref,
+            {
+                "uid": uid,
+                "productId": pack["productId"],
+                "diamondAmount": total,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="granted",
+            reason=f"{total} DIA granted from {pack['productId']}.",
+            diamond_balance=diamonds,
+            share_balance=share,
+            value_token_balance=value,
+        )
+
     def _donate_hall_of_fame_tx(
         self,
         transaction,
@@ -860,11 +1165,13 @@ class SecuredActionService:
             )
 
         reward = STREAK_BONUS_DIA
+        wallet = user.get("wallet") or {}
+        moved = move_currency(wallet, diamond=reward)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(
             user_ref,
             {
-                "wallet.diamondBalance": firestore.Increment(reward),
+                **moved["updates"],
                 "streakBonusWeekKey": week,
                 "updatedAt": SERVER_TIMESTAMP,
             },
@@ -877,6 +1184,7 @@ class SecuredActionService:
                 "diamondAmount": reward,
                 "weekKey": week,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return self._harvest_result(
@@ -907,11 +1215,13 @@ class SecuredActionService:
             )
 
         reward = TRIAL_COMPLETION_REWARD_SRV
+        wallet = user.get("wallet") or {}
+        moved = move_currency(wallet, share=reward)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(
             user_ref,
             {
-                "wallet.shareBalance": firestore.Increment(reward),
+                **moved["updates"],
                 "economy.trialMilestoneRewardClaimed": True,
                 "updatedAt": SERVER_TIMESTAMP,
             },
@@ -923,6 +1233,7 @@ class SecuredActionService:
                 "type": "trial_completion_reward",
                 "shareAmount": reward,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return self._harvest_result(
@@ -1176,10 +1487,21 @@ class SecuredActionService:
             )
             if payout["amount"] <= 0:
                 continue
+            payee_snapshot = payout["payee_ref"].get(transaction=transaction)
+            payee_wallet = (payee_snapshot.to_dict() or {}).get("wallet") or {}
+            unlock_at = datetime.now(timezone.utc) + timedelta(
+                days=REFERRAL_SHARE_LOCK_DAYS
+            )
+            moved = move_currency(
+                payee_wallet,
+                share=payout["amount"],
+                lock_until=unlock_at,
+            )
+            payout["ledger"] = moved["ledger"]
             transaction.update(
                 payout["payee_ref"],
                 {
-                    "wallet.shareBalance": firestore.Increment(payout["amount"]),
+                    **moved["updates"],
                     "updatedAt": SERVER_TIMESTAMP,
                 },
             )
@@ -1218,6 +1540,7 @@ class SecuredActionService:
                 "type": f"referral_{payout_type}",
                 "shareAmount": payout["amount"],
                 "createdAt": SERVER_TIMESTAMP,
+                **(payout.get("ledger") or {}),
             },
         )
 
@@ -1242,6 +1565,7 @@ class SecuredActionService:
         cost = int(catalog_item["diamondCost"])
         if diamond_balance < cost:
             raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        moved = move_currency(wallet, diamond=-cost)
 
         inventory_ref = user_ref.collection("shopInventory").document(item_id)
         inventory_snapshot = inventory_ref.get(transaction=transaction)
@@ -1253,7 +1577,7 @@ class SecuredActionService:
         transaction.update(
             user_ref,
             {
-                "wallet.diamondBalance": diamond_balance - cost,
+                **moved["updates"],
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -1275,6 +1599,7 @@ class SecuredActionService:
                 "diamondAmount": -cost,
                 "itemId": item_id,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -1301,10 +1626,11 @@ class SecuredActionService:
         cost = self.CREW_GIFT_DIA
         if diamond_balance < cost:
             raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        moved = move_currency(wallet, diamond=-cost)
         transaction.update(
             user_ref,
             {
-                "wallet.diamondBalance": diamond_balance - cost,
+                **moved["updates"],
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -1337,6 +1663,7 @@ class SecuredActionService:
                 "diamondAmount": -cost,
                 "itemIds": granted,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -1366,23 +1693,23 @@ class SecuredActionService:
         wallet = user.get("wallet") or {}
         if asset == "diamond":
             balance = int(wallet.get("diamondBalance") or 0)
-            field = "wallet.diamondBalance"
             amount_key = "diamondAmount"
             if balance < cost:
                 raise HTTPException(
                     status_code=400, detail="Insufficient Diamond balance."
                 )
+            moved = move_currency(wallet, diamond=-cost)
         else:
             balance = int(wallet.get("shareBalance") or 0)
-            field = "wallet.shareBalance"
             amount_key = "shareAmount"
             if balance < cost:
                 raise HTTPException(
                     status_code=400, detail="Insufficient Share balance."
                 )
+            moved = move_currency(wallet, share=-cost)
         transaction.update(
             user_ref,
-            {field: balance - cost, "updatedAt": SERVER_TIMESTAMP},
+            {**moved["updates"], "updatedAt": SERVER_TIMESTAMP},
         )
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.set(
@@ -1392,6 +1719,7 @@ class SecuredActionService:
                 "type": tx_type,
                 amount_key: -cost,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -1424,10 +1752,11 @@ class SecuredActionService:
         cost = self.NICKNAME_CHANGE_DIA
         if diamond < cost:
             raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        moved = move_currency(wallet, diamond=-cost)
         transaction.update(
             user_ref,
             {
-                "wallet.diamondBalance": diamond - cost,
+                **moved["updates"],
                 "nickname": nickname,
                 "nicknameUpdatedAt": SERVER_TIMESTAMP,
                 "updatedAt": SERVER_TIMESTAMP,
@@ -1441,6 +1770,7 @@ class SecuredActionService:
                 "type": "nickname_change",
                 "diamondAmount": -cost,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -1471,10 +1801,11 @@ class SecuredActionService:
         cost = self.CREW_CREATE_SHARE
         if share < cost:
             raise HTTPException(status_code=400, detail="Insufficient Share balance.")
+        moved = move_currency(wallet, share=-cost)
         transaction.update(
             user_ref,
             {
-                "wallet.shareBalance": share - cost,
+                **moved["updates"],
                 "ownedCrewId": crew_ref.id,
                 "updatedAt": SERVER_TIMESTAMP,
             },
@@ -1499,6 +1830,7 @@ class SecuredActionService:
                 "shareAmount": -cost,
                 "crewId": crew_ref.id,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -1530,11 +1862,12 @@ class SecuredActionService:
         share = int(wallet.get("shareBalance") or 0)
         if share < fee:
             raise HTTPException(status_code=400, detail="Insufficient Share balance.")
+        moved = move_currency(wallet, share=-fee)
         bep = _challenge_bep(distance_km)
         capacity = min(400, max(20, bep * 2))
         transaction.update(
             user_ref,
-            {"wallet.shareBalance": share - fee, "updatedAt": SERVER_TIMESTAMP},
+            {**moved["updates"], "updatedAt": SERVER_TIMESTAMP},
         )
         transaction.set(
             room_ref,
@@ -1565,6 +1898,7 @@ class SecuredActionService:
                 "shareAmount": -fee,
                 "tournamentId": room_ref.id,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return CreateChallengeRoomResult(
@@ -1718,12 +2052,16 @@ class SecuredActionService:
         if diamond_deposit > 0 and diamonds < diamond_deposit:
             raise HTTPException(status_code=400, detail="Insufficient Diamond deposit.")
 
+        wallet = user.get("wallet") or {}
+        moved = move_currency(
+            wallet,
+            share=-entry_fee,
+            diamond=-diamond_deposit if diamond_deposit > 0 else 0,
+        )
         user_updates = {
-            "wallet.shareBalance": share - entry_fee,
+            **moved["updates"],
             "updatedAt": SERVER_TIMESTAMP,
         }
-        if diamond_deposit > 0:
-            user_updates["wallet.diamondBalance"] = diamonds - diamond_deposit
 
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(user_ref, user_updates)
@@ -1761,6 +2099,7 @@ class SecuredActionService:
                 "diamondAmount": -diamond_deposit,
                 "charityTarget": selected_charity if diamond_deposit > 0 else None,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         new_share = share - entry_fee
@@ -1821,10 +2160,12 @@ class SecuredActionService:
             )
 
         user_updates: dict = {"updatedAt": SERVER_TIMESTAMP}
+        returned_ledger: dict = {}
         if settlement.returned_diamonds > 0:
-            user_updates["wallet.diamondBalance"] = firestore.Increment(
-                settlement.returned_diamonds
-            )
+            wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+            moved = move_currency(wallet, diamond=settlement.returned_diamonds)
+            user_updates.update(moved["updates"])
+            returned_ledger = moved["ledger"]
         if settlement.forfeited_diamonds > 0:
             user_updates["wallet.totalDonationValue"] = firestore.Increment(
                 settlement.forfeited_diamonds
@@ -1842,6 +2183,7 @@ class SecuredActionService:
                 "type": "mercy_rule_donation",
                 "diamondAmount": settlement.forfeited_diamonds,
                 "returnedDiamondAmount": settlement.returned_diamonds,
+                **returned_ledger,
                 "achievementRate": settlement.achievement_rate,
                 "donationTarget": settlement.charity_target,
                 "createdAt": SERVER_TIMESTAMP,
@@ -1914,11 +2256,14 @@ class SecuredActionService:
             raise HTTPException(status_code=403, detail="Move closer to collect.")
 
         reward = int(box.get("rewardDiamond") or 1)
+        user_snapshot = user_ref.get(transaction=transaction)
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        moved = move_currency(wallet, diamond=reward)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(
             user_ref,
             {
-                "wallet.diamondBalance": firestore.Increment(reward),
+                **moved["updates"],
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -1938,6 +2283,7 @@ class SecuredActionService:
                 "type": "diamond_box_collect",
                 "diamondAmount": reward,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -2022,8 +2368,10 @@ class SecuredActionService:
         user = user_snapshot.to_dict() or {}
         current_share, current_dia, current_value = self._wallet_balances(user)
         today = self._economy_service.kst_today_key()
+        hour_key = self._economy_service.kst_hour_key()
+        raw_harvest = user.get("pedometerHarvest") or {}
         harvest = self._economy_service.normalize_pedometer_harvest(
-            user.get("pedometerHarvest"),
+            raw_harvest,
             today,
         )
         prev_claimed = int(harvest["claimedSteps"])
@@ -2039,21 +2387,44 @@ class SecuredActionService:
                 value_token_balance=current_value,
             )
 
+        same_hour = (
+            raw_harvest.get("dateKey") == today
+            and raw_harvest.get("hourKey") == hour_key
+        )
+        hour_steps = int(raw_harvest.get("hourSteps") or 0) if same_hour else 0
+        accepted_delta = min(
+            claimed - prev_claimed,
+            max(0, PEDOMETER_HOURLY_STEP_CAP - hour_steps),
+        )
+        if accepted_delta <= 0:
+            return self._harvest_result(
+                status="hourly_cap_reached",
+                reason="Walking challenge hourly step cap reached.",
+                share_credited=0,
+                share_balance=current_share,
+                diamond_balance=current_dia,
+                value_token_balance=current_value,
+            )
+        accepted_claimed = prev_claimed + accepted_delta
         share = self._economy_service.pedometer_harvest_share(
-            claimed_steps=claimed,
+            claimed_steps=accepted_claimed,
             prev_claimed_steps=prev_claimed,
             harvested_share=harvested,
         )
-        new_share = current_share + share
-        # Dotted SHARE field only — never replace the wallet map (DIA/VALUE).
+        wallet = user.get("wallet") or {}
+        moved = move_currency(wallet, share=share) if share > 0 else {"updates": {}, "ledger": {}}
+        new_share = int(wallet.get("shareBalance") or current_share)
+        # Dotted SHARE fields only — never replace the wallet map (DIA/VALUE).
         updates = {
             "pedometerHarvest.dateKey": today,
-            "pedometerHarvest.claimedSteps": claimed,
+            "pedometerHarvest.claimedSteps": accepted_claimed,
             "pedometerHarvest.harvestedShare": harvested + share,
+            "pedometerHarvest.hourKey": hour_key,
+            "pedometerHarvest.hourSteps": hour_steps + accepted_delta,
             "updatedAt": SERVER_TIMESTAMP,
+            **moved["updates"],
         }
         if share > 0:
-            updates["wallet.shareBalance"] = new_share
             tx_ref = self.firebase_service.db.collection(
                 "walletTransactions"
             ).document()
@@ -2065,6 +2436,7 @@ class SecuredActionService:
                     "shareAmount": share,
                     "claimedSteps": claimed,
                     "createdAt": SERVER_TIMESTAMP,
+                    **moved["ledger"],
                 },
             )
         transaction.update(user_ref, updates)
@@ -2179,12 +2551,13 @@ class SecuredActionService:
             )
 
         amount = TEST_WALLET_GRANT_AMOUNT
+        wallet = user.get("wallet") or {}
+        moved = assign_free_balances(wallet, share=amount, diamond=amount)
         # Dotted fields only — keep wallet.totalDonationValue intact.
         transaction.update(
             user_ref,
             {
-                "wallet.shareBalance": amount,
-                "wallet.diamondBalance": amount,
+                **moved["updates"],
                 "wallet.valueTokenBalance": amount,
                 TEST_WALLET_GRANT_FLAG: True,
                 "updatedAt": SERVER_TIMESTAMP,
@@ -2202,6 +2575,7 @@ class SecuredActionService:
                 "diamondAmount": amount,
                 "valueAmount": amount,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return self._harvest_result(
@@ -2234,12 +2608,14 @@ class SecuredActionService:
         share = int(wallet.get("shareBalance") or 0)
         if share < request.share_amount:
             raise HTTPException(status_code=400, detail="Refund exceeds Share balance.")
+        # Paid first so a cash refund returns unused paid SHARE before free.
+        moved = move_currency(wallet, share=-request.share_amount, paid_first=True)
 
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(
             user_ref,
             {
-                "wallet.shareBalance": share - request.share_amount,
+                **moved["updates"],
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -2250,6 +2626,7 @@ class SecuredActionService:
                 "type": "cash_refund_requested",
                 "shareAmount": -request.share_amount,
                 "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
             },
         )
         return SecuredActionResult(
@@ -2573,6 +2950,33 @@ def _commit_refund_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._request_refund_tx(transaction, uid, request, user_ref)
+
+
+@firestore.transactional
+def _commit_share_to_dia_tx(
+    transaction,
+    service,
+    uid: str,
+    dia_amount: int,
+    user_ref,
+) -> ShareToDiaView:
+    return service._exchange_share_to_dia_tx(
+        transaction, uid, dia_amount, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_dia_pack_tx(
+    transaction,
+    service,
+    uid: str,
+    pack: dict,
+    user_ref,
+    purchase_ref,
+) -> SecuredActionResult:
+    return service._grant_dia_pack_tx(
+        transaction, uid, pack, user_ref, purchase_ref
+    )
 
 
 @firestore.transactional

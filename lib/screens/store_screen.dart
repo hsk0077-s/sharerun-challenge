@@ -18,6 +18,7 @@ import '../core/widgets/src_exit_guard.dart';
 import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
@@ -113,6 +114,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   ShopItemModel _shopItem(String id) {
     return ShopItemModel.catalog.firstWhere((item) => item.id == id);
+  }
+
+  int _diaCost(String id) {
+    final catalog = ref.watch(shopCatalogProvider).asData?.value;
+    final server = catalog?[id];
+    if (server != null) return server;
+    return _shopItem(id).diamondCost;
   }
 
   Future<void> _onBuyItem(ShopItemModel item) async {
@@ -287,6 +295,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       icon: Icons.monitor_heart_outlined,
                                       iconColor: AppColors.error,
                                       title: AppStrings.storeItemCpr,
+                                      diamondCost: _diaCost('record_cpr_ticket'),
                                       ownedCount: inventory.cprCount,
                                       onBuy: () => _onBuyItem(_shopItem('record_cpr_ticket')),
                                     ),
@@ -297,6 +306,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                       icon: Icons.shield_outlined,
                                       iconColor: AppColors.success,
                                       title: AppStrings.storeItemSafeGuard,
+                                      diamondCost: _diaCost('record_safe_guard'),
                                       ownedCount: inventory.safeGuardCount,
                                       onBuy: () => _onBuyItem(_shopItem('record_safe_guard')),
                                     ),
@@ -624,6 +634,7 @@ class _ItemBuyCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     required this.title,
+    required this.diamondCost,
     required this.ownedCount,
     required this.onBuy,
   });
@@ -631,6 +642,7 @@ class _ItemBuyCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
+  final int diamondCost;
   final int ownedCount;
   final VoidCallback? onBuy;
 
@@ -677,7 +689,7 @@ class _ItemBuyCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  AppStrings.storeBuyDia,
+                  '${diamondCost} DIA 구매',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.buttonText.copyWith(
                     color: AppColors.tealAccent,

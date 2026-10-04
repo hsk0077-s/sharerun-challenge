@@ -23,6 +23,8 @@ import '../features/run_tracking/services/gps_tracking_service.dart';
 import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
@@ -234,6 +236,24 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                     4,
                   ),
                   child: _EffortCapsule(),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppShapes.termsHorizontalPadding,
+                  ),
+                  child: ServerItemUseButton(
+                    itemId: ServerShopInventory.cprId,
+                    label: '기록 심폐소생권',
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppShapes.termsHorizontalPadding,
+                  ),
+                  child: ServerItemUseButton(
+                    itemId: ServerShopInventory.safeGuardId,
+                    label: '세이프 가드',
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(

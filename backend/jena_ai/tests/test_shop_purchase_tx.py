@@ -17,6 +17,37 @@ def _buy(db: _MemoryDb, service: SecuredActionService):
     )
 
 
+def test_catalog_keeps_cpr_and_prices_battle_pass_at_120() -> None:
+    prices = {
+        row["id"]: row["diamondCost"] for row in SecuredActionService.shop_catalog()
+    }
+    assert prices["record_cpr_ticket"] == 3
+    assert prices["record_safe_guard"] == 5
+    assert prices["battle_run_pass"] == 120
+
+
+def test_battle_pass_debits_server_price() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = {"wallet": {"diamondBalance": 200}}
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    user_ref = db.collection("users").document("u1")
+    result = _commit_shop_tx.to_wrap(
+        _MemoryTxn(),
+        service,
+        "u1",
+        "battle_run_pass",
+        user_ref,
+    )
+    assert result.status == "purchased"
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 80
+    ledger = [
+        row
+        for path, row in db.store.items()
+        if path.startswith("walletTransactions/")
+    ]
+    assert ledger[0]["diamondAmount"] == -120
+
+
 def test_shop_purchase_appends_negative_diamond_row() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {"wallet": {"diamondBalance": 10}}

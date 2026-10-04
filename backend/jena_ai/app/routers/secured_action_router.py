@@ -18,8 +18,13 @@ from app.models.secured_actions import (
     CreateChallengeRoomResult,
     CrewFoundRequest,
     CrewSpendRequest,
+    ShopCatalogItem,
+    ShopCatalogView,
     ShopPurchaseRequest,
     ValidateRunRequest,
+    DiaPackGrantRequest,
+    ShareToDiaRequest,
+    ShareToDiaView,
     Web3TransferRequest,
     WinnerRewardRequest,
 )
@@ -191,6 +196,21 @@ def create_challenge_room(
     )
 
 
+@router.post("/shop/catalog", response_model=ShopCatalogView)
+def shop_catalog(uid: str = Depends(require_uid)) -> ShopCatalogView:
+    del uid
+    return ShopCatalogView(
+        items=[
+            ShopCatalogItem(
+                id=row["id"],
+                title=row["title"],
+                diamond_cost=row["diamondCost"],
+            )
+            for row in service.shop_catalog()
+        ]
+    )
+
+
 @router.post("/shop/use", response_model=SecuredActionResult)
 def use_shop_item(
     request: ShopPurchaseRequest,
@@ -210,3 +230,28 @@ def transfer_value_to_web3(
 @router.post("/hall-of-fame/donate", response_model=SecuredActionResult)
 def donate_hall_of_fame(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.donate_hall_of_fame(uid=uid)
+
+
+@router.post("/wallet/share-to-dia/quote", response_model=ShareToDiaView)
+def quote_share_to_dia(uid: str = Depends(require_uid)) -> ShareToDiaView:
+    return service.quote_share_to_dia(uid=uid)
+
+
+@router.post("/wallet/share-to-dia", response_model=ShareToDiaView)
+def exchange_share_to_dia(
+    request: ShareToDiaRequest,
+    uid: str = Depends(require_uid),
+) -> ShareToDiaView:
+    return service.exchange_share_to_dia(uid=uid, dia_amount=request.dia_amount)
+
+
+@router.post("/wallet/dia-pack/grant", response_model=SecuredActionResult)
+def grant_dia_pack(
+    request: DiaPackGrantRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.grant_dia_pack(
+        uid=uid,
+        product_id=request.product_id,
+        purchase_token=request.purchase_token,
+    )

@@ -42,6 +42,33 @@ def test_harvest_credits_fifty_share_once() -> None:
     assert db.store["users/u1"]["wallet"]["shareBalance"] == 60
 
 
+def test_hourly_step_cap_limits_spoofed_watermark() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = {"wallet": {"shareBalance": 0, "diamondBalance": 1}}
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    user_ref = db.collection("users").document("u1")
+    request = HarvestPedometerRequest(claimed_steps=999_999)
+
+    first = _commit_harvest_tx.to_wrap(
+        _MemoryTxn(), service, "u1", request, user_ref
+    )
+    assert first.status == "harvested"
+    assert first.share_credited == 60
+    harvest = db.store["users/u1"]["pedometerHarvest"]
+    assert harvest["claimedSteps"] == 12_000
+    assert harvest["hourSteps"] == 12_000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 60
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 1
+
+    again = _commit_harvest_tx.to_wrap(
+        _MemoryTxn(), service, "u1", request, user_ref
+    )
+    assert again.status == "hourly_cap_reached"
+    assert again.share_credited == 0
+    assert db.store["users/u1"]["pedometerHarvest"]["claimedSteps"] == 12_000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 60
+
+
 def test_harvest_entry_uses_module_transaction(monkeypatch) -> None:
     db = _MemoryDb()
     service = SecuredActionService(firebase_service=SimpleNamespace(db=db))

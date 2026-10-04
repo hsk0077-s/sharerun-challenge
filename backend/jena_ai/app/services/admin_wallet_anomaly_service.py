@@ -10,14 +10,12 @@ from app.services.firebase_service import FirebaseService
 
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 40
-RECEIPT_CAP = 40
 LEDGER_CAP = 80
 INTENT_CAP = 40
-_ASSETS = {"SHARE": "shareAmount", "DIA": "diamondAmount", "VALUE": "valueAmount"}
 
 
 class AdminWalletAnomalyService:
-    """Reads wallets, receipts, and the server ledger. Does not write."""
+    """Reads wallets and the server ledger. Does not write."""
 
     def __init__(self, firebase_service: FirebaseService | None = None) -> None:
         self.firebase_service = firebase_service
@@ -70,13 +68,6 @@ class AdminWalletAnomalyService:
         return service.db
 
     def _for_user(self, db, uid: str, user: dict) -> tuple[list[WalletAnomalyRow], bool]:
-        receipts = list(
-            db.collection("users")
-            .document(uid)
-            .collection("wallet_transactions")
-            .limit(RECEIPT_CAP)
-            .stream()
-        )
         ledger = list(
             db.collection("walletTransactions")
             .where("uid", "==", uid)
@@ -89,11 +80,7 @@ class AdminWalletAnomalyService:
             .limit(INTENT_CAP)
             .stream()
         )
-        truncated = (
-            len(receipts) >= RECEIPT_CAP
-            or len(ledger) >= LEDGER_CAP
-            or len(intents) >= INTENT_CAP
-        )
+        truncated = len(ledger) >= LEDGER_CAP or len(intents) >= INTENT_CAP
         share, diamond, value = _balances(user)
         rows: list[WalletAnomalyRow] = []
         grant = _grant_detail(user, ledger)
@@ -120,36 +107,6 @@ class AdminWalletAnomalyService:
                     valueTokenBalance=value,
                 )
             )
-        pools = _pools(ledger, intents)
-        for snap in receipts:
-            data = snap.to_dict() or {}
-            stored_uid = _text(data.get("uid"))
-            if stored_uid and stored_uid != uid:
-                rows.append(
-                    WalletAnomalyRow(
-                        uid=uid,
-                        reason="receipt_uid_mismatch",
-                        detail=(
-                            f"영수증 {snap.id} uid={stored_uid} 가 "
-                            f"소유자 {uid} 와 다릅니다."
-                        ),
-                        receiptId=snap.id,
-                        amount=_stored_int(data.get("amount")),
-                        assetType=_text(data.get("assetType")),
-                    )
-                )
-            mismatch = _receipt_mismatch(snap.id, data, pools)
-            if mismatch:
-                rows.append(
-                    WalletAnomalyRow(
-                        uid=uid,
-                        reason="unmatched_receipt",
-                        detail=mismatch,
-                        receiptId=snap.id,
-                        amount=_stored_int(data.get("amount")),
-                        assetType=_text(data.get("assetType")),
-                    )
-                )
         for snap in intents:
             data = snap.to_dict() or {}
             if data.get("status") != "amount_mismatch":
@@ -204,38 +161,6 @@ def _negative_detail(
     if not parts:
         return None
     return "음수 잔액: " + ", ".join(parts)
-
-
-def _pools(ledger: list, intents: list) -> dict[str, set[int]]:
-    pools = {asset: set() for asset in _ASSETS}
-    for snap in ledger:
-        data = snap.to_dict() or {}
-        for asset, field in _ASSETS.items():
-            number = _stored_int(data.get(field))
-            if number:
-                pools[asset].add(abs(number))
-    for snap in intents:
-        data = snap.to_dict() or {}
-        for field in ("amountKrw", "amountShare", "verifiedAmount"):
-            number = _stored_int(data.get(field))
-            if number:
-                pools["SHARE"].add(abs(number))
-    return pools
-
-
-def _receipt_mismatch(receipt_id: str, data: dict, pools: dict[str, set[int]]) -> str | None:
-    asset = _text(data.get("assetType"))
-    amount = _stored_int(data.get("amount"))
-    title = _text(data.get("title"))
-    title_bit = f" title={title}" if title else ""
-    if asset not in _ASSETS or amount is None:
-        return f"영수증 {receipt_id} 금액 또는 assetType이 없습니다.{title_bit}"
-    if abs(amount) not in pools[asset]:
-        return (
-            f"영수증 {receipt_id} {asset} {amount} 이 "
-            f"원장·paymentIntents 금액에 없습니다.{title_bit}"
-        )
-    return None
 
 
 def _intent_detail(intent_id: str, data: dict) -> str:
@@ -309,13 +234,6 @@ def _stored_int(value: object) -> int | None:
     if isinstance(value, float) and value.is_integer():
         return int(value)
     return None
-
-
-def _text(value: object) -> str | None:
-    if not isinstance(value, str):
-        return None
-    text = value.strip()
-    return text or None
 
 
 admin_wallet_anomaly_service = AdminWalletAnomalyService()

@@ -7,6 +7,8 @@ class JoinTournamentRequest(BaseModel):
     selected_charity: str = Field(default="UNICEF", min_length=2, max_length=64)
     # Prize races only. ``share`` debits config SHARE; ``ticket`` spends free tickets.
     entry_method: str = Field(default="share", pattern="^(share|ticket)$")
+    # Non-prize rooms only. Opens a full or closed room by spending 추가 참가권.
+    use_extra_entry: bool = False
 
 
 class SettleTournamentFailureRequest(BaseModel):

@@ -278,6 +278,9 @@ abstract final class AppStrings {
   static const storeFunctionalItems = '기능성 아이템';
   static const storeItemCpr = '기록 심폐소생권';
   static const storeItemSafeGuard = '세이프 가드';
+  static const storeItemCoachOnePoint = '코치 원포인트권';
+  static const storeItemExtraEntry = '추가 참가권';
+  static const storeItemExtraEntryPack = '추가 참가권 3장';
   static const storeItemStarBoost = '스타 부스트';
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
@@ -400,6 +403,10 @@ abstract final class AppStrings {
   // ── Item Inventory (Screen 20) ──────────────────────────────────────
   static const itemInventoryTitle = '내 아이템 보관함';
   static const itemInventoryCprTitle = '기록 심폐소생권';
+  static const itemInventoryCoachOnePointTitle = '코치 원포인트권';
+  static const itemInventoryExtraEntryTitle = '추가 참가권';
+  static const itemInventoryCoachOnePointHint = '러닝을 시작하면 사용됩니다. 하루 1회.';
+  static const itemInventoryExtraEntryHint = '모집 마감·정원 초과 참가 시 사용됩니다. 하루 2회.';
   static const itemInventoryCprQuantity = '보유량: 3/3';
   static const itemInventorySafeGuardTitle = '세이프 가드';
   static const itemInventorySafeGuardQuantity = '보유량: 1/1';

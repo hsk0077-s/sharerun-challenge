@@ -1,21 +1,29 @@
-"""Streak-item DIA prices.
+"""DIA prices for items Jena sells from ``config/item_prices``.
 
-One Firestore doc, ``config/item_prices``, overrides these defaults.
-Jena reads it for the shop catalog and when 심폐소생권 or 세이프가드 is
+Jena reads the doc for the shop catalog and when one of these items is
 bought. Missing or invalid fields keep the code default, so a bad edit
-cannot make either item free. Numbers can change without an app update
-and without another Cloud Run deploy after this code is live.
+cannot make an item free. Numbers can change without an app update and
+without another Cloud Run deploy after this code is live.
 """
 
 ITEM_PRICES_CONFIG_ID = "item_prices"
 CPR_ITEM_ID = "record_cpr_ticket"
 SAFEGUARD_ITEM_ID = "record_safe_guard"
+COACH_ONE_POINT_ITEM_ID = "coach_one_point_ticket"
+EXTRA_ENTRY_ITEM_ID = "extra_entry_ticket"
+EXTRA_ENTRY_PACK_ITEM_ID = "extra_entry_ticket_3pack"
 STREAK_ITEM_IDS = frozenset({CPR_ITEM_ID, SAFEGUARD_ITEM_ID})
+RUN_ACCESS_ITEM_IDS = frozenset(
+    {COACH_ONE_POINT_ITEM_ID, EXTRA_ENTRY_ITEM_ID, EXTRA_ENTRY_PACK_ITEM_ID}
+)
 
 # Code defaults. A missing doc or a bad field keeps these.
 _DEFAULTS = {
     CPR_ITEM_ID: 12,
     SAFEGUARD_ITEM_ID: 8,
+    COACH_ONE_POINT_ITEM_ID: 5,
+    EXTRA_ENTRY_ITEM_ID: 10,
+    EXTRA_ENTRY_PACK_ITEM_ID: 25,
 }
 
 

@@ -8,6 +8,7 @@ TournamentModel _room({
   int participantCount = 1,
   int requiredTier = 1,
   String status = 'recruiting',
+  String prizeTier = '',
 }) {
   return TournamentModel.fromJson(
     id: 'room-1',
@@ -23,6 +24,7 @@ TournamentModel _room({
       'requiredTier': requiredTier,
       'status': status,
       'sponsorName': 'UNICEF',
+      if (prizeTier.isNotEmpty) 'prizeTier': prizeTier,
     },
   );
 }
@@ -91,6 +93,90 @@ void main() {
         shareBalance: 100,
       ),
       'Share 잔액이 부족합니다.',
+    );
+  });
+
+  test('an extra entry ticket opens a full or closed non-prize room', () {
+    final full = _room(maxParticipants: 10, participantCount: 10);
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: full,
+        userTier: 1,
+        shareBalance: 1000000,
+        extraEntryTickets: 1,
+      ),
+      isNull,
+    );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: _room(status: 'active'),
+        userTier: 1,
+        shareBalance: 1000000,
+        extraEntryTickets: 1,
+      ),
+      isNull,
+    );
+    expect(
+      TournamentJoinGate.canAttemptJoin(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: full,
+        userTier: 1,
+        extraEntryTickets: 1,
+      ),
+      isTrue,
+    );
+  });
+
+  test(
+      'a ticket does not open a prize race, a cancelled room, or a short SHARE balance',
+      () {
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: _room(
+          maxParticipants: 10,
+          participantCount: 10,
+          prizeTier: 'beginner',
+        ),
+        userTier: 1,
+        shareBalance: 1000000,
+        extraEntryTickets: 2,
+      ),
+      '대회 정원이 가득 찼습니다.',
+    );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: _room(status: 'cancelled'),
+        userTier: 1,
+        shareBalance: 1000000,
+        extraEntryTickets: 1,
+      ),
+      '현재 모집 중인 대회가 아닙니다.',
+    );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: _room(maxParticipants: 10, participantCount: 10),
+        userTier: 1,
+        shareBalance: 10,
+        extraEntryTickets: 1,
+      ),
+      'Share 잔액이 부족합니다.',
+    );
+    expect(
+      TournamentJoinGate.extraEntryCanOpen(
+        _room(status: 'active', prizeTier: 'mid'),
+      ),
+      isFalse,
     );
   });
 

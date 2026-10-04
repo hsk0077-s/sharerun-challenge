@@ -158,6 +158,28 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           AppStrings.itemInventorySafeGuardTitle,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.record_voice_over_outlined,
+                          size: 40,
+                          color: AppColors.tealAccent,
+                        ),
+                        title: AppStrings.itemInventoryCoachOnePointTitle,
+                        quantity: '보유량: ${shop.coachOnePointCount}',
+                        hint: AppStrings.itemInventoryCoachOnePointHint,
+                      ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.confirmation_number_outlined,
+                          size: 40,
+                          color: AppColors.progressYellow,
+                        ),
+                        title: AppStrings.itemInventoryExtraEntryTitle,
+                        quantity: '보유량: ${shop.extraEntryCount}',
+                        hint: AppStrings.itemInventoryExtraEntryHint,
+                      ),
                     ],
                   ),
                 ),
@@ -347,15 +369,17 @@ class _InventoryItemCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.quantity,
-    required this.useButtonColor,
-    required this.onUse,
+    this.useButtonColor = const Color(0xFFCDDC39),
+    this.onUse,
+    this.hint,
   });
 
   final Widget icon;
   final String title;
   final String quantity;
   final Color useButtonColor;
-  final VoidCallback onUse;
+  final VoidCallback? onUse;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -405,31 +429,40 @@ class _InventoryItemCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Material(
-              color: useButtonColor,
-              borderRadius: BorderRadius.circular(20),
-              clipBehavior: Clip.antiAlias,
-              child: InkWell(
-                onTap: onUse,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  child: Text(
-                    AppStrings.itemInventoryUse,
-                    style: AppTextStyles.buttonText.copyWith(
-                      color: AppColors.textBlack,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+          if (onUse != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: Material(
+                color: useButtonColor,
+                borderRadius: BorderRadius.circular(20),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: onUse,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    child: Text(
+                      AppStrings.itemInventoryUse,
+                      style: AppTextStyles.buttonText.copyWith(
+                        color: AppColors.textBlack,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),
               ),
+            )
+          else if (hint != null)
+            Text(
+              hint!,
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 12,
+                color: AppColors.textGrey,
+              ),
             ),
-          ),
         ],
       ),
     );

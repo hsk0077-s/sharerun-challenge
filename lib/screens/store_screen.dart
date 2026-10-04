@@ -328,6 +328,50 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                   ),
                                 ],
                               ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.record_voice_over_outlined,
+                                      iconColor: AppColors.tealAccent,
+                                      title: AppStrings.storeItemCoachOnePoint,
+                                      diamondCost:
+                                          _diaCost('coach_one_point_ticket'),
+                                      ownedCount: inventory.coachOnePointCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('coach_one_point_ticket'),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.confirmation_number_outlined,
+                                      iconColor: AppColors.progressYellow,
+                                      title: AppStrings.storeItemExtraEntry,
+                                      diamondCost:
+                                          _diaCost('extra_entry_ticket'),
+                                      ownedCount: inventory.extraEntryCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('extra_entry_ticket'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              _ItemBuyCard(
+                                icon: Icons.confirmation_number_outlined,
+                                iconColor: AppColors.progressYellow,
+                                title: AppStrings.storeItemExtraEntryPack,
+                                diamondCost:
+                                    _diaCost('extra_entry_ticket_3pack'),
+                                ownedCount: inventory.extraEntryCount,
+                                onBuy: () => _onBuyItem(
+                                  _shopItem('extra_entry_ticket_3pack'),
+                                ),
+                              ),
                             ],
                           ),
                         ),

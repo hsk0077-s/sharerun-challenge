@@ -68,6 +68,11 @@ abstract final class ApiErrorMessage {
     return switch (detail) {
       'Tournament is full.' => '대회 정원이 가득 찼습니다.',
       'Tournament is not recruiting.' => '현재 모집 중인 대회가 아닙니다.',
+      'Prize races accept only SHARE or free tickets.' =>
+        '상금 대회는 SHARE 또는 무료 참가권만 사용할 수 있습니다.',
+      'Extra entry daily use cap is 2.' => '추가 참가권은 하루에 2번까지 사용할 수 있습니다.',
+      'No extra entry ticket.' => '사용할 추가 참가권이 없습니다.',
+      'Coach one-point daily use cap is 1.' => '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.',
       'Lower-tier room is locked.' => '내 등급보다 낮은 방은 참가할 수 없습니다.',
       'Insufficient Share balance.' => 'Share 잔액이 부족합니다.',
       'Refund exceeds Share balance.' => '환불 가능한 Share 잔액을 초과했습니다.',

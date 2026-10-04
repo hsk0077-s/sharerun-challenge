@@ -57,7 +57,19 @@ from app.services.company_tournament_config import (
     prize_tier_id,
     resolve_company_tournament_config,
 )
-from app.services.item_price_config import STREAK_ITEM_IDS, read_item_prices
+from app.services.item_price_config import (
+    COACH_ONE_POINT_ITEM_ID,
+    EXTRA_ENTRY_ITEM_ID,
+    RUN_ACCESS_ITEM_IDS,
+    STREAK_ITEM_IDS,
+    read_item_prices,
+)
+from app.services.run_access_items import (
+    consume_extra_entry_ticket,
+    extra_entry_opens_closed,
+    purchase_run_access_item,
+    use_coach_one_point,
+)
 from app.services.streak_protection import (
     CPR_ITEM_ID,
     grant_coach_plus_cpr,
@@ -364,6 +376,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id in RUN_ACCESS_ITEM_IDS:
+            return _commit_run_access_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
 
     def ensure_coach_plus_cpr(self, uid: str) -> None:
@@ -426,6 +447,19 @@ class SecuredActionService:
                 item_id,
                 require_request_id(request_id),
                 user_ref,
+            )
+        if item_id == COACH_ONE_POINT_ITEM_ID:
+            return _commit_coach_one_point_use_tx(
+                transaction,
+                self,
+                uid,
+                require_request_id(request_id),
+                user_ref,
+            )
+        if item_id in RUN_ACCESS_ITEM_IDS:
+            raise HTTPException(
+                status_code=400,
+                detail="Extra entry ticket is spent by joining a race.",
             )
         return _commit_use_shop_tx(transaction, self, uid, item_id, user_ref)
 
@@ -698,6 +732,18 @@ class SecuredActionService:
         "record_safe_guard": {
             "title": "기록 마감 세이프 가드",
             "diamondCost": 8,
+        },
+        "coach_one_point_ticket": {
+            "title": "코치 원포인트권",
+            "diamondCost": 5,
+        },
+        "extra_entry_ticket": {
+            "title": "추가 참가권",
+            "diamondCost": 10,
+        },
+        "extra_entry_ticket_3pack": {
+            "title": "추가 참가권 3장",
+            "diamondCost": 25,
         },
         "ghost_pace_match": {
             "title": "고스트 페이스 매칭",
@@ -1598,7 +1644,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         catalog_item = self.SHOP_CATALOG.get(item_id)
         if catalog_item is None:
@@ -1968,7 +2014,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
             raise HTTPException(status_code=404, detail="Shop item not found.")
@@ -2095,6 +2141,11 @@ class SecuredActionService:
             )
 
         tier_id = prize_tier_id(tournament)
+        if request.use_extra_entry and tier_id is not None:
+            raise HTTPException(
+                status_code=400,
+                detail="Prize races accept only SHARE or free tickets.",
+            )
         if tier_id is not None:
             if tier_id == "":
                 raise HTTPException(status_code=400, detail="Unknown prize tier.")
@@ -2128,16 +2179,31 @@ class SecuredActionService:
         diamond_deposit = request.diamond_deposit or required_deposit
         selected_charity = request.selected_charity or "UNICEF"
 
+        needs_ticket = False
         if tournament.get("status", "recruiting") != "recruiting":
-            raise HTTPException(status_code=400, detail="Tournament is not recruiting.")
+            if request.use_extra_entry and extra_entry_opens_closed(
+                tournament.get("status")
+            ):
+                needs_ticket = True
+            else:
+                raise HTTPException(
+                    status_code=400, detail="Tournament is not recruiting."
+                )
         if required_tier < user_tier and tournament_ref.id not in _OPEN_TIER_ROOM_IDS:
             raise HTTPException(status_code=403, detail="Lower-tier room is locked.")
         if self._tournament_is_full(tournament):
-            raise HTTPException(status_code=409, detail="Tournament is full.")
+            if request.use_extra_entry:
+                needs_ticket = True
+            else:
+                raise HTTPException(status_code=409, detail="Tournament is full.")
         if share < entry_fee:
             raise HTTPException(status_code=400, detail="Insufficient Share balance.")
         if diamond_deposit > 0 and diamonds < diamond_deposit:
             raise HTTPException(status_code=400, detail="Insufficient Diamond deposit.")
+        if needs_ticket:
+            consume_extra_entry_ticket(
+                self, transaction, uid, user_ref, tournament_ref.id
+            )
 
         wallet = user.get("wallet") or {}
         moved = move_currency(
@@ -2174,6 +2240,7 @@ class SecuredActionService:
                 "selectedCharity": selected_charity,
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
+                **({"extraEntryTicket": True} if needs_ticket else {}),
             },
         )
         transaction.set(
@@ -2186,6 +2253,7 @@ class SecuredActionService:
                 "diamondAmount": -diamond_deposit,
                 "charityTarget": selected_charity if diamond_deposit > 0 else None,
                 "createdAt": SERVER_TIMESTAMP,
+                **({"extraEntryItemId": EXTRA_ENTRY_ITEM_ID} if needs_ticket else {}),
                 **moved["ledger"],
             },
         )
@@ -3291,6 +3359,31 @@ def _commit_streak_purchase_tx(
     return purchase_streak_item(
         service, transaction, uid, item_id, request_id, user_ref
     )
+
+
+@firestore.transactional
+def _commit_run_access_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_run_access_item(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_coach_one_point_use_tx(
+    transaction,
+    service,
+    uid: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return use_coach_one_point(service, transaction, uid, request_id, user_ref)
 
 
 @firestore.transactional

@@ -14,6 +14,7 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
@@ -312,7 +313,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     }
   }
 
-  void _startRun() {
+  Future<void> _startRun() async {
     if (isRunning) return;
     setState(() {
       isRunning = true;
@@ -325,6 +326,10 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       if (!mounted || !isRunning) return;
       setState(() => _elapsedSeconds++);
     });
+    try {
+      await ref.read(coachOnePointRunProvider.notifier).claimIfNeeded();
+    } catch (_) {}
+    if (!mounted || !isRunning) return;
     final coach = _voiceCoachOf();
     final started = coach.onRunStarted();
     _voiceCoachEpoch = coach.liveSessionEpoch;
@@ -348,6 +353,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   void _onFinish() {
     setState(() => isRunning = false);
     _stopTracking();
+    ref.read(coachOnePointRunProvider.notifier).endRun();
     final coach = _voiceCoach ?? _voiceCoachOf();
     unawaited(coach.onRunFinished());
     if (!mounted) return;
@@ -366,6 +372,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     if (coach != null && epoch != null) {
       unawaited(coach.onSessionDismissed(epoch));
     }
+    try {
+      ref.read(coachOnePointRunProvider.notifier).endRun();
+    } catch (_) {}
     _stopTracking();
     _mapController = null;
     super.dispose();

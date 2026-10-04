@@ -7,8 +7,10 @@ import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
 import '../data/models/tournament_model.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
+import '../features/tournaments/utils/tournament_join_gate.dart';
 import 'sponsor_payment_screen.dart';
 
 class TournamentScreen extends ConsumerStatefulWidget {
@@ -73,6 +75,9 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
     final userTier = ref.watch(activeUserTierProvider).value ?? 1;
     final authUser = ref.watch(authStateChangesProvider).value;
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
+    final extraEntryTickets =
+        ref.watch(serverShopInventoryProvider).asData?.value.extraEntryCount ??
+            0;
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final onDonation = Theme.of(context).colorScheme.onTertiary;
@@ -138,11 +143,13 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             userTier: userTier,
             highlighted: room.id == widget.initialTournamentId,
             isJoined: joinedIds.contains(room.id),
-            canJoin: authUser != null &&
-                room.isRecruiting &&
-                !room.lockedForTier(userTier) &&
-                !room.isFull &&
-                !joinedIds.contains(room.id),
+            canJoin: TournamentJoinGate.canAttemptJoin(
+              signedIn: authUser != null,
+              alreadyJoined: joinedIds.contains(room.id),
+              tournament: room,
+              userTier: userTier,
+              extraEntryTickets: extraEntryTickets,
+            ),
             onJoin: authUser == null
                 ? null
                 : () => joinTournamentWithPreflight(
@@ -306,11 +313,13 @@ class _TournamentRoomCard extends StatelessWidget {
                         ? 'Lower-tier room locked'
                         : isJoined
                             ? 'Already joined'
-                            : room.isFull
-                                ? 'Room full'
-                                : room.isRecruiting
-                                    ? 'Join with Share'
-                                    : 'Not recruiting',
+                            : canJoin && (room.isFull || !room.isRecruiting)
+                                ? '추가 참가권으로 참가'
+                                : room.isFull
+                                    ? 'Room full'
+                                    : room.isRecruiting
+                                        ? 'Join with Share'
+                                        : 'Not recruiting',
                   ),
                 ),
               ),

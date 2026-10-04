@@ -53,17 +53,24 @@ class SecuredActionApiClient {
   final http.Client _httpClient;
   final ShopRequestIds _requestIds = ShopRequestIds();
 
-  static const _streakItemIds = {
+  static const _idempotentItemIds = {
     'record_cpr_ticket',
     'record_safe_guard',
+    'coach_one_point_ticket',
+    'extra_entry_ticket',
+    'extra_entry_ticket_3pack',
   };
 
   Future<TournamentJoinResult> joinTournament({
     required String tournamentId,
+    bool useExtraEntry = false,
   }) async {
     final json = await _post(
       '/actions/tournaments/join',
-      {'tournament_id': tournamentId},
+      {
+        'tournament_id': tournamentId,
+        if (useExtraEntry) 'use_extra_entry': true,
+      },
     );
     return TournamentJoinResult.fromJson(json);
   }
@@ -204,8 +211,8 @@ class SecuredActionApiClient {
 
   /// Buys one catalog item. DIA debit and shopInventory live in one server transaction.
   ///
-  /// 심폐소생권 and 세이프가드 send a stable [request_id]. A retry of the same
-  /// attempt reuses it so a lost response cannot charge DIA twice.
+  /// Priced items send a stable request id. A retry of the same attempt reuses
+  /// it so a lost response cannot charge DIA twice.
   Future<PedometerHarvestResult> purchaseShopItem(String itemId) async {
     final json = await _postStreakAware(
       '/actions/shop/purchase',
@@ -218,6 +225,16 @@ class SecuredActionApiClient {
   /// Decrements one account inventory doc. Rejects when quantity is already 0.
   Future<void> useShopItem(String itemId) async {
     await _postStreakAware('/actions/shop/use', itemId, 'use:$itemId');
+  }
+
+  /// Spends one 코치 원포인트권 for this run. The same [requestId] is one charge.
+  Future<String> useCoachOnePoint(String requestId) async {
+    final json = await _post('/actions/shop/use', {
+      'item_id': 'coach_one_point_ticket',
+      'request_id': requestId,
+    });
+    final status = json['status'];
+    return status is String ? status : '';
   }
 
   /// Once per KST day. Covers yesterday when a 세이프가드 is already held.
@@ -235,7 +252,7 @@ class SecuredActionApiClient {
     String itemId,
     String retryKey,
   ) async {
-    final streak = _streakItemIds.contains(itemId);
+    final streak = _idempotentItemIds.contains(itemId);
     final requestId = streak ? _requestIds.begin(retryKey) : null;
     final body = <String, dynamic>{
       'item_id': itemId,

@@ -21,6 +21,7 @@ class TournamentModel {
     required this.status,
     required this.sponsorName,
     this.sponsorBillboardMessages = const [],
+    this.prizeTier = '',
   });
 
   final String id;
@@ -37,7 +38,17 @@ class TournamentModel {
   final String sponsorName;
   final List<String> sponsorBillboardMessages;
 
+  /// Company prize race tier. Empty on a normal room.
+  final String prizeTier;
+
   bool get isRecruiting => status == TournamentStatus.recruiting;
+
+  bool get isPrizeRace => prizeTier.isNotEmpty;
+
+  bool get isTerminal =>
+      status == TournamentStatus.cancelled ||
+      status == TournamentStatus.cancelledBepNotMet ||
+      status == TournamentStatus.completed;
 
   bool lockedForTier(int userTier) {
     return requiredTier < userTier;
@@ -72,6 +83,9 @@ class TournamentModel {
       requiredTier: (json['requiredTier'] as num?)?.toInt() ?? 1,
       status: _statusFromCode(json['status'] as String?),
       sponsorName: json['sponsorName'] as String? ?? 'SRC Sponsor',
+      prizeTier: json['prizeTier'] is String
+          ? (json['prizeTier'] as String).trim()
+          : '',
       sponsorBillboardMessages: (json['sponsorBillboardMessages'] as List<dynamic>?)
               ?.map((item) => item.toString())
               .toList() ??

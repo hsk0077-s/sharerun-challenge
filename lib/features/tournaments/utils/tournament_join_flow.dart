@@ -9,6 +9,7 @@ import '../../../data/models/tournament_model.dart';
 import '../../wallet/debug_local_wallet_store.dart';
 import '../../wallet/providers/debug_local_share_history_provider.dart';
 import '../../wallet/providers/wallet_provider.dart';
+import '../../shop/providers/server_shop_inventory_provider.dart';
 import '../providers/local_joined_ids_provider.dart';
 import 'tournament_join_gate.dart';
 import 'tournament_join_outcome.dart';
@@ -108,12 +109,21 @@ Future<bool> joinTournamentWithPreflight({
       readSafe(() => container.read(activeUserTierProvider).value) ?? 1;
   final shareBalance =
       readSafe(() => container.read(walletProvider).shareBalance) ?? 0;
+  final extraEntryTickets = readSafe(
+        () => container
+            .read(serverShopInventoryProvider)
+            .asData
+            ?.value
+            .extraEntryCount,
+      ) ??
+      0;
   final blocked = TournamentJoinGate.blockReason(
     signedIn: true,
     alreadyJoined: alreadyPaid,
     tournament: tournament,
     userTier: userTier,
     shareBalance: shareBalance,
+    extraEntryTickets: extraEntryTickets,
   );
   if (blocked != null) {
     if (kDebugMode) {
@@ -143,6 +153,8 @@ Future<bool> joinTournamentWithPreflight({
       final result =
           await container.read(tournamentRepositoryProvider).joinTournament(
                 tournament: tournament,
+                useExtraEntry: extraEntryTickets > 0 &&
+                    TournamentJoinGate.extraEntryCanOpen(tournament),
               );
       plan = TournamentJoinPlanner.fromJenaSuccess(
         result: result,

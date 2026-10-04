@@ -107,9 +107,11 @@ class TournamentRepository {
 
   Future<TournamentJoinResult> joinTournament({
     required TournamentModel tournament,
+    bool useExtraEntry = false,
   }) {
     return _securedActionApiClient.joinTournament(
       tournamentId: tournament.id,
+      useExtraEntry: useExtraEntry,
     );
   }
 

@@ -15,23 +15,31 @@ class ServerShopInventory {
     this.safeGuardCount = 0,
     this.ghostPaceCount = 0,
     this.battlePassCount = 0,
+    this.coachOnePointCount = 0,
+    this.extraEntryCount = 0,
   });
 
   static const cprId = 'record_cpr_ticket';
   static const safeGuardId = 'record_safe_guard';
   static const ghostPaceId = 'ghost_pace_match';
   static const battlePassId = 'battle_run_pass';
+  static const coachOnePointId = 'coach_one_point_ticket';
+  static const extraEntryId = 'extra_entry_ticket';
 
   final int cprCount;
   final int safeGuardCount;
   final int ghostPaceCount;
   final int battlePassCount;
+  final int coachOnePointCount;
+  final int extraEntryCount;
 
   bool get isEmpty =>
       cprCount <= 0 &&
       safeGuardCount <= 0 &&
       ghostPaceCount <= 0 &&
-      battlePassCount <= 0;
+      battlePassCount <= 0 &&
+      coachOnePointCount <= 0 &&
+      extraEntryCount <= 0;
 
   int countFor(String itemId) {
     switch (itemId) {
@@ -43,6 +51,10 @@ class ServerShopInventory {
         return ghostPaceCount;
       case battlePassId:
         return battlePassCount;
+      case coachOnePointId:
+        return coachOnePointCount;
+      case extraEntryId:
+        return extraEntryCount;
       default:
         return 0;
     }
@@ -64,6 +76,8 @@ class ServerShopInventory {
       safeGuardCount: quantities[safeGuardId] ?? 0,
       ghostPaceCount: quantities[ghostPaceId] ?? 0,
       battlePassCount: quantities[battlePassId] ?? 0,
+      coachOnePointCount: quantities[coachOnePointId] ?? 0,
+      extraEntryCount: quantities[extraEntryId] ?? 0,
     );
   }
 

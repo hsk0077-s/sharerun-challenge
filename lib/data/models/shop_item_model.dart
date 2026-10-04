@@ -29,6 +29,27 @@ class ShopItemModel {
       iconName: 'shield',
     ),
     ShopItemModel(
+      id: 'coach_one_point_ticket',
+      title: '코치 원포인트권',
+      description: '비구독 러닝 1회에 Coach+ 페이스 코칭을 엽니다. 하루 1회, 러닝 시작 시 사용.',
+      diamondCost: 5,
+      iconName: 'campaign',
+    ),
+    ShopItemModel(
+      id: 'extra_entry_ticket',
+      title: '추가 참가권',
+      description: '모집이 끝났거나 정원이 찬 비상금 대회에 참가합니다. 하루 2회. 상금 대회는 불가.',
+      diamondCost: 10,
+      iconName: 'confirmation_number',
+    ),
+    ShopItemModel(
+      id: 'extra_entry_ticket_3pack',
+      title: '추가 참가권 3장',
+      description: '추가 참가권 3장. 한 장씩 사는 것보다 저렴합니다.',
+      diamondCost: 25,
+      iconName: 'confirmation_number',
+    ),
+    ShopItemModel(
       id: 'ghost_pace_match',
       title: '고스트 페이스 매칭',
       description: '과거 최고 페이스 고스트와 실시간 페이스 대결을 시작합니다.',

@@ -70,7 +70,13 @@ def test_invalid_price_fields_keep_defaults() -> None:
             "ghost_pace_match": 1,
         }
     )
-    assert prices == {CPR: 12, GUARD: 8}
+    assert prices == {
+        CPR: 12,
+        GUARD: 8,
+        "coach_one_point_ticket": 5,
+        "extra_entry_ticket": 10,
+        "extra_entry_ticket_3pack": 25,
+    }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})
     assert overridden[CPR] == 20

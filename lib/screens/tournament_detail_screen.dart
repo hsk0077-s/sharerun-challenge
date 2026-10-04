@@ -11,8 +11,10 @@ import '../data/models/tournament_model.dart';
 import '../data/models/tournament_participation_model.dart';
 import '../data/models/user_model.dart';
 import '../features/run_tracking/utils/run_start_preflight.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
+import '../features/tournaments/utils/tournament_join_gate.dart';
 import '../features/tournaments/widgets/sponsor_rolling_banner.dart';
 import 'sponsor_payment_screen.dart';
 
@@ -47,6 +49,9 @@ class TournamentDetailScreen extends ConsumerWidget {
     final authUser = ref.watch(authStateChangesProvider).value;
     final userTier = ref.watch(activeUserTierProvider).value ?? 1;
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
+    final extraEntryTickets =
+        ref.watch(serverShopInventoryProvider).asData?.value.extraEntryCount ??
+            0;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tournament Detail')),
@@ -61,11 +66,14 @@ class TournamentDetailScreen extends ConsumerWidget {
           }
 
           final isJoined = joinedIds.contains(room.id);
-          final canJoin = authUser != null &&
-              room.isRecruiting &&
-              !room.lockedForTier(userTier) &&
-              !room.isFull &&
-              !isJoined;
+          final canJoin = TournamentJoinGate.canAttemptJoin(
+            signedIn: authUser != null,
+            alreadyJoined: isJoined,
+            tournament: room,
+            userTier: userTier,
+            extraEntryTickets: extraEntryTickets,
+          );
+          final withTicket = TournamentJoinGate.extraEntryCanOpen(room);
 
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -85,7 +93,11 @@ class TournamentDetailScreen extends ConsumerWidget {
                     tournament: room,
                   ),
                   icon: const Icon(Icons.how_to_reg_rounded),
-                  label: Text('Join with ${room.entryFeeShare} Share'),
+                  label: Text(
+                    withTicket
+                        ? '추가 참가권으로 참가'
+                        : 'Join with ${room.entryFeeShare} Share',
+                  ),
                 )
               else if (authUser == null)
                 const Text('로그인 후 참가할 수 있습니다.')

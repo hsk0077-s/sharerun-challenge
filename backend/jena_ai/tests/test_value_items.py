@@ -412,6 +412,69 @@ def test_donation_match_stops_at_the_company_cap() -> None:
     assert db.store["donationPools/2026-10"]["totalWon"] == 1000
 
 
+def test_phone_match_with_no_dia_charges_value_once_on_the_live_clock() -> None:
+    """Shop and inventory both call this with no injected clock.
+
+    A missing clock used to raise before any debit, so the app showed a
+    generic failure and VALUE stayed put. Zero DIA must not matter.
+    """
+    db = _MemoryDb()
+    db.store["users/u1"] = _user(value=1_000_000)
+    db.store["users/u1"]["wallet"]["diamondBalance"] = 0
+    service = _service(db)
+    user_ref = db.collection("users").document("u1")
+
+    result = purchase_value_item(service, _MemoryTxn(), "u1", MATCH, "req-match-live", user_ref)
+
+    assert result.status == "matched"
+    assert result.value_token_balance == 999_900
+    assert result.diamond_balance == 0
+    assert result.share_balance == 10
+    wallet = db.store["users/u1"]["wallet"]
+    assert wallet["valueTokenBalance"] == 999_900
+    assert wallet["diamondBalance"] == 0
+    assert wallet["shareBalance"] == 10
+    assert "users/u1/shopInventory/donation_match" not in db.store
+    row = _wallet_rows(db)[0]
+    assert row["type"] == "donation_match"
+    assert row["itemId"] == MATCH
+    assert row["valueAmount"] == -100
+    assert "diamondAmount" not in row
+    assert "shareAmount" not in row
+    assert len(_donations(db)) == 1
+
+    replay = purchase_value_item(service, _MemoryTxn(), "u1", MATCH, "req-match-live", user_ref)
+    assert replay.status == "already_matched"
+    assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 999_900
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 0
+    assert len(_wallet_rows(db)) == 1
+    assert len(_donations(db)) == 1
+
+
+def test_phone_rest_day_use_on_the_live_clock_does_not_charge_dia() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _user(value=1_000_000)
+    db.store["users/u1"]["wallet"]["diamondBalance"] = 0
+    service = _service(db)
+
+    used = use_value_item(
+        service,
+        _MemoryTxn(),
+        "u1",
+        REST,
+        "req-rest-live",
+        db.collection("users").document("u1"),
+    )
+
+    assert used.status == "used"
+    assert used.diamond_balance == 0
+    assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 1_000_000
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 0
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 10
+    assert _wallet_rows(db)[0]["valueAmount"] == 0
+    assert "diamondAmount" not in _wallet_rows(db)[0]
+
+
 def test_generic_shop_path_does_not_sell_value_items() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _user()

@@ -1240,7 +1240,9 @@ class SecuredActionService:
             {
                 "uid": uid,
                 "type": "deposit_forfeiture_fraud",
-                "diamondAmount": total_forfeited,
+                # Balance already dropped when the deposit was taken.
+                "diamondAmount": 0,
+                "forfeitedDiamondAmount": total_forfeited,
                 "charityTarget": charity,
                 "activityId": activity_id,
                 "createdAt": SERVER_TIMESTAMP,
@@ -2949,7 +2951,9 @@ class SecuredActionService:
                 "uid": uid,
                 "tournamentId": tournament_ref.id,
                 "type": "mercy_rule_donation",
-                "diamondAmount": settlement.forfeited_diamonds,
+                # Credit is positive. The join debit stays negative.
+                "diamondAmount": settlement.returned_diamonds,
+                "forfeitedDiamondAmount": settlement.forfeited_diamonds,
                 "returnedDiamondAmount": settlement.returned_diamonds,
                 **returned_ledger,
                 "achievementRate": settlement.achievement_rate,

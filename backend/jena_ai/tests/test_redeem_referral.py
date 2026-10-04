@@ -45,39 +45,84 @@ class _MemoryCollection:
         return _MemoryDoc(self._store, f"{self._name}/{doc_id}")
 
     def where(self, field: str, op: str, value):
-        return _MemoryQuery(self._store, self._name, field, op, value)
+        return _MemoryQuery(self._store, self._name, [(field, op, value)])
 
     def get(self, transaction=None):
         return _child_snapshots(self._store, self._name)
 
 
 class _MemoryQuery:
-    def __init__(self, store: dict, name: str, field: str, op: str, value) -> None:
+    def __init__(
+        self,
+        store: dict,
+        name: str,
+        filters: list | None = None,
+        group: bool = False,
+    ) -> None:
         self._store = store
         self._name = name
-        self._field = field
-        self._op = op
-        self._value = value
+        self._filters = list(filters or [])
+        self._group = group
         self._limit = None
+
+    def where(self, field: str, op: str, value) -> "_MemoryQuery":
+        return _MemoryQuery(
+            self._store,
+            self._name,
+            [*self._filters, (field, op, value)],
+            group=self._group,
+        )
 
     def limit(self, count: int) -> "_MemoryQuery":
         self._limit = count
         return self
 
     def get(self, transaction=None):
-        matched = []
-        for snapshot in _child_snapshots(self._store, self._name):
-            current = snapshot.to_dict()
-            for part in self._field.split("."):
-                if not isinstance(current, dict) or part not in current:
-                    current = None
-                    break
-                current = current[part]
-            if self._op == "==" and current == self._value:
-                matched.append(snapshot)
+        snapshots = (
+            _group_snapshots(self._store, self._name)
+            if self._group
+            else _child_snapshots(self._store, self._name)
+        )
+        matched = [
+            snapshot
+            for snapshot in snapshots
+            if _matches(snapshot.to_dict(), self._filters)
+        ]
         if self._limit is not None:
             return matched[: self._limit]
         return matched
+
+
+def _matches(data: dict, filters: list) -> bool:
+    for field, op, value in filters:
+        current = data
+        for part in field.split("."):
+            if not isinstance(current, dict) or part not in current:
+                current = None
+                break
+            current = current[part]
+        if op != "==" or current != value:
+            return False
+    return True
+
+
+def _group_snapshots(store: dict, name: str) -> list:
+    token = f"/{name}/"
+    snapshots = []
+    for path, data in store.items():
+        marked = f"/{path}"
+        if token not in marked:
+            continue
+        tail = marked.split(token, 1)[1]
+        if "/" in tail:
+            continue
+        snapshot = MagicMock()
+        snapshot.id = tail
+        snapshot.exists = True
+        snapshot.to_dict.return_value = deepcopy(data)
+        snapshot.reference = _MemoryDoc(store, path)
+        snapshots.append(snapshot)
+    return snapshots
 
 
 def _child_snapshots(store: dict, name: str) -> list:
@@ -138,6 +183,9 @@ class _MemoryDb:
 
     def collection(self, name: str) -> _MemoryCollection:
         return _MemoryCollection(self.store, name)
+
+    def collection_group(self, name: str) -> _MemoryQuery:
+        return _MemoryQuery(self.store, name, group=True)
 
     def transaction(self) -> _MemoryTxn:
         return _MemoryTxn()

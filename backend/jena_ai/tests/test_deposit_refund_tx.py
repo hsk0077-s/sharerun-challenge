@@ -54,6 +54,11 @@ def test_join_records_the_paid_and_free_deposit_split() -> None:
     participant = db.store["tournaments/t1/participants/u1"]
     assert participant["diamondPaidDeposit"] == 6
     assert participant["diamondFreeDeposit"] == 4
+    ledger = next(
+        row for path, row in db.store.items() if path.startswith("walletTransactions/")
+    )
+    assert ledger["diamondAmount"] == -10
+    assert ledger["shareAmount"] == 0
     wallet = db.store["users/u1"]["wallet"]
     assert wallet["paidDiamondBalance"] == 0
     assert wallet["freeDiamondBalance"] == 0
@@ -103,3 +108,35 @@ def test_mercy_refund_keeps_paid_dia_paid() -> None:
     )
     assert ledger["diamondPaidAmount"] == 6
     assert ledger["diamondFreeAmount"] == 0
+    assert ledger["diamondAmount"] == 6
+    assert ledger["forfeitedDiamondAmount"] == 4
+
+
+def test_forfeited_deposit_is_not_a_positive_ledger_credit() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = {
+        "wallet": {"diamondBalance": 90, "totalDonationValue": 1}
+    }
+    db.store["tournaments/room1/participants/u1"] = {
+        "uid": "u1",
+        "status": "joined",
+        "diamondDeposit": 10,
+        "selectedCharity": "UNICEF",
+    }
+    service = _service(db)
+
+    service._forfeit_active_deposit_tx(
+        _MemoryTxn(),
+        "u1",
+        db.collection("users").document("u1"),
+        "act1",
+    )
+
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 90
+    assert db.store["users/u1"]["wallet"]["totalDonationValue"] == 11
+    ledger = next(
+        row for path, row in db.store.items() if path.startswith("walletTransactions/")
+    )
+    assert ledger["type"] == "deposit_forfeiture_fraud"
+    assert ledger["diamondAmount"] == 0
+    assert ledger["forfeitedDiamondAmount"] == 10

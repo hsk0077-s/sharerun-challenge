@@ -75,6 +75,7 @@ from app.services.item_price_config import (
     FRIEND_GHOST_ITEM_ID,
     FRIEND_GHOST_PACK_ITEM_ID,
     RUN_ACCESS_ITEM_IDS,
+    SHARE_ACTIVITY_ITEM_IDS,
     SOCIAL_ITEM_IDS,
     STREAK_ITEM_IDS,
     read_item_prices,
@@ -109,6 +110,11 @@ from app.services.wallet_funding import (
     move_currency,
 )
 from app.services.running_validation_service import RunningValidationService
+from app.services.share_activity_items import (
+    plan_activity_share,
+    purchase_share_activity_item,
+    use_share_activity_item,
+)
 
 
 _NICKNAME_PATTERN = re.compile(r"^[가-힣a-zA-Z0-9]{2,12}$")
@@ -427,6 +433,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id in SHARE_ACTIVITY_ITEM_IDS:
+            return _commit_share_activity_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         if item_id not in self.SHOP_CATALOG and is_cosmetic_item(
             self.firebase_service.db, item_id
         ):
@@ -577,6 +592,15 @@ class SecuredActionService:
             raise HTTPException(
                 status_code=400,
                 detail="Friend ghost pack is spent as single uses.",
+            )
+        if item_id in SHARE_ACTIVITY_ITEM_IDS:
+            return _commit_share_activity_use_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
             )
         return _commit_use_shop_tx(transaction, self, uid, item_id, user_ref)
 
@@ -944,18 +968,39 @@ class SecuredActionService:
             "title": "배틀런 패스+",
             "diamondCost": 200,
         },
+        "boost_run": {
+            "title": "부스트 런",
+            "diamondCost": 0,
+        },
+        "step_incubator": {
+            "title": "만보기 부화기",
+            "diamondCost": 0,
+        },
     }
 
     def shop_catalog(self) -> list[dict]:
         prices = read_item_prices(self.firebase_service.db)
-        return [
-            {
-                "id": item_id,
-                "title": item["title"],
-                "diamondCost": int(prices.get(item_id, item["diamondCost"])),
-            }
-            for item_id, item in self.SHOP_CATALOG.items()
-        ]
+        rows = []
+        for item_id, item in self.SHOP_CATALOG.items():
+            if item_id in SHARE_ACTIVITY_ITEM_IDS:
+                rows.append(
+                    {
+                        "id": item_id,
+                        "title": item["title"],
+                        "diamondCost": 0,
+                        "shareCost": int(prices[item_id]),
+                    }
+                )
+                continue
+            rows.append(
+                {
+                    "id": item_id,
+                    "title": item["title"],
+                    "diamondCost": int(prices.get(item_id, item["diamondCost"])),
+                    "shareCost": 0,
+                }
+            )
+        return rows
 
     # Crew prices live here. The client does not send an amount.
     CREW_GIFT_DIA = 30
@@ -1834,7 +1879,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in BATTLE_PASS_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in BATTLE_PASS_ITEM_IDS or item_id in SHARE_ACTIVITY_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         catalog_item = self.SHOP_CATALOG.get(item_id)
         if catalog_item is None:
@@ -2243,7 +2288,7 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         if item_id in BATTLE_PASS_ITEM_IDS:
             raise HTTPException(status_code=400, detail=NOT_SPENT)
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in SHARE_ACTIVITY_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
             if is_cosmetic_item(self.firebase_service.db, item_id):
@@ -2884,6 +2929,7 @@ class SecuredActionService:
         uid: str,
         request: HarvestPedometerRequest,
         user_ref,
+        now: datetime | None = None,
     ) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
@@ -2891,8 +2937,9 @@ class SecuredActionService:
 
         user = user_snapshot.to_dict() or {}
         current_share, current_dia, current_value = self._wallet_balances(user)
-        today = self._economy_service.kst_today_key()
-        hour_key = self._economy_service.kst_hour_key()
+        current = now or datetime.now(timezone.utc)
+        today = self._economy_service.kst_today_key(current)
+        hour_key = self._economy_service.kst_hour_key(current)
         raw_harvest = user.get("pedometerHarvest") or {}
         harvest = self._economy_service.normalize_pedometer_harvest(
             raw_harvest,
@@ -2936,7 +2983,26 @@ class SecuredActionService:
             harvested_share=harvested,
         )
         wallet = user.get("wallet") or {}
-        moved = move_currency(wallet, share=share) if share > 0 else {"updates": {}, "ledger": {}}
+        effect = plan_activity_share(
+            self,
+            transaction,
+            user,
+            user_ref,
+            base_share=share,
+            accepted_steps=accepted_delta,
+            now=current,
+        )
+        credit = share + effect.extra_share
+        moved = (
+            move_currency(wallet, share=credit)
+            if credit > 0
+            else {"updates": {}, "ledger": {}}
+        )
+        hatch_moved = (
+            move_currency(wallet, share=effect.hatch_share)
+            if effect.hatch_share > 0
+            else {"updates": {}, "ledger": {}}
+        )
         new_share = int(wallet.get("shareBalance") or current_share)
         # Dotted SHARE fields only — never replace the wallet map (DIA/VALUE).
         updates = {
@@ -2947,8 +3013,13 @@ class SecuredActionService:
             "pedometerHarvest.hourSteps": hour_steps + accepted_delta,
             "updatedAt": SERVER_TIMESTAMP,
             **moved["updates"],
+            **hatch_moved["updates"],
         }
-        if share > 0:
+        if effect.boost_state is not None:
+            updates["boostRun"] = effect.boost_state
+        if effect.incubator_state is not None:
+            updates["stepIncubator"] = effect.incubator_state
+        if credit > 0:
             tx_ref = self.firebase_service.db.collection(
                 "walletTransactions"
             ).document()
@@ -2957,26 +3028,44 @@ class SecuredActionService:
                 {
                     "uid": uid,
                     "type": "pedometer_harvest",
-                    "shareAmount": share,
+                    "shareAmount": credit,
+                    "boostShare": effect.extra_share,
                     "claimedSteps": claimed,
                     "createdAt": SERVER_TIMESTAMP,
                     **moved["ledger"],
                 },
             )
+        if effect.hatch_fields is not None:
+            transaction.set(
+                self.firebase_service.db.collection("walletTransactions").document(
+                    effect.hatch_doc_id
+                ),
+                {
+                    **effect.hatch_fields,
+                    "createdAt": SERVER_TIMESTAMP,
+                    **hatch_moved["ledger"],
+                },
+            )
+        if effect.cosmetic_fields is not None:
+            transaction.set(
+                user_ref.collection("shopInventory").document(effect.cosmetic_id),
+                effect.cosmetic_fields,
+            )
         transaction.update(user_ref, updates)
+        granted = credit + effect.hatch_share
         if share <= 0:
             return self._harvest_result(
                 status="daily_cap_reached",
                 reason="Walking challenge daily SHARE cap reached.",
-                share_credited=0,
-                share_balance=current_share,
+                share_credited=granted,
+                share_balance=new_share,
                 diamond_balance=current_dia,
                 value_token_balance=current_value,
             )
         return self._harvest_result(
             status="harvested",
-            reason=f"{share} SHARE credited from walking challenge.",
-            share_credited=share,
+            reason=f"{credit} SHARE credited from walking challenge.",
+            share_credited=granted,
             share_balance=new_share,
             diamond_balance=current_dia,
             value_token_balance=current_value,
@@ -3394,9 +3483,10 @@ def _commit_harvest_tx(
     uid: str,
     request: HarvestPedometerRequest,
     user_ref,
+    now: datetime | None = None,
 ) -> SecuredActionResult:
     return service._harvest_pedometer_share_tx(
-        transaction, uid, request, user_ref
+        transaction, uid, request, user_ref, now
     )
 
 
@@ -3710,6 +3800,35 @@ def _commit_social_purchase_tx(
 ) -> SecuredActionResult:
     return purchase_social_item(
         service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_share_activity_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_share_activity_item(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_share_activity_use_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+    now: datetime | None = None,
+) -> SecuredActionResult:
+    return use_share_activity_item(
+        service, transaction, uid, item_id, request_id, user_ref, now
     )
 
 

@@ -9,6 +9,9 @@ String streakItemMessage(ApiException error, {required String fallback}) {
     'Streak break is outside 72 hours.' => '스트릭이 끊긴 지 72시간이 지나 되돌릴 수 없습니다.',
     'No missed day to protect.' => '막을 빠진 날이 없습니다.',
     'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+    'Insufficient Share balance.' => 'SHARE가 부족합니다.',
+    'Boost run already used today.' => '부스트 런은 하루에 1번까지 사용할 수 있습니다.',
+    'An incubator is already active.' => '만보기 부화기는 한 번에 하나만 동작합니다.',
     'Insufficient paid Diamond balance.' =>
       '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.',
     'Battle pass already owned for this season.' =>

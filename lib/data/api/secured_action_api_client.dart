@@ -43,16 +43,23 @@ class FriendGhostUseResult {
 }
 
 class ShopCatalogPrice {
-  const ShopCatalogPrice({required this.id, required this.diamondCost});
+  const ShopCatalogPrice({
+    required this.id,
+    required this.diamondCost,
+    this.shareCost = 0,
+  });
 
   final String id;
   final int diamondCost;
+  final int shareCost;
 
   factory ShopCatalogPrice.fromJson(Map<String, dynamic> json) {
     final cost = json['diamond_cost'];
+    final share = json['share_cost'];
     return ShopCatalogPrice(
       id: json['id'] as String? ?? '',
       diamondCost: cost is num ? cost.toInt() : 0,
+      shareCost: share is num ? share.toInt() : 0,
     );
   }
 }

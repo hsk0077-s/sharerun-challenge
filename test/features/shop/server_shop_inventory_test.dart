@@ -21,6 +21,9 @@ void main() {
     expect(inventory.extraEntryCount, 3);
     expect(inventory.countFor(ServerShopInventory.extraEntryId), 3);
     expect(inventory.countFor('star_boost'), 0);
+    expect(inventory.countFor(ServerShopInventory.boostRunId), 0);
+    expect(inventory.boostRunCount, 0);
+    expect(inventory.stepIncubatorCount, 0);
     expect(
       ServerShopInventory.fromQuantities(const {
         ServerShopInventory.friendGhostId: 2,
@@ -31,6 +34,21 @@ void main() {
           .having((row) => row.crewCheerCount, 'cheer', 1)
           .having((row) => row.isEmpty, 'empty', isFalse),
     );
+    expect(inventory.isEmpty, isFalse);
+  });
+
+  test('share items stay on the account after cosmetic docs are read', () {
+    final inventory = ServerShopInventory.fromDocMaps({
+      ServerShopInventory.boostRunId: {'quantity': 2},
+      ServerShopInventory.stepIncubatorId: {'quantity': 1},
+      'shoe_mint': {'quantity': 1, 'category': 'shoe_skin'},
+      'cosmetic_loadout': {'slots': <String, dynamic>{}},
+    });
+
+    expect(inventory.boostRunCount, 2);
+    expect(inventory.stepIncubatorCount, 1);
+    expect(inventory.countFor(ServerShopInventory.boostRunId), 2);
+    expect(inventory.ownedCosmeticIds, contains('shoe_mint'));
     expect(inventory.isEmpty, isFalse);
   });
 

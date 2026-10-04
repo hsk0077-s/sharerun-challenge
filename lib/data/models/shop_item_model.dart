@@ -5,12 +5,14 @@ class ShopItemModel {
     required this.description,
     required this.diamondCost,
     required this.iconName,
+    this.shareCost = 0,
   });
 
   final String id;
   final String title;
   final String description;
   final int diamondCost;
+  final int shareCost;
   final String iconName;
 
   static const catalog = <ShopItemModel>[
@@ -90,6 +92,22 @@ class ShopItemModel {
       description: '패스 보상에 프레임, 스킨, 배지를 더합니다. 패스가 있으면 차액만 냅니다.',
       diamondCost: 200,
       iconName: 'emoji_events',
+    ),
+    ShopItemModel(
+      id: 'boost_run',
+      title: '부스트 런',
+      description: '하루 1회. 15분간 걸음으로 줍는 SHARE가 2배입니다. 추가분은 하루 +240까지.',
+      diamondCost: 0,
+      shareCost: 120,
+      iconName: 'bolt',
+    ),
+    ShopItemModel(
+      id: 'step_incubator',
+      title: '만보기 부화기',
+      description: '서버가 인정한 걸음 30,000보에 민트 러닝화가 부화합니다. 이미 있으면 500 SHARE.',
+      diamondCost: 0,
+      shareCost: 1200,
+      iconName: 'egg',
     ),
   ];
 }

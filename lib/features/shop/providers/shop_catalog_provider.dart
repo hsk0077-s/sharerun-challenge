@@ -19,3 +19,25 @@ final shopCatalogProvider = FutureProvider<Map<String, int>>((ref) async {
 Map<String, int> _localCatalog() {
   return {for (final item in ShopItemModel.catalog) item.id: item.diamondCost};
 }
+
+/// SHARE prices from the same catalog. DIA prices stay on [shopCatalogProvider].
+final shopSharePriceProvider = FutureProvider<Map<String, int>>((ref) async {
+  try {
+    final items =
+        await ref.read(securedActionApiClientProvider).fetchShopCatalog();
+    if (items.isEmpty) return _localSharePrices();
+    return {
+      for (final item in items)
+        if (item.shareCost > 0) item.id: item.shareCost,
+    };
+  } catch (_) {
+    return _localSharePrices();
+  }
+});
+
+Map<String, int> _localSharePrices() {
+  return {
+    for (final item in ShopItemModel.catalog)
+      if (item.shareCost > 0) item.id: item.shareCost,
+  };
+}

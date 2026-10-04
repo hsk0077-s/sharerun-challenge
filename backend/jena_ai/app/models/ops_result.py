@@ -18,6 +18,19 @@ class ActivateTournamentResult(BaseModel):
     reason: str
 
 
+class PrizeSettlementResult(BaseModel):
+    accepted: bool
+    tournament_id: str
+    status: str
+    finisher_count: int
+    paid_dia: int
+    held_dia: int
+    share_paid: int
+    value_paid: int
+    donation_krw: int
+    reason: str
+
+
 class PurgeUserResult(BaseModel):
     accepted: bool
     uid: str

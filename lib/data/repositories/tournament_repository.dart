@@ -108,10 +108,12 @@ class TournamentRepository {
   Future<TournamentJoinResult> joinTournament({
     required TournamentModel tournament,
     bool useExtraEntry = false,
+    String entryMethod = 'share',
   }) {
     return _securedActionApiClient.joinTournament(
       tournamentId: tournament.id,
       useExtraEntry: useExtraEntry,
+      entryMethod: entryMethod,
     );
   }
 

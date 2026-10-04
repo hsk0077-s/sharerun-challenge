@@ -26,20 +26,25 @@ def test_signup_appends_positive_value_row_once() -> None:
 
     assert result.status == "claimed"
     assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 105
+    assert db.store["users/u1"]["wallet"]["freeTicketBalance"] == 1
     assert db.store["users/u1"]["economy"]["signupRewardClaimed"] is True
-    ledger = [
-        row
+    assert db.store["users/u1"]["economy"]["signupFreeTicketGranted"] is True
+    ledger = {
+        row["type"]: row
         for path, row in db.store.items()
         if path.startswith("walletTransactions/")
-    ]
-    assert len(ledger) == 1
-    assert ledger[0]["type"] == "onboarding_signup_reward"
-    assert ledger[0]["valueAmount"] == 100
+    }
+    assert ledger["onboarding_signup_reward"]["valueAmount"] == 100
+    ticket = db.store["walletTransactions/signup_free_ticket_u1"]
+    assert ticket["type"] == "signup_free_ticket"
+    assert ticket["ticketAmount"] == 1
+    assert ticket["uid"] == "u1"
 
     again = _claim(db, service)
     assert again.status == "already_claimed"
     assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 105
+    assert db.store["users/u1"]["wallet"]["freeTicketBalance"] == 1
     assert (
         sum(1 for path in db.store if path.startswith("walletTransactions/"))
-        == 1
+        == 2
     )

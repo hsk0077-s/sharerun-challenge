@@ -12,7 +12,9 @@ import '../data/models/tournament_participation_model.dart';
 import '../data/models/user_model.dart';
 import '../features/run_tracking/utils/run_start_preflight.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/tournaments/providers/company_tournament_providers.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
+import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
 import '../features/tournaments/widgets/sponsor_rolling_banner.dart';
@@ -52,6 +54,10 @@ class TournamentDetailScreen extends ConsumerWidget {
     final extraEntryTickets =
         ref.watch(serverShopInventoryProvider).asData?.value.extraEntryCount ??
             0;
+    final configAsync = ref.watch(companyTournamentConfigProvider);
+    final freeTickets =
+        ref.watch(activeWalletProvider).asData?.value.freeTicketBalance ?? 0;
+    ref.watch(signupFreeTicketGrantProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tournament Detail')),
@@ -74,6 +80,13 @@ class TournamentDetailScreen extends ConsumerWidget {
             extraEntryTickets: extraEntryTickets,
           );
           final withTicket = TournamentJoinGate.extraEntryCanOpen(room);
+          final quote = resolvePrizeRaceQuote(
+            tournament: room,
+            configLoading: configAsync.isLoading,
+            config: configAsync.asData?.value,
+          );
+          final prizeReady = quote == null || quote.ready;
+          final ticketChoice = quote?.canUseTickets(freeTickets) ?? false;
 
           return ListView(
             padding: const EdgeInsets.all(20),
@@ -82,23 +95,48 @@ class TournamentDetailScreen extends ConsumerWidget {
               _TournamentInfoCard(
                 room: room,
                 entryFeeShare: room.entryFeeShare,
+                feeText: quote?.costLabel(freeTickets),
                 participantStatus: isJoined ? 'joined' : null,
               ),
               const SizedBox(height: 24),
-              if (canJoin)
+              if (canJoin && prizeReady)
                 FilledButton.icon(
                   onPressed: () => joinTournamentWithPreflight(
                     context: context,
                     ref: ref,
                     tournament: room,
+                    prizeEntryShare:
+                        quote != null && quote.ready ? quote.entryShare : null,
+                    prizeTicketCost: quote?.ticketCost ?? 0,
+                    freeTicketBalance: freeTickets,
                   ),
                   icon: const Icon(Icons.how_to_reg_rounded),
                   label: Text(
                     withTicket
                         ? '추가 참가권으로 참가'
-                        : 'Join with ${room.entryFeeShare} Share',
+                        : quote != null
+                            ? quote.shareJoinLabel
+                            : 'Join with ${room.entryFeeShare} Share',
                   ),
-                )
+                ),
+              if (canJoin && ticketChoice) ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => joinTournamentWithPreflight(
+                    context: context,
+                    ref: ref,
+                    tournament: room,
+                    entryMethod: 'ticket',
+                    prizeEntryShare: quote!.entryShare,
+                    prizeTicketCost: quote.ticketCost,
+                    freeTicketBalance: freeTickets,
+                  ),
+                  icon: const Icon(Icons.confirmation_number_outlined),
+                  label: Text(quote!.ticketJoinLabel),
+                ),
+              ],
+              if (canJoin && quote != null && !quote.ready)
+                Text(quote.shareJoinLabel)
               else if (authUser == null)
                 const Text('로그인 후 참가할 수 있습니다.')
               else if (room.lockedForTier(userTier))
@@ -193,12 +231,14 @@ class _TournamentInfoCard extends StatelessWidget {
   const _TournamentInfoCard({
     required this.room,
     required this.entryFeeShare,
+    this.feeText,
     this.participantStatus,
     this.joinedAt,
   });
 
   final TournamentModel room;
   final int entryFeeShare;
+  final String? feeText;
   final String? participantStatus;
   final DateTime? joinedAt;
 
@@ -219,7 +259,7 @@ class _TournamentInfoCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text('Target: ${room.targetDistanceKm.toStringAsFixed(1)} km'),
           const SizedBox(height: 8),
-          Text('Entry: $entryFeeShare Share'),
+          Text(feeText == null ? 'Entry: $entryFeeShare Share' : 'Entry: $feeText'),
           if (participantStatus != null) ...[
             const SizedBox(height: 8),
             Text(

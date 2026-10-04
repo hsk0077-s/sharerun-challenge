@@ -16,6 +16,15 @@ void main() {
     expect(wallet.valueTokenBalance, 3);
   });
 
+  test('fromJson reads the server free-ticket balance', () {
+    final wallet = WalletModel.fromJson(<String, dynamic>{
+      'shareBalance': 1,
+      'freeTicketBalance': 1,
+    });
+    expect(wallet.freeTicketBalance, 1);
+    expect(wallet.shareBalance, 1);
+  });
+
   test('fromJson returns zeros for missing wallet', () {
     final wallet = WalletModel.fromJson(null);
     expect(wallet.shareBalance, 0);

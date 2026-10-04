@@ -31,6 +31,21 @@ void main() {
 
       expect(transaction.amountSummary, '-250 Value');
     });
+    test('maps the signup free ticket', () {
+      const ticket = WalletTransactionModel(
+        id: 'signup_free_ticket_u1',
+        type: 'signup_free_ticket',
+        shareAmount: 0,
+        valueAmount: 0,
+        diamondAmount: 0,
+        ticketAmount: 1,
+        createdAt: null,
+        tournamentId: null,
+      );
+      expect(ticket.displayLabel, '첫 경기 무료 참가권');
+      expect(ticket.amountSummary, '+1 참가권');
+    });
+
     test('maps prize-race settlement credits', () {
       const dia = WalletTransactionModel(
         id: 'tx-prize-dia',

@@ -10,6 +10,7 @@ class WalletTransactionModel {
     required this.createdAt,
     required this.tournamentId,
     this.itemId,
+    this.ticketAmount = 0,
   });
 
   final String id;
@@ -20,6 +21,7 @@ class WalletTransactionModel {
   final DateTime? createdAt;
   final String? tournamentId;
   final String? itemId;
+  final int ticketAmount;
 
   String get displayLabel {
     if (type == 'shop_purchase' && itemId == 'rest_day_ticket') {
@@ -39,6 +41,7 @@ class WalletTransactionModel {
       'diamond_box_collect' => '다이아 수집',
       'effort_value_mint' => '러닝 SRV 채굴',
       'onboarding_signup_reward' => '신규 가입 보상',
+      'signup_free_ticket' => '첫 경기 무료 참가권',
       'trial_milestone_reward' => '예비 러닝 5회 달성',
       'referral_reward' => '추천인 보상 (지연 지급)',
       'referral_redeem' => '초대 코드 등록',
@@ -74,6 +77,9 @@ class WalletTransactionModel {
     }
     if (diamondAmount != 0) {
       parts.add(_formatAmount(diamondAmount, 'Diamond', debit: diamondAmount < 0));
+    }
+    if (ticketAmount != 0) {
+      parts.add(_formatAmount(ticketAmount, '참가권', debit: ticketAmount < 0));
     }
     return parts.isEmpty ? '—' : parts.join(' · ');
   }
@@ -116,6 +122,7 @@ class WalletTransactionModel {
       createdAt: createdDate,
       tournamentId: data['tournamentId'] as String?,
       itemId: data['itemId'] as String?,
+      ticketAmount: (data['ticketAmount'] as num?)?.toInt() ?? 0,
     );
   }
 }

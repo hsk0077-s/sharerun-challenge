@@ -11,6 +11,10 @@ abstract final class TournamentJoinGate {
     required int userTier,
     required int shareBalance,
     int extraEntryTickets = 0,
+    int? prizeEntryShare,
+    int prizeTicketCost = 0,
+    int freeTicketBalance = 0,
+    bool payingWithTickets = false,
   }) {
     final ticketOpens = extraEntryTickets > 0 && extraEntryCanOpen(tournament);
     if (!signedIn) {
@@ -27,6 +31,18 @@ abstract final class TournamentJoinGate {
     }
     if (tournament.isFull && !ticketOpens) {
       return '대회 정원이 가득 찼습니다.';
+    }
+    if (tournament.isPrizeRace && prizeEntryShare != null) {
+      if (payingWithTickets) {
+        if (prizeTicketCost <= 0 || freeTicketBalance < prizeTicketCost) {
+          return '무료 참가권이 부족합니다.';
+        }
+        return null;
+      }
+      if (prizeEntryShare > 0 && shareBalance < prizeEntryShare) {
+        return 'Share 잔액이 부족합니다.';
+      }
+      return null;
     }
     if (shareBalance < tournament.entryFeeShare) {
       return 'Share 잔액이 부족합니다.';

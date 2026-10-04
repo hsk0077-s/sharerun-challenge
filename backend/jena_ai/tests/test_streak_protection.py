@@ -91,6 +91,8 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "donation_match_won": 1000,
         "donation_match_user_monthly": 1,
         "donation_match_company_cap_won": 500000,
+        "personal_sponsor_share": 50000,
+        "personal_sponsor_won_per_share": 1,
     }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})

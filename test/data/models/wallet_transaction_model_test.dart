@@ -45,6 +45,32 @@ void main() {
       expect(transaction.amountSummary, '-100 Share');
     });
 
+    test('maps personal sponsor debits to Korean labels', () {
+      const donation = WalletTransactionModel(
+        id: 'tx-sponsor',
+        type: 'personal_sponsor_donation',
+        shareAmount: -50000,
+        valueAmount: 0,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: null,
+      );
+      expect(donation.displayLabel, '유니세프 기부 완료');
+      expect(donation.amountSummary, '-50000 Share');
+
+      const prize = WalletTransactionModel(
+        id: 'tx-prize',
+        type: 'personal_sponsor_prize',
+        shareAmount: -50000,
+        valueAmount: 0,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: null,
+      );
+      expect(prize.displayLabel, '챌린지 상금 지원 후원');
+      expect(prize.amountSummary, '-50000 Share');
+    });
+
     test('maps pedometer harvest to walking-challenge pickup label', () {
       const transaction = WalletTransactionModel(
         id: 'tx-4',

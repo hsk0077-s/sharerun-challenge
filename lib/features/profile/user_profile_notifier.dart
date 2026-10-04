@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'dart:async' show StreamSubscription;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/providers/app_providers.dart';
 import '../../core/config/app_env.dart';
 import '../../core/strings/app_strings.dart';
+import '../../data/models/personal_sponsor_donation.dart';
 import '../../data/models/user_model.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import '../wallet/debug_local_wallet_store.dart';
@@ -18,19 +19,9 @@ import '../wallet/providers/wallet_provider.dart';
 class UserProfileNotifier extends Notifier<UserProfile> {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
       _profileSubscription;
-  int? _durableDonationCount;
-  int? _durableDonationAmount;
-  var _durableSponsored = false;
-
-  static const _donationCountPrefix = 'angelDonationCount_';
-  static const _donationAmountPrefix = 'angelDonationAmount_';
-  static const _sponsoredPrefix = 'angelIsSponsored_';
 
   @override
   UserProfile build() {
-    _durableDonationCount = null;
-    _durableDonationAmount = null;
-    _durableSponsored = false;
     ref.onDispose(() {
       _profileSubscription?.cancel();
     });
@@ -90,18 +81,12 @@ class UserProfileNotifier extends Notifier<UserProfile> {
       state = retainOptimisticDonationTotals(
         local: state,
         remote: profile,
-        durableDonationCount: _durableDonationCount,
-        durableDonationAmount: _durableDonationAmount,
-        durableSponsored: _durableSponsored,
       );
     } catch (_) {
       // `build()` may deliver the first cloud snapshot before `state` exists.
       state = retainOptimisticDonationTotals(
         local: profile,
         remote: profile,
-        durableDonationCount: _durableDonationCount,
-        durableDonationAmount: _durableDonationAmount,
-        durableSponsored: _durableSponsored,
       );
     }
     ref.read(walletProvider.notifier).replaceFromRemote(profile.wallet);
@@ -116,38 +101,6 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     bool durableSponsored = false,
   }) {
     return remote;
-  }
-
-  void _rememberDurableDonations({
-    required int count,
-    required int amount,
-    bool sponsored = true,
-  }) {
-    if (count > (_durableDonationCount ?? 0)) {
-      _durableDonationCount = count;
-    }
-    if (amount > (_durableDonationAmount ?? 0)) {
-      _durableDonationAmount = amount;
-    }
-    if (sponsored) _durableSponsored = true;
-  }
-
-  Future<void> _persistDurableDonations() async {
-    final uid = _currentUid();
-    if (uid == null || uid.isEmpty) return;
-    final count = _durableDonationCount ?? state.safeDonationCount;
-    final amount = _durableDonationAmount ?? state.safeCumulativeDonationAmount;
-    if (count <= 0 && amount <= 0 && !_durableSponsored) return;
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('$_donationCountPrefix$uid', count);
-      await prefs.setInt('$_donationAmountPrefix$uid', amount);
-      if (_durableSponsored || state.isSponsored) {
-        await prefs.setBool('$_sponsoredPrefix$uid', true);
-      }
-    } catch (e) {
-      debugPrint('persistDurableDonations: $e');
-    }
   }
 
   /// Same uid resolution as shop receipts: auth, persisted session, then profile.
@@ -214,43 +167,32 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     return updateGender(state.gender == 'female' ? 'male' : 'female');
   }
 
-  /// 후원 성공 정산. [amount]는 SHARE 단위이며 100 SHARE = 100원.
+  /// SHARE 개인 후원. 금액과 천사 실적은 서버가 정하고, 화면은 그 응답만 쓴다.
+  /// [amount]는 호출부 양수 가드이며 차감액이 아니다.
   /// 상점 VALUE 기부는 [assetType]을 `VALUE`로 넘긴다.
-  Future<void> processDonation(
+  Future<PersonalSponsorDonation?> processDonation(
     int amount, {
     String assetType = 'SHARE',
     String? receiptTitle,
+    String purpose = 'donation',
   }) async {
-    if (amount <= 0) return;
+    if (amount <= 0) return null;
+    if (assetType == 'SHARE') {
+      return _confirmPersonalSponsor(purpose: purpose);
+    }
     final won = amount * AngelEconomy.shareToWon;
     final nextCount = state.donationCount + 1;
     final nextAmount = state.cumulativeDonationAmount + won;
-    final nextTier = AngelTierX.resolve(
-      donationCount: nextCount,
-      cumulativeDonationAmount: nextAmount,
-    );
     state = state.copyWith(
       donationCount: nextCount,
       cumulativeDonationAmount: nextAmount,
       isSponsored: true,
     );
-    _rememberDurableDonations(count: nextCount, amount: nextAmount);
-    unawaited(_persistDurableDonations());
     final uid = _receiptUid();
     if (uid != null && uid.isNotEmpty) {
       try {
-        await ref.read(userRepositoryProvider).recordDonation(
-              uid: uid,
-              amountWon: won,
-              angelTierCode: nextTier.code,
-            );
-      } catch (_) {
-        // 로컬 mock / 오프라인 — 낙관적 승급은 유지한다.
-      }
-      try {
         await ref.read(userRepositoryProvider).mergeEconomyState(
               uid: uid,
-              shareDelta: assetType == 'SHARE' ? -amount : null,
               valueDelta: assetType == 'VALUE' ? -amount : null,
               isSponsored: true,
             );
@@ -270,35 +212,45 @@ class UserProfileNotifier extends Notifier<UserProfile> {
           debugPrint('processDonation persistDebugShopSpend: $e');
         }
       }
-      if (kDebugMode && assetType == 'SHARE') {
-        try {
-          // Absolute post-debit balances — `validDebugShareSpend` requires
-          // int SHARE plus unchanged DIA/VALUE. Increment-only writes are
-          // rejected and the stale snapshot restores the pre-debit ledger.
-          final wallet = ref.read(walletProvider);
-          await ref.read(walletRepositoryProvider).persistDebugShareSpend(
-                uid: uid,
-                shareDelta: -amount,
-                shareBalanceAfter: wallet.shareBalance,
-                diamondBalance: wallet.diamondBalance,
-                valueBalance: wallet.valueBalance,
-                donationCount: nextCount,
-                cumulativeDonationAmount: nextAmount,
-                isSponsored: true,
-              );
-        } catch (e) {
-          debugPrint('processDonation persistDebugShareSpend: $e');
-        }
-      }
     }
     await writeTransactionReceipt(
-      title: receiptTitle ??
-          (assetType == 'VALUE'
-              ? AppStrings.storeDonateHistoryTitle
-              : '유니세프 기부 완료 🕊️'),
+      title: receiptTitle ?? AppStrings.storeDonateHistoryTitle,
       amount: -amount,
       assetType: assetType,
     );
+    return null;
+  }
+
+  /// Applies a server-confirmed sponsor donation onto the profile on screen.
+  static UserModel confirmedSponsorshipProfile({
+    required UserModel local,
+    required PersonalSponsorDonation confirmed,
+  }) {
+    return local.copyWith(
+      donationCount: confirmed.donationCount,
+      cumulativeDonationAmount: confirmed.cumulativeDonationAmount,
+      isSponsored: confirmed.isSponsored,
+    );
+  }
+
+  Future<PersonalSponsorDonation> _confirmPersonalSponsor({
+    required String purpose,
+  }) async {
+    final uid = _receiptUid();
+    if (uid == null || uid.isEmpty) {
+      throw StateError('Personal sponsor requires a signed-in user.');
+    }
+    final confirmed = await ref.read(userRepositoryProvider).recordDonation(
+          uid: uid,
+          purpose: purpose,
+        );
+    state = confirmedSponsorshipProfile(local: state, confirmed: confirmed);
+    ref.read(walletProvider.notifier).applyWalletSnapshot(
+          shareBalance: confirmed.shareBalance,
+          diamondBalance: confirmed.diamondBalance,
+          valueBalance: confirmed.valueTokenBalance,
+        );
+    return confirmed;
   }
 
   /// 상점 글로벌 펀딩 — VALUE 차감 후 클라우드 영수증 발행.

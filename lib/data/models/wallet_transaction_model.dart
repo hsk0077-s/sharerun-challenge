@@ -51,6 +51,8 @@ class WalletTransactionModel {
       'pedometer_harvest' => '워킹챌린지 코인 줍기',
       'step_incubator_hatch' => '만보기 부화',
       'donation_match' => '기부 매칭권',
+      'personal_sponsor_donation' => '유니세프 기부 완료',
+      'personal_sponsor_prize' => '챌린지 상금 지원 후원',
       'cosmetic_equip' => '코스메틱 장착',
       'debug_test_grant_1m' => '디버그 테스트 지급',
       _ => type,
@@ -78,7 +80,9 @@ class WalletTransactionModel {
       'tournament_entry' ||
       'cash_refund_requested' ||
       'shop_purchase' ||
-      'web3_transfer' =>
+      'web3_transfer' ||
+      'personal_sponsor_donation' ||
+      'personal_sponsor_prize' =>
         true,
       _ => false,
     };

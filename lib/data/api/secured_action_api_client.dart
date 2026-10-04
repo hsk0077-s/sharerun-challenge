@@ -11,6 +11,7 @@ import '../../features/run_tracking/models/route_point.dart';
 import '../../features/shop/cosmetics_catalog.dart';
 import '../../features/shop/shop_request_ids.dart';
 import '../models/pedometer_harvest_result.dart';
+import '../models/personal_sponsor_donation.dart';
 import '../models/share_to_dia_view.dart';
 import '../models/tournament_join_result.dart';
 import '../models/winner_reward_action.dart';
@@ -191,6 +192,19 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> donateHallOfFame() async {
     final json = await _post('/actions/hall-of-fame/donate', const {});
     return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Debits the server personal-sponsor SHARE price once per [purpose] attempt.
+  /// A dropped response retries the same request id and is not charged twice.
+  Future<PersonalSponsorDonation> donatePersonalSponsor({
+    required String purpose,
+  }) async {
+    final json = await _postWithRequest(
+      '/actions/sponsorship/donate',
+      {'purpose': purpose},
+      'personal-sponsor:$purpose',
+    );
+    return PersonalSponsorDonation.fromJson(json);
   }
 
   Future<void> applyWinnerReward({

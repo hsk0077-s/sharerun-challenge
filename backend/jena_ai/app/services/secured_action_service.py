@@ -1635,19 +1635,10 @@ class SecuredActionService:
 
         user = user_snapshot.to_dict() or {}
         share, diamonds, value = self._wallet_balances(user)
-        week = self._economy_service.kst_week_key()
-        if (user.get("streakBonusWeekKey") or "") == week:
-            return self._harvest_result(
-                status="already_claimed",
-                reason="Streak diamond reward was already claimed this week.",
-                share_credited=0,
-                share_balance=share,
-                diamond_balance=diamonds,
-                value_token_balance=value,
-            )
-
         streak_days = self._walk_streak_days(transaction, uid)
-        if streak_days <= 0 or streak_days % _STREAK_BONUS_DAYS != 0:
+        milestone = (streak_days // _STREAK_BONUS_DAYS) * _STREAK_BONUS_DAYS
+        paid_milestone = int(user.get("streakBonusMilestone") or 0)
+        if milestone <= 0:
             return self._harvest_result(
                 status="not_eligible",
                 reason="Streak bonus needs 7 consecutive account days.",
@@ -1656,8 +1647,18 @@ class SecuredActionService:
                 diamond_balance=diamonds,
                 value_token_balance=value,
             )
+        if paid_milestone >= milestone:
+            return self._harvest_result(
+                status="already_claimed",
+                reason="Streak bonus for this milestone was already claimed.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
 
-        reward = STREAK_BONUS_DIA
+        steps = (milestone - paid_milestone) // _STREAK_BONUS_DAYS
+        reward = STREAK_BONUS_DIA * steps
         wallet = user.get("wallet") or {}
         moved = move_currency(wallet, diamond=reward)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
@@ -1665,7 +1666,7 @@ class SecuredActionService:
             user_ref,
             {
                 **moved["updates"],
-                "streakBonusWeekKey": week,
+                "streakBonusMilestone": milestone,
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -1675,7 +1676,7 @@ class SecuredActionService:
                 "uid": uid,
                 "type": "streak_bonus",
                 "diamondAmount": reward,
-                "weekKey": week,
+                "streakDays": milestone,
                 "createdAt": SERVER_TIMESTAMP,
                 **moved["ledger"],
             },

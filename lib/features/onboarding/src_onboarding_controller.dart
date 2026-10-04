@@ -492,6 +492,31 @@ extension AngelTierX on AngelTier {
           'assets/images/characters/chibi_seraphim_wing.png',
       };
 
+  /// 프로필 사진 뒤에 깔리는 날개. 예비 천사는 날개가 없다.
+  String? get wingAssetPath => switch (this) {
+        AngelTier.preAngel => null,
+        AngelTier.cupid => 'assets/images/wings/wing_cupid.png',
+        AngelTier.guardian => 'assets/images/wings/wing_guardian.png',
+        AngelTier.archangel => 'assets/images/wings/wing_archangel.png',
+        AngelTier.cherubim => 'assets/images/wings/wing_cherubim.png',
+        AngelTier.seraphim => 'assets/images/wings/wing_seraphim.png',
+      };
+
+  /// 날개 이미지 너비 대비 빈 원 중심 X.
+  double get wingHoleCenterX => 0.5;
+
+  /// 날개 이미지 높이 대비 빈 원 중심 Y.
+  double get wingHoleCenterY => switch (this) {
+        AngelTier.cherubim || AngelTier.seraphim => 0.535,
+        _ => 0.5,
+      };
+
+  /// 빈 원 지름. 날개 이미지 너비 대비.
+  double get wingHoleDiameter => switch (this) {
+        AngelTier.cherubim || AngelTier.seraphim => 0.205,
+        _ => 0.30,
+      };
+
   /// 승급에 필요한 최소 후원 횟수. 예비 천사는 0.
   int get minDonationCount => switch (this) {
         AngelTier.preAngel => 0,

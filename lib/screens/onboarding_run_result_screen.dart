@@ -12,6 +12,8 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/shop/cosmetics_catalog.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/pedometer/walking_challenge_share.dart';
 import '../features/run_result/run_finish_image_share.dart';
 import '../features/run_result/run_finish_share_card.dart';
@@ -120,6 +122,13 @@ class _OnboardingRunResultScreenState
   }
 
   RunFinishShareCard _shareCard(RunFinishCardTheme style) {
+    final accent = ref
+        .watch(serverShopInventoryProvider)
+        .asData
+        ?.value
+        .loadout
+        .frame
+        .accent;
     return RunFinishShareCard(
       style: style,
       distanceKm: _mockDistanceKm,
@@ -127,6 +136,7 @@ class _OnboardingRunResultScreenState
       pace: AppStrings.runResultAvgPaceValue,
       date: _finishedOn,
       photo: style == RunFinishCardTheme.photo ? _photo : null,
+      frameColor: cosmeticAccentColor(accent),
     );
   }
 

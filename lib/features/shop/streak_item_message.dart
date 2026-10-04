@@ -34,6 +34,10 @@ String streakItemMessage(ApiException error, {required String fallback}) {
       '이 크루의 응원 깃발은 오늘 이미 걸려 있습니다.',
     'Friend ghost pack is spent as single uses.' =>
       '10회 묶음은 한 장씩 사용합니다.',
+    'Cosmetic already owned.' => '이미 보유한 코스메틱입니다.',
+    'Season item is not on sale.' => '이번 시즌에 판매하지 않는 아이템입니다.',
+    'Cosmetic is not owned.' => '보유한 뒤에 장착할 수 있습니다.',
+    'Cosmetic item is not spent.' => '코스메틱은 사용해서 사라지지 않습니다.',
     _ => fallback,
   };
 }

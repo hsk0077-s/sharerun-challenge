@@ -9,6 +9,7 @@ import '../../../core/theme/theme.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../onboarding/widgets/nickname_change_sheet.dart';
 import '../../onboarding/widgets/nickname_setup_sheet.dart';
+import '../../shop/providers/server_shop_inventory_provider.dart';
 import '../avatar_choice.dart';
 import '../avatar_choice_provider.dart';
 import '../user_profile_notifier.dart';
@@ -34,6 +35,13 @@ class GenderProfileAvatar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final gender = ref.watch(userGenderProvider);
     final avatar = ref.watch(avatarChoiceProvider);
+    final equipped = ref
+        .watch(serverShopInventoryProvider)
+        .asData
+        ?.value
+        .loadout
+        .avatar
+        .asset;
     final tokens = context.srcTokens;
 
     return Material(
@@ -58,6 +66,7 @@ class GenderProfileAvatar extends ConsumerWidget {
             child: _AvatarImage(
               choice: avatar,
               genderFallback: gender,
+              equippedAsset: equipped,
             ),
           ),
         ),
@@ -299,13 +308,19 @@ class _AvatarImage extends StatelessWidget {
   const _AvatarImage({
     required this.choice,
     required this.genderFallback,
+    this.equippedAsset,
   });
 
   final AvatarChoice choice;
   final String genderFallback;
+  final String? equippedAsset;
 
   @override
   Widget build(BuildContext context) {
+    final equipped = equippedAsset;
+    if (equipped != null && equipped.isNotEmpty) {
+      return _assetOrBust(equipped, genderFallback);
+    }
     final bytes = choice.photoBytes;
     if (choice.isPhoto && bytes != null) {
       return Image.memory(

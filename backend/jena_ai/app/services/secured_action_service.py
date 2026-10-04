@@ -58,6 +58,13 @@ from app.services.company_tournament_config import (
     resolve_company_tournament_config,
 )
 from app.services.battle_pass import NOT_SPENT, purchase_battle_pass
+from app.services.cosmetics import (
+    NOT_SPENT as COSMETIC_NOT_SPENT,
+    equip_cosmetic,
+    is_cosmetic_item,
+    purchase_cosmetic,
+    read_cosmetics_catalog,
+)
 from app.services.item_price_config import (
     BATTLE_PASS_ITEM_IDS,
     COACH_ONE_POINT_ITEM_ID,
@@ -420,7 +427,40 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id not in self.SHOP_CATALOG and is_cosmetic_item(
+            self.firebase_service.db, item_id
+        ):
+            return _commit_cosmetic_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
+
+    def cosmetics_catalog(self) -> dict:
+        return read_cosmetics_catalog(self.firebase_service.db)
+
+    def equip_cosmetic_item(
+        self,
+        uid: str,
+        item_id: str,
+        request_id: str,
+        equip: bool,
+    ) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_cosmetic_equip_tx(
+            transaction,
+            self,
+            uid,
+            item_id,
+            require_request_id(request_id),
+            user_ref,
+            equip,
+        )
 
     def ensure_coach_plus_cpr(self, uid: str) -> None:
         maybe_grant_coach_plus_cpr(self, uid)
@@ -2206,6 +2246,8 @@ class SecuredActionService:
         if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
+            if is_cosmetic_item(self.firebase_service.db, item_id):
+                raise HTTPException(status_code=400, detail=COSMETIC_NOT_SPENT)
             raise HTTPException(status_code=404, detail="Shop item not found.")
         inventory_ref = user_ref.collection("shopInventory").document(item_id)
         inventory_snapshot = inventory_ref.get(transaction=transaction)
@@ -3612,6 +3654,35 @@ def _commit_nickname_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._change_nickname_tx(transaction, uid, nickname, user_ref)
+
+
+@firestore.transactional
+def _commit_cosmetic_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_cosmetic(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_cosmetic_equip_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+    equip: bool,
+) -> SecuredActionResult:
+    return equip_cosmetic(
+        service, transaction, uid, item_id, request_id, user_ref, equip
+    )
 
 
 @firestore.transactional

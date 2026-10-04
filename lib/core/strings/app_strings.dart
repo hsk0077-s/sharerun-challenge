@@ -276,6 +276,14 @@ abstract final class AppStrings {
   static const storeFundingProgress = '85% 달성';
   static const storeDonateButton = '500 밸류(VALUE) 기부하기';
   static const storeFunctionalItems = '기능성 아이템';
+  static const storeCosmeticsTitle = '코스메틱';
+  static const storeCosmeticsNote =
+      '무료 DIA로 살 수 있습니다. 기록과 랭킹은 바뀌지 않습니다.';
+  static const storeCosmeticOwned = '보유';
+  static const storeCosmeticEquip = '장착';
+  static const storeCosmeticUnequip = '해제';
+  static const storeCosmeticSeasonEnded = '시즌 종료';
+  static const storeCosmeticLimited = '시즌 한정';
   static const storeItemCpr = '기록 심폐소생권';
   static const storeItemSafeGuard = '세이프 가드';
   static const storeItemCoachOnePoint = '코치 원포인트권';

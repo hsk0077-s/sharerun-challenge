@@ -17,9 +17,12 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import '../features/shop/cosmetics_catalog.dart';
+import '../features/shop/providers/cosmetics_catalog_provider.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/shop/widgets/cosmetics_shop_section.dart';
 import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
@@ -42,6 +45,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   final _fundingKey = GlobalKey();
   final _itemsKey = GlobalKey();
   var _buyBusy = false;
+  var _cosmeticBusyId = '';
 
   @override
   void initState() {
@@ -159,6 +163,62 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
   }
 
+  Future<void> _onBuyCosmetic(CosmeticItem item) async {
+    if (_cosmeticBusyId.isNotEmpty) return;
+    setState(() => _cosmeticBusyId = item.id);
+    try {
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .purchaseCosmetic(item.id);
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      _toast(
+        result.status == 'already_purchased'
+            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+            : '${item.name} 구매를 기록했습니다.',
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(streakItemMessage(error, fallback: '구매하지 못했습니다.'));
+    } catch (_) {
+      if (!mounted) return;
+      _toast('구매하지 못했습니다.');
+    } finally {
+      if (mounted) setState(() => _cosmeticBusyId = '');
+    }
+  }
+
+  Future<void> _onEquipCosmetic(CosmeticItem item, bool equip) async {
+    if (_cosmeticBusyId.isNotEmpty) return;
+    setState(() => _cosmeticBusyId = item.id);
+    try {
+      final status = await ref.read(securedActionApiClientProvider).equipCosmetic(
+            itemId: item.id,
+            equip: equip,
+          );
+      if (!mounted) return;
+      _toast(
+        status == 'already_equipped'
+            ? '이미 처리된 장착입니다.'
+            : equip
+                ? '${item.name}을 장착했습니다.'
+                : '${item.name} 장착을 해제했습니다.',
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(streakItemMessage(error, fallback: '장착하지 못했습니다.'));
+    } catch (_) {
+      if (!mounted) return;
+      _toast('장착하지 못했습니다.');
+    } finally {
+      if (mounted) setState(() => _cosmeticBusyId = '');
+    }
+  }
+
   void _onOpenInventory() {
     AppRouteNav.push<void>(
       context,
@@ -215,6 +275,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final shop = ref.watch(shopTabProvider);
     final inventory = ref.watch(serverShopInventoryProvider).asData?.value ??
         const ServerShopInventory();
+    final cosmetics = ref.watch(cosmeticsCatalogProvider).asData?.value ??
+        CosmeticsCatalog.defaults;
     final focus = widget.initialFocus ?? ref.watch(storeFocusProvider);
     final highlightDonate = focus == StoreFocus.donate;
     final highlightItems = focus == StoreFocus.items;
@@ -417,6 +479,16 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                             ],
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 22),
+                      CosmeticsShopSection(
+                        catalog: cosmetics,
+                        diamondBalance: wallet.diamondBalance,
+                        ownedIds: inventory.ownedCosmeticIds,
+                        loadout: inventory.loadout,
+                        busyId: _cosmeticBusyId,
+                        onPurchase: _onBuyCosmetic,
+                        onEquip: _onEquipCosmetic,
                       ),
                     ],
                   ),

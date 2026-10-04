@@ -15,6 +15,8 @@ import '../data/models/user_model.dart';
 import '../core/constants/legal_constants.dart';
 import '../features/my_page/widgets/pace_calculator_card.dart';
 import '../features/my_page/widgets/shoe_mileage_tracker.dart';
+import '../features/shop/cosmetics_catalog.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/reward/view/winner_honor_popup.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
@@ -208,6 +210,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final calendarDays = _last30Days();
     final verifiedRunDays = _verifiedRunDays(verifiedRuns);
     final crownDay = _crownDay(verifiedRuns);
+    final shoe = ref
+        .watch(serverShopInventoryProvider)
+        .asData
+        ?.value
+        .loadout
+        .shoe;
 
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
@@ -241,7 +249,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          child: ShoeMileageTracker(totalDistanceKm: totalDistance),
+          child: ShoeMileageTracker(
+            totalDistanceKm: totalDistance,
+            skinName: shoe != null && shoe.isEquipped ? shoe.name : null,
+            skinColor: cosmeticAccentColor(shoe?.accent),
+          ),
         ),
         const SizedBox(height: 12),
         const _SectionCard(

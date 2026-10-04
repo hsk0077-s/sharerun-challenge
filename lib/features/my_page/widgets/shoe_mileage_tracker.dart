@@ -6,10 +6,14 @@ import '../../../core/theme/theme.dart';
 class ShoeMileageTracker extends StatelessWidget {
   const ShoeMileageTracker({
     required this.totalDistanceKm,
+    this.skinName,
+    this.skinColor,
     super.key,
   });
 
   final double totalDistanceKm;
+  final String? skinName;
+  final Color? skinColor;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +28,10 @@ class ShoeMileageTracker extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.directions_run_rounded, color: tokens.colors.accent),
+            Icon(
+              Icons.directions_run_rounded,
+              color: skinColor ?? tokens.colors.accent,
+            ),
             SizedBox(width: tokens.spacing.xs),
             Text(
               '러닝화 마일리지 트래커',
@@ -45,6 +52,16 @@ class ShoeMileageTracker extends StatelessWidget {
           '${totalDistanceKm.toStringAsFixed(1)} km / $goal km',
           style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
+        if (skinName != null && skinName!.isNotEmpty) ...[
+          SizedBox(height: tokens.spacing.xs),
+          Text(
+            '장착 중 · $skinName',
+            style: textTheme.bodyMedium?.copyWith(
+              color: skinColor ?? tokens.colors.accent,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
         SizedBox(height: tokens.spacing.xs),
         if (needsReplacement)
           Container(

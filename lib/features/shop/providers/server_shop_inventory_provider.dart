@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/providers/app_providers.dart';
 import '../../../data/models/shop_item_model.dart';
 import '../battle_pass_grant.dart';
+import '../cosmetics_catalog.dart';
 
 /// Account inventory from `users/{uid}/shopInventory/{itemId}.quantity`.
 ///
@@ -22,6 +23,8 @@ class ServerShopInventory {
     this.crewCheerCount = 0,
     this.battlePassTier = '',
     this.battlePassRewardIds = const [],
+    this.ownedCosmeticIds = const {},
+    this.loadout = const CosmeticLoadout(),
   });
 
   static const cprId = 'record_cpr_ticket';
@@ -45,6 +48,8 @@ class ServerShopInventory {
   final int crewCheerCount;
   final String battlePassTier;
   final List<String> battlePassRewardIds;
+  final Set<String> ownedCosmeticIds;
+  final CosmeticLoadout loadout;
 
   BattlePassGrant get battlePass => BattlePassGrant(
         tier: battlePassTier,
@@ -111,15 +116,37 @@ class ServerShopInventory {
   static ServerShopInventory fromSnapshot(
     QuerySnapshot<Map<String, dynamic>> snap,
   ) {
+    return fromDocMaps({
+      for (final doc in snap.docs) doc.id: doc.data(),
+    });
+  }
+
+  /// Inventory docs including cosmetic ownership and the equip loadout.
+  static ServerShopInventory fromDocMaps(
+    Map<String, Map<String, dynamic>> docs,
+  ) {
     final quantities = <String, int>{};
     var grant = const BattlePassGrant();
-    for (final doc in snap.docs) {
-      quantities[doc.id] = _qty(doc.data()['quantity']);
-      if (doc.id == battlePassId) {
-        grant = battlePassGrantFromDoc(doc.data());
+    final owned = <String>{};
+    var loadout = const CosmeticLoadout();
+    for (final entry in docs.entries) {
+      final data = entry.value;
+      if (entry.key == cosmeticLoadoutDocId) {
+        loadout = CosmeticLoadout.fromDoc(data);
+        continue;
+      }
+      quantities[entry.key] = _qty(data['quantity']);
+      if (entry.key == battlePassId) grant = battlePassGrantFromDoc(data);
+      final category = data['category'];
+      if (_qty(data['quantity']) >= 1 &&
+          category is String &&
+          cosmeticCategories.contains(category)) {
+        owned.add(entry.key);
       }
     }
-    return fromQuantities(quantities).withBattlePass(grant);
+    return fromQuantities(quantities)
+        .withBattlePass(grant)
+        .withCosmetics(owned, loadout);
   }
 
   ServerShopInventory withBattlePass(BattlePassGrant grant) {
@@ -134,6 +161,28 @@ class ServerShopInventory {
       crewCheerCount: crewCheerCount,
       battlePassTier: grant.tier,
       battlePassRewardIds: grant.rewardIds,
+      ownedCosmeticIds: ownedCosmeticIds,
+      loadout: loadout,
+    );
+  }
+
+  ServerShopInventory withCosmetics(
+    Set<String> owned,
+    CosmeticLoadout equipped,
+  ) {
+    return ServerShopInventory(
+      cprCount: cprCount,
+      safeGuardCount: safeGuardCount,
+      ghostPaceCount: ghostPaceCount,
+      battlePassCount: battlePassCount,
+      coachOnePointCount: coachOnePointCount,
+      extraEntryCount: extraEntryCount,
+      friendGhostCount: friendGhostCount,
+      crewCheerCount: crewCheerCount,
+      battlePassTier: battlePassTier,
+      battlePassRewardIds: battlePassRewardIds,
+      ownedCosmeticIds: Set.unmodifiable(owned),
+      loadout: equipped,
     );
   }
 }

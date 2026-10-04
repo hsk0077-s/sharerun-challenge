@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
@@ -11,7 +10,7 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 
-/// Web3 지갑 연결 및 토큰 전송 화면 (Screen 22).
+/// 외부 지갑 전송 안내 (Screen 22).
 ///
 /// VALUE는 앱 내 Off-chain 마일리지로만 관리한다.
 /// MetaMask 전송은 출시 빌드에서 준비 중이며 VALUE를 차감하지 않는다.
@@ -19,9 +18,6 @@ class Web3WalletScreen extends ConsumerStatefulWidget {
   const Web3WalletScreen({super.key});
 
   static const _saveNavy = Color(0xFF1A2B4A);
-  static const _warningBrown = Color(0xFF8D4B1F);
-  static const _externalAddress = '0x1A2b3C4d5E6f7081920aBcDeF1234567890a3C4d';
-  static const _gasFeeValue = 10;
 
   @override
   ConsumerState<Web3WalletScreen> createState() => _Web3WalletScreenState();
@@ -37,15 +33,6 @@ class _Web3WalletScreenState extends ConsumerState<Web3WalletScreen> {
         );
   }
 
-  void _onCopy(BuildContext context) {
-    Clipboard.setData(
-      const ClipboardData(text: Web3WalletScreen._externalAddress),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('주소가 복사되었습니다.')),
-    );
-  }
-
   Future<void> _onTransfer() async {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -58,8 +45,6 @@ class _Web3WalletScreenState extends ConsumerState<Web3WalletScreen> {
     final wallet = ref.watch(walletProvider);
     final remote = ref.watch(activeWalletProvider).asData?.value;
     final valueBalance = remote?.valueTokenBalance ?? wallet.valueBalance;
-    final netTransfer =
-        (valueBalance - Web3WalletScreen._gasFeeValue).clamp(0, 1 << 31);
 
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,
@@ -84,40 +69,9 @@ class _Web3WalletScreenState extends ConsumerState<Web3WalletScreen> {
                         onBack: () => AppRouteNav.pop(context),
                       ),
                       const SizedBox(height: 20),
-                      _WalletConnectionCard(onCopy: () => _onCopy(context)),
-                      const SizedBox(height: 14),
                       _TokenTransferCard(
                         valueBalanceLabel:
                             '보유 밸류(VALUE): ${_format(valueBalance)}',
-                        transferAmountLabel:
-                            '${_format(netTransfer)} VALUE',
-                      ),
-                      const SizedBox(height: 14),
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.sponsorBgGradientStart,
-                          borderRadius:
-                              BorderRadius.circular(AppShapes.cardRadius),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('⚠️', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                AppStrings.web3WalletVaspWarning,
-                                style: AppTextStyles.caption.copyWith(
-                                  fontSize: 12,
-                                  color: Web3WalletScreen._warningBrown,
-                                  height: 1.45,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
                     ],
                   ),
@@ -237,84 +191,10 @@ class _Web3WhiteCard extends StatelessWidget {
   }
 }
 
-class _WalletConnectionCard extends StatelessWidget {
-  const _WalletConnectionCard({required this.onCopy});
-
-  final VoidCallback onCopy;
-
-  @override
-  Widget build(BuildContext context) {
-    return _Web3WhiteCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Text('🦊', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  AppStrings.web3WalletConnected,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.borderLight.withValues(alpha: 0.45),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    AppStrings.web3WalletAddress,
-                    style: AppTextStyles.agreementLabel.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                InkWell(
-                  onTap: onCopy,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    child: Text(
-                      AppStrings.web3WalletCopy,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primaryMint,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _TokenTransferCard extends StatelessWidget {
-  const _TokenTransferCard({
-    required this.valueBalanceLabel,
-    required this.transferAmountLabel,
-  });
+  const _TokenTransferCard({required this.valueBalanceLabel});
 
   final String valueBalanceLabel;
-  final String transferAmountLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -331,18 +211,12 @@ class _TokenTransferCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            transferAmountLabel,
-            style: AppTextStyles.header1.copyWith(fontSize: 28),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            AppStrings.web3WalletGasFee,
-            style: AppTextStyles.caption.copyWith(fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '오프체인 마일리지 → 외부 Transfer 전용 (원화 환전 없음)',
-            style: AppTextStyles.caption.copyWith(fontSize: 11),
+            AppStrings.web3WalletPendingNote,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 13,
+              height: 1.45,
+              color: AppColors.textGrey,
+            ),
           ),
         ],
       ),

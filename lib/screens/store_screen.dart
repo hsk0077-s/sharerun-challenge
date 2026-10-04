@@ -158,7 +158,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       builder: (ctx) {
         return AlertDialog(
           title: const Text(AppStrings.storeValueTransferConfirmTitle),
-          content: const Text(AppStrings.web3WalletVaspWarning),
+          content: const Text(AppStrings.web3WalletPendingNote),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(false),
@@ -399,7 +399,7 @@ class _ValueTokenDetailCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                AppStrings.web3WalletVaspWarning,
+                AppStrings.storeValueDetailBody,
                 style: AppTextStyles.caption.copyWith(
                   fontSize: 11,
                   height: 1.4,

@@ -54,7 +54,7 @@ void main() {
     expect(coach.onTap, isNotNull);
   });
 
-  testWidgets('shop tab opens Coach+ and keeps SHARE 충전', (tester) async {
+  testWidgets('shop tab opens Coach+ and the diamond charge station', (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -77,5 +77,9 @@ void main() {
     );
     expect(coach.onTap, isNotNull);
     expect(find.text(AppStrings.storeChargeCta), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.storeChargeCta));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.iapBillingTitle), findsOneWidget);
   });
 }

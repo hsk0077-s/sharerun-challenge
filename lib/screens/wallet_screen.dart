@@ -125,7 +125,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
           label: Text(
             creatingTopUp
                 ? '결제 생성 중...'
-                : 'Share ${PaymentConstants.shareTopUpAmountKrw}원 충전하기',
+                : '다이아 충전',
           ),
         ),
         const SizedBox(height: 12),

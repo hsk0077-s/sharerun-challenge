@@ -112,9 +112,10 @@ abstract final class AppStrings {
   static const myWalletCharge = '충전하기';
   static const myWalletUse = '상점 가기';
   static const myWalletChargeShare = 'SHARE';
-  static const myWalletChargeShareHint = '충전소에서 구매할 수 있어요';
+  static const myWalletChargeShareHint = '활동으로 모을 수 있어요';
   static const myWalletChargeDia = '다이아몬드';
-  static const myWalletChargeDiaHint = '연속 달리기로 모을 수 있어요';
+  static const myWalletChargeDiaHint =
+      '충전소에서 구매하거나 연속 달리기로 모을 수 있어요';
   static const myWalletChargeValue = '밸류(VALUE)';
   static const myWalletChargeValueHint = '달리기로 모을 수 있어요';
   static const myWalletItemDuringRun = '달리기 중 사용 가능';
@@ -303,7 +304,7 @@ abstract final class AppStrings {
   static const storeItemStarBoost = '스타 부스트';
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
-  static const storeChargeCta = 'SHARE 충전';
+  static const storeChargeCta = '다이아 충전';
   static const storeValueDetailTitle = 'VALUE 상세';
   static const storeValueDetailBody =
       'VALUE는 현금으로 바꿀 수 없는 명예 재화예요. 기부처 투표, 명예의 전당, 칭호·배지 등에 쓰이고, 외부 지갑 전송은 준비 중이에요.';

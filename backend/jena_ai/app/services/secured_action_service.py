@@ -2432,6 +2432,17 @@ class SecuredActionService:
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
+        transaction.set(
+            room_ref.collection("participants").document(uid),
+            {
+                "uid": uid,
+                "entryFeeShare": fee,
+                "diamondDeposit": 0,
+                "selectedCharity": "UNICEF",
+                "joinedAt": SERVER_TIMESTAMP,
+                "status": "joined",
+            },
+        )
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.set(
             tx_ref,
@@ -2589,6 +2600,27 @@ class SecuredActionService:
         )
         share, diamonds, value = self._wallet_balances(user)
         if participant_snapshot.exists:
+            return self._already_joined_result(
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+        if (
+            tournament.get("userCreated") is True
+            and tournament.get("createdByUid") == uid
+        ):
+            # The create fee already paid this entry and counted the creator.
+            transaction.set(
+                participant_ref,
+                {
+                    "uid": uid,
+                    "entryFeeShare": int(tournament.get("entryFeeShare") or 0),
+                    "diamondDeposit": 0,
+                    "selectedCharity": request.selected_charity or "UNICEF",
+                    "joinedAt": SERVER_TIMESTAMP,
+                    "status": "joined",
+                },
+            )
             return self._already_joined_result(
                 share_balance=share,
                 diamond_balance=diamonds,

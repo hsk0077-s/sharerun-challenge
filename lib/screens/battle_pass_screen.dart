@@ -7,6 +7,8 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/widgets/server_item_use_button.dart';
 
 /// 배틀런 패스 보상 화면 (Screen 24).
 class BattlePassScreen extends StatefulWidget {
@@ -56,6 +58,13 @@ class _BattlePassScreenState extends State<BattlePassScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: const _PremiumStatusCard(),
+                ),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: ServerItemUseButton(
+                    itemId: ServerShopInventory.battlePassId,
+                    label: '배틀런 챌린지 패스',
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Expanded(

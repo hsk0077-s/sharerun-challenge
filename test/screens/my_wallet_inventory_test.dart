@@ -124,6 +124,16 @@ void main() {
     expect(find.text(AppStrings.myWalletInventoryCount(2)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryEmpty), findsNothing);
     expect(find.text(AppStrings.dashboardGoldBadge), findsNothing);
+    expect(find.text(AppStrings.myWalletUse), findsOneWidget);
+    expect(find.text(AppStrings.myWalletItemDuringRun), findsOneWidget);
+    expect(find.text(AppStrings.myWalletItemDuringTournament), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.myWalletCharge));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(AppStrings.myWalletChargeShareHint), findsOneWidget);
+    expect(find.text(AppStrings.myWalletChargeDiaHint), findsOneWidget);
+    expect(find.text(AppStrings.myWalletChargeValueHint), findsOneWidget);
   });
 
   testWidgets('My Wallet empty inventory still lists the section',

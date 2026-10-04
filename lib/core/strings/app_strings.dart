@@ -110,7 +110,15 @@ abstract final class AppStrings {
   static const dashboardNavMyPage = '마이페이지';
 
   static const myWalletCharge = '충전하기';
-  static const myWalletUse = '사용하기';
+  static const myWalletUse = '상점 가기';
+  static const myWalletChargeShare = 'SHARE';
+  static const myWalletChargeShareHint = '충전소에서 구매할 수 있어요';
+  static const myWalletChargeDia = '다이아몬드';
+  static const myWalletChargeDiaHint = '연속 달리기로 모을 수 있어요';
+  static const myWalletChargeValue = '밸류(VALUE)';
+  static const myWalletChargeValueHint = '달리기로 모을 수 있어요';
+  static const myWalletItemDuringRun = '달리기 중 사용 가능';
+  static const myWalletItemDuringTournament = '대회에서 사용 가능';
   static const myWalletRecentTransactions = '최근 거래 내역';
 
   static String myWalletShareLabel(String amount) => '보유 SHARE: $amount';
@@ -212,7 +220,11 @@ abstract final class AppStrings {
       '타겟 기부처: 유니세프(결식아동)';
   static const challengeDetailValueTip =
       '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
-  static const challengeDetailCprTickets = '심폐소생권 보유: 0/3';
+  static const challengeDetailCprMaxPerRace = 3;
+  static String challengeDetailCprTickets(int count) =>
+      '심폐소생권 보유: $count/$challengeDetailCprMaxPerRace';
+  static const challengeDetailCprUse = '심폐소생권 사용';
+  static const challengeDetailCprBuyHint = '상점에서 구매';
   static const challengeDetailJoin = '대회 참가';
 
   // ── Live Running (Screen 10) ────────────────────────────────────────

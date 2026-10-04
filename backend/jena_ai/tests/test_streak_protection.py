@@ -85,6 +85,12 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "battle_run_pass_plus": 200,
         "boost_run": 120,
         "step_incubator": 1200,
+        "rest_day_ticket": 50,
+        "rest_day_free_per_week": 1,
+        "donation_match": 100,
+        "donation_match_won": 1000,
+        "donation_match_user_monthly": 1,
+        "donation_match_company_cap_won": 500000,
     }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})

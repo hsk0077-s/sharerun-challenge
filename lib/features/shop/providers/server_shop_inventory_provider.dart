@@ -23,6 +23,7 @@ class ServerShopInventory {
     this.crewCheerCount = 0,
     this.boostRunCount = 0,
     this.stepIncubatorCount = 0,
+    this.restDayCount = 0,
     this.battlePassTier = '',
     this.battlePassRewardIds = const [],
     this.ownedCosmeticIds = const {},
@@ -41,6 +42,8 @@ class ServerShopInventory {
   static const crewCheerId = 'crew_cheer_flag';
   static const boostRunId = 'boost_run';
   static const stepIncubatorId = 'step_incubator';
+  static const restDayId = 'rest_day_ticket';
+  static const donationMatchId = 'donation_match';
 
   final int cprCount;
   final int safeGuardCount;
@@ -52,6 +55,7 @@ class ServerShopInventory {
   final int crewCheerCount;
   final int boostRunCount;
   final int stepIncubatorCount;
+  final int restDayCount;
   final String battlePassTier;
   final List<String> battlePassRewardIds;
   final Set<String> ownedCosmeticIds;
@@ -72,7 +76,8 @@ class ServerShopInventory {
       friendGhostCount <= 0 &&
       crewCheerCount <= 0 &&
       boostRunCount <= 0 &&
-      stepIncubatorCount <= 0;
+      stepIncubatorCount <= 0 &&
+      restDayCount <= 0;
 
   int countFor(String itemId) {
     switch (itemId) {
@@ -97,6 +102,8 @@ class ServerShopInventory {
         return boostRunCount;
       case stepIncubatorId:
         return stepIncubatorCount;
+      case restDayId:
+        return restDayCount;
       default:
         return 0;
     }
@@ -124,6 +131,7 @@ class ServerShopInventory {
       crewCheerCount: quantities[crewCheerId] ?? 0,
       boostRunCount: quantities[boostRunId] ?? 0,
       stepIncubatorCount: quantities[stepIncubatorId] ?? 0,
+      restDayCount: quantities[restDayId] ?? 0,
     );
   }
 
@@ -175,6 +183,7 @@ class ServerShopInventory {
       crewCheerCount: crewCheerCount,
       boostRunCount: boostRunCount,
       stepIncubatorCount: stepIncubatorCount,
+      restDayCount: restDayCount,
       battlePassTier: grant.tier,
       battlePassRewardIds: grant.rewardIds,
       ownedCosmeticIds: ownedCosmeticIds,
@@ -197,6 +206,7 @@ class ServerShopInventory {
       crewCheerCount: crewCheerCount,
       boostRunCount: boostRunCount,
       stepIncubatorCount: stepIncubatorCount,
+      restDayCount: restDayCount,
       battlePassTier: battlePassTier,
       battlePassRewardIds: battlePassRewardIds,
       ownedCosmeticIds: Set.unmodifiable(owned),

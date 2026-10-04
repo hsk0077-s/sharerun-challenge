@@ -72,6 +72,8 @@ class ShopPurchaseRequest(BaseModel):
     # Friend ghost only. Own best leaves both empty and is not charged.
     friend_uid: str | None = Field(default=None, max_length=128)
     activity_id: str | None = Field(default=None, max_length=128)
+    # Rest-day ticket only. Empty means today (KST). Yesterday is allowed.
+    rest_day: str | None = Field(default=None, max_length=10)
 
 
 class CrewSpendRequest(BaseModel):
@@ -133,6 +135,7 @@ class ShopCatalogItem(BaseModel):
     title: str
     diamond_cost: int
     share_cost: int = 0
+    value_cost: int = 0
 
 
 class ShopCatalogView(BaseModel):

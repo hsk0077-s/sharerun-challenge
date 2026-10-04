@@ -683,7 +683,13 @@ service cloud.firestore {
               'source',
               'lastHealth',
               'deviceId',
-              'deviceModel'
+              'deviceModel',
+              'streakCovered',
+              'coveredAt',
+              'coveredByRequestId',
+              'streakPaused',
+              'pausedAt',
+              'pausedByRequestId'
             ])
             && request.resource.data.steps is int
             && request.resource.data.steps >= 0
@@ -720,6 +726,25 @@ service cloud.firestore {
             );
         }
 
+        // Server streak marks stay. A phone cannot add, edit, or erase them.
+        function serverFieldUnchanged(field, existed) {
+          return (!existed && !(field in request.resource.data))
+            || (existed
+              && (field in resource.data) == (field in request.resource.data)
+              && (!(field in resource.data)
+                || request.resource.data[field] == resource.data[field]));
+        }
+
+        function streakServerFieldsKept() {
+          let existed = exists(/databases/$(database)/documents/users/$(uid)/daily_metrics/$(dayKey));
+          return serverFieldUnchanged('streakCovered', existed)
+            && serverFieldUnchanged('coveredAt', existed)
+            && serverFieldUnchanged('coveredByRequestId', existed)
+            && serverFieldUnchanged('streakPaused', existed)
+            && serverFieldUnchanged('pausedAt', existed)
+            && serverFieldUnchanged('pausedByRequestId', existed);
+        }
+
         function dailyMetricNotClobbered() {
           return !exists(/databases/$(database)/documents/users/$(uid)/daily_metrics/$(dayKey))
             || !('steps' in resource.data)
@@ -738,7 +763,8 @@ service cloud.firestore {
         allow read: if isOwner(uid);
         allow create, update: if isOwner(uid)
           && validDailyMetric()
-          && dailyMetricNotClobbered();
+          && dailyMetricNotClobbered()
+          && streakServerFieldsKept();
         allow delete: if false;
       }
 
@@ -884,6 +910,13 @@ service cloud.firestore {
     }
 
     match /walletTransactions/{txId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update, delete: if false;
+    }
+
+    // Company donation matches. Admin SDK appends. The owner reads their row.
+    match /donationLedger/{entryId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.uid == request.auth.uid);
       allow create, update, delete: if false;

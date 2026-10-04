@@ -23,6 +23,7 @@ import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/shop/widgets/cosmetics_shop_section.dart';
+import '../features/shop/widgets/donation_match_contribution.dart';
 import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
@@ -135,6 +136,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return _shopItem(id).shareCost;
   }
 
+  int _valueCost(String id) {
+    final server = ref.watch(shopValuePriceProvider).asData?.value[id];
+    if (server != null && server > 0) return server;
+    return _shopItem(id).valueCost;
+  }
+
   Future<void> _onBuyItem(ShopItemModel item) async {
     if (_buyBusy) return;
     _buyBusy = true;
@@ -149,11 +156,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             valueBalance: result.valueTokenBalance,
           );
       _toast(
-        result.status == 'already_purchased'
-            ? item.shareCost > 0
-                ? '이미 처리된 구매입니다. SHARE는 한 번만 차감됩니다.'
-                : '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
-            : '${item.title}을 구매했습니다.',
+        result.status == 'already_purchased' || result.status == 'already_matched'
+            ? item.valueCost > 0
+                ? '이미 처리된 구매입니다. VALUE는 한 번만 차감됩니다.'
+                : item.shareCost > 0
+                    ? '이미 처리된 구매입니다. SHARE는 한 번만 차감됩니다.'
+                    : '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+            : item.id == 'donation_match'
+                ? '기부 매칭을 기록했습니다. 회사 명의 기부에 내 이름이 함께 표시됩니다.'
+                : '${item.title}을 구매했습니다.',
       );
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -348,9 +359,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         key: _fundingKey,
                         child: _FocusGlow(
                           highlighted: highlightDonate,
-                          child: _UnicefFundingCard(
-                            progress: shop.fundingProgress,
-                            onDonate: _onDonate,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _UnicefFundingCard(
+                                progress: shop.fundingProgress,
+                                onDonate: _onDonate,
+                              ),
+                              const DonationMatchContribution(),
+                            ],
                           ),
                         ),
                       ),
@@ -483,6 +500,42 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                 onBuy: () => _onBuyItem(
                                   _shopItem('friend_ghost_pace_10pack'),
                                 ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.hotel_outlined,
+                                      iconColor: AppColors.tealAccent,
+                                      title: AppStrings.storeItemRestDay,
+                                      note: AppStrings.storeItemRestDayNote,
+                                      diamondCost: 0,
+                                      priceLabel:
+                                          '${_format(_valueCost('rest_day_ticket'))} VALUE 구매',
+                                      ownedCount: inventory.restDayCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('rest_day_ticket'),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.volunteer_activism_outlined,
+                                      iconColor: AppColors.success,
+                                      title: AppStrings.storeItemDonationMatch,
+                                      note: AppStrings.storeItemDonationMatchNote,
+                                      diamondCost: 0,
+                                      priceLabel:
+                                          '${_format(_valueCost('donation_match'))} VALUE',
+                                      ownedCount: 0,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('donation_match'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 12),
                               Row(

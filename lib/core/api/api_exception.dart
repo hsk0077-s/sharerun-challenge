@@ -97,6 +97,13 @@ abstract final class ApiErrorMessage {
       'Reward already processed.' => '이미 처리된 우승 보상입니다.',
       'No reward available.' => '수령 가능한 보상이 없습니다.',
       'Insufficient Value to donate.' => '기부할 Value Token이 부족합니다.',
+      'Insufficient Value balance.' => 'VALUE가 부족합니다.',
+      'That day already counts.' => '이미 기록이 있는 날은 휴식일로 지정할 수 없습니다.',
+      'That day is already a rest day.' => '그 날은 이미 휴식일입니다.',
+      'Rest day must be today or yesterday.' => '휴식일은 오늘 또는 어제로만 지정할 수 있습니다.',
+      'Donation match monthly cap reached.' => '이번 달 기부 매칭 횟수를 모두 사용했습니다.',
+      'Donation match company cap reached.' =>
+        '이번 달 회사 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.',
       'Activity belongs to another user.' => '다른 사용자의 활동입니다.',
       'User or tournament not found.' => '사용자 또는 대회 정보를 찾을 수 없습니다.',
       'User or activity not found.' => '사용자 또는 활동 정보를 찾을 수 없습니다.',

@@ -215,4 +215,29 @@ void main() {
       ['2026.09.24'],
     );
   });
+
+  test('a rest day pauses the streak without counting as a run', () {
+    final paused = MyPageActivityMath.compute(
+      activities: const [],
+      stepsByDate: const {'2026-09-24': 1000, '2026-09-26': 800},
+      kmByDate: const {},
+      pausedDays: const {'2026-09-25'},
+      now: now,
+    );
+    final broken = MyPageActivityMath.compute(
+      activities: const [],
+      stepsByDate: const {'2026-09-24': 1000, '2026-09-26': 800},
+      kmByDate: const {},
+      now: now,
+    );
+
+    expect(paused.streakDays, 2);
+    expect(broken.streakDays, 1);
+    expect(paused.activeMonthDays.contains(25), isFalse);
+    expect(paused.activeMonthDays, {24, 26});
+    expect(
+      paused.logEntries.map((entry) => entry.dateLabel).toList(),
+      isNot(contains('2026.09.25')),
+    );
+  });
 }

@@ -6,6 +6,7 @@ class ShopItemModel {
     required this.diamondCost,
     required this.iconName,
     this.shareCost = 0,
+    this.valueCost = 0,
   });
 
   final String id;
@@ -13,6 +14,7 @@ class ShopItemModel {
   final String description;
   final int diamondCost;
   final int shareCost;
+  final int valueCost;
   final String iconName;
 
   static const catalog = <ShopItemModel>[
@@ -108,6 +110,22 @@ class ShopItemModel {
       diamondCost: 0,
       shareCost: 1200,
       iconName: 'egg',
+    ),
+    ShopItemModel(
+      id: 'rest_day_ticket',
+      title: '휴식일 지정권',
+      description: '매주 1장 무료. 추가 1장은 50 VALUE. 부상·이동일을 휴식으로 두어 스트릭을 잠시 멈춥니다.',
+      diamondCost: 0,
+      valueCost: 50,
+      iconName: 'hotel',
+    ),
+    ShopItemModel(
+      id: 'donation_match',
+      title: '기부 매칭권',
+      description: '100 VALUE. 회사가 러닝 기부 풀에 1,000원을 더합니다. 한 달에 1회.',
+      diamondCost: 0,
+      valueCost: 100,
+      iconName: 'volunteer_activism',
     ),
   ];
 }

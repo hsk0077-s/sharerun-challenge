@@ -18,6 +18,18 @@ void main() {
     expect(covered?.streakCovered, isTrue);
     expect(covered?.steps, 0);
     expect(covered?.km, 0);
+    final paused = AccountDailySteps.dayOf('2026-10-03', const {
+      'steps': 0,
+      'streakPaused': 'rest',
+    });
+    expect(paused?.streakPaused, isTrue);
+    expect(paused?.streakCovered, isFalse);
+    final coveredWins = AccountDailySteps.dayOf('2026-10-03', const {
+      'streakCovered': 'safeguard',
+      'streakPaused': 'rest',
+    });
+    expect(coveredWins?.streakCovered, isTrue);
+    expect(coveredWins?.streakPaused, isFalse);
   });
 
   test('today display is the server document steps', () {

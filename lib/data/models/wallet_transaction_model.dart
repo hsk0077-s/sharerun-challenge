@@ -9,6 +9,7 @@ class WalletTransactionModel {
     required this.diamondAmount,
     required this.createdAt,
     required this.tournamentId,
+    this.itemId,
   });
 
   final String id;
@@ -18,8 +19,15 @@ class WalletTransactionModel {
   final int diamondAmount;
   final DateTime? createdAt;
   final String? tournamentId;
+  final String? itemId;
 
   String get displayLabel {
+    if (type == 'shop_purchase' && itemId == 'rest_day_ticket') {
+      return '휴식일 지정권';
+    }
+    if (type == 'shop_item_use' && itemId == 'rest_day_ticket') {
+      return '휴식일 지정';
+    }
     return switch (type) {
       'share_top_up' => 'Share 충전',
       'tournament_entry' => '대회 참가',
@@ -42,6 +50,7 @@ class WalletTransactionModel {
       'deposit_forfeiture_fraud' => '부정 러닝 예치금 몰수',
       'pedometer_harvest' => '워킹챌린지 코인 줍기',
       'step_incubator_hatch' => '만보기 부화',
+      'donation_match' => '기부 매칭권',
       'cosmetic_equip' => '코스메틱 장착',
       'debug_test_grant_1m' => '디버그 테스트 지급',
       _ => type,
@@ -99,6 +108,7 @@ class WalletTransactionModel {
       diamondAmount: (data['diamondAmount'] as num?)?.toInt() ?? 0,
       createdAt: createdDate,
       tournamentId: data['tournamentId'] as String?,
+      itemId: data['itemId'] as String?,
     );
   }
 }

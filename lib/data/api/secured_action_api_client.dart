@@ -123,6 +123,12 @@ class SecuredActionApiClient {
     );
   }
 
+  /// Debits 500 VALUE on the server ledger. The device must not debit first.
+  Future<PedometerHarvestResult> donateHallOfFame() async {
+    final json = await _post('/actions/hall-of-fame/donate', const {});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
   Future<void> applyWinnerReward({
     required String activityId,
     required WinnerRewardAction action,

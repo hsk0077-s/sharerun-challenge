@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
+import '../core/strings/app_strings.dart';
 import '../core/widgets/async_value_section.dart';
 import '../data/models/tournament_model.dart';
 import '../data/models/tournament_participation_model.dart';
@@ -141,7 +142,7 @@ class _JoinedTournamentDetail extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'Verified finish reward: +${room.winnerRewardValue} Value',
+            AppStrings.winnerRewardNoConversion,
             style: const TextStyle(
               color: AppColors.neonLime,
               fontWeight: FontWeight.w800,

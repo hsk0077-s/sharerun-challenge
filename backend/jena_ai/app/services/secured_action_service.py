@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from math import asin, cos, radians, sin, sqrt
 import re
 
@@ -24,6 +24,7 @@ from app.models.secured_actions import (
 )
 from app.services.firebase_service import FirebaseService
 from app.constants.economy_constants import (
+    HALL_OF_FAME_DONATE_VALUE,
     REFERRAL_REDEEM_SHARE,
     REFERRAL_TRIAL_REFEREE_SHARE,
     REFERRAL_TRIAL_REFERRER_SHARE,
@@ -47,6 +48,40 @@ _COACH_PLUS_DAYS = {
     "coach_plus_monthly": 32,
     "coach_plus_yearly": 370,
 }
+
+# Client detail copy has no Firestore doc. First join writes these defaults.
+# Beginner prize/donation are the shown "3만 원"; intermediate, "50만 원".
+_BEGINNER_BUILTIN_ROOM = {
+    "title": "1km 초보 챌린지",
+    "targetDistanceKm": 1.0,
+    "entryFeeShare": 30000,
+    "status": "recruiting",
+    "maxParticipants": 200,
+    "minParticipantsBep": 100,
+    "winnerRewardValue": 30000,
+    "donationValue": 30000,
+    "requiredTier": 1,
+}
+_INTERMEDIATE_BUILTIN_ROOM = {
+    "title": "3km 중급 챌린지 (골드 방)",
+    "targetDistanceKm": 3.0,
+    "entryFeeShare": 60000,
+    "status": "recruiting",
+    "maxParticipants": 400,
+    "minParticipantsBep": 100,
+    "winnerRewardValue": 500000,
+    "donationValue": 500000,
+    "requiredTier": 1,
+}
+_BUILTIN_ROOMS = {
+    "beginner-1km-room": _BEGINNER_BUILTIN_ROOM,
+    "beginner-1km-room-01": _BEGINNER_BUILTIN_ROOM,
+    "intermediate-3km-room": _INTERMEDIATE_BUILTIN_ROOM,
+    "demo-intermediate-3km": _INTERMEDIATE_BUILTIN_ROOM,
+    "crew-challenge-room": _INTERMEDIATE_BUILTIN_ROOM,
+}
+# PR #64: the beginner lobby stays open to every tier.
+_OPEN_TIER_ROOM_IDS = frozenset({"beginner-1km-room", "beginner-1km-room-01"})
 
 
 class InviteCodeCollision(Exception):
@@ -334,9 +369,18 @@ class SecuredActionService:
         uid: str,
         request: Web3TransferRequest,
     ) -> SecuredActionResult:
+        # On-chain transfer is not live. Do not open a transaction or debit VALUE.
+        del uid, request
+        return SecuredActionResult(
+            accepted=False,
+            status="coming_soon",
+            reason="준비 중",
+        )
+
+    def donate_hall_of_fame(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_web3_transfer_tx(transaction, self, uid, request, user_ref)
+        return _commit_hall_of_fame_donate_tx(transaction, self, uid, user_ref)
 
     def activate_coach_plus(self, uid: str, product_id: str) -> SecuredActionResult:
         if product_id not in _COACH_PLUS_DAYS:
@@ -703,41 +747,40 @@ class SecuredActionService:
             },
         )
 
-    def _transfer_value_to_web3_tx(
+    def _donate_hall_of_fame_tx(
         self,
         transaction,
         uid: str,
-        request: Web3TransferRequest,
         user_ref,
     ) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
-
+        user = user_snapshot.to_dict() or {}
+        share, diamonds, value = self._wallet_balances(user)
+        amount = HALL_OF_FAME_DONATE_VALUE
         self._debit_value_tx(
             transaction,
             uid=uid,
             user_ref=user_ref,
-            amount=request.amount_srv,
-            tx_type="web3_transfer",
-            extra_fields={
-                "destinationAddress": request.destination_address,
-                "transferChannel": request.transfer_channel,
-            },
+            amount=amount,
+            tx_type="hall_of_fame_donation",
         )
-        channel_label = (
-            "외부 지갑"
-            if request.transfer_channel == "external_wallet"
-            else "DEX"
+        donation = int((user.get("wallet") or {}).get("totalDonationValue") or 0)
+        transaction.update(
+            user_ref,
+            {
+                "wallet.totalDonationValue": donation + amount,
+                "updatedAt": SERVER_TIMESTAMP,
+            },
         )
         return SecuredActionResult(
             accepted=True,
-            status="transferred",
-            reason=(
-                f"{request.amount_srv} SRV가 {channel_label} "
-                f"({request.destination_address[:10]}...)로 전송되었습니다. "
-                "앱 내 현금 환전은 제공하지 않습니다."
-            ),
+            status="donated",
+            reason=f"{amount} VALUE donated to the Hall of Fame.",
+            share_balance=share,
+            diamond_balance=diamonds,
+            value_token_balance=value - amount,
         )
 
     def _claim_signup_reward_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
@@ -799,6 +842,17 @@ class SecuredActionService:
             return self._harvest_result(
                 status="already_claimed",
                 reason="Streak diamond reward was already claimed this week.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+
+        streak_days = self._walk_streak_days(transaction, uid)
+        if streak_days <= 0 or streak_days % _STREAK_BONUS_DAYS != 0:
+            return self._harvest_result(
+                status="not_eligible",
+                reason="Streak bonus needs 7 consecutive account days.",
                 share_credited=0,
                 share_balance=share,
                 diamond_balance=diamonds,
@@ -1624,11 +1678,20 @@ class SecuredActionService:
         tournament_snapshot = tournament_ref.get(transaction=transaction)
         participant_snapshot = participant_ref.get(transaction=transaction)
 
-        if not user_snapshot.exists or not tournament_snapshot.exists:
+        builtin = (
+            None
+            if tournament_snapshot.exists
+            else _BUILTIN_ROOMS.get(tournament_ref.id)
+        )
+        if not user_snapshot.exists or (
+            not tournament_snapshot.exists and builtin is None
+        ):
             raise HTTPException(status_code=404, detail="User or tournament not found.")
 
         user = user_snapshot.to_dict() or {}
-        tournament = tournament_snapshot.to_dict() or {}
+        tournament = (
+            dict(builtin) if builtin is not None else (tournament_snapshot.to_dict() or {})
+        )
         share, diamonds, value = self._wallet_balances(user)
         if participant_snapshot.exists:
             return self._already_joined_result(
@@ -1646,7 +1709,7 @@ class SecuredActionService:
 
         if tournament.get("status", "recruiting") != "recruiting":
             raise HTTPException(status_code=400, detail="Tournament is not recruiting.")
-        if required_tier < user_tier:
+        if required_tier < user_tier and tournament_ref.id not in _OPEN_TIER_ROOM_IDS:
             raise HTTPException(status_code=403, detail="Lower-tier room is locked.")
         if self._tournament_is_full(tournament):
             raise HTTPException(status_code=409, detail="Tournament is full.")
@@ -1664,13 +1727,19 @@ class SecuredActionService:
 
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.update(user_ref, user_updates)
-        transaction.update(
-            tournament_ref,
-            {
-                "participantCount": firestore.Increment(1),
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-        )
+        if builtin is not None:
+            transaction.set(
+                tournament_ref,
+                {**tournament, "participantCount": 1, "updatedAt": SERVER_TIMESTAMP},
+            )
+        else:
+            transaction.update(
+                tournament_ref,
+                {
+                    "participantCount": firestore.Increment(1),
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
         transaction.set(
             participant_ref,
             {
@@ -1887,6 +1956,28 @@ class SecuredActionService:
         # Module wrapper: a method decorator does not bind `self`, so this
         # transaction never ran and the wallet was not credited.
         return _commit_harvest_tx(transaction, self, uid, request, user_ref)
+
+    def _walk_streak_days(self, transaction, uid: str) -> int:
+        """Consecutive qualifying daily_metrics days, ending today or yesterday."""
+        today = date.fromisoformat(self._economy_service.kst_today_key())
+        parent = (
+            self.firebase_service.db.collection("users")
+            .document(uid)
+            .collection("daily_metrics")
+        )
+        start = today
+        today_snap = parent.document(today.isoformat()).get(transaction=transaction)
+        if not _day_has_activity(today_snap):
+            start = today - timedelta(days=1)
+        count = 0
+        day = start
+        for _ in range(_STREAK_LOOKBACK_DAYS):
+            snap = parent.document(day.isoformat()).get(transaction=transaction)
+            if not _day_has_activity(snap):
+                break
+            count += 1
+            day -= timedelta(days=1)
+        return count
 
     @staticmethod
     def _wallet_balances(user: dict) -> tuple[int, int, int]:
@@ -2485,16 +2576,13 @@ def _commit_refund_tx(
 
 
 @firestore.transactional
-def _commit_web3_transfer_tx(
+def _commit_hall_of_fame_donate_tx(
     transaction,
     service,
     uid: str,
-    request: Web3TransferRequest,
     user_ref,
 ) -> SecuredActionResult:
-    return service._transfer_value_to_web3_tx(
-        transaction, uid, request, user_ref
-    )
+    return service._donate_hall_of_fame_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional
@@ -2543,6 +2631,23 @@ def _challenge_entry_fee(km: int) -> int:
 
 def _challenge_bep(km: int) -> int:
     return {1: 50, 3: 100, 5: 150, 10: 200}.get(km, 250)
+
+
+_STREAK_BONUS_DAYS = 7
+_STREAK_LOOKBACK_DAYS = 400
+
+
+def _day_has_activity(snapshot) -> bool:
+    if not snapshot.exists:
+        return False
+    data = snapshot.to_dict() or {}
+    return _positive_number(data.get("steps")) or _positive_number(data.get("km"))
+
+
+def _positive_number(value: object) -> bool:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    return value > 0
 
 
 def _wallet_int(wallet: dict, key: str) -> int | None:

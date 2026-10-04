@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import '../../../screens/angel_book_page.dart';
 import '../../../screens/personal_sponsor_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../user_profile_notifier.dart';
+import 'gender_profile_avatar.dart';
 
 /// src-17 개인스폰서 후원결제. 도감을 거치지 않고 직행한다.
 void openPersonalSponsor(BuildContext context) {
@@ -198,6 +201,143 @@ class _AngelMascotState extends State<AngelMascot>
   }
 }
 
+/// 티어 날개를 프로필 사진 뒤에 깐다. 사진은 구멍 위에 있고 가려지지 않는다.
+class AngelWingAvatar extends StatelessWidget {
+  const AngelWingAvatar({
+    super.key,
+    required this.tier,
+    this.avatarSize = 72,
+    this.neonGlowAlpha,
+  });
+
+  final AngelTier tier;
+  final double avatarSize;
+
+  /// 지천사 이상 민트/골드 오라. null이면 네온 등급은 고정 오라.
+  final double? neonGlowAlpha;
+
+  /// 승인된 날개 PNG는 1024×576.
+  static const wingHeightOverWidth = 576 / 1024;
+
+  /// 아바타가 구멍에 맞도록 날개 크기를 잡고, [maxWidth]를 넘으면 함께 줄인다.
+  static ({double width, double height, double avatar}) layoutFor({
+    required AngelTier tier,
+    required double avatarSize,
+    required double maxWidth,
+  }) {
+    if (tier.wingAssetPath == null) {
+      final size = _clamp(avatarSize, maxWidth);
+      return (width: size, height: size, avatar: size);
+    }
+    final diameter = tier.wingHoleDiameter;
+    var avatar = avatarSize;
+    var width = diameter <= 0 ? avatar : avatar / diameter;
+    if (maxWidth.isFinite && maxWidth > 0 && width > maxWidth) {
+      width = maxWidth;
+      avatar = width * diameter;
+    }
+    return (
+      width: width,
+      height: width * wingHeightOverWidth,
+      avatar: avatar,
+    );
+  }
+
+  static double _clamp(double size, double maxWidth) {
+    if (maxWidth.isFinite && maxWidth > 0 && size > maxWidth) return maxWidth;
+    return size;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenWidth = MediaQuery.sizeOf(context).width;
+        final maxWidth = constraints.maxWidth.isFinite
+            ? math.min(constraints.maxWidth, screenWidth)
+            : screenWidth;
+        final laid = layoutFor(
+          tier: tier,
+          avatarSize: avatarSize,
+          maxWidth: maxWidth,
+        );
+        final path = tier.wingAssetPath;
+        final Widget plate;
+        if (path == null) {
+          plate = SizedBox(
+            width: laid.width,
+            height: laid.height,
+            child: GenderProfileAvatar(size: laid.avatar),
+          );
+        } else {
+          final glow = neonGlowAlpha ?? (tier.neonAura ? 0.35 : null);
+          final cx = laid.width * tier.wingHoleCenterX;
+          final cy = laid.height * tier.wingHoleCenterY;
+          final avatar = laid.avatar;
+          final glowSize = avatar * (96 / 72);
+          plate = SizedBox(
+            width: laid.width,
+            height: laid.height,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                if (glow != null)
+                  Positioned(
+                    left: cx - glowSize / 2,
+                    top: cy - glowSize / 2,
+                    child: Container(
+                      width: glowSize,
+                      height: glowSize,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.tealAccent.withValues(alpha: glow),
+                            blurRadius: 22,
+                            spreadRadius: 8,
+                          ),
+                          if (tier.goldNickname)
+                            BoxShadow(
+                              color:
+                                  AppColors.angelGold.withValues(alpha: glow),
+                              blurRadius: 18,
+                              spreadRadius: 4,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Image.asset(
+                      path,
+                      fit: BoxFit.fill,
+                      errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: cx - avatar / 2,
+                  top: cy - avatar / 2,
+                  width: avatar,
+                  height: avatar,
+                  child: GenderProfileAvatar(size: avatar),
+                ),
+              ],
+            ),
+          );
+        }
+        return Align(
+          alignment: Alignment.center,
+          widthFactor: 1,
+          heightFactor: 1,
+          child: plate,
+        );
+      },
+    );
+  }
+}
+
 /// 마이페이지 나의 천사 연대기 카드.
 class AngelChronicleCard extends ConsumerWidget {
   const AngelChronicleCard({super.key});
@@ -247,38 +387,34 @@ class AngelChronicleCard extends ConsumerWidget {
                     ),
                   ),
                   SizedBox(height: tokens.spacing.sm),
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      AngelMascot(tier: tier, size: 72),
-                      SizedBox(width: tokens.spacing.sm),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${tier.emoji} ${tier.koreanName}',
-                              style: textTheme.titleLarge?.copyWith(
-                                fontSize: 17,
-                                color: tokens.colors.ink,
-                              ),
-                            ),
-                            SizedBox(height: tokens.spacing.xxs / 2),
-                            Text(
-                              tier.englishName,
-                              style: textTheme.bodySmall?.copyWith(
-                                color: tokens.colors.muted,
-                              ),
-                            ),
-                            SizedBox(height: tokens.spacing.xxs + 2),
-                            Text(
-                              '후원 $count회 · '
-                              '${AngelTierX.formatWon(amount)}',
-                              style: textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: tokens.colors.donation,
-                              ),
-                            ),
-                          ],
+                      Center(
+                        child: AngelWingAvatar(tier: tier, avatarSize: 72),
+                      ),
+                      SizedBox(height: tokens.spacing.sm),
+                      Text(
+                        '${tier.emoji} ${tier.koreanName}',
+                        style: textTheme.titleLarge?.copyWith(
+                          fontSize: 17,
+                          color: tokens.colors.ink,
+                        ),
+                      ),
+                      SizedBox(height: tokens.spacing.xxs / 2),
+                      Text(
+                        tier.englishName,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: tokens.colors.muted,
+                        ),
+                      ),
+                      SizedBox(height: tokens.spacing.xxs + 2),
+                      Text(
+                        '후원 $count회 · '
+                        '${AngelTierX.formatWon(amount)}',
+                        style: textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: tokens.colors.donation,
                         ),
                       ),
                     ],

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
 import '../data/models/tournament_model.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
@@ -274,7 +275,7 @@ class _TournamentRoomCard extends StatelessWidget {
           ),
           SizedBox(height: tokens.spacing.xxs),
           Text(
-            '과금 없이 목표 달성 시: +${room.winnerRewardValue} 밸류 지급',
+            AppStrings.winnerRewardNoConversion,
             style: textTheme.bodyMedium?.copyWith(
               color: tokens.colors.donation,
               fontWeight: FontWeight.w800,

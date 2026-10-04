@@ -23,6 +23,9 @@ STREAK_BONUS_DIA = 10
 PEDOMETER_SHARE_PER_STEP = 0.01
 PEDOMETER_DAILY_HARVEST_SHARE_CAP = 60
 
+# Hall of Fame donation. Server ledger only; the device must not debit VALUE.
+HALL_OF_FAME_DONATE_VALUE = 500
+
 # Debug one-shot QA grant. Play Store / release clients never send the
 # baked debug-client secret. UID allowlist remains an optional extra gate.
 TEST_WALLET_GRANT_AMOUNT = 1_000_000

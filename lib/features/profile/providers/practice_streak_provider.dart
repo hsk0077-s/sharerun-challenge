@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../app/providers/app_providers.dart';
-import '../../../core/constants/economy_constants.dart';
 import '../../../data/models/pedometer_harvest_result.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../wallet/providers/wallet_provider.dart';
@@ -122,10 +121,7 @@ class PracticeStreakNotifier extends Notifier<PracticeStreakState> {
     await prefs.setInt(countKey, count);
     await prefs.setString(lastDateKey, lastDate);
 
-    var diaRewardPending = false;
-    if (count > 0 && count % EconomyConstants.streakBonusDays == 0) {
-      diaRewardPending = await _claimWeeklyStreakDia();
-    }
+    final diaRewardPending = await _claimWeeklyStreakDia();
 
     state = PracticeStreakState(
       count: count,
@@ -135,8 +131,8 @@ class PracticeStreakNotifier extends Notifier<PracticeStreakState> {
     );
   }
 
-  /// Server credits 10 DIA once per KST week. The snackbar fires only when
-  /// this call appended the ledger row.
+  /// Server credits 10 DIA when the account has 7 consecutive days.
+  /// The snackbar fires only when this call appended the ledger row.
   Future<bool> _claimWeeklyStreakDia() async {
     try {
       final result =

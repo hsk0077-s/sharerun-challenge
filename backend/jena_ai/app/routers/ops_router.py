@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
+    PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
 )
@@ -33,6 +34,17 @@ def activate_tournament(
     _: None = Depends(require_ops_admin),
 ) -> ActivateTournamentResult:
     return service.activate_tournament(tournament_id=tournament_id)
+
+
+@router.post(
+    "/tournaments/{tournament_id}/settle",
+    response_model=PrizeSettlementResult,
+)
+def settle_company_tournament(
+    tournament_id: str,
+    _: None = Depends(require_ops_admin),
+) -> PrizeSettlementResult:
+    return service.settle_company_tournament(tournament_id=tournament_id)
 
 
 @router.post("/users/{uid}/purge-data", response_model=PurgeUserResult)

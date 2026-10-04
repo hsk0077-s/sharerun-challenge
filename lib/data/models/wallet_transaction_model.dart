@@ -31,6 +31,9 @@ class WalletTransactionModel {
     return switch (type) {
       'share_top_up' => 'Share 충전',
       'tournament_entry' => '대회 참가',
+      'tournament_prize_dia' => '대회 보너스 DIA',
+      'tournament_top_percent_share' => '대회 상위 완주 SHARE',
+      'tournament_finisher_value' => '대회 완주 VALUE',
       'cash_refund_requested' => '현금 환불 요청',
       'bep_refund' => 'BEP 환불',
       'diamond_box_collect' => '다이아 수집',

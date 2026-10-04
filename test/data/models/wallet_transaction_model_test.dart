@@ -31,6 +31,32 @@ void main() {
 
       expect(transaction.amountSummary, '-250 Value');
     });
+    test('maps prize-race settlement credits', () {
+      const dia = WalletTransactionModel(
+        id: 'tx-prize-dia',
+        type: 'tournament_prize_dia',
+        shareAmount: 0,
+        valueAmount: 0,
+        diamondAmount: 1000,
+        createdAt: null,
+        tournamentId: 'race',
+      );
+      expect(dia.displayLabel, '대회 보너스 DIA');
+      expect(dia.amountSummary, '+1000 Diamond');
+
+      const share = WalletTransactionModel(
+        id: 'tx-prize-share',
+        type: 'tournament_top_percent_share',
+        shareAmount: 1000,
+        valueAmount: 0,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: 'race',
+      );
+      expect(share.displayLabel, '대회 상위 완주 SHARE');
+      expect(share.amountSummary, '+1000 Share');
+    });
+
     test('shows debit amounts for tournament entry', () {
       const transaction = WalletTransactionModel(
         id: 'tx-3',

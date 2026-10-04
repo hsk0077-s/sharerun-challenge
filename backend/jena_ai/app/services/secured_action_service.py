@@ -58,6 +58,7 @@ from app.services.company_tournament_config import (
     prize_tier_id,
     resolve_company_tournament_config,
 )
+from app.services.company_tournament_settlement import prize_finish_fields
 from app.services.battle_pass import NOT_SPENT, purchase_battle_pass
 from app.services.cosmetics import (
     NOT_SPENT as COSMETIC_NOT_SPENT,
@@ -825,16 +826,29 @@ class SecuredActionService:
                 cheer_crew = crew_snapshot.to_dict() or {}
         tournament_id = (request.tournament_id or "").strip()
         race_share = 0
+        prize_finish = None
+        participant_ref = None
         if tournament_id and "/" not in tournament_id:
-            tournament_snapshot = (
-                self.firebase_service.db.collection("tournaments")
-                .document(tournament_id)
-                .get(transaction=transaction)
+            tournament_ref = self.firebase_service.db.collection("tournaments").document(
+                tournament_id
             )
+            tournament_snapshot = tournament_ref.get(transaction=transaction)
             if tournament_snapshot.exists:
-                race_share = positive_share_reward(
-                    (tournament_snapshot.to_dict() or {}).get("shareReward")
-                )
+                tournament_doc = tournament_snapshot.to_dict() or {}
+                race_share = positive_share_reward(tournament_doc.get("shareReward"))
+                if result.verified and prize_tier_id(tournament_doc) is not None:
+                    participant_ref = tournament_ref.collection("participants").document(
+                        uid
+                    )
+                    participant_snapshot = participant_ref.get(transaction=transaction)
+                    if participant_snapshot.exists:
+                        prize_finish = prize_finish_fields(
+                            tournament_doc,
+                            participant_snapshot.to_dict() or {},
+                            distance_km=request.distance_km,
+                            duration_seconds=request.duration_seconds,
+                            activity_id=activity_ref.id,
+                        )
         cheer_ledger_ref = self.firebase_service.db.collection(
             "walletTransactions"
         ).document(f"crew_cheer_{activity_ref.id}")
@@ -953,6 +967,12 @@ class SecuredActionService:
                     "createdAt": SERVER_TIMESTAMP,
                     **moved["ledger"],
                 },
+            )
+
+        if prize_finish is not None and participant_ref is not None:
+            transaction.update(
+                participant_ref,
+                {**prize_finish, "updatedAt": SERVER_TIMESTAMP},
             )
 
         return ValidationResult(

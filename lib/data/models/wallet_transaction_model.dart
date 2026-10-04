@@ -41,6 +41,7 @@ class WalletTransactionModel {
       'web3_transfer' => 'Web3 외부 전송',
       'deposit_forfeiture_fraud' => '부정 러닝 예치금 몰수',
       'pedometer_harvest' => '워킹챌린지 코인 줍기',
+      'step_incubator_hatch' => '만보기 부화',
       'cosmetic_equip' => '코스메틱 장착',
       'debug_test_grant_1m' => '디버그 테스트 지급',
       _ => type,

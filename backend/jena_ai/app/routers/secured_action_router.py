@@ -257,6 +257,7 @@ def shop_catalog(uid: str = Depends(require_uid)) -> ShopCatalogView:
                 id=row["id"],
                 title=row["title"],
                 diamond_cost=row["diamondCost"],
+                share_cost=int(row.get("shareCost") or 0),
             )
             for row in service.shop_catalog()
         ]

@@ -12,6 +12,8 @@ const requestPricedShopItemIds = <String>{
   'crew_cheer_flag',
   'battle_run_pass',
   'battle_run_pass_plus',
+  'boost_run',
+  'step_incubator',
 };
 
 /// One id per attempt. A retry after a dropped response reuses it so the

@@ -132,6 +132,7 @@ class ShopCatalogItem(BaseModel):
     id: str
     title: str
     diamond_cost: int
+    share_cost: int = 0
 
 
 class ShopCatalogView(BaseModel):

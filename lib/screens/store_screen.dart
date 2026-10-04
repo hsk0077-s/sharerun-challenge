@@ -129,6 +129,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return _shopItem(id).diamondCost;
   }
 
+  int _shareCost(String id) {
+    final server = ref.watch(shopSharePriceProvider).asData?.value[id];
+    if (server != null && server > 0) return server;
+    return _shopItem(id).shareCost;
+  }
+
   Future<void> _onBuyItem(ShopItemModel item) async {
     if (_buyBusy) return;
     _buyBusy = true;
@@ -144,7 +150,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           );
       _toast(
         result.status == 'already_purchased'
-            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+            ? item.shareCost > 0
+                ? '이미 처리된 구매입니다. SHARE는 한 번만 차감됩니다.'
+                : '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
             : '${item.title}을 구매했습니다.',
       );
     } on ApiException catch (error) {
@@ -475,6 +483,42 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                 onBuy: () => _onBuyItem(
                                   _shopItem('friend_ghost_pace_10pack'),
                                 ),
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.bolt,
+                                      iconColor: AppColors.tealAccent,
+                                      title: AppStrings.storeItemBoostRun,
+                                      note: AppStrings.storeItemBoostRunNote,
+                                      diamondCost: 0,
+                                      priceLabel:
+                                          '${_format(_shareCost('boost_run'))} SHARE 구매',
+                                      ownedCount: inventory.boostRunCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('boost_run'),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.egg_alt_outlined,
+                                      iconColor: AppColors.progressYellow,
+                                      title: AppStrings.storeItemStepIncubator,
+                                      note: AppStrings.storeItemStepIncubatorNote,
+                                      diamondCost: 0,
+                                      priceLabel:
+                                          '${_format(_shareCost('step_incubator'))} SHARE 구매',
+                                      ownedCount: inventory.stepIncubatorCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('step_incubator'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -810,6 +854,8 @@ class _ItemBuyCard extends StatelessWidget {
     required this.diamondCost,
     required this.ownedCount,
     required this.onBuy,
+    this.priceLabel,
+    this.note,
   });
 
   final IconData icon;
@@ -818,6 +864,8 @@ class _ItemBuyCard extends StatelessWidget {
   final int diamondCost;
   final int ownedCount;
   final VoidCallback? onBuy;
+  final String? priceLabel;
+  final String? note;
 
   @override
   Widget build(BuildContext context) {
@@ -843,6 +891,14 @@ class _ItemBuyCard extends StatelessWidget {
                   fontSize: 13,
                 ),
               ),
+              if (note != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  note!,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(fontSize: 11),
+                ),
+              ],
               if (ownedCount > 0) ...[
                 const SizedBox(height: 4),
                 Text(
@@ -862,7 +918,7 @@ class _ItemBuyCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${diamondCost} DIA 구매',
+                  priceLabel ?? '${diamondCost} DIA 구매',
                   textAlign: TextAlign.center,
                   style: AppTextStyles.buttonText.copyWith(
                     color: AppColors.tealAccent,

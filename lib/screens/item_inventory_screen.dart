@@ -207,6 +207,38 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           AppStrings.itemInventoryCrewCheerTitle,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.bolt,
+                          size: 40,
+                          color: AppColors.tealAccent,
+                        ),
+                        title: AppStrings.itemInventoryBoostRunTitle,
+                        quantity:
+                            '보유량: ${shop.boostRunCount}\n${AppStrings.itemInventoryBoostRunQuantityNote}',
+                        useButtonColor: _useButtonMint,
+                        onUse: () => _onUseItem(
+                          ServerShopInventory.boostRunId,
+                          AppStrings.itemInventoryBoostRunTitle,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.egg_alt_outlined,
+                          size: 40,
+                          color: AppColors.progressYellow,
+                        ),
+                        title: AppStrings.itemInventoryStepIncubatorTitle,
+                        quantity:
+                            '보유량: ${shop.stepIncubatorCount}\n${AppStrings.itemInventoryStepIncubatorQuantityNote}',
+                        useButtonColor: _useButtonMint,
+                        onUse: () => _onUseItem(
+                          ServerShopInventory.stepIncubatorId,
+                          AppStrings.itemInventoryStepIncubatorTitle,
+                        ),
+                      ),
                     ],
                   ),
                 ),

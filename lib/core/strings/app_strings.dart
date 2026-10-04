@@ -292,6 +292,10 @@ abstract final class AppStrings {
   static const storeItemFriendGhost = '친구 고스트 페이스';
   static const storeItemFriendGhostPack = '친구 고스트 10회';
   static const storeItemCrewCheer = '크루 응원 깃발';
+  static const storeItemBoostRun = '부스트 런';
+  static const storeItemBoostRunNote = '하루 1회 · 15분간 걸음 SHARE 2배';
+  static const storeItemStepIncubator = '만보기 부화기';
+  static const storeItemStepIncubatorNote = '검증 걸음 30,000보에 민트 러닝화';
   static const storeItemStarBoost = '스타 부스트';
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
@@ -424,6 +428,12 @@ abstract final class AppStrings {
   static const itemInventoryCrewCheerTitle = '크루 응원 깃발';
   static const itemInventoryCrewCheerHint =
       '하루 1회. 대회 SHARE 보상만 10% 늘어납니다.';
+  static const itemInventoryBoostRunTitle = '부스트 런';
+  static const itemInventoryBoostRunQuantityNote =
+      '하루 1회 · 15분간 줍는 SHARE 2배 · 추가분 +240';
+  static const itemInventoryStepIncubatorTitle = '만보기 부화기';
+  static const itemInventoryStepIncubatorQuantityNote =
+      '검증 걸음 30,000보에 민트 러닝화';
   static const itemInventoryCprQuantity = '보유량: 3/3';
   static const itemInventorySafeGuardTitle = '세이프 가드';
   static const itemInventorySafeGuardQuantity = '보유량: 1/1';

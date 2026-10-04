@@ -74,7 +74,9 @@ abstract final class ApiErrorMessage {
       'No extra entry ticket.' => '사용할 추가 참가권이 없습니다.',
       'Coach one-point daily use cap is 1.' => '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.',
       'Lower-tier room is locked.' => '내 등급보다 낮은 방은 참가할 수 없습니다.',
-      'Insufficient Share balance.' => 'Share 잔액이 부족합니다.',
+      'Insufficient Share balance.' => 'SHARE가 부족합니다.',
+      'Boost run already used today.' => '부스트 런은 하루에 1번까지 사용할 수 있습니다.',
+      'An incubator is already active.' => '만보기 부화기는 한 번에 하나만 동작합니다.',
       'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
       'Insufficient paid Diamond balance.' =>
         '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.',

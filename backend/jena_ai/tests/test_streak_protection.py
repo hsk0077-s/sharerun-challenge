@@ -83,6 +83,8 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "crew_create_share": 30000,
         "battle_run_pass": 120,
         "battle_run_pass_plus": 200,
+        "boost_run": 120,
+        "step_incubator": 1200,
     }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})

@@ -60,6 +60,21 @@ void main() {
       expect(transaction.amountSummary, '+20 Share');
     });
 
+    test('maps incubator hatch to a credit label', () {
+      const transaction = WalletTransactionModel(
+        id: 'tx-hatch',
+        type: 'step_incubator_hatch',
+        shareAmount: 500,
+        valueAmount: 0,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: null,
+      );
+
+      expect(transaction.displayLabel, '만보기 부화');
+      expect(transaction.amountSummary, '+500 Share');
+    });
+
     test('maps debug 1M test grant label', () {
       const transaction = WalletTransactionModel(
         id: 'tx-5',

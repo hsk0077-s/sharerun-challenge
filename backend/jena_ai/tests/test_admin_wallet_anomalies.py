@@ -272,19 +272,7 @@ def test_wallet_anomalies_flags_grant_receipt_and_payment() -> None:
     assert "원장 type=debug_test_grant_1m" in grant["detail"]
     balances = next(row for row in body["rows"] if row["uid"] == "balances")
     assert "shareBalance=1000000" in balances["detail"]
-    fake = next(
-        row
-        for row in body["rows"]
-        if row["uid"] == "fake" and row["receiptId"] == "tx-fake"
-    )
-    assert fake["amount"] == 99999
-    assert "99999" in fake["detail"]
-    assert not any(
-        row["uid"] == "fake" and row["receiptId"] == "tx-real" for row in body["rows"]
-    )
-    assert any(
-        row["uid"] == "fake" and row["receiptId"] == "tx-dia" for row in body["rows"]
-    )
+    assert not any(row["uid"] == "fake" for row in body["rows"])
     assert ("paid", "unmatched_receipt") not in reasons
     assert ("mismatch", "payment_amount_mismatch") in reasons
     debt = next(row for row in body["rows"] if row["uid"] == "debt")

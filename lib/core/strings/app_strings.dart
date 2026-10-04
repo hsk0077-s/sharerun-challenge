@@ -282,11 +282,13 @@ abstract final class AppStrings {
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
   static const storeChargeCta = 'SHARE 충전';
-  static const storeValueDetailTitle = 'VALUE 토큰 상세';
-  static const storeValueExternalTransfer = '외부 지갑 전송 (보안 승인)';
-  static const storeValueTransferConfirmTitle = '특금법 보안 승인';
+  static const storeValueDetailTitle = 'VALUE 상세';
+  static const storeValueDetailBody =
+      'VALUE는 현금으로 바꿀 수 없는 명예 재화예요. 기부처 투표, 명예의 전당, 칭호·배지 등에 쓰이고, 외부 지갑 전송은 준비 중이에요.';
+  static const storeValueExternalTransfer = '외부 지갑 전송 (준비 중)';
+  static const storeValueTransferConfirmTitle = '외부 지갑 전송 (준비 중)';
   static const storeValueTransferCancel = '취소';
-  static const storeValueTransferApprove = '이해하고 전송 화면으로';
+  static const storeValueTransferApprove = '확인';
   static const walletHistoryShortcutTooltip = '재화 히스토리';
   static const iapBillingTitle = '다이아 충전소';
   static const iapBillingSubtitle = '구글 플레이 공식 보안 결제를 적용합니다.';
@@ -415,16 +417,9 @@ abstract final class AppStrings {
   static const refundCancelCta = '수수료 없이 결제 취소하기 (현금 환불)';
 
   // ── Web3 Wallet (Screen 22) ─────────────────────────────────────────
-  static const web3WalletTitle = '지갑 연결 및 토큰 전송';
-  static const web3WalletConnected = 'MetaMask 지갑 연동 완료';
-  static const web3WalletAddress = '0x1A2b...3C4d';
-  static const web3WalletCopy = '복사';
-  static const web3WalletValueBalance = '보유 밸류(VALUE): 5,200';
-  static const web3WalletTransferAmount = '5,000 VALUE';
-  static const web3WalletMax = 'MAX(최대)';
-  static const web3WalletGasFee = '전송 수수료(가스비): 10 VALUE';
-  static const web3WalletVaspWarning =
-      '특정금융정보법(VASP)에 따라 앱 내 현금 환전은 지원하지 않으며, 외부 개인 지갑으로만 전송 가능합니다.';
+  static const web3WalletTitle = '외부 지갑 전송 (준비 중)';
+  static const web3WalletPendingNote =
+      '법률 검토가 끝난 뒤 열릴 예정이에요. 지금은 VALUE가 차감되지 않아요.';
   static const web3WalletTransferCta = '준비 중';
   static const winnerRewardNoConversion =
       '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';

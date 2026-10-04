@@ -1704,6 +1704,17 @@ class SecuredActionService:
                 diamond_balance=diamonds,
                 value_token_balance=value,
             )
+        if not self._economy_service.trial_milestone_reached(
+            int(economy.get("trialRunCount") or 0)
+        ):
+            return self._harvest_result(
+                status="not_eligible",
+                reason="Trial reward needs 5 verified runs.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
 
         reward = TRIAL_COMPLETION_REWARD_SHARE
         wallet = user.get("wallet") or {}

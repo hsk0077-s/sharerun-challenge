@@ -14,10 +14,10 @@ def _claim(service: SecuredActionService):
     return _commit_trial_reward_tx.to_wrap(_MemoryTxn(), service, "u1", user_ref)
 
 
-def test_trial_credits_500_share_once_per_account() -> None:
+def test_trial_requires_five_verified_runs() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {
-        "economy": {"signupRewardClaimed": True},
+        "economy": {"signupRewardClaimed": True, "trialRunCount": 4},
         "wallet": {
             "shareBalance": 1_000_000,
             "diamondBalance": 1_000_000,
@@ -25,6 +25,15 @@ def test_trial_credits_500_share_once_per_account() -> None:
     }
     service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
 
+    early = _claim(service)
+
+    assert early.status == "not_eligible"
+    assert early.share_balance == 1_000_000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 1_000_000
+    assert "trialMilestoneRewardClaimed" not in db.store["users/u1"]["economy"]
+    assert not any(path.startswith("walletTransactions/") for path in db.store)
+
+    db.store["users/u1"]["economy"]["trialRunCount"] = 5
     result = _claim(service)
 
     assert result.status == "claimed"

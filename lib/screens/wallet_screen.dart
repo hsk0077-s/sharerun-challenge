@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
+import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
@@ -206,6 +207,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   }
 
   Future<void> _purchaseShopItem(ShopItemModel item) async {
+    if (purchasingItemId != null) return;
     setState(() => purchasingItemId = item.id);
     try {
       final result = await ref
@@ -217,13 +219,24 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
+      final boughtAgain = result.status == 'already_purchased';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.title}을 구매했습니다.')),
+        SnackBar(
+          content: Text(
+            boughtAgain
+                ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+                : '${item.title}을 구매했습니다.',
+          ),
+        ),
       );
-    } on ApiException {
+    } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('DIA가 부족합니다.')),
+        SnackBar(
+          content: Text(
+            streakItemMessage(error, fallback: 'DIA가 부족합니다.'),
+          ),
+        ),
       );
     } catch (error) {
       if (!mounted) return;

@@ -190,4 +190,29 @@ void main() {
     expect(stats.activeMonthDays, {24, 26});
     expect(stats.logEntries, hasLength(2));
   });
+
+  test('a server-covered miss keeps the streak and adds no distance', () {
+    final without = MyPageActivityMath.compute(
+      activities: const [],
+      stepsByDate: const {'2026-09-24': 1000},
+      kmByDate: const {},
+      now: now,
+    );
+    final covered = MyPageActivityMath.compute(
+      activities: const [],
+      stepsByDate: const {'2026-09-24': 1000},
+      kmByDate: const {},
+      coveredDays: const {'2026-09-25'},
+      now: now,
+    );
+
+    expect(without.streakDays, 0);
+    expect(covered.streakDays, 2);
+    expect(covered.monthKm, without.monthKm);
+    expect(covered.activeMonthDays.contains(25), isTrue);
+    expect(
+      covered.logEntries.map((entry) => entry.dateLabel).toList(),
+      ['2026.09.24'],
+    );
+  });
 }

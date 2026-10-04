@@ -11,6 +11,7 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 
 /// 인게임 아이템 보관함 화면 (Screen 20).
@@ -25,6 +26,7 @@ class ItemInventoryScreen extends ConsumerStatefulWidget {
 class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
   static const _currentNavIndex = DashboardTabNavigation.shop;
   static const _useButtonMint = Color(0xFFCDDC39);
+  var _useBusy = false;
 
   String _format(int amount) {
     return amount.toString().replaceAllMapped(
@@ -42,6 +44,7 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
   }
 
   Future<void> _onUseItem(String itemId, String title) async {
+    if (_useBusy) return;
     final owned =
         ref.read(serverShopInventoryProvider).asData?.value.countFor(itemId) ??
             0;
@@ -51,22 +54,32 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
       );
       return;
     }
+    _useBusy = true;
     try {
       await ref.read(securedActionApiClientProvider).useShopItem(itemId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$title 사용 완료')),
       );
-    } on ApiException {
+    } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$title 보유량이 없습니다. 상점에서 구매해 주세요.')),
+        SnackBar(
+          content: Text(
+            streakItemMessage(
+              error,
+              fallback: '$title 보유량이 없습니다. 상점에서 구매해 주세요.',
+            ),
+          ),
+        ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$title 을 사용하지 못했습니다.')),
       );
+    } finally {
+      _useBusy = false;
     }
   }
 

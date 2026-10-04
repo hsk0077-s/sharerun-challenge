@@ -160,7 +160,11 @@ def purchase_shop_item(
     request: ShopPurchaseRequest,
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
-    return service.purchase_shop_item(uid=uid, item_id=request.item_id)
+    return service.purchase_shop_item(
+        uid=uid,
+        item_id=request.item_id,
+        request_id=request.request_id,
+    )
 
 
 @router.post("/shop/crew-gift", response_model=SecuredActionResult)
@@ -204,7 +208,7 @@ def create_challenge_room(
 
 @router.post("/shop/catalog", response_model=ShopCatalogView)
 def shop_catalog(uid: str = Depends(require_uid)) -> ShopCatalogView:
-    del uid
+    service.ensure_coach_plus_cpr(uid)
     return ShopCatalogView(
         items=[
             ShopCatalogItem(
@@ -222,7 +226,11 @@ def use_shop_item(
     request: ShopPurchaseRequest,
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
-    return service.use_shop_item(uid=uid, item_id=request.item_id)
+    return service.use_shop_item(
+        uid=uid,
+        item_id=request.item_id,
+        request_id=request.request_id,
+    )
 
 
 @router.post("/web3/transfer", response_model=SecuredActionResult)

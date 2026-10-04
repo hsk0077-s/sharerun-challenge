@@ -20,6 +20,7 @@ import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
 import 'item_inventory_screen.dart';
@@ -40,6 +41,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   static const _currentNavIndex = DashboardTabNavigation.shop;
   final _fundingKey = GlobalKey();
   final _itemsKey = GlobalKey();
+  var _buyBusy = false;
 
   @override
   void initState() {
@@ -124,6 +126,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   Future<void> _onBuyItem(ShopItemModel item) async {
+    if (_buyBusy) return;
+    _buyBusy = true;
     try {
       final result = await ref
           .read(securedActionApiClientProvider)
@@ -134,13 +138,24 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
-      _toast('${item.title}을 구매했습니다.');
-    } on ApiException {
+      _toast(
+        result.status == 'already_purchased'
+            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+            : '${item.title}을 구매했습니다.',
+      );
+    } on ApiException catch (error) {
       if (!mounted) return;
-      _toast('DIA가 부족합니다. 상점에서 구매해 주세요.');
+      _toast(
+        streakItemMessage(
+          error,
+          fallback: 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
       _toast('${item.title}을 구매하지 못했습니다.');
+    } finally {
+      _buyBusy = false;
     }
   }
 

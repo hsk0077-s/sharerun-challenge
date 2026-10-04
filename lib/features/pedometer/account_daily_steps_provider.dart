@@ -14,11 +14,15 @@ class AccountDayMetric {
     required this.dayKey,
     required this.steps,
     this.km = 0,
+    this.streakCovered = false,
   });
 
   final String dayKey;
   final int steps;
   final double km;
+
+  /// Server marked this day so a broken streak stays connected. Not distance.
+  final bool streakCovered;
 }
 
 abstract final class AccountDailySteps {
@@ -28,13 +32,24 @@ abstract final class AccountDailySteps {
     return PedometerStepTruth.clampDaily((data?['steps'] as num?)?.toInt() ?? 0);
   }
 
+  static bool coveredOf(Map<String, dynamic>? data) {
+    final raw = data?['streakCovered'];
+    return raw == 'cpr' || raw == 'safeguard';
+  }
+
   static AccountDayMetric? dayOf(String dayKey, Map<String, dynamic>? data) {
     if (!_dayKey.hasMatch(dayKey) || data == null) return null;
     final steps = stepsOf(data);
     final kmRaw = data['km'];
     final km = kmRaw is num && kmRaw > 0 ? kmRaw.toDouble() : 0.0;
-    if (steps <= 0 && km <= 0) return null;
-    return AccountDayMetric(dayKey: dayKey, steps: steps, km: km);
+    final covered = coveredOf(data);
+    if (steps <= 0 && km <= 0 && !covered) return null;
+    return AccountDayMetric(
+      dayKey: dayKey,
+      steps: steps,
+      km: km,
+      streakCovered: covered,
+    );
   }
 
   static List<AccountDayMetric> daysOf(

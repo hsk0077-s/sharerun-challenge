@@ -8,6 +8,7 @@ import '../../core/api/api_exception.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
+import '../../features/shop/shop_request_ids.dart';
 import '../models/pedometer_harvest_result.dart';
 import '../models/share_to_dia_view.dart';
 import '../models/tournament_join_result.dart';
@@ -50,6 +51,12 @@ class SecuredActionApiClient {
   final Uri baseUri;
   final FirebaseAuth firebaseAuth;
   final http.Client _httpClient;
+  final ShopRequestIds _requestIds = ShopRequestIds();
+
+  static const _streakItemIds = {
+    'record_cpr_ticket',
+    'record_safe_guard',
+  };
 
   Future<TournamentJoinResult> joinTournament({
     required String tournamentId,
@@ -196,14 +203,61 @@ class SecuredActionApiClient {
   }
 
   /// Buys one catalog item. DIA debit and shopInventory live in one server transaction.
+  ///
+  /// 심폐소생권 and 세이프가드 send a stable [request_id]. A retry of the same
+  /// attempt reuses it so a lost response cannot charge DIA twice.
   Future<PedometerHarvestResult> purchaseShopItem(String itemId) async {
-    final json = await _post('/actions/shop/purchase', {'item_id': itemId});
+    final json = await _postStreakAware(
+      '/actions/shop/purchase',
+      itemId,
+      'buy:$itemId',
+    );
     return PedometerHarvestResult.fromJson(json);
   }
 
   /// Decrements one account inventory doc. Rejects when quantity is already 0.
   Future<void> useShopItem(String itemId) async {
-    await _post('/actions/shop/use', {'item_id': itemId});
+    await _postStreakAware('/actions/shop/use', itemId, 'use:$itemId');
+  }
+
+  /// Once per KST day. Covers yesterday when a 세이프가드 is already held.
+  Future<String> applyHeldSafeguard(String dayKey) async {
+    final json = await _post('/actions/shop/use', {
+      'item_id': 'record_safe_guard',
+      'request_id': 'safeguard-auto-$dayKey',
+    });
+    final status = json['status'];
+    return status is String ? status : '';
+  }
+
+  Future<Map<String, dynamic>> _postStreakAware(
+    String path,
+    String itemId,
+    String retryKey,
+  ) async {
+    final streak = _streakItemIds.contains(itemId);
+    final requestId = streak ? _requestIds.begin(retryKey) : null;
+    final body = <String, dynamic>{
+      'item_id': itemId,
+      if (requestId != null) 'request_id': requestId,
+    };
+    try {
+      final json = await _post(path, body);
+      if (streak) _requestIds.succeed(retryKey);
+      return json;
+    } on ApiException catch (error) {
+      if (streak) {
+        _requestIds.failed(
+          retryKey,
+          requestId!,
+          retryable: error.statusCode >= 500,
+        );
+      }
+      rethrow;
+    } catch (_) {
+      if (streak) _requestIds.failed(retryKey, requestId!, retryable: true);
+      rethrow;
+    }
   }
 
   /// Debits 100 DIA and stores the nickname in one server transaction.

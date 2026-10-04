@@ -57,6 +57,16 @@ from app.services.company_tournament_config import (
     prize_tier_id,
     resolve_company_tournament_config,
 )
+from app.services.item_price_config import STREAK_ITEM_IDS, read_item_prices
+from app.services.streak_protection import (
+    CPR_ITEM_ID,
+    grant_coach_plus_cpr,
+    maybe_grant_coach_plus_cpr,
+    metric_qualifies,
+    purchase_streak_item,
+    require_request_id,
+    use_streak_item,
+)
 from app.services.wallet_funding import (
     assign_free_balances,
     exchange_spendable,
@@ -341,10 +351,26 @@ class SecuredActionService:
         self,
         uid: str,
         item_id: str,
+        request_id: str | None = None,
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
+        if item_id in STREAK_ITEM_IDS:
+            return _commit_streak_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
+
+    def ensure_coach_plus_cpr(self, uid: str) -> None:
+        maybe_grant_coach_plus_cpr(self, uid)
+
+    def commit_cpr_grant(self, transaction, uid: str, user_ref) -> None:
+        _commit_cpr_grant_tx(transaction, self, uid, user_ref)
 
     def grant_crew_items(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
@@ -382,9 +408,25 @@ class SecuredActionService:
             transaction, self, uid, title, distance_km, user_ref, room_ref
         )
 
-    def use_shop_item(self, uid: str, item_id: str) -> SecuredActionResult:
+    def use_shop_item(
+        self,
+        uid: str,
+        item_id: str,
+        request_id: str | None = None,
+    ) -> SecuredActionResult:
+        if item_id == CPR_ITEM_ID:
+            self.ensure_coach_plus_cpr(uid)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
+        if item_id in STREAK_ITEM_IDS:
+            return _commit_streak_use_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         return _commit_use_shop_tx(transaction, self, uid, item_id, user_ref)
 
     def transfer_value_to_web3(
@@ -651,11 +693,11 @@ class SecuredActionService:
     SHOP_CATALOG: dict[str, dict] = {
         "record_cpr_ticket": {
             "title": "기록 심폐소생권",
-            "diamondCost": 3,
+            "diamondCost": 12,
         },
         "record_safe_guard": {
             "title": "기록 마감 세이프 가드",
-            "diamondCost": 5,
+            "diamondCost": 8,
         },
         "ghost_pace_match": {
             "title": "고스트 페이스 매칭",
@@ -667,15 +709,15 @@ class SecuredActionService:
         },
     }
 
-    @classmethod
-    def shop_catalog(cls) -> list[dict]:
+    def shop_catalog(self) -> list[dict]:
+        prices = read_item_prices(self.firebase_service.db)
         return [
             {
                 "id": item_id,
                 "title": item["title"],
-                "diamondCost": int(item["diamondCost"]),
+                "diamondCost": int(prices.get(item_id, item["diamondCost"])),
             }
-            for item_id, item in cls.SHOP_CATALOG.items()
+            for item_id, item in self.SHOP_CATALOG.items()
         ]
 
     # Crew prices live here. The client does not send an amount.
@@ -1556,6 +1598,8 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
+        if item_id in STREAK_ITEM_IDS:
+            raise HTTPException(status_code=400, detail="request_id is required.")
         catalog_item = self.SHOP_CATALOG.get(item_id)
         if catalog_item is None:
             raise HTTPException(status_code=404, detail="Shop item not found.")
@@ -1924,6 +1968,8 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
+        if item_id in STREAK_ITEM_IDS:
+            raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
             raise HTTPException(status_code=404, detail="Shop item not found.")
         inventory_ref = user_ref.collection("shopInventory").document(item_id)
@@ -3223,14 +3269,7 @@ _STREAK_LOOKBACK_DAYS = 400
 def _day_has_activity(snapshot) -> bool:
     if not snapshot.exists:
         return False
-    data = snapshot.to_dict() or {}
-    return _positive_number(data.get("steps")) or _positive_number(data.get("km"))
-
-
-def _positive_number(value: object) -> bool:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        return False
-    return value > 0
+    return metric_qualifies(snapshot.to_dict() or {})
 
 
 def _wallet_int(wallet: dict, key: str) -> int | None:
@@ -3238,6 +3277,37 @@ def _wallet_int(wallet: dict, key: str) -> int | None:
     if raw is None:
         return None
     return int(raw)
+
+
+@firestore.transactional
+def _commit_streak_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_streak_item(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_streak_use_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return use_streak_item(service, transaction, uid, item_id, request_id, user_ref)
+
+
+@firestore.transactional
+def _commit_cpr_grant_tx(transaction, service, uid: str, user_ref) -> None:
+    grant_coach_plus_cpr(service, transaction, uid, user_ref)
 
 
 @firestore.transactional

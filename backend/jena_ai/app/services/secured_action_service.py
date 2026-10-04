@@ -243,8 +243,8 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._apply_referral_code_tx(
-            transaction, uid, referral_code.strip().upper(), user_ref
+        return _commit_apply_referral_tx(
+            transaction, self, uid, referral_code.strip().upper(), user_ref
         )
 
     def get_or_create_invite_code(self, uid: str) -> InviteCodeResult:
@@ -1736,7 +1736,6 @@ class SecuredActionService:
             value_token_balance=value,
         )
 
-    @firestore.transactional
     def _apply_referral_code_tx(
         self,
         transaction,
@@ -2537,8 +2536,9 @@ class SecuredActionService:
         )
         user_ref = self.firebase_service.db.collection("users").document(uid)
         participant_ref = tournament_ref.collection("participants").document(uid)
-        return self._settle_tournament_failure_tx(
+        return _commit_settle_failure_tx(
             transaction,
+            self,
             uid,
             request,
             user_ref,
@@ -2848,7 +2848,6 @@ class SecuredActionService:
             value_token_balance=value,
         )
 
-    @firestore.transactional
     def _settle_tournament_failure_tx(
         self,
         transaction,
@@ -3624,6 +3623,32 @@ class SecuredActionService:
         if self._firebase_service is None:
             self._firebase_service = FirebaseService()
         return self._firebase_service
+
+
+@firestore.transactional
+def _commit_apply_referral_tx(
+    transaction, service, uid: str, referral_code: str, user_ref
+) -> SecuredActionResult:
+    # Module-level so the first argument is the Transaction. Decorating the
+    # method drops `self` and raises TypeError.
+    return service._apply_referral_code_tx(
+        transaction, uid, referral_code, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_settle_failure_tx(
+    transaction,
+    service,
+    uid: str,
+    request: SettleTournamentFailureRequest,
+    user_ref,
+    tournament_ref,
+    participant_ref,
+) -> SecuredActionResult:
+    return service._settle_tournament_failure_tx(
+        transaction, uid, request, user_ref, tournament_ref, participant_ref
+    )
 
 
 @firestore.transactional

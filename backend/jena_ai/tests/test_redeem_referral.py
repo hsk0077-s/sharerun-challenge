@@ -44,6 +44,57 @@ class _MemoryCollection:
             doc_id = f"auto{len(self._store)}"
         return _MemoryDoc(self._store, f"{self._name}/{doc_id}")
 
+    def where(self, field: str, op: str, value):
+        return _MemoryQuery(self._store, self._name, field, op, value)
+
+    def get(self, transaction=None):
+        return _child_snapshots(self._store, self._name)
+
+
+class _MemoryQuery:
+    def __init__(self, store: dict, name: str, field: str, op: str, value) -> None:
+        self._store = store
+        self._name = name
+        self._field = field
+        self._op = op
+        self._value = value
+        self._limit = None
+
+    def limit(self, count: int) -> "_MemoryQuery":
+        self._limit = count
+        return self
+
+    def get(self, transaction=None):
+        matched = []
+        for snapshot in _child_snapshots(self._store, self._name):
+            current = snapshot.to_dict()
+            for part in self._field.split("."):
+                if not isinstance(current, dict) or part not in current:
+                    current = None
+                    break
+                current = current[part]
+            if self._op == "==" and current == self._value:
+                matched.append(snapshot)
+        if self._limit is not None:
+            return matched[: self._limit]
+        return matched
+
+
+def _child_snapshots(store: dict, name: str) -> list:
+    prefix = f"{name}/"
+    depth = name.count("/") + 1
+    snapshots = []
+    for path, data in store.items():
+        if not path.startswith(prefix) or path.count("/") != depth:
+            continue
+        snapshot = MagicMock()
+        snapshot.id = path.rsplit("/", 1)[-1]
+        snapshot.exists = True
+        snapshot.to_dict.return_value = deepcopy(data)
+        snapshot.reference = _MemoryDoc(store, path)
+        snapshots.append(snapshot)
+    return snapshots
+
 
 class _MemoryTxn:
     def set(self, ref: _MemoryDoc, data: dict, merge: bool = False) -> None:
@@ -66,6 +117,9 @@ class _MemoryTxn:
             nested = dict(current.get(parent) or {})
             nested[child] = value
             current[parent] = nested
+
+    def get(self, ref_or_query):
+        return ref_or_query.get(transaction=self)
 
 
 def _assign_increment(current: dict, key: str, amount) -> None:

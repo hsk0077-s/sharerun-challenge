@@ -52,6 +52,11 @@ from app.services.play_billing import (
     purchase_token_hash,
     verify_play_product_purchase,
 )
+from app.services.company_tournament_config import (
+    COMPANY_TOURNAMENT_CONFIG_ID,
+    prize_tier_id,
+    resolve_company_tournament_config,
+)
 from app.services.wallet_funding import (
     assign_free_balances,
     exchange_spendable,
@@ -1962,6 +1967,15 @@ class SecuredActionService:
             forfeit_deposit=bool(activity.get("depositForfeited")),
         )
 
+    def get_company_tournament_config(self) -> dict:
+        snapshot = (
+            self.firebase_service.db.collection("config")
+            .document(COMPANY_TOURNAMENT_CONFIG_ID)
+            .get()
+        )
+        raw = snapshot.to_dict() if snapshot.exists else None
+        return resolve_company_tournament_config(raw)
+
     def join_tournament(
         self,
         uid: str,
@@ -2032,6 +2046,33 @@ class SecuredActionService:
                 share_balance=share,
                 diamond_balance=diamonds,
                 value_token_balance=value,
+            )
+
+        tier_id = prize_tier_id(tournament)
+        if tier_id is not None:
+            if tier_id == "":
+                raise HTTPException(status_code=400, detail="Unknown prize tier.")
+            config_snapshot = (
+                self.firebase_service.db.collection("config")
+                .document(COMPANY_TOURNAMENT_CONFIG_ID)
+                .get(transaction=transaction)
+            )
+            raw = config_snapshot.to_dict() if config_snapshot.exists else None
+            return self._join_prize_race_tx(
+                transaction,
+                uid,
+                request,
+                user,
+                tournament,
+                tier_id,
+                resolve_company_tournament_config(raw),
+                user_ref,
+                tournament_ref,
+                participant_ref,
+                builtin is not None,
+                share,
+                diamonds,
+                value,
             )
 
         user_tier = int(user.get("tier") or 1)
@@ -2111,6 +2152,144 @@ class SecuredActionService:
             share_credited=-entry_fee,
             share_balance=new_share,
             diamond_balance=new_diamonds,
+            value_token_balance=value,
+        )
+
+    def _join_prize_race_tx(
+        self,
+        transaction,
+        uid: str,
+        request: JoinTournamentRequest,
+        user: dict,
+        tournament: dict,
+        tier_id: str,
+        config: dict,
+        user_ref,
+        tournament_ref,
+        participant_ref,
+        builtin: bool,
+        share: int,
+        diamonds: int,
+        value: int,
+    ) -> SecuredActionResult:
+        """Admission for a company prize race. Fee comes from config, not the room doc."""
+        tier = config["tiers"].get(tier_id)
+        if tier is None:
+            raise HTTPException(status_code=400, detail="Unknown prize tier.")
+        if tournament.get("status", "recruiting") != "recruiting":
+            raise HTTPException(status_code=400, detail="Tournament is not recruiting.")
+        if self._tournament_is_full(
+            {**tournament, "maxParticipants": int(tier["maxEntrants"])}
+        ):
+            raise HTTPException(status_code=409, detail="Tournament is full.")
+        if (request.diamond_deposit or 0) > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Prize race entry does not accept DIA.",
+            )
+        if tier["requiresSeasonQualification"] and user.get("seasonQualified") is not True:
+            raise HTTPException(
+                status_code=403,
+                detail="Season qualification is required.",
+            )
+
+        wallet = user.get("wallet") or {}
+        share_fee = 0
+        ticket_fee = 0
+        moved: dict = {"updates": {}, "ledger": {}}
+        if request.entry_method == "ticket":
+            ticket_fee = int(tier["freeTicketCost"])
+            if ticket_fee <= 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="This tier does not accept free tickets.",
+                )
+            owned = int(wallet.get("freeTicketBalance") or 0)
+            if owned < ticket_fee:
+                raise HTTPException(status_code=400, detail="Insufficient free tickets.")
+            transaction.update(
+                user_ref,
+                {
+                    "wallet.freeTicketBalance": owned - ticket_fee,
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
+            entry_method = "ticket"
+            result_status = "joined_ticket"
+            reason = "Tournament joined with free tickets."
+            new_share = share
+        else:
+            share_fee = int(tier["entryShare"])
+            if share_fee > 0:
+                if share < share_fee:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Insufficient Share balance.",
+                    )
+                moved = move_currency(wallet, share=-share_fee)
+                transaction.update(
+                    user_ref,
+                    {**moved["updates"], "updatedAt": SERVER_TIMESTAMP},
+                )
+                entry_method = "share"
+                result_status = "joined"
+                reason = "Tournament joined with Share."
+                new_share = share - share_fee
+            else:
+                entry_method = "free"
+                result_status = "joined_free"
+                reason = "Tournament joined with no entry fee."
+                new_share = share
+
+        if builtin:
+            transaction.set(
+                tournament_ref,
+                {**tournament, "participantCount": 1, "updatedAt": SERVER_TIMESTAMP},
+            )
+        else:
+            transaction.update(
+                tournament_ref,
+                {
+                    "participantCount": firestore.Increment(1),
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
+        transaction.set(
+            participant_ref,
+            {
+                "uid": uid,
+                "entryFeeShare": share_fee,
+                "ticketAmount": ticket_fee,
+                "entryMethod": entry_method,
+                "prizeTier": tier_id,
+                "diamondDeposit": 0,
+                "selectedCharity": request.selected_charity or "UNICEF",
+                "joinedAt": SERVER_TIMESTAMP,
+                "status": "joined",
+            },
+        )
+        transaction.set(
+            self.firebase_service.db.collection("walletTransactions").document(),
+            {
+                "uid": uid,
+                "tournamentId": tournament_ref.id,
+                "type": "tournament_entry",
+                "shareAmount": -share_fee,
+                "diamondAmount": 0,
+                "ticketAmount": -ticket_fee,
+                "entryMethod": entry_method,
+                "prizeTier": tier_id,
+                "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status=result_status,
+            reason=reason,
+            share_credited=-share_fee,
+            share_balance=new_share,
+            diamond_balance=diamonds,
             value_token_balance=value,
         )
 

@@ -52,6 +52,12 @@ def join_tournament(
     return service.join_tournament(uid=uid, request=request)
 
 
+@router.get("/company-tournament/config")
+def company_tournament_config(uid: str = Depends(require_uid)) -> dict:
+    del uid
+    return service.get_company_tournament_config()
+
+
 @router.post("/tournaments/settle-failure", response_model=SecuredActionResult)
 def settle_tournament_failure(
     request: SettleTournamentFailureRequest,

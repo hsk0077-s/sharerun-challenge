@@ -19,5 +19,9 @@ void main() {
   test('stamp-tour catalog paths are config + collection, not user docs', () {
     expect(FirestorePaths.stampTourConfig, 'config/stamp_tour');
     expect(FirestorePaths.stampLandmarks, 'stampLandmarks');
+    expect(
+      FirestorePaths.companyTournamentConfig,
+      'config/company_tournament',
+    );
   });
 }

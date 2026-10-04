@@ -290,7 +290,7 @@ abstract final class AppStrings {
   static const storeValueTransferCancel = '취소';
   static const storeValueTransferApprove = '이해하고 전송 화면으로';
   static const walletHistoryShortcutTooltip = '재화 히스토리';
-  static const iapBillingTitle = 'SHARE (참가 쿠폰) 충전소';
+  static const iapBillingTitle = '다이아 충전소';
   static const iapBillingSubtitle = '구글 플레이 공식 보안 결제를 적용합니다.';
 
   // ── Pro Tools (Screen 15) ─────────────────────────────────────────

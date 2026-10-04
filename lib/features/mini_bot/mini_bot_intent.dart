@@ -105,7 +105,7 @@ abstract final class MiniBotPrompts {
   static const cpr = '심폐소생권';
   static const donate = '후원';
   static const safeGuard = '세이프가드';
-  static const charge = 'SHARE 충전';
+  static const charge = '다이아 충전';
   static const sponsor = '스폰서';
   static const runnerSponsor = '러너 후원';
   static const subscription = '구독';
@@ -175,7 +175,7 @@ abstract final class MiniBotCopy {
       '구매하기를 눌러도 결제하지 않아요. '
       '상점의 세이프 가드 칸에서 직접 구매해 주세요.';
 
-  static String get charge => 'SHARE 충전소로 이동할까요? $chargeAmount 팩이 있어요. '
+  static String get charge => '다이아 충전소로 이동할까요? $chargeAmount 팩이 있어요. '
       '충전하기를 눌러도 여기서는 결제되지 않아요. 충전소에서 직접 골라 주세요.';
 
   static String get sponsor => '러너 후원 화면으로 이동할까요? $sponsorAmount예요. '
@@ -205,7 +205,7 @@ abstract final class MiniBotCopy {
 
   static const unknown = '그 말은 아직 연결되지 않았어요. '
       '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
-      'SHARE 충전, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.';
+      '다이아 충전, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.';
 
   static const micDenied = '마이크 권한이 없어 음성을 듣지 못했어요. '
       '한글로 입력하거나 아래 버튼을 눌러 주세요.';
@@ -229,7 +229,7 @@ abstract final class MiniBotCopy {
           '세이프 가드를 눌러 구매해 주세요. 여기서는 결제되지 않아요.',
       MiniBotDestination.donateStore => '상점 기부 펀딩으로 이동할게요. '
           '기부 버튼으로 직접 눌러 주세요. 여기서는 기부되지 않아요.',
-      MiniBotDestination.shareCharge => 'SHARE 충전소로 이동할게요. '
+      MiniBotDestination.shareCharge => '다이아 충전소로 이동할게요. '
           '팩은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
       MiniBotDestination.personalSponsor => '러너 후원 화면으로 이동할게요. '
           '후원 버튼으로 직접 확정해 주세요. 여기서는 후원되지 않아요.',

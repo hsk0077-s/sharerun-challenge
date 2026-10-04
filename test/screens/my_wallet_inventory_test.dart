@@ -134,6 +134,15 @@ void main() {
     expect(find.text(AppStrings.myWalletChargeShareHint), findsOneWidget);
     expect(find.text(AppStrings.myWalletChargeDiaHint), findsOneWidget);
     expect(find.text(AppStrings.myWalletChargeValueHint), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.myWalletChargeShare));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.iapBillingTitle), findsNothing);
+    expect(find.text(AppStrings.myWalletChargeDiaHint), findsOneWidget);
+
+    await tester.tap(find.text(AppStrings.myWalletChargeDia));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.iapBillingTitle), findsOneWidget);
   });
 
   testWidgets('My Wallet empty inventory still lists the section',

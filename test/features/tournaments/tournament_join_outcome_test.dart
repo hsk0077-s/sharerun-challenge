@@ -185,6 +185,60 @@ void main() {
     expect(kTournamentEntryHistoryTitle, isNot(contains('유니세프')));
   });
 
+  test('zero-fee Jena join unlocks without a SHARE debit', () {
+    const joined = TournamentJoinResult(
+      accepted: true,
+      status: 'joined',
+      shareCredited: 0,
+    );
+    final plan = TournamentJoinPlanner.fromJenaSuccess(
+      result: joined,
+      entryFeeShare: 0,
+    );
+    expect(plan.kind, TournamentJoinKind.free);
+    expect(plan.applyDebit, isFalse);
+    expect(plan.debitAmount, 0);
+    expect(plan.unlockRun, isTrue);
+    expect(plan.joinedForUi, isTrue);
+    expect(plan.showsPaidSnackbar, isFalse);
+    expect(plan.snackbarMessage, TournamentJoinMessages.freeJoined);
+    expect(plan.debugLog, contains('debit=N'));
+    expect(plan.debugLog, isNot(contains('no_entry_fee')));
+  });
+
+  test('joined_free and joined_ticket succeed even when the local fee is positive',
+      () {
+    for (final status in ['joined_free', 'joined_ticket']) {
+      final plan = TournamentJoinPlanner.fromJenaSuccess(
+        result: TournamentJoinResult(
+          accepted: true,
+          status: status,
+          shareCredited: 0,
+        ),
+        entryFeeShare: 600,
+      );
+      expect(plan.kind, TournamentJoinKind.free);
+      expect(plan.applyDebit, isFalse);
+      expect(plan.unlockRun, isTrue);
+    }
+  });
+
+  test('server-confirmed SHARE debit still applies when the local fee is 0', () {
+    const joined = TournamentJoinResult(
+      accepted: true,
+      status: 'joined',
+      shareCredited: -600,
+    );
+    final plan = TournamentJoinPlanner.fromJenaSuccess(
+      result: joined,
+      entryFeeShare: 0,
+    );
+    expect(plan.kind, TournamentJoinKind.paid);
+    expect(plan.applyDebit, isTrue);
+    expect(plan.debitAmount, 600);
+    expect(plan.unlockRun, isTrue);
+  });
+
   test('legacy joined body without share_credited still plans a debit', () {
     const legacy = TournamentJoinResult(accepted: true, status: 'joined');
     final plan = TournamentJoinPlanner.fromJenaSuccess(

@@ -88,6 +88,31 @@ void main() {
     expect(planSnack.snackbarMessage, isNot(contains('Entry Share locked')));
   });
 
+  test('zero local fee still mirrors a server-confirmed SHARE debit', () {
+    expect(
+      TournamentJoinDebit.shouldApplyEntryFee(
+        result: const TournamentJoinResult(
+          accepted: true,
+          status: 'joined',
+          shareCredited: -600,
+        ),
+        entryFeeShare: 0,
+      ),
+      isTrue,
+    );
+    expect(
+      TournamentJoinDebit.debitAmount(
+        result: const TournamentJoinResult(
+          accepted: true,
+          status: 'joined',
+          shareCredited: -600,
+        ),
+        entryFeeShare: 0,
+      ),
+      600,
+    );
+  });
+
   test('failed or zero-fee join does not debit', () {
     expect(
       TournamentJoinDebit.shouldApplyEntryFee(

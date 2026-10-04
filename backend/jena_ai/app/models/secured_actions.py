@@ -5,6 +5,8 @@ class JoinTournamentRequest(BaseModel):
     tournament_id: str
     diamond_deposit: int = Field(default=0, ge=0)
     selected_charity: str = Field(default="UNICEF", min_length=2, max_length=64)
+    # Prize races only. ``share`` debits config SHARE; ``ticket`` spends free tickets.
+    entry_method: str = Field(default="share", pattern="^(share|ticket)$")
 
 
 class SettleTournamentFailureRequest(BaseModel):

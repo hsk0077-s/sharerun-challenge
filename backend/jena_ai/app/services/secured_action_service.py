@@ -57,7 +57,9 @@ from app.services.company_tournament_config import (
     prize_tier_id,
     resolve_company_tournament_config,
 )
+from app.services.battle_pass import NOT_SPENT, purchase_battle_pass
 from app.services.item_price_config import (
+    BATTLE_PASS_ITEM_IDS,
     COACH_ONE_POINT_ITEM_ID,
     CREW_CHEER_FLAG_ITEM_ID,
     CREW_CREATE_DIA_ID,
@@ -409,6 +411,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id in BATTLE_PASS_ITEM_IDS:
+            return _commit_battle_pass_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
 
     def ensure_coach_plus_cpr(self, uid: str) -> None:
@@ -478,6 +489,8 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         if item_id == CPR_ITEM_ID:
             self.ensure_coach_plus_cpr(uid)
+        if item_id in BATTLE_PASS_ITEM_IDS:
+            raise HTTPException(status_code=400, detail=NOT_SPENT)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         if item_id in STREAK_ITEM_IDS:
@@ -886,6 +899,10 @@ class SecuredActionService:
         "battle_run_pass": {
             "title": "배틀런 챌린지 패스",
             "diamondCost": 120,
+        },
+        "battle_run_pass_plus": {
+            "title": "배틀런 패스+",
+            "diamondCost": 200,
         },
     }
 
@@ -1777,7 +1794,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in BATTLE_PASS_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         catalog_item = self.SHOP_CATALOG.get(item_id)
         if catalog_item is None:
@@ -2184,6 +2201,8 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
+        if item_id in BATTLE_PASS_ITEM_IDS:
+            raise HTTPException(status_code=400, detail=NOT_SPENT)
         if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
@@ -3593,6 +3612,20 @@ def _commit_nickname_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._change_nickname_tx(transaction, uid, nickname, user_ref)
+
+
+@firestore.transactional
+def _commit_battle_pass_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_battle_pass(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
 
 
 @firestore.transactional

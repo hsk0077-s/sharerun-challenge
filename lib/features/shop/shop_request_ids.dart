@@ -1,5 +1,19 @@
 import 'dart:math';
 
+/// Shop items whose purchase sends `request_id`. A retry reuses that id.
+const requestPricedShopItemIds = <String>{
+  'record_cpr_ticket',
+  'record_safe_guard',
+  'coach_one_point_ticket',
+  'extra_entry_ticket',
+  'extra_entry_ticket_3pack',
+  'friend_ghost_pace',
+  'friend_ghost_pace_10pack',
+  'crew_cheer_flag',
+  'battle_run_pass',
+  'battle_run_pass_plus',
+};
+
 /// One id per attempt. A retry after a dropped response reuses it so the
 /// server does not charge 심폐소생권 or 세이프가드 twice.
 class ShopRequestIds {

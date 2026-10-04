@@ -81,6 +81,8 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "crew_cheer_flag": 15,
         "crew_create_dia": 50,
         "crew_create_share": 30000,
+        "battle_run_pass": 120,
+        "battle_run_pass_plus": 200,
     }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})
@@ -88,15 +90,21 @@ def test_invalid_price_fields_keep_defaults() -> None:
     assert overridden[GUARD] == 8
 
 
-def test_catalog_uses_firestore_price_for_streak_items_only() -> None:
+def test_catalog_uses_firestore_price_for_configured_items() -> None:
     db = _MemoryDb()
-    db.store["config/item_prices"] = {CPR: 20, GUARD: -3, "battle_run_pass": 1}
+    db.store["config/item_prices"] = {
+        CPR: 20,
+        GUARD: -3,
+        "battle_run_pass": 90,
+        "ghost_pace_match": 1,
+    }
     prices = {
         row["id"]: row["diamondCost"] for row in _service(db).shop_catalog()
     }
     assert prices[CPR] == 20
     assert prices[GUARD] == 8
-    assert prices["battle_run_pass"] == 120
+    assert prices["battle_run_pass"] == 90
+    assert prices["ghost_pace_match"] == 8
 
 
 def test_purchase_spends_free_dia_first_and_replay_does_not_charge_again() -> None:

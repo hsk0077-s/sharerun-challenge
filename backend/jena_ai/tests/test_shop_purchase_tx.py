@@ -2,6 +2,9 @@
 
 from types import SimpleNamespace
 
+from fastapi import HTTPException
+import pytest
+
 from app.services.secured_action_service import SecuredActionService, _commit_shop_tx
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
@@ -26,26 +29,22 @@ def test_catalog_prices_streak_items_from_config_and_keeps_battle_pass() -> None
     assert prices["battle_run_pass"] == 120
 
 
-def test_battle_pass_debits_server_price() -> None:
+def test_generic_shop_purchase_does_not_sell_battle_pass() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {"wallet": {"diamondBalance": 200}}
     service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
     user_ref = db.collection("users").document("u1")
-    result = _commit_shop_tx.to_wrap(
-        _MemoryTxn(),
-        service,
-        "u1",
-        "battle_run_pass",
-        user_ref,
-    )
-    assert result.status == "purchased"
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 80
-    ledger = [
-        row
-        for path, row in db.store.items()
-        if path.startswith("walletTransactions/")
-    ]
-    assert ledger[0]["diamondAmount"] == -120
+    with pytest.raises(HTTPException) as exc:
+        _commit_shop_tx.to_wrap(
+            _MemoryTxn(),
+            service,
+            "u1",
+            "battle_run_pass",
+            user_ref,
+        )
+    assert exc.value.detail == "request_id is required."
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 200
+    assert not any(path.startswith("walletTransactions/") for path in db.store)
 
 
 def test_shop_purchase_appends_negative_diamond_row() -> None:

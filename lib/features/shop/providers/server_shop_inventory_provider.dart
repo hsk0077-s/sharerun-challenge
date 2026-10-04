@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../data/models/shop_item_model.dart';
+import '../battle_pass_grant.dart';
 
 /// Account inventory from `users/{uid}/shopInventory/{itemId}.quantity`.
 ///
@@ -19,12 +20,15 @@ class ServerShopInventory {
     this.extraEntryCount = 0,
     this.friendGhostCount = 0,
     this.crewCheerCount = 0,
+    this.battlePassTier = '',
+    this.battlePassRewardIds = const [],
   });
 
   static const cprId = 'record_cpr_ticket';
   static const safeGuardId = 'record_safe_guard';
   static const ghostPaceId = 'ghost_pace_match';
-  static const battlePassId = 'battle_run_pass';
+  static const battlePassId = battlePassItemId;
+  static const battlePassPlusId = battlePassPlusItemId;
   static const coachOnePointId = 'coach_one_point_ticket';
   static const extraEntryId = 'extra_entry_ticket';
   static const friendGhostId = 'friend_ghost_pace';
@@ -39,6 +43,13 @@ class ServerShopInventory {
   final int extraEntryCount;
   final int friendGhostCount;
   final int crewCheerCount;
+  final String battlePassTier;
+  final List<String> battlePassRewardIds;
+
+  BattlePassGrant get battlePass => BattlePassGrant(
+        tier: battlePassTier,
+        rewardIds: battlePassRewardIds,
+      );
 
   bool get isEmpty =>
       cprCount <= 0 &&
@@ -101,10 +112,29 @@ class ServerShopInventory {
     QuerySnapshot<Map<String, dynamic>> snap,
   ) {
     final quantities = <String, int>{};
+    var grant = const BattlePassGrant();
     for (final doc in snap.docs) {
       quantities[doc.id] = _qty(doc.data()['quantity']);
+      if (doc.id == battlePassId) {
+        grant = battlePassGrantFromDoc(doc.data());
+      }
     }
-    return fromQuantities(quantities);
+    return fromQuantities(quantities).withBattlePass(grant);
+  }
+
+  ServerShopInventory withBattlePass(BattlePassGrant grant) {
+    return ServerShopInventory(
+      cprCount: cprCount,
+      safeGuardCount: safeGuardCount,
+      ghostPaceCount: ghostPaceCount,
+      battlePassCount: battlePassCount,
+      coachOnePointCount: coachOnePointCount,
+      extraEntryCount: extraEntryCount,
+      friendGhostCount: friendGhostCount,
+      crewCheerCount: crewCheerCount,
+      battlePassTier: grant.tier,
+      battlePassRewardIds: grant.rewardIds,
+    );
   }
 }
 

@@ -156,7 +156,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       } else {
         final result = await ref.read(securedActionApiClientProvider).foundCrew(
               AppStrings.runningCrewMyCrewName,
-              payWith: payWith,
+              payWith: payWith!,
             );
         ref.read(walletProvider.notifier).applyWalletSnapshot(
               shareBalance: result.shareBalance,

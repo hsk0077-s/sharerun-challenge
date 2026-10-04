@@ -68,17 +68,6 @@ class SecuredActionApiClient {
   final http.Client _httpClient;
   final ShopRequestIds _requestIds = ShopRequestIds();
 
-  static const _idempotentItemIds = {
-    'record_cpr_ticket',
-    'record_safe_guard',
-    'coach_one_point_ticket',
-    'extra_entry_ticket',
-    'extra_entry_ticket_3pack',
-    'friend_ghost_pace',
-    'friend_ghost_pace_10pack',
-    'crew_cheer_flag',
-  };
-
   Future<TournamentJoinResult> joinTournament({
     required String tournamentId,
     bool useExtraEntry = false,
@@ -273,7 +262,7 @@ class SecuredActionApiClient {
     String itemId,
     String retryKey,
   ) async {
-    final streak = _idempotentItemIds.contains(itemId);
+    final streak = requestPricedShopItemIds.contains(itemId);
     final requestId = streak ? _requestIds.begin(retryKey) : null;
     final body = <String, dynamic>{
       'item_id': itemId,

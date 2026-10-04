@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -7,25 +10,30 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../data/models/shop_item_model.dart';
+import '../features/shop/battle_pass_grant.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
-import '../features/shop/widgets/server_item_use_button.dart';
+import '../features/shop/providers/shop_catalog_provider.dart';
+import '../features/shop/streak_item_message.dart';
+import '../features/wallet/providers/wallet_provider.dart';
 
-/// 배틀런 패스 보상 화면 (Screen 24).
-class BattlePassScreen extends StatefulWidget {
+/// 배틀런 패스. Purchase and cosmetics come from the server.
+class BattlePassScreen extends ConsumerStatefulWidget {
   const BattlePassScreen({super.key});
 
   @override
-  State<BattlePassScreen> createState() => _BattlePassScreenState();
+  ConsumerState<BattlePassScreen> createState() => _BattlePassScreenState();
 }
 
-class _BattlePassScreenState extends State<BattlePassScreen> {
+class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
   static const _currentNavIndex = DashboardTabNavigation.challenge;
-
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Color(0xFFE0F7FA), Colors.white],
   );
+
+  var _busy = false;
 
   void _onNavTap(int index) {
     if (index == _currentNavIndex) {
@@ -35,8 +43,66 @@ class _BattlePassScreenState extends State<BattlePassScreen> {
     DashboardTabNavigation.go(context, index);
   }
 
+  int _dia(String id, int fallback) {
+    final server = ref.watch(shopCatalogProvider).asData?.value[id];
+    if (server != null && server > 0) return server;
+    for (final item in ShopItemModel.catalog) {
+      if (item.id == id) return item.diamondCost;
+    }
+    return fallback;
+  }
+
+  Future<void> _buy(String itemId) async {
+    if (_busy) return;
+    _busy = true;
+    try {
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .purchaseShopItem(itemId);
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      final title = serverShopItemTitle(itemId) ?? itemId;
+      _toast(
+        result.status == 'already_purchased'
+            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+            : '$title을 구매했습니다.',
+      );
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(streakItemMessage(error, fallback: '구매하지 못했습니다.'));
+    } catch (_) {
+      if (!mounted) return;
+      _toast('구매하지 못했습니다.');
+    } finally {
+      _busy = false;
+    }
+  }
+
+  void _toast(String message) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.hideCurrentSnackBar();
+    messenger?.showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final grant =
+        ref.watch(serverShopInventoryProvider).asData?.value.battlePass ??
+            const BattlePassGrant();
+    final diamond = ref.watch(walletProvider).diamondBalance;
+    final passCost = _dia(battlePassItemId, 120);
+    final plusCost = _dia(battlePassPlusItemId, 200);
+    final upgrade = plusCost > passCost ? plusCost - passCost : plusCost;
+    final status = grant.ownsPlus
+        ? AppStrings.battlePassPlusOwned
+        : grant.ownsPass
+            ? AppStrings.battlePassOwned
+            : AppStrings.battlePassNone;
+
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
       child: Scaffold(
@@ -51,40 +117,35 @@ class _BattlePassScreenState extends State<BattlePassScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: _BattlePassHeader(
+                    diamondBalance: diamond,
                     onBack: () => Navigator.pop(context),
                   ),
                 ),
                 const SizedBox(height: 20),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: const _PremiumStatusCard(),
+                  child: _StatusCard(status: status),
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: ServerItemUseButton(
-                    itemId: ServerShopInventory.battlePassId,
-                    label: '배틀런 챌린지 패스',
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: _BuyRow(
+                    grant: grant,
+                    passCost: passCost,
+                    plusCost: plusCost,
+                    upgradeCost: upgrade,
+                    onBuy: _buy,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    children: const [
-                      _BattlePassRewardCard(
-                        level: 15,
-                        state: _RewardCardState.completed,
-                      ),
-                      SizedBox(height: 12),
-                      _BattlePassRewardCard(
-                        level: 16,
-                        state: _RewardCardState.current,
-                      ),
-                      SizedBox(height: 12),
-                      _BattlePassRewardCard(
-                        level: 17,
-                        state: _RewardCardState.locked,
-                      ),
+                    children: [
+                      for (final reward in battlePassRewards) ...[
+                        _RewardRow(
+                            reward: reward, owned: grant.owned(reward.id)),
+                        const SizedBox(height: 12),
+                      ],
                     ],
                   ),
                 ),
@@ -102,8 +163,12 @@ class _BattlePassScreenState extends State<BattlePassScreen> {
 }
 
 class _BattlePassHeader extends StatelessWidget {
-  const _BattlePassHeader({required this.onBack});
+  const _BattlePassHeader({
+    required this.diamondBalance,
+    required this.onBack,
+  });
 
+  final int diamondBalance;
   final VoidCallback onBack;
 
   @override
@@ -138,11 +203,17 @@ class _BattlePassHeader extends StatelessWidget {
                   size: 18,
                 ),
                 const SizedBox(width: 4),
-                Text(
-                  AppStrings.storeDiamondBalance,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                SizedBox(
+                  width: 72,
+                  child: Text(
+                    '$diamondBalance',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ],
@@ -154,8 +225,10 @@ class _BattlePassHeader extends StatelessWidget {
   }
 }
 
-class _PremiumStatusCard extends StatelessWidget {
-  const _PremiumStatusCard();
+class _StatusCard extends StatelessWidget {
+  const _StatusCard({required this.status});
+
+  final String status;
 
   static const _navy = Color(0xFF1A2B4A);
   static const _gold = Color(0xFFFFD54F);
@@ -163,8 +236,8 @@ class _PremiumStatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      key: const Key('battle-pass-tier'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: _navy,
         borderRadius: BorderRadius.circular(AppShapes.cardRadius),
@@ -177,57 +250,28 @@ class _PremiumStatusCard extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            AppStrings.battlePassPremiumActive,
+            status,
+            key: const Key('battle-pass-status'),
             style: const TextStyle(
               fontFamily: 'Pretendard',
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
               color: _gold,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
-          Text(
-            AppStrings.battlePassCurrentLevel,
+          const Text(
+            AppStrings.battlePassCosmeticNote,
             style: const TextStyle(
               fontFamily: 'Pretendard',
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
               color: AppColors.textWhite,
             ),
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: SizedBox(
-              height: 14,
-              width: double.infinity,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(color: _navy.withValues(alpha: 0.6)),
-                  FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: 0.8,
-                    child: Container(color: AppColors.primaryMint),
-                  ),
-                  Text(
-                    AppStrings.battlePassProgressLabel,
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textWhite,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
@@ -235,187 +279,97 @@ class _PremiumStatusCard extends StatelessWidget {
   }
 }
 
-enum _RewardCardState { completed, current, locked }
-
-class _BattlePassRewardCard extends StatelessWidget {
-  const _BattlePassRewardCard({
-    required this.level,
-    required this.state,
+class _BuyRow extends StatelessWidget {
+  const _BuyRow({
+    required this.grant,
+    required this.passCost,
+    required this.plusCost,
+    required this.upgradeCost,
+    required this.onBuy,
   });
 
-  final int level;
-  final _RewardCardState state;
+  final BattlePassGrant grant;
+  final int passCost;
+  final int plusCost;
+  final int upgradeCost;
+  final Future<void> Function(String itemId) onBuy;
 
   @override
   Widget build(BuildContext context) {
-    final isCurrent = state == _RewardCardState.current;
-    final isLocked = state == _RewardCardState.locked;
-    final isCompleted = state == _RewardCardState.completed;
-
-    return Opacity(
-      opacity: isLocked ? 0.55 : 1,
-      child: Container(
-        height: 90,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceWhite,
-          borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-          border: Border.all(
-            color: isCurrent ? Colors.amber : AppColors.borderLight,
-            width: isCurrent ? 2 : 1,
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _RewardColumn(
-                label: AppStrings.battlePassFreeReward,
-                child: _buildFreeReward(isCompleted, isLocked, isCurrent),
-              ),
-            ),
-            Container(width: 1, height: 50, color: AppColors.borderLight),
-            Expanded(
-              child: _RewardColumn(
-                label: '',
-                child: _buildLevelColumn(isCurrent, isLocked),
-              ),
-            ),
-            Container(width: 1, height: 50, color: AppColors.borderLight),
-            Expanded(
-              child: _RewardColumn(
-                label: AppStrings.battlePassPremiumReward,
-                child: _buildPremiumReward(isCompleted, isLocked, isCurrent),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFreeReward(bool completed, bool locked, bool current) {
-    if (completed) {
-      return const Icon(Icons.check_rounded, color: AppColors.textBlack, size: 22);
-    }
-    if (locked) {
-      return Icon(Icons.lock_outline_rounded, color: AppColors.textGreyLight, size: 22);
-    }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    if (grant.ownsPlus) return const SizedBox.shrink();
+    return Wrap(
+      spacing: 8,
       children: [
-        Container(
-          width: 22,
-          height: 22,
-          decoration: const BoxDecoration(
-            color: AppColors.progressYellow,
-            shape: BoxShape.circle,
+        if (!grant.ownsPass)
+          TextButton(
+            key: const Key('battle-pass-buy-pass'),
+            onPressed: () => onBuy(battlePassItemId),
+            child: Text('배틀런 패스 · $passCost DIA'),
           ),
-          alignment: Alignment.center,
-          child: const Text(
-            'S',
-            style: TextStyle(
-              color: AppColors.textWhite,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
+        TextButton(
+          key: const Key('battle-pass-buy-plus'),
+          onPressed: () => onBuy(battlePassPlusItemId),
+          child: Text(
+            grant.ownsPass
+                ? '패스+ 업그레이드 · $upgradeCost DIA'
+                : '패스+ · $plusCost DIA',
           ),
-        ),
-        const SizedBox(height: 4),
-        const Text(
-          AppStrings.battlePassFreeShare,
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPremiumReward(bool completed, bool locked, bool current) {
-    if (completed) {
-      return const Icon(Icons.check_rounded, color: AppColors.textBlack, size: 22);
-    }
-    if (locked) {
-      return Icon(Icons.lock_outline_rounded, color: AppColors.textGreyLight, size: 22);
-    }
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Icon(Icons.diamond_rounded, color: Color(0xFF42A5F5), size: 22),
-        const SizedBox(height: 4),
-        const Text(
-          AppStrings.battlePassPremiumDia,
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLevelColumn(bool current, bool locked) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (current)
-          const Icon(Icons.lock_outline_rounded, size: 14, color: Colors.amber),
-        if (current) const SizedBox(height: 2),
-        Text(
-          'Lv. $level',
-          style: TextStyle(
-            fontFamily: 'Pretendard',
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: locked ? AppColors.textGrey : AppColors.textBlack,
-          ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 }
 
-class _RewardColumn extends StatelessWidget {
-  const _RewardColumn({
-    required this.label,
-    required this.child,
-  });
+class _RewardRow extends StatelessWidget {
+  const _RewardRow({required this.reward, required this.owned});
 
-  final String label;
-  final Widget child;
+  final BattlePassReward reward;
+  final bool owned;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        if (label.isNotEmpty)
+    return Container(
+      key: Key('battle-pass-reward-${reward.id}'),
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+        border: Border.all(
+          color: owned ? Colors.amber : AppColors.borderLight,
+          width: owned ? 2 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            owned ? Icons.check_rounded : Icons.lock_outline_rounded,
+            color: owned ? AppColors.textBlack : AppColors.textGreyLight,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              reward.title,
+              style: const TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
           Text(
-            label,
+            reward.plusOnly
+                ? AppStrings.battlePassPremiumReward
+                : AppStrings.battlePassFreeReward,
             style: AppTextStyles.caption.copyWith(
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.textGrey,
             ),
-            textAlign: TextAlign.center,
           ),
-        if (label.isNotEmpty) const SizedBox(height: 6),
-        child,
-      ],
+        ],
+      ),
     );
   }
 }

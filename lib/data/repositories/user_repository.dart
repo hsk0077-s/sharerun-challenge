@@ -323,7 +323,7 @@ class UserRepository {
     return Future<void>.value();
   }
 
-  /// 예비 평가 완료 500 SHARE. 서버가 계정당 한 번만 원장에 적습니다.
+  /// 예비 평가 완료 5,000 SHARE. 서버가 계정당 한 번만 원장에 적습니다.
   /// [trialShareReward]는 호출부 상수이며, 지급액은 서버가 정합니다.
   Future<PedometerHarvestResult?> completePreliminaryEvaluation({
     required String uid,

@@ -91,7 +91,7 @@ def test_normalize_pedometer_harvest_resets_on_new_kst_day() -> None:
     assert same_day["harvestedShare"] == 40
 
 
-def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> None:
+def test_pedometer_harvest_share_is_ten_per_hundred_steps_with_daily_cap() -> None:
     service = EconomyService()
     assert (
         service.pedometer_harvest_share(
@@ -99,15 +99,15 @@ def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> No
             prev_claimed_steps=0,
             harvested_share=0,
         )
-        == 1
+        == 15
     )
     assert (
         service.pedometer_harvest_share(
             claimed_steps=250,
             prev_claimed_steps=150,
-            harvested_share=1,
+            harvested_share=15,
         )
-        == 1
+        == 10
     )
     assert (
         service.pedometer_harvest_share(
@@ -115,21 +115,21 @@ def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> No
             prev_claimed_steps=0,
             harvested_share=0,
         )
-        == 60
+        == 600
     )
     assert (
         service.pedometer_harvest_share(
             claimed_steps=1000,
             prev_claimed_steps=0,
-            harvested_share=55,
+            harvested_share=590,
         )
-        == 5
+        == 10
     )
     assert (
         service.pedometer_harvest_share(
-            claimed_steps=200,
+            claimed_steps=159,
             prev_claimed_steps=150,
-            harvested_share=1,
+            harvested_share=15,
         )
         == 0
     )
@@ -139,13 +139,13 @@ def test_pedometer_harvest_share_is_one_per_hundred_steps_with_daily_cap() -> No
             prev_claimed_steps=0,
             harvested_share=0,
         )
-        == 29
+        == 291
     )
     assert (
         service.pedometer_harvest_share(
             claimed_steps=2918,
             prev_claimed_steps=2918,
-            harvested_share=29,
+            harvested_share=291,
         )
         == 0
     )

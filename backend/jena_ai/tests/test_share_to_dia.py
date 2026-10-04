@@ -39,7 +39,7 @@ def _exchange(db, service, dia: int):
 
 def test_exchange_is_one_row_and_credits_free_dia() -> None:
     db = _MemoryDb()
-    db.store["users/u1"] = _user(shareBalance=5_000)
+    db.store["users/u1"] = _user(shareBalance=20_000)
     service = _service(db)
 
     result = _exchange(db, service, 10)
@@ -47,8 +47,8 @@ def test_exchange_is_one_row_and_credits_free_dia() -> None:
     assert result.status == "exchanged"
     assert result.remaining_dia == 10
     wallet = db.store["users/u1"]["wallet"]
-    assert wallet["shareBalance"] == 3_800
-    assert wallet["freeShareBalance"] == 3_800
+    assert wallet["shareBalance"] == 8_000
+    assert wallet["freeShareBalance"] == 8_000
     assert wallet["diamondBalance"] == 10
     assert wallet["freeDiamondBalance"] == 10
     assert wallet["paidDiamondBalance"] == 0
@@ -60,14 +60,14 @@ def test_exchange_is_one_row_and_credits_free_dia() -> None:
     ]
     assert len(ledger) == 1
     assert ledger[0]["type"] == "share_to_dia"
-    assert ledger[0]["shareAmount"] == -1_200
+    assert ledger[0]["shareAmount"] == -12_000
     assert ledger[0]["diamondAmount"] == 10
     assert ledger[0]["diamondFreeAmount"] == 10
 
 
 def test_weekly_cap_blocks_the_third_unit() -> None:
     db = _MemoryDb()
-    db.store["users/u1"] = _user(shareBalance=10_000)
+    db.store["users/u1"] = _user(shareBalance=30_000)
     service = _service(db)
 
     _exchange(db, service, 10)
@@ -95,11 +95,11 @@ def test_signup_lock_and_referral_share_are_not_exchangeable() -> None:
     )
     unlock = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
     db.store["users/u1"]["wallet"] = {
-        "shareBalance": 2_000,
-        "freeShareBalance": 2_000,
+        "shareBalance": 20_000,
+        "freeShareBalance": 20_000,
         "paidShareBalance": 0,
-        "lockedReferralShare": 2_000,
-        "referralShareLocks": [{"amount": 2_000, "unlockAt": unlock}],
+        "lockedReferralShare": 20_000,
+        "referralShareLocks": [{"amount": 20_000, "unlockAt": unlock}],
         "diamondBalance": 0,
         "valueTokenBalance": 3,
     }

@@ -128,7 +128,7 @@ class _DiaExchangeEntry extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               SizedBox(height: 4),
-              Text('120 SHARE = 1 DIA · 주간 한도 안에서 교환'),
+              Text('1,200 SHARE = 1 DIA · 주간 한도 안에서 교환'),
             ],
           ),
         ),

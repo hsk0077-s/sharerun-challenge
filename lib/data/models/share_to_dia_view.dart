@@ -31,7 +31,7 @@ class ShareToDiaView {
   factory ShareToDiaView.fromJson(Map<String, dynamic> json) {
     return ShareToDiaView(
       status: json['status'] as String? ?? '',
-      rateSharePerDia: _int(json['rate_share_per_dia']) ?? 120,
+      rateSharePerDia: _int(json['rate_share_per_dia']) ?? 1200,
       unitDia: _int(json['unit_dia']) ?? 10,
       weeklyCapDia: _int(json['weekly_cap_dia']) ?? 20,
       remainingDia: _int(json['remaining_dia']) ?? 0,

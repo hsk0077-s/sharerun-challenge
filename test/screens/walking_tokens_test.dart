@@ -90,12 +90,12 @@ void main() {
     expect(find.textContaining('줍기 대기'), findsOneWidget);
     expect(find.text('90000 SHARE'), findsOneWidget);
     expect(find.text('내 누적 셰어 통장 🏦'), findsOneWidget);
-    expect(find.textContaining('오늘의 채굴 : 0 / 60 SHARE'), findsOneWidget);
+    expect(find.textContaining('오늘의 채굴 : 0 / 600 SHARE'), findsOneWidget);
     expect(find.textContaining('3km만 걸어도 특별히 60 SHARE'), findsNothing);
     expect(find.textContaining('획득 완료'), findsNothing);
     expect(find.textContaining('+20'), findsNothing);
     expect(
-      find.textContaining('4,500보 · 줍기 가능 약 45 SHARE (100걸음당 1, 하루 최대 60)'),
+      find.textContaining('4,500보 · 줍기 가능 약 450 SHARE (100걸음당 10, 하루 최대 600)'),
       findsOneWidget,
     );
     expect(find.textContaining('9999'), findsNothing);

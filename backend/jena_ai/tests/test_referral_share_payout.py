@@ -110,13 +110,13 @@ def test_redeem_pays_1000_once_and_rejects_repeat_self_and_invalid() -> None:
     result = _redeem(service, "u2", "ab23cd45")
 
     assert result.referred_by == "u1"
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
     assert _share(db, "u1") == 20
     assert _value(db, "u2") == 7
-    assert db.store["referralPayouts/u2_redeem"]["amount"] == 1_000
+    assert db.store["referralPayouts/u2_redeem"]["amount"] == 10_000
     receipt = db.store["users/u2/wallet_transactions/referral_u2_redeem"]
     assert receipt["title"] == "초대 코드 등록"
-    assert receipt["amount"] == 1_000
+    assert receipt["amount"] == 10_000
     assert receipt["assetType"] == "SHARE"
     assert db.store["walletTransactions/referral_u2_u2_redeem"]["type"] == (
         "referral_redeem"
@@ -125,12 +125,12 @@ def test_redeem_pays_1000_once_and_rejects_repeat_self_and_invalid() -> None:
     with pytest.raises(HTTPException) as again:
         _redeem(service, "u2", "AB23CD45")
     assert again.value.detail == "already"
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
 
     economy = db.store["users/u2"]["economy"]
     economy.pop("referredBy", None)
     _redeem(service, "u2", "AB23CD45")
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
 
     with pytest.raises(HTTPException) as own:
         _redeem(service, "u1", "AB23CD45")
@@ -140,7 +140,7 @@ def test_redeem_pays_1000_once_and_rejects_repeat_self_and_invalid() -> None:
     with pytest.raises(HTTPException) as missing:
         _redeem(service, "u2", "NOSUCH1")
     assert missing.value.detail == "invalid"
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
     assert not any(path.startswith("referralPayouts/u1_") for path in db.store)
 
 
@@ -159,14 +159,14 @@ def test_fifth_verified_run_pays_referee_and_referrer_once() -> None:
     _persist(service, "u2", "run-5")
     assert db.store["users/u2"]["economy"]["trialRunCount"] == 5
     assert db.store["users/u2"]["economy"]["trialMilestoneRewardClaimed"] is True
-    assert _share(db, "u2") == 5_040
-    assert _share(db, "u1") == 3_020
+    assert _share(db, "u2") == 50_040
+    assert _share(db, "u1") == 30_020
     assert _value(db, "u2") == 507
     assert _value(db, "u1") == 2
     assert db.store["users/u2"]["wallet"]["diamondBalance"] == 3
     assert _payout_count(db, "u1") == 1
-    assert db.store["referralPayouts/u2_trial_referee"]["amount"] == 5_000
-    assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 3_000
+    assert db.store["referralPayouts/u2_trial_referee"]["amount"] == 50_000
+    assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 30_000
     referee_receipt = db.store[
         "users/u2/wallet_transactions/referral_u2_trial_referee"
     ]
@@ -174,14 +174,14 @@ def test_fifth_verified_run_pays_referee_and_referrer_once() -> None:
         "users/u1/wallet_transactions/referral_u2_trial_referrer"
     ]
     assert referee_receipt["title"] == "체험 런 5회 완료"
-    assert referee_receipt["amount"] == 5_000
+    assert referee_receipt["amount"] == 50_000
     assert referrer_receipt["title"] == "친구 체험 런 5회"
-    assert referrer_receipt["amount"] == 3_000
+    assert referrer_receipt["amount"] == 30_000
 
     _persist(service, "u2", "run-5")
     _persist(service, "u2", "run-6")
-    assert _share(db, "u2") == 5_040
-    assert _share(db, "u1") == 3_020
+    assert _share(db, "u2") == 50_040
+    assert _share(db, "u1") == 30_020
     assert _payout_count(db, "u1") == 1
     assert _value(db, "u2") == 507
 
@@ -199,14 +199,14 @@ def test_eleventh_referral_pays_referrer_nothing() -> None:
     db = _MemoryDb()
     _seed_pair(db, trial_run_count=4, payout_count=10)
     _persist(_service(db), "u2", "run-5")
-    assert _share(db, "u2") == 5_040
+    assert _share(db, "u2") == 50_040
     assert _share(db, "u1") == 20
     assert _payout_count(db, "u1") == 10
     assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
     assert "users/u1/wallet_transactions/referral_u2_trial_referrer" not in db.store
 
     _persist(_service(db), "u2", "run-5")
-    assert _share(db, "u2") == 5_040
+    assert _share(db, "u2") == 50_040
     assert _share(db, "u1") == 20
 
 
@@ -247,14 +247,14 @@ def test_redeem_after_five_runs_pays_all_once() -> None:
     service = _service(db)
 
     _redeem(service, "u2", "AB23CD45")
-    assert _share(db, "u2") == 6_040
-    assert _share(db, "u1") == 3_020
+    assert _share(db, "u2") == 60_040
+    assert _share(db, "u1") == 30_020
     assert _payout_count(db, "u1") == 10
     assert _value(db, "u2") == 7
 
     _persist(service, "u2", "run-6")
-    assert _share(db, "u2") == 6_040
-    assert _share(db, "u1") == 3_020
+    assert _share(db, "u2") == 60_040
+    assert _share(db, "u1") == 30_020
     assert _payout_count(db, "u1") == 10
 
 

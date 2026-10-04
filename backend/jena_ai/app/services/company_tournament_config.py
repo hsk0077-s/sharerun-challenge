@@ -7,7 +7,8 @@ zero a fee or drop a tier. Numbers can change without an app update and
 without another Cloud Run deploy after this code is live.
 
 Entry fees are admission only. This module does not pay prizes.
-SHARE figures are stored as given (the pending 10x scale is not applied).
+Entry SHARE is already the 10x scale and is not multiplied again.
+top10PercentShare is the 10x reward. Prize DIA is unchanged.
 """
 
 from copy import deepcopy
@@ -65,7 +66,7 @@ _DEFAULT_TIERS = {
         min_entrants=30,
         target_entrants=100,
         max_entrants=500,
-        top10_percent_share=1_000,
+        top10_percent_share=10_000,
         prize_dia_by_rank=_rank_prizes((1, 1, 1_000), (2, 2, 500), (3, 3, 300)),
     ),
     "mid": _tier(
@@ -76,7 +77,7 @@ _DEFAULT_TIERS = {
         min_entrants=50,
         target_entrants=200,
         max_entrants=1_000,
-        top10_percent_share=2_000,
+        top10_percent_share=20_000,
         prize_dia_by_rank=_rank_prizes(
             (1, 1, 3_000),
             (2, 2, 1_500),
@@ -93,7 +94,7 @@ _DEFAULT_TIERS = {
         min_entrants=50,
         target_entrants=250,
         max_entrants=1_000,
-        top10_percent_share=3_000,
+        top10_percent_share=30_000,
         prize_dia_by_rank=_rank_prizes(
             (1, 1, 5_000),
             (2, 2, 2_500),
@@ -110,7 +111,7 @@ _DEFAULT_TIERS = {
         min_entrants=50,
         target_entrants=150,
         max_entrants=500,
-        top10_percent_share=5_000,
+        top10_percent_share=50_000,
         prize_dia_by_rank=_rank_prizes(
             (1, 1, 10_000),
             (2, 2, 5_000),
@@ -127,7 +128,7 @@ _DEFAULT_TIERS = {
         min_entrants=64,
         target_entrants=96,
         max_entrants=128,
-        top10_percent_share=10_000,
+        top10_percent_share=100_000,
         prize_dia_by_rank=_rank_prizes(
             (1, 1, 30_000),
             (2, 2, 15_000),

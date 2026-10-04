@@ -27,10 +27,10 @@ def test_harvest_credits_fifty_share_once() -> None:
         _MemoryTxn(), service, "u1", request, user_ref
     )
     assert first.status == "harvested"
-    assert first.share_credited == 50
-    assert first.share_balance == 60
+    assert first.share_credited == 500
+    assert first.share_balance == 510
     wallet = db.store["users/u1"]["wallet"]
-    assert wallet["shareBalance"] == 60
+    assert wallet["shareBalance"] == 510
     assert wallet["diamondBalance"] == 2
     assert wallet["valueTokenBalance"] == 3
 
@@ -39,7 +39,7 @@ def test_harvest_credits_fifty_share_once() -> None:
     )
     assert again.status == "already_harvested"
     assert again.share_credited == 0
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 60
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 510
 
 
 def test_hourly_step_cap_limits_spoofed_watermark() -> None:
@@ -53,11 +53,11 @@ def test_hourly_step_cap_limits_spoofed_watermark() -> None:
         _MemoryTxn(), service, "u1", request, user_ref
     )
     assert first.status == "harvested"
-    assert first.share_credited == 60
+    assert first.share_credited == 600
     harvest = db.store["users/u1"]["pedometerHarvest"]
     assert harvest["claimedSteps"] == 12_000
     assert harvest["hourSteps"] == 12_000
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 60
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 600
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 1
 
     again = _commit_harvest_tx.to_wrap(
@@ -66,7 +66,7 @@ def test_hourly_step_cap_limits_spoofed_watermark() -> None:
     assert again.status == "hourly_cap_reached"
     assert again.share_credited == 0
     assert db.store["users/u1"]["pedometerHarvest"]["claimedSteps"] == 12_000
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 60
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 600
 
 
 def test_harvest_entry_uses_module_transaction(monkeypatch) -> None:

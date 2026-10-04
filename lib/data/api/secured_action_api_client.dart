@@ -497,7 +497,7 @@ class SecuredActionApiClient {
     return PedometerHarvestResult.fromJson(json);
   }
 
-  /// Once per account. Credits 500 SHARE (`trialCompletionRewardSrv`).
+  /// Once per account. Credits 5,000 SHARE (`trialCompletionRewardSrv`).
   Future<PedometerHarvestResult> claimTrialReward() async {
     final json = await _post('/actions/onboarding/claim-trial', const {});
     return PedometerHarvestResult.fromJson(json);

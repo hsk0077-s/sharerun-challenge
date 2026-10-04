@@ -1,14 +1,15 @@
 /// KST-day harvest watermark helpers.
 ///
-/// Pending SHARE is 1 per 100 unclaimed steps (floor), capped at the daily
+/// Pending SHARE is 10 per 100 unclaimed steps (floor), capped at the daily
 /// walking benefit ([dailyShareCap]). The claimed-step watermark must survive
 /// screen dispose/re-enter so the same floor amount cannot be harvested twice.
 abstract final class PedometerHarvestLedger {
-  static const stepsPerShare = 100;
+  /// 10 steps = 1 SHARE, so 100 steps = 10 SHARE.
+  static const stepsPerShare = 10;
 
   /// Snail 3km promo / walking UI denominator. Harvest and "오늘의 채굴"
   /// must never exceed this, even when the step source overflows.
-  static const dailyShareCap = 60;
+  static const dailyShareCap = 600;
 
   static const stepsForDailyCap = dailyShareCap * stepsPerShare;
 
@@ -34,8 +35,8 @@ abstract final class PedometerHarvestLedger {
     return _sessionClaimed;
   }
 
-  /// True when at least one full SHARE (100 steps) is still unclaimed.
-  /// A leftover under 100 steps is not another 줍기.
+  /// True when at least one full SHARE (10 steps) is still unclaimed.
+  /// A leftover under 10 steps is not another 줍기.
   static bool pickupReady({required int steps, required int claimedSteps}) {
     return pendingShareFloor(steps: steps, claimedSteps: claimedSteps) >= 1;
   }

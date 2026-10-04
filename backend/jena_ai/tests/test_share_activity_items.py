@@ -198,30 +198,30 @@ def test_boost_doubles_harvest_share_inside_the_window_only() -> None:
 
     inside = _harvest(db, 1_000, NOW + timedelta(minutes=14))
     assert inside.status == "harvested"
-    assert inside.share_credited == 20
+    assert inside.share_credited == 200
     assert inside.diamond_balance == 9
     assert inside.value_token_balance == 4
     wallet = db.store["users/u1"]["wallet"]
-    assert wallet["shareBalance"] == 520
+    assert wallet["shareBalance"] == 700
     assert wallet["diamondBalance"] == 9
     assert wallet["valueTokenBalance"] == 4
     assert wallet["totalDonationValue"] == 7
     harvest = db.store["users/u1"]["pedometerHarvest"]
-    assert harvest["harvestedShare"] == 10
+    assert harvest["harvestedShare"] == 100
     assert harvest["claimedSteps"] == 1_000
-    assert db.store["users/u1"]["boostRun"]["extraShare"] == 10
+    assert db.store["users/u1"]["boostRun"]["extraShare"] == 100
     harvest_row = next(row for row in _ledger(db) if row["type"] == "pedometer_harvest")
-    assert harvest_row["shareAmount"] == 20
-    assert harvest_row["boostShare"] == 10
+    assert harvest_row["shareAmount"] == 200
+    assert harvest_row["boostShare"] == 100
     assert "diamondAmount" not in harvest_row
     assert "valueAmount" not in harvest_row
     assert not any(path.startswith("activities/") for path in db.store)
 
     outside = _harvest(db, 2_000, NOW + timedelta(minutes=15))
-    assert outside.share_credited == 10
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 530
-    assert db.store["users/u1"]["pedometerHarvest"]["harvestedShare"] == 20
-    assert db.store["users/u1"]["boostRun"]["extraShare"] == 10
+    assert outside.share_credited == 100
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 800
+    assert db.store["users/u1"]["pedometerHarvest"]["harvestedShare"] == 200
+    assert db.store["users/u1"]["boostRun"]["extraShare"] == 100
 
 
 def test_boost_is_once_per_kst_day_and_the_replay_does_not_consume() -> None:
@@ -256,14 +256,14 @@ def test_boost_extra_stops_at_the_daily_ceiling() -> None:
     }
 
     first = _harvest(db, 2_000, NOW)
-    assert first.share_credited == 30
+    assert first.share_credited == 210
     assert db.store["users/u1"]["boostRun"]["extraShare"] == BOOST_EXTRA_DAILY_CAP
-    assert db.store["users/u1"]["pedometerHarvest"]["harvestedShare"] == 20
+    assert db.store["users/u1"]["pedometerHarvest"]["harvestedShare"] == 200
 
     second = _harvest(db, 3_000, NOW + timedelta(minutes=1))
-    assert second.share_credited == 10
+    assert second.share_credited == 100
     assert db.store["users/u1"]["boostRun"]["extraShare"] == BOOST_EXTRA_DAILY_CAP
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 50
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 320
 
 
 def test_boost_does_not_change_a_verified_run_or_race_share() -> None:
@@ -332,7 +332,7 @@ def test_incubator_hatches_one_fixed_cosmetic_from_capped_steps() -> None:
     assert db.store["users/u1"]["stepIncubator"]["steps"] == 5_000
 
     capped = _harvest(db, 999_999, NOW + timedelta(hours=1))
-    assert capped.share_credited == 10
+    assert capped.share_credited == 100
     assert db.store["users/u1"]["stepIncubator"]["steps"] == 17_000
     assert db.store["users/u1"]["pedometerHarvest"]["claimedSteps"] == 17_000
 
@@ -410,11 +410,11 @@ def test_owned_cosmetic_hatches_fixed_share_and_never_dia() -> None:
     }
 
     result = _harvest(db, 12_000, NOW)
-    assert result.share_credited == 60 + HATCH_FALLBACK_SHARE
+    assert result.share_credited == 600 + HATCH_FALLBACK_SHARE
     assert result.diamond_balance == 9
     assert result.value_token_balance == 4
     wallet = db.store["users/u1"]["wallet"]
-    assert wallet["shareBalance"] == 100 + 60 + HATCH_FALLBACK_SHARE
+    assert wallet["shareBalance"] == 100 + 600 + HATCH_FALLBACK_SHARE
     assert wallet["diamondBalance"] == 9
     assert wallet["valueTokenBalance"] == 4
     assert db.store[f"users/u1/shopInventory/{HATCH_COSMETIC_ID}"]["quantity"] == 1

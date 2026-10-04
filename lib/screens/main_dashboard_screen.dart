@@ -411,10 +411,7 @@ class _WalletCard extends StatelessWidget {
           _WalletTapSegment(
             onTap: onShareTap,
             child: Text(
-              AppStrings.dashboardShareBalanceOf(
-                _comma(share),
-                _comma(share),
-              ),
+              AppStrings.dashboardShareBalanceOf(_comma(share)),
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: tokens.colors.accent,

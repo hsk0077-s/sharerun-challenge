@@ -137,16 +137,16 @@ def test_redeem_pays_referee_1000_share_once() -> None:
     assert economy["referralCode"] == "KEEP"
     assert economy["referralPayoutCount"] == 1
     assert "referredByUid" not in economy
-    assert db.store["users/u2"]["wallet"]["shareBalance"] == 1_040
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 10_040
     marker = db.store["referralPayouts/u2_redeem"]
-    assert marker["amount"] == 1_000
+    assert marker["amount"] == 10_000
     assert marker["payeeUid"] == "u2"
-    assert db.store["users/u2/wallet_transactions/referral_u2_redeem"]["amount"] == 1_000
-    assert db.store["walletTransactions/referral_u2_u2_redeem"]["shareAmount"] == 1_000
+    assert db.store["users/u2/wallet_transactions/referral_u2_redeem"]["amount"] == 10_000
+    assert db.store["walletTransactions/referral_u2_u2_redeem"]["shareAmount"] == 10_000
     with pytest.raises(HTTPException) as again:
         service.redeem_referral_code("u2", "AB23CD45")
     assert again.value.detail == "already"
-    assert db.store["users/u2"]["wallet"]["shareBalance"] == 1_040
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 10_040
     assert db.store["referralCodes/AB23CD45"]["uid"] == "u1"
     assert db.store["referralCodes/AB23CD45"]["createdAt"] == "kept"
     assert db.store["referralCodes/AB23CD45"]["redeemCount"] == 1

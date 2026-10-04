@@ -10,7 +10,7 @@ import 'package:share_run_challenge/screens/challenge_detail_screen.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('beginner 1km room shows 30,000 SHARE fee', (tester) async {
+  testWidgets('beginner 1km room shows 300,000 SHARE fee', (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -36,7 +36,7 @@ void main() {
     );
   });
 
-  testWidgets('intermediate 3km room shows 60,000 SHARE fee', (tester) async {
+  testWidgets('intermediate 3km room shows 600,000 SHARE fee', (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

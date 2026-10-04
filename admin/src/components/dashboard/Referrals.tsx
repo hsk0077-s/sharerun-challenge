@@ -73,9 +73,9 @@ export default function Referrals() {
                 <th className="py-3 px-3">referredByUid</th>
                 <th className="py-3 px-3">체험</th>
                 <th className="py-3 px-3">지급 횟수</th>
-                <th className="py-3 px-3">redeem 1000</th>
-                <th className="py-3 px-3">trial_referee 5000</th>
-                <th className="py-3 px-3">trial_referrer 3000</th>
+                <th className="py-3 px-3">redeem 10000</th>
+                <th className="py-3 px-3">trial_referee 50000</th>
+                <th className="py-3 px-3">trial_referrer 30000</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700/50">

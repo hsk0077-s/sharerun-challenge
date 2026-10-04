@@ -90,17 +90,17 @@ def test_missing_builtin_room_is_created_and_debited() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {
         "tier": 5,
-        "wallet": {"shareBalance": 100000, "diamondBalance": 0, "valueTokenBalance": 0},
+        "wallet": {"shareBalance": 1_000_000, "diamondBalance": 0, "valueTokenBalance": 0},
     }
 
     result = _join(db, "u1", "beginner-1km-room")
 
     room = db.store["tournaments/beginner-1km-room"]
     assert result.status == "joined"
-    assert result.share_credited == -30000
+    assert result.share_credited == -300_000
     assert room["title"] == "1km 초보 챌린지"
     assert room["targetDistanceKm"] == 1.0
-    assert room["entryFeeShare"] == 30000
+    assert room["entryFeeShare"] == 300_000
     assert room["status"] == "recruiting"
     assert room["maxParticipants"] == 200
     assert room["minParticipantsBep"] == 100
@@ -108,18 +108,18 @@ def test_missing_builtin_room_is_created_and_debited() -> None:
     assert room["donationValue"] == 30000
     assert room["participantCount"] == 1
     assert "Increment" not in repr(room["participantCount"])
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 70000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 700_000
     ledger = next(
         row for path, row in db.store.items() if path.startswith("walletTransactions/")
     )
     assert ledger["type"] == "tournament_entry"
-    assert ledger["shareAmount"] == -30000
+    assert ledger["shareAmount"] == -300_000
     assert ledger["tournamentId"] == "beginner-1km-room"
 
     again = _join(db, "u1", "beginner-1km-room")
     assert again.status == "already_joined"
     assert room["participantCount"] == 1
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 70000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 700_000
 
 
 def test_builtin_intermediate_keeps_tier_lock_and_fallback_ids() -> None:
@@ -135,7 +135,7 @@ def test_builtin_intermediate_keeps_tier_lock_and_fallback_ids() -> None:
 
     db.store["users/rookie"] = {
         "tier": 1,
-        "wallet": {"shareBalance": 200000, "diamondBalance": 0, "valueTokenBalance": 0},
+        "wallet": {"shareBalance": 2_000_000, "diamondBalance": 0, "valueTokenBalance": 0},
     }
     for tournament_id in (
         "intermediate-3km-room",
@@ -145,13 +145,13 @@ def test_builtin_intermediate_keeps_tier_lock_and_fallback_ids() -> None:
         created = _join(db, "rookie", tournament_id)
         room = db.store[f"tournaments/{tournament_id}"]
         assert created.status == "joined"
-        assert room["entryFeeShare"] == 60000
+        assert room["entryFeeShare"] == 600_000
         assert room["maxParticipants"] == 400
         assert room["minParticipantsBep"] == 100
         assert room["winnerRewardValue"] == 500000
         assert room["participantCount"] == 1
 
-    assert db.store["users/rookie"]["wallet"]["shareBalance"] == 20000
+    assert db.store["users/rookie"]["wallet"]["shareBalance"] == 200_000
 
 
 def _ledger(db: _MemoryDb) -> dict:

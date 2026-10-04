@@ -61,6 +61,8 @@ class ApplyReferralRequest(BaseModel):
 
 class ShopPurchaseRequest(BaseModel):
     item_id: str = Field(min_length=3)
+    # Same id on a retry. 심폐소생권 and 세이프가드 charge or consume once.
+    request_id: str | None = Field(default=None, max_length=80)
 
 
 class CrewSpendRequest(BaseModel):

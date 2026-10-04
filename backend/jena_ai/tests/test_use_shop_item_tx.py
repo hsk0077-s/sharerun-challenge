@@ -9,7 +9,7 @@ from app.services.secured_action_service import SecuredActionService, _commit_us
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
 
-def _use(db: _MemoryDb, item_id: str = "record_cpr_ticket"):
+def _use(db: _MemoryDb, item_id: str = "ghost_pace_match"):
     service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
     user_ref = db.collection("users").document("u1")
     return _commit_use_shop_tx.to_wrap(
@@ -24,12 +24,12 @@ def _use(db: _MemoryDb, item_id: str = "record_cpr_ticket"):
 def test_use_decrements_quantity_and_appends_usage_row() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {"wallet": {"diamondBalance": 1000000}}
-    db.store["users/u1/shopInventory/record_cpr_ticket"] = {"quantity": 2}
+    db.store["users/u1/shopInventory/ghost_pace_match"] = {"quantity": 2}
 
     result = _use(db)
 
     assert result.status == "used"
-    assert db.store["users/u1/shopInventory/record_cpr_ticket"]["quantity"] == 1
+    assert db.store["users/u1/shopInventory/ghost_pace_match"]["quantity"] == 1
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 1000000
     ledger = [
         row
@@ -38,11 +38,11 @@ def test_use_decrements_quantity_and_appends_usage_row() -> None:
     ]
     assert len(ledger) == 1
     assert ledger[0]["type"] == "shop_item_use"
-    assert ledger[0]["itemId"] == "record_cpr_ticket"
+    assert ledger[0]["itemId"] == "ghost_pace_match"
     assert ledger[0]["quantityAmount"] == -1
 
     _use(db)
-    assert db.store["users/u1/shopInventory/record_cpr_ticket"]["quantity"] == 0
+    assert db.store["users/u1/shopInventory/ghost_pace_match"]["quantity"] == 0
     with pytest.raises(HTTPException) as raised:
         _use(db)
     assert raised.value.status_code == 400

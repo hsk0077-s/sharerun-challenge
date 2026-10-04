@@ -11,6 +11,13 @@ void main() {
     expect(row?.km, 1.5);
     expect(AccountDailySteps.dayOf('not-a-day', const {'steps': 10}), isNull);
     expect(AccountDailySteps.dayOf('2026-10-03', const {'steps': 0}), isNull);
+    final covered = AccountDailySteps.dayOf('2026-10-03', const {
+      'steps': 0,
+      'streakCovered': 'cpr',
+    });
+    expect(covered?.streakCovered, isTrue);
+    expect(covered?.steps, 0);
+    expect(covered?.km, 0);
   });
 
   test('today display is the server document steps', () {

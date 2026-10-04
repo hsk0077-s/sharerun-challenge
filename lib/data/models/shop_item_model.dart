@@ -17,15 +17,15 @@ class ShopItemModel {
     ShopItemModel(
       id: 'record_cpr_ticket',
       title: '기록 심폐소생권',
-      description: '무효 처리된 러닝 1회를 복구해 기록을 되살립니다.',
-      diamondCost: 3,
+      description: '끊긴 연속 출석을 72시간 안에 되돌립니다. 한 달에 2번까지.',
+      diamondCost: 12,
       iconName: 'favorite',
     ),
     ShopItemModel(
       id: 'record_safe_guard',
       title: '기록 마감 세이프 가드',
-      description: '대회 마감 직전 누락된 GPS 구간을 안전하게 보완합니다.',
-      diamondCost: 5,
+      description: '놓친 하루를 스트릭이 끊기기 전에 막아 줍니다. 최대 2개.',
+      diamondCost: 8,
       iconName: 'shield',
     ),
     ShopItemModel(

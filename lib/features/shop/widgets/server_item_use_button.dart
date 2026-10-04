@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/providers/app_providers.dart';
 import '../../../core/api/api_exception.dart';
 import '../providers/server_shop_inventory_provider.dart';
+import '../streak_item_message.dart';
 
 /// Spends one owned item through `POST /actions/shop/use`.
 /// The label count is the server inventory stream, not a local decrement.
@@ -85,10 +86,17 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${widget.label} 사용 완료')),
       );
-    } on ApiException {
+    } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${widget.label} 보유량이 없습니다.')),
+        SnackBar(
+          content: Text(
+            streakItemMessage(
+              error,
+              fallback: '${widget.label} 보유량이 없습니다.',
+            ),
+          ),
+        ),
       );
     } catch (_) {
       if (!mounted) return;

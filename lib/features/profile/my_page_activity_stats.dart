@@ -65,14 +65,17 @@ final myPageActivityStatsProvider = Provider<MyPageActivityStats>((ref) {
       ref.watch(accountDailyMetricsProvider).asData?.value ?? const [];
   final stepsByDate = <String, int>{};
   final kmByDate = <String, double>{};
+  final coveredDays = <String>{};
   for (final day in days) {
     if (day.steps > 0) stepsByDate[day.dayKey] = day.steps;
     if (day.km > 0) kmByDate[day.dayKey] = day.km;
+    if (day.streakCovered) coveredDays.add(day.dayKey);
   }
   return MyPageActivityMath.compute(
     activities: activities,
     stepsByDate: stepsByDate,
     kmByDate: kmByDate,
+    coveredDays: coveredDays,
     now: DateTime.now(),
   );
 });
@@ -85,6 +88,7 @@ abstract final class MyPageActivityMath {
     required Map<String, int> stepsByDate,
     required Map<String, double> kmByDate,
     required DateTime now,
+    Set<String> coveredDays = const {},
   }) {
     final kstNow = KstCalendar.toKst(now);
     final today = DateTime.utc(kstNow.year, kstNow.month, kstNow.day);
@@ -109,6 +113,7 @@ abstract final class MyPageActivityMath {
       ...activityKm.keys,
       ...stepsByDate.keys,
       ...kmByDate.keys,
+      ...coveredDays,
     };
     final dayKm = <String, double>{};
     final qualifying = <String>{};
@@ -120,7 +125,10 @@ abstract final class MyPageActivityMath {
       final fromActivity = activityKm[key] ?? 0;
       final km = fromActivity > walkKm ? fromActivity : walkKm;
       if (km > 0) dayKm[key] = km;
-      if (fromActivity > 0 || steps > 0 || storedKm > 0) {
+      if (fromActivity > 0 ||
+          steps > 0 ||
+          storedKm > 0 ||
+          coveredDays.contains(key)) {
         qualifying.add(key);
       }
     }

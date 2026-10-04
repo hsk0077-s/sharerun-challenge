@@ -1,0 +1,62 @@
+"""Streak-item DIA prices.
+
+One Firestore doc, ``config/item_prices``, overrides these defaults.
+Jena reads it for the shop catalog and when 심폐소생권 or 세이프가드 is
+bought. Missing or invalid fields keep the code default, so a bad edit
+cannot make either item free. Numbers can change without an app update
+and without another Cloud Run deploy after this code is live.
+"""
+
+ITEM_PRICES_CONFIG_ID = "item_prices"
+CPR_ITEM_ID = "record_cpr_ticket"
+SAFEGUARD_ITEM_ID = "record_safe_guard"
+STREAK_ITEM_IDS = frozenset({CPR_ITEM_ID, SAFEGUARD_ITEM_ID})
+
+# Code defaults. A missing doc or a bad field keeps these.
+_DEFAULTS = {
+    CPR_ITEM_ID: 12,
+    SAFEGUARD_ITEM_ID: 8,
+}
+
+
+def resolve_item_prices(raw: dict | None) -> dict[str, int]:
+    """Merge a Firestore doc over the code defaults."""
+    resolved = dict(_DEFAULTS)
+    if not isinstance(raw, dict):
+        return resolved
+    for item_id in _DEFAULTS:
+        if item_id not in raw:
+            continue
+        number = _positive_int(raw.get(item_id))
+        if number is None:
+            continue
+        resolved[item_id] = number
+    return resolved
+
+
+def read_item_prices(db, transaction=None) -> dict[str, int]:
+    """Load ``config/item_prices``. A read failure keeps the code defaults."""
+    try:
+        snapshot = (
+            db.collection("config")
+            .document(ITEM_PRICES_CONFIG_ID)
+            .get(transaction=transaction)
+        )
+        raw = snapshot.to_dict() if snapshot.exists else None
+    except Exception:
+        raw = None
+    return resolve_item_prices(raw)
+
+
+def _positive_int(value: object) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        number = value
+    elif isinstance(value, float) and value.is_integer():
+        number = int(value)
+    else:
+        return None
+    if number < 1:
+        return None
+    return number

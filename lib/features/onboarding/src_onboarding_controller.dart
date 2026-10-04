@@ -2070,6 +2070,8 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
   var _goldenDate = '';
   var _jenaId = '';
   var _streakWeek = '';
+  var _safeguardDay = '';
+  var _safeguardBusy = false;
 
   @override
   List<RetentionPushPayload> build() {
@@ -2096,12 +2098,31 @@ class RetentionAlertController extends Notifier<List<RetentionPushPayload>> {
     }
   }
 
+  void _scheduleSafeguard(DateTime now) {
+    final today = RetentionCalendar.dateKey(now);
+    if (_safeguardDay == today || _safeguardBusy) return;
+    _safeguardBusy = true;
+    unawaited(() async {
+      try {
+        final status = await ref
+            .read(securedActionApiClientProvider)
+            .applyHeldSafeguard(today);
+        if (status.isNotEmpty) _safeguardDay = today;
+      } catch (_) {
+        // The next evaluation retries. The server request id is the KST day.
+      } finally {
+        _safeguardBusy = false;
+      }
+    }());
+  }
+
   Future<void> _evaluateUnlocked() async {
     final profile = ref.read(activeUserProfileProvider).asData?.value;
     if (profile == null || profile.uid.isEmpty) return;
     final activities =
         ref.read(recentActivitiesProvider).value ?? const <ActivityModel>[];
     final now = DateTime.now();
+    _scheduleSafeguard(now);
     final daily = RetentionMetrics.todayDistance(
       profile: profile,
       activities: activities,

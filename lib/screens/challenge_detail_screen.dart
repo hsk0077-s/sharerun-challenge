@@ -206,7 +206,13 @@ class ChallengeDetailScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const _ChallengeCprTickets(),
+                      const ServerItemUseButton(
+                        itemId: ServerShopInventory.cprId,
+                        label: AppStrings.challengeDetailCprUse,
+                        emptyHint: AppStrings.challengeDetailCprBuyHint,
+                        maxUses: AppStrings.challengeDetailCprMaxPerRace,
+                        alignment: Alignment.centerRight,
+                      ),
                       const SizedBox(height: 8),
                       _ChallengeJoinPayButton(
                         key: ValueKey<String>('join-${roomId ?? 'default'}'),
@@ -301,36 +307,6 @@ class _ChallengeDetailCopy {
       joinLabel: AppStrings.challengeDetailJoin,
       radiusMeters: 3000,
       entryFeeShare: fee,
-    );
-  }
-}
-
-class _ChallengeCprTickets extends ConsumerWidget {
-  const _ChallengeCprTickets();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final count =
-        ref.watch(serverShopInventoryProvider).asData?.value.cprCount ?? 0;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Align(
-          alignment: Alignment.centerRight,
-          child: Text(
-            AppStrings.challengeDetailCprTickets(count),
-            key: const Key('challenge-cpr-owned'),
-            style: AppTextStyles.caption.copyWith(fontSize: 12),
-          ),
-        ),
-        const ServerItemUseButton(
-          itemId: ServerShopInventory.cprId,
-          label: AppStrings.challengeDetailCprUse,
-          emptyHint: AppStrings.challengeDetailCprBuyHint,
-          maxUses: AppStrings.challengeDetailCprMaxPerRace,
-          alignment: Alignment.centerRight,
-        ),
-      ],
     );
   }
 }

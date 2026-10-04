@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
-import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/shop/providers/server_shop_inventory_provider.dart';
 import 'package:share_run_challenge/screens/challenge_detail_screen.dart';
@@ -41,11 +40,7 @@ void main() {
     await pumpDetail(tester, cprCount: 2);
 
     expect(find.text('1km 초보 챌린지'), findsOneWidget);
-    expect(
-      find.text(AppStrings.challengeDetailCprTickets(2)),
-      findsOneWidget,
-    );
-    expect(find.text('심폐소생권 보유: 0/3'), findsNothing);
+    expect(find.text('심폐소생권 보유: 2/3'), findsNothing);
     expect(find.text('심폐소생권 사용 · 보유 2/3'), findsOneWidget);
     expect(
       tester
@@ -60,10 +55,7 @@ void main() {
   testWidgets('CPR use is disabled with a shop hint at zero', (tester) async {
     await pumpDetail(tester, cprCount: 0);
 
-    expect(
-      find.text(AppStrings.challengeDetailCprTickets(0)),
-      findsOneWidget,
-    );
+    expect(find.text('심폐소생권 보유: 0/3'), findsNothing);
     expect(find.text('심폐소생권 사용 · 상점에서 구매'), findsOneWidget);
     expect(
       tester

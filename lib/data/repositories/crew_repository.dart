@@ -11,10 +11,8 @@ class CrewRepository {
 
   final FirestoreService _firestoreService;
 
-  /// 크루 창설 — SHARE 차감과 `crews` 문서 생성을 원자적으로 커밋.
-  ///
-  /// Absolute nested SHARE via `update`. `ownedCrewId` is allowed only on
-  /// this write (`validCrewFoundingDebit` in `firestore.rules`).
+  /// Client SHARE debit for crew founding. Rules reject it.
+  /// The Crew screen uses `POST /actions/crew/found` instead.
   Future<CrewRankingModel> createCrewWithShareDebit({
     required String uid,
     required String name,

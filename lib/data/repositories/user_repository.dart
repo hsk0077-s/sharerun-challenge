@@ -139,8 +139,8 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  /// 후원 1건 원자 누적 + 천사 등급 코드 기록.
-  /// Count/total may only increase (`validDonationRecord`).
+  /// Donation totals are server-owned. Rules reject this client write.
+  /// No secured endpoint exists yet; callers must treat a failure as not saved.
   Future<void> recordDonation({
     required String uid,
     required int amountWon,

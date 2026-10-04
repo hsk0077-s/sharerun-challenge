@@ -58,3 +58,12 @@ def test_wallet_grant_uids() -> frozenset[str]:
 
 def test_wallet_grant_secret() -> str:
     return os.getenv("TEST_WALLET_GRANT_SECRET", "").strip()
+
+
+def debug_test_grant_enabled() -> bool:
+    """Off unless DEBUG_TEST_GRANT_ENABLED is explicitly true. Does not credit wallets."""
+    return os.getenv("DEBUG_TEST_GRANT_ENABLED", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+    }

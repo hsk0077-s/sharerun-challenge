@@ -15,6 +15,7 @@ class AccountDayMetric {
     required this.steps,
     this.km = 0,
     this.streakCovered = false,
+    this.streakPaused = false,
   });
 
   final String dayKey;
@@ -23,6 +24,9 @@ class AccountDayMetric {
 
   /// Server marked this day so a broken streak stays connected. Not distance.
   final bool streakCovered;
+
+  /// Server rest day. The streak pauses here. Not a run and not a cover.
+  final bool streakPaused;
 }
 
 abstract final class AccountDailySteps {
@@ -37,18 +41,25 @@ abstract final class AccountDailySteps {
     return raw == 'cpr' || raw == 'safeguard';
   }
 
+  static bool pausedOf(Map<String, dynamic>? data) {
+    if (coveredOf(data)) return false;
+    return data?['streakPaused'] == 'rest';
+  }
+
   static AccountDayMetric? dayOf(String dayKey, Map<String, dynamic>? data) {
     if (!_dayKey.hasMatch(dayKey) || data == null) return null;
     final steps = stepsOf(data);
     final kmRaw = data['km'];
     final km = kmRaw is num && kmRaw > 0 ? kmRaw.toDouble() : 0.0;
     final covered = coveredOf(data);
-    if (steps <= 0 && km <= 0 && !covered) return null;
+    final paused = pausedOf(data);
+    if (steps <= 0 && km <= 0 && !covered && !paused) return null;
     return AccountDayMetric(
       dayKey: dayKey,
       steps: steps,
       km: km,
       streakCovered: covered,
+      streakPaused: paused,
     );
   }
 

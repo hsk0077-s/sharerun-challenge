@@ -60,6 +60,33 @@ void main() {
       expect(transaction.amountSummary, '+20 Share');
     });
 
+    test('maps value item spends without treating them as cash', () {
+      const rest = WalletTransactionModel(
+        id: 'tx-rest',
+        type: 'shop_purchase',
+        shareAmount: 0,
+        valueAmount: -50,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: null,
+        itemId: 'rest_day_ticket',
+      );
+      const match = WalletTransactionModel(
+        id: 'tx-match',
+        type: 'donation_match',
+        shareAmount: 0,
+        valueAmount: -100,
+        diamondAmount: 0,
+        createdAt: null,
+        tournamentId: null,
+      );
+
+      expect(rest.displayLabel, '휴식일 지정권');
+      expect(rest.amountSummary, '-50 Value');
+      expect(match.displayLabel, '기부 매칭권');
+      expect(match.amountSummary, '-100 Value');
+    });
+
     test('maps incubator hatch to a credit label', () {
       const transaction = WalletTransactionModel(
         id: 'tx-hatch',

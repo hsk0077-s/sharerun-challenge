@@ -47,19 +47,23 @@ class ShopCatalogPrice {
     required this.id,
     required this.diamondCost,
     this.shareCost = 0,
+    this.valueCost = 0,
   });
 
   final String id;
   final int diamondCost;
   final int shareCost;
+  final int valueCost;
 
   factory ShopCatalogPrice.fromJson(Map<String, dynamic> json) {
     final cost = json['diamond_cost'];
     final share = json['share_cost'];
+    final value = json['value_cost'];
     return ShopCatalogPrice(
       id: json['id'] as String? ?? '',
       diamondCost: cost is num ? cost.toInt() : 0,
       shareCost: share is num ? share.toInt() : 0,
+      valueCost: value is num ? value.toInt() : 0,
     );
   }
 }
@@ -265,6 +269,20 @@ class SecuredActionApiClient {
       '/actions/shop/purchase',
       itemId,
       'buy:$itemId',
+    );
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Designates today or yesterday (KST) as a rest day. The server spends the
+  /// weekly free use first, then one held ticket.
+  Future<PedometerHarvestResult> useRestDay(String dayKey) async {
+    final json = await _postWithRequest(
+      '/actions/shop/use',
+      {
+        'item_id': 'rest_day_ticket',
+        'rest_day': dayKey,
+      },
+      'use:rest_day_ticket:$dayKey',
     );
     return PedometerHarvestResult.fromJson(json);
   }

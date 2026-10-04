@@ -10,8 +10,10 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/pedometer/kst_calendar.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/streak_item_message.dart';
+import '../features/shop/widgets/donation_match_contribution.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 
 /// 인게임 아이템 보관함 화면 (Screen 20).
@@ -41,6 +43,84 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
       return;
     }
     DashboardTabNavigation.go(context, index);
+  }
+
+  Future<void> _onBuyDonationMatch() async {
+    if (_useBusy) return;
+    _useBusy = true;
+    try {
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .purchaseShopItem(ServerShopInventory.donationMatchId);
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      final done = result.status == 'already_matched'
+          ? '이미 처리된 매칭입니다. VALUE는 한 번만 차감됩니다.'
+          : '기부 매칭을 기록했습니다.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            streakItemMessage(error, fallback: '기부 매칭을 기록하지 못했습니다.'),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('기부 매칭을 기록하지 못했습니다.')),
+      );
+    } finally {
+      _useBusy = false;
+    }
+  }
+
+  Future<void> _onUseRestDay(String dayKey, String label) async {
+    if (_useBusy) return;
+    _useBusy = true;
+    try {
+      final result =
+          await ref.read(securedActionApiClientProvider).useRestDay(dayKey);
+      if (!mounted) return;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      final done = result.status == 'already_used'
+          ? '이미 처리된 휴식일 지정입니다.'
+          : '$label 완료';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            streakItemMessage(error, fallback: '휴식일을 지정하지 못했습니다.'),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('휴식일을 지정하지 못했습니다.')),
+      );
+    } finally {
+      _useBusy = false;
+    }
+  }
+
+  String _kstDay(int offset) {
+    final kst = KstCalendar.toKst(DateTime.now());
+    final day = DateTime.utc(kst.year, kst.month, kst.day)
+        .add(Duration(days: offset));
+    return KstCalendar.dateKeyFromYmd(day.year, day.month, day.day);
   }
 
   Future<void> _onUseItem(String itemId, String title) async {
@@ -239,6 +319,42 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           AppStrings.itemInventoryStepIncubatorTitle,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.hotel_outlined,
+                          size: 40,
+                          color: AppColors.tealAccent,
+                        ),
+                        title: AppStrings.itemInventoryRestDayTitle,
+                        quantity:
+                            '추가 보유: ${shop.restDayCount}\n${AppStrings.itemInventoryRestDayNote}',
+                        useButtonColor: _useButtonMint,
+                        useLabel: AppStrings.itemInventoryRestDayToday,
+                        onUse: () => _onUseRestDay(
+                          _kstDay(0),
+                          AppStrings.itemInventoryRestDayToday,
+                        ),
+                        secondaryLabel: AppStrings.itemInventoryRestDayYesterday,
+                        onSecondary: () => _onUseRestDay(
+                          _kstDay(-1),
+                          AppStrings.itemInventoryRestDayYesterday,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.volunteer_activism_outlined,
+                          size: 40,
+                          color: AppColors.success,
+                        ),
+                        title: AppStrings.itemInventoryDonationMatchTitle,
+                        quantity: AppStrings.itemInventoryDonationMatchNote,
+                        useButtonColor: _useButtonMint,
+                        useLabel: AppStrings.itemInventoryDonationMatchUse,
+                        onUse: () => _onBuyDonationMatch(),
+                        extra: const DonationMatchContribution(),
+                      ),
                     ],
                   ),
                 ),
@@ -250,6 +366,41 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
       bottomNavigationBar: DashboardBottomNav(
         currentIndex: _currentNavIndex,
         onTap: _onNavTap,
+      ),
+    );
+  }
+}
+
+class _UseChip extends StatelessWidget {
+  const _UseChip({
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  final Color color;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            label,
+            style: AppTextStyles.buttonText.copyWith(
+              color: AppColors.textBlack,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -430,7 +581,11 @@ class _InventoryItemCard extends StatelessWidget {
     required this.quantity,
     this.useButtonColor = const Color(0xFFCDDC39),
     this.onUse,
+    this.useLabel,
+    this.secondaryLabel,
+    this.onSecondary,
     this.hint,
+    this.extra,
   });
 
   final Widget icon;
@@ -438,7 +593,11 @@ class _InventoryItemCard extends StatelessWidget {
   final String quantity;
   final Color useButtonColor;
   final VoidCallback? onUse;
+  final String? useLabel;
+  final String? secondaryLabel;
+  final VoidCallback? onSecondary;
   final String? hint;
+  final Widget? extra;
 
   @override
   Widget build(BuildContext context) {
@@ -487,31 +646,28 @@ class _InventoryItemCard extends StatelessWidget {
               ),
             ],
           ),
+          if (extra != null) extra!,
           const SizedBox(height: 12),
           if (onUse != null)
             Align(
               alignment: Alignment.centerRight,
-              child: Material(
-                color: useButtonColor,
-                borderRadius: BorderRadius.circular(20),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: onUse,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      AppStrings.itemInventoryUse,
-                      style: AppTextStyles.buttonText.copyWith(
-                        color: AppColors.textBlack,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
+                children: [
+                  _UseChip(
+                    color: useButtonColor,
+                    label: useLabel ?? AppStrings.itemInventoryUse,
+                    onTap: onUse,
                   ),
-                ),
+                  if (onSecondary != null && secondaryLabel != null)
+                    _UseChip(
+                      color: useButtonColor,
+                      label: secondaryLabel!,
+                      onTap: onSecondary,
+                    ),
+                ],
               ),
             )
           else if (hint != null)

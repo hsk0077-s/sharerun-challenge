@@ -258,6 +258,7 @@ def shop_catalog(uid: str = Depends(require_uid)) -> ShopCatalogView:
                 title=row["title"],
                 diamond_cost=row["diamondCost"],
                 share_cost=int(row.get("shareCost") or 0),
+                value_cost=int(row.get("valueCost") or 0),
             )
             for row in service.shop_catalog()
         ]
@@ -275,6 +276,7 @@ def use_shop_item(
         request_id=request.request_id,
         friend_uid=request.friend_uid,
         activity_id=request.activity_id,
+        rest_day=request.rest_day,
     )
 
 

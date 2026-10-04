@@ -53,6 +53,13 @@ def metric_qualifies(data: dict | None) -> bool:
     return _positive_number(data.get("steps")) or _positive_number(data.get("km"))
 
 
+def is_rest_pause(data: dict | None) -> bool:
+    """A rest day pauses the streak. It is not a run and not a cover."""
+    if not data or metric_qualifies(data):
+        return False
+    return data.get("streakPaused") == "rest"
+
+
 def kst_today(now: datetime) -> date:
     current = now if now.tzinfo else now.replace(tzinfo=timezone.utc)
     return current.astimezone(_KST).date()
@@ -60,6 +67,13 @@ def kst_today(now: datetime) -> date:
 
 def kst_month_key(now: datetime) -> str:
     return kst_today(now).strftime("%Y-%m")
+
+
+def kst_week_key(now: datetime) -> str:
+    """Monday of the KST week, YYYY-MM-DD. Same marker as the streak DIA week."""
+    today = kst_today(now)
+    monday = today - timedelta(days=today.weekday())
+    return monday.isoformat()
 
 
 def cpr_restore_days(metrics: dict[date, dict], today: date, now: datetime) -> list[date]:
@@ -76,27 +90,33 @@ def cpr_restore_days(metrics: dict[date, dict], today: date, now: datetime) -> l
     if last is None:
         raise ValueError("not_broken")
     first_missed = last + timedelta(days=1)
-    break_at = datetime.combine(first_missed + timedelta(days=1), time.min, tzinfo=_KST)
-    current = now if now.tzinfo else now.replace(tzinfo=timezone.utc)
-    if current > break_at + _CPR_WINDOW:
-        raise ValueError("window")
     gap: list[date] = []
     day = first_missed
     while day <= gap_end:
-        if not metric_qualifies(metrics.get(day)):
+        data = metrics.get(day)
+        # A rest pause is not a miss to fill. CPR must not turn it into a run.
+        if not metric_qualifies(data) and not is_rest_pause(data):
             gap.append(day)
         day += timedelta(days=1)
     if not gap:
         raise ValueError("not_broken")
+    break_at = datetime.combine(gap[0] + timedelta(days=1), time.min, tzinfo=_KST)
+    current = now if now.tzinfo else now.replace(tzinfo=timezone.utc)
+    if current > break_at + _CPR_WINDOW:
+        raise ValueError("window")
     return gap
 
 
 def safeguard_target(metrics: dict[date, dict], today: date) -> date | None:
-    """Yesterday, when that single day is the only miss before a live streak."""
+    """Yesterday, when that single day is the only miss before a live streak.
+
+    A rest pause is not that miss, and it is not overwritten with a cover.
+    Pauses between the miss and the last run still count as connected.
+    """
     yesterday = today - timedelta(days=1)
-    if metric_qualifies(metrics.get(yesterday)):
+    if metric_qualifies(metrics.get(yesterday)) or is_rest_pause(metrics.get(yesterday)):
         return None
-    if not metric_qualifies(metrics.get(yesterday - timedelta(days=1))):
+    if not _connects_through_pauses(metrics, yesterday - timedelta(days=1)):
         return None
     return yesterday
 
@@ -367,11 +387,34 @@ def _gap_end(metrics: dict[date, dict], today: date) -> date | None:
         run_start = today
         while metric_qualifies(metrics.get(run_start - timedelta(days=1))):
             run_start -= timedelta(days=1)
-        return run_start - timedelta(days=1)
+        gap_end = run_start - timedelta(days=1)
+        if _pause_bridge(metrics, gap_end):
+            return None
+        return gap_end
     yesterday = today - timedelta(days=1)
-    if metric_qualifies(metrics.get(yesterday)):
+    if metric_qualifies(metrics.get(yesterday)) or _pause_bridge(metrics, yesterday):
         return None
     return yesterday
+
+
+def _pause_bridge(metrics: dict[date, dict], day: date) -> bool:
+    """True when ``day`` is a rest pause that still reaches a qualifying day."""
+    if not is_rest_pause(metrics.get(day)):
+        return False
+    return _connects_through_pauses(metrics, day)
+
+
+def _connects_through_pauses(metrics: dict[date, dict], day: date) -> bool:
+    probe = day
+    for _ in range(_LOOKBACK_DAYS):
+        data = metrics.get(probe)
+        if metric_qualifies(data):
+            return True
+        if is_rest_pause(data):
+            probe -= timedelta(days=1)
+            continue
+        return False
+    return False
 
 
 def _previous_qualifying(metrics: dict[date, dict], gap_end: date) -> date | None:

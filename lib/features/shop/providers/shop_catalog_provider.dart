@@ -41,3 +41,25 @@ Map<String, int> _localSharePrices() {
       if (item.shareCost > 0) item.id: item.shareCost,
   };
 }
+
+/// VALUE prices from the same catalog.
+final shopValuePriceProvider = FutureProvider<Map<String, int>>((ref) async {
+  try {
+    final items =
+        await ref.read(securedActionApiClientProvider).fetchShopCatalog();
+    if (items.isEmpty) return _localValuePrices();
+    return {
+      for (final item in items)
+        if (item.valueCost > 0) item.id: item.valueCost,
+    };
+  } catch (_) {
+    return _localValuePrices();
+  }
+});
+
+Map<String, int> _localValuePrices() {
+  return {
+    for (final item in ShopItemModel.catalog)
+      if (item.valueCost > 0) item.id: item.valueCost,
+  };
+}

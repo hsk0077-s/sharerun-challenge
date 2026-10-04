@@ -16,7 +16,9 @@ import '../pedometer/kst_calendar.dart';
 /// walk kilometres so a walk is not added on top of a run.
 ///
 /// Consecutive streak ends at today, or at yesterday when today has no
-/// record yet. This display streak does not change wallet bonuses.
+/// record yet. A rest day is skipped: it does not add a day and it does
+/// not break the run of days around it. This display streak does not
+/// change wallet bonuses.
 class MyPageLogEntry {
   const MyPageLogEntry({
     required this.dateLabel,
@@ -66,16 +68,19 @@ final myPageActivityStatsProvider = Provider<MyPageActivityStats>((ref) {
   final stepsByDate = <String, int>{};
   final kmByDate = <String, double>{};
   final coveredDays = <String>{};
+  final pausedDays = <String>{};
   for (final day in days) {
     if (day.steps > 0) stepsByDate[day.dayKey] = day.steps;
     if (day.km > 0) kmByDate[day.dayKey] = day.km;
     if (day.streakCovered) coveredDays.add(day.dayKey);
+    if (day.streakPaused) pausedDays.add(day.dayKey);
   }
   return MyPageActivityMath.compute(
     activities: activities,
     stepsByDate: stepsByDate,
     kmByDate: kmByDate,
     coveredDays: coveredDays,
+    pausedDays: pausedDays,
     now: DateTime.now(),
   );
 });
@@ -89,6 +94,7 @@ abstract final class MyPageActivityMath {
     required Map<String, double> kmByDate,
     required DateTime now,
     Set<String> coveredDays = const {},
+    Set<String> pausedDays = const {},
   }) {
     final kstNow = KstCalendar.toKst(now);
     final today = DateTime.utc(kstNow.year, kstNow.month, kstNow.day);
@@ -133,7 +139,7 @@ abstract final class MyPageActivityMath {
       }
     }
 
-    final streak = _streakEnding(todayKey, qualifying);
+    final streak = _streakEnding(todayKey, qualifying, pausedDays);
     final daysInMonth = DateTime.utc(today.year, today.month + 1, 0).day;
     final active = <int>{};
     for (final key in qualifying) {
@@ -224,15 +230,29 @@ abstract final class MyPageActivityMath {
     return (steps * EconomyConstants.pedometerStrideMeters) / 1000.0;
   }
 
-  static int _streakEnding(String todayKey, Set<String> qualifying) {
+  static int _streakEnding(
+    String todayKey,
+    Set<String> qualifying,
+    Set<String> paused,
+  ) {
     var cursor = todayKey;
     if (!qualifying.contains(cursor)) {
       cursor = _previousKey(cursor);
     }
     var streak = 0;
-    while (qualifying.contains(cursor) && streak < _streakGuard) {
-      streak += 1;
-      cursor = _previousKey(cursor);
+    var guard = 0;
+    while (guard < _streakGuard) {
+      guard += 1;
+      if (qualifying.contains(cursor)) {
+        streak += 1;
+        cursor = _previousKey(cursor);
+        continue;
+      }
+      if (paused.contains(cursor) && !qualifying.contains(cursor)) {
+        cursor = _previousKey(cursor);
+        continue;
+      }
+      break;
     }
     return streak;
   }

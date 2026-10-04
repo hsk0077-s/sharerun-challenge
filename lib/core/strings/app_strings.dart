@@ -296,6 +296,10 @@ abstract final class AppStrings {
   static const storeItemBoostRunNote = '하루 1회 · 15분간 걸음 SHARE 2배';
   static const storeItemStepIncubator = '만보기 부화기';
   static const storeItemStepIncubatorNote = '검증 걸음 30,000보에 민트 러닝화';
+  static const storeItemRestDay = '휴식일 지정권';
+  static const storeItemRestDayNote = '매주 1장 무료 · 추가는 VALUE';
+  static const storeItemDonationMatch = '기부 매칭권';
+  static const storeItemDonationMatchNote = '한 달에 1회 · 회사 1,000원';
   static const storeItemStarBoost = '스타 부스트';
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
@@ -434,6 +438,15 @@ abstract final class AppStrings {
   static const itemInventoryStepIncubatorTitle = '만보기 부화기';
   static const itemInventoryStepIncubatorQuantityNote =
       '검증 걸음 30,000보에 민트 러닝화';
+  static const itemInventoryRestDayTitle = '휴식일 지정권';
+  static const itemInventoryRestDayNote =
+      '매주 1회 무료. 추가 보유분만 VALUE로 샀습니다. 휴식일은 출석으로 세지 않고 스트릭도 끊지 않습니다.';
+  static const itemInventoryRestDayToday = '오늘 휴식';
+  static const itemInventoryRestDayYesterday = '어제 휴식';
+  static const itemInventoryDonationMatchTitle = '기부 매칭권';
+  static const itemInventoryDonationMatchNote =
+      '100 VALUE. 회사 명의 1,000원이 러닝 기부 풀에 더해지고 내 이름이 함께 표시됩니다. 영수증은 없습니다.';
+  static const itemInventoryDonationMatchUse = '매칭하기';
   static const itemInventoryCprQuantity = '보유량: 3/3';
   static const itemInventorySafeGuardTitle = '세이프 가드';
   static const itemInventorySafeGuardQuantity = '보유량: 1/1';

@@ -1,9 +1,12 @@
-"""DIA prices for items Jena sells from ``config/item_prices``.
+"""Prices and caps Jena reads from ``config/item_prices``.
 
 Jena reads the doc for the shop catalog and when one of these items is
 bought. Missing or invalid fields keep the code default, so a bad edit
 cannot make an item free. Numbers can change without an app update and
 without another Cloud Run deploy after this code is live.
+
+DIA, SHARE, and VALUE prices share this doc. The item decides the
+currency. Cap keys are not shop items.
 """
 
 ITEM_PRICES_CONFIG_ID = "item_prices"
@@ -21,8 +24,15 @@ BATTLE_PASS_ITEM_ID = "battle_run_pass"
 BATTLE_PASS_PLUS_ITEM_ID = "battle_run_pass_plus"
 BOOST_RUN_ITEM_ID = "boost_run"
 STEP_INCUBATOR_ITEM_ID = "step_incubator"
+REST_DAY_TICKET_ID = "rest_day_ticket"
+REST_DAY_FREE_PER_WEEK_ID = "rest_day_free_per_week"
+DONATION_MATCH_ID = "donation_match"
+DONATION_MATCH_WON_ID = "donation_match_won"
+DONATION_MATCH_USER_MONTHLY_ID = "donation_match_user_monthly"
+DONATION_MATCH_COMPANY_CAP_ID = "donation_match_company_cap_won"
 BATTLE_PASS_ITEM_IDS = frozenset({BATTLE_PASS_ITEM_ID, BATTLE_PASS_PLUS_ITEM_ID})
 SHARE_ACTIVITY_ITEM_IDS = frozenset({BOOST_RUN_ITEM_ID, STEP_INCUBATOR_ITEM_ID})
+VALUE_ITEM_IDS = frozenset({REST_DAY_TICKET_ID, DONATION_MATCH_ID})
 STREAK_ITEM_IDS = frozenset({CPR_ITEM_ID, SAFEGUARD_ITEM_ID})
 RUN_ACCESS_ITEM_IDS = frozenset(
     {COACH_ONE_POINT_ITEM_ID, EXTRA_ENTRY_ITEM_ID, EXTRA_ENTRY_PACK_ITEM_ID}
@@ -47,6 +57,12 @@ _DEFAULTS = {
     BATTLE_PASS_PLUS_ITEM_ID: 200,
     BOOST_RUN_ITEM_ID: 120,
     STEP_INCUBATOR_ITEM_ID: 1_200,
+    REST_DAY_TICKET_ID: 50,
+    REST_DAY_FREE_PER_WEEK_ID: 1,
+    DONATION_MATCH_ID: 100,
+    DONATION_MATCH_WON_ID: 1_000,
+    DONATION_MATCH_USER_MONTHLY_ID: 1,
+    DONATION_MATCH_COMPANY_CAP_ID: 500_000,
 }
 
 

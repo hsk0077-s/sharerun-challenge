@@ -78,6 +78,7 @@ from app.services.item_price_config import (
     SHARE_ACTIVITY_ITEM_IDS,
     SOCIAL_ITEM_IDS,
     STREAK_ITEM_IDS,
+    VALUE_ITEM_IDS,
     read_item_prices,
 )
 from app.services.run_access_items import (
@@ -98,12 +99,14 @@ from app.services.social_items import (
 from app.services.streak_protection import (
     CPR_ITEM_ID,
     grant_coach_plus_cpr,
+    is_rest_pause,
     maybe_grant_coach_plus_cpr,
     metric_qualifies,
     purchase_streak_item,
     require_request_id,
     use_streak_item,
 )
+from app.services.value_items import purchase_value_item, use_value_item
 from app.services.wallet_funding import (
     assign_free_balances,
     exchange_spendable,
@@ -442,6 +445,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id in VALUE_ITEM_IDS:
+            return _commit_value_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         if item_id not in self.SHOP_CATALOG and is_cosmetic_item(
             self.firebase_service.db, item_id
         ):
@@ -541,6 +553,7 @@ class SecuredActionService:
         request_id: str | None = None,
         friend_uid: str | None = None,
         activity_id: str | None = None,
+        rest_day: str | None = None,
     ) -> SecuredActionResult:
         if item_id == CPR_ITEM_ID:
             self.ensure_coach_plus_cpr(uid)
@@ -601,6 +614,16 @@ class SecuredActionService:
                 item_id,
                 require_request_id(request_id),
                 user_ref,
+            )
+        if item_id in VALUE_ITEM_IDS:
+            return _commit_value_use_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+                rest_day,
             )
         return _commit_use_shop_tx(transaction, self, uid, item_id, user_ref)
 
@@ -976,6 +999,14 @@ class SecuredActionService:
             "title": "만보기 부화기",
             "diamondCost": 0,
         },
+        "rest_day_ticket": {
+            "title": "휴식일 지정권",
+            "diamondCost": 0,
+        },
+        "donation_match": {
+            "title": "기부 매칭권",
+            "diamondCost": 0,
+        },
     }
 
     def shop_catalog(self) -> list[dict]:
@@ -989,6 +1020,18 @@ class SecuredActionService:
                         "title": item["title"],
                         "diamondCost": 0,
                         "shareCost": int(prices[item_id]),
+                        "valueCost": 0,
+                    }
+                )
+                continue
+            if item_id in VALUE_ITEM_IDS:
+                rows.append(
+                    {
+                        "id": item_id,
+                        "title": item["title"],
+                        "diamondCost": 0,
+                        "shareCost": 0,
+                        "valueCost": int(prices[item_id]),
                     }
                 )
                 continue
@@ -998,6 +1041,7 @@ class SecuredActionService:
                     "title": item["title"],
                     "diamondCost": int(prices.get(item_id, item["diamondCost"])),
                     "shareCost": 0,
+                    "valueCost": 0,
                 }
             )
         return rows
@@ -1879,7 +1923,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in BATTLE_PASS_ITEM_IDS or item_id in SHARE_ACTIVITY_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in BATTLE_PASS_ITEM_IDS or item_id in SHARE_ACTIVITY_ITEM_IDS or item_id in VALUE_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         catalog_item = self.SHOP_CATALOG.get(item_id)
         if catalog_item is None:
@@ -2288,7 +2332,7 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         if item_id in BATTLE_PASS_ITEM_IDS:
             raise HTTPException(status_code=400, detail=NOT_SPENT)
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in SHARE_ACTIVITY_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS or item_id in SHARE_ACTIVITY_ITEM_IDS or item_id in VALUE_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
             if is_cosmetic_item(self.firebase_service.db, item_id):
@@ -2888,9 +2932,12 @@ class SecuredActionService:
         day = start
         for _ in range(_STREAK_LOOKBACK_DAYS):
             snap = parent.document(day.isoformat()).get(transaction=transaction)
-            if not _day_has_activity(snap):
+            if _day_has_activity(snap):
+                count += 1
+            elif _day_is_rest(snap):
+                pass
+            else:
                 break
-            count += 1
             day -= timedelta(days=1)
         return count
 
@@ -3661,6 +3708,12 @@ def _day_has_activity(snapshot) -> bool:
     return metric_qualifies(snapshot.to_dict() or {})
 
 
+def _day_is_rest(snapshot) -> bool:
+    if not snapshot.exists:
+        return False
+    return is_rest_pause(snapshot.to_dict() or {})
+
+
 def _wallet_int(wallet: dict, key: str) -> int | None:
     raw = wallet.get(key)
     if raw is None:
@@ -3717,6 +3770,35 @@ def _commit_streak_use_tx(
     user_ref,
 ) -> SecuredActionResult:
     return use_streak_item(service, transaction, uid, item_id, request_id, user_ref)
+
+
+@firestore.transactional
+def _commit_value_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_value_item(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_value_use_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+    rest_day: str | None,
+) -> SecuredActionResult:
+    return use_value_item(
+        service, transaction, uid, item_id, request_id, user_ref, rest_day
+    )
 
 
 @firestore.transactional

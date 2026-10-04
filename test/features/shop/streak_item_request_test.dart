@@ -49,5 +49,15 @@ void main() {
       ),
       '보유량이 없습니다.',
     );
+    expect(
+      streakItemMessage(
+        const ApiException(
+          statusCode: 400,
+          detail: 'Donation match company cap reached.',
+        ),
+        fallback: 'fallback',
+      ),
+      '이번 달 회사 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.',
+    );
   });
 }

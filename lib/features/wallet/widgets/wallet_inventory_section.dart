@@ -71,6 +71,14 @@ class WalletInventorySection extends ConsumerWidget {
           count: shop.stepIncubatorCount,
           note: AppStrings.itemInventoryStepIncubatorQuantityNote,
         ),
+      if (shop.restDayCount > 0)
+        _InventoryRow(
+          icon: Icons.hotel_outlined,
+          color: AppColors.tealAccent,
+          title: AppStrings.itemInventoryRestDayTitle,
+          count: shop.restDayCount,
+          note: AppStrings.storeItemRestDayNote,
+        ),
       if (shop.ghostPaceCount > 0)
         _InventoryRow(
           icon: Icons.speed,

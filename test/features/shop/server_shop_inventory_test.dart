@@ -24,6 +24,13 @@ void main() {
     expect(inventory.countFor(ServerShopInventory.boostRunId), 0);
     expect(inventory.boostRunCount, 0);
     expect(inventory.stepIncubatorCount, 0);
+    expect(inventory.restDayCount, 0);
+    expect(
+      ServerShopInventory.fromQuantities(const {
+        ServerShopInventory.restDayId: 2,
+      }).countFor(ServerShopInventory.restDayId),
+      2,
+    );
     expect(
       ServerShopInventory.fromQuantities(const {
         ServerShopInventory.friendGhostId: 2,

@@ -20,6 +20,13 @@ String streakItemMessage(ApiException error, {required String fallback}) {
     'Pass upgrade price is invalid.' =>
       '패스+ 가격이 패스보다 낮아 업그레이드할 수 없습니다.',
     'No item to use.' => fallback,
+    'Insufficient Value balance.' => 'VALUE가 부족합니다.',
+    'That day already counts.' => '이미 기록이 있는 날은 휴식일로 지정할 수 없습니다.',
+    'That day is already a rest day.' => '그 날은 이미 휴식일입니다.',
+    'Rest day must be today or yesterday.' => '휴식일은 오늘 또는 어제로만 지정할 수 있습니다.',
+    'Donation match monthly cap reached.' => '이번 달 기부 매칭 횟수를 모두 사용했습니다.',
+    'Donation match company cap reached.' =>
+      '이번 달 회사 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.',
     'Coach one-point daily use cap is 1.' => '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.',
     'Extra entry daily use cap is 2.' => '추가 참가권은 하루에 2번까지 사용할 수 있습니다.',
     'Prize races accept only SHARE or free tickets.' =>

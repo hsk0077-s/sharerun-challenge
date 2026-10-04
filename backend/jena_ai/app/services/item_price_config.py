@@ -12,9 +12,17 @@ SAFEGUARD_ITEM_ID = "record_safe_guard"
 COACH_ONE_POINT_ITEM_ID = "coach_one_point_ticket"
 EXTRA_ENTRY_ITEM_ID = "extra_entry_ticket"
 EXTRA_ENTRY_PACK_ITEM_ID = "extra_entry_ticket_3pack"
+FRIEND_GHOST_ITEM_ID = "friend_ghost_pace"
+FRIEND_GHOST_PACK_ITEM_ID = "friend_ghost_pace_10pack"
+CREW_CHEER_FLAG_ITEM_ID = "crew_cheer_flag"
+CREW_CREATE_DIA_ID = "crew_create_dia"
+CREW_CREATE_SHARE_ID = "crew_create_share"
 STREAK_ITEM_IDS = frozenset({CPR_ITEM_ID, SAFEGUARD_ITEM_ID})
 RUN_ACCESS_ITEM_IDS = frozenset(
     {COACH_ONE_POINT_ITEM_ID, EXTRA_ENTRY_ITEM_ID, EXTRA_ENTRY_PACK_ITEM_ID}
+)
+SOCIAL_ITEM_IDS = frozenset(
+    {FRIEND_GHOST_ITEM_ID, FRIEND_GHOST_PACK_ITEM_ID, CREW_CHEER_FLAG_ITEM_ID}
 )
 
 # Code defaults. A missing doc or a bad field keeps these.
@@ -24,6 +32,11 @@ _DEFAULTS = {
     COACH_ONE_POINT_ITEM_ID: 5,
     EXTRA_ENTRY_ITEM_ID: 10,
     EXTRA_ENTRY_PACK_ITEM_ID: 25,
+    FRIEND_GHOST_ITEM_ID: 5,
+    FRIEND_GHOST_PACK_ITEM_ID: 40,
+    CREW_CHEER_FLAG_ITEM_ID: 15,
+    CREW_CREATE_DIA_ID: 50,
+    CREW_CREATE_SHARE_ID: 30_000,
 }
 
 

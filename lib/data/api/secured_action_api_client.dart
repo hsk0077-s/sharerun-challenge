@@ -26,6 +26,21 @@ class ChallengeRoomCreateResult {
   final int entryFeeShare;
 }
 
+class FriendGhostUseResult {
+  const FriendGhostUseResult({required this.status, this.paceSecPerKm});
+
+  final String status;
+  final double? paceSecPerKm;
+
+  factory FriendGhostUseResult.fromJson(Map<String, dynamic> json) {
+    final raw = json['pace_sec_per_km'] ?? json['paceSecPerKm'];
+    return FriendGhostUseResult(
+      status: json['status'] as String? ?? '',
+      paceSecPerKm: raw is num && raw > 0 ? raw.toDouble() : null,
+    );
+  }
+}
+
 class ShopCatalogPrice {
   const ShopCatalogPrice({required this.id, required this.diamondCost});
 
@@ -59,6 +74,9 @@ class SecuredActionApiClient {
     'coach_one_point_ticket',
     'extra_entry_ticket',
     'extra_entry_ticket_3pack',
+    'friend_ghost_pace',
+    'friend_ghost_pace_10pack',
+    'crew_cheer_flag',
   };
 
   Future<TournamentJoinResult> joinTournament({
@@ -78,10 +96,13 @@ class SecuredActionApiClient {
   Future<JenaValidationResult> validateRun({
     required JenaValidationRequest request,
     required List<RoutePoint> routePoints,
+    String? tournamentId,
   }) async {
     final json = request.toJson()
       ..remove('user_id')
       ..['gps_route'] = routePoints.map((point) => point.toJson()).toList();
+    final raceId = tournamentId?.trim() ?? '';
+    if (raceId.isNotEmpty) json['tournament_id'] = raceId;
 
     final response = await _post(
       '/actions/runs/validate',
@@ -283,10 +304,61 @@ class SecuredActionApiClient {
     return PedometerHarvestResult.fromJson(json);
   }
 
-  /// Creates a crew and debits the server founding cost.
-  Future<PedometerHarvestResult> foundCrew(String name) async {
-    final json = await _post('/actions/crew/found', {'name': name});
-    return PedometerHarvestResult.fromJson(json);
+  /// Creates a crew. [payWith] is `dia` or `share`. The server debits the price.
+  Future<PedometerHarvestResult> foundCrew(
+    String name, {
+    required String payWith,
+  }) async {
+    const retryKey = 'crew-create';
+    final requestId = _requestIds.begin(retryKey);
+    try {
+      final json = await _post('/actions/crew/found', {
+        'name': name,
+        'pay_with': payWith,
+        'request_id': requestId,
+      });
+      _requestIds.succeed(retryKey);
+      return PedometerHarvestResult.fromJson(json);
+    } on ApiException catch (error) {
+      _requestIds.failed(
+        retryKey,
+        requestId,
+        retryable: error.statusCode >= 500,
+      );
+      rethrow;
+    } catch (_) {
+      _requestIds.failed(retryKey, requestId, retryable: true);
+      rethrow;
+    }
+  }
+
+  /// Spends one 친구 고스트 페이스 for [friendUid]'s verified run.
+  Future<FriendGhostUseResult> useFriendGhost({
+    required String friendUid,
+    required String activityId,
+  }) async {
+    const retryKey = 'use:friend_ghost_pace';
+    final requestId = _requestIds.begin(retryKey);
+    try {
+      final json = await _post('/actions/shop/use', {
+        'item_id': 'friend_ghost_pace',
+        'request_id': requestId,
+        'friend_uid': friendUid,
+        'activity_id': activityId,
+      });
+      _requestIds.succeed(retryKey);
+      return FriendGhostUseResult.fromJson(json);
+    } on ApiException catch (error) {
+      _requestIds.failed(
+        retryKey,
+        requestId,
+        retryable: error.statusCode >= 500,
+      );
+      rethrow;
+    } catch (_) {
+      _requestIds.failed(retryKey, requestId, retryable: true);
+      rethrow;
+    }
   }
 
   /// Creates a challenge room and debits the server entry fee for that distance.

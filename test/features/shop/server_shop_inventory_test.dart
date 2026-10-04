@@ -21,6 +21,16 @@ void main() {
     expect(inventory.extraEntryCount, 3);
     expect(inventory.countFor(ServerShopInventory.extraEntryId), 3);
     expect(inventory.countFor('star_boost'), 0);
+    expect(
+      ServerShopInventory.fromQuantities(const {
+        ServerShopInventory.friendGhostId: 2,
+        ServerShopInventory.crewCheerId: 1,
+      }),
+      isA<ServerShopInventory>()
+          .having((row) => row.friendGhostCount, 'friend', 2)
+          .having((row) => row.crewCheerCount, 'cheer', 1)
+          .having((row) => row.isEmpty, 'empty', isFalse),
+    );
     expect(inventory.isEmpty, isFalse);
   });
 

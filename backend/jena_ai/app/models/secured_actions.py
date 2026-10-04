@@ -57,6 +57,8 @@ class ValidateRunRequest(BaseModel):
     cadence_spm: list[int] = Field(default_factory=list)
     gyro_stability_score: float = Field(ge=0, le=1)
     gps_route: list[RoutePointPayload] = Field(default_factory=list)
+    # Set on a race finish. Crew cheer reads this room's SHARE reward only.
+    tournament_id: str | None = Field(default=None, max_length=128)
 
 
 class ApplyReferralRequest(BaseModel):
@@ -65,8 +67,11 @@ class ApplyReferralRequest(BaseModel):
 
 class ShopPurchaseRequest(BaseModel):
     item_id: str = Field(min_length=3)
-    # Same id on a retry. 심폐소생권 and 세이프가드 charge or consume once.
+    # Same id on a retry. Priced items charge or consume once.
     request_id: str | None = Field(default=None, max_length=80)
+    # Friend ghost only. Own best leaves both empty and is not charged.
+    friend_uid: str | None = Field(default=None, max_length=128)
+    activity_id: str | None = Field(default=None, max_length=128)
 
 
 class CrewSpendRequest(BaseModel):
@@ -75,6 +80,10 @@ class CrewSpendRequest(BaseModel):
 
 class CrewFoundRequest(BaseModel):
     name: str = Field(min_length=1, max_length=80)
+    # ``dia`` charges 50 DIA. ``share`` charges 30,000 SHARE. The server
+    # reads both numbers from config/item_prices.
+    pay_with: str = Field(default="share", pattern="^(share|dia)$")
+    request_id: str = Field(min_length=8, max_length=64)
 
 
 class NicknameChangeRequest(BaseModel):
@@ -160,6 +169,8 @@ class SecuredActionResult(BaseModel):
     share_balance: int | None = None
     diamond_balance: int | None = None
     value_token_balance: int | None = None
+    # Friend ghost only. Seconds per km from the friend's verified run.
+    pace_sec_per_km: float | None = None
 
 
 class CreateChallengeRoomResult(SecuredActionResult):

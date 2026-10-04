@@ -39,6 +39,22 @@ class WalletInventorySection extends ConsumerWidget {
           count: shop.safeGuardCount,
           note: AppStrings.myWalletItemDuringTournament,
         ),
+      if (shop.friendGhostCount > 0)
+        _InventoryRow(
+          icon: Icons.speed,
+          color: AppColors.tealAccent,
+          title: AppStrings.itemInventoryFriendGhostTitle,
+          count: shop.friendGhostCount,
+          note: AppStrings.myWalletItemDuringRun,
+        ),
+      if (shop.crewCheerCount > 0)
+        _InventoryRow(
+          icon: Icons.flag_outlined,
+          color: AppColors.progressYellow,
+          title: AppStrings.itemInventoryCrewCheerTitle,
+          count: shop.crewCheerCount,
+          note: AppStrings.myWalletItemDuringTournament,
+        ),
       if (shop.ghostPaceCount > 0)
         _InventoryRow(
           icon: Icons.speed,

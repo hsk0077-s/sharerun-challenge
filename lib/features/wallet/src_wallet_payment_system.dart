@@ -15,7 +15,8 @@ import 'widgets/share_insufficient_dialog.dart';
 /// - 크루 창설·방 개설 등 소비: Firestore `runTransaction` 만 사용.
 ///   IAP `buyConsumable` 을 호출하지 않는다.
 abstract final class SrcWalletPaymentSystem {
-  static const crewCreateShareCost = 50000;
+  static const crewCreateShareCost = 30000;
+  static const crewCreateDiaCost = 50;
   static const defaultRoomCreateShareCost = 50000;
 
   static const pack1000Id = 'share_pack_1000';

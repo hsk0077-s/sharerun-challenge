@@ -76,6 +76,11 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "coach_one_point_ticket": 5,
         "extra_entry_ticket": 10,
         "extra_entry_ticket_3pack": 25,
+        "friend_ghost_pace": 5,
+        "friend_ghost_pace_10pack": 40,
+        "crew_cheer_flag": 15,
+        "crew_create_dia": 50,
+        "crew_create_share": 30000,
     }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})

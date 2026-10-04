@@ -193,7 +193,12 @@ def found_crew(
     request: CrewFoundRequest,
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
-    return service.found_crew(uid=uid, name=request.name)
+    return service.found_crew(
+        uid=uid,
+        name=request.name,
+        pay_with=request.pay_with,
+        request_id=request.request_id,
+    )
 
 
 @router.post("/tournaments/create-room", response_model=CreateChallengeRoomResult)
@@ -230,6 +235,8 @@ def use_shop_item(
         uid=uid,
         item_id=request.item_id,
         request_id=request.request_id,
+        friend_uid=request.friend_uid,
+        activity_id=request.activity_id,
     )
 
 

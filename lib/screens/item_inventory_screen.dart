@@ -180,6 +180,33 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                         quantity: '보유량: ${shop.extraEntryCount}',
                         hint: AppStrings.itemInventoryExtraEntryHint,
                       ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.speed,
+                          size: 40,
+                          color: AppColors.ghostPacePurple,
+                        ),
+                        title: AppStrings.itemInventoryFriendGhostTitle,
+                        quantity: '보유량: ${shop.friendGhostCount}',
+                        hint: AppStrings.itemInventoryFriendGhostHint,
+                      ),
+                      const SizedBox(height: 12),
+                      _InventoryItemCard(
+                        icon: const Icon(
+                          Icons.flag_outlined,
+                          size: 40,
+                          color: AppColors.progressYellow,
+                        ),
+                        title: AppStrings.itemInventoryCrewCheerTitle,
+                        quantity: '보유량: ${shop.crewCheerCount}',
+                        hint: AppStrings.itemInventoryCrewCheerHint,
+                        useButtonColor: _useButtonMint,
+                        onUse: () => _onUseItem(
+                          ServerShopInventory.crewCheerId,
+                          AppStrings.itemInventoryCrewCheerTitle,
+                        ),
+                      ),
                     ],
                   ),
                 ),

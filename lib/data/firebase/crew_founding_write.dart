@@ -6,7 +6,7 @@
 abstract final class CrewFoundingWrite {
   /// Same number as `SrcWalletPaymentSystem.crewCreateShareCost` and
   /// `validCrewFoundingDebit` / `match /crews` in `firestore.rules`.
-  static const shareCost = 50000;
+  static const shareCost = 30000;
 
   static final crewIdPattern = RegExp(r'^[A-Za-z0-9]{20}$');
 

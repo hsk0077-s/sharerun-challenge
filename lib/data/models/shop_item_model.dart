@@ -50,6 +50,27 @@ class ShopItemModel {
       iconName: 'confirmation_number',
     ),
     ShopItemModel(
+      id: 'friend_ghost_pace',
+      title: '친구 고스트 페이스',
+      description: '친구의 검증된 기록과 이번 러닝 페이스를 비교합니다. 내 최고 기록은 무료입니다.',
+      diamondCost: 5,
+      iconName: 'speed',
+    ),
+    ShopItemModel(
+      id: 'friend_ghost_pace_10pack',
+      title: '친구 고스트 10회',
+      description: '친구 고스트 페이스 10회. 한 번씩 사는 것보다 저렴합니다.',
+      diamondCost: 40,
+      iconName: 'speed',
+    ),
+    ShopItemModel(
+      id: 'crew_cheer_flag',
+      title: '크루 응원 깃발',
+      description: '하루 1회. 대회에서 크루원이 받는 SHARE 보상만 10% 늘어납니다.',
+      diamondCost: 15,
+      iconName: 'flag',
+    ),
+    ShopItemModel(
       id: 'ghost_pace_match',
       title: '고스트 페이스 매칭',
       description: '과거 최고 페이스 고스트와 실시간 페이스 대결을 시작합니다.',

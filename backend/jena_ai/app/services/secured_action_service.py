@@ -59,8 +59,14 @@ from app.services.company_tournament_config import (
 )
 from app.services.item_price_config import (
     COACH_ONE_POINT_ITEM_ID,
+    CREW_CHEER_FLAG_ITEM_ID,
+    CREW_CREATE_DIA_ID,
+    CREW_CREATE_SHARE_ID,
     EXTRA_ENTRY_ITEM_ID,
+    FRIEND_GHOST_ITEM_ID,
+    FRIEND_GHOST_PACK_ITEM_ID,
     RUN_ACCESS_ITEM_IDS,
+    SOCIAL_ITEM_IDS,
     STREAK_ITEM_IDS,
     read_item_prices,
 )
@@ -69,6 +75,15 @@ from app.services.run_access_items import (
     extra_entry_opens_closed,
     purchase_run_access_item,
     use_coach_one_point,
+)
+from app.services.social_items import (
+    cheer_bonus_share,
+    crew_has_cheer,
+    member_crew_id,
+    positive_share_reward,
+    purchase_social_item,
+    use_crew_cheer,
+    use_friend_ghost,
 )
 from app.services.streak_protection import (
     CPR_ITEM_ID,
@@ -385,6 +400,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id in SOCIAL_ITEM_IDS:
+            return _commit_social_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         return _commit_shop_tx(transaction, self, uid, item_id, user_ref)
 
     def ensure_coach_plus_cpr(self, uid: str) -> None:
@@ -411,12 +435,27 @@ class SecuredActionService:
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_nickname_tx(transaction, self, uid, compact, user_ref)
 
-    def found_crew(self, uid: str, name: str) -> SecuredActionResult:
+    def found_crew(
+        self,
+        uid: str,
+        name: str,
+        pay_with: str,
+        request_id: str,
+    ) -> SecuredActionResult:
+        if pay_with not in {"share", "dia"}:
+            raise HTTPException(status_code=400, detail="Invalid crew payment.")
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         crew_ref = self.firebase_service.db.collection("crews").document()
         return _commit_crew_found_tx(
-            transaction, self, uid, name, user_ref, crew_ref
+            transaction,
+            self,
+            uid,
+            name,
+            pay_with,
+            require_request_id(request_id),
+            user_ref,
+            crew_ref,
         )
 
     def create_challenge_room(
@@ -434,6 +473,8 @@ class SecuredActionService:
         uid: str,
         item_id: str,
         request_id: str | None = None,
+        friend_uid: str | None = None,
+        activity_id: str | None = None,
     ) -> SecuredActionResult:
         if item_id == CPR_ITEM_ID:
             self.ensure_coach_plus_cpr(uid)
@@ -460,6 +501,29 @@ class SecuredActionService:
             raise HTTPException(
                 status_code=400,
                 detail="Extra entry ticket is spent by joining a race.",
+            )
+        if item_id == FRIEND_GHOST_ITEM_ID:
+            return _commit_friend_ghost_use_tx(
+                transaction,
+                self,
+                uid,
+                require_request_id(request_id),
+                friend_uid,
+                activity_id,
+                user_ref,
+            )
+        if item_id == CREW_CHEER_FLAG_ITEM_ID:
+            return _commit_crew_cheer_use_tx(
+                transaction,
+                self,
+                uid,
+                require_request_id(request_id),
+                user_ref,
+            )
+        if item_id == FRIEND_GHOST_PACK_ITEM_ID:
+            raise HTTPException(
+                status_code=400,
+                detail="Friend ghost pack is spent as single uses.",
             )
         return _commit_use_shop_tx(transaction, self, uid, item_id, user_ref)
 
@@ -630,6 +694,33 @@ class SecuredActionService:
                 referrer_uid=referred_by,
             )
 
+        crew_id = member_crew_id(user) if user_snapshot.exists else ""
+        cheer_crew = None
+        if crew_id:
+            crew_snapshot = (
+                self.firebase_service.db.collection("crews")
+                .document(crew_id)
+                .get(transaction=transaction)
+            )
+            if crew_snapshot.exists:
+                cheer_crew = crew_snapshot.to_dict() or {}
+        tournament_id = (request.tournament_id or "").strip()
+        race_share = 0
+        if tournament_id and "/" not in tournament_id:
+            tournament_snapshot = (
+                self.firebase_service.db.collection("tournaments")
+                .document(tournament_id)
+                .get(transaction=transaction)
+            )
+            if tournament_snapshot.exists:
+                race_share = positive_share_reward(
+                    (tournament_snapshot.to_dict() or {}).get("shareReward")
+                )
+        cheer_ledger_ref = self.firebase_service.db.collection(
+            "walletTransactions"
+        ).document(f"crew_cheer_{activity_ref.id}")
+        cheer_already = cheer_ledger_ref.get(transaction=transaction).exists
+
         route = [
             point.model_dump() if hasattr(point, "model_dump") else point.dict()
             for point in request.gps_route
@@ -714,6 +805,37 @@ class SecuredActionService:
         if result.forfeit_deposit:
             self._forfeit_active_deposit_tx(transaction, uid, user_ref, activity_ref.id)
 
+        cheer_bonus = 0
+        if (
+            result.verified
+            and user_snapshot.exists
+            and not cheer_already
+            and crew_has_cheer(cheer_crew, today)
+        ):
+            cheer_bonus = cheer_bonus_share(race_share)
+        if cheer_bonus > 0:
+            wallet = user.get("wallet") or {}
+            moved = move_currency(wallet, share=cheer_bonus)
+            transaction.update(
+                user_ref,
+                {**moved["updates"], "updatedAt": SERVER_TIMESTAMP},
+            )
+            transaction.set(
+                cheer_ledger_ref,
+                {
+                    "uid": uid,
+                    "type": "crew_cheer_share",
+                    "shareAmount": cheer_bonus,
+                    "baseShare": race_share,
+                    "bonusPercent": 10,
+                    "crewId": crew_id,
+                    "tournamentId": tournament_id,
+                    "activityId": activity_ref.id,
+                    "createdAt": SERVER_TIMESTAMP,
+                    **moved["ledger"],
+                },
+            )
+
         return ValidationResult(
             verified=result.verified,
             decision=result.decision,
@@ -745,6 +867,18 @@ class SecuredActionService:
             "title": "추가 참가권 3장",
             "diamondCost": 25,
         },
+        "friend_ghost_pace": {
+            "title": "친구 고스트 페이스",
+            "diamondCost": 5,
+        },
+        "friend_ghost_pace_10pack": {
+            "title": "친구 고스트 10회",
+            "diamondCost": 40,
+        },
+        "crew_cheer_flag": {
+            "title": "크루 응원 깃발",
+            "diamondCost": 15,
+        },
         "ghost_pace_match": {
             "title": "고스트 페이스 매칭",
             "diamondCost": 8,
@@ -774,7 +908,6 @@ class SecuredActionService:
         "expand": ("diamond", 300, "crew_member_expand"),
         "deposit": ("share", 10000, "crew_deposit"),
     }
-    CREW_CREATE_SHARE = 50000
     NICKNAME_CHANGE_DIA = 100
     CREW_GIFT_ITEMS = (
         ("record_cpr_ticket", "기록 심폐소생권"),
@@ -1644,7 +1777,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         catalog_item = self.SHOP_CATALOG.get(item_id)
         if catalog_item is None:
@@ -1882,21 +2015,55 @@ class SecuredActionService:
         transaction,
         uid: str,
         name: str,
+        pay_with: str,
+        request_id: str,
         user_ref,
         crew_ref,
     ) -> SecuredActionResult:
         trimmed = name.strip()
         if not trimmed or len(trimmed) > 80:
             raise HTTPException(status_code=400, detail="Invalid crew name.")
+        prices = read_item_prices(self.firebase_service.db, transaction)
+        dia_cost = int(prices[CREW_CREATE_DIA_ID])
+        share_cost = int(prices[CREW_CREATE_SHARE_ID])
+        ledger_ref = self.firebase_service.db.collection("walletTransactions").document(
+            f"crew_create_{uid}_{request_id}"
+        )
+        if ledger_ref.get(transaction=transaction).exists:
+            user_snapshot = user_ref.get(transaction=transaction)
+            wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+            return SecuredActionResult(
+                accepted=True,
+                status="already_created",
+                reason="Crew creation already recorded.",
+                share_balance=_wallet_int(wallet, "shareBalance"),
+                diamond_balance=_wallet_int(wallet, "diamondBalance"),
+                value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+            )
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
         wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
         share = int(wallet.get("shareBalance") or 0)
-        cost = self.CREW_CREATE_SHARE
-        if share < cost:
-            raise HTTPException(status_code=400, detail="Insufficient Share balance.")
-        moved = move_currency(wallet, share=-cost)
+        diamonds = int(wallet.get("diamondBalance") or 0)
+        if pay_with == "dia":
+            if diamonds < dia_cost:
+                raise HTTPException(
+                    status_code=400, detail="Insufficient Diamond balance."
+                )
+            moved = move_currency(wallet, diamond=-dia_cost)
+            amount_key = "diamondAmount"
+            cost = dia_cost
+            share_charged = 0
+            dia_charged = dia_cost
+        else:
+            if share < share_cost:
+                raise HTTPException(status_code=400, detail="Insufficient Share balance.")
+            moved = move_currency(wallet, share=-share_cost)
+            amount_key = "shareAmount"
+            cost = share_cost
+            share_charged = share_cost
+            dia_charged = 0
         transaction.update(
             user_ref,
             {
@@ -1912,18 +2079,21 @@ class SecuredActionService:
                 "ownerUid": uid,
                 "totalValue": 0,
                 "memberCount": 1,
-                "shareCost": cost,
+                "payWith": pay_with,
+                "shareCost": share_charged,
+                "diaCost": dia_charged,
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
-        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.set(
-            tx_ref,
+            ledger_ref,
             {
                 "uid": uid,
                 "type": "crew_create",
-                "shareAmount": -cost,
+                amount_key: -cost,
+                "payWith": pay_with,
                 "crewId": crew_ref.id,
+                "requestId": request_id,
                 "createdAt": SERVER_TIMESTAMP,
                 **moved["ledger"],
             },
@@ -1932,8 +2102,8 @@ class SecuredActionService:
             accepted=True,
             status="created",
             reason="Crew created.",
-            share_balance=share - cost,
-            diamond_balance=_wallet_int(wallet, "diamondBalance"),
+            share_balance=share - share_charged,
+            diamond_balance=diamonds - dia_charged,
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
@@ -2014,7 +2184,7 @@ class SecuredActionService:
         item_id: str,
         user_ref,
     ) -> SecuredActionResult:
-        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS:
+        if item_id in STREAK_ITEM_IDS or item_id in RUN_ACCESS_ITEM_IDS or item_id in SOCIAL_ITEM_IDS:
             raise HTTPException(status_code=400, detail="request_id is required.")
         if item_id not in self.SHOP_CATALOG:
             raise HTTPException(status_code=404, detail="Shop item not found.")
@@ -3426,15 +3596,66 @@ def _commit_nickname_tx(
 
 
 @firestore.transactional
+def _commit_social_purchase_tx(
+    transaction,
+    service,
+    uid: str,
+    item_id: str,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_social_item(
+        service, transaction, uid, item_id, request_id, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_friend_ghost_use_tx(
+    transaction,
+    service,
+    uid: str,
+    request_id: str,
+    friend_uid: str | None,
+    activity_id: str | None,
+    user_ref,
+) -> SecuredActionResult:
+    return use_friend_ghost(
+        service,
+        transaction,
+        uid,
+        request_id,
+        friend_uid,
+        activity_id,
+        user_ref,
+    )
+
+
+@firestore.transactional
+def _commit_crew_cheer_use_tx(
+    transaction,
+    service,
+    uid: str,
+    request_id: str,
+    user_ref,
+    now=None,
+) -> SecuredActionResult:
+    return use_crew_cheer(service, transaction, uid, request_id, user_ref, now=now)
+
+
+@firestore.transactional
 def _commit_crew_found_tx(
     transaction,
     service,
     uid: str,
     name: str,
+    pay_with: str,
+    request_id: str,
     user_ref,
     crew_ref,
 ) -> SecuredActionResult:
-    return service._found_crew_tx(transaction, uid, name, user_ref, crew_ref)
+    return service._found_crew_tx(
+        transaction, uid, name, pay_with, request_id, user_ref, crew_ref
+    )
 
 
 @firestore.transactional

@@ -45,15 +45,15 @@ void main() {
 
   test('user merge is an absolute SHARE int plus the new crew id', () {
     expect(
-      CrewFoundingWrite.shareAfter(availableShare: 60000, shareCost: 50000),
+      CrewFoundingWrite.shareAfter(availableShare: 40000, shareCost: 30000),
       10000,
     );
     expect(
-      CrewFoundingWrite.shareAfter(availableShare: 50000, shareCost: 50000),
+      CrewFoundingWrite.shareAfter(availableShare: 30000, shareCost: 30000),
       0,
     );
     expect(
-      CrewFoundingWrite.shareAfter(availableShare: 49999, shareCost: 50000),
+      CrewFoundingWrite.shareAfter(availableShare: 29999, shareCost: 30000),
       isNull,
     );
     expect(
@@ -85,13 +85,13 @@ void main() {
       'ownerUid': 'user-1',
       'totalValue': 0,
       'memberCount': 1,
-      'shareCost': 50000,
+      'shareCost': 30000,
     });
     expect(
       () => CrewFoundingWrite.crewFields(
         name: '   ',
         ownerUid: 'user-1',
-        shareCost: 50000,
+        shareCost: 30000,
       ),
       throwsArgumentError,
     );

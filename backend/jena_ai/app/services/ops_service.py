@@ -23,106 +23,10 @@ class OpsService:
         self._firebase_service = firebase_service
 
     def cancel_bep_and_refund(self, tournament_id: str) -> BepRefundResult:
-        db = self.firebase_service.db
-        tournament_ref = db.collection("tournaments").document(tournament_id)
-        tournament_snapshot = tournament_ref.get()
-
-        if not tournament_snapshot.exists:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Tournament does not exist.",
-            )
-
-        tournament = tournament_snapshot.to_dict() or {}
-        participant_count = int(tournament.get("participantCount") or 0)
-        min_participants_bep = int(tournament.get("minParticipantsBep") or 0)
-        current_status = tournament.get("status", "recruiting")
-
-        if participant_count >= min_participants_bep:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="BEP has been met; tournament cannot be cancelled.",
-            )
-        if current_status not in {"recruiting", "cancelled_bep_not_met"}:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Only recruiting or already-BEP-cancelled tournaments can be refunded.",
-            )
-
-        participants = list(tournament_ref.collection("participants").stream())
-        batch = db.batch()
-        writes_in_batch = 0
-        refunded_count = 0
-        refunded_total = 0
-
-        batch.update(
-            tournament_ref,
-            {
-                "status": "cancelled_bep_not_met",
-                "cancelledReason": "bep_not_met",
-                "updatedAt": SERVER_TIMESTAMP,
-            },
+        transaction = self.firebase_service.db.transaction()
+        refunded_count, refunded_total = _commit_bep_refund_tx(
+            transaction, self, tournament_id
         )
-        writes_in_batch += 1
-
-        for participant_snapshot in participants:
-            participant = participant_snapshot.to_dict() or {}
-            if participant.get("refundStatus") == "refunded":
-                continue
-            if participant.get("status") not in {"joined", "refundable"}:
-                continue
-
-            uid = participant.get("uid") or participant_snapshot.id
-            entry_fee = int(participant.get("entryFeeShare") or 0)
-            if entry_fee <= 0:
-                continue
-
-            user_ref = db.collection("users").document(uid)
-            tx_ref = db.collection("walletTransactions").document()
-            user_snapshot = user_ref.get()
-            wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
-            moved = move_currency(wallet, share=entry_fee)
-
-            batch.update(
-                user_ref,
-                {
-                    **moved["updates"],
-                    "updatedAt": SERVER_TIMESTAMP,
-                },
-            )
-            batch.update(
-                participant_snapshot.reference,
-                {
-                    "refundStatus": "refunded",
-                    "refundedShare": entry_fee,
-                    "refundedAt": SERVER_TIMESTAMP,
-                    "status": "refunded",
-                },
-            )
-            batch.set(
-                tx_ref,
-                {
-                    "uid": uid,
-                    "tournamentId": tournament_id,
-                    "type": "bep_refund",
-                    "shareAmount": entry_fee,
-                    "fee": 0,
-                    "createdAt": SERVER_TIMESTAMP,
-                    **moved["ledger"],
-                },
-            )
-
-            refunded_count += 1
-            refunded_total += entry_fee
-            writes_in_batch += 3
-
-            if writes_in_batch >= 400:
-                batch.commit()
-                batch = db.batch()
-                writes_in_batch = 0
-
-        if writes_in_batch > 0:
-            batch.commit()
 
         self._try_send_tournament_notification(
             tournament_id,
@@ -313,3 +217,106 @@ class OpsService:
         if self._firebase_service is None:
             self._firebase_service = FirebaseService()
         return self._firebase_service
+
+
+def bep_refund_ledger_id(tournament_id: str, uid: str) -> str:
+    return f"bep_refund_{tournament_id}_{uid}"
+
+
+@firestore.transactional
+def _commit_bep_refund_tx(transaction, service: OpsService, tournament_id: str):
+    db = service.firebase_service.db
+    tournament_ref = db.collection("tournaments").document(tournament_id)
+    tournament_snapshot = tournament_ref.get(transaction=transaction)
+    if not tournament_snapshot.exists:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Tournament does not exist.",
+        )
+
+    tournament = tournament_snapshot.to_dict() or {}
+    participant_count = int(tournament.get("participantCount") or 0)
+    min_participants_bep = int(tournament.get("minParticipantsBep") or 0)
+    current_status = tournament.get("status", "recruiting")
+    if participant_count >= min_participants_bep:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="BEP has been met; tournament cannot be cancelled.",
+        )
+    if current_status not in {"recruiting", "cancelled_bep_not_met"}:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only recruiting or already-BEP-cancelled tournaments can be refunded.",
+        )
+
+    participants = list(
+        transaction.get(tournament_ref.collection("participants"))
+    )
+    plans = []
+    for participant_snapshot in participants:
+        participant = participant_snapshot.to_dict() or {}
+        if participant.get("refundStatus") == "refunded":
+            continue
+        if participant.get("status") not in {"joined", "refundable"}:
+            continue
+        uid = participant.get("uid") or participant_snapshot.id
+        entry_fee = int(participant.get("entryFeeShare") or 0)
+        if entry_fee <= 0:
+            continue
+        user_ref = db.collection("users").document(uid)
+        ledger_ref = db.collection("walletTransactions").document(
+            bep_refund_ledger_id(tournament_id, uid)
+        )
+        user_snapshot = user_ref.get(transaction=transaction)
+        if ledger_ref.get(transaction=transaction).exists:
+            continue
+        if not user_snapshot.exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        plans.append(
+            (user_ref, ledger_ref, participant_snapshot.reference, entry_fee, wallet, uid)
+        )
+
+    transaction.update(
+        tournament_ref,
+        {
+            "status": "cancelled_bep_not_met",
+            "cancelledReason": "bep_not_met",
+            "updatedAt": SERVER_TIMESTAMP,
+        },
+    )
+    refunded_count = 0
+    refunded_total = 0
+    for user_ref, ledger_ref, participant_ref, entry_fee, wallet, uid in plans:
+        moved = move_currency(wallet, share=entry_fee)
+        transaction.update(
+            user_ref,
+            {**moved["updates"], "updatedAt": SERVER_TIMESTAMP},
+        )
+        transaction.update(
+            participant_ref,
+            {
+                "refundStatus": "refunded",
+                "refundedShare": entry_fee,
+                "refundedAt": SERVER_TIMESTAMP,
+                "status": "refunded",
+            },
+        )
+        transaction.set(
+            ledger_ref,
+            {
+                "uid": uid,
+                "tournamentId": tournament_id,
+                "type": "bep_refund",
+                "shareAmount": entry_fee,
+                "fee": 0,
+                "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
+            },
+        )
+        refunded_count += 1
+        refunded_total += entry_fee
+    return refunded_count, refunded_total

@@ -6,13 +6,15 @@ import '../../../data/models/tournament_join_result.dart';
 /// [walletProvider] (like personal sponsorship `subtractShare`) when Jena
 /// cannot be reached, and only once.
 abstract final class TournamentJoinDebit {
-  /// True for a newly accepted join. False for idempotent re-join, failures
-  /// (those never produce a result), and zero-fee rooms.
+  /// True for a newly accepted join that should mirror a SHARE debit.
+  /// False for idempotent re-join, failures, and zero-fee rooms.
+  /// A server-confirmed negative [TournamentJoinResult.shareCredited] still
+  /// debits even when the local fee is 0.
   static bool shouldApplyEntryFee({
     required TournamentJoinResult result,
     required int entryFeeShare,
   }) {
-    if (entryFeeShare <= 0) return false;
+    if (entryFeeShare <= 0 && result.shareCredited >= 0) return false;
     if (!result.accepted) return false;
     if (result.alreadyJoined) return false;
     if (result.shareCredited > 0) return false;

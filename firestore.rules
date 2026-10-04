@@ -820,11 +820,13 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Official stamp-tour catalog. Clients read; admin replaces the list.
-    // Scoped to stamp_tour so other future config docs stay closed.
+    // Official catalogs. Clients read; admin replaces the doc.
+    // company_tournament is the prize-race config (Jena also serves it).
     match /config/{docId} {
-      allow read: if (signedIn() || isAdmin()) && docId == 'stamp_tour';
-      allow write: if isAdmin() && docId == 'stamp_tour';
+      allow read: if (signedIn() || isAdmin())
+        && (docId == 'stamp_tour' || docId == 'company_tournament');
+      allow write: if isAdmin()
+        && (docId == 'stamp_tour' || docId == 'company_tournament');
     }
 
     match /stampLandmarks/{landmarkId} {

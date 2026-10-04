@@ -15,6 +15,10 @@ abstract final class FirestorePaths {
   /// shipping a new client. Shape: `{ landmarks: [ {id, name, lat, lng} ] }`.
   static const stampTourConfig = 'config/stamp_tour';
 
+  /// Company prize-race settings. Jena merges this over code defaults.
+  /// Same document as `GET /actions/company-tournament/config`.
+  static const companyTournamentConfig = 'config/company_tournament';
+
   static String user(String uid) => '$users/$uid';
 
   /// 클라이언트 결제/소모 장부. 앱 재설치 후 로그인 시 히스토리 복원용.

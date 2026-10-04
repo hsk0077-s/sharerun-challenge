@@ -21,6 +21,9 @@ enum TournamentJoinKind {
 
   /// Release (or non-recoverable) Jena failure — no join, no debit.
   failedClosed,
+
+  /// Accepted 0-fee or free-ticket join. No SHARE debit.
+  free,
 }
 
 /// Pure join decision so USB logs and tests can assert debit / snackbar
@@ -61,6 +64,7 @@ abstract final class TournamentJoinMessages {
   static const alreadyJoined = '이미 참가한 챌린지입니다. 참가비는 다시 차감되지 않습니다.';
   static const rejected = '참가가 거절되었습니다. 참가비는 차감되지 않았습니다.';
   static const joinPaymentFailed = '참가·결제가 완료되지 않았습니다. 서버 연결 또는 인증에 실패했습니다.';
+  static const freeJoined = '참가 완료.';
 
   static String paid(int fee) => '참가 완료. 참가비 $fee SHARE가 잠겼습니다.';
 
@@ -108,6 +112,22 @@ abstract final class TournamentJoinPlanner {
         debitAmount: 0,
         snackbarMessage: TournamentJoinMessages.rejected,
         debugLog: '[JOIN] status=${result.status} debit=N error=rejected',
+      );
+    }
+    final freeStatus =
+        result.status == 'joined_free' || result.status == 'joined_ticket';
+    final zeroFee = entryFeeShare <= 0 &&
+        (result.status == 'joined' || result.status.isEmpty);
+    if (result.shareCredited >= 0 && (freeStatus || zeroFee)) {
+      final status = result.status.isEmpty ? 'joined' : result.status;
+      return TournamentJoinPlan(
+        kind: TournamentJoinKind.free,
+        applyDebit: false,
+        debitAmount: 0,
+        snackbarMessage: TournamentJoinMessages.freeJoined,
+        debugLog: '[JOIN] status=$status debit=N error=',
+        joinedForUi: true,
+        unlockRun: true,
       );
     }
     if (!TournamentJoinDebit.shouldApplyEntryFee(

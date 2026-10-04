@@ -221,8 +221,6 @@ abstract final class AppStrings {
   static const challengeDetailValueTip =
       '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
   static const challengeDetailCprMaxPerRace = 3;
-  static String challengeDetailCprTickets(int count) =>
-      '심폐소생권 보유: $count/$challengeDetailCprMaxPerRace';
   static const challengeDetailCprUse = '심폐소생권 사용';
   static const challengeDetailCprBuyHint = '상점에서 구매';
   static const challengeDetailJoin = '대회 참가';

@@ -199,7 +199,7 @@ class _JoinedTournamentDetail extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text('Donation pool: ${room.donationValue} Value'),
+          Text(room.cashPrizePoolLabel ?? AppStrings.noCashPrizePool),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () => startRunWithPreflight(

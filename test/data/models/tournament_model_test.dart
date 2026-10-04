@@ -56,6 +56,38 @@ void main() {
     });
   });
 
+  group('TournamentModel cash prize copy', () {
+    test('hides a prize taken from the entry fee', () {
+      final room = TournamentModel.fromJson(
+        id: 'user-room',
+        json: {
+          'entryFeeShare': 600000,
+          'winnerRewardValue': 240000,
+          'donationValue': 120000,
+        },
+      );
+
+      expect(room.cashPrizePoolLabel, isNull);
+    });
+
+    test('hides an empty pool on a room with no sponsor prize', () {
+      final room = TournamentModel.fromJson(
+        id: 'user-room',
+        json: {
+          'entryFeeShare': 600000,
+          'winnerRewardValue': 0,
+          'donationValue': 0,
+        },
+      );
+
+      expect(room.cashPrizePoolLabel, isNull);
+    });
+
+    test('keeps a prize that is not a cut of the entry fee', () {
+      expect(_room().cashPrizePoolLabel, 'Donation pool: 200 Value');
+    });
+  });
+
   group('TournamentModel capacity', () {
     test('treats zero maxParticipants as unlimited capacity', () {
       final room = _room(maxParticipants: 0, participantCount: 99);

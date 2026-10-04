@@ -102,8 +102,8 @@ class _CreateChallengeRoomScreenState
           title: title,
           targetDistanceKm: _selectedDistanceKm.toDouble(),
           entryFeeShare: created.entryFeeShare,
-          winnerRewardValue: (created.entryFeeShare * 0.4).round(),
-          donationValue: (created.entryFeeShare * 0.2).round(),
+          winnerRewardValue: 0,
+          donationValue: 0,
           minParticipantsBep: TournamentRepository.defaultBepForDistance(
             _selectedDistanceKm,
           ),
@@ -156,8 +156,8 @@ class _CreateChallengeRoomScreenState
       title: title,
       targetDistanceKm: _selectedDistanceKm.toDouble(),
       entryFeeShare: _entryFee,
-      winnerRewardValue: (_entryFee * 0.4).round(),
-      donationValue: (_entryFee * 0.2).round(),
+      winnerRewardValue: 0,
+      donationValue: 0,
       minParticipantsBep: TournamentRepository.defaultBepForDistance(
         _selectedDistanceKm,
       ),

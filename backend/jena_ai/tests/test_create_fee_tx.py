@@ -78,6 +78,8 @@ def test_create_room_uses_server_fee_for_3km() -> None:
     assert result.share_balance == 400_000
     assert result.diamond_balance == 1_000_000
     assert db.store["tournaments/room1"]["entryFeeShare"] == 600_000
+    assert db.store["tournaments/room1"]["winnerRewardValue"] == 0
+    assert db.store["tournaments/room1"]["donationValue"] == 0
     assert db.store["tournaments/room1"]["userCreated"] is True
     ledger = [
         row for path, row in db.store.items() if path.startswith("walletTransactions/")

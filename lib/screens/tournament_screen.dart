@@ -356,7 +356,7 @@ class _TournamentRoomCard extends StatelessWidget {
             ),
           ),
           Text(
-            'Donation pool: ${room.donationValue} Value',
+            room.cashPrizePoolLabel ?? AppStrings.noCashPrizePool,
             style: textTheme.bodySmall?.copyWith(
               color: tokens.colors.donation,
               fontWeight: FontWeight.w600,

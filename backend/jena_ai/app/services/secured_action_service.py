@@ -2418,8 +2418,9 @@ class SecuredActionService:
                 "title": trimmed,
                 "targetDistanceKm": float(distance_km),
                 "entryFeeShare": fee,
-                "winnerRewardValue": int(fee * 0.4),
-                "donationValue": int(fee * 0.2),
+                # Admission only. Cash prizes come from a sponsor or company budget.
+                "winnerRewardValue": 0,
+                "donationValue": 0,
                 "minParticipantsBep": bep,
                 "maxParticipants": capacity,
                 "participantCount": 1,

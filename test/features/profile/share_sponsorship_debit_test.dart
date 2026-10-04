@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
+import 'package:share_run_challenge/core/api/api_exception.dart';
+import 'package:share_run_challenge/data/models/personal_sponsor_donation.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
+import 'package:share_run_challenge/screens/personal_sponsor_screen.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
@@ -98,7 +101,7 @@ void main() {
     expect(merged.isSponsored, isFalse);
   });
 
-  test('50k SHARE sponsor updates angel count/total and they stay', () async {
+  test('sponsor donation does not change totals before the server confirms', () async {
     final container = ProviderContainer(
       overrides: [
         activeUserProfileProvider.overrideWith(
@@ -112,19 +115,61 @@ void main() {
     expect(container.read(userProfileProvider).donationCount, 0);
     expect(container.read(userProfileProvider).safeCumulativeDonationAmount, 0);
 
-    await notifier.processDonation(50000);
+    await expectLater(
+      notifier.processDonation(50000),
+      throwsA(isA<StateError>()),
+    );
 
     final after = container.read(userProfileProvider);
-    expect(after.donationCount, 1);
-    expect(after.cumulativeDonationAmount, 50000);
-    expect(after.isSponsored, isTrue);
-    expect(after.angelTier, AngelTier.guardian);
+    expect(after.donationCount, 0);
+    expect(after.cumulativeDonationAmount, 0);
+    expect(after.isSponsored, isFalse);
+    expect(after.angelTier, AngelTier.preAngel);
+  });
 
-    final snapped = UserProfileNotifier.retainOptimisticDonationTotals(
-      local: after,
-      remote: UserModel.dashboardDefault(uid: ''),
+  test('server confirmation updates angel count and tier', () {
+    final confirmed = UserProfileNotifier.confirmedSponsorshipProfile(
+      local: UserModel.dashboardDefault(uid: 'u1'),
+      confirmed: const PersonalSponsorDonation(
+        status: 'sponsored',
+        shareSpent: 50000,
+        donationCount: 1,
+        cumulativeDonationAmount: 50000,
+        angelTierCode: 'guardian',
+        isSponsored: true,
+        shareBalance: 30000,
+      ),
     );
-    expect(snapped.donationCount, 0);
-    expect(snapped.cumulativeDonationAmount, 0);
+    expect(confirmed.donationCount, 1);
+    expect(confirmed.cumulativeDonationAmount, 50000);
+    expect(confirmed.isSponsored, isTrue);
+    expect(confirmed.angelTier, AngelTier.guardian);
+  });
+
+  test('sponsor failure is SHARE or a generic Korean error, never DIA', () {
+    expect(
+      personalSponsorFailureMessage(
+        const ApiException(
+          statusCode: 400,
+          detail: 'Insufficient Share balance.',
+        ),
+      ),
+      'SHARE가 부족합니다.',
+    );
+    expect(
+      personalSponsorFailureMessage(
+        const ApiException(
+          statusCode: 400,
+          detail: 'Insufficient Diamond balance.',
+        ),
+      ),
+      '후원에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+    );
+    expect(
+      personalSponsorFailureMessage(
+        const ApiException(statusCode: 500, detail: 'Internal Server Error'),
+      ),
+      '후원에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+    );
   });
 }

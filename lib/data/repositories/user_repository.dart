@@ -6,6 +6,7 @@ import '../../core/constants/firestore_paths.dart';
 import '../api/secured_action_api_client.dart';
 import '../firebase/firestore_service.dart';
 import '../models/pedometer_harvest_result.dart';
+import '../models/personal_sponsor_donation.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
@@ -139,25 +140,21 @@ class UserRepository {
     }, SetOptions(merge: true));
   }
 
-  /// Donation totals are server-owned. Rules reject this client write.
-  /// No secured endpoint exists yet; callers must treat a failure as not saved.
-  Future<void> recordDonation({
+  /// Personal sponsor donation. The server debits SHARE and writes the
+  /// angel totals. [uid] must match the signed-in account; the amount is
+  /// not sent. Throws when the server rejects the charge.
+  Future<PersonalSponsorDonation> recordDonation({
     required String uid,
-    required int amountWon,
-    required String angelTierCode,
+    required String purpose,
   }) async {
-    if (uid.isEmpty || amountWon <= 0) return;
-    await _firestoreService.doc(FirestorePaths.user(uid)).set(
-      {
-        'uid': uid,
-        'donationCount': FieldValue.increment(1),
-        'cumulativeDonationAmount': FieldValue.increment(amountWon),
-        'isSponsored': true,
-        'angelTierCode': angelTierCode,
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      SetOptions(merge: true),
-    );
+    if (uid.isEmpty) {
+      throw StateError('Personal sponsor requires a signed-in user.');
+    }
+    final api = _securedActionApiClient;
+    if (api == null) {
+      throw StateError('Personal sponsor server is unavailable.');
+    }
+    return api.donatePersonalSponsor(purpose: purpose);
   }
 
   /// Users.watch_api_token 매핑 — 어뷰징 차단 Jena 파이프라인 핸드오프.

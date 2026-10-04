@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/router/route_names.dart';
+import '../core/api/api_exception.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -13,10 +14,18 @@ import '../core/widgets/src_gradient_background.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
-import '../features/wallet/providers/wallet_provider.dart';
 import 'hall_of_fame_screen.dart';
 
 enum _SponsorPurpose { prize, donation }
+
+/// Korean copy for a failed personal-sponsor charge.
+/// A server or network failure is not a DIA shortage.
+String personalSponsorFailureMessage(Object error) {
+  if (error is ApiException && error.detail == 'Insufficient Share balance.') {
+    return 'SHARE가 부족합니다.';
+  }
+  return '후원에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+}
 
 /// 개인 스폰서십(천사 후원) 화면 (Screen 17).
 class PersonalSponsorScreen extends ConsumerStatefulWidget {
@@ -40,43 +49,37 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final wallet = ref.read(walletProvider);
-      if (wallet.shareBalance < _donationShare) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'SHARE가 부족합니다. (필요 $_donationShare / 보유 ${wallet.shareBalance})',
-            ),
-          ),
-        );
-        return;
-      }
       final previousTier = ref.read(userProfileProvider).angelTier;
-      // Sync + durable, same as tournament join. `subtractShare` is async and
-      // does not remember the post-spend ledger, so a stale Firestore
-      // snapshot restores pre-debit SHARE and the My-page bar snaps back.
-      ref.read(walletProvider.notifier).applyEntryFeeDebit(_donationShare);
-      await ref.read(userProfileNotifierProvider.notifier).processDonation(
-            _donationShare,
-            receiptTitle: _purpose == _SponsorPurpose.prize
-                ? '챌린지 상금 지원 후원 🏆'
-                : '유니세프 기부 완료 🕊️',
-          );
-      if (!mounted) return;
+      final confirmed =
+          await ref.read(userProfileNotifierProvider.notifier).processDonation(
+                _donationShare,
+                purpose: _purpose == _SponsorPurpose.prize ? 'prize' : 'donation',
+              );
+      if (!mounted || confirmed == null) return;
       final nextTier = ref.read(userProfileProvider).angelTier;
       await _showCelebration(
         previousTier: previousTier,
         nextTier: nextTier,
+        shareSpent: confirmed.shareSpent,
       );
+    } catch (error) {
+      if (!mounted) return;
+      _snack(personalSponsorFailureMessage(error));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
+  void _snack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _showCelebration({
     required AngelTier previousTier,
     required AngelTier nextTier,
+    required int shareSpent,
   }) async {
     final purposeLabel = _purpose == _SponsorPurpose.prize
         ? AppStrings.personalSponsorPrizeTitle
@@ -113,7 +116,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '$purposeLabel · 50,000 SHARE',
+                '$purposeLabel · ${AngelTierX.formatWon(shareSpent)}',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.caption.copyWith(fontSize: 12),
               ),

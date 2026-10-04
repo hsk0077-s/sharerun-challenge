@@ -27,6 +27,8 @@ from app.models.secured_actions import (
     ShopPurchaseRequest,
     ValidateRunRequest,
     DiaPackGrantRequest,
+    PersonalSponsorRequest,
+    PersonalSponsorResult,
     ShareToDiaRequest,
     ShareToDiaView,
     Web3TransferRequest,
@@ -305,6 +307,18 @@ def transfer_value_to_web3(
 @router.post("/hall-of-fame/donate", response_model=SecuredActionResult)
 def donate_hall_of_fame(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.donate_hall_of_fame(uid=uid)
+
+
+@router.post("/sponsorship/donate", response_model=PersonalSponsorResult)
+def donate_personal_sponsor(
+    request: PersonalSponsorRequest,
+    uid: str = Depends(require_uid),
+) -> PersonalSponsorResult:
+    return service.donate_personal_sponsor(
+        uid=uid,
+        request_id=request.request_id,
+        purpose=request.purpose,
+    )
 
 
 @router.post("/wallet/share-to-dia/quote", response_model=ShareToDiaView)

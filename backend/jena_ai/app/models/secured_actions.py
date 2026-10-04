@@ -130,6 +130,26 @@ class ShareToDiaRequest(BaseModel):
     dia_amount: int = Field(gt=0, le=20)
 
 
+class PersonalSponsorRequest(BaseModel):
+    # Same id on a retry. The server charges SHARE once for that id.
+    request_id: str = Field(min_length=8, max_length=64)
+    purpose: str = Field(default="donation", pattern="^(donation|prize)$")
+
+
+class PersonalSponsorResult(BaseModel):
+    accepted: bool
+    status: str
+    reason: str
+    share_spent: int = 0
+    donation_count: int = 0
+    cumulative_donation_amount: int = 0
+    angel_tier_code: str = "pre_angel"
+    is_sponsored: bool = False
+    share_balance: int | None = None
+    diamond_balance: int | None = None
+    value_token_balance: int | None = None
+
+
 class ShopCatalogItem(BaseModel):
     id: str
     title: str

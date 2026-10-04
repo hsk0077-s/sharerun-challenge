@@ -13,6 +13,7 @@ from app.models.secured_actions import (
     HarvestPedometerRequest,
     InviteCodeResult,
     JoinTournamentRequest,
+    PersonalSponsorResult,
     RedeemReferralResult,
     RefundRequest,
     ShareToDiaView,
@@ -106,6 +107,7 @@ from app.services.streak_protection import (
     require_request_id,
     use_streak_item,
 )
+from app.services.personal_sponsor import donate_personal_sponsor as _donate_personal_sponsor
 from app.services.value_items import purchase_value_item, use_value_item
 from app.services.wallet_funding import (
     assign_free_balances,
@@ -686,6 +688,23 @@ class SecuredActionService:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_hall_of_fame_donate_tx(transaction, self, uid, user_ref)
+
+    def donate_personal_sponsor(
+        self,
+        uid: str,
+        request_id: str,
+        purpose: str,
+    ) -> PersonalSponsorResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_personal_sponsor_tx(
+            transaction,
+            self,
+            uid,
+            request_id,
+            purpose,
+            user_ref,
+        )
 
     def activate_coach_plus(self, uid: str, product_id: str) -> SecuredActionResult:
         if product_id not in _COACH_PLUS_DAYS:
@@ -3652,6 +3671,20 @@ def _commit_hall_of_fame_donate_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._donate_hall_of_fame_tx(transaction, uid, user_ref)
+
+
+@firestore.transactional
+def _commit_personal_sponsor_tx(
+    transaction,
+    service,
+    uid: str,
+    request_id: str,
+    purpose: str,
+    user_ref,
+) -> PersonalSponsorResult:
+    return _donate_personal_sponsor(
+        service, transaction, uid, request_id, purpose, user_ref
+    )
 
 
 @firestore.transactional

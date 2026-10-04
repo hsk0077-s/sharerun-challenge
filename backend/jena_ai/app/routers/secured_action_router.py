@@ -18,6 +18,9 @@ from app.models.secured_actions import (
     CreateChallengeRoomResult,
     CrewFoundRequest,
     CrewSpendRequest,
+    CosmeticCatalogItem,
+    CosmeticCatalogView,
+    CosmeticEquipRequest,
     ShopCatalogItem,
     ShopCatalogView,
     ShopPurchaseRequest,
@@ -208,6 +211,40 @@ def create_challenge_room(
 ) -> CreateChallengeRoomResult:
     return service.create_challenge_room(
         uid=uid, title=request.title, distance_km=request.distance_km
+    )
+
+
+@router.post("/shop/cosmetics", response_model=CosmeticCatalogView)
+def cosmetics_catalog(uid: str = Depends(require_uid)) -> CosmeticCatalogView:
+    catalog = service.cosmetics_catalog()
+    return CosmeticCatalogView(
+        season=catalog["season"],
+        items=[
+            CosmeticCatalogItem(
+                id=row["id"],
+                name=row["name"],
+                category=row["category"],
+                price=row["price"],
+                limited=row["limited"],
+                season=row["season"],
+                asset=row["asset"],
+                accent=row["accent"],
+            )
+            for row in catalog["items"]
+        ],
+    )
+
+
+@router.post("/shop/cosmetics/equip", response_model=SecuredActionResult)
+def equip_cosmetic_item(
+    request: CosmeticEquipRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.equip_cosmetic_item(
+        uid=uid,
+        item_id=request.item_id,
+        request_id=request.request_id,
+        equip=request.equip,
     )
 
 

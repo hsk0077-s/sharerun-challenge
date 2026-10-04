@@ -8,6 +8,7 @@ import '../../core/api/api_exception.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
+import '../../features/shop/cosmetics_catalog.dart';
 import '../../features/shop/shop_request_ids.dart';
 import '../models/pedometer_harvest_result.dart';
 import '../models/share_to_dia_view.dart';
@@ -219,6 +220,35 @@ class SecuredActionApiClient {
     ];
   }
 
+  Future<CosmeticsCatalog> fetchCosmeticsCatalog() async {
+    final json = await _post('/actions/shop/cosmetics', const {});
+    return CosmeticsCatalog.fromJson(json);
+  }
+
+  /// Buys one cosmetic. The request id makes a retry charge DIA once.
+  Future<PedometerHarvestResult> purchaseCosmetic(String itemId) async {
+    final json = await _postWithRequest(
+      '/actions/shop/purchase',
+      {'item_id': itemId},
+      'buy:$itemId',
+    );
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Equips or clears one owned cosmetic. DIA is not charged.
+  Future<String> equipCosmetic({
+    required String itemId,
+    required bool equip,
+  }) async {
+    final json = await _postWithRequest(
+      '/actions/shop/cosmetics/equip',
+      {'item_id': itemId, 'equip': equip},
+      'equip:$itemId:$equip',
+    );
+    final status = json['status'];
+    return status is String ? status : '';
+  }
+
   /// Buys one catalog item. DIA debit and shopInventory live in one server transaction.
   ///
   /// Priced items send a stable request id. A retry of the same attempt reuses
@@ -255,6 +285,29 @@ class SecuredActionApiClient {
     });
     final status = json['status'];
     return status is String ? status : '';
+  }
+
+  Future<Map<String, dynamic>> _postWithRequest(
+    String path,
+    Map<String, dynamic> fields,
+    String retryKey,
+  ) async {
+    final requestId = _requestIds.begin(retryKey);
+    try {
+      final json = await _post(path, {...fields, 'request_id': requestId});
+      _requestIds.succeed(retryKey);
+      return json;
+    } on ApiException catch (error) {
+      _requestIds.failed(
+        retryKey,
+        requestId,
+        retryable: error.statusCode >= 500,
+      );
+      rethrow;
+    } catch (_) {
+      _requestIds.failed(retryKey, requestId, retryable: true);
+      rethrow;
+    }
   }
 
   Future<Map<String, dynamic>> _postStreakAware(

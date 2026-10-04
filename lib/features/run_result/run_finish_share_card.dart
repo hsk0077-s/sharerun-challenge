@@ -76,6 +76,7 @@ class RunFinishShareCard extends StatelessWidget {
     this.donationWon,
     this.route,
     this.photo,
+    this.frameColor,
     super.key,
   });
 
@@ -111,6 +112,9 @@ class RunFinishShareCard extends StatelessWidget {
 
   /// Scenery for [RunFinishCardTheme.photo]. Session-only; never uploaded.
   final ImageProvider? photo;
+
+  /// Owned share-card frame. Null keeps the card unchanged.
+  final Color? frameColor;
 
   _PaceParts get _paceParts {
     var trimmed = pace.trim();
@@ -202,6 +206,15 @@ class RunFinishShareCard extends StatelessWidget {
                     donation: donation,
                   ),
                 ),
+                if (frameColor != null)
+                  IgnorePointer(
+                    child: DecoratedBox(
+                      key: const Key('run-finish-cosmetic-frame'),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: frameColor!, width: 36),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

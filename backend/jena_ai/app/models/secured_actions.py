@@ -138,6 +138,28 @@ class ShopCatalogView(BaseModel):
     items: list[ShopCatalogItem]
 
 
+class CosmeticCatalogItem(BaseModel):
+    id: str
+    name: str
+    category: str
+    price: int
+    limited: bool
+    season: str
+    asset: str
+    accent: str
+
+
+class CosmeticCatalogView(BaseModel):
+    season: str
+    items: list[CosmeticCatalogItem]
+
+
+class CosmeticEquipRequest(BaseModel):
+    item_id: str = Field(min_length=3, max_length=40)
+    request_id: str = Field(min_length=8, max_length=64)
+    equip: bool = True
+
+
 class DiaPackGrantRequest(BaseModel):
     product_id: str = Field(min_length=3)
     purchase_token: str = Field(min_length=8, max_length=4096)

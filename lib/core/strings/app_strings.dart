@@ -281,6 +281,9 @@ abstract final class AppStrings {
   static const storeItemCoachOnePoint = '코치 원포인트권';
   static const storeItemExtraEntry = '추가 참가권';
   static const storeItemExtraEntryPack = '추가 참가권 3장';
+  static const storeItemFriendGhost = '친구 고스트 페이스';
+  static const storeItemFriendGhostPack = '친구 고스트 10회';
+  static const storeItemCrewCheer = '크루 응원 깃발';
   static const storeItemStarBoost = '스타 부스트';
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
@@ -362,7 +365,7 @@ abstract final class AppStrings {
   static const runningCrewMyCrewStats =
       '소속 크루원: 45/50명 | 누적 달성 거리: 3,240km';
   static const runningCrewCreateButton =
-      '[50,000 SHARE 결제하고 새 크루(방장) 창설하기]';
+      '[50 DIA 또는 30,000 SHARE로 새 크루 창설하기]';
   static const runningCrewRankingTitle = '이번 주 전국 크루 랭킹';
   static const runningCrewRank1Label = '1위';
   static const runningCrewRank1Name = '강남 스피드 클럽';
@@ -407,6 +410,12 @@ abstract final class AppStrings {
   static const itemInventoryExtraEntryTitle = '추가 참가권';
   static const itemInventoryCoachOnePointHint = '러닝을 시작하면 사용됩니다. 하루 1회.';
   static const itemInventoryExtraEntryHint = '모집 마감·정원 초과 참가 시 사용됩니다. 하루 2회.';
+  static const itemInventoryFriendGhostTitle = '친구 고스트 페이스';
+  static const itemInventoryFriendGhostHint =
+      '러닝 중 친구 기록과 비교합니다. 내 최고 기록은 무료입니다.';
+  static const itemInventoryCrewCheerTitle = '크루 응원 깃발';
+  static const itemInventoryCrewCheerHint =
+      '하루 1회. 대회 SHARE 보상만 10% 늘어납니다.';
   static const itemInventoryCprQuantity = '보유량: 3/3';
   static const itemInventorySafeGuardTitle = '세이프 가드';
   static const itemInventorySafeGuardQuantity = '보유량: 1/1';

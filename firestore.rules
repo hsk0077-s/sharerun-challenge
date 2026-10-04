@@ -572,7 +572,7 @@ service cloud.firestore {
     }
 
     // Crew tab create («새 크루 창설하기»).
-    // Keep 50000 in sync with CrewFoundingWrite.shareCost.
+    // Keep 30000 in sync with CrewFoundingWrite.shareCost.
     // Deploy these rules or that transaction stays PERMISSION_DENIED.
     //
     // Do not use incomingShare()/incomingDiamond()/incomingValue() here.
@@ -598,7 +598,7 @@ service cloud.firestore {
         && request.resource.data.wallet.shareBalance is int
         && resourceShare() is int
         && request.resource.data.wallet.shareBalance >= 0
-        && request.resource.data.wallet.shareBalance == resourceShare() - 50000
+        && request.resource.data.wallet.shareBalance == resourceShare() - 30000
         && (
           !('wallet' in resource.data)
           || !(resource.data.wallet is map)
@@ -617,7 +617,7 @@ service cloud.firestore {
         && !exists(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))
         && existsAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))
         && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.ownerUid == uid
-        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.shareCost == 50000
+        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.shareCost == 30000
         && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.memberCount == 1
         && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.totalValue == 0;
     }
@@ -854,7 +854,7 @@ service cloud.firestore {
         && request.resource.data.name.size() <= 80
         && request.resource.data.totalValue == 0
         && request.resource.data.memberCount == 1
-        && request.resource.data.shareCost == 50000
+        && request.resource.data.shareCost == 30000
         && request.resource.data.createdAt == request.time
         && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownedCrewId == crewId;
       allow update, delete: if false;

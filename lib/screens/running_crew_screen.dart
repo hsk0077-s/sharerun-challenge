@@ -36,6 +36,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   static const _createButtonGold = Color(0xFFC9A227);
   static const _createCrewShareCost =
       SrcWalletPaymentSystem.crewCreateShareCost;
+  static const _createCrewDiaCost = SrcWalletPaymentSystem.crewCreateDiaCost;
 
   static const _allRankings = <_CrewRankItem>[
     _CrewRankItem(
@@ -103,25 +104,59 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     );
   }
 
+  Future<String?> _chooseCrewPayment() {
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('크루 만들기'),
+        content: const Text('서버가 50 DIA 또는 30,000 SHARE 중 선택한 금액만 차감합니다.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'dia'),
+            child: const Text('50 DIA'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'share'),
+            child: const Text('30,000 SHARE'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _onCreateCrew() async {
     if (_isSubmitting) return;
+    final payWith = await _chooseCrewPayment();
+    if (payWith != 'dia' && payWith != 'share') return;
+    if (!mounted) return;
     setState(() => _isSubmitting = true);
 
     try {
       final uid = ref.read(authStateChangesProvider).asData?.value?.uid;
       final useRemote =
           !AppEnv.useLocalMockData && uid != null && uid.isNotEmpty;
+      final paidWithDia = payWith == 'dia';
 
       if (!useRemote) {
-        if (ref.read(walletProvider).shareBalance < _createCrewShareCost) {
+        final wallet = ref.read(walletProvider);
+        if (paidWithDia) {
+          if (wallet.diamondBalance < _createCrewDiaCost) {
+            if (mounted) setState(() => _isSubmitting = false);
+            _toast('DIA가 부족합니다. 상점에서 구매해 주세요.');
+            return;
+          }
+          ref.read(walletProvider.notifier).debitDia(_createCrewDiaCost);
+        } else if (wallet.shareBalance < _createCrewShareCost) {
           if (mounted) setState(() => _isSubmitting = false);
           await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
           return;
+        } else {
+          ref.read(walletProvider.notifier).subtractShare(_createCrewShareCost);
         }
-        ref.read(walletProvider.notifier).subtractShare(_createCrewShareCost);
       } else {
         final result = await ref.read(securedActionApiClientProvider).foundCrew(
               AppStrings.runningCrewMyCrewName,
+              payWith: payWith,
             );
         ref.read(walletProvider.notifier).applyWalletSnapshot(
               shareBalance: result.shareBalance,
@@ -132,7 +167,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
 
       if (!mounted) return;
       setState(() => _hasOwnCrew = true);
-      _toast('새 크루 창설 완료 (−$_createCrewShareCost SHARE)');
+      _toast(
+        paidWithDia
+            ? '새 크루 창설 완료 (−$_createCrewDiaCost DIA)'
+            : '새 크루 창설 완료 (−$_createCrewShareCost SHARE)',
+      );
       await AppRouteNav.push<void>(
         context,
         RouteNames.crewManager,
@@ -142,9 +181,13 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       if (mounted) setState(() => _isSubmitting = false);
       if (!mounted) return;
       await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
-    } on ApiException {
+    } on ApiException catch (error) {
       if (mounted) setState(() => _isSubmitting = false);
       if (!mounted) return;
+      if (error.detail == 'Insufficient Diamond balance.') {
+        _toast(error.userMessage);
+        return;
+      }
       await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
     } catch (error) {
       if (!mounted) return;

@@ -9,6 +9,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
 
@@ -109,6 +110,22 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     if (!mounted) return;
     setState(() => _crewName = next);
     _toast('크루 프로필이 변경되었습니다. (−$_profileChangeDia DIA)');
+  }
+
+  Future<void> _onCheerFlag() async {
+    try {
+      await ref.read(securedActionApiClientProvider).useShopItem(
+            ServerShopInventory.crewCheerId,
+          );
+      if (!mounted) return;
+      _toast('크루 응원 깃발을 걸었습니다. 오늘 대회 SHARE 보상이 10% 늘어납니다.');
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(error.userMessage);
+    } catch (_) {
+      if (!mounted) return;
+      _toast('응원 깃발을 걸지 못했습니다.');
+    }
   }
 
   Future<void> _onGiftCpr() async {
@@ -307,6 +324,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                             _RoyalBlueButton(
                               label: AppStrings.crewManagerGiftCpr,
                               onTap: _onGiftCpr,
+                            ),
+                            const SizedBox(height: 10),
+                            _RoyalBlueButton(
+                              label: '🚩 크루 응원 깃발 (15 DIA, 하루 1회)',
+                              onTap: _onCheerFlag,
                             ),
                             const SizedBox(height: 10),
                             _RoyalBlueButton(

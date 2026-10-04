@@ -24,6 +24,7 @@ import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
 import '../features/shop/coach_one_point_run.dart';
+import '../features/shop/friend_ghost_run.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
@@ -92,6 +93,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
     }
     try {
       ref.read(coachOnePointRunProvider.notifier).endRun();
+      ref.read(friendGhostPaceProvider.notifier).endRun();
     } catch (_) {}
     unawaited(_telemetrySubscription?.cancel());
     _mapController?.dispose();
@@ -173,10 +175,11 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
     final sponsorBuff = ref.watch(activeSponsorBuffProvider);
     final route = _telemetry.routePoints;
     final last = route.isEmpty ? null : route.last;
+    final friendPace = ref.watch(friendGhostPaceProvider);
     final ghost = GhostPaceMatcher.positionAt(
       routePoints: route,
       elapsedSeconds: _telemetry.durationSeconds,
-      ghostPaceSecPerKm: widget.ghostPaceSecPerKm,
+      ghostPaceSecPerKm: friendPace ?? widget.ghostPaceSecPerKm,
     );
 
     return Stack(
@@ -258,6 +261,12 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                     itemId: ServerShopInventory.safeGuardId,
                     label: '세이프 가드',
                   ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppShapes.termsHorizontalPadding,
+                  ),
+                  child: FriendGhostUseButton(),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
@@ -381,6 +390,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
 
   Future<void> _finishAndValidate() async {
     ref.read(coachOnePointRunProvider.notifier).endRun();
+    ref.read(friendGhostPaceProvider.notifier).endRun();
     final coach = _voiceCoachOf();
     unawaited(coach.onRunFinished());
     setState(() => _validating = true);
@@ -416,6 +426,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
             gyroStabilityScore: session.telemetry.gyroStabilityScore,
             routePoints: session.routePoints,
             sensorBuffer: session.sensorBuffer,
+            tournamentId: widget.roomId,
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;

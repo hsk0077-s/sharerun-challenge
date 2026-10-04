@@ -372,6 +372,48 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                   _shopItem('extra_entry_ticket_3pack'),
                                 ),
                               ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.speed,
+                                      iconColor: AppColors.ghostPacePurple,
+                                      title: AppStrings.storeItemFriendGhost,
+                                      diamondCost: _diaCost('friend_ghost_pace'),
+                                      ownedCount: inventory.friendGhostCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('friend_ghost_pace'),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: _ItemBuyCard(
+                                      icon: Icons.flag_outlined,
+                                      iconColor: AppColors.progressYellow,
+                                      title: AppStrings.storeItemCrewCheer,
+                                      diamondCost: _diaCost('crew_cheer_flag'),
+                                      ownedCount: inventory.crewCheerCount,
+                                      onBuy: () => _onBuyItem(
+                                        _shopItem('crew_cheer_flag'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              _ItemBuyCard(
+                                icon: Icons.speed,
+                                iconColor: AppColors.ghostPacePurple,
+                                title: AppStrings.storeItemFriendGhostPack,
+                                diamondCost:
+                                    _diaCost('friend_ghost_pace_10pack'),
+                                ownedCount: inventory.friendGhostCount,
+                                onBuy: () => _onBuyItem(
+                                  _shopItem('friend_ghost_pace_10pack'),
+                                ),
+                              ),
                             ],
                           ),
                         ),

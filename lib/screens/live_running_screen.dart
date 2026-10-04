@@ -14,9 +14,10 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/run_tracking/models/route_point.dart';
+import '../features/run_tracking/services/ghost_pace_matcher.dart';
 import '../features/shop/coach_one_point_run.dart';
-import '../features/shop/providers/server_shop_inventory_provider.dart';
-import '../features/shop/widgets/server_item_use_button.dart';
+import '../features/shop/friend_ghost_run.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import 'onboarding_run_result_screen.dart';
 
@@ -184,7 +185,25 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   }
 
   Set<Marker> _buildMarkers(LatLng me) {
-    final ghost = LatLng(me.latitude + 0.002, me.longitude + 0.002);
+    final pace = ref.read(friendGhostPaceProvider);
+    final matched = pace == null
+        ? null
+        : GhostPaceMatcher.positionAt(
+            routePoints: [
+              for (final point in _routePoints)
+                RoutePoint(
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                  recordedAt: DateTime.now(),
+                ),
+            ],
+            elapsedSeconds: _elapsedSeconds,
+            ghostPaceSecPerKm: pace,
+          );
+    final ghost = matched ??
+        (pace == null
+            ? LatLng(me.latitude + 0.002, me.longitude + 0.002)
+            : me);
     return {
       Marker(
         markerId: const MarkerId('me'),
@@ -354,6 +373,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     setState(() => isRunning = false);
     _stopTracking();
     ref.read(coachOnePointRunProvider.notifier).endRun();
+    ref.read(friendGhostPaceProvider.notifier).endRun();
     final coach = _voiceCoach ?? _voiceCoachOf();
     unawaited(coach.onRunFinished());
     if (!mounted) return;
@@ -374,6 +394,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     }
     try {
       ref.read(coachOnePointRunProvider.notifier).endRun();
+      ref.read(friendGhostPaceProvider.notifier).endRun();
     } catch (_) {}
     _stopTracking();
     _mapController = null;
@@ -431,10 +452,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
               padding: EdgeInsets.symmetric(
                 horizontal: AppShapes.termsHorizontalPadding,
               ),
-              child: ServerItemUseButton(
-                itemId: ServerShopInventory.ghostPaceId,
-                label: '고스트 페이스 매칭',
-              ),
+              child: FriendGhostUseButton(),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(

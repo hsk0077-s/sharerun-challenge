@@ -17,7 +17,7 @@ def _service(db: _MemoryDb) -> SecuredActionService:
     return SecuredActionService(firebase_service=SimpleNamespace(db=db))
 
 
-def test_found_crew_debits_50000_and_keeps_other_balances() -> None:
+def test_found_crew_debits_30000_share_and_keeps_other_balances() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = {
         "wallet": {
@@ -31,19 +31,27 @@ def test_found_crew_debits_50000_and_keeps_other_balances() -> None:
     crew_ref = db.collection("crews").document("crew1")
 
     result = _commit_crew_found_tx.to_wrap(
-        _MemoryTxn(), service, "u1", "우리크루", user_ref, crew_ref
+        _MemoryTxn(),
+        service,
+        "u1",
+        "우리크루",
+        "share",
+        "req-crew-01",
+        user_ref,
+        crew_ref,
     )
 
-    assert result.share_balance == 950_000
+    assert result.share_balance == 970_000
     assert result.diamond_balance == 1_000_000
     assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 1_000_000
     assert db.store["users/u1"]["ownedCrewId"] == "crew1"
-    assert db.store["crews/crew1"]["shareCost"] == 50000
+    assert db.store["crews/crew1"]["shareCost"] == 30000
+    assert db.store["crews/crew1"]["diaCost"] == 0
     ledger = [
         row for path, row in db.store.items() if path.startswith("walletTransactions/")
     ]
     assert ledger[0]["type"] == "crew_create"
-    assert ledger[0]["shareAmount"] == -50000
+    assert ledger[0]["shareAmount"] == -30000
 
 
 def test_create_room_uses_server_fee_for_3km() -> None:
@@ -87,6 +95,8 @@ def test_short_share_creates_nothing() -> None:
             service,
             "u1",
             "우리크루",
+            "share",
+            "req-crew-short",
             user_ref,
             db.collection("crews").document("crew1"),
         )

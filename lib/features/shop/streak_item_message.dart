@@ -17,6 +17,16 @@ String streakItemMessage(ApiException error, {required String fallback}) {
     'Extra entry ticket is spent by joining a race.' =>
       '추가 참가권은 대회에 참가할 때 사용됩니다.',
     'No extra entry ticket.' => '사용할 추가 참가권이 없습니다.',
+    'Friend recorded run is required.' => '친구의 검증된 기록을 선택해 주세요.',
+    'Recorded run not found.' => '친구 기록을 찾지 못했습니다.',
+    'Recorded run belongs to another runner.' => '그 기록은 선택한 친구의 기록이 아닙니다.',
+    'Recorded run is not verified.' => '검증되지 않은 기록과는 비교할 수 없습니다.',
+    'Recorded run has no pace.' => '그 기록에는 페이스가 없습니다.',
+    'No crew.' => '소속 크루가 없습니다.',
+    'Cheer flag is already up for this crew today.' =>
+      '이 크루의 응원 깃발은 오늘 이미 걸려 있습니다.',
+    'Friend ghost pack is spent as single uses.' =>
+      '10회 묶음은 한 장씩 사용합니다.',
     _ => fallback,
   };
 }

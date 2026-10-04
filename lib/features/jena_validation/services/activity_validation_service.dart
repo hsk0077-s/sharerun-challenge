@@ -31,6 +31,7 @@ class ActivityValidationService {
     WatchType watchType = WatchType.none,
     DateTime? startedAt,
     DateTime? endedAt,
+    String? tournamentId,
   }) async {
     final payload = _payloadNormalizer.normalize(
       activityId: activityId,
@@ -54,6 +55,7 @@ class ActivityValidationService {
       return _securedActionApiClient.validateRun(
         request: request,
         routePoints: routePoints,
+        tournamentId: tournamentId,
       );
     } finally {
       sensorBuffer.destroy();

@@ -75,6 +75,13 @@ abstract final class ApiErrorMessage {
       'Coach one-point daily use cap is 1.' => '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.',
       'Lower-tier room is locked.' => '내 등급보다 낮은 방은 참가할 수 없습니다.',
       'Insufficient Share balance.' => 'Share 잔액이 부족합니다.',
+      'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+      'No crew.' => '소속 크루가 없습니다.',
+      'No item to use.' => '사용할 아이템이 없습니다.',
+      'Crew not found.' => '크루를 찾지 못했습니다.',
+      'Cheer flag is already up for this crew today.' =>
+        '이 크루의 응원 깃발은 오늘 이미 걸려 있습니다.',
+      'Friend recorded run is required.' => '친구의 검증된 기록을 선택해 주세요.',
       'Refund exceeds Share balance.' => '환불 가능한 Share 잔액을 초과했습니다.',
       'Move closer to collect.' => '다이아 상자에 더 가까이 이동해 주세요.',
       'Diamond box already collected.' => '이미 수집한 다이아 상자입니다.',

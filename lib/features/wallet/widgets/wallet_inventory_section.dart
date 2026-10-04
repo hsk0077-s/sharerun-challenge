@@ -67,9 +67,11 @@ class WalletInventorySection extends ConsumerWidget {
         _InventoryRow(
           icon: Icons.emoji_events_outlined,
           color: AppColors.progressYellow,
-          title: serverShopItemTitle(ServerShopInventory.battlePassId) ?? '',
+          title: shop.battlePass.ownsPlus
+              ? '배틀런 패스+'
+              : serverShopItemTitle(ServerShopInventory.battlePassId) ?? '',
           count: shop.battlePassCount,
-          note: AppStrings.myWalletItemDuringTournament,
+          note: AppStrings.battlePassInventoryNote,
         ),
     ];
 

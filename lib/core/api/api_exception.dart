@@ -76,6 +76,12 @@ abstract final class ApiErrorMessage {
       'Lower-tier room is locked.' => '내 등급보다 낮은 방은 참가할 수 없습니다.',
       'Insufficient Share balance.' => 'Share 잔액이 부족합니다.',
       'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+      'Insufficient paid Diamond balance.' =>
+        '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.',
+      'Battle pass already owned for this season.' =>
+        '이번 시즌 배틀런 패스는 이미 구매했습니다.',
+      'Battle pass is not spent.' => '배틀런 패스는 사용해서 사라지지 않습니다.',
+      'Pass upgrade price is invalid.' => '패스+ 가격이 패스보다 낮아 업그레이드할 수 없습니다.',
       'No crew.' => '소속 크루가 없습니다.',
       'No item to use.' => '사용할 아이템이 없습니다.',
       'Crew not found.' => '크루를 찾지 못했습니다.',

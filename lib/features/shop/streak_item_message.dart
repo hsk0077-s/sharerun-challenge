@@ -9,6 +9,13 @@ String streakItemMessage(ApiException error, {required String fallback}) {
     'Streak break is outside 72 hours.' => '스트릭이 끊긴 지 72시간이 지나 되돌릴 수 없습니다.',
     'No missed day to protect.' => '막을 빠진 날이 없습니다.',
     'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+    'Insufficient paid Diamond balance.' =>
+      '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.',
+    'Battle pass already owned for this season.' =>
+      '이번 시즌 배틀런 패스는 이미 구매했습니다.',
+    'Battle pass is not spent.' => '배틀런 패스는 사용해서 사라지지 않습니다.',
+    'Pass upgrade price is invalid.' =>
+      '패스+ 가격이 패스보다 낮아 업그레이드할 수 없습니다.',
     'No item to use.' => fallback,
     'Coach one-point daily use cap is 1.' => '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.',
     'Extra entry daily use cap is 2.' => '추가 참가권은 하루에 2번까지 사용할 수 있습니다.',

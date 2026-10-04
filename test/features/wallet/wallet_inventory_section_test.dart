@@ -59,7 +59,7 @@ void main() {
     expect(find.text(AppStrings.myWalletInventoryCount(3)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryCount(1)), findsOneWidget);
     expect(find.text(AppStrings.myWalletItemDuringRun), findsOneWidget);
-    expect(find.text(AppStrings.myWalletItemDuringTournament), findsOneWidget);
+    expect(find.text(AppStrings.battlePassInventoryNote), findsOneWidget);
   });
 
   testWidgets('wallet inventory empty state', (tester) async {

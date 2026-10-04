@@ -459,10 +459,14 @@ abstract final class AppStrings {
   static const battlePassPremiumActive = '👑 프리미엄 패스 활성화 중';
   static const battlePassCurrentLevel = '현재 레벨: Lv. 15';
   static const battlePassProgressLabel = '80%';
-  static const battlePassFreeReward = '무료 보상';
-  static const battlePassPremiumReward = '프리미엄 보상';
-  static const battlePassFreeShare = '100 SHARE';
-  static const battlePassPremiumDia = '3 다이아몬드';
+  static const battlePassFreeReward = '패스 보상';
+  static const battlePassPremiumReward = '패스+ 보상';
+  static const battlePassOwned = '배틀런 패스 보유';
+  static const battlePassPlusOwned = '패스+ 보유';
+  static const battlePassNone = '유료 DIA로만 구매';
+  static const battlePassCosmeticNote =
+      '프레임·스킨·배지입니다. 순위, 기록, DIA는 바뀌지 않습니다.';
+  static const battlePassInventoryNote = '꾸미기 보상. 순위와 기록은 그대로입니다.';
   static const lobbyBattlePassCta = '시즌 1 배틀런 패스 확인';
 
   // ── Subscription Management (Screen 25) ───────────────────────────

@@ -7,40 +7,19 @@ import 'package:share_run_challenge/features/wallet/src_wallet_payment_system.da
 void main() {
   const crewId = 'Abcdefghij0123456789';
 
-  test('founding cost matches the Crew tab constant and firestore.rules', () {
+  test('founding cost matches the Crew tab constant', () {
     expect(
       CrewFoundingWrite.shareCost,
       SrcWalletPaymentSystem.crewCreateShareCost,
     );
+  });
 
+  test('clients cannot debit SHARE in rules to found a crew', () {
     final rules = File('firestore.rules').readAsStringSync();
-    expect(rules, contains('function validCrewFoundingDebit(uid)'));
-    expect(rules, contains('if validCrewFoundingDebit(uid)'));
+    expect(rules.contains('validCrewFoundingDebit'), isFalse);
     expect(rules, contains('match /crews/{crewId}'));
-    final founding = rules.split('function validCrewFoundingDebit(uid)').last;
-    final foundingBody = founding.split('match /admins/').first;
-    expect(foundingBody.contains('incomingShare()'), isFalse);
-    expect(foundingBody.contains('incomingDiamond()'), isFalse);
-    expect(foundingBody.contains('incomingValue()'), isFalse);
-    expect(
-      foundingBody,
-      contains(
-        'request.resource.data.wallet.shareBalance == resourceShare() - ${CrewFoundingWrite.shareCost}',
-      ),
-    );
-    expect(
-      foundingBody,
-      contains('request.resource.data.wallet.diamondBalance'),
-    );
-    expect(
-      foundingBody,
-      contains('== resource.data.wallet.diamondBalance'),
-    );
-    expect(
-      rules,
-      contains('request.resource.data.shareCost == ${CrewFoundingWrite.shareCost}'),
-    );
-    expect(rules, contains("matches('^[A-Za-z0-9]{20}\$')"));
+    final crew = rules.split('match /crews/{crewId}').last.split('match /').first;
+    expect(crew, contains('allow create, update, delete: if false'));
   });
 
   test('user merge is an absolute SHARE int plus the new crew id', () {

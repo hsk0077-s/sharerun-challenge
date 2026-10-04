@@ -3166,7 +3166,21 @@ class SecuredActionService:
         self,
         uid: str,
         request: DebugTestGrantRequest | None = None,
+        *,
+        admin_authorized: bool = False,
     ) -> SecuredActionResult:
+        from app.config import debug_test_grant_enabled
+
+        if not debug_test_grant_enabled():
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Not found.",
+            )
+        if not admin_authorized:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Admin access required.",
+            )
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return self._grant_debug_test_wallet_tx(
@@ -3178,7 +3192,7 @@ class SecuredActionService:
         self,
         transaction,
         uid: str,
-        request: DebugTestGrantRequest,
+        _request: DebugTestGrantRequest,
         user_ref,
     ) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
@@ -3198,16 +3212,6 @@ class SecuredActionService:
                 share_balance=current_share,
                 diamond_balance=current_dia,
                 value_token_balance=current_value,
-            )
-        if not self.is_test_grant_authorized(
-            uid,
-            user,
-            request.grant_secret,
-            debug_client=request.debug_client,
-        ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not eligible for debug test grant.",
             )
 
         amount = TEST_WALLET_GRANT_AMOUNT

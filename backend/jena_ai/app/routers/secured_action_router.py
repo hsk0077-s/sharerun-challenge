@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 
+from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
     ApplyReferralRequest,
     CollectDiamondBoxRequest,
@@ -32,6 +33,7 @@ from app.models.secured_actions import (
     WinnerRewardRequest,
 )
 from app.models.validation_result import ValidationResult
+from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
 from app.services.secured_action_service import SecuredActionService
 
@@ -96,9 +98,21 @@ def harvest_pedometer_share(
 @router.post("/debug/test-grant-1m", response_model=SecuredActionResult)
 def grant_debug_test_wallet(
     request: DebugTestGrantRequest = DebugTestGrantRequest(),
-    uid: str = Depends(require_uid),
+    authorization: str | None = Header(default=None),
 ) -> SecuredActionResult:
-    return service.grant_debug_test_wallet(uid=uid, request=request)
+    # Off by default. A baked client secret is not enough. Existing balances
+    # are left as they are; this returns before any wallet write.
+    if not debug_test_grant_enabled():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Not found.",
+        )
+    actor = admin_auth_service.require_admin(authorization)
+    return service.grant_debug_test_wallet(
+        uid=str(actor["uid"]),
+        request=request,
+        admin_authorized=True,
+    )
 
 
 @router.post("/account/delete", response_model=SecuredActionResult)

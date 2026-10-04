@@ -4,8 +4,8 @@
 /// `Transaction.update` sends `wallet.shareBalance` as a field path.
 /// `set(merge)` does not, and a leftover literal key must not win in rules.
 abstract final class CrewFoundingWrite {
-  /// Same number as `SrcWalletPaymentSystem.crewCreateShareCost` and
-  /// `validCrewFoundingDebit` / `match /crews` in `firestore.rules`.
+  /// Same number as `SrcWalletPaymentSystem.crewCreateShareCost`.
+  /// Clients cannot debit this in `firestore.rules`; the server charges it.
   static const shareCost = 30000;
 
   static final crewIdPattern = RegExp(r'^[A-Za-z0-9]{20}$');

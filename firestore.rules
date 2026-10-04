@@ -197,227 +197,32 @@ service cloud.firestore {
         && request.resource.data.wallet.totalDonationValue == 0;
     }
 
-    function resourceWalletBalancesEmpty() {
-      return !('wallet' in resource.data)
-        || (
-          (
-            !('shareBalance' in resource.data.wallet)
-            || resource.data.wallet.shareBalance == 0
-          )
-          && (
-            !('diamondBalance' in resource.data.wallet)
-            || resource.data.wallet.diamondBalance == 0
-          )
-          && (
-            !('valueTokenBalance' in resource.data.wallet)
-            || resource.data.wallet.valueTokenBalance == 0
-          )
-        );
-    }
-
-    // Flutter `set(merge: true)` may apply `wallet.shareBalance` as a nested
-    // field path (Android) or as a literal dotted key (some SDKs). Read either
-    // so owner persist is not permission-denied.
-    function incomingShare() {
-      return request.resource.data.keys().hasAny(['wallet.shareBalance'])
-        ? request.resource.data['wallet.shareBalance']
-        : request.resource.data.wallet.shareBalance;
-    }
-
-    function incomingDiamond() {
-      return request.resource.data.keys().hasAny(['wallet.diamondBalance'])
-        ? request.resource.data['wallet.diamondBalance']
-        : request.resource.data.wallet.diamondBalance;
-    }
-
-    function incomingValue() {
-      return request.resource.data.keys().hasAny(['wallet.valueTokenBalance'])
-        ? request.resource.data['wallet.valueTokenBalance']
-        : request.resource.data.wallet.valueTokenBalance;
-    }
-
-    function resourceShare() {
-      return 'wallet' in resource.data
-        && 'shareBalance' in resource.data.wallet
-        ? resource.data.wallet.shareBalance
-        : 0;
-    }
-
-    function resourceDiamond() {
-      return 'wallet' in resource.data
-        && 'diamondBalance' in resource.data.wallet
-        ? resource.data.wallet.diamondBalance
-        : 0;
-    }
-
-    function resourceValue() {
-      return 'wallet' in resource.data
-        && 'valueTokenBalance' in resource.data.wallet
-        ? resource.data.wallet.valueTokenBalance
-        : 0;
-    }
-
-    // affectedKeys includes newly added dotted fields; changedKeys does not.
     function userAffectedKeys() {
       return request.resource.data.diff(resource.data).affectedKeys();
     }
 
-    // Debug USB one-shot: empty wallet -> 1,000,000 SHARE/DIA/VALUE.
-    // Release clients never call this. Re-apply is allowed only while still 0.
-    function validDebugTestWalletGrant(uid) {
-      return isOwner(uid)
-        && request.resource.data.uid == uid
-        && resourceWalletBalancesEmpty()
-        && request.resource.data.testGrant1mDone == true
-        && incomingShare() == 1000000
-        && incomingDiamond() == 1000000
-        && incomingValue() == 1000000
-        && userAffectedKeys().hasOnly([
-          'uid',
-          'wallet',
-          'wallet.shareBalance',
-          'wallet.diamondBalance',
-          'wallet.valueTokenBalance',
-          'testGrant1mDone',
-          'updatedAt'
-        ]);
-    }
-
-    // Debug harvest: SHARE may increase after the one-shot grant. DIA/VALUE
-    // must stay unchanged. Release clients never call this path.
-    function validDebugLocalHarvestShare(uid) {
-      return isOwner(uid)
-        && request.resource.data.uid == uid
-        && resource.data.testGrant1mDone == true
-        && request.resource.data.testGrant1mDone == true
-        && incomingShare() is int
-        && incomingShare() >= resourceShare()
-        && incomingDiamond() == resourceDiamond()
-        && incomingValue() == resourceValue()
-        && userAffectedKeys().hasOnly([
-          'uid',
-          'wallet',
-          'wallet.shareBalance',
-          'updatedAt'
-        ]);
-    }
-
-    // Debug USB: SHARE may decrease after the one-shot grant (join / personal
-    // sponsor). DIA/VALUE stay unchanged. Donation totals may only increase.
-    // Release clients never call this path.
-    function validDebugShareSpend(uid) {
-      return isOwner(uid)
-        && request.resource.data.uid == uid
-        && resource.data.testGrant1mDone == true
-        && request.resource.data.testGrant1mDone == true
-        && incomingShare() is int
-        && incomingShare() >= 0
-        && incomingShare() < resourceShare()
-        && incomingDiamond() == resourceDiamond()
-        && incomingValue() == resourceValue()
-        && userAffectedKeys().hasOnly([
-          'uid',
-          'wallet',
-          'wallet.shareBalance',
-          'wallet.diamondBalance',
-          'wallet.valueTokenBalance',
-          'testGrant1mDone',
-          'updatedAt',
-          'donationCount',
-          'cumulativeDonationAmount',
-          'isSponsored'
-        ])
-        && (
-          !userAffectedKeys().hasAny(['donationCount'])
-          || (
-            request.resource.data.donationCount is int
-            && request.resource.data.donationCount >= (
-              'donationCount' in resource.data
-                ? resource.data.donationCount
-                : 0
-            )
-          )
-        )
-        && (
-          !userAffectedKeys().hasAny(['cumulativeDonationAmount'])
-          || (
-            request.resource.data.cumulativeDonationAmount is int
-            && request.resource.data.cumulativeDonationAmount >= (
-              'cumulativeDonationAmount' in resource.data
-                ? resource.data.cumulativeDonationAmount
-                : 0
-            )
-          )
-        );
-    }
-
-    // Personal SHARE sponsor: increment donation count/total only.
-    // Does not touch wallet SHARE/DIA/VALUE (those stay on the debit path).
-    function validDonationRecord(uid) {
-      return isOwner(uid)
-        && request.resource.data.uid == uid
-        && request.resource.data.diff(resource.data).changedKeys()
-            .hasOnly([
-              'uid',
-              'donationCount',
-              'cumulativeDonationAmount',
-              'isSponsored',
-              'angelTierCode',
-              'updatedAt'
-            ])
-        && request.resource.data.donationCount is int
-        && request.resource.data.donationCount >= (
-          'donationCount' in resource.data
-            ? resource.data.donationCount
-            : 0
-        )
-        && request.resource.data.cumulativeDonationAmount is int
-        && request.resource.data.cumulativeDonationAmount >= (
-          'cumulativeDonationAmount' in resource.data
-            ? resource.data.cumulativeDonationAmount
-            : 0
-        )
-        && request.resource.data.isSponsored == true
-        && (
-          !request.resource.data.diff(resource.data).changedKeys()
-              .hasAny(['angelTierCode'])
-          || request.resource.data.angelTierCode is string
-        );
-    }
-
-    // Debug USB: shop DIA and/or VALUE may decrease after the one-shot
-    // grant. SHARE must stay unchanged. hasCPR may only become true.
-    // Release clients never call this path.
-    function validDebugShopCurrencySpend(uid) {
-      return isOwner(uid)
-        && request.resource.data.uid == uid
-        && resource.data.testGrant1mDone == true
-        && request.resource.data.testGrant1mDone == true
-        && incomingShare() == resourceShare()
-        && incomingDiamond() is int
-        && incomingDiamond() >= 0
-        && incomingValue() is int
-        && incomingValue() >= 0
-        && incomingDiamond() <= resourceDiamond()
-        && incomingValue() <= resourceValue()
-        && (
-          incomingDiamond() < resourceDiamond()
-          || incomingValue() < resourceValue()
-        )
-        && userAffectedKeys().hasOnly([
-          'uid',
-          'wallet',
-          'wallet.shareBalance',
-          'wallet.diamondBalance',
-          'wallet.valueTokenBalance',
-          'testGrant1mDone',
-          'updatedAt',
-          'hasCPR'
-        ])
-        && (
-          !userAffectedKeys().hasAny(['hasCPR'])
-          || request.resource.data.hasCPR == true
-        );
+    // Balances, grant flags, donation totals, and shop entitlements.
+    // Only the Admin SDK may write these. Signup may still create a zero wallet.
+    function clientCurrencyAffected() {
+      return userAffectedKeys().hasAny([
+        'wallet',
+        'wallet.shareBalance',
+        'wallet.diamondBalance',
+        'wallet.valueTokenBalance',
+        'wallet.totalDonationValue',
+        'shareBalance',
+        'diamondBalance',
+        'valueBalance',
+        'valueTokenBalance',
+        'testGrant1mDone',
+        'testGrant1mEligible',
+        'donationCount',
+        'cumulativeDonationAmount',
+        'totalDonationValue',
+        'hasCPR',
+        'angelTierCode',
+        'isSponsored'
+      ]);
     }
 
     function validUserCreate(uid) {
@@ -440,31 +245,6 @@ service cloud.firestore {
         && request.resource.data.termsAccepted == false
         && request.resource.data.pushNotificationsEnabled == false
         && validInitialWallet();
-    }
-
-    // Client receipts: `users/{uid}/wallet_transactions` via
-    // WalletRepository.logClientWalletTransaction. Optional uid must match
-    // the signed-in owner. Amount may be negative (spend).
-    function validClientWalletTransactionCreate() {
-      return request.resource.data.keys().hasOnly([
-          'id',
-          'uid',
-          'title',
-          'amount',
-          'assetType',
-          'timestamp'
-        ])
-        && request.resource.data.id is string
-        && request.resource.data.title is string
-        && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() < 200
-        && request.resource.data.amount is int
-        && request.resource.data.assetType in ['SHARE', 'DIA', 'VALUE']
-        && request.resource.data.timestamp is timestamp
-        && (
-          !('uid' in request.resource.data)
-          || request.resource.data.uid == request.auth.uid
-        );
     }
 
     function validClientNotificationCreate() {
@@ -564,62 +344,11 @@ service cloud.firestore {
       );
     }
 
-    // SRC Admin console — status / VALUE 핀셋 갱신만 허용
+    // Admin console status only. Wallet fields stay on the Admin SDK.
     function isAdminUserOpsUpdate() {
       return isAdmin()
         && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'adminStatus', 'wallet', 'updatedAt']);
-    }
-
-    // Crew tab create («새 크루 창설하기»).
-    // Keep 30000 in sync with CrewFoundingWrite.shareCost.
-    // Deploy these rules or that transaction stays PERMISSION_DENIED.
-    //
-    // Do not use incomingShare()/incomingDiamond()/incomingValue() here.
-    // Those helpers prefer a literal top-level key named "wallet.shareBalance"
-    // (Flutter set(merge) dotted keys). Crew founding uses Transaction.update,
-    // which changes the nested map only. A stale literal key then fails the
-    // 50,000 debit check and the user update walks the rest of `allow update`
-    // until the 1000-expression cap, which the client shows as permission-denied.
-    function validCrewFoundingDebit(uid) {
-      return isOwner(uid)
-        && 'ownedCrewId' in request.resource.data
-        && request.resource.data.ownedCrewId is string
-        && request.resource.data.ownedCrewId.matches('^[A-Za-z0-9]{20}$')
-        && userAffectedKeys().hasAll(['ownedCrewId'])
-        && userAffectedKeys().hasOnly([
-          'wallet',
-          'wallet.shareBalance',
-          'ownedCrewId',
-          'updatedAt'
-        ])
-        && 'wallet' in request.resource.data
-        && request.resource.data.wallet is map
-        && request.resource.data.wallet.shareBalance is int
-        && resourceShare() is int
-        && request.resource.data.wallet.shareBalance >= 0
-        && request.resource.data.wallet.shareBalance == resourceShare() - 30000
-        && (
-          !('wallet' in resource.data)
-          || !(resource.data.wallet is map)
-          || !('diamondBalance' in resource.data.wallet)
-          || request.resource.data.wallet.diamondBalance
-              == resource.data.wallet.diamondBalance
-        )
-        && (
-          !('wallet' in resource.data)
-          || !(resource.data.wallet is map)
-          || !('valueTokenBalance' in resource.data.wallet)
-          || request.resource.data.wallet.valueTokenBalance
-              == resource.data.wallet.valueTokenBalance
-        )
-        && request.resource.data.updatedAt == request.time
-        && !exists(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))
-        && existsAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId))
-        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.ownerUid == uid
-        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.shareCost == 30000
-        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.memberCount == 1
-        && getAfter(/databases/$(database)/documents/crews/$(request.resource.data.ownedCrewId)).data.totalValue == 0;
+            .hasOnly(['status', 'adminStatus', 'updatedAt']);
     }
 
     match /admins/{uid} {
@@ -631,27 +360,11 @@ service cloud.firestore {
       allow get: if isOwner(uid) || isAdmin();
       allow list: if isAdmin();
       allow create: if validUserCreate(uid);
-      // Clients cannot set testGrant1mEligible. testGrant1mDone is only
-      // writable via the one-shot empty-wallet debug grant below.
-      // Owner wallet persist (grant / harvest / SHARE spend / shop DIA-VALUE)
-      // is the helpers below — deploy this file or those writes stay
-      // PERMISSION_DENIED even though local #34 persist works.
-      // Crew founding is first so a matching create does not walk the
-      // large debug-spend helpers (expression budget). Non-crew updates
-      // fail the ownedCrewId guard and continue as before.
-      allow update: if validCrewFoundingDebit(uid)
-        || isAdminUserOpsUpdate()
-        || validDebugTestWalletGrant(uid)
-        || validDebugLocalHarvestShare(uid)
-        || validDebugShareSpend(uid)
-        || validDonationRecord(uid)
-        || validDebugShopCurrencySpend(uid)
+      // Profile/settings only. Balances and grant flags stay server-owned.
+      allow update: if isAdminUserOpsUpdate()
         || (
           validUserSettingsUpdate(uid)
-          && !request.resource.data.diff(resource.data).changedKeys().hasAny([
-            'testGrant1mEligible',
-            'testGrant1mDone'
-          ])
+          && !clientCurrencyAffected()
         );
       allow delete: if false;
 
@@ -768,12 +481,10 @@ service cloud.firestore {
         allow delete: if false;
       }
 
-      // Owner-only payment/spend receipts. Deploy this match or History
-      // create is PERMISSION_DENIED for the signed-in user.
+      // Receipts are the server ledger `walletTransactions`. Clients read only.
       match /wallet_transactions/{txId} {
         allow read: if isOwner(uid);
-        allow create: if isOwner(uid) && validClientWalletTransactionCreate();
-        allow update, delete: if false;
+        allow create, update, delete: if false;
       }
 
       match /notifications/{noticeId} {
@@ -846,13 +557,12 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Official catalogs. Clients read; admin replaces the doc.
-    // company_tournament is the prize-race config (Jena also serves it).
+    // Official catalogs. Clients read the docs the app uses.
+    // Admin SDK writes config; the client cannot.
     match /config/{docId} {
       allow read: if (signedIn() || isAdmin())
         && (docId == 'stamp_tour' || docId == 'company_tournament');
-      allow write: if isAdmin()
-        && (docId == 'stamp_tour' || docId == 'company_tournament');
+      allow write: if false;
     }
 
     match /stampLandmarks/{landmarkId} {
@@ -860,30 +570,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Created only with validCrewFoundingDebit in the same transaction.
+    // Crew docs are created by POST /actions/crew/found (Admin SDK).
     match /crews/{crewId} {
       allow get: if signedIn() && resource.data.ownerUid == request.auth.uid;
       allow list: if false;
-      allow create: if signedIn()
-        && crewId.matches('^[A-Za-z0-9]{20}$')
-        && request.resource.data.keys().hasOnly([
-          'name',
-          'ownerUid',
-          'totalValue',
-          'memberCount',
-          'shareCost',
-          'createdAt'
-        ])
-        && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 80
-        && request.resource.data.totalValue == 0
-        && request.resource.data.memberCount == 1
-        && request.resource.data.shareCost == 30000
-        && request.resource.data.createdAt == request.time
-        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.ownedCrewId == crewId;
-      allow update, delete: if false;
+      allow create, update, delete: if false;
     }
 
     match /crewRankings/{crewId} {
@@ -920,6 +611,11 @@ service cloud.firestore {
       allow read: if isAdmin()
         || (signedIn() && resource.data.uid == request.auth.uid);
       allow create, update, delete: if false;
+    }
+
+    // Monthly company match pool. Admin SDK only.
+    match /donationPools/{poolId} {
+      allow read, write: if false;
     }
 
     // Invite-code index. Minted only by the secured API (Admin SDK).

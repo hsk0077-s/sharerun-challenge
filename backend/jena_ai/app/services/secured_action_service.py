@@ -2689,6 +2689,12 @@ class SecuredActionService:
                 "uid": uid,
                 "entryFeeShare": entry_fee,
                 "diamondDeposit": diamond_deposit,
+                "diamondPaidDeposit": abs(
+                    int(moved["ledger"].get("diamondPaidAmount") or 0)
+                ),
+                "diamondFreeDeposit": abs(
+                    int(moved["ledger"].get("diamondFreeAmount") or 0)
+                ),
                 "selectedCharity": selected_charity,
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
@@ -2907,9 +2913,27 @@ class SecuredActionService:
         returned_ledger: dict = {}
         if settlement.returned_diamonds > 0:
             wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
-            moved = move_currency(wallet, diamond=settlement.returned_diamonds)
-            user_updates.update(moved["updates"])
-            returned_ledger = moved["ledger"]
+            # Paid first so a partial refund does not turn paid DIA into free.
+            returned_paid = min(
+                int(participant.get("diamondPaidDeposit") or 0),
+                settlement.returned_diamonds,
+            )
+            returned_free = settlement.returned_diamonds - returned_paid
+            if returned_paid:
+                paid = move_currency(
+                    wallet, diamond=returned_paid, paid_credit=True
+                )
+                user_updates.update(paid["updates"])
+                returned_ledger.update(paid["ledger"])
+            if returned_free:
+                free = move_currency(wallet, diamond=returned_free)
+                user_updates.update(free["updates"])
+                returned_ledger["diamondFreeAmount"] = int(
+                    returned_ledger.get("diamondFreeAmount") or 0
+                ) + int(free["ledger"].get("diamondFreeAmount") or 0)
+                returned_ledger["diamondPaidAmount"] = int(
+                    returned_ledger.get("diamondPaidAmount") or 0
+                )
         if settlement.forfeited_diamonds > 0:
             user_updates["wallet.totalDonationValue"] = firestore.Increment(
                 settlement.forfeited_diamonds

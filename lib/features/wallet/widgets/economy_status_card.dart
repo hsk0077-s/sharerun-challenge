@@ -44,7 +44,7 @@ class EconomyStatusCard extends StatelessWidget {
             icon: Icons.directions_run_rounded,
             label: '예비 러닝',
             detail:
-                '${economy.trialRunCount}/${EconomyConstants.trialRunsRequired}회 · 완료 시 ${EconomyConstants.trialCompletionRewardSrv} SHARE',
+                '${economy.trialRunCount}/${EconomyConstants.referralTrialRunsRequired}회 · 완료 시 50,000 SHARE · 1.1km 이상 달리면 안전해요',
             progress: economy.trialProgress,
             color: AppColors.electricBlue,
           ),
@@ -62,7 +62,7 @@ class EconomyStatusCard extends StatelessWidget {
             icon: Icons.people_alt_rounded,
             label: '추천인 보상 (지연 지급)',
             detail:
-                '${economy.referralPayoutCount}/${EconomyConstants.maxReferralPayouts}명 · 지인 5회 예비 완료 시 30,000 SHARE',
+                '${economy.referralPayoutCount}/${EconomyConstants.maxReferralPayouts}명 · 지인 3회 완료 시 30,000 SHARE',
             progress: economy.referralProgress,
             color: Colors.purpleAccent,
           ),

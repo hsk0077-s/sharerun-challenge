@@ -61,6 +61,8 @@ class ValidateRunRequest(BaseModel):
     # Optional. Stride uses this when the phone sends the session step total.
     # Absent means the server estimates steps from the cadence series.
     total_steps: int | None = Field(default=None, ge=0)
+    # Optional. Trial SHARE is once per device when this id is present.
+    device_id: str | None = Field(default=None, max_length=128)
     # Set on a race finish. Crew cheer reads this room's SHARE reward only.
     tournament_id: str | None = Field(default=None, max_length=128)
 

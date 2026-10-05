@@ -1,7 +1,8 @@
 """Onboarding rewards, referral limits, and daily SRV mining cap."""
 
 SIGNUP_REWARD_SRV = 100
-TRIAL_RUNS_REQUIRED = 5
+# Mirror of config/referral_trial.runs_required. The payout path reads the doc.
+TRIAL_RUNS_REQUIRED = 3
 TRIAL_COMPLETION_REWARD_SRV = 500
 # Same milestone, when the account claims it as SHARE instead of the run's VALUE.
 TRIAL_COMPLETION_REWARD_SHARE = 5_000
@@ -11,6 +12,7 @@ MAX_REFERRAL_PAYOUTS = 10
 
 # SHARE (wallet.shareBalance). Server transaction + referralPayouts marker only.
 REFERRAL_REDEEM_SHARE = 10_000
+# Trial amounts are config/referral_trial. These lumps are not paid.
 REFERRAL_TRIAL_REFEREE_SHARE = 50_000
 REFERRAL_TRIAL_REFERRER_SHARE = 30_000
 

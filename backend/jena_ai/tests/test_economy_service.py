@@ -41,10 +41,10 @@ def test_compute_mining_reward_returns_zero_when_cap_exhausted() -> None:
     assert allowance.daily_cap_reached is True
 
 
-def test_trial_milestone_reached_at_five_runs() -> None:
+def test_trial_milestone_reached_at_three_runs() -> None:
     service = EconomyService()
-    assert service.trial_milestone_reached(4) is False
-    assert service.trial_milestone_reached(5) is True
+    assert service.trial_milestone_reached(2) is False
+    assert service.trial_milestone_reached(3) is True
 
 
 def test_kst_today_key_rolls_at_utc_plus_9_midnight() -> None:

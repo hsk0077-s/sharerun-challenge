@@ -90,7 +90,7 @@ class _MyPageReferralCodeEntryState
         ref.watch(authStateChangesProvider).value?.metadata.creationTime;
     final hasReferrer = referredBy != null && referredBy.trim().isNotEmpty;
     final runs = (economy?.trialRunCount ?? 0)
-        .clamp(0, EconomyConstants.trialRunsRequired);
+        .clamp(0, EconomyConstants.referralTrialRunsRequired);
     final done = _done || hasReferrer;
     final open = referralRedeemWindowOpen(
       signedUpAt: signedUpAt,
@@ -104,7 +104,7 @@ class _MyPageReferralCodeEntryState
       padding: EdgeInsets.only(top: tokens.spacing.sm),
       child: done
           ? Text(
-              '${AppStrings.referralRedeemDone} · $runs/${EconomyConstants.trialRunsRequired} 런',
+              '${AppStrings.referralRedeemDone} · $runs/${EconomyConstants.referralTrialRunsRequired} 런 · 1.1km 이상 달리면 안전해요',
               key: MyPageReferralCodeEntry.doneKey,
               style: textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,

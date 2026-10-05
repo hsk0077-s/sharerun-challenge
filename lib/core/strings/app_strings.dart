@@ -235,8 +235,10 @@ abstract final class AppStrings {
   static const liveRunningStatPaceValue = '4:45 /km';
   static const liveRunningYouLabel = '나 (You)';
   static const liveRunningGhostPace = '고스트 페이스';
-  static const liveRunningEffortTip =
-      '순수 노력 목표: 완주 시 밸류 토큰 +100';
+  static String liveRunningEffortTip(int valueTokens) =>
+      '순수 노력 목표: 완주 시 밸류 토큰 +$valueTokens';
+  static const runValidationFailed =
+      '기록 검증에 실패했습니다. 보상이 지급되지 않았습니다.';
   static const liveRunningFinish = '종료 / 저장';
   static const liveRunningSubmissionsLeft = '제출 기회: 2/3회 남음';
 
@@ -246,10 +248,10 @@ abstract final class AppStrings {
   static const runResultFinalTimeValue = '52:14';
   static const runResultAvgPaceLabel = '평균 페이스:';
   static const runResultAvgPaceValue = '6:15 /KM';
-  static const runResultShareAmount = '+200';
-  static const runResultShareEarned = 'SHARE 획득';
-  static const runResultValueReward =
-      '목표 달성! 순수 노력 보상 +100 밸류(VALUE) 획득';
+  static String runResultValueReward(int tokens) =>
+      '서버 확인 노력 보상 +$tokens VALUE';
+  static const runResultUnconfirmed = '서버에서 확인된 기록이 없습니다.';
+  static const runResultDonatePending = '준비 중';
   static const runResultDonate = '❤️ 기부처에 내 이름으로 기부하기';
   static const runResultShare = '🔗 기록 SNS 공유하기';
 

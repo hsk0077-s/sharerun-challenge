@@ -295,7 +295,12 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           theme: SrcTheme.light,
-          home: const OnboardingRunResultScreen(),
+          home: const OnboardingRunResultScreen(
+            distanceKm: 8.35,
+            durationSeconds: 52 * 60 + 14,
+            valueTokenReward: 83,
+            serverConfirmed: true,
+          ),
         ),
       ),
     );
@@ -663,7 +668,12 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           theme: SrcTheme.light,
-          home: const OnboardingRunResultScreen(),
+          home: const OnboardingRunResultScreen(
+            distanceKm: 8.35,
+            durationSeconds: 52 * 60 + 14,
+            valueTokenReward: 83,
+            serverConfirmed: true,
+          ),
         ),
       ),
     );
@@ -719,7 +729,12 @@ void main() {
       ProviderScope(
         child: MaterialApp(
           theme: SrcTheme.light,
-          home: const OnboardingRunResultScreen(),
+          home: const OnboardingRunResultScreen(
+            distanceKm: 8.35,
+            durationSeconds: 52 * 60 + 14,
+            valueTokenReward: 83,
+            serverConfirmed: true,
+          ),
         ),
       ),
     );

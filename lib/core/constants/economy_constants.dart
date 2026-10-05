@@ -13,6 +13,12 @@ abstract final class EconomyConstants {
   static const dailyCapSrvTokens = 50;
   static const srvTokensPerKm = 10;
 
+  /// Same truncation as server `int(distance_km * SRV_TOKENS_PER_KM)`.
+  static int effortValueTokens(double distanceKm) {
+    if (!distanceKm.isFinite || distanceKm <= 0) return 0;
+    return (distanceKm * srvTokensPerKm).toInt();
+  }
+
   /// 만보기 채굴 — 0.1km당 1 SHARE, 보폭 추정.
   static const pedometerCoinIntervalKm = 0.1;
   static const pedometerSharePerCoin = 1;

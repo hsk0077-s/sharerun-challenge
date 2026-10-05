@@ -508,7 +508,7 @@ Future<void> _pumpFinish(WidgetTester tester) async {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: SrcTheme.light,
-        home: const OnboardingRunResultScreen(),
+        home: const OnboardingRunResultScreen(serverConfirmed: true),
       ),
     ),
   );

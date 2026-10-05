@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../app/providers/wallet_state_provider.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -19,9 +18,44 @@ import '../features/run_result/run_finish_image_share.dart';
 import '../features/run_result/run_finish_share_card.dart';
 import '../features/run_result/run_finish_theme_store.dart';
 
+String _formatRunClock(int seconds) {
+  final safe = seconds < 0 ? 0 : seconds;
+  final minutes = safe ~/ 60;
+  final remain = safe % 60;
+  return '${minutes.toString().padLeft(2, '0')}:'
+      '${remain.toString().padLeft(2, '0')}';
+}
+
+String _formatRunPace(double distanceKm, int durationSeconds) {
+  if (distanceKm <= 0 || durationSeconds <= 0) return '--:-- /km';
+  final totalSeconds = (durationSeconds / distanceKm).round();
+  final minutes = totalSeconds ~/ 60;
+  final seconds = totalSeconds % 60;
+  return '${minutes.toString().padLeft(2, '0')}:'
+      '${seconds.toString().padLeft(2, '0')} /km';
+}
+
 /// 온보딩 플로우 기록 결과 화면 (Screen 11).
 class OnboardingRunResultScreen extends ConsumerStatefulWidget {
-  const OnboardingRunResultScreen({super.key});
+  const OnboardingRunResultScreen({
+    super.key,
+    this.distanceKm = 0,
+    this.durationSeconds = 0,
+    this.valueTokenReward = 0,
+    this.serverConfirmed = false,
+  });
+
+  /// Tracked kilometres passed through server validation.
+  final double distanceKm;
+
+  /// Tracked seconds passed through server validation.
+  final int durationSeconds;
+
+  /// `value_token_reward` from POST /actions/runs/validate.
+  final int valueTokenReward;
+
+  /// True only after the server marked the run verified.
+  final bool serverConfirmed;
 
   static const photoGalleryKey = Key('run-finish-photo-gallery');
   static const photoCameraKey = Key('run-finish-photo-camera');
@@ -38,12 +72,6 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
 
 class _OnboardingRunResultScreenState
     extends ConsumerState<OnboardingRunResultScreen> {
-  static const _shareReward = 200;
-  static const _valueReward = 100;
-  static const _donationAmount = 100;
-  static const _mockDistanceKm = '8.35';
-
-  var _rewardsApplied = false;
   var _styleIndex = 0;
   var _themeReady = false;
   var _instagramInstalled = false;
@@ -57,13 +85,16 @@ class _OnboardingRunResultScreenState
   final _styleController = PageController(viewportFraction: 0.8);
   final _cardKey = GlobalKey();
 
+  String get _distanceLabel => widget.distanceKm.toStringAsFixed(2);
+
+  String get _timeLabel => _formatRunClock(widget.durationSeconds);
+
+  String get _paceLabel =>
+      _formatRunPace(widget.distanceKm, widget.durationSeconds);
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      await _applyRunRewards();
-      await _saveRunDataToFirebase();
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       unawaited(_loadShareTargets());
@@ -131,9 +162,9 @@ class _OnboardingRunResultScreenState
         .accent;
     return RunFinishShareCard(
       style: style,
-      distanceKm: _mockDistanceKm,
-      time: AppStrings.runResultFinalTimeValue,
-      pace: AppStrings.runResultAvgPaceValue,
+      distanceKm: _distanceLabel,
+      time: _timeLabel,
+      pace: _paceLabel,
       date: _finishedOn,
       photo: style == RunFinishCardTheme.photo ? _photo : null,
       frameColor: cosmeticAccentColor(accent),
@@ -172,65 +203,6 @@ class _OnboardingRunResultScreenState
         const SnackBar(content: Text('사진을 불러오지 못했어요.')),
       );
     }
-  }
-
-  Future<void> _applyRunRewards() async {
-    if (_rewardsApplied || !mounted) return;
-    _rewardsApplied = true;
-    final wallet = ref.read(walletProvider.notifier);
-    wallet.creditShare(_shareReward);
-    wallet.creditValueToken(_valueReward);
-  }
-
-  /// Placeholder for persisting the run log to Cloud Firestore.
-  Future<void> _saveRunDataToFirebase() async {
-    // ignore: avoid_print
-    print(
-      '[OnboardingRunResult] _saveRunDataToFirebase — '
-      'distanceKm=$_mockDistanceKm, '
-      'time=${AppStrings.runResultFinalTimeValue}, '
-      'share=+$_shareReward, value=+$_valueReward',
-    );
-  }
-
-  Future<void> _onDonate() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('기부 확인'),
-          content: const Text(
-            '유니세프 결식아동에게 100 VALUE를 기부하시겠습니까?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('기부하기'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true || !mounted) return;
-
-    final wallet = ref.read(walletProvider);
-    if (wallet.valueTokenBalance < _donationAmount) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('기부할 VALUE가 부족합니다.')),
-      );
-      return;
-    }
-
-    ref.read(walletProvider.notifier).donateValueToken(_donationAmount);
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('기부가 성공적으로 완료되었습니다!')),
-    );
   }
 
   Future<File?> _capturePoster() async {
@@ -291,8 +263,8 @@ class _OnboardingRunResultScreenState
   }
 
   Future<void> _onShare(BuildContext buttonContext) async {
-    final shareText = 'SRC 앱에서 ${_mockDistanceKm}km 완주 후 기부에 동참했습니다! '
-        '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
+    final shareText = 'SRC 앱에서 ${_distanceLabel}km 완주 후 기부에 동참했습니다! '
+        '⏱ 기록: $_timeLabel';
 
     try {
       await WalkingChallengeShare.openChooser(
@@ -308,6 +280,26 @@ class _OnboardingRunResultScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.serverConfirmed) {
+      return Scaffold(
+        backgroundColor: AppColors.bgGradientEnd,
+        body: SRCGradientBackground(
+          child: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Text(
+                  AppStrings.runResultUnconfirmed,
+                  style: AppTextStyles.header1.copyWith(fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    final valueTokens = widget.valueTokenReward;
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,
       body: SRCGradientBackground(
@@ -370,9 +362,13 @@ class _OnboardingRunResultScreenState
                             ],
                           ),
                           const SizedBox(height: 20),
-                          const _RecordCard(),
+                          _RecordCard(
+                            distance: '$_distanceLabel km',
+                            time: _timeLabel,
+                            pace: _paceLabel,
+                          ),
                           const SizedBox(height: 14),
-                          const _RewardCard(),
+                          _RewardCard(valueTokens: valueTokens),
                         ],
                       ),
                     ),
@@ -388,17 +384,17 @@ class _OnboardingRunResultScreenState
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Material(
-                          color: AppColors.primaryMint,
+                          color: AppColors.primaryMint.withValues(alpha: 0.35),
                           borderRadius:
                               BorderRadius.circular(AppShapes.cardRadius),
                           clipBehavior: Clip.antiAlias,
                           child: InkWell(
-                            onTap: _onDonate,
+                            onTap: null,
                             child: SizedBox(
                               height: AppShapes.buttonHeight,
                               child: Center(
                                 child: Text(
-                                  AppStrings.runResultDonate,
+                                  AppStrings.runResultDonatePending,
                                   style: AppTextStyles.buttonText.copyWith(
                                     color: AppColors.textBlack,
                                     fontSize: 15,
@@ -666,21 +662,31 @@ class _ConfettiDot extends StatelessWidget {
 }
 
 class _RecordCard extends StatelessWidget {
-  const _RecordCard();
+  const _RecordCard({
+    required this.distance,
+    required this.time,
+    required this.pace,
+  });
+
+  final String distance;
+  final String time;
+  final String pace;
 
   @override
   Widget build(BuildContext context) {
     return _ResultCard(
       child: Column(
         children: [
+          _RecordLine(label: '거리:', value: distance),
+          const SizedBox(height: 12),
           _RecordLine(
             label: AppStrings.runResultFinalTimeLabel,
-            value: AppStrings.runResultFinalTimeValue,
+            value: time,
           ),
           const SizedBox(height: 12),
           _RecordLine(
             label: AppStrings.runResultAvgPaceLabel,
-            value: AppStrings.runResultAvgPaceValue,
+            value: pace,
           ),
         ],
       ),
@@ -716,7 +722,9 @@ class _RecordLine extends StatelessWidget {
 }
 
 class _RewardCard extends StatelessWidget {
-  const _RewardCard();
+  const _RewardCard({required this.valueTokens});
+
+  final int valueTokens;
 
   @override
   Widget build(BuildContext context) {
@@ -732,11 +740,11 @@ class _RewardCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppStrings.runResultShareAmount,
+                    '+$valueTokens',
                     style: AppTextStyles.header1.copyWith(fontSize: 36),
                   ),
                   Text(
-                    AppStrings.runResultShareEarned,
+                    'VALUE 획득',
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -761,7 +769,7 @@ class _RewardCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    AppStrings.runResultValueReward,
+                    AppStrings.runResultValueReward(valueTokens),
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 12,
                       color: AppColors.textGrey,
@@ -826,7 +834,7 @@ class _ShareCoinIcon extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        'S',
+        'V',
         style: AppTextStyles.buttonText.copyWith(
           color: AppColors.textWhite,
           fontSize: size * 0.45,

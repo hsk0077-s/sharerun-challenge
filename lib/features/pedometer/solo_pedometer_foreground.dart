@@ -459,6 +459,11 @@ class SoloPedometerForegroundHandler extends TaskHandler {
 
   Future<void> _publish(int steps, {int? healthToday}) async {
     try {
+      final recording = await FlutterForegroundTask.getData<bool>(
+            key: SoloPedometerForeground.runRecordingKey,
+          ) ??
+          false;
+      if (recording) return;
       await FlutterForegroundTask.saveData(key: _stepsKey, value: steps);
       await FlutterForegroundTask.saveData(
         key: _stepsAtKey,
@@ -502,6 +507,11 @@ abstract final class SoloPedometerForeground {
     metaDataName: _iconMeta,
     backgroundColor: AppColors.primaryMint,
   );
+
+  /// Set while a run owns the single foreground service.
+  static const runRecordingKey = 'src_run_recording';
+  static var runRecording = false;
+
   static var _ensuring = false;
   static int? _knownHealthToday;
   static String _knownHealthDay = '';
@@ -841,6 +851,7 @@ abstract final class SoloPedometerForeground {
     double? pendingShare,
     int? healthToday,
   }) async {
+    if (runRecording) return;
     try {
       initForegroundTask();
       try {
@@ -913,6 +924,7 @@ abstract final class SoloPedometerForeground {
     double? pendingShare,
     int? healthToday,
   }) async {
+    if (runRecording) return;
     try {
       if (!await FlutterForegroundTask.isRunningService) {
         await ensureAlive(
@@ -975,6 +987,7 @@ abstract final class SoloPedometerForeground {
     double? pendingShare,
     int? healthToday,
   }) async {
+    if (runRecording) return;
     if (_ensuring) return;
     _ensuring = true;
     try {

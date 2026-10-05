@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/theme/src_theme.dart';
+import '../features/run_tracking/run_recording_foreground.dart';
+import '../features/run_tracking/run_recording_policy.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
@@ -51,7 +53,29 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
             );
       },
     );
-    unawaited(_stepKeepAlive!.attach());
+    unawaited(_bootBackgroundRun());
+  }
+
+  Future<void> _bootBackgroundRun() async {
+    final interrupted = await RunRecordingForeground.consumeInterruptedRun();
+    if (!mounted) return;
+    await _stepKeepAlive!.attach();
+    if (!mounted || !interrupted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text(interruptedRunTitle),
+          content: const Text(interruptedRunBody),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

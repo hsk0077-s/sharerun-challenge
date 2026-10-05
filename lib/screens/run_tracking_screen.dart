@@ -9,6 +9,7 @@ import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
+import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
 import 'run_result_screen.dart';
@@ -131,6 +132,10 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
           'MyPage에서 [선택] 민감정보 수집 동의 후 러닝 검증을 시작할 수 있습니다.',
         );
       }
+
+      if (!mounted) return;
+      await ensureRunRecordingChecklist(context);
+      if (!mounted) return;
 
       final runSessionService = ref.read(runSessionServiceProvider);
       telemetrySubscription = runSessionService.telemetryStream.listen(

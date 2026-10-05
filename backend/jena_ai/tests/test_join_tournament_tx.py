@@ -97,10 +97,10 @@ def test_missing_builtin_room_is_created_and_debited() -> None:
 
     room = db.store["tournaments/beginner-1km-room"]
     assert result.status == "joined"
-    assert result.share_credited == -300_000
+    assert result.share_credited == -600
     assert room["title"] == "1km 초보 챌린지"
     assert room["targetDistanceKm"] == 1.0
-    assert room["entryFeeShare"] == 300_000
+    assert room["entryFeeShare"] == 600
     assert room["status"] == "recruiting"
     assert room["maxParticipants"] == 200
     assert room["minParticipantsBep"] == 100
@@ -108,18 +108,18 @@ def test_missing_builtin_room_is_created_and_debited() -> None:
     assert room["donationValue"] == 30000
     assert room["participantCount"] == 1
     assert "Increment" not in repr(room["participantCount"])
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 700_000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 999_400
     ledger = next(
         row for path, row in db.store.items() if path.startswith("walletTransactions/")
     )
     assert ledger["type"] == "tournament_entry"
-    assert ledger["shareAmount"] == -300_000
+    assert ledger["shareAmount"] == -600
     assert ledger["tournamentId"] == "beginner-1km-room"
 
     again = _join(db, "u1", "beginner-1km-room")
     assert again.status == "already_joined"
     assert room["participantCount"] == 1
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 700_000
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 999_400
 
 
 def test_builtin_intermediate_keeps_tier_lock_and_fallback_ids() -> None:
@@ -145,13 +145,13 @@ def test_builtin_intermediate_keeps_tier_lock_and_fallback_ids() -> None:
         created = _join(db, "rookie", tournament_id)
         room = db.store[f"tournaments/{tournament_id}"]
         assert created.status == "joined"
-        assert room["entryFeeShare"] == 600_000
+        assert room["entryFeeShare"] == 1_200
         assert room["maxParticipants"] == 400
         assert room["minParticipantsBep"] == 100
         assert room["winnerRewardValue"] == 500000
         assert room["participantCount"] == 1
 
-    assert db.store["users/rookie"]["wallet"]["shareBalance"] == 200_000
+    assert db.store["users/rookie"]["wallet"]["shareBalance"] == 1_996_400
 
 
 def _ledger(db: _MemoryDb) -> dict:

@@ -186,7 +186,7 @@ def test_referrals_shape_and_payout_markers() -> None:
     assert by_uid["b"]["referredBy"] == "a"
     assert by_uid["b"]["referredByUid"] is None
     assert by_uid["b"]["trialRunCount"] == 2
-    assert by_uid["b"]["trialRunsRequired"] == 5
+    assert by_uid["b"]["trialRunsRequired"] == 3
     assert by_uid["b"]["referralPayoutCount"] == 1
     assert by_uid["b"]["referralPayoutMax"] == 10
     assert by_uid["b"]["payouts"]["redeem"] == {

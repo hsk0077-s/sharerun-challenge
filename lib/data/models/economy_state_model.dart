@@ -65,7 +65,8 @@ class EconomyStateModel {
   final DailyMiningModel dailyMining;
 
   double get trialProgress =>
-      (trialRunCount / EconomyConstants.trialRunsRequired).clamp(0.0, 1.0);
+      (trialRunCount / EconomyConstants.referralTrialRunsRequired)
+          .clamp(0.0, 1.0);
 
   double get referralProgress =>
       (referralPayoutCount / EconomyConstants.maxReferralPayouts)

@@ -31,8 +31,6 @@ from app.constants.economy_constants import (
     PEDOMETER_HOURLY_STEP_CAP,
     REFERRAL_REDEEM_SHARE,
     REFERRAL_SHARE_LOCK_DAYS,
-    REFERRAL_TRIAL_REFEREE_SHARE,
-    REFERRAL_TRIAL_REFERRER_SHARE,
     SHARE_PER_DIA,
     SHARE_TO_DIA_SIGNUP_LOCK_DAYS,
     SHARE_TO_DIA_UNIT,
@@ -42,11 +40,18 @@ from app.constants.economy_constants import (
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
     TEST_WALLET_GRANT_ELIGIBLE_FLAG,
     TEST_WALLET_GRANT_FLAG,
-    TRIAL_COMPLETION_REWARD_SHARE,
 )
 from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
+from app.services.referral_trial_config import (
+    advance_trial_count,
+    distinct_day_count,
+    milestones_due,
+    progress_count,
+    read_referral_trial_config,
+    referrer_due,
+)
 from app.services.mercy_rule_service import MercyRuleService
 from app.services.play_billing import (
     consume_play_product_purchase,
@@ -227,6 +232,13 @@ class SecuredActionService:
             gps_route=request.gps_route,
         )
 
+        self._release_referrer_holds(uid)
+        created_at = None
+        try:
+            created_at = self._auth_account_created_at(uid)
+        except HTTPException:
+            created_at = None
+
         transaction = self.firebase_service.db.transaction()
         activity_ref = self.firebase_service.db.collection("activities").document(
             request.activity_id
@@ -235,7 +247,14 @@ class SecuredActionService:
         # Module wrapper: a method decorator does not bind `self`, so the
         # transaction body never ran. Same shape as referral redeem.
         return _commit_validation_tx(
-            transaction, self, uid, request, result, activity_ref, user_ref
+            transaction,
+            self,
+            uid,
+            request,
+            result,
+            activity_ref,
+            user_ref,
+            account_created_at=created_at,
         )
 
     def _validation_policy(self, tournament_id: str | None):
@@ -435,10 +454,14 @@ class SecuredActionService:
                     detail="expired",
                 )
 
+        trial_config = read_referral_trial_config(
+            self.firebase_service.db, transaction
+        )
+        trial_count = progress_count(economy)
         trial_complete = bool(economy.get("trialMilestoneRewardClaimed")) or (
-            self._economy_service.trial_milestone_reached(
-                int(economy.get("trialRunCount") or 0)
-            )
+            trial_count >= int(trial_config["runs_required"])
+            and distinct_day_count(economy, trial_count)
+            >= int(trial_config["distinct_days_required"])
         )
         payouts = self._plan_redeem_referral_payouts(
             transaction,
@@ -446,6 +469,10 @@ class SecuredActionService:
             referee_ref=user_ref,
             referrer_uid=owner,
             include_trial=trial_complete,
+            trial_run_count=trial_count,
+            distinct_days=distinct_day_count(economy, trial_count),
+            config=trial_config,
+            now=current,
         )
         transaction.update(
             user_ref,
@@ -825,6 +852,8 @@ class SecuredActionService:
         result: ValidationResult,
         activity_ref,
         user_ref,
+        account_created_at: datetime | None = None,
+        now: datetime | None = None,
     ) -> ValidationResult:
         activity_snapshot = activity_ref.get(transaction=transaction)
         if activity_snapshot.exists:
@@ -848,7 +877,18 @@ class SecuredActionService:
         reward_tokens = 0
         counted_km = 0.0
         daily_cap_applied = False
-        trial_run_count = int(economy.get("trialRunCount") or 0)
+        trial_config = read_referral_trial_config(
+            self.firebase_service.db, transaction
+        )
+        current = now or datetime.now(timezone.utc)
+        trial_run_count = progress_count(economy)
+        trial_days = economy.get("trialCountedDays")
+        if not isinstance(trial_days, list):
+            trial_days = []
+        trial_counted = False
+        device_id = _trial_device_id(getattr(request, "device_id", None))
+        device_owner = self._trial_device_owner(transaction, device_id)
+        device_blocked = bool(device_owner and device_owner != uid)
         trial_milestone_reached = bool(economy.get("trialMilestoneRewardClaimed"))
 
         if result.verified:
@@ -864,26 +904,47 @@ class SecuredActionService:
                 or counted_km < request.distance_km
                 or reward_tokens < result.value_token_reward
             )
+            trial_run_count, trial_days, trial_counted = advance_trial_count(
+                economy,
+                distance_m=request.distance_km * 1000,
+                now=current,
+                signup_at=account_created_at,
+                config=trial_config,
+                device_blocked=device_blocked,
+            )
 
-            if self._economy_service.should_count_trial_run(economy):
-                trial_run_count = self._economy_service.next_trial_run_count(economy)
-
-        # Reads before the activity write. 5th verified run is the trial trigger.
+        # Reads before the activity write. Milestones pay once, by ledger id.
         referral_payouts: list[dict] = []
         referred_by = economy.get("referredBy")
-        if (
-            result.verified
-            and self._economy_service.should_count_trial_run(economy)
-            and self._economy_service.trial_milestone_reached(trial_run_count)
-            and isinstance(referred_by, str)
-            and referred_by.strip()
-            and referred_by != uid
-        ):
+        if isinstance(referred_by, str):
+            referred_by = referred_by.strip()
+        else:
+            referred_by = ""
+        if referred_by == uid:
+            referred_by = ""
+        # Staged SHARE is the invited runner's reward. A run with no referrer
+        # still counts, and claim/redeem pays the same ledger ids later.
+        owes_trial = bool(referred_by) and (
+            trial_counted
+            or (
+                result.verified
+                and economy.get("trialMilestoneRewardClaimed") is not True
+                and progress_count(economy) >= int(trial_config["runs_required"])
+            )
+        )
+        if owes_trial:
             referral_payouts = self._plan_trial_referral_payouts(
                 transaction,
                 referee_uid=uid,
                 referee_ref=user_ref,
                 referrer_uid=referred_by,
+                trial_run_count=trial_run_count,
+                distinct_days=distinct_day_count(
+                    {"trialCountedDays": trial_days}, trial_run_count
+                ),
+                config=trial_config,
+                device_id=device_id,
+                now=current,
             )
 
         crew_id = member_crew_id(user) if user_snapshot.exists else ""
@@ -982,22 +1043,32 @@ class SecuredActionService:
             }
             user_updates["dailyMining"] = daily_mining
 
-        if result.verified and self._economy_service.should_count_trial_run(economy):
+        if trial_counted:
             economy_updates["trialRunCount"] = trial_run_count
-            if self._economy_service.trial_milestone_reached(trial_run_count):
-                trial_milestone_reached = True
-                economy_updates["trialMilestoneRewardClaimed"] = True
-                economy_updates["firstTierGranted"] = True
-                self._credit_value_tx(
-                    transaction,
-                    uid=uid,
-                    user_ref=user_ref,
-                    amount=self._economy_service.trial_completion_reward_amount(),
-                    tx_type="trial_milestone_reward",
+            economy_updates["trialCountedDays"] = trial_days
+            if device_id and not device_owner:
+                economy_updates["trialDeviceId"] = device_id
+                transaction.set(
+                    self.firebase_service.db.collection("trialDevices").document(
+                        device_id
+                    ),
+                    {"uid": uid, "createdAt": SERVER_TIMESTAMP},
                 )
-                user_updates["tier"] = max(int(user.get("tier") or 1), 1)
-                if referral_payouts:
-                    self._write_referral_payouts(transaction, referral_payouts)
+            if trial_run_count >= int(trial_config["runs_required"]):
+                trial_milestone_reached = True
+        elif (
+            result.verified
+            and not trial_milestone_reached
+            and progress_count(economy) >= int(trial_config["runs_required"])
+        ):
+            # Grade exam reads these flags. Referral completion must not set them.
+            trial_milestone_reached = True
+            trial_run_count = progress_count(economy)
+        staged_wallets: dict[str, dict] = {}
+        if referral_payouts:
+            staged_wallets = self._write_referral_payouts(
+                transaction, referral_payouts, now=current
+            )
 
         if result.verified:
             economy_updates["lastVerifiedRunWeek"] = self._economy_service.kst_week_key()
@@ -1020,7 +1091,7 @@ class SecuredActionService:
         ):
             cheer_bonus = cheer_bonus_share(race_share)
         if cheer_bonus > 0:
-            wallet = user.get("wallet") or {}
+            wallet = staged_wallets.get(uid) or user.get("wallet") or {}
             moved = move_currency(wallet, share=cheer_bonus)
             transaction.update(
                 user_ref,
@@ -1757,7 +1828,45 @@ class SecuredActionService:
         user = user_snapshot.to_dict() or {}
         economy = user.get("economy") or {}
         share, diamonds, value = self._wallet_balances(user)
-        if economy.get("trialMilestoneRewardClaimed") is True:
+        config = read_referral_trial_config(self.firebase_service.db, transaction)
+        required = int(config["runs_required"])
+        count = progress_count(economy)
+        distinct = distinct_day_count(economy, count)
+        complete = count >= required and distinct >= int(
+            config["distinct_days_required"]
+        )
+        if not complete:
+            return self._harvest_result(
+                status="not_eligible",
+                reason=f"Trial reward needs {required} verified runs.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+
+        referred_by = economy.get("referredBy")
+        if isinstance(referred_by, str):
+            referred_by = referred_by.strip()
+        else:
+            referred_by = ""
+        if referred_by == uid:
+            referred_by = ""
+        payouts = self._plan_trial_referral_payouts(
+            transaction,
+            referee_uid=uid,
+            referee_ref=user_ref,
+            referrer_uid=referred_by,
+            trial_run_count=count,
+            distinct_days=distinct,
+            config=config,
+        )
+        credited = sum(
+            int(row["amount"])
+            for row in payouts
+            if row["payee_uid"] == uid and not row.get("pending")
+        )
+        if credited <= 0:
             return self._harvest_result(
                 status="already_claimed",
                 reason="Trial completion reward was already claimed.",
@@ -1766,45 +1875,13 @@ class SecuredActionService:
                 diamond_balance=diamonds,
                 value_token_balance=value,
             )
-        if not self._economy_service.trial_milestone_reached(
-            int(economy.get("trialRunCount") or 0)
-        ):
-            return self._harvest_result(
-                status="not_eligible",
-                reason="Trial reward needs 5 verified runs.",
-                share_credited=0,
-                share_balance=share,
-                diamond_balance=diamonds,
-                value_token_balance=value,
-            )
 
-        reward = TRIAL_COMPLETION_REWARD_SHARE
-        wallet = user.get("wallet") or {}
-        moved = move_currency(wallet, share=reward)
-        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
-        transaction.update(
-            user_ref,
-            {
-                **moved["updates"],
-                "economy.trialMilestoneRewardClaimed": True,
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-        )
-        transaction.set(
-            tx_ref,
-            {
-                "uid": uid,
-                "type": "trial_completion_reward",
-                "shareAmount": reward,
-                "createdAt": SERVER_TIMESTAMP,
-                **moved["ledger"],
-            },
-        )
+        self._write_referral_payouts(transaction, payouts)
         return self._harvest_result(
             status="claimed",
-            reason=f"Trial completion reward of {reward} SHARE credited.",
-            share_credited=reward,
-            share_balance=share + reward,
+            reason=f"Trial completion reward of {credited} SHARE credited.",
+            share_credited=credited,
+            share_balance=share + credited,
             diamond_balance=diamonds,
             value_token_balance=value,
         )
@@ -1923,8 +2000,9 @@ class SecuredActionService:
 
     _REFERRAL_SHARE_TITLES = {
         "redeem": "초대 코드 등록",
-        "trial_referee": "체험 런 5회 완료",
-        "trial_referrer": "친구 체험 런 5회",
+        "trial_referee": "체험 런 3회 완료",
+        "trial_referee_1": "체험 런 1회",
+        "trial_referrer": "친구 체험 런 3회",
     }
 
     def _referral_payout_ref(self, referee_uid: str, payout_type: str):
@@ -1940,6 +2018,10 @@ class SecuredActionService:
         referee_ref,
         referrer_uid: str,
         include_trial: bool,
+        trial_run_count: int = 0,
+        distinct_days: int = 0,
+        config: dict | None = None,
+        now: datetime | None = None,
     ) -> list[dict]:
         payouts: list[dict] = []
         redeem = self._payout_if_unpaid(
@@ -1959,6 +2041,10 @@ class SecuredActionService:
                     referee_uid=referee_uid,
                     referee_ref=referee_ref,
                     referrer_uid=referrer_uid,
+                    trial_run_count=trial_run_count,
+                    distinct_days=distinct_days,
+                    config=config,
+                    now=now,
                 )
             )
         return payouts
@@ -1970,18 +2056,39 @@ class SecuredActionService:
         referee_uid: str,
         referee_ref,
         referrer_uid: str,
+        trial_run_count: int = 0,
+        distinct_days: int = 0,
+        config: dict | None = None,
+        device_id: str = "",
+        now: datetime | None = None,
     ) -> list[dict]:
-        payouts: list[dict] = []
-        referee = self._payout_if_unpaid(
-            transaction,
-            referee_uid=referee_uid,
-            payout_type="trial_referee",
-            payee_uid=referee_uid,
-            payee_ref=referee_ref,
-            amount=REFERRAL_TRIAL_REFEREE_SHARE,
+        config = config or read_referral_trial_config(
+            self.firebase_service.db, transaction
         )
-        if referee is not None:
-            payouts.append(referee)
+        current = now or datetime.now(timezone.utc)
+        required = int(config["runs_required"])
+        payouts: list[dict] = []
+        for milestone in milestones_due(trial_run_count, config):
+            run = int(milestone["run"])
+            payout_type = "trial_referee" if run == required else f"trial_referee_{run}"
+            title = self._REFERRAL_SHARE_TITLES.get(
+                payout_type, f"체험 런 {run}회"
+            )
+            row = self._payout_if_unpaid(
+                transaction,
+                referee_uid=referee_uid,
+                payout_type=payout_type,
+                payee_uid=referee_uid,
+                payee_ref=referee_ref,
+                amount=int(milestone["share"]),
+            )
+            if row is not None:
+                row["title"] = title
+                row["lock_days"] = int(config["referrer_lock_days"])
+                payouts.append(row)
+
+        if not referrer_uid or not referrer_due(trial_run_count, distinct_days, config):
+            return payouts
 
         marker_ref = self._referral_payout_ref(referee_uid, "trial_referrer")
         if marker_ref.get(transaction=transaction).exists:
@@ -1991,13 +2098,25 @@ class SecuredActionService:
             referrer_uid
         )
         referrer_snapshot = referrer_ref.get(transaction=transaction)
-        amount = 0
-        bump = False
+        referrer_economy = {}
         if referrer_snapshot.exists:
             referrer_economy = (referrer_snapshot.to_dict() or {}).get("economy") or {}
-            if self._economy_service.can_pay_referrer(referrer_economy):
-                amount = REFERRAL_TRIAL_REFERRER_SHARE
-                bump = True
+        same_device = bool(
+            device_id and referrer_economy.get("trialDeviceId") == device_id
+        )
+        amount = 0
+        bump = False
+        pending = False
+        if (
+            referrer_snapshot.exists
+            and not same_device
+            and self._can_pay_referrer(referrer_economy, config)
+        ):
+            amount = int(config["referrer_reward"])
+            bump = True
+            pending = True
+        release_at = current + timedelta(days=int(config["referrer_payout_hold_days"]))
+        holds = dict(referrer_economy.get("referrerHolds") or {})
         payouts.append(
             {
                 "referee_uid": referee_uid,
@@ -2008,9 +2127,18 @@ class SecuredActionService:
                 "title": self._REFERRAL_SHARE_TITLES["trial_referrer"],
                 "marker_ref": marker_ref,
                 "bump_referrer_count": bump,
+                "pending": pending,
+                "release_at": release_at.isoformat(),
+                "referrer_holds": holds,
+                "lock_days": int(config["referrer_lock_days"]),
             }
         )
         return payouts
+
+    @staticmethod
+    def _can_pay_referrer(referrer_economy: dict, config: dict) -> bool:
+        payout_count = int(referrer_economy.get("referralPayoutCount") or 0)
+        return payout_count < int(config["referrer_max_referrals"])
 
     def _payout_if_unpaid(
         self,
@@ -2036,25 +2164,44 @@ class SecuredActionService:
             "bump_referrer_count": False,
         }
 
-    def _write_referral_payouts(self, transaction, payouts: list[dict]) -> None:
+    def _write_referral_payouts(
+        self,
+        transaction,
+        payouts: list[dict],
+        now: datetime | None = None,
+    ) -> dict[str, dict]:
+        current = now or datetime.now(timezone.utc)
+        # One wallet per payee. A later milestone in this transaction must
+        # see the earlier credit, or the last absolute balance wins.
+        wallets: dict[str, dict] = {}
         for payout in payouts:
-            transaction.set(
-                payout["marker_ref"],
-                {
-                    "refereeUid": payout["referee_uid"],
-                    "payeeUid": payout["payee_uid"],
-                    "type": payout["type"],
-                    "amount": payout["amount"],
-                    "createdAt": SERVER_TIMESTAMP,
-                },
-            )
+            if payout.get("pending") or payout["amount"] <= 0:
+                continue
+            payee_uid = payout["payee_uid"]
+            if payee_uid in wallets:
+                continue
+            snapshot = payout["payee_ref"].get(transaction=transaction)
+            wallets[payee_uid] = dict((snapshot.to_dict() or {}).get("wallet") or {})
+        for payout in payouts:
+            marker = {
+                "refereeUid": payout["referee_uid"],
+                "payeeUid": payout["payee_uid"],
+                "type": payout["type"],
+                "amount": payout["amount"],
+                "createdAt": SERVER_TIMESTAMP,
+            }
+            if payout.get("pending"):
+                marker["status"] = "pending"
+                marker["releaseAt"] = payout["release_at"]
+            transaction.set(payout["marker_ref"], marker)
+            if payout.get("pending"):
+                self._write_referrer_hold(transaction, payout)
+                continue
             if payout["amount"] <= 0:
                 continue
-            payee_snapshot = payout["payee_ref"].get(transaction=transaction)
-            payee_wallet = (payee_snapshot.to_dict() or {}).get("wallet") or {}
-            unlock_at = datetime.now(timezone.utc) + timedelta(
-                days=REFERRAL_SHARE_LOCK_DAYS
-            )
+            payee_wallet = wallets[payout["payee_uid"]]
+            lock_days = int(payout.get("lock_days") or REFERRAL_SHARE_LOCK_DAYS)
+            unlock_at = current + timedelta(days=lock_days)
             moved = move_currency(
                 payee_wallet,
                 share=payout["amount"],
@@ -2077,6 +2224,151 @@ class SecuredActionService:
                     },
                 )
             self._write_share_receipt(transaction, payout)
+        return wallets
+
+    def _write_referrer_hold(self, transaction, payout: dict) -> None:
+        referee_uid = payout["referee_uid"]
+        holds = dict(payout.get("referrer_holds") or {})
+        holds[referee_uid] = {
+            "amount": payout["amount"],
+            "releaseAt": payout["release_at"],
+            "status": "pending",
+            "refereeUid": referee_uid,
+        }
+        updates = {
+            "economy.referrerHolds": holds,
+            "updatedAt": SERVER_TIMESTAMP,
+        }
+        if payout["bump_referrer_count"]:
+            updates["economy.referralPayoutCount"] = firestore.Increment(1)
+        transaction.update(payout["payee_ref"], updates)
+        transaction.set(
+            self.firebase_service.db.collection("walletTransactions").document(
+                f"trial_referrer_hold_{payout['payee_uid']}_{referee_uid}"
+            ),
+            {
+                "uid": payout["payee_uid"],
+                "type": "referral_trial_referrer_hold",
+                "status": "pending",
+                "shareAmount": 0,
+                "amount": payout["amount"],
+                "refereeUid": referee_uid,
+                "releaseAt": payout["release_at"],
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+
+    def _release_referrer_holds(self, uid: str, now: datetime | None = None) -> None:
+        try:
+            transaction = self.firebase_service.db.transaction()
+            _commit_release_referrer_holds_tx(transaction, self, uid, now)
+        except Exception:
+            return
+
+    def _release_referrer_holds_tx(self, transaction, uid: str, now: datetime | None) -> None:
+        current = now or datetime.now(timezone.utc)
+        if current.tzinfo is None:
+            current = current.replace(tzinfo=timezone.utc)
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        snapshot = user_ref.get(transaction=transaction)
+        if not snapshot.exists:
+            return
+        user = snapshot.to_dict() or {}
+        holds = dict((user.get("economy") or {}).get("referrerHolds") or {})
+        config = read_referral_trial_config(self.firebase_service.db, transaction)
+        due: list[dict] = []
+        for referee_uid, hold in holds.items():
+            if not isinstance(hold, dict) or hold.get("status") != "pending":
+                continue
+            release_at = _parse_timestamp(hold.get("releaseAt"))
+            if release_at is None or release_at > current:
+                continue
+            marker_ref = self._referral_payout_ref(str(referee_uid), "trial_referrer")
+            marker_snap = marker_ref.get(transaction=transaction)
+            release_ref = self.firebase_service.db.collection(
+                "walletTransactions"
+            ).document(f"trial_referrer_release_{uid}_{referee_uid}")
+            if release_ref.get(transaction=transaction).exists:
+                holds[referee_uid] = {**hold, "status": "released"}
+                continue
+            marker = marker_snap.to_dict() if marker_snap.exists else {}
+            due.append(
+                {
+                    "referee_uid": str(referee_uid),
+                    "amount": int(hold.get("amount") or 0),
+                    "clawback": bool(marker.get("clawback")),
+                    "release_ref": release_ref,
+                    "marker_ref": marker_ref,
+                }
+            )
+        if not due and holds == (user.get("economy") or {}).get("referrerHolds"):
+            return
+        wallet = user.get("wallet") or {}
+        changed = False
+        for row in due:
+            if row["clawback"] or row["amount"] <= 0:
+                holds[row["referee_uid"]] = {
+                    **holds[row["referee_uid"]],
+                    "status": "clawed_back",
+                }
+                transaction.set(
+                    self.firebase_service.db.collection("walletTransactions").document(
+                        f"trial_referrer_clawback_{uid}_{row['referee_uid']}"
+                    ),
+                    {
+                        "uid": uid,
+                        "type": "referral_trial_referrer_clawback",
+                        "status": "clawed_back",
+                        "shareAmount": 0,
+                        "refereeUid": row["referee_uid"],
+                        "createdAt": SERVER_TIMESTAMP,
+                    },
+                )
+                changed = True
+                continue
+            moved = move_currency(
+                wallet,
+                share=row["amount"],
+                lock_until=current
+                + timedelta(days=int(config["referrer_lock_days"])),
+            )
+            wallet_updates = moved["updates"]
+            transaction.set(
+                row["release_ref"],
+                {
+                    "uid": uid,
+                    "type": "referral_trial_referrer",
+                    "status": "released",
+                    "shareAmount": row["amount"],
+                    "refereeUid": row["referee_uid"],
+                    "createdAt": SERVER_TIMESTAMP,
+                    **moved["ledger"],
+                },
+            )
+            holds[row["referee_uid"]] = {
+                **holds[row["referee_uid"]],
+                "status": "released",
+            }
+            transaction.update(user_ref, {**wallet_updates, "updatedAt": SERVER_TIMESTAMP})
+            changed = True
+        if changed or holds != (user.get("economy") or {}).get("referrerHolds"):
+            transaction.update(
+                user_ref,
+                {"economy.referrerHolds": holds, "updatedAt": SERVER_TIMESTAMP},
+            )
+
+    def _trial_device_owner(self, transaction, device_id: str) -> str:
+        if not device_id:
+            return ""
+        snapshot = (
+            self.firebase_service.db.collection("trialDevices")
+            .document(device_id)
+            .get(transaction=transaction)
+        )
+        if not snapshot.exists:
+            return ""
+        owner = (snapshot.to_dict() or {}).get("uid")
+        return owner if isinstance(owner, str) else ""
 
     def _write_share_receipt(self, transaction, payout: dict) -> None:
         referee_uid = payout["referee_uid"]
@@ -3919,6 +4211,36 @@ def _commit_invite_code_tx(transaction, service, uid: str, user_ref, code: str) 
     return service._allocate_invite_code(transaction, uid, user_ref, code)
 
 
+def _trial_device_id(raw: object) -> str:
+    if not isinstance(raw, str):
+        return ""
+    device_id = raw.strip()
+    if not device_id or len(device_id) > 128:
+        return ""
+    return device_id
+
+
+def _parse_timestamp(value: object) -> datetime | None:
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+@firestore.transactional
+def _commit_release_referrer_holds_tx(
+    transaction, service, uid: str, now: datetime | None
+) -> None:
+    return service._release_referrer_holds_tx(transaction, uid, now)
+
+
 @firestore.transactional
 def _commit_validation_tx(
     transaction,
@@ -3928,9 +4250,18 @@ def _commit_validation_tx(
     result: ValidationResult,
     activity_ref,
     user_ref,
+    account_created_at: datetime | None = None,
+    now: datetime | None = None,
 ) -> ValidationResult:
     return service._persist_validation_tx(
-        transaction, uid, request, result, activity_ref, user_ref
+        transaction,
+        uid,
+        request,
+        result,
+        activity_ref,
+        user_ref,
+        account_created_at=account_created_at,
+        now=now,
     )
 
 

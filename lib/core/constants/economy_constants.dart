@@ -1,7 +1,9 @@
 abstract final class EconomyConstants {
   static const signupRewardSrv = 100;
+  /// Grade exam paces. Referral trial progress uses [referralTrialRunsRequired].
   static const trialRunsRequired = 5;
-  /// Server credits this as SHARE (`trial_completion_reward`).
+  static const referralTrialRunsRequired = 3;
+  /// Server credits this as SHARE across the 1,000 and 4,000 trial milestones.
   static const trialCompletionRewardSrv = 5000;
   static const referralRewardSrv = 300;
   static const maxReferralPayouts = 10;

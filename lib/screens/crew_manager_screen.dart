@@ -28,7 +28,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   static const _profileChangeDia = 100;
   static const _expandMembersDia = 300;
   static const _giftCprDia = 30;
-  static const _giftDepositShare = 100000;
+  static const _giftDepositShare = 3000;
   static const _giftPassDia = 50;
 
   var _crewName = AppStrings.crewManagerCrewName;

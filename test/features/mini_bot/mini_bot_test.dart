@@ -175,7 +175,7 @@ void main() {
     final join = MiniBotInterpreter.interpret('챌린지 참가');
     expect(join.destination, MiniBotDestination.beginnerRoom);
     expect(join.confirmLabel, '참가하기');
-    expect(join.amountLabel, '300,000 SHARE');
+    expect(join.amountLabel, '600 SHARE');
     expect(join.reply, contains('참가는 확정되지 않아요'));
 
     final runner = MiniBotInterpreter.interpret('러너 후원');

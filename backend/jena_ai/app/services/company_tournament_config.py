@@ -8,7 +8,8 @@ without another Cloud Run deploy after this code is live.
 
 Entry fees are admission only. This module does not pay prizes.
 Entry SHARE is already the 10x scale and is not multiplied again.
-top10PercentShare is the 10x reward. Prize DIA is unchanged.
+top10PercentShare is the 10x reward. Ranks 1-5 keep their DIA.
+Ranks 6-10 are half the previous band. Advertised totals are DIA only.
 """
 
 from copy import deepcopy
@@ -31,6 +32,13 @@ def _rank_prizes(*bands: tuple[int, int, int]) -> dict[str, int]:
     return prizes
 
 
+def _tickets(*bands: tuple[int, int, str]) -> list[dict]:
+    return [
+        {"fromRank": start, "toRank": end, "targetTier": target}
+        for start, end, target in bands
+    ]
+
+
 def _tier(
     *,
     label_ko: str,
@@ -42,6 +50,7 @@ def _tier(
     max_entrants: int,
     top10_percent_share: int,
     prize_dia_by_rank: dict[str, int],
+    ticket_rewards: list[dict] | None = None,
     requires_season_qualification: bool = False,
 ) -> dict:
     return {
@@ -55,6 +64,8 @@ def _tier(
         "maxEntrants": max_entrants,
         "top10PercentShare": top10_percent_share,
         "prizeDiaByRank": prize_dia_by_rank,
+        # One ticket admits once. It is not N generic free tickets.
+        "ticketRewards": list(ticket_rewards or []),
     }
 
 
@@ -69,6 +80,7 @@ _DEFAULT_TIERS = {
         max_entrants=500,
         top10_percent_share=10_000,
         prize_dia_by_rank=_rank_prizes((1, 1, 1_000), (2, 2, 500), (3, 3, 300)),
+        ticket_rewards=_tickets((1, 3, "mid")),
     ),
     "mid": _tier(
         label_ko="중급",
@@ -84,8 +96,9 @@ _DEFAULT_TIERS = {
             (2, 2, 1_500),
             (3, 3, 1_000),
             (4, 5, 500),
-            (6, 10, 200),
+            (6, 10, 100),
         ),
+        ticket_rewards=_tickets((1, 10, "advanced")),
     ),
     "advanced": _tier(
         label_ko="상급",
@@ -101,8 +114,9 @@ _DEFAULT_TIERS = {
             (2, 2, 2_500),
             (3, 3, 1_500),
             (4, 5, 800),
-            (6, 10, 400),
+            (6, 10, 200),
         ),
+        ticket_rewards=_tickets((1, 10, "half")),
     ),
     "half": _tier(
         label_ko="하프",
@@ -118,8 +132,10 @@ _DEFAULT_TIERS = {
             (2, 2, 5_000),
             (3, 3, 3_000),
             (4, 5, 1_500),
-            (6, 10, 800),
+            (6, 10, 400),
         ),
+        # Ranks 1-3: final direct entry. Ranks 4-10: the next half.
+        ticket_rewards=_tickets((1, 3, "final"), (4, 10, "half")),
     ),
     "final": _tier(
         label_ko="파이널",
@@ -159,8 +175,21 @@ _DEFAULTS = {
     "prizeClaimMinAccountAgeDays": 14,
     "prizeClaimMinVerifiedRuns": 3,
     "prizeClaimVerifiedRunWindowDays": 14,
+    # Next N editions of the target tier. There is no race calendar.
+    "ticketValidEditions": 2,
+    "ticketSeatPercent": 20,
+    "finalDirectTicketSeatPercent": 15,
+    "beginnerDiaPrizeLimitPerSeason": 2,
+    "prizeSeasonId": "season_1",
     "tiers": _DEFAULT_TIERS,
 }
+
+TICKET_SEATS_FULL = (
+    "Ticket seats for this race are full. You can still join with SHARE."
+)
+NO_TIER_TICKET = "No valid entry ticket for this tier."
+TICKET_EDITION_MISMATCH = "This entry ticket is not valid for this edition."
+NO_RACE_EDITION = "This race has no edition, so an entry ticket cannot be used."
 
 # Server-owned user field. Clients cannot write it. Missing means not eligible.
 IDENTITY_VERIFIED_FIELD = "identityVerified"
@@ -174,6 +203,7 @@ def resolve_company_tournament_config(raw: dict | None) -> dict:
     resolved["prizesFundedByEntryFees"] = _PRIZES_FUNDED_BY_ENTRY_FEES
     resolved["entryFeeRole"] = _ENTRY_FEE_ROLE
     if not isinstance(raw, dict):
+        _fill_advertised_prize_dia(resolved)
         return resolved
 
     resolved["source"] = "firestore"
@@ -188,6 +218,13 @@ def resolve_company_tournament_config(raw: dict | None) -> dict:
     _overlay_int(resolved, raw, "prizeClaimMinAccountAgeDays", minimum=0)
     _overlay_int(resolved, raw, "prizeClaimMinVerifiedRuns", minimum=0)
     _overlay_int(resolved, raw, "prizeClaimVerifiedRunWindowDays", minimum=1)
+    _overlay_int(resolved, raw, "ticketValidEditions", minimum=1, maximum=12)
+    _overlay_int(resolved, raw, "ticketSeatPercent", minimum=0, maximum=100)
+    _overlay_int(resolved, raw, "finalDirectTicketSeatPercent", minimum=0, maximum=100)
+    _overlay_int(resolved, raw, "beginnerDiaPrizeLimitPerSeason", minimum=0)
+    season = raw.get("prizeSeasonId")
+    if isinstance(season, str) and season.strip() and len(season.strip()) <= 32:
+        resolved["prizeSeasonId"] = season.strip()
     rule = raw.get("finisherValueRule")
     if isinstance(rule, str) and rule.strip() and len(rule.strip()) <= 64:
         resolved["finisherValueRule"] = rule.strip()
@@ -202,6 +239,7 @@ def resolve_company_tournament_config(raw: dict | None) -> dict:
     resolved["prizesFundedByEntryFees"] = _PRIZES_FUNDED_BY_ENTRY_FEES
     resolved["entryFeeRole"] = _ENTRY_FEE_ROLE
     resolved["topPercentExcludesPrizeRanks"] = True
+    _fill_advertised_prize_dia(resolved)
     return resolved
 
 
@@ -237,6 +275,37 @@ def _overlay_tier(base: dict, incoming: dict) -> None:
                 cleaned[key] = dia
         if cleaned:
             base["prizeDiaByRank"] = cleaned
+    _overlay_ticket_rewards(base, incoming)
+
+
+def _fill_advertised_prize_dia(resolved: dict) -> None:
+    """Prize totals count DIA only. Tickets are not given a cash value."""
+    for tier in resolved["tiers"].values():
+        prizes = tier.get("prizeDiaByRank") or {}
+        tier["advertisedPrizeDia"] = sum(int(amount) for amount in prizes.values())
+
+
+def _overlay_ticket_rewards(base: dict, incoming: dict) -> None:
+    raw = incoming.get("ticketRewards")
+    if not isinstance(raw, list):
+        return
+    cleaned: list[dict] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        start = _nonneg_int(item.get("fromRank"))
+        end = _nonneg_int(item.get("toRank"))
+        target = item.get("targetTier")
+        if start is None or end is None or start < 1 or end > 100 or start > end:
+            continue
+        if not isinstance(target, str):
+            continue
+        tier_id = target.strip().lower()
+        if tier_id not in _DEFAULT_TIERS:
+            continue
+        cleaned.append({"fromRank": start, "toRank": end, "targetTier": tier_id})
+    if cleaned:
+        base["ticketRewards"] = cleaned
 
 
 def _overlay_entrants(base: dict, incoming: dict) -> None:
@@ -395,6 +464,76 @@ def prize_ineligible_reason_ko(reason: str | None, config: dict) -> str | None:
     return labels.get(reason or "")
 
 
+def ticket_reward_for_rank(tier: dict, rank: int) -> dict | None:
+    for band in tier.get("ticketRewards") or []:
+        if int(band["fromRank"]) <= rank <= int(band["toRank"]):
+            return band
+    return None
+
+
+def ticket_seat_cap(config: dict, tier_id: str, tier: dict) -> int:
+    key = "finalDirectTicketSeatPercent" if tier_id == "final" else "ticketSeatPercent"
+    percent = int(config[key])
+    return (int(tier["maxEntrants"]) * percent) // 100
+
+
+def tournament_edition(tournament: dict) -> int | None:
+    value = tournament.get("edition")
+    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+        return None
+    return value
+
+
+def ticket_edition_bounds(latest_settled: int, valid_editions: int) -> tuple[int, int]:
+    """Exclusive start and inclusive end. Valid editions are the next N."""
+    anchor = max(0, latest_settled)
+    return anchor, anchor + max(1, valid_editions)
+
+
+def ticket_matches_edition(ticket: dict, edition: int) -> bool:
+    if ticket.get("status") != "valid" or ticket.get("transferable") is True:
+        return False
+    after = ticket.get("validAfterEdition")
+    through = ticket.get("validThroughEdition")
+    if isinstance(after, bool) or not isinstance(after, int):
+        return False
+    if isinstance(through, bool) or not isinstance(through, int):
+        return False
+    return after < edition <= through
+
+
+def ticket_is_open(ticket: dict, latest_settled: int) -> bool:
+    """Still usable for a future edition. Expired tickets do not block a new grant."""
+    if ticket.get("status") != "valid" or ticket.get("transferable") is True:
+        return False
+    through = ticket.get("validThroughEdition")
+    if isinstance(through, bool) or not isinstance(through, int):
+        return False
+    return latest_settled < through
+
+
+def ticket_reward_label(config: dict, target_tier: str) -> str:
+    label = config["tiers"][target_tier]["labelKo"]
+    editions = int(config["ticketValidEditions"])
+    return f"+ {label} 참가권 1장 (다음 {editions}회 유효)"
+
+
+def ticket_share_label(amount: int) -> str:
+    return f"+ {amount:,} SHARE"
+
+
+def ticket_join_label(config: dict, target_tier: str) -> str:
+    return f"{config['tiers'][target_tier]['labelKo']} 참가권으로 참가"
+
+
+def beginner_dia_season_blocked(
+    recognized_ids: list[str], tournament_id: str, limit: int
+) -> bool:
+    if tournament_id in recognized_ids:
+        return False
+    return len(recognized_ids) >= limit
+
+
 def build_prize_viewer(
     *,
     user: dict,
@@ -403,6 +542,7 @@ def build_prize_viewer(
     free_used: int,
     config: dict,
     now: datetime,
+    tier_tickets: list[dict] | None = None,
 ) -> dict:
     identity = user.get(IDENTITY_VERIFIED_FIELD) is True
     identity_ok = identity_check_passed(config, identity)
@@ -425,6 +565,7 @@ def build_prize_viewer(
         "prizeClaimEligible": reason is None,
         "prizeIneligibleReason": reason,
         "prizeIneligibleReasonKo": prize_ineligible_reason_ko(reason, config),
+        "tierTickets": list(tier_tickets or []),
     }
 
 

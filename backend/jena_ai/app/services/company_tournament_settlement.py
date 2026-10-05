@@ -21,10 +21,17 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 from app.models.ops_result import PrizeSettlementResult
 from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
+    beginner_dia_season_blocked,
     prize_claim_reason,
     prize_tier_id,
     resolve_account_created_at,
     resolve_company_tournament_config,
+    ticket_edition_bounds,
+    ticket_is_open,
+    ticket_reward_for_rank,
+    ticket_reward_label,
+    ticket_share_label,
+    tournament_edition,
     verified_runs_in_window,
 )
 from app.services.streak_protection import kst_month_key
@@ -51,6 +58,15 @@ class _Payout:
         self.value = 0
         self.donation_krw = 0
         self.ineligible_reason: str | None = None
+        self.dia_zero_reason: str | None = None
+        self.ticket_kind: str | None = None
+        self.ticket_target: str | None = None
+        self.ticket_label: str | None = None
+        self.ticket_share = 0
+        self.ticket_reason: str | None = None
+        self.ticket_already = False
+        self.valid_after = 0
+        self.valid_through = 0
 
 
 def prize_finish_fields(
@@ -123,6 +139,10 @@ def assign_dia_budget(payouts: list[_Payout], budget: int) -> None:
             payout.dia_paid = 0
             payout.dia_status = "ineligible"
             continue
+        if payout.dia_zero_reason:
+            payout.dia_paid = 0
+            payout.dia_status = "season_limited"
+            continue
         requested = payout.dia_requested
         if requested <= 0:
             payout.dia_paid = 0
@@ -190,9 +210,13 @@ def settle_company_prize_race(
     payouts = plan_payouts(config, tier_id, finishers)
     accounts = _require_accounts(db, payouts)
     _mark_ineligible_claims(db, payouts, accounts, config, current)
+    _apply_beginner_dia_limit(db, payouts, config, tier_id, tournament_id)
+    _attach_ticket_rewards(db, payouts, config, tier_id, tournament_id, tournament)
     cap = int(config["monthlyCompanyPrizeCapDia"])
     requested = sum(
-        payout.dia_requested for payout in payouts if not payout.ineligible_reason
+        payout.dia_requested
+        for payout in payouts
+        if not payout.ineligible_reason and not payout.dia_zero_reason
     )
     budget = _reserve_prize_budget(db, month, tournament_id, requested, cap)
     assign_dia_budget(payouts, budget)
@@ -214,9 +238,11 @@ def settle_company_prize_race(
             value_rule=str(config["finisherValueRule"]),
             tokens_per_km=int(config["finisherValueTokensPerKm"]),
             krw_per_km=int(config["companyDonationKrwPerKm"]),
+            season_id=str(config["prizeSeasonId"]),
         )
         batch.flush_if_full()
 
+    _advance_settled_edition(batch, db, tier_id, tournament)
     summary = _summary(payouts, month, tier_id, cap, donation_krw)
     held = summary["heldDia"]
     if held > 0:
@@ -253,6 +279,7 @@ def _apply_payout(
     value_rule: str,
     tokens_per_km: int,
     krw_per_km: int,
+    season_id: str,
 ) -> None:
     user_ref = db.collection("users").document(payout.uid)
     dia_ref = _wallet_ref(db, f"tournament_prize_{tournament_id}_{payout.uid}")
@@ -261,10 +288,16 @@ def _apply_payout(
     donation_ref = db.collection(DONATION_LEDGER).document(
         f"tournament_km_{tournament_id}_{payout.uid}"
     )
+    grant_ref = _wallet_ref(db, f"tournament_ticket_{tournament_id}_{payout.uid}")
+    ticket_share_ref = _wallet_ref(
+        db, f"tournament_ticket_share_{tournament_id}_{payout.uid}"
+    )
     dia_exists = dia_ref.get().exists
     share_exists = share_ref.get().exists
     value_exists = value_ref.get().exists
     donation_exists = donation_ref.get().exists
+    grant_exists = grant_ref.get().exists
+    ticket_share_exists = ticket_share_ref.get().exists
 
     wallet = dict(user.get("wallet") or {})
     updates: dict = {}
@@ -282,6 +315,16 @@ def _apply_payout(
         share_ledger = {}
     if payout.value > 0 and not value_exists:
         updates["wallet.valueTokenBalance"] = firestore.Increment(payout.value)
+    ticket_share_ledger: dict = {}
+    if (
+        payout.ticket_kind == "share"
+        and payout.ticket_share > 0
+        and not ticket_share_exists
+        and not payout.ticket_already
+    ):
+        moved = move_currency(wallet, share=payout.ticket_share)
+        updates.update(moved["updates"])
+        ticket_share_ledger = moved["ledger"]
     if updates:
         batch.update(user_ref, {**updates, "updatedAt": SERVER_TIMESTAMP})
 
@@ -319,10 +362,19 @@ def _apply_payout(
         }
         if payout.dia_status in {"held", "capped"}:
             row["capReason"] = "monthly_company_prize_cap"
+        if payout.dia_zero_reason:
+            row["heldDia"] = 0
+            row["zeroReason"] = payout.dia_zero_reason
         if payout.dia_paid <= 0:
             row["diamondFreeAmount"] = 0
             row["diamondPaidAmount"] = 0
         batch.set(dia_ref, row)
+        if (
+            tier_id == "beginner"
+            and payout.dia_status in {"paid", "capped", "held"}
+            and not payout.dia_zero_reason
+        ):
+            _remember_beginner_dia(db, batch, payout.uid, season_id, tournament_id)
 
     if payout.share > 0 and not share_exists:
         batch.set(
@@ -358,6 +410,19 @@ def _apply_payout(
             },
         )
 
+    _write_ticket_grant(
+        db,
+        batch,
+        payout,
+        tournament_id=tournament_id,
+        tier_id=tier_id,
+        grant_ref=grant_ref,
+        grant_exists=grant_exists,
+        ticket_share_ref=ticket_share_ref,
+        ticket_share_exists=ticket_share_exists,
+        ticket_share_ledger=ticket_share_ledger,
+    )
+
     if payout.donation_krw > 0 and not donation_exists:
         batch.set(
             donation_ref,
@@ -392,6 +457,12 @@ def _apply_payout(
     }
     if payout.ineligible_reason:
         participant_update["prizeIneligibleReason"] = payout.ineligible_reason
+    if payout.dia_zero_reason:
+        participant_update["prizeZeroReason"] = payout.dia_zero_reason
+    if payout.ticket_label:
+        participant_update["ticketRewardLabel"] = payout.ticket_label
+        participant_update["ticketRewardKind"] = payout.ticket_kind
+        participant_update["ticketTargetTier"] = payout.ticket_target
     batch.update(participant_ref, participant_update)
 
 
@@ -406,7 +477,9 @@ def _summary(
     held = sum(
         payout.dia_requested - payout.dia_paid
         for payout in payouts
-        if payout.dia_requested > 0 and not payout.ineligible_reason
+        if payout.dia_requested > 0
+        and not payout.ineligible_reason
+        and not payout.dia_zero_reason
     )
     return {
         "status": "settled",
@@ -420,6 +493,10 @@ def _summary(
         "donationKrw": donation_krw,
         "capDia": cap,
         "fundedByEntryFees": False,
+        "ticketsGranted": sum(1 for payout in payouts if payout.ticket_kind == "ticket"),
+        "ticketSharePaid": sum(
+            payout.ticket_share for payout in payouts if payout.ticket_kind == "share"
+        ),
     }
 
 
@@ -461,6 +538,248 @@ def _mark_ineligible_claims(db, payouts: list[_Payout], accounts: dict, config: 
             payout.dia_requested,
             reason,
         )
+
+
+def _apply_beginner_dia_limit(db, payouts, config, tier_id: str, tournament_id: str) -> None:
+    if tier_id != "beginner":
+        return
+    limit = int(config["beginnerDiaPrizeLimitPerSeason"])
+    season = str(config["prizeSeasonId"])
+    for payout in payouts:
+        if payout.dia_requested <= 0 or payout.ineligible_reason:
+            continue
+        recognized = _beginner_dia_ids(db, payout.uid, season)
+        if not beginner_dia_season_blocked(recognized, tournament_id, limit):
+            continue
+        payout.dia_zero_reason = "beginner_dia_season_limit"
+        logger.warning(
+            "Beginner DIA season limit: uid %s tournament %s rank %s season %s "
+            "recognized %s limit %s reason beginner_dia_season_limit",
+            payout.uid,
+            tournament_id,
+            payout.rank,
+            season,
+            len(recognized),
+            limit,
+        )
+
+
+def _attach_ticket_rewards(db, payouts, config, tier_id, tournament_id, tournament) -> None:
+    tier = config["tiers"][tier_id]
+    source_edition = tournament_edition(tournament)
+    for payout in payouts:
+        reward = ticket_reward_for_rank(tier, payout.rank)
+        if reward is None:
+            continue
+        target = str(reward["targetTier"])
+        payout.ticket_target = target
+        existing = _existing_ticket_grant(db, payout.uid, tournament_id, config, target)
+        if existing is not None:
+            payout.ticket_already = True
+            payout.ticket_kind = existing["kind"]
+            payout.ticket_share = existing["share"]
+            payout.ticket_label = existing["label"]
+            continue
+        holds = _holds_open_ticket(db, payout.uid, target)
+        registered = _registered_for_tier(db, payout.uid, target, tournament_id)
+        if holds or registered:
+            amount = int(config["tiers"][target]["entryShare"])
+            payout.ticket_kind = "share"
+            payout.ticket_share = amount
+            payout.ticket_label = ticket_share_label(amount)
+            payout.ticket_reason = "already_holds_ticket" if holds else "already_registered"
+            continue
+        latest = _latest_settled_edition(db, target)
+        if target == tier_id and source_edition is not None:
+            latest = max(latest, source_edition)
+        after, through = ticket_edition_bounds(latest, int(config["ticketValidEditions"]))
+        payout.ticket_kind = "ticket"
+        payout.ticket_label = ticket_reward_label(config, target)
+        payout.valid_after = after
+        payout.valid_through = through
+
+
+def _write_ticket_grant(
+    db,
+    batch,
+    payout: _Payout,
+    *,
+    tournament_id: str,
+    tier_id: str,
+    grant_ref,
+    grant_exists: bool,
+    ticket_share_ref,
+    ticket_share_exists: bool,
+    ticket_share_ledger: dict,
+) -> None:
+    if payout.ticket_already or payout.ticket_kind is None:
+        return
+    if payout.ticket_kind == "ticket" and not grant_exists:
+        batch.set(
+            grant_ref,
+            {
+                "uid": payout.uid,
+                "tournamentId": tournament_id,
+                "type": "ticket_grant",
+                "prizeTier": tier_id,
+                "targetTier": payout.ticket_target,
+                "rank": payout.rank,
+                "ticketAmount": 1,
+                "shareAmount": 0,
+                "diamondAmount": 0,
+                "transferable": False,
+                "validAfterEdition": payout.valid_after,
+                "validThroughEdition": payout.valid_through,
+                "fundedByEntryFees": False,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        ticket_ref = (
+            db.collection("users")
+            .document(payout.uid)
+            .collection("prizeTickets")
+            .document(f"from_{tournament_id}")
+        )
+        if not ticket_ref.get().exists:
+            batch.set(
+                ticket_ref,
+                {
+                    "uid": payout.uid,
+                    "targetTier": payout.ticket_target,
+                    "status": "valid",
+                    "transferable": False,
+                    "sourceTournamentId": tournament_id,
+                    "sourceTier": tier_id,
+                    "sourceRank": payout.rank,
+                    "validAfterEdition": payout.valid_after,
+                    "validThroughEdition": payout.valid_through,
+                    "createdAt": SERVER_TIMESTAMP,
+                },
+            )
+        return
+    if payout.ticket_kind == "share" and not ticket_share_exists:
+        batch.set(
+            ticket_share_ref,
+            {
+                "uid": payout.uid,
+                "tournamentId": tournament_id,
+                "type": "ticket_share_fallback",
+                "prizeTier": tier_id,
+                "targetTier": payout.ticket_target,
+                "rank": payout.rank,
+                "shareAmount": payout.ticket_share,
+                "diamondAmount": 0,
+                "ticketAmount": 0,
+                "reason": payout.ticket_reason or "duplicate_ticket",
+                "transferable": False,
+                "fundedByEntryFees": False,
+                "createdAt": SERVER_TIMESTAMP,
+                **ticket_share_ledger,
+            },
+        )
+
+
+def _existing_ticket_grant(db, uid: str, tournament_id: str, config: dict, target: str):
+    ticket_ref = (
+        db.collection("users")
+        .document(uid)
+        .collection("prizeTickets")
+        .document(f"from_{tournament_id}")
+    )
+    grant_ref = _wallet_ref(db, f"tournament_ticket_{tournament_id}_{uid}")
+    share_ref = _wallet_ref(db, f"tournament_ticket_share_{tournament_id}_{uid}")
+    if _read(ticket_ref) is not None or _read(grant_ref) is not None:
+        return {"kind": "ticket", "share": 0, "label": ticket_reward_label(config, target)}
+    share = _read(share_ref)
+    if share is None:
+        return None
+    amount = int(share.get("shareAmount") or 0)
+    return {"kind": "share", "share": amount, "label": ticket_share_label(amount)}
+
+
+def _holds_open_ticket(db, uid: str, target: str) -> bool:
+    latest = _latest_settled_edition(db, target)
+    parent = db.collection("users").document(uid).collection("prizeTickets")
+    for snap in parent.get():
+        row = snap.to_dict() or {}
+        if row.get("targetTier") != target:
+            continue
+        if ticket_is_open(row, latest):
+            return True
+    return False
+
+
+def _registered_for_tier(db, uid: str, target: str, source_id: str) -> bool:
+    for snap in db.collection("tournaments").where("prizeTier", "==", target).get():
+        if snap.id == source_id:
+            continue
+        data = snap.to_dict() or {}
+        if data.get("status") not in {"recruiting", "active"}:
+            continue
+        participant = (
+            db.collection("tournaments")
+            .document(snap.id)
+            .collection("participants")
+            .document(uid)
+            .get()
+        )
+        if not participant.exists:
+            continue
+        if (participant.to_dict() or {}).get("status") == "joined":
+            return True
+    return False
+
+
+def _latest_settled_edition(db, tier_id: str) -> int:
+    data = _read(db.collection("companyPrizeEditions").document(tier_id)) or {}
+    value = data.get("latestSettledEdition")
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return 0
+    return value
+
+
+def _advance_settled_edition(batch, db, tier_id: str, tournament: dict) -> None:
+    edition = tournament_edition(tournament)
+    if edition is None:
+        return
+    current = _latest_settled_edition(db, tier_id)
+    if edition <= current:
+        return
+    batch.set(
+        db.collection("companyPrizeEditions").document(tier_id),
+        {
+            "tier": tier_id,
+            "latestSettledEdition": edition,
+            "updatedAt": SERVER_TIMESTAMP,
+        },
+        merge=True,
+    )
+
+
+def _beginner_dia_ids(db, uid: str, season: str) -> list[str]:
+    data = _read(
+        db.collection("users").document(uid).collection("companyPrizeRace").document("state")
+    ) or {}
+    raw = (data.get("beginnerDiaPrizeIds") or {}).get(season)
+    if not isinstance(raw, list):
+        return []
+    return [item for item in raw if isinstance(item, str)]
+
+
+def _remember_beginner_dia(db, batch, uid: str, season: str, tournament_id: str) -> None:
+    ref = db.collection("users").document(uid).collection("companyPrizeRace").document("state")
+    data = _read(ref) or {}
+    by_season = dict(data.get("beginnerDiaPrizeIds") or {})
+    ids = [item for item in (by_season.get(season) or []) if isinstance(item, str)]
+    if tournament_id in ids:
+        return
+    ids.append(tournament_id)
+    by_season[season] = ids
+    batch.set(
+        ref,
+        {"beginnerDiaPrizeIds": by_season, "updatedAt": SERVER_TIMESTAMP},
+        merge=True,
+    )
 
 
 def _load_config(db) -> dict:
@@ -626,11 +945,16 @@ class _Batch:
         self._live = db.batch() if hasattr(db, "batch") else None
         self._ops = 0
 
-    def set(self, ref, data: dict) -> None:
+    def set(self, ref, data: dict, merge: bool = False) -> None:
         if self._live is None:
+            if merge and ref.path in self._db.store:
+                current = dict(self._db.store[ref.path])
+                current.update(deepcopy(data))
+                self._db.store[ref.path] = current
+                return
             self._db.store[ref.path] = deepcopy(data)
             return
-        self._live.set(ref, data)
+        self._live.set(ref, data, merge=merge)
         self._ops += 1
 
     def update(self, ref, data: dict) -> None:

@@ -12,6 +12,9 @@ from app.services.auth_service import require_uid
 from app.services.company_tournament_config import (
     prize_claim_reason,
     resolve_company_tournament_config,
+    ticket_reward_for_rank,
+    ticket_reward_label,
+    ticket_seat_cap,
 )
 from app.services.secured_action_service import SecuredActionService
 from test_redeem_referral import _MemoryDb
@@ -53,7 +56,7 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert mid["entryShare"] == 1_200
     assert mid["freeTicketCost"] == 1
     assert mid["prizeDiaByRank"]["4"] == 500
-    assert mid["prizeDiaByRank"]["6"] == 200
+    assert mid["prizeDiaByRank"]["6"] == 100
     assert mid["top10PercentShare"] == 20_000
     assert (mid["minEntrants"], mid["targetEntrants"], mid["maxEntrants"]) == (
         50,
@@ -65,7 +68,7 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert advanced["entryShare"] == 2_400
     assert advanced["freeTicketCost"] == 2
     assert advanced["prizeDiaByRank"]["1"] == 5_000
-    assert advanced["prizeDiaByRank"]["10"] == 400
+    assert advanced["prizeDiaByRank"]["10"] == 200
     assert advanced["targetEntrants"] == 250
 
     half = config["tiers"]["half"]
@@ -292,3 +295,65 @@ def test_read_route_returns_merged_config() -> None:
     assert body["viewer"]["freeEntryLabelKo"] == "첫 2회 무료"
     assert body["viewer"]["prizeIneligibleReason"] == "account_too_new"
     assert "일주일에 1번" in body["viewer"]["weeklyLimitLabelKo"]
+    assert body["viewer"]["tierTickets"] == []
+
+
+def test_rank_6_to_10_dia_defaults_are_halved() -> None:
+    config = resolve_company_tournament_config(None)
+    mid = config["tiers"]["mid"]["prizeDiaByRank"]
+    advanced = config["tiers"]["advanced"]["prizeDiaByRank"]
+    half = config["tiers"]["half"]["prizeDiaByRank"]
+
+    assert mid["5"] == 500
+    assert mid["6"] == 100
+    assert mid["10"] == 100
+    assert advanced["5"] == 800
+    assert advanced["6"] == 200
+    assert advanced["10"] == 200
+    assert half["5"] == 1_500
+    assert half["6"] == 400
+    assert half["10"] == 400
+    assert config["tiers"]["beginner"]["prizeDiaByRank"] == {
+        "1": 1_000,
+        "2": 500,
+        "3": 300,
+    }
+    assert config["tiers"]["final"]["prizeDiaByRank"]["1"] == 30_000
+    assert config["tiers"]["final"]["prizeDiaByRank"]["10"] == 3_000
+    assert config["tiers"]["mid"]["advertisedPrizeDia"] == 7_000
+    assert config["tiers"]["advanced"]["advertisedPrizeDia"] == 11_600
+    assert config["tiers"]["half"]["advertisedPrizeDia"] == 23_000
+    assert config["tiers"]["beginner"]["advertisedPrizeDia"] == 1_800
+    assert config["tiers"]["final"]["advertisedPrizeDia"] == 80_000
+    assert "원" not in ticket_reward_label(config, "mid")
+
+
+def test_ticket_mapping_and_seat_caps_come_from_config() -> None:
+    config = resolve_company_tournament_config(None)
+
+    assert ticket_reward_for_rank(config["tiers"]["beginner"], 3)["targetTier"] == "mid"
+    assert ticket_reward_for_rank(config["tiers"]["beginner"], 4) is None
+    assert ticket_reward_for_rank(config["tiers"]["mid"], 10)["targetTier"] == "advanced"
+    assert ticket_reward_for_rank(config["tiers"]["advanced"], 1)["targetTier"] == "half"
+    assert ticket_reward_for_rank(config["tiers"]["half"], 3)["targetTier"] == "final"
+    assert ticket_reward_for_rank(config["tiers"]["half"], 4)["targetTier"] == "half"
+    assert ticket_reward_for_rank(config["tiers"]["final"], 1) is None
+    assert config["ticketValidEditions"] == 2
+    assert config["ticketSeatPercent"] == 20
+    assert config["finalDirectTicketSeatPercent"] == 15
+    assert config["beginnerDiaPrizeLimitPerSeason"] == 2
+    assert ticket_seat_cap(config, "mid", config["tiers"]["mid"]) == 200
+    assert ticket_seat_cap(config, "final", config["tiers"]["final"]) == 19
+
+    overlaid = resolve_company_tournament_config(
+        {
+            "ticketSeatPercent": 10,
+            "finalDirectTicketSeatPercent": 15,
+            "ticketValidEditions": 0,
+            "beginnerDiaPrizeLimitPerSeason": "2",
+        }
+    )
+    assert overlaid["ticketSeatPercent"] == 10
+    assert overlaid["finalDirectTicketSeatPercent"] == 15
+    assert overlaid["ticketValidEditions"] == 2
+    assert overlaid["beginnerDiaPrizeLimitPerSeason"] == 2

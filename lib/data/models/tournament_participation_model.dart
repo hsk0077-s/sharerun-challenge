@@ -9,6 +9,7 @@ class TournamentParticipationModel {
     required this.participantStatus,
     required this.joinedAt,
     required this.refundStatus,
+    this.ticketRewardLabel,
   });
 
   final TournamentModel tournament;
@@ -16,8 +17,16 @@ class TournamentParticipationModel {
   final String participantStatus;
   final DateTime? joinedAt;
   final String? refundStatus;
+  final String? ticketRewardLabel;
 
   bool get isRefunded => refundStatus == 'refunded';
+
+  static String? _serverLabel(Object? value) {
+    if (value is! String) return null;
+    final text = value.trim();
+    if (text.isEmpty) return null;
+    return text;
+  }
 
   factory TournamentParticipationModel.fromFirestore({
     required String tournamentId,
@@ -36,6 +45,7 @@ class TournamentParticipationModel {
       participantStatus: participantJson['status'] as String? ?? 'joined',
       joinedAt: joinedDate,
       refundStatus: participantJson['refundStatus'] as String?,
+      ticketRewardLabel: _serverLabel(participantJson['ticketRewardLabel']),
     );
   }
 }

@@ -92,7 +92,8 @@ class SecuredActionApiClient {
       {
         'tournament_id': tournamentId,
         if (useExtraEntry) 'use_extra_entry': true,
-        if (entryMethod == 'ticket') 'entry_method': 'ticket',
+        if (entryMethod == 'ticket' || entryMethod == 'tier_ticket')
+          'entry_method': entryMethod,
       },
     );
     return TournamentJoinResult.fromJson(json);

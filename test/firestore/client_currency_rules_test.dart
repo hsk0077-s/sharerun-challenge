@@ -22,6 +22,7 @@ void main() {
   test('currency and config docs are not client-writable', () {
     expect(_writesDenied(rules, 'match /walletTransactions/{txId}'), isTrue);
     expect(_writesDenied(rules, 'match /shopInventory/{itemId}'), isTrue);
+    expect(_writesDenied(rules, 'match /prizeTickets/{ticketId}'), isTrue);
     expect(_writesDenied(rules, 'match /donationLedger/{entryId}'), isTrue);
     expect(_writesDenied(rules, 'match /donationPools/{poolId}'), isTrue);
     expect(_writesDenied(rules, 'match /wallet_transactions/{txId}'), isTrue);

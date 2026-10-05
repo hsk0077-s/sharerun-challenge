@@ -229,6 +229,18 @@ void main() {
       ),
       isNull,
     );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: race,
+        userTier: 1,
+        shareBalance: 0,
+        prizeEntryShare: 1200,
+        payingWithTierTicket: true,
+      ),
+      isNull,
+    );
   });
 
   test('allows a recruiting room when SHARE and tier are valid', () {

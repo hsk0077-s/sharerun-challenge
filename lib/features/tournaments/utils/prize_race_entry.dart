@@ -10,6 +10,7 @@ class PrizeRaceQuote {
     required this.ticketCost,
     this.freeEntryLabel,
     this.rulesLabel,
+    this.tierTicketJoinLabel,
   });
 
   final bool ready;
@@ -18,6 +19,7 @@ class PrizeRaceQuote {
   final int ticketCost;
   final String? freeEntryLabel;
   final String? rulesLabel;
+  final String? tierTicketJoinLabel;
 
   bool canUseTickets(int held) =>
       ready && entryShare > 0 && ticketCost > 0 && held >= ticketCost;
@@ -83,6 +85,7 @@ PrizeRaceQuote? resolvePrizeRaceQuote({
         ? readyConfig.freeEntryLabelKo
         : null,
     rulesLabel: _rulesLabel(readyConfig),
+    tierTicketJoinLabel: readyConfig.tierTicketJoinLabel(tournament.prizeTier),
   );
 }
 

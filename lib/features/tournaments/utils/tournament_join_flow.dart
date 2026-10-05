@@ -122,6 +122,7 @@ Future<bool> joinTournamentWithPreflight({
       ) ??
       0;
   final payingWithTickets = entryMethod == 'ticket';
+  final payingWithTierTicket = entryMethod == 'tier_ticket';
   final blocked = TournamentJoinGate.blockReason(
     signedIn: true,
     alreadyJoined: alreadyPaid,
@@ -133,6 +134,7 @@ Future<bool> joinTournamentWithPreflight({
     prizeTicketCost: prizeTicketCost,
     freeTicketBalance: freeTicketBalance,
     payingWithTickets: payingWithTickets,
+    payingWithTierTicket: payingWithTierTicket,
   );
   if (blocked != null) {
     if (kDebugMode) {
@@ -156,7 +158,7 @@ Future<bool> joinTournamentWithPreflight({
   }
 
   var unlock = false;
-  final chargedShare = payingWithTickets
+  final chargedShare = payingWithTickets || payingWithTierTicket
       ? 0
       : (prizeEntryShare ?? tournament.entryFeeShare);
   try {

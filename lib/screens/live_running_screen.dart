@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -7,7 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../core/constants/economy_constants.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -16,6 +17,8 @@ import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/run_tracking/models/route_point.dart';
 import '../features/run_tracking/services/ghost_pace_matcher.dart';
+import '../features/run_tracking/services/run_session_service.dart';
+import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/friend_ghost_run.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
@@ -51,6 +54,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   Timer? _timer;
   int _elapsedSeconds = 0;
   double _distanceInMeters = 0.0;
+  var _validating = false;
+  var _validationSession = false;
+  Future<void>? _validationStart;
   List<LatLng> _routePoints = [];
   LatLng _cameraTarget = _fallbackTarget;
   Set<Marker> _markers = {};
@@ -339,7 +345,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       _elapsedSeconds = 0;
       _distanceInMeters = 0.0;
       _routePoints = [];
+      _validationSession = false;
     });
+    _validationStart = _startValidationSession();
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || !isRunning) return;
@@ -369,20 +377,113 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     _positionStreamSubscription = null;
   }
 
-  void _onFinish() {
-    setState(() => isRunning = false);
+  /// Same collectors as the in-challenge finish: pedometer cadence, heart rate
+  /// when Health has it, gyro, and the session GPS route.
+  Future<void> _startValidationSession() async {
+    try {
+      await ref.read(runSessionServiceProvider).start();
+      _validationSession = true;
+    } catch (error) {
+      _validationSession = false;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('센서 시작 실패: $error')),
+      );
+    }
+  }
+
+  Future<void> _onFinish() async {
+    if (_validating || !isRunning) return;
+    final authUser = ref.read(authStateChangesProvider).value;
+    final blocked = HomeStartGate.validateBlockReason(
+      signedIn: authUser != null,
+      sessionStarted: true,
+    );
+    if (blocked != null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(blocked)),
+      );
+      return;
+    }
+
+    final roomId = widget.roomId;
+    final userId = authUser!.uid;
+    setState(() {
+      _validating = true;
+      isRunning = false;
+    });
     _stopTracking();
     ref.read(coachOnePointRunProvider.notifier).endRun();
     ref.read(friendGhostPaceProvider.notifier).endRun();
     final coach = _voiceCoach ?? _voiceCoachOf();
     unawaited(coach.onRunFinished());
-    if (!mounted) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => const OnboardingRunResultScreen(),
-      ),
-    );
+    await _validationStart;
+    if (!_validationSession) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.runValidationFailed)),
+      );
+      setState(() => _validating = false);
+      return;
+    }
+
+    final activityId = 'activity-${DateTime.now().millisecondsSinceEpoch}';
+    CompletedRunSession? session;
+    try {
+      session = await ref.read(runSessionServiceProvider).finish(
+            activityId: activityId,
+            userId: userId,
+          );
+      final result = await ref
+          .read(activityValidationServiceProvider)
+          .validateAndPersistResult(
+            activityId: activityId,
+            userId: userId,
+            distanceKm: session.telemetry.distanceKm,
+            durationSeconds: session.telemetry.durationSeconds,
+            gyroStabilityScore: session.telemetry.gyroStabilityScore,
+            routePoints: session.routePoints,
+            sensorBuffer: session.sensorBuffer,
+            tournamentId: roomId,
+          );
+      final distanceKm = session.telemetry.distanceKm;
+      final durationSeconds = session.telemetry.durationSeconds;
+      session.discardAllSensitive();
+      session = null;
+      if (!mounted) return;
+      if (!result.verified) {
+        final reason = result.reason.trim();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              reason.isEmpty ? AppStrings.runValidationFailed : reason,
+            ),
+          ),
+        );
+        return;
+      }
+      setState(() => _validating = false);
+      await Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => OnboardingRunResultScreen(
+            distanceKm: distanceKm,
+            durationSeconds: durationSeconds,
+            valueTokenReward: result.valueTokenReward,
+            serverConfirmed: true,
+          ),
+        ),
+      );
+    } catch (_) {
+      session?.discardAllSensitive();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.runValidationFailed)),
+      );
+    } finally {
+      if (mounted) setState(() => _validating = false);
+    }
   }
 
   @override
@@ -403,6 +504,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(runSessionServiceProvider);
     return Scaffold(
       backgroundColor: LiveRunningScreen._background,
       body: SafeArea(
@@ -446,7 +548,11 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
                 AppShapes.termsHorizontalPadding,
                 8,
               ),
-              child: const _EffortTipBox(),
+              child: _EffortTipBox(
+                tip: AppStrings.liveRunningEffortTip(
+                  EconomyConstants.effortValueTokens(_raceTargetKm),
+                ),
+              ),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(
@@ -461,15 +567,20 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
                 AppShapes.termsHorizontalPadding,
                 4,
               ),
-              child: isRunning
+              child: _validating
                   ? _ActionButton(
-                      label: AppStrings.liveRunningFinish,
-                      onTap: _onFinish,
+                      label: '검증 중',
+                      onTap: () {},
                     )
-                  : _ActionButton(
-                      label: '시작',
-                      onTap: _startRun,
-                    ),
+                  : isRunning
+                      ? _ActionButton(
+                          label: AppStrings.liveRunningFinish,
+                          onTap: _onFinish,
+                        )
+                      : _ActionButton(
+                          label: '시작',
+                          onTap: _startRun,
+                        ),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -711,7 +822,9 @@ class _LiveGoogleMap extends StatelessWidget {
 }
 
 class _EffortTipBox extends StatelessWidget {
-  const _EffortTipBox();
+  const _EffortTipBox({required this.tip});
+
+  final String tip;
 
   @override
   Widget build(BuildContext context) {
@@ -731,7 +844,7 @@ class _EffortTipBox extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              AppStrings.liveRunningEffortTip,
+              tip,
               style: AppTextStyles.caption.copyWith(
                 fontSize: 12,
                 color: const Color(0xFFE8F5A0),

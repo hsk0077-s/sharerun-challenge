@@ -164,3 +164,41 @@ def test_rejects_flat_heart_rate_curve_despite_cadence() -> None:
 
     assert result.decision == "rejected_unknown"
 
+
+def test_phone_only_six_minute_pace_verifies_without_heart_rate() -> None:
+    """3.0 km at 6:00/km, pedometer cadence, no watch."""
+    result = RunningValidationService().validate(
+        ValidationRequest(
+            activity_id="activity-phone",
+            user_id="user-phone",
+            distance_km=3.0,
+            duration_seconds=1_080,
+            heart_rates=[],
+            cadence_spm=[160],
+            gyro_stability_score=0.45,
+        )
+    )
+
+    assert result.verified is True
+    assert result.decision == "verified"
+    assert result.value_token_reward == 30
+    assert result.forfeit_deposit is False
+
+
+def test_six_minute_pace_without_steps_is_not_a_kickboard() -> None:
+    result = RunningValidationService().validate(
+        ValidationRequest(
+            activity_id="activity-phone-empty",
+            user_id="user-phone",
+            distance_km=3.0,
+            duration_seconds=1_080,
+            heart_rates=[],
+            cadence_spm=[],
+            gyro_stability_score=0.45,
+        )
+    )
+
+    assert result.verified is False
+    assert result.decision == "rejected_unknown"
+    assert result.forfeit_deposit is False
+

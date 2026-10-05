@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../core/constants/economy_constants.dart';
 import '../core/config/app_env.dart';
 import '../core/auth/health_data_consent_store.dart';
 import '../core/strings/app_strings.dart';
@@ -235,14 +236,20 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                     ),
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
                     AppShapes.termsHorizontalPadding,
                     10,
                     AppShapes.termsHorizontalPadding,
                     4,
                   ),
-                  child: _EffortCapsule(),
+                  child: _EffortCapsule(
+                    tip: AppStrings.liveRunningEffortTip(
+                      EconomyConstants.effortValueTokens(
+                        widget.roomId == RouteNames.beginner1kmRoomId ? 1 : 3,
+                      ),
+                    ),
+                  ),
                 ),
                 const Padding(
                   padding: EdgeInsets.symmetric(
@@ -749,7 +756,9 @@ class _LiveMap extends StatelessWidget {
 }
 
 class _EffortCapsule extends StatelessWidget {
-  const _EffortCapsule();
+  const _EffortCapsule({required this.tip});
+
+  final String tip;
 
   @override
   Widget build(BuildContext context) {
@@ -761,7 +770,7 @@ class _EffortCapsule extends StatelessWidget {
         border: Border.all(color: AppColors.primaryMint.withValues(alpha: 0.35)),
       ),
       child: Text(
-        '💡 ${AppStrings.liveRunningEffortTip}',
+        '💡 $tip',
         textAlign: TextAlign.center,
         style: AppTextStyles.caption.copyWith(
           color: const Color(0xFFE8F5A0),

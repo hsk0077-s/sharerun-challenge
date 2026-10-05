@@ -40,6 +40,8 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert config["prizeClaimMinAccountAgeDays"] == 14
     assert config["prizeClaimMinVerifiedRuns"] == 3
     assert config["prizeClaimVerifiedRunWindowDays"] == 14
+    assert config["finalFrequency"] == "season"
+    assert config["finalCountsTowardMonthlyCap"] is False
 
     beginner = config["tiers"]["beginner"]
     assert beginner["labelKo"] == "초급"
@@ -296,6 +298,8 @@ def test_read_route_returns_merged_config() -> None:
     assert body["viewer"]["prizeIneligibleReason"] == "account_too_new"
     assert "일주일에 1번" in body["viewer"]["weeklyLimitLabelKo"]
     assert body["viewer"]["tierTickets"] == []
+    assert body["finalFrequency"] == "season"
+    assert body["finalCountsTowardMonthlyCap"] is False
 
 
 def test_rank_6_to_10_dia_defaults_are_halved() -> None:
@@ -357,3 +361,17 @@ def test_ticket_mapping_and_seat_caps_come_from_config() -> None:
     assert overlaid["finalDirectTicketSeatPercent"] == 15
     assert overlaid["ticketValidEditions"] == 2
     assert overlaid["beginnerDiaPrizeLimitPerSeason"] == 2
+
+
+def test_final_frequency_keeps_season_when_the_value_is_invalid() -> None:
+    opened = resolve_company_tournament_config(
+        {"finalFrequency": "Unlimited", "finalCountsTowardMonthlyCap": True}
+    )
+    assert opened["finalFrequency"] == "unlimited"
+    assert opened["finalCountsTowardMonthlyCap"] is True
+
+    kept = resolve_company_tournament_config(
+        {"finalFrequency": "monthly", "finalCountsTowardMonthlyCap": "no"}
+    )
+    assert kept["finalFrequency"] == "season"
+    assert kept["finalCountsTowardMonthlyCap"] is False

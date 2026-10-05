@@ -18,6 +18,16 @@ class ActivateTournamentResult(BaseModel):
     reason: str
 
 
+class CreatePrizeRaceResult(BaseModel):
+    accepted: bool
+    tournament_id: str
+    tier: str
+    edition: int
+    season_id: str | None = None
+    status: str
+    reason: str
+
+
 class PrizeSettlementResult(BaseModel):
     accepted: bool
     tournament_id: str

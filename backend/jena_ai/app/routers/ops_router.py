@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
 from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
+    CreatePrizeRaceResult,
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
@@ -12,6 +14,11 @@ from app.services.ops_service import OpsService
 
 router = APIRouter(prefix="/ops", tags=["operations"])
 service = OpsService()
+
+
+class CreatePrizeRaceRequest(BaseModel):
+    tier: str
+    edition: int
 
 
 @router.post(
@@ -34,6 +41,22 @@ def activate_tournament(
     _: None = Depends(require_ops_admin),
 ) -> ActivateTournamentResult:
     return service.activate_tournament(tournament_id=tournament_id)
+
+
+@router.post(
+    "/prize-races/{tournament_id}",
+    response_model=CreatePrizeRaceResult,
+)
+def create_company_prize_race(
+    tournament_id: str,
+    request: CreatePrizeRaceRequest,
+    _: None = Depends(require_ops_admin),
+) -> CreatePrizeRaceResult:
+    return service.create_company_prize_race(
+        tournament_id=tournament_id,
+        tier=request.tier,
+        edition=request.edition,
+    )
 
 
 @router.post(

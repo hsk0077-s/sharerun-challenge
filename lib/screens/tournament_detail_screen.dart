@@ -96,6 +96,7 @@ class TournamentDetailScreen extends ConsumerWidget {
                 room: room,
                 entryFeeShare: room.entryFeeShare,
                 feeText: quote?.costLabel(freeTickets),
+                rulesText: quote?.rulesLabel,
                 participantStatus: isJoined ? 'joined' : null,
               ),
               const SizedBox(height: 24),
@@ -232,6 +233,7 @@ class _TournamentInfoCard extends StatelessWidget {
     required this.room,
     required this.entryFeeShare,
     this.feeText,
+    this.rulesText,
     this.participantStatus,
     this.joinedAt,
   });
@@ -239,6 +241,7 @@ class _TournamentInfoCard extends StatelessWidget {
   final TournamentModel room;
   final int entryFeeShare;
   final String? feeText;
+  final String? rulesText;
   final String? participantStatus;
   final DateTime? joinedAt;
 
@@ -260,6 +263,10 @@ class _TournamentInfoCard extends StatelessWidget {
           Text('Target: ${room.targetDistanceKm.toStringAsFixed(1)} km'),
           const SizedBox(height: 8),
           Text(feeText == null ? 'Entry: $entryFeeShare Share' : 'Entry: $feeText'),
+          if (rulesText != null) ...[
+            const SizedBox(height: 8),
+            Text(rulesText!),
+          ],
           if (participantStatus != null) ...[
             const SizedBox(height: 8),
             Text(

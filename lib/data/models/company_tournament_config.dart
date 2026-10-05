@@ -10,9 +10,19 @@ class CompanyTournamentTier {
 }
 
 class CompanyTournamentConfig {
-  const CompanyTournamentConfig({required this.tiers});
+  const CompanyTournamentConfig({
+    required this.tiers,
+    this.beginnerFreeEntryEligible = false,
+    this.freeEntryLabelKo,
+    this.weeklyLimitLabelKo,
+    this.prizeIneligibleReasonKo,
+  });
 
   final Map<String, CompanyTournamentTier> tiers;
+  final bool beginnerFreeEntryEligible;
+  final String? freeEntryLabelKo;
+  final String? weeklyLimitLabelKo;
+  final String? prizeIneligibleReasonKo;
 
   CompanyTournamentTier? tier(String id) => tiers[id.trim().toLowerCase()];
 
@@ -33,7 +43,24 @@ class CompanyTournamentConfig {
         );
       }
     }
-    return CompanyTournamentConfig(tiers: tiers);
+    final viewer = json['viewer'];
+    final freeLabel = viewer is Map ? viewer['freeEntryLabelKo'] : null;
+    final weekLabel = viewer is Map ? viewer['weeklyLimitLabelKo'] : null;
+    final claimLabel = viewer is Map ? viewer['prizeIneligibleReasonKo'] : null;
+    return CompanyTournamentConfig(
+      tiers: tiers,
+      beginnerFreeEntryEligible:
+          viewer is Map && viewer['beginnerFreeEntryEligible'] == true,
+      freeEntryLabelKo: freeLabel is String && freeLabel.isNotEmpty
+          ? freeLabel
+          : null,
+      weeklyLimitLabelKo: weekLabel is String && weekLabel.isNotEmpty
+          ? weekLabel
+          : null,
+      prizeIneligibleReasonKo: claimLabel is String && claimLabel.isNotEmpty
+          ? claimLabel
+          : null,
+    );
   }
 }
 

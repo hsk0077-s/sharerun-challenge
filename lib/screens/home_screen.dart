@@ -12,6 +12,8 @@ import '../core/navigation/app_route_nav.dart';
 import '../core/widgets/async_value_section.dart';
 import '../core/widgets/currency_badge.dart';
 import '../data/models/tournament_model.dart';
+import '../features/tournaments/providers/company_tournament_providers.dart';
+import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
@@ -200,6 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final wallet = ref.watch(walletProvider);
     final userTierAsync = ref.watch(activeUserTierProvider);
     final challengesAsync = ref.watch(tournamentRoomsProvider);
+    final prizeConfigAsync = ref.watch(companyTournamentConfigProvider);
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
     final onboarding = ref.watch(onboardingProvider);
     final showGradeEval = onboarding.currentStep != OnboardingStep.completed;
@@ -409,6 +412,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     room: room,
                     userTier: userTier,
                     isJoined: joinedIds.contains(room.id),
+                    feeLine: prizeRaceHomeFeeLine(
+                      tournament: room,
+                      configLoading: prizeConfigAsync.isLoading,
+                      config: prizeConfigAsync.asData?.value,
+                    ),
                     onTap: () =>
                         context.go(RouteNames.tournamentDetail(room.id)),
                   );
@@ -466,12 +474,14 @@ class _ActiveChallengeCard extends StatelessWidget {
     required this.room,
     required this.userTier,
     required this.isJoined,
+    required this.feeLine,
     required this.onTap,
   });
 
   final TournamentModel room;
   final int userTier;
   final bool isJoined;
+  final String feeLine;
   final VoidCallback onTap;
 
   @override
@@ -515,7 +525,7 @@ class _ActiveChallengeCard extends StatelessWidget {
           ),
           SizedBox(height: tokens.spacing.xs),
           Text(
-            '${room.targetDistanceKm.toStringAsFixed(1)}km · ${room.entryFeeShare} Share',
+            feeLine,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),

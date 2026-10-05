@@ -77,6 +77,61 @@ void main() {
     );
   });
 
+  test('free entry and limits appear only from the server payload', () {
+    const hidden = CompanyTournamentConfig(
+      tiers: {
+        'beginner': CompanyTournamentTier(entryShare: 300, freeTicketCost: 1),
+        'mid': CompanyTournamentTier(entryShare: 1200, freeTicketCost: 1),
+      },
+      weeklyLimitLabelKo: '같은 등급은 일주일에 1번만 참가할 수 있어요.',
+      prizeIneligibleReasonKo: '본인인증된 계정이 아니라 다이아 상금을 받을 수 없어요.',
+    );
+    final closed = resolvePrizeRaceQuote(
+      tournament: _race('beginner'),
+      configLoading: false,
+      config: hidden,
+    )!;
+    expect(closed.entryShare, 300);
+    expect(closed.freeEntryLabel, isNull);
+    expect(closed.costLabel(0), '300 SHARE 또는 무료 참가권 1장 · 보유 0장');
+    expect(closed.shareJoinLabel, '300 SHARE로 참가');
+    expect(closed.rulesLabel, contains('일주일에 1번'));
+    expect(closed.rulesLabel, contains('본인인증'));
+
+    const open = CompanyTournamentConfig(
+      tiers: {
+        'beginner': CompanyTournamentTier(entryShare: 111, freeTicketCost: 1),
+      },
+      beginnerFreeEntryEligible: true,
+      freeEntryLabelKo: '첫 2회 무료',
+    );
+    final eligible = resolvePrizeRaceQuote(
+      tournament: _race('beginner'),
+      configLoading: false,
+      config: open,
+    )!;
+    expect(eligible.entryShare, 111);
+    expect(eligible.freeEntryLabel, '첫 2회 무료');
+    expect(eligible.costLabel(1), contains('첫 2회 무료'));
+    expect(eligible.shareJoinLabel, '첫 2회 무료로 참가');
+
+    final home = prizeRaceHomeFeeLine(
+      tournament: _race('beginner'),
+      configLoading: false,
+      config: open,
+    );
+    expect(home, contains('첫 2회 무료'));
+    expect(home, isNot(contains('99999')));
+
+    final midHome = prizeRaceHomeFeeLine(
+      tournament: _race('mid'),
+      configLoading: false,
+      config: hidden,
+    );
+    expect(midHome, contains('1200 SHARE'));
+    expect(midHome, isNot(contains('첫 2회 무료')));
+  });
+
   test('missing config does not invent a zero fee', () {
     final pending = resolvePrizeRaceQuote(
       tournament: _race('mid'),

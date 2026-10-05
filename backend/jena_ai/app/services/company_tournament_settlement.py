@@ -21,8 +21,11 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 from app.models.ops_result import PrizeSettlementResult
 from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
+    prize_claim_reason,
     prize_tier_id,
+    resolve_account_created_at,
     resolve_company_tournament_config,
+    verified_runs_in_window,
 )
 from app.services.streak_protection import kst_month_key
 from app.services.wallet_funding import move_currency
@@ -47,6 +50,7 @@ class _Payout:
         self.share = 0
         self.value = 0
         self.donation_krw = 0
+        self.ineligible_reason: str | None = None
 
 
 def prize_finish_fields(
@@ -115,6 +119,10 @@ def assign_dia_budget(payouts: list[_Payout], budget: int) -> None:
     """Spend the reserved bonus-DIA budget from rank 1 downward."""
     remaining = max(0, budget)
     for payout in payouts:
+        if payout.ineligible_reason:
+            payout.dia_paid = 0
+            payout.dia_status = "ineligible"
+            continue
         requested = payout.dia_requested
         if requested <= 0:
             payout.dia_paid = 0
@@ -180,13 +188,16 @@ def settle_company_prize_race(
         participant_refs[row["uid"]] = ref
 
     payouts = plan_payouts(config, tier_id, finishers)
+    accounts = _require_accounts(db, payouts)
+    _mark_ineligible_claims(db, payouts, accounts, config, current)
     cap = int(config["monthlyCompanyPrizeCapDia"])
-    requested = sum(payout.dia_requested for payout in payouts)
+    requested = sum(
+        payout.dia_requested for payout in payouts if not payout.ineligible_reason
+    )
     budget = _reserve_prize_budget(db, month, tournament_id, requested, cap)
     assign_dia_budget(payouts, budget)
     donation_krw = sum(payout.donation_krw for payout in payouts)
     _record_donation_total(db, month, tournament_id, donation_krw)
-    accounts = _require_accounts(db, payouts)
 
     batch = _Batch(db)
     for payout in payouts:
@@ -274,7 +285,7 @@ def _apply_payout(
     if updates:
         batch.update(user_ref, {**updates, "updatedAt": SERVER_TIMESTAMP})
 
-    if payout.dia_requested > 0 and not dia_exists:
+    if payout.dia_requested > 0 and not dia_exists and not payout.ineligible_reason:
         if payout.dia_status in {"held", "capped"}:
             logger.warning(
                 "Company prize %s: tournament %s uid %s rank %s requested %s "
@@ -368,20 +379,20 @@ def _apply_payout(
             },
         )
 
-    batch.update(
-        participant_ref,
-        {
-            "prizeSettled": True,
-            "finishRank": payout.rank,
-            "prizeDiaPaid": payout.dia_paid,
-            "prizeDiaRequested": payout.dia_requested,
-            "prizeDiaStatus": payout.dia_status,
-            "topPercentShare": payout.share,
-            "finisherValue": payout.value,
-            "companyDonationKrw": payout.donation_krw,
-            "settledAt": SERVER_TIMESTAMP,
-        },
-    )
+    participant_update = {
+        "prizeSettled": True,
+        "finishRank": payout.rank,
+        "prizeDiaPaid": payout.dia_paid,
+        "prizeDiaRequested": payout.dia_requested,
+        "prizeDiaStatus": payout.dia_status,
+        "topPercentShare": payout.share,
+        "finisherValue": payout.value,
+        "companyDonationKrw": payout.donation_krw,
+        "settledAt": SERVER_TIMESTAMP,
+    }
+    if payout.ineligible_reason:
+        participant_update["prizeIneligibleReason"] = payout.ineligible_reason
+    batch.update(participant_ref, participant_update)
 
 
 def _summary(
@@ -395,7 +406,7 @@ def _summary(
     held = sum(
         payout.dia_requested - payout.dia_paid
         for payout in payouts
-        if payout.dia_requested > 0
+        if payout.dia_requested > 0 and not payout.ineligible_reason
     )
     return {
         "status": "settled",
@@ -425,6 +436,31 @@ def _result(tournament_id: str, status: str, reason: str, summary: dict) -> Priz
         donation_krw=int(summary.get("donationKrw") or 0),
         reason=reason,
     )
+
+
+def _mark_ineligible_claims(db, payouts: list[_Payout], accounts: dict, config: dict, now: datetime) -> None:
+    window = int(config["prizeClaimVerifiedRunWindowDays"])
+    for payout in payouts:
+        if payout.dia_requested <= 0:
+            continue
+        user = accounts[payout.uid]
+        reason = prize_claim_reason(
+            identity_verified=user.get("identityVerified") is True,
+            created_at=resolve_account_created_at(user, payout.uid),
+            verified_runs=verified_runs_in_window(db, payout.uid, now, window),
+            config=config,
+            now=now,
+        )
+        if not reason:
+            continue
+        payout.ineligible_reason = reason
+        logger.warning(
+            "Company prize ineligible: uid %s rank %s requested %s reason %s",
+            payout.uid,
+            payout.rank,
+            payout.dia_requested,
+            reason,
+        )
 
 
 def _load_config(db) -> dict:

@@ -56,8 +56,13 @@ from app.services.play_billing import (
 )
 from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
+    FREE_ENTRY_TIER,
+    IDENTITY_VERIFIED_FIELD,
+    build_prize_viewer,
     prize_tier_id,
+    resolve_account_created_at,
     resolve_company_tournament_config,
+    verified_runs_in_window,
 )
 from app.services.company_tournament_settlement import prize_finish_fields
 from app.services.battle_pass import NOT_SPENT, purchase_battle_pass
@@ -2523,14 +2528,40 @@ class SecuredActionService:
             forfeit_deposit=bool(activity.get("depositForfeited")),
         )
 
-    def get_company_tournament_config(self) -> dict:
+    def get_company_tournament_config(self, uid: str | None = None) -> dict:
         snapshot = (
             self.firebase_service.db.collection("config")
             .document(COMPANY_TOURNAMENT_CONFIG_ID)
             .get()
         )
         raw = snapshot.to_dict() if snapshot.exists else None
-        return resolve_company_tournament_config(raw)
+        config = resolve_company_tournament_config(raw)
+        if uid:
+            config["viewer"] = self._prize_race_viewer(uid, config)
+        return config
+
+    def _prize_race_viewer(self, uid: str, config: dict) -> dict:
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        user_snapshot = user_ref.get()
+        user = user_snapshot.to_dict() if user_snapshot.exists else {}
+        state_snapshot = (
+            user_ref.collection("companyPrizeRace").document("state").get()
+        )
+        state = state_snapshot.to_dict() if state_snapshot.exists else {}
+        used = state.get("beginnerFreeUsed")
+        free_used = used if isinstance(used, int) and not isinstance(used, bool) else 0
+        now = datetime.now(timezone.utc)
+        window = int(config["prizeClaimVerifiedRunWindowDays"])
+        return build_prize_viewer(
+            user=user or {},
+            created_at=resolve_account_created_at(user or {}, uid),
+            verified_runs=verified_runs_in_window(
+                self.firebase_service.db, uid, now, window
+            ),
+            free_used=free_used,
+            config=config,
+            now=now,
+        )
 
     def join_tournament(
         self,
@@ -2801,6 +2832,34 @@ class SecuredActionService:
                 detail="Season qualification is required.",
             )
 
+        state_ref = user_ref.collection("companyPrizeRace").document("state")
+        state_snapshot = state_ref.get(transaction=transaction)
+        state = state_snapshot.to_dict() if state_snapshot.exists else {}
+        week = self._economy_service.kst_week_key()
+        weeks_raw = state.get("weeks")
+        weeks = dict(weeks_raw) if isinstance(weeks_raw, dict) else {}
+        week_raw = weeks.get(week)
+        week_row = dict(week_raw) if isinstance(week_raw, dict) else {}
+        used = week_row.get(tier_id)
+        used_count = used if isinstance(used, int) and not isinstance(used, bool) else 0
+        if used_count >= int(config["weeklyEntriesPerTier"]):
+            raise HTTPException(
+                status_code=409,
+                detail="Weekly prize-race entry limit reached.",
+            )
+        free_used_raw = state.get("beginnerFreeUsed")
+        free_used = (
+            free_used_raw
+            if isinstance(free_used_raw, int) and not isinstance(free_used_raw, bool)
+            else 0
+        )
+        free_entry = (
+            request.entry_method != "ticket"
+            and tier_id == FREE_ENTRY_TIER
+            and user.get(IDENTITY_VERIFIED_FIELD) is True
+            and free_used < int(config["beginnerFreeEntryCount"])
+        )
+
         wallet = user.get("wallet") or {}
         share_fee = 0
         ticket_fee = 0
@@ -2825,6 +2884,11 @@ class SecuredActionService:
             entry_method = "ticket"
             result_status = "joined_ticket"
             reason = "Tournament joined with free tickets."
+            new_share = share
+        elif free_entry:
+            entry_method = "free_entry"
+            result_status = "joined_free"
+            reason = "Tournament joined with a free beginner entry."
             new_share = share
         else:
             share_fee = int(tier["entryShare"])
@@ -2876,12 +2940,17 @@ class SecuredActionService:
                 "status": "joined",
             },
         )
+        ledger_id = (
+            f"prize_free_entry_{tournament_ref.id}_{uid}"
+            if free_entry
+            else f"prize_entry_{tournament_ref.id}_{uid}"
+        )
         transaction.set(
-            self.firebase_service.db.collection("walletTransactions").document(),
+            self.firebase_service.db.collection("walletTransactions").document(ledger_id),
             {
                 "uid": uid,
                 "tournamentId": tournament_ref.id,
-                "type": "tournament_entry",
+                "type": "free_entry" if free_entry else "tournament_entry",
                 "shareAmount": -share_fee,
                 "diamondAmount": 0,
                 "ticketAmount": -ticket_fee,
@@ -2891,6 +2960,12 @@ class SecuredActionService:
                 **moved["ledger"],
             },
         )
+        week_row[tier_id] = used_count + 1
+        weeks[week] = week_row
+        state_payload: dict = {"weeks": weeks, "updatedAt": SERVER_TIMESTAMP}
+        if free_entry:
+            state_payload["beginnerFreeUsed"] = free_used + 1
+        transaction.set(state_ref, state_payload, merge=True)
         return SecuredActionResult(
             accepted=True,
             status=result_status,

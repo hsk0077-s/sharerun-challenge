@@ -181,6 +181,9 @@ _DEFAULTS = {
     "finalDirectTicketSeatPercent": 15,
     "beginnerDiaPrizeLimitPerSeason": 2,
     "prizeSeasonId": "season_1",
+    # 파이널 is once per prizeSeasonId. Its DIA stays outside the monthly cap.
+    "finalFrequency": "season",
+    "finalCountsTowardMonthlyCap": False,
     "tiers": _DEFAULT_TIERS,
 }
 
@@ -190,6 +193,8 @@ TICKET_SEATS_FULL = (
 NO_TIER_TICKET = "No valid entry ticket for this tier."
 TICKET_EDITION_MISMATCH = "This entry ticket is not valid for this edition."
 NO_RACE_EDITION = "This race has no edition, so an entry ticket cannot be used."
+FINAL_SEASON_TAKEN = "A final prize race already exists for this season."
+_FINAL_FREQUENCIES = frozenset({"season", "unlimited"})
 
 # Server-owned user field. Clients cannot write it. Missing means not eligible.
 IDENTITY_VERIFIED_FIELD = "identityVerified"
@@ -222,6 +227,8 @@ def resolve_company_tournament_config(raw: dict | None) -> dict:
     _overlay_int(resolved, raw, "ticketSeatPercent", minimum=0, maximum=100)
     _overlay_int(resolved, raw, "finalDirectTicketSeatPercent", minimum=0, maximum=100)
     _overlay_int(resolved, raw, "beginnerDiaPrizeLimitPerSeason", minimum=0)
+    _overlay_choice(resolved, raw, "finalFrequency", _FINAL_FREQUENCIES)
+    _overlay_bool(resolved, raw, "finalCountsTowardMonthlyCap")
     season = raw.get("prizeSeasonId")
     if isinstance(season, str) and season.strip() and len(season.strip()) <= 32:
         resolved["prizeSeasonId"] = season.strip()
@@ -332,6 +339,17 @@ def _overlay_bool(base: dict, incoming: dict, key: str) -> None:
     value = incoming.get(key)
     if isinstance(value, bool):
         base[key] = value
+
+
+def _overlay_choice(base: dict, incoming: dict, key: str, allowed: frozenset[str]) -> None:
+    if key not in incoming:
+        return
+    value = incoming.get(key)
+    if not isinstance(value, str):
+        return
+    choice = value.strip().lower()
+    if choice in allowed:
+        base[key] = choice
 
 
 def _overlay_int(

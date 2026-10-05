@@ -4,6 +4,9 @@ Prize DIA, top-percent SHARE, finisher VALUE, and the company km donation
 come from ``config/company_tournament``. Entry fees are not a prize pool.
 Bonus DIA is free DIA. The monthly cap is ``monthlyCompanyPrizeCapDia``;
 a prize that does not fit is capped or held and written to the ledger.
+A final race stays outside that cap unless ``finalCountsTowardMonthlyCap``
+is true. When ``finalFrequency`` is ``season``, one final edition can be
+opened or settled per ``prizeSeasonId``.
 
 Calling settle again does not pay twice. A verified finish is stored on
 the participant by the run-validation transaction, then this module ranks
@@ -18,9 +21,10 @@ from fastapi import HTTPException
 from google.cloud import firestore
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
-from app.models.ops_result import PrizeSettlementResult
+from app.models.ops_result import CreatePrizeRaceResult, PrizeSettlementResult
 from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
+    FINAL_SEASON_TAKEN,
     beginner_dia_season_blocked,
     prize_claim_reason,
     prize_tier_id,
@@ -40,6 +44,7 @@ from app.services.wallet_funding import move_currency
 logger = logging.getLogger(__name__)
 
 PRIZE_POOLS = "companyPrizePools"
+FINAL_SEASONS = "companyFinalSeasons"
 DONATION_POOLS = "companyDonationPools"
 DONATION_LEDGER = "donationLedger"
 _BATCH_LIMIT = 450
@@ -197,6 +202,9 @@ def settle_company_prize_race(
             detail="Only an active or finished prize race can be settled.",
         )
 
+    final_season = ensure_final_season_slot(
+        db, config, tier_id, tournament_id, tournament
+    )
     target = _number(tournament.get("targetDistanceKm")) or 0
     finishers: list[dict] = []
     participant_refs: dict = {}
@@ -218,7 +226,10 @@ def settle_company_prize_race(
         for payout in payouts
         if not payout.ineligible_reason and not payout.dia_zero_reason
     )
-    budget = _reserve_prize_budget(db, month, tournament_id, requested, cap)
+    if tier_id == "final" and config.get("finalCountsTowardMonthlyCap") is not True:
+        budget = requested
+    else:
+        budget = _reserve_prize_budget(db, month, tournament_id, requested, cap)
     assign_dia_budget(payouts, budget)
     donation_krw = sum(payout.donation_krw for payout in payouts)
     _record_donation_total(db, month, tournament_id, donation_krw)
@@ -252,17 +263,164 @@ def settle_company_prize_race(
         )
     else:
         reason = "Prize race settled from server config. Entry fees were not used."
-    batch.update(
-        tournament_ref,
-        {
-            "status": "finished",
-            "prizeSettled": True,
-            "prizeSettlement": summary,
-            "updatedAt": SERVER_TIMESTAMP,
-        },
-    )
+    finished = {
+        "status": "finished",
+        "prizeSettled": True,
+        "prizeSettlement": summary,
+        "updatedAt": SERVER_TIMESTAMP,
+    }
+    if final_season is not None:
+        finished["prizeSeasonId"] = final_season
+    batch.update(tournament_ref, finished)
     batch.commit()
     return _result(tournament_id, "settled", reason, summary)
+
+
+def ensure_final_season_slot(
+    db,
+    config: dict,
+    tier_id: str,
+    tournament_id: str,
+    tournament: dict | None = None,
+) -> str | None:
+    """Claim the season final. The same tournament id can retry."""
+    if tier_id != "final" or config.get("finalFrequency") != "season":
+        return None
+    season_id = _final_season_id(config, tournament)
+    _claim_final_season(db, season_id, tournament_id)
+    return season_id
+
+
+def create_company_prize_race(
+    db,
+    tournament_id: str,
+    tier: str,
+    edition: int,
+) -> CreatePrizeRaceResult:
+    """Open one prize-race edition. A second final in the season is rejected."""
+    if not tournament_id or "/" in tournament_id:
+        raise HTTPException(status_code=400, detail="Invalid tournament id.")
+    if isinstance(edition, bool) or not isinstance(edition, int) or edition < 1:
+        raise HTTPException(status_code=400, detail="Invalid edition.")
+    if not isinstance(tier, str) or not tier.strip():
+        raise HTTPException(status_code=400, detail="Unknown prize tier.")
+    config = _load_config(db)
+    tier_id = tier.strip().lower()
+    tier_row = config["tiers"].get(tier_id)
+    if tier_row is None:
+        raise HTTPException(status_code=400, detail="Unknown prize tier.")
+
+    ref = db.collection("tournaments").document(tournament_id)
+    snapshot = ref.get()
+    if snapshot.exists:
+        existing = snapshot.to_dict() or {}
+        if prize_tier_id(existing) != tier_id or tournament_edition(existing) != edition:
+            raise HTTPException(status_code=409, detail="Tournament id is already used.")
+        season_id = ensure_final_season_slot(db, config, tier_id, tournament_id, existing)
+        if season_id is not None and not isinstance(existing.get("prizeSeasonId"), str):
+            _save(db, ref, {"prizeSeasonId": season_id, "updatedAt": SERVER_TIMESTAMP})
+        return _create_result(
+            tournament_id,
+            tier_id,
+            edition,
+            season_id,
+            "already_created",
+            "Prize race edition was already opened.",
+        )
+
+    season_id = ensure_final_season_slot(db, config, tier_id, tournament_id, None)
+    payload = {
+        "title": tier_row["labelKo"],
+        "prizeTier": tier_id,
+        "edition": edition,
+        "status": "recruiting",
+        "participantCount": 0,
+        "targetDistanceKm": 0,
+        "minParticipantsBep": int(tier_row["minEntrants"]),
+        "maxParticipants": int(tier_row["maxEntrants"]),
+        "entryFeeShare": int(tier_row["entryShare"]),
+        "requiredTier": 1,
+        "createdAt": SERVER_TIMESTAMP,
+        "updatedAt": SERVER_TIMESTAMP,
+    }
+    if season_id is not None:
+        payload["prizeSeasonId"] = season_id
+    _save(db, ref, payload)
+    return _create_result(
+        tournament_id,
+        tier_id,
+        edition,
+        season_id,
+        "created",
+        "Prize race edition opened.",
+    )
+
+
+def _final_season_id(config: dict, tournament: dict | None) -> str:
+    if isinstance(tournament, dict):
+        raw = tournament.get("prizeSeasonId")
+        if isinstance(raw, str):
+            season = raw.strip()
+            if season and len(season) <= 32:
+                return season
+    return str(config["prizeSeasonId"])
+
+
+def _claim_final_season(db, season_id: str, tournament_id: str) -> None:
+    ref = db.collection(FINAL_SEASONS).document(season_id)
+
+    def apply(data: dict | None) -> dict | None:
+        current = (data or {}).get("tournamentId")
+        if isinstance(current, str) and current:
+            if current == tournament_id:
+                return None
+            logger.warning(
+                "Final season already claimed: season %s owner %s rejected %s",
+                season_id,
+                current,
+                tournament_id,
+            )
+            raise HTTPException(status_code=409, detail=FINAL_SEASON_TAKEN)
+        return {
+            "seasonId": season_id,
+            "tournamentId": tournament_id,
+            "updatedAt": SERVER_TIMESTAMP,
+        }
+
+    if getattr(db, "store", None) is not None:
+        payload = apply(_read(ref))
+        if payload is not None:
+            _save(db, ref, payload)
+        return
+
+    @firestore.transactional
+    def _tx(transaction):
+        snapshot = ref.get(transaction=transaction)
+        data = snapshot.to_dict() if snapshot.exists else None
+        payload = apply(data)
+        if payload is not None:
+            transaction.set(ref, payload, merge=True)
+
+    _tx(db.transaction())
+
+
+def _create_result(
+    tournament_id: str,
+    tier_id: str,
+    edition: int,
+    season_id: str | None,
+    status: str,
+    reason: str,
+) -> CreatePrizeRaceResult:
+    return CreatePrizeRaceResult(
+        accepted=True,
+        tournament_id=tournament_id,
+        tier=tier_id,
+        edition=edition,
+        season_id=season_id,
+        status=status,
+        reason=reason,
+    )
 
 
 def _apply_payout(

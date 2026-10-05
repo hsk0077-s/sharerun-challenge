@@ -6,11 +6,15 @@ import logging
 from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
+    CreatePrizeRaceResult,
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
 )
-from app.services.company_tournament_settlement import settle_company_prize_race
+from app.services.company_tournament_settlement import (
+    create_company_prize_race as open_company_prize_race,
+    settle_company_prize_race,
+)
 from app.services.firebase_service import FirebaseService
 from app.services.notification_service import send_tournament_topic_notification
 from app.services.wallet_funding import move_currency
@@ -101,6 +105,13 @@ class OpsService:
             participant_count=participant_count,
             status="active",
             reason="Tournament activated and participants notified.",
+        )
+
+    def create_company_prize_race(
+        self, tournament_id: str, tier: str, edition: int
+    ) -> CreatePrizeRaceResult:
+        return open_company_prize_race(
+            self.firebase_service.db, tournament_id, tier, edition
         )
 
     def settle_company_tournament(self, tournament_id: str) -> PrizeSettlementResult:

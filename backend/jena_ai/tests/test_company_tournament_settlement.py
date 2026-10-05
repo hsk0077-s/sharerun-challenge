@@ -13,8 +13,12 @@ from app.main import app
 from app.models.secured_actions import ValidateRunRequest
 from app.models.validation_result import ValidationResult
 from app.routers import ops_router
-from app.services.company_tournament_config import resolve_company_tournament_config
+from app.services.company_tournament_config import (
+    FINAL_SEASON_TAKEN,
+    resolve_company_tournament_config,
+)
 from app.services.company_tournament_settlement import (
+    create_company_prize_race,
     plan_payouts,
     settle_company_prize_race,
 )
@@ -724,3 +728,197 @@ def test_monthly_cap_still_limits_dia_when_tickets_are_granted() -> None:
     assert db.store["users/u1/prizeTickets/from_race"]["targetTier"] == "mid"
     assert db.store["users/u2/prizeTickets/from_race"]["targetTier"] == "mid"
     assert db.store["companyPrizePools/2026-10"]["paidDia"] == 1_000
+
+
+def test_one_final_per_season_pays_outside_the_monthly_cap() -> None:
+    db = _MemoryDb()
+    db.store["config/company_tournament"] = {"monthlyCompanyPrizeCapDia": 1_000}
+    _seed_finishers(db, "final-a", [("u1", _finisher("u1", 10))], prizeTier="final")
+    _seed_finishers(db, "final-b", [("u2", _finisher("u2", 10))], prizeTier="final")
+
+    first = _settle(db, "final-a")
+
+    assert first.paid_dia == 30_000
+    assert first.held_dia == 0
+    assert db.store["users/u1"]["wallet"]["freeDiamondBalance"] == 30_010
+    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 50
+    assert "companyPrizePools/2026-10" not in db.store
+    assert db.store["companyFinalSeasons/season_1"]["tournamentId"] == "final-a"
+    assert db.store["tournaments/final-a"]["prizeSeasonId"] == "season_1"
+    ledger = db.store["walletTransactions/tournament_prize_final-a_u1"]
+    assert ledger["prizeStatus"] == "paid"
+    assert ledger["diamondAmount"] == 30_000
+    assert "capReason" not in ledger
+
+    with pytest.raises(HTTPException) as blocked:
+        _settle(db, "final-b")
+    assert blocked.value.status_code == 409
+    assert blocked.value.detail == FINAL_SEASON_TAKEN
+    assert db.store["tournaments/final-b"].get("prizeSettled") is not True
+    assert db.store["users/u2"]["wallet"]["diamondBalance"] == 60
+    assert db.store["companyFinalSeasons/season_1"]["tournamentId"] == "final-a"
+    assert "companyPrizePools/2026-10" not in db.store
+
+    again = _settle(db, "final-a")
+    assert again.status == "already_settled"
+    assert again.paid_dia == 30_000
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 30_060
+
+    db.store["tournaments/final-a"]["prizeSettled"] = False
+    db.store["tournaments/final-a"].pop("prizeSettlement")
+    replay = _settle(db, "final-a")
+    assert replay.status == "settled"
+    assert replay.paid_dia == 30_000
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 30_060
+    assert db.store["companyFinalSeasons/season_1"]["tournamentId"] == "final-a"
+
+    db.store["config/company_tournament"]["prizeSeasonId"] = "season_2"
+    second = _settle(db, "final-b")
+    assert second.paid_dia == 30_000
+    assert second.held_dia == 0
+    assert db.store["companyFinalSeasons/season_2"]["tournamentId"] == "final-b"
+    assert db.store["users/u2"]["wallet"]["freeDiamondBalance"] == 30_010
+    assert "companyPrizePools/2026-10" not in db.store
+
+
+def test_final_counts_toward_the_monthly_cap_when_asked() -> None:
+    db = _MemoryDb()
+    db.store["config/company_tournament"] = {
+        "monthlyCompanyPrizeCapDia": 1_000,
+        "finalCountsTowardMonthlyCap": True,
+    }
+    _seed_finishers(db, "final-a", [("u1", _finisher("u1", 10))], prizeTier="final")
+
+    result = _settle(db, "final-a")
+
+    assert result.paid_dia == 1_000
+    assert result.held_dia == 29_000
+    assert db.store["companyPrizePools/2026-10"]["paidDia"] == 1_000
+    assert db.store["walletTransactions/tournament_prize_final-a_u1"]["capReason"] == (
+        "monthly_company_prize_cap"
+    )
+
+
+def test_unlimited_final_frequency_allows_a_second_edition() -> None:
+    db = _MemoryDb()
+    db.store["config/company_tournament"] = {
+        "finalFrequency": "unlimited",
+        "monthlyCompanyPrizeCapDia": 1_000,
+    }
+    _seed_finishers(db, "final-a", [("u1", _finisher("u1", 10))], prizeTier="final")
+    _seed_finishers(db, "final-b", [("u2", _finisher("u2", 10))], prizeTier="final")
+
+    assert _settle(db, "final-a").paid_dia == 30_000
+    assert _settle(db, "final-b").paid_dia == 30_000
+    assert "companyFinalSeasons/season_1" not in db.store
+    assert "companyPrizePools/2026-10" not in db.store
+
+
+def test_create_rejects_a_second_final_and_replays_the_same_id() -> None:
+    db = _MemoryDb()
+
+    opened = create_company_prize_race(db, "final-1", "Final", 1)
+    assert opened.status == "created"
+    assert opened.season_id == "season_1"
+    race = db.store["tournaments/final-1"]
+    assert race["prizeTier"] == "final"
+    assert race["edition"] == 1
+    assert race["status"] == "recruiting"
+    assert race["title"] == "파이널"
+    assert race["prizeSeasonId"] == "season_1"
+    assert race["participantCount"] == 0
+    assert db.store["companyFinalSeasons/season_1"]["tournamentId"] == "final-1"
+
+    again = create_company_prize_race(db, "final-1", "final", 1)
+    assert again.status == "already_created"
+    assert again.season_id == "season_1"
+
+    with pytest.raises(HTTPException) as blocked:
+        create_company_prize_race(db, "final-2", "final", 2)
+    assert blocked.value.status_code == 409
+    assert blocked.value.detail == FINAL_SEASON_TAKEN
+    assert "tournaments/final-2" not in db.store
+
+    beginner = create_company_prize_race(db, "beg-1", "beginner", 3)
+    assert beginner.status == "created"
+    assert beginner.season_id is None
+    assert db.store["tournaments/beg-1"]["edition"] == 3
+    assert "prizeSeasonId" not in db.store["tournaments/beg-1"]
+    assert db.store["companyFinalSeasons/season_1"]["tournamentId"] == "final-1"
+
+    with pytest.raises(HTTPException) as used:
+        create_company_prize_race(db, "final-1", "beginner", 1)
+    assert used.value.detail == "Tournament id is already used."
+
+    with pytest.raises(HTTPException) as bad_edition:
+        create_company_prize_race(db, "final-3", "final", 0)
+    assert bad_edition.value.detail == "Invalid edition."
+    assert "tournaments/final-3" not in db.store
+
+
+def test_created_final_settles_once_and_blocks_the_next_id(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    db = _MemoryDb()
+    create_company_prize_race(db, "final-1", "final", 1)
+    db.store["tournaments/final-1"]["status"] = "active"
+    db.store["tournaments/final-1/participants/u1"] = _finisher("u1", 10)
+    db.store["users/u1"] = _wallet()
+    for index in range(3):
+        db.store[f"activities/u1-verified-{index}"] = {
+            "userId": "u1",
+            "jenaVerified": True,
+            "completedAt": (NOW - timedelta(days=1)).isoformat(),
+        }
+
+    settled = _settle(db, "final-1")
+    assert settled.paid_dia == 30_000
+    assert db.store["companyFinalSeasons/season_1"]["tournamentId"] == "final-1"
+
+    _seed_finishers(db, "final-2", [("u2", _finisher("u2", 10))], prizeTier="final")
+    with caplog.at_level(logging.WARNING):
+        with pytest.raises(HTTPException) as blocked:
+            _settle(db, "final-2")
+    assert blocked.value.detail == FINAL_SEASON_TAKEN
+    assert "final-2" in caplog.text
+    assert db.store["users/u2"]["wallet"]["diamondBalance"] == 60
+
+
+def test_create_prize_race_route_uses_the_ops_secret(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPS_ADMIN_SECRET", "ops-secret")
+    db = _MemoryDb()
+    original = ops_router.service
+    ops_router.service = OpsService(firebase_service=SimpleNamespace(db=db))
+    headers = {"x-ops-admin-secret": "ops-secret"}
+    try:
+        client = TestClient(app)
+        denied = client.post(
+            "/ops/prize-races/final-1",
+            json={"tier": "final", "edition": 1},
+            headers={"x-ops-admin-secret": "nope"},
+        )
+        opened = client.post(
+            "/ops/prize-races/final-1",
+            json={"tier": "final", "edition": 1},
+            headers=headers,
+        )
+        again = client.post(
+            "/ops/prize-races/final-1",
+            json={"tier": "final", "edition": 1},
+            headers=headers,
+        )
+        blocked = client.post(
+            "/ops/prize-races/final-2",
+            json={"tier": "final", "edition": 1},
+            headers=headers,
+        )
+    finally:
+        ops_router.service = original
+
+    assert denied.status_code == 401
+    assert opened.status_code == 200
+    assert opened.json()["status"] == "created"
+    assert opened.json()["season_id"] == "season_1"
+    assert again.json()["status"] == "already_created"
+    assert blocked.status_code == 409
+    assert blocked.json()["detail"] == FINAL_SEASON_TAKEN

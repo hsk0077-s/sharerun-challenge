@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 import os
 
 from fastapi import HTTPException, status
@@ -8,9 +9,9 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from app.models.payment_webhook import PaymentWebhookRequest, PaymentWebhookResult
 from app.services.firebase_service import FirebaseService
-from app.services.wallet_funding import move_currency
 
-SHARE_TOP_UP_AMOUNTS_KRW = {10000}
+logger = logging.getLogger(__name__)
+
 SPONSOR_PAYMENT_AMOUNTS_SHARE = {1000, 3000, 5000}
 
 
@@ -61,6 +62,8 @@ class PaymentWebhookService:
 
         if current_status == "credited":
             return self._already_processed_result(request.payment_intent_id)
+        if current_status == "rejected":
+            return self._share_top_up_rejected_result(request.payment_intent_id)
 
         if expected_amount != request.amount:
             transaction.update(
@@ -97,15 +100,15 @@ class PaymentWebhookService:
             )
 
         intent_type = intent.get("type")
-        self._ensure_supported_amount(intent_type, expected_amount)
-
         if intent_type == "share_top_up":
-            return self._credit_share_top_up(
+            return self._reject_share_top_up(
                 transaction=transaction,
                 intent_ref=intent_ref,
                 intent=intent,
                 request=request,
             )
+
+        self._ensure_supported_amount(intent_type, expected_amount)
 
         if intent_type == "sponsor_payment":
             return self._apply_sponsor_payment(
@@ -120,65 +123,43 @@ class PaymentWebhookService:
             detail=f"Unsupported payment intent type: {intent_type}",
         )
 
-    def _credit_share_top_up(
+    def _reject_share_top_up(
         self,
         transaction,
         intent_ref,
         intent: dict,
         request: PaymentWebhookRequest,
     ) -> PaymentWebhookResult:
-        uid = self._share_top_up_uid_from_intent(intent)
-
-        user_ref = self.firebase_service.db.collection("users").document(uid)
-        user_snapshot = user_ref.get(transaction=transaction)
-        if not user_snapshot.exists:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User document does not exist.",
-            )
-
-        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
-        share_amount = request.amount
-        moved = move_currency(wallet, share=share_amount, paid_credit=True)
-        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
-
-        transaction.update(
-            user_ref,
-            {
-                **moved["updates"],
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-        )
-        transaction.set(
-            tx_ref,
-            {
-                "uid": uid,
-                "paymentIntentId": request.payment_intent_id,
-                "pgTransactionId": request.pg_transaction_id,
-                "type": "share_top_up",
-                "shareAmount": share_amount,
-                "createdAt": SERVER_TIMESTAMP,
-                **moved["ledger"],
-            },
+        # HTTP 200 with accepted=false. A 4xx/5xx would make the PG retry.
+        logger.warning(
+            "Rejected share_top_up payment_intent_id=%s amount=%s uid=%s; "
+            "SHARE is not sold for money.",
+            request.payment_intent_id,
+            request.amount,
+            intent.get("uid"),
         )
         transaction.update(
             intent_ref,
             {
-                "status": "credited",
+                "status": "rejected",
                 "pgTransactionId": request.pg_transaction_id,
                 "verifiedAmount": request.amount,
                 "verifiedCurrency": request.currency,
+                "rejectReason": "share_not_for_sale",
                 "serverVerifiedAt": SERVER_TIMESTAMP,
-                "creditedAt": SERVER_TIMESTAMP,
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
+        return self._share_top_up_rejected_result(request.payment_intent_id)
 
+    def _share_top_up_rejected_result(
+        self, payment_intent_id: str
+    ) -> PaymentWebhookResult:
         return PaymentWebhookResult(
-            accepted=True,
-            payment_intent_id=request.payment_intent_id,
-            status="credited",
-            reason="Share top-up verified and credited.",
+            accepted=False,
+            payment_intent_id=payment_intent_id,
+            status="rejected",
+            reason="SHARE is not sold for money.",
         )
 
     def _apply_sponsor_payment(
@@ -283,16 +264,13 @@ class PaymentWebhookService:
             )
 
     def _ensure_supported_amount(self, intent_type: str | None, amount: int) -> None:
-        if intent_type == "share_top_up" and amount in SHARE_TOP_UP_AMOUNTS_KRW:
-            return
         if intent_type == "sponsor_payment" and amount in SPONSOR_PAYMENT_AMOUNTS_SHARE:
             return
-        if intent_type not in {"share_top_up", "sponsor_payment"}:
-            return
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Payment intent amount is not supported.",
-        )
+        if intent_type in {"share_top_up", "sponsor_payment"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Payment intent amount is not supported.",
+            )
 
     def _sponsor_uid_from_intent(self, intent: dict) -> str:
         uid = intent.get("uid")

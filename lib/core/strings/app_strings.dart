@@ -469,6 +469,7 @@ abstract final class AppStrings {
   static const web3WalletTransferCta = '준비 중';
   static const winnerRewardNoConversion =
       '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
+  static const noCashPrizePool = '현금 상금 없음';
 
   // ── Stamp Tour (Screen 23) ──────────────────────────────────────────
   static const stampTourTitle = '스탬프 투어 & 미션';

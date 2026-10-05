@@ -66,6 +66,22 @@ class TournamentModel {
     return bep;
   }
 
+  bool get _prizeTakenFromEntryFee {
+    if (entryFeeShare <= 0) return false;
+    return winnerRewardValue == (entryFeeShare * 0.4).round() &&
+        donationValue == (entryFeeShare * 0.2).round();
+  }
+
+  /// Cash pool line. Null when the room has no sponsor or company prize.
+  String? get cashPrizePoolLabel {
+    if (!isPrizeRace &&
+        (_prizeTakenFromEntryFee ||
+            (winnerRewardValue <= 0 && donationValue <= 0))) {
+      return null;
+    }
+    return 'Donation pool: $donationValue Value';
+  }
+
   factory TournamentModel.fromJson({
     required String id,
     required Map<String, dynamic> json,

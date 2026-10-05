@@ -52,6 +52,8 @@ def _tier(
     prize_dia_by_rank: dict[str, int],
     ticket_rewards: list[dict] | None = None,
     requires_season_qualification: bool = False,
+    requires_heart_rate: bool = False,
+    min_distance_km: float = 1.0,
 ) -> dict:
     return {
         "labelKo": label_ko,
@@ -59,6 +61,8 @@ def _tier(
         "entryShare": entry_share,
         "freeTicketCost": free_ticket_cost,
         "requiresSeasonQualification": requires_season_qualification,
+        "requiresHeartRate": requires_heart_rate,
+        "minDistanceKm": min_distance_km,
         "minEntrants": min_entrants,
         "targetEntrants": target_entrants,
         "maxEntrants": max_entrants,
@@ -81,6 +85,8 @@ _DEFAULT_TIERS = {
         top10_percent_share=10_000,
         prize_dia_by_rank=_rank_prizes((1, 1, 1_000), (2, 2, 500), (3, 3, 300)),
         ticket_rewards=_tickets((1, 3, "mid")),
+        requires_heart_rate=False,
+        min_distance_km=1.0,
     ),
     "mid": _tier(
         label_ko="중급",
@@ -99,6 +105,8 @@ _DEFAULT_TIERS = {
             (6, 10, 100),
         ),
         ticket_rewards=_tickets((1, 10, "advanced")),
+        requires_heart_rate=False,
+        min_distance_km=5.0,
     ),
     "advanced": _tier(
         label_ko="상급",
@@ -117,6 +125,8 @@ _DEFAULT_TIERS = {
             (6, 10, 200),
         ),
         ticket_rewards=_tickets((1, 10, "half")),
+        requires_heart_rate=True,
+        min_distance_km=10.0,
     ),
     "half": _tier(
         label_ko="하프",
@@ -136,6 +146,8 @@ _DEFAULT_TIERS = {
         ),
         # Ranks 1-3: final direct entry. Ranks 4-10: the next half.
         ticket_rewards=_tickets((1, 3, "final"), (4, 10, "half")),
+        requires_heart_rate=True,
+        min_distance_km=21.0975,
     ),
     "final": _tier(
         label_ko="파이널",
@@ -154,6 +166,11 @@ _DEFAULT_TIERS = {
             (6, 10, 3_000),
         ),
         requires_season_qualification=True,
+        requires_heart_rate=True,
+        # The label is "파이널" with no km. Rooms are opened at
+        # targetDistanceKm 0, so the floor stays 1.0 until the room or this
+        # config sets a distance. Heart rate is still required.
+        min_distance_km=1.0,
     ),
 }
 
@@ -271,6 +288,10 @@ def _overlay_tier(base: dict, incoming: dict) -> None:
     qualified = incoming.get("requiresSeasonQualification")
     if isinstance(qualified, bool):
         base["requiresSeasonQualification"] = qualified
+    heart = incoming.get("requiresHeartRate")
+    if isinstance(heart, bool):
+        base["requiresHeartRate"] = heart
+    _overlay_km(base, incoming, "minDistanceKm")
     _overlay_entrants(base, incoming)
     prizes = incoming.get("prizeDiaByRank")
     if isinstance(prizes, dict):
@@ -331,6 +352,17 @@ def _picked_int(base: dict, incoming: dict, key: str) -> int | None:
     if key not in incoming:
         return base[key]
     return _nonneg_int(incoming.get(key))
+
+
+def _overlay_km(base: dict, incoming: dict, key: str) -> None:
+    if key not in incoming:
+        return
+    value = incoming.get(key)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return
+    if float(value) < 1.0:
+        return
+    base[key] = float(value)
 
 
 def _overlay_bool(base: dict, incoming: dict, key: str) -> None:

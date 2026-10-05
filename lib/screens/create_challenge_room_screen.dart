@@ -33,8 +33,8 @@ class _CreateChallengeRoomScreenState
   var _selectedDistanceKm = 3;
   var _isSubmitting = false;
 
-  /// 1·3·5·10 + 10km 초과(15·20) 선택 칩.
-  static const _distances = [1, 3, 5, 10, 15, 20];
+  /// 1·2·3·5·10 + 10km 초과(15·20) 선택 칩.
+  static const _distances = [1, 2, 3, 5, 10, 15, 20];
 
   int get _entryFee => ChallengeEntryFee.forDistanceKm(_selectedDistanceKm);
 

@@ -58,6 +58,9 @@ class ValidateRunRequest(BaseModel):
     cadence_spm: list[int] = Field(default_factory=list)
     gyro_stability_score: float = Field(ge=0, le=1)
     gps_route: list[RoutePointPayload] = Field(default_factory=list)
+    # Optional. Stride uses this when the phone sends the session step total.
+    # Absent means the server estimates steps from the cadence series.
+    total_steps: int | None = Field(default=None, ge=0)
     # Set on a race finish. Crew cheer reads this room's SHARE reward only.
     tournament_id: str | None = Field(default=None, max_length=128)
 

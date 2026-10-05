@@ -195,6 +195,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
             gyroStabilityScore: completedRun.telemetry.gyroStabilityScore,
             routePoints: completedRun.routePoints,
             sensorBuffer: completedRun.sensorBuffer,
+            totalSteps: completedRun.totalSteps,
           );
 
       if (!mounted) {

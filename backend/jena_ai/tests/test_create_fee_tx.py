@@ -163,6 +163,7 @@ def test_short_share_creates_nothing() -> None:
 
 def test_user_room_fee_schedule() -> None:
     assert _challenge_entry_fee(1) == 600
+    assert _challenge_entry_fee(2) == 900
     assert _challenge_entry_fee(3) == 1_200
     assert _challenge_entry_fee(5) == 1_800
     assert _challenge_entry_fee(10) == 3_000

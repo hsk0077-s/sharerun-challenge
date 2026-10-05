@@ -54,7 +54,10 @@ class SrcRunningPayloadNormalizer {
     );
   }
 
-  JenaValidationRequest toJenaRequest(SrcRunningPayload payload) {
+  JenaValidationRequest toJenaRequest(
+    SrcRunningPayload payload, {
+    int? totalSteps,
+  }) {
     return JenaValidationRequest(
       activityId: payload.activityId,
       userId: payload.userId,
@@ -63,6 +66,7 @@ class SrcRunningPayloadNormalizer {
       heartRates: List<int>.from(payload.biometrics.heartRateBpmSeries),
       cadenceSpm: List<int>.from(payload.biometrics.cadenceSpmSeries),
       gyroStabilityScore: payload.device.gyroStabilityScore,
+      totalSteps: totalSteps,
     );
   }
 

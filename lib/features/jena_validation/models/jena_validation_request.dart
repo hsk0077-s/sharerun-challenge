@@ -7,6 +7,7 @@ class JenaValidationRequest {
     required this.heartRates,
     required this.cadenceSpm,
     required this.gyroStabilityScore,
+    this.totalSteps,
   });
 
   final String activityId;
@@ -16,6 +17,7 @@ class JenaValidationRequest {
   final List<int> heartRates;
   final List<int> cadenceSpm;
   final double gyroStabilityScore;
+  final int? totalSteps;
 
   Map<String, dynamic> toJson() {
     return {
@@ -26,6 +28,7 @@ class JenaValidationRequest {
       'heart_rates': heartRates,
       'cadence_spm': cadenceSpm,
       'gyro_stability_score': gyroStabilityScore,
+      if (totalSteps != null) 'total_steps': totalSteps,
     };
   }
 }

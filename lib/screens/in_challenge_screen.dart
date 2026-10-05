@@ -434,6 +434,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
             routePoints: session.routePoints,
             sensorBuffer: session.sensorBuffer,
             tournamentId: widget.roomId,
+            totalSteps: session.totalSteps,
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;

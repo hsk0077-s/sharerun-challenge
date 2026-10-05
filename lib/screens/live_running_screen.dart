@@ -446,6 +446,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             routePoints: session.routePoints,
             sensorBuffer: session.sensorBuffer,
             tournamentId: roomId,
+            totalSteps: session.totalSteps,
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;

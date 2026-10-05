@@ -151,9 +151,9 @@ _DEFAULTS = {
     "finisherValueTokensPerKm": SRV_TOKENS_PER_KM,
     "topPercent": 10,
     "topPercentExcludesPrizeRanks": True,
-    # First N 초급 joins are free for an identity-verified account. Nothing
-    # sets identityVerified yet: there is no 본인인증/CI, so the flag stays
-    # false and the free entries stay closed.
+    # First N 초급 joins are free. Identity is checked only when this is true.
+    # Nothing sets identityVerified yet, so the flag stays false until 본인인증 exists.
+    "requireIdentityVerification": False,
     "beginnerFreeEntryCount": 2,
     "weeklyEntriesPerTier": 1,
     "prizeClaimMinAccountAgeDays": 14,
@@ -182,6 +182,7 @@ def resolve_company_tournament_config(raw: dict | None) -> dict:
     _overlay_int(resolved, raw, "monthlyCompanyPrizeCapDia", minimum=0)
     _overlay_int(resolved, raw, "finisherValueTokensPerKm", minimum=0)
     _overlay_int(resolved, raw, "topPercent", minimum=1, maximum=100)
+    _overlay_bool(resolved, raw, "requireIdentityVerification")
     _overlay_int(resolved, raw, "beginnerFreeEntryCount", minimum=0)
     _overlay_int(resolved, raw, "weeklyEntriesPerTier", minimum=1)
     _overlay_int(resolved, raw, "prizeClaimMinAccountAgeDays", minimum=0)
@@ -256,6 +257,14 @@ def _picked_int(base: dict, incoming: dict, key: str) -> int | None:
     return _nonneg_int(incoming.get(key))
 
 
+def _overlay_bool(base: dict, incoming: dict, key: str) -> None:
+    if key not in incoming:
+        return
+    value = incoming.get(key)
+    if isinstance(value, bool):
+        base[key] = value
+
+
 def _overlay_int(
     base: dict,
     incoming: dict,
@@ -295,6 +304,13 @@ def _rank_key(value: object) -> str | None:
     return str(number)
 
 
+def identity_check_passed(config: dict, identity_verified: bool) -> bool:
+    """False only when the config flag is on and the account is not verified."""
+    if config.get("requireIdentityVerification") is not True:
+        return True
+    return identity_verified is True
+
+
 def prize_claim_reason(
     *,
     identity_verified: bool,
@@ -304,7 +320,7 @@ def prize_claim_reason(
     now: datetime,
 ) -> str | None:
     """Why this account cannot be paid DIA. None means the claim is allowed."""
-    if identity_verified is not True:
+    if not identity_check_passed(config, identity_verified):
         return "not_identity_verified"
     if not account_age_reached(
         created_at, now, int(config["prizeClaimMinAccountAgeDays"])
@@ -389,9 +405,10 @@ def build_prize_viewer(
     now: datetime,
 ) -> dict:
     identity = user.get(IDENTITY_VERIFIED_FIELD) is True
+    identity_ok = identity_check_passed(config, identity)
     allowance = int(config["beginnerFreeEntryCount"])
-    remaining = max(0, allowance - max(0, free_used)) if identity else 0
-    free_ok = identity and remaining > 0 and allowance > 0
+    remaining = max(0, allowance - max(0, free_used)) if identity_ok else 0
+    free_ok = identity_ok and remaining > 0 and allowance > 0
     reason = prize_claim_reason(
         identity_verified=identity,
         created_at=created_at,

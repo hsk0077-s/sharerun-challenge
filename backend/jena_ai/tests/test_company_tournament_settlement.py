@@ -469,8 +469,8 @@ def _claim_race(days: int, runs: int, *, identity: bool = True):
 
 
 def test_thirteen_day_account_keeps_rank_and_receives_no_dia() -> None:
-    young = _claim_race(13, 3)
-    old = _claim_race(14, 3)
+    young = _claim_race(13, 3, identity=False)
+    old = _claim_race(14, 3, identity=False)
 
     blocked = _settle(young)
     allowed = _settle(old)
@@ -495,8 +495,8 @@ def test_thirteen_day_account_keeps_rank_and_receives_no_dia() -> None:
 
 
 def test_two_verified_runs_block_dia_and_three_do_not() -> None:
-    short = _claim_race(30, 2)
-    enough = _claim_race(30, 3)
+    short = _claim_race(30, 2, identity=False)
+    enough = _claim_race(30, 3, identity=False)
 
     blocked = _settle(short)
     allowed = _settle(enough)
@@ -514,6 +514,7 @@ def test_two_verified_runs_block_dia_and_three_do_not() -> None:
 
 def test_unverified_identity_is_not_paid_and_resettle_does_not_double_pay() -> None:
     db = _claim_race(30, 3, identity=False)
+    db.store["config/company_tournament"] = {"requireIdentityVerification": True}
     first = _settle(db)
     second_balance = db.store["users/u2"]["wallet"]["diamondBalance"]
     first_balance = db.store["users/u1"]["wallet"]["diamondBalance"]

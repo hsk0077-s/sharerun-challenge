@@ -31,6 +31,7 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert config["finisherValueTokensPerKm"] == SRV_TOKENS_PER_KM
     assert config["topPercent"] == 10
     assert config["topPercentExcludesPrizeRanks"] is True
+    assert config["requireIdentityVerification"] is False
     assert config["beginnerFreeEntryCount"] == 2
     assert config["weeklyEntriesPerTier"] == 1
     assert config["prizeClaimMinAccountAgeDays"] == 14
@@ -131,6 +132,7 @@ def test_firestore_overlay_keeps_invalid_fields_on_defaults() -> None:
 def test_overlay_of_entry_limits_and_claim_thresholds() -> None:
     config = resolve_company_tournament_config(
         {
+            "requireIdentityVerification": True,
             "beginnerFreeEntryCount": 4,
             "weeklyEntriesPerTier": 2,
             "prizeClaimMinAccountAgeDays": 10,
@@ -138,6 +140,7 @@ def test_overlay_of_entry_limits_and_claim_thresholds() -> None:
             "prizeClaimVerifiedRunWindowDays": 7,
         }
     )
+    assert config["requireIdentityVerification"] is True
     assert config["beginnerFreeEntryCount"] == 4
     assert config["weeklyEntriesPerTier"] == 2
     assert config["prizeClaimMinAccountAgeDays"] == 10
@@ -146,6 +149,7 @@ def test_overlay_of_entry_limits_and_claim_thresholds() -> None:
 
     kept = resolve_company_tournament_config(
         {
+            "requireIdentityVerification": "yes",
             "beginnerFreeEntryCount": -1,
             "weeklyEntriesPerTier": 0,
             "prizeClaimMinAccountAgeDays": True,
@@ -153,6 +157,7 @@ def test_overlay_of_entry_limits_and_claim_thresholds() -> None:
             "prizeClaimVerifiedRunWindowDays": 0,
         }
     )
+    assert kept["requireIdentityVerification"] is False
     assert kept["beginnerFreeEntryCount"] == 2
     assert kept["weeklyEntriesPerTier"] == 1
     assert kept["prizeClaimMinAccountAgeDays"] == 14
@@ -224,7 +229,38 @@ def test_claim_thresholds_are_14_days_and_3_runs() -> None:
             config=config,
             now=now,
         )
+        is None
+    )
+    assert (
+        prize_claim_reason(
+            identity_verified=False,
+            created_at=young,
+            verified_runs=3,
+            config=config,
+            now=now,
+        )
+        == "account_too_new"
+    )
+    locked = resolve_company_tournament_config({"requireIdentityVerification": True})
+    assert (
+        prize_claim_reason(
+            identity_verified=False,
+            created_at=old,
+            verified_runs=3,
+            config=locked,
+            now=now,
+        )
         == "not_identity_verified"
+    )
+    assert (
+        prize_claim_reason(
+            identity_verified=True,
+            created_at=old,
+            verified_runs=3,
+            config=locked,
+            now=now,
+        )
+        is None
     )
 
 
@@ -251,8 +287,8 @@ def test_read_route_returns_merged_config() -> None:
     assert body["tiers"]["beginner"]["entryShare"] == 300
     assert body["prizesFundedByEntryFees"] is False
     assert body["beginnerFreeEntryCount"] == 2
-    assert body["viewer"]["beginnerFreeEntryEligible"] is False
-    assert body["viewer"]["freeEntryLabelKo"] is None
-    assert body["viewer"]["prizeIneligibleReason"] == "not_identity_verified"
-    assert "본인인증" in body["viewer"]["prizeIneligibleReasonKo"]
+    assert body["requireIdentityVerification"] is False
+    assert body["viewer"]["beginnerFreeEntryEligible"] is True
+    assert body["viewer"]["freeEntryLabelKo"] == "첫 2회 무료"
+    assert body["viewer"]["prizeIneligibleReason"] == "account_too_new"
     assert "일주일에 1번" in body["viewer"]["weeklyLimitLabelKo"]

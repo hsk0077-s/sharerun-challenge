@@ -59,6 +59,7 @@ from app.services.company_tournament_config import (
     FREE_ENTRY_TIER,
     IDENTITY_VERIFIED_FIELD,
     build_prize_viewer,
+    identity_check_passed,
     prize_tier_id,
     resolve_account_created_at,
     resolve_company_tournament_config,
@@ -2856,7 +2857,9 @@ class SecuredActionService:
         free_entry = (
             request.entry_method != "ticket"
             and tier_id == FREE_ENTRY_TIER
-            and user.get(IDENTITY_VERIFIED_FIELD) is True
+            and identity_check_passed(
+                config, user.get(IDENTITY_VERIFIED_FIELD) is True
+            )
             and free_used < int(config["beginnerFreeEntryCount"])
         )
 

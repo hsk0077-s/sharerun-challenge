@@ -16,7 +16,7 @@ abstract final class AppStrings {
   static const loginReferralHint = '추천 코드를 입력하세요...';
   static const referralRedeemEntry = '초대 코드 입력';
   static const referralRedeemSubmit = '등록';
-  static const referralRedeemSuccess = '1,000 SHARE 지급';
+  static const referralRedeemSuccess = '10,000 SHARE 지급';
   static const referralRedeemInvalid = '없는 초대 코드예요';
   static const referralRedeemSelf = '본인 코드는 입력할 수 없어요';
   static const referralRedeemAlready = '이미 초대 코드를 입력했어요';
@@ -83,11 +83,10 @@ abstract final class AppStrings {
   static const dashboardNickname = '달리기부자45';
   static const dashboardGoldBadge = '골드';
   static const dashboardMyWallet = '나의 지갑';
-  static const dashboardShareBalance = '보유 SHARE: 90,000 (≈ 90,000 KRW)';
+  static const dashboardShareBalance = '보유 SHARE: 90,000';
   static const dashboardDiamondBalance = '💎 보유 다이아몬드: 5개';
   static const dashboardValueBalance = '🌱 보유 밸류(VALUE): 5,200';
-  static String dashboardShareBalanceOf(String amount, String krw) =>
-      '보유 SHARE: $amount (≈ $krw KRW)';
+  static String dashboardShareBalanceOf(String amount) => '보유 SHARE: $amount';
   static String dashboardDiamondBalanceOf(int count) =>
       '💎 보유 다이아몬드: $count개';
   static String dashboardValueBalanceOf(String amount) =>
@@ -98,9 +97,9 @@ abstract final class AppStrings {
   static const dashboardStampMapTooltip = '오늘의 미션 · 스탬프 투어';
   static const dashboardOngoingChallenges = '진행 중인 챌린지';
   static const dashboardChallenge1Title = '초보 1km 챌린지 🏆';
-  static const dashboardChallenge1Sub = '참가비: 30,000 SHARE';
+  static const dashboardChallenge1Sub = '참가비: 300,000 SHARE';
   static const dashboardChallenge2Title = '중급 3km 챌린지 (골드 방)';
-  static const dashboardChallenge2Sub = '참가비: 60,000 SHARE';
+  static const dashboardChallenge2Sub = '참가비: 600,000 SHARE';
   static const dashboardViewRoom = '방 상세 보기';
   static const dashboardNavHome = '홈';
   static const dashboardNavStore = '상점';
@@ -123,7 +122,6 @@ abstract final class AppStrings {
   static const myWalletRecentTransactions = '최근 거래 내역';
 
   static String myWalletShareLabel(String amount) => '보유 SHARE: $amount';
-  static String myWalletShareKrw(String krw) => '(~ $krw KRW)';
   static String myWalletDiamondLabel(int count) => '보유 다이아몬드: $count개';
   static String myWalletValueLabel(String amount) => '보유 밸류(VALUE): $amount';
   static const myWalletInventoryTitle = '보유 아이템';
@@ -165,7 +163,7 @@ abstract final class AppStrings {
   static const lobbyRoom2Title = '크루 대항 주말 10K 매치 🔥';
   static const lobbyRoom2Sub = '참가 크루 8팀 · 주말 오전 09:00 시작';
   static const lobbyRoom3Title = '초보 1km 챌린지';
-  static const lobbyRoom3Sub = '참가비: 30,000 SHARE';
+  static const lobbyRoom3Sub = '참가비: 300,000 SHARE';
   static const lobbyEnterRoom = '입장하기';
 
   // ── Create Challenge Room (Screen 8) ──────────────────────────────
@@ -209,7 +207,7 @@ abstract final class AppStrings {
 
   // ── Challenge Detail (Screen 9) ───────────────────────────────────
   static const challengeDetailTitle = '3km 중급 챌린지 (골드 방)';
-  static const challengeDetailEntryFee = '참가비: 60,000 SHARE';
+  static const challengeDetailEntryFee = '참가비: 600,000 SHARE';
   static const challengeDetailGoldBadge = 'Gold';
   static const challengeDetailPrize = '상금: 50만 원';
   static const challengeDetailDonation = '기부금: 유니세프 기부 50만 원';

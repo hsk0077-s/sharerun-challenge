@@ -2,22 +2,22 @@
 abstract final class ChallengeEntryFee {
   /// 목표 거리(km) → 참가비 SHARE.
   ///
-  /// - 1km beginner → 30,000
-  /// - 3km intermediate → 60,000
-  /// - 5km → 70,000
-  /// - 10km → 100,000
-  /// - 10km 초과: 100,000 + ((km - 10) ~/ 5) × 50,000
-  ///   (15km → 150,000 / 20km → 200,000)
-  static const beginner1kmShare = 30000;
-  static const intermediate3kmShare = 60000;
+  /// - 1km beginner → 300,000
+  /// - 3km intermediate → 600,000
+  /// - 5km → 700,000
+  /// - 10km → 1,000,000
+  /// - 10km 초과: 1,000,000 + ((km - 10) ~/ 5) × 500,000
+  ///   (15km → 1,500,000 / 20km → 2,000,000)
+  static const beginner1kmShare = 300000;
+  static const intermediate3kmShare = 600000;
 
   static int forDistanceKm(int km) {
     return switch (km) {
       1 => beginner1kmShare,
       3 => intermediate3kmShare,
-      5 => 70000,
-      10 => 100000,
-      _ when km > 10 => 100000 + ((km - 10) ~/ 5) * 50000,
+      5 => 700000,
+      10 => 1000000,
+      _ when km > 10 => 1000000 + ((km - 10) ~/ 5) * 500000,
       _ => beginner1kmShare,
     };
   }

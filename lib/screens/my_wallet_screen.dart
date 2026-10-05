@@ -374,7 +374,6 @@ class _MainAssetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = (gradeCompleted / gradeTotal).clamp(0.0, 1.0);
-    final krw = share;
 
     return WalletNeoCard(
       child: Column(
@@ -383,11 +382,6 @@ class _MainAssetCard extends StatelessWidget {
           Text(
             AppStrings.myWalletShareLabel(_comma(share)),
             style: MyWalletText.shareMint,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            AppStrings.myWalletShareKrw(_comma(krw)),
-            style: MyWalletText.muted14,
           ),
           const SizedBox(height: 16),
           _AssetLine(

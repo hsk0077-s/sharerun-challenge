@@ -2,21 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/features/pedometer/pedometer_harvest_ledger.dart';
 
 void main() {
-  test('pending floor is 1 SHARE per 100 unclaimed steps', () {
+  test('pending floor is 10 SHARE per 100 unclaimed steps', () {
     expect(
       PedometerHarvestLedger.pendingShareFloor(steps: 2918, claimedSteps: 0),
-      29,
+      291,
     );
     expect(
       PedometerHarvestLedger.pendingShareFloor(steps: 2918, claimedSteps: 2918),
       0,
     );
     expect(
-      PedometerHarvestLedger.pendingShareFloor(steps: 3000, claimedSteps: 2918),
+      PedometerHarvestLedger.pendingShareFloor(steps: 2927, claimedSteps: 2918),
       0,
     );
     expect(
-      PedometerHarvestLedger.pendingShareFloor(steps: 3018, claimedSteps: 2918),
+      PedometerHarvestLedger.pendingShareFloor(steps: 2928, claimedSteps: 2918),
       1,
     );
   });
@@ -72,14 +72,14 @@ void main() {
     );
   });
 
-  test('2950 steps with claimed 0 is 29.50 pending and 29 floor', () {
+  test('2950 steps with claimed 0 is 295 pending and 295 floor', () {
     expect(
       PedometerHarvestLedger.pendingShareExact(steps: 2950, claimedSteps: 0),
-      29.5,
+      295,
     );
     expect(
       PedometerHarvestLedger.pendingShareFloor(steps: 2950, claimedSteps: 0),
-      29,
+      295,
     );
     expect(
       PedometerHarvestLedger.pendingShareFloor(steps: 2950, claimedSteps: 2950),
@@ -110,11 +110,11 @@ void main() {
         harvestedShare: 999,
         todayKey: '2026-10-03',
       ),
-      60,
+      600,
     );
   });
 
-  test('today mined and pending never exceed the daily 60 SHARE cap', () {
+  test('today mined and pending never exceed the daily 600 SHARE cap', () {
     expect(
       PedometerHarvestLedger.todayMinedShare(claimedSteps: 999999),
       PedometerHarvestLedger.dailyShareCap,
@@ -138,7 +138,7 @@ void main() {
         steps: 999999,
         claimedSteps: 5000,
       ),
-      10,
+      100,
     );
     expect(
       PedometerHarvestLedger.pendingShareFloor(
@@ -236,8 +236,8 @@ void main() {
       steps: steps,
       claimedSteps: 0,
     );
-    expect(claimed, 2900);
-    expect(steps > claimed, isTrue);
+    expect(claimed, 2950);
+    expect(steps > claimed, isFalse);
     expect(
       PedometerHarvestLedger.pickupReady(
         steps: steps,

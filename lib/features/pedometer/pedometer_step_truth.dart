@@ -272,13 +272,13 @@ abstract final class PedometerStepTruth {
 
 /// Foreground shade copy. [dailySteps] is the same counter as the walking UI.
 ///
-/// SHARE here is harvestable, not already credited: 1 per 100 steps, daily
+/// SHARE here is harvestable, not already credited: 10 per 100 steps, daily
 /// cap [PedometerHarvestLedger.dailyShareCap]. Never say it was acquired
 /// before a harvest.
 abstract final class WalkingChallengeNotificationCopy {
   static const dailyGoal = 4500;
 
-  static const harvestRule = '(100걸음당 1, 하루 최대 60)';
+  static const harvestRule = '(100걸음당 10, 하루 최대 600)';
 
   /// Approximate unharvested SHARE for [dailySteps]. Already-claimed steps
   /// are excluded when [claimedSteps] is known; otherwise this is the
@@ -310,10 +310,10 @@ abstract final class WalkingChallengeNotificationCopy {
   /// Morning, lunch, and evening alarms repeat every day at the same clock
   /// time, so they must not freeze a pending total captured when scheduled.
   static String goldenMorningBody() =>
-      '오늘 걸음은 100걸음당 1 SHARE, 하루 최대 60까지 주울 수 있어요.';
+      '오늘 걸음은 100걸음당 10 SHARE, 하루 최대 600까지 주울 수 있어요.';
 
   static String goldenLunchBody() =>
-      '아직 안 주운 SHARE가 있으면 걷기 화면에서 주울 수 있어요. 100걸음당 1, 하루 최대 60.';
+      '아직 안 주운 SHARE가 있으면 걷기 화면에서 주울 수 있어요. 100걸음당 10, 하루 최대 600.';
 
   static String goldenEveningBody() =>
       '아직 안 주운 SHARE는 자정에 초기화돼요. 이미 지갑에 넣은 잔액은 그대로예요.';

@@ -1,7 +1,8 @@
 abstract final class EconomyConstants {
   static const signupRewardSrv = 100;
   static const trialRunsRequired = 5;
-  static const trialCompletionRewardSrv = 500;
+  /// Server credits this as SHARE (`trial_completion_reward`).
+  static const trialCompletionRewardSrv = 5000;
   static const referralRewardSrv = 300;
   static const maxReferralPayouts = 10;
 

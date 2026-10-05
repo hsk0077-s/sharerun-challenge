@@ -42,7 +42,7 @@ from app.constants.economy_constants import (
     TEST_WALLET_GRANT_DEBUG_CLIENT_SECRET,
     TEST_WALLET_GRANT_ELIGIBLE_FLAG,
     TEST_WALLET_GRANT_FLAG,
-    TRIAL_COMPLETION_REWARD_SRV,
+    TRIAL_COMPLETION_REWARD_SHARE,
 )
 from app.models.validation_request import ValidationRequest
 from app.models.validation_result import ValidationResult
@@ -136,7 +136,7 @@ _COACH_PLUS_DAYS = {
 _BEGINNER_BUILTIN_ROOM = {
     "title": "1km 초보 챌린지",
     "targetDistanceKm": 1.0,
-    "entryFeeShare": 30000,
+    "entryFeeShare": 300_000,
     "status": "recruiting",
     "maxParticipants": 200,
     "minParticipantsBep": 100,
@@ -147,7 +147,7 @@ _BEGINNER_BUILTIN_ROOM = {
 _INTERMEDIATE_BUILTIN_ROOM = {
     "title": "3km 중급 챌린지 (골드 방)",
     "targetDistanceKm": 3.0,
-    "entryFeeShare": 60000,
+    "entryFeeShare": 600_000,
     "status": "recruiting",
     "maxParticipants": 400,
     "minParticipantsBep": 100,
@@ -1106,7 +1106,7 @@ class SecuredActionService:
         "profile": ("diamond", 100, "crew_profile_change"),
         "pass": ("diamond", 50, "crew_challenge_pass"),
         "expand": ("diamond", 300, "crew_member_expand"),
-        "deposit": ("share", 10000, "crew_deposit"),
+        "deposit": ("share", 100_000, "crew_deposit"),
     }
     NICKNAME_CHANGE_DIA = 100
     CREW_GIFT_ITEMS = (
@@ -1705,7 +1705,7 @@ class SecuredActionService:
                 value_token_balance=value,
             )
 
-        reward = TRIAL_COMPLETION_REWARD_SRV
+        reward = TRIAL_COMPLETION_REWARD_SHARE
         wallet = user.get("wallet") or {}
         moved = move_currency(wallet, share=reward)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
@@ -3831,16 +3831,16 @@ def _commit_trial_reward_tx(
 
 def _challenge_entry_fee(km: int) -> int:
     if km == 1:
-        return 30000
+        return 300_000
     if km == 3:
-        return 60000
+        return 600_000
     if km == 5:
-        return 70000
+        return 700_000
     if km == 10:
-        return 100000
+        return 1_000_000
     if km > 10:
-        return 100000 + ((km - 10) // 5) * 50000
-    return 30000
+        return 1_000_000 + ((km - 10) // 5) * 500_000
+    return 300_000
 
 
 def _challenge_bep(km: int) -> int:

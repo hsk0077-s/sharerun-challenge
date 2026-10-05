@@ -719,7 +719,7 @@ void main() {
       expect(copy.title, contains('셰어런 챌린지 대기 중'));
       expect(
         copy.body,
-        '0보 · 줍기 가능 약 0 SHARE (100걸음당 1, 하루 최대 60)',
+        '0보 · 줍기 가능 약 0 SHARE (100걸음당 10, 하루 최대 600)',
       );
       expect(copy.body, isNot(contains('획득')));
     });
@@ -729,7 +729,7 @@ void main() {
       expect(copy.title, contains('숲길 걷는 중'));
       expect(
         copy.body,
-        '1,835보 · 줍기 가능 약 18 SHARE (100걸음당 1, 하루 최대 60)',
+        '1,835보 · 줍기 가능 약 183 SHARE (100걸음당 10, 하루 최대 600)',
       );
       expect(copy.body, isNot(contains('0보')));
     });
@@ -739,7 +739,7 @@ void main() {
       expect(copy.title, contains('오늘 걸음 이어가는 중'));
       expect(
         copy.body,
-        '4,500보 · 줍기 가능 약 45 SHARE (100걸음당 1, 하루 최대 60)',
+        '4,500보 · 줍기 가능 약 450 SHARE (100걸음당 10, 하루 최대 600)',
       );
       expect(copy.body, isNot(contains('획득')));
       expect(copy.body, isNot(contains('+20')));
@@ -756,10 +756,10 @@ void main() {
       expect(copy.body, contains('약 0 SHARE'));
     });
 
-    test('the hint stops at the daily 60 SHARE cap', () {
+    test('the hint stops at the daily 600 SHARE cap', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(10000);
       expect(copy.body, contains('10,000보'));
-      expect(copy.body, contains('약 60 SHARE'));
+      expect(copy.body, contains('약 600 SHARE'));
       expect(copy.body, isNot(contains('+20')));
       expect(copy.body, isNot(contains('100 SHARE')));
     });
@@ -769,7 +769,7 @@ void main() {
       expect(copy.body, isNot(contains('86,626')));
       expect(
         copy.body,
-        '0보 · 줍기 가능 약 0 SHARE (100걸음당 1, 하루 최대 60)',
+        '0보 · 줍기 가능 약 0 SHARE (100걸음당 10, 하루 최대 600)',
       );
     });
 
@@ -778,7 +778,7 @@ void main() {
       expect(copy.body, isNot(contains('999,999')));
       expect(
         copy.body,
-        '0보 · 줍기 가능 약 0 SHARE (100걸음당 1, 하루 최대 60)',
+        '0보 · 줍기 가능 약 0 SHARE (100걸음당 10, 하루 최대 600)',
       );
     });
 
@@ -792,8 +792,8 @@ void main() {
 
       final morning = WalkingChallengeNotificationCopy.goldenMorningBody();
       final lunch = WalkingChallengeNotificationCopy.goldenLunchBody();
-      expect(morning, contains('100걸음당 1'));
-      expect(morning, contains('하루 최대 60'));
+      expect(morning, contains('100걸음당 10'));
+      expect(morning, contains('하루 최대 600'));
       expect(lunch, contains('아직 안 주운 SHARE'));
       expect(morning, isNot(contains('소멸')));
       expect(lunch, isNot(contains('소멸')));

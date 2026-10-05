@@ -56,7 +56,7 @@ def test_deposit_debits_share_only() -> None:
 
     result = _spend(db, "deposit")
 
-    assert result.share_balance == 990_000
+    assert result.share_balance == 900_000
     assert result.diamond_balance == 1_000_000
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 1_000_000
     ledger = [
@@ -65,7 +65,7 @@ def test_deposit_debits_share_only() -> None:
         if path.startswith("walletTransactions/")
     ]
     assert ledger[0]["type"] == "crew_deposit"
-    assert ledger[0]["shareAmount"] == -10000
+    assert ledger[0]["shareAmount"] == -100_000
 
 
 def test_unknown_action_and_short_balance_write_no_ledger() -> None:

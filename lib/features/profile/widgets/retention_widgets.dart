@@ -70,7 +70,7 @@ class DailyCapGauge extends StatelessWidget {
   }
 }
 
-/// 워킹챌린지 홈 CTA. 100걸음 단위로 아직 안 주운 SHARE가 있을 때만 줍기.
+/// 워킹챌린지 홈 CTA. 10걸음(1 SHARE) 단위로 아직 안 주운 SHARE가 있을 때만 줍기.
 class SoloQuickStartBanner extends ConsumerStatefulWidget {
   const SoloQuickStartBanner({super.key, required this.onTap});
 

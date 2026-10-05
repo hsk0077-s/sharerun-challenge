@@ -28,11 +28,11 @@ def test_trial_credits_500_share_once_per_account() -> None:
     result = _claim(service)
 
     assert result.status == "claimed"
-    assert result.share_credited == 500
-    assert result.share_balance == 1_000_500
+    assert result.share_credited == 5_000
+    assert result.share_balance == 1_005_000
     assert result.diamond_balance == 1_000_000
     user = db.store["users/u1"]
-    assert user["wallet"]["shareBalance"] == 1_000_500
+    assert user["wallet"]["shareBalance"] == 1_005_000
     assert user["wallet"]["diamondBalance"] == 1_000_000
     assert user["economy"]["trialMilestoneRewardClaimed"] is True
     assert user["economy"]["signupRewardClaimed"] is True
@@ -43,12 +43,12 @@ def test_trial_credits_500_share_once_per_account() -> None:
     ]
     assert len(ledger) == 1
     assert ledger[0]["type"] == "trial_completion_reward"
-    assert ledger[0]["shareAmount"] == 500
+    assert ledger[0]["shareAmount"] == 5_000
 
     again = _claim(service)
     assert again.status == "already_claimed"
-    assert again.share_balance == 1_000_500
-    assert user["wallet"]["shareBalance"] == 1_000_500
+    assert again.share_balance == 1_005_000
+    assert user["wallet"]["shareBalance"] == 1_005_000
     assert (
         sum(1 for path in db.store if path.startswith("walletTransactions/"))
         == 1

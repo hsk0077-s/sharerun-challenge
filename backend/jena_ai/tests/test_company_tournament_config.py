@@ -36,7 +36,7 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert beginner["minEntrants"] == 30
     assert beginner["targetEntrants"] == 100
     assert beginner["maxEntrants"] == 500
-    assert beginner["top10PercentShare"] == 1_000
+    assert beginner["top10PercentShare"] == 10_000
     assert beginner["prizeDiaByRank"] == {"1": 1_000, "2": 500, "3": 300}
 
     mid = config["tiers"]["mid"]
@@ -44,7 +44,7 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert mid["freeTicketCost"] == 1
     assert mid["prizeDiaByRank"]["4"] == 500
     assert mid["prizeDiaByRank"]["6"] == 200
-    assert mid["top10PercentShare"] == 2_000
+    assert mid["top10PercentShare"] == 20_000
     assert (mid["minEntrants"], mid["targetEntrants"], mid["maxEntrants"]) == (
         50,
         200,
@@ -75,7 +75,7 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert final["requiresSeasonQualification"] is True
     assert final["prizeDiaByRank"]["1"] == 30_000
     assert final["prizeDiaByRank"]["6"] == 3_000
-    assert final["top10PercentShare"] == 10_000
+    assert final["top10PercentShare"] == 100_000
     assert (final["minEntrants"], final["targetEntrants"], final["maxEntrants"]) == (
         64,
         96,

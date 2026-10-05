@@ -3,14 +3,16 @@
 SIGNUP_REWARD_SRV = 100
 TRIAL_RUNS_REQUIRED = 5
 TRIAL_COMPLETION_REWARD_SRV = 500
+# Same milestone, when the account claims it as SHARE instead of the run's VALUE.
+TRIAL_COMPLETION_REWARD_SHARE = 5_000
 # Legacy SRV figure. /referrals/apply no longer credits this.
 REFERRAL_REWARD_SRV = 300
 MAX_REFERRAL_PAYOUTS = 10
 
 # SHARE (wallet.shareBalance). Server transaction + referralPayouts marker only.
-REFERRAL_REDEEM_SHARE = 1_000
-REFERRAL_TRIAL_REFEREE_SHARE = 5_000
-REFERRAL_TRIAL_REFERRER_SHARE = 3_000
+REFERRAL_REDEEM_SHARE = 10_000
+REFERRAL_TRIAL_REFEREE_SHARE = 50_000
+REFERRAL_TRIAL_REFERRER_SHARE = 30_000
 
 DAILY_CAP_KM = 5.0
 DAILY_CAP_SRV_TOKENS = 50
@@ -19,9 +21,9 @@ SRV_TOKENS_PER_KM = 10
 # Weekly practice streak. Once per KST week, same transaction as the ledger row.
 STREAK_BONUS_DIA = 10
 
-# Walking challenge harvest: 0.1 SHARE per 10 steps (1 SHARE / 100 steps).
-PEDOMETER_SHARE_PER_STEP = 0.01
-PEDOMETER_DAILY_HARVEST_SHARE_CAP = 60
+# Walking challenge harvest: 10 SHARE per 100 steps.
+PEDOMETER_SHARE_PER_STEP = 0.1
+PEDOMETER_DAILY_HARVEST_SHARE_CAP = 600
 # Spoofed claimed_steps cannot move the daily watermark by more than this
 # in one KST hour. Honest days stay under the 6,000-step SHARE cap.
 PEDOMETER_HOURLY_STEP_CAP = 12_000
@@ -30,7 +32,7 @@ PEDOMETER_HOURLY_STEP_CAP = 12_000
 HALL_OF_FAME_DONATE_VALUE = 500
 
 # SHARE → DIA. One way. Referral SHARE cannot be exchanged for 30 days.
-SHARE_PER_DIA = 120
+SHARE_PER_DIA = 1_200
 SHARE_TO_DIA_UNIT = 10
 SHARE_TO_DIA_WEEKLY_CAP = 20
 SHARE_TO_DIA_SIGNUP_LOCK_DAYS = 7

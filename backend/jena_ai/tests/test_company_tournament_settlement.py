@@ -89,7 +89,7 @@ def test_plan_pays_config_ranks_then_share_below_them() -> None:
     assert payouts[0].share == 0
     assert payouts[9].dia_requested == 200
     assert payouts[10].dia_requested == 0
-    assert payouts[10].share == 2_000
+    assert payouts[10].share == 20_000
     assert payouts[11].share == 0
     assert {payout.value for payout in payouts} == {50}
     assert {payout.donation_krw for payout in payouts} == {500}
@@ -137,7 +137,7 @@ def test_settlement_pays_bonus_dia_share_value_and_km_donation_once() -> None:
     assert result.finisher_count == 10
     assert result.paid_dia == 1_800
     assert result.held_dia == 0
-    assert result.share_paid == 1_000
+    assert result.share_paid == 10_000
     assert result.value_paid == 300
     assert result.donation_krw == 3_000
     assert result.paid_dia != sum(
@@ -167,13 +167,13 @@ def test_settlement_pays_bonus_dia_share_value_and_km_donation_once() -> None:
     assert "walletTransactions/tournament_share_race_u01" not in db.store
 
     share_user = db.store["users/u04"]["wallet"]
-    assert share_user["shareBalance"] == 1_010
-    assert share_user["freeShareBalance"] == 1_004
+    assert share_user["shareBalance"] == 10_010
+    assert share_user["freeShareBalance"] == 10_004
     assert share_user["paidShareBalance"] == 6
     assert share_user["diamondBalance"] == 60
     share = db.store["walletTransactions/tournament_share_race_u04"]
     assert share["type"] == "tournament_top_percent_share"
-    assert share["shareAmount"] == 1_000
+    assert share["shareAmount"] == 10_000
     assert share["fundedByEntryFees"] is False
     assert db.store["tournaments/race/participants/u04"]["finishRank"] == 4
 

@@ -71,17 +71,17 @@ def test_create_room_uses_server_fee_for_3km() -> None:
         _MemoryTxn(), service, "u1", "아침 3km", 3, user_ref, room_ref
     )
 
-    assert result.entry_fee_share == 60000
+    assert result.entry_fee_share == 600_000
     assert result.tournament_id == "room1"
-    assert result.share_balance == 940_000
+    assert result.share_balance == 400_000
     assert result.diamond_balance == 1_000_000
-    assert db.store["tournaments/room1"]["entryFeeShare"] == 60000
+    assert db.store["tournaments/room1"]["entryFeeShare"] == 600_000
     assert db.store["tournaments/room1"]["userCreated"] is True
     ledger = [
         row for path, row in db.store.items() if path.startswith("walletTransactions/")
     ]
     assert ledger[0]["type"] == "challenge_room_create"
-    assert ledger[0]["shareAmount"] == -60000
+    assert ledger[0]["shareAmount"] == -600_000
 
 
 def test_short_share_creates_nothing() -> None:

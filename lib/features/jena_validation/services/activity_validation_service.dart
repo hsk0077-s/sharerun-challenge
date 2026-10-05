@@ -32,6 +32,7 @@ class ActivityValidationService {
     DateTime? startedAt,
     DateTime? endedAt,
     String? tournamentId,
+    int? totalSteps,
   }) async {
     final payload = _payloadNormalizer.normalize(
       activityId: activityId,
@@ -49,7 +50,10 @@ class ActivityValidationService {
     // Only summary fields without biometric arrays may be logged/persisted.
     final _ = _payloadNormalizer.toPersistableSummary(payload);
 
-    final request = _payloadNormalizer.toJenaRequest(payload);
+    final request = _payloadNormalizer.toJenaRequest(
+      payload,
+      totalSteps: totalSteps,
+    );
 
     try {
       return _securedActionApiClient.validateRun(

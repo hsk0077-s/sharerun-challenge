@@ -5,6 +5,7 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 void main() {
   test('1km beginner is cheaper than 3km intermediate', () {
     expect(ChallengeEntryFee.forDistanceKm(1), 600);
+    expect(ChallengeEntryFee.forDistanceKm(2), 900);
     expect(ChallengeEntryFee.forDistanceKm(3), 1200);
     expect(ChallengeEntryFee.forDistanceKm(5), 1800);
     expect(ChallengeEntryFee.forDistanceKm(10), 3000);

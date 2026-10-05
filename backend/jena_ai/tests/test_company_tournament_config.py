@@ -53,6 +53,16 @@ def test_defaults_match_the_prize_race_decision() -> None:
     assert beginner["maxEntrants"] == 500
     assert beginner["top10PercentShare"] == 10_000
     assert beginner["prizeDiaByRank"] == {"1": 1_000, "2": 500, "3": 300}
+    assert beginner["requiresHeartRate"] is False
+    assert beginner["minDistanceKm"] == 1.0
+    assert config["tiers"]["mid"]["requiresHeartRate"] is False
+    assert config["tiers"]["mid"]["minDistanceKm"] == 5.0
+    assert config["tiers"]["advanced"]["requiresHeartRate"] is True
+    assert config["tiers"]["advanced"]["minDistanceKm"] == 10.0
+    assert config["tiers"]["half"]["requiresHeartRate"] is True
+    assert config["tiers"]["half"]["minDistanceKm"] == 21.0975
+    assert config["tiers"]["final"]["requiresHeartRate"] is True
+    assert config["tiers"]["final"]["minDistanceKm"] == 1.0
 
     mid = config["tiers"]["mid"]
     assert mid["entryShare"] == 1_200
@@ -132,6 +142,17 @@ def test_firestore_overlay_keeps_invalid_fields_on_defaults() -> None:
     assert "2" not in beginner["prizeDiaByRank"]
     assert "extra" not in config["tiers"]
     assert config["tiers"]["mid"]["entryShare"] == 1_200
+    assert config["tiers"]["advanced"]["requiresHeartRate"] is True
+    kept_hr = resolve_company_tournament_config(
+        {"tiers": {"beginner": {"requiresHeartRate": "yes", "minDistanceKm": 0.5}}}
+    )
+    assert kept_hr["tiers"]["beginner"]["requiresHeartRate"] is False
+    assert kept_hr["tiers"]["beginner"]["minDistanceKm"] == 1.0
+    opened = resolve_company_tournament_config(
+        {"tiers": {"final": {"requiresHeartRate": False, "minDistanceKm": 42.195}}}
+    )
+    assert opened["tiers"]["final"]["requiresHeartRate"] is False
+    assert opened["tiers"]["final"]["minDistanceKm"] == 42.195
 
 
 def test_overlay_of_entry_limits_and_claim_thresholds() -> None:

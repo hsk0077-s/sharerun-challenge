@@ -3,6 +3,7 @@ abstract final class ChallengeEntryFee {
   /// 목표 거리(km) → 참가비 SHARE.
   ///
   /// - 1km beginner → 600
+  /// - 2km → 900
   /// - 3km intermediate → 1,200
   /// - 5km → 1,800
   /// - 10km → 3,000
@@ -14,6 +15,7 @@ abstract final class ChallengeEntryFee {
   static int forDistanceKm(int km) {
     return switch (km) {
       1 => beginner1kmShare,
+      2 => 900,
       3 => intermediate3kmShare,
       5 => 1800,
       10 => 3000,

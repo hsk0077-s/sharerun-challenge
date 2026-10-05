@@ -131,7 +131,10 @@ from app.services.wallet_funding import (
     exchange_spendable,
     move_currency,
 )
-from app.services.running_validation_service import RunningValidationService
+from app.services.running_validation_service import (
+    RunningValidationService,
+    policy_for_room,
+)
 from app.services.share_activity_items import (
     plan_activity_share,
     purchase_share_activity_item,
@@ -217,7 +220,12 @@ class SecuredActionService:
             cadence_spm=request.cadence_spm,
             gyro_stability_score=request.gyro_stability_score,
         )
-        result = self._running_validation_service.validate(validation_request)
+        result = self._running_validation_service.validate(
+            validation_request,
+            self._validation_policy(request.tournament_id),
+            total_steps=request.total_steps,
+            gps_route=request.gps_route,
+        )
 
         transaction = self.firebase_service.db.transaction()
         activity_ref = self.firebase_service.db.collection("activities").document(
@@ -228,6 +236,40 @@ class SecuredActionService:
         # transaction body never ran. Same shape as referral redeem.
         return _commit_validation_tx(
             transaction, self, uid, request, result, activity_ref, user_ref
+        )
+
+    def _validation_policy(self, tournament_id: str | None):
+        """Room distance from the tournament doc. Prize HR rule from config."""
+        tid = (tournament_id or "").strip()
+        if not tid or "/" in tid:
+            return policy_for_room(has_room=False)
+        snapshot = (
+            self.firebase_service.db.collection("tournaments").document(tid).get()
+        )
+        if not snapshot.exists:
+            return policy_for_room(has_room=False)
+        tournament = snapshot.to_dict() or {}
+        try:
+            target = float(tournament.get("targetDistanceKm") or 0)
+        except (TypeError, ValueError):
+            target = 0.0
+        tier_min = 0.0
+        requires_hr = False
+        tier_id = prize_tier_id(tournament)
+        if tier_id:
+            tier = (self.get_company_tournament_config().get("tiers") or {}).get(
+                tier_id
+            ) or {}
+            requires_hr = tier.get("requiresHeartRate") is True
+            try:
+                tier_min = float(tier.get("minDistanceKm") or 0)
+            except (TypeError, ValueError):
+                tier_min = 0.0
+        return policy_for_room(
+            has_room=True,
+            target_distance_km=target,
+            tier_min_distance_km=tier_min,
+            requires_heart_rate=requires_hr,
         )
 
     def claim_signup_reward(self, uid: str) -> SecuredActionResult:
@@ -906,6 +948,7 @@ class SecuredActionService:
                 "jenaVerified": result.verified,
                 "jenaDecision": result.decision,
                 "jenaReason": result.reason,
+                "jenaReasonCode": result.reason_code,
                 "valueTokenReward": reward_tokens,
                 "dailyCapApplied": daily_cap_applied,
                 "dailyCountedKm": counted_km,
@@ -1009,6 +1052,7 @@ class SecuredActionService:
             verified=result.verified,
             decision=result.decision,
             reason=result.reason,
+            reason_code=result.reason_code,
             value_token_reward=reward_tokens,
             daily_cap_applied=daily_cap_applied,
             trial_run_count=trial_run_count if result.verified else None,
@@ -2531,6 +2575,7 @@ class SecuredActionService:
             verified=bool(activity.get("jenaVerified")),
             decision=activity.get("jenaDecision") or "rejected_unknown",
             reason=activity.get("jenaReason") or "Validation already finalized.",
+            reason_code=activity.get("jenaReasonCode") or "",
             value_token_reward=int(activity.get("valueTokenReward") or 0),
             daily_cap_applied=bool(activity.get("dailyCapApplied")),
             trial_run_count=activity.get("trialRunCount"),
@@ -4113,6 +4158,8 @@ def _commit_trial_reward_tx(
 def _challenge_entry_fee(km: int) -> int:
     if km == 1:
         return 600
+    if km == 2:
+        return 900
     if km == 3:
         return 1_200
     if km == 5:

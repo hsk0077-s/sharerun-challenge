@@ -18,7 +18,7 @@ DAILY_CAP_KM = 5.0
 DAILY_CAP_SRV_TOKENS = 50
 SRV_TOKENS_PER_KM = 10
 
-# Weekly practice streak. Once per KST week, same transaction as the ledger row.
+# Practice streak. Once per 7-day milestone, same transaction as the ledger row.
 STREAK_BONUS_DIA = 10
 
 # Walking challenge harvest: 10 SHARE per 100 steps.

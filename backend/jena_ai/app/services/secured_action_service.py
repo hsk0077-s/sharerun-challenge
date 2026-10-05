@@ -243,8 +243,8 @@ class SecuredActionService:
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return self._apply_referral_code_tx(
-            transaction, uid, referral_code.strip().upper(), user_ref
+        return _commit_apply_referral_tx(
+            transaction, self, uid, referral_code.strip().upper(), user_ref
         )
 
     def get_or_create_invite_code(self, uid: str) -> InviteCodeResult:
@@ -1240,7 +1240,9 @@ class SecuredActionService:
             {
                 "uid": uid,
                 "type": "deposit_forfeiture_fraud",
-                "diamondAmount": total_forfeited,
+                # Balance already dropped when the deposit was taken.
+                "diamondAmount": 0,
+                "forfeitedDiamondAmount": total_forfeited,
                 "charityTarget": charity,
                 "activityId": activity_id,
                 "createdAt": SERVER_TIMESTAMP,
@@ -1633,19 +1635,10 @@ class SecuredActionService:
 
         user = user_snapshot.to_dict() or {}
         share, diamonds, value = self._wallet_balances(user)
-        week = self._economy_service.kst_week_key()
-        if (user.get("streakBonusWeekKey") or "") == week:
-            return self._harvest_result(
-                status="already_claimed",
-                reason="Streak diamond reward was already claimed this week.",
-                share_credited=0,
-                share_balance=share,
-                diamond_balance=diamonds,
-                value_token_balance=value,
-            )
-
         streak_days = self._walk_streak_days(transaction, uid)
-        if streak_days <= 0 or streak_days % _STREAK_BONUS_DAYS != 0:
+        milestone = (streak_days // _STREAK_BONUS_DAYS) * _STREAK_BONUS_DAYS
+        paid_milestone = int(user.get("streakBonusMilestone") or 0)
+        if milestone <= 0:
             return self._harvest_result(
                 status="not_eligible",
                 reason="Streak bonus needs 7 consecutive account days.",
@@ -1654,8 +1647,18 @@ class SecuredActionService:
                 diamond_balance=diamonds,
                 value_token_balance=value,
             )
+        if paid_milestone >= milestone:
+            return self._harvest_result(
+                status="already_claimed",
+                reason="Streak bonus for this milestone was already claimed.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
 
-        reward = STREAK_BONUS_DIA
+        steps = (milestone - paid_milestone) // _STREAK_BONUS_DAYS
+        reward = STREAK_BONUS_DIA * steps
         wallet = user.get("wallet") or {}
         moved = move_currency(wallet, diamond=reward)
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
@@ -1663,7 +1666,7 @@ class SecuredActionService:
             user_ref,
             {
                 **moved["updates"],
-                "streakBonusWeekKey": week,
+                "streakBonusMilestone": milestone,
                 "updatedAt": SERVER_TIMESTAMP,
             },
         )
@@ -1673,7 +1676,7 @@ class SecuredActionService:
                 "uid": uid,
                 "type": "streak_bonus",
                 "diamondAmount": reward,
-                "weekKey": week,
+                "streakDays": milestone,
                 "createdAt": SERVER_TIMESTAMP,
                 **moved["ledger"],
             },
@@ -1699,6 +1702,17 @@ class SecuredActionService:
             return self._harvest_result(
                 status="already_claimed",
                 reason="Trial completion reward was already claimed.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+        if not self._economy_service.trial_milestone_reached(
+            int(economy.get("trialRunCount") or 0)
+        ):
+            return self._harvest_result(
+                status="not_eligible",
+                reason="Trial reward needs 5 verified runs.",
                 share_credited=0,
                 share_balance=share,
                 diamond_balance=diamonds,
@@ -1736,7 +1750,6 @@ class SecuredActionService:
             value_token_balance=value,
         )
 
-    @firestore.transactional
     def _apply_referral_code_tx(
         self,
         transaction,
@@ -2419,6 +2432,17 @@ class SecuredActionService:
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
+        transaction.set(
+            room_ref.collection("participants").document(uid),
+            {
+                "uid": uid,
+                "entryFeeShare": fee,
+                "diamondDeposit": 0,
+                "selectedCharity": "UNICEF",
+                "joinedAt": SERVER_TIMESTAMP,
+                "status": "joined",
+            },
+        )
         tx_ref = self.firebase_service.db.collection("walletTransactions").document()
         transaction.set(
             tx_ref,
@@ -2537,8 +2561,9 @@ class SecuredActionService:
         )
         user_ref = self.firebase_service.db.collection("users").document(uid)
         participant_ref = tournament_ref.collection("participants").document(uid)
-        return self._settle_tournament_failure_tx(
+        return _commit_settle_failure_tx(
             transaction,
+            self,
             uid,
             request,
             user_ref,
@@ -2575,6 +2600,27 @@ class SecuredActionService:
         )
         share, diamonds, value = self._wallet_balances(user)
         if participant_snapshot.exists:
+            return self._already_joined_result(
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
+        if (
+            tournament.get("userCreated") is True
+            and tournament.get("createdByUid") == uid
+        ):
+            # The create fee already paid this entry and counted the creator.
+            transaction.set(
+                participant_ref,
+                {
+                    "uid": uid,
+                    "entryFeeShare": int(tournament.get("entryFeeShare") or 0),
+                    "diamondDeposit": 0,
+                    "selectedCharity": request.selected_charity or "UNICEF",
+                    "joinedAt": SERVER_TIMESTAMP,
+                    "status": "joined",
+                },
+            )
             return self._already_joined_result(
                 share_balance=share,
                 diamond_balance=diamonds,
@@ -2678,6 +2724,12 @@ class SecuredActionService:
                 "uid": uid,
                 "entryFeeShare": entry_fee,
                 "diamondDeposit": diamond_deposit,
+                "diamondPaidDeposit": abs(
+                    int(moved["ledger"].get("diamondPaidAmount") or 0)
+                ),
+                "diamondFreeDeposit": abs(
+                    int(moved["ledger"].get("diamondFreeAmount") or 0)
+                ),
                 "selectedCharity": selected_charity,
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
@@ -2848,7 +2900,6 @@ class SecuredActionService:
             value_token_balance=value,
         )
 
-    @firestore.transactional
     def _settle_tournament_failure_tx(
         self,
         transaction,
@@ -2897,9 +2948,27 @@ class SecuredActionService:
         returned_ledger: dict = {}
         if settlement.returned_diamonds > 0:
             wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
-            moved = move_currency(wallet, diamond=settlement.returned_diamonds)
-            user_updates.update(moved["updates"])
-            returned_ledger = moved["ledger"]
+            # Paid first so a partial refund does not turn paid DIA into free.
+            returned_paid = min(
+                int(participant.get("diamondPaidDeposit") or 0),
+                settlement.returned_diamonds,
+            )
+            returned_free = settlement.returned_diamonds - returned_paid
+            if returned_paid:
+                paid = move_currency(
+                    wallet, diamond=returned_paid, paid_credit=True
+                )
+                user_updates.update(paid["updates"])
+                returned_ledger.update(paid["ledger"])
+            if returned_free:
+                free = move_currency(wallet, diamond=returned_free)
+                user_updates.update(free["updates"])
+                returned_ledger["diamondFreeAmount"] = int(
+                    returned_ledger.get("diamondFreeAmount") or 0
+                ) + int(free["ledger"].get("diamondFreeAmount") or 0)
+                returned_ledger["diamondPaidAmount"] = int(
+                    returned_ledger.get("diamondPaidAmount") or 0
+                )
         if settlement.forfeited_diamonds > 0:
             user_updates["wallet.totalDonationValue"] = firestore.Increment(
                 settlement.forfeited_diamonds
@@ -2915,7 +2984,9 @@ class SecuredActionService:
                 "uid": uid,
                 "tournamentId": tournament_ref.id,
                 "type": "mercy_rule_donation",
-                "diamondAmount": settlement.forfeited_diamonds,
+                # Credit is positive. The join debit stays negative.
+                "diamondAmount": settlement.returned_diamonds,
+                "forfeitedDiamondAmount": settlement.forfeited_diamonds,
                 "returnedDiamondAmount": settlement.returned_diamonds,
                 **returned_ledger,
                 "achievementRate": settlement.achievement_rate,
@@ -3624,6 +3695,32 @@ class SecuredActionService:
         if self._firebase_service is None:
             self._firebase_service = FirebaseService()
         return self._firebase_service
+
+
+@firestore.transactional
+def _commit_apply_referral_tx(
+    transaction, service, uid: str, referral_code: str, user_ref
+) -> SecuredActionResult:
+    # Module-level so the first argument is the Transaction. Decorating the
+    # method drops `self` and raises TypeError.
+    return service._apply_referral_code_tx(
+        transaction, uid, referral_code, user_ref
+    )
+
+
+@firestore.transactional
+def _commit_settle_failure_tx(
+    transaction,
+    service,
+    uid: str,
+    request: SettleTournamentFailureRequest,
+    user_ref,
+    tournament_ref,
+    participant_ref,
+) -> SecuredActionResult:
+    return service._settle_tournament_failure_tx(
+        transaction, uid, request, user_ref, tournament_ref, participant_ref
+    )
 
 
 @firestore.transactional

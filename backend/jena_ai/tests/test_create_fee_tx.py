@@ -5,10 +5,12 @@ from types import SimpleNamespace
 from fastapi import HTTPException
 import pytest
 
+from app.models.secured_actions import JoinTournamentRequest
 from app.services.secured_action_service import (
     SecuredActionService,
     _commit_create_room_tx,
     _commit_crew_found_tx,
+    _commit_join_tx,
 )
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
@@ -82,6 +84,58 @@ def test_create_room_uses_server_fee_for_3km() -> None:
     ]
     assert ledger[0]["type"] == "challenge_room_create"
     assert ledger[0]["shareAmount"] == -600_000
+    assert db.store["tournaments/room1/participants/u1"]["status"] == "joined"
+    assert db.store["tournaments/room1/participants/u1"]["entryFeeShare"] == 600_000
+
+    joined = _commit_join_tx.to_wrap(
+        _MemoryTxn(),
+        service,
+        "u1",
+        JoinTournamentRequest(tournament_id="room1"),
+        user_ref,
+        room_ref,
+        room_ref.collection("participants").document("u1"),
+    )
+    assert joined.status == "already_joined"
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 400_000
+    assert (
+        sum(1 for path in db.store if path.startswith("walletTransactions/")) == 1
+    )
+
+
+def test_creator_join_without_a_participant_doc_does_not_charge_again() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = {
+        "tier": 1,
+        "wallet": {"shareBalance": 400_000, "diamondBalance": 0, "valueTokenBalance": 0},
+    }
+    db.store["tournaments/room1"] = {
+        "status": "recruiting",
+        "userCreated": True,
+        "createdByUid": "u1",
+        "entryFeeShare": 600_000,
+        "participantCount": 1,
+        "requiredTier": 1,
+    }
+    service = _service(db)
+    user_ref = db.collection("users").document("u1")
+    room_ref = db.collection("tournaments").document("room1")
+
+    result = _commit_join_tx.to_wrap(
+        _MemoryTxn(),
+        service,
+        "u1",
+        JoinTournamentRequest(tournament_id="room1"),
+        user_ref,
+        room_ref,
+        room_ref.collection("participants").document("u1"),
+    )
+
+    assert result.status == "already_joined"
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 400_000
+    assert db.store["tournaments/room1"]["participantCount"] == 1
+    assert db.store["tournaments/room1/participants/u1"]["status"] == "joined"
+    assert not any(path.startswith("walletTransactions/") for path in db.store)
 
 
 def test_short_share_creates_nothing() -> None:

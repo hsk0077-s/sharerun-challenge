@@ -16,8 +16,8 @@ import '../core/theme/app_text_styles.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/run_tracking/models/route_point.dart';
-import '../features/run_tracking/services/ephemeral_sensor_buffer.dart';
 import '../features/run_tracking/services/ghost_pace_matcher.dart';
+import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/friend_ghost_run.dart';
@@ -55,8 +55,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   int _elapsedSeconds = 0;
   double _distanceInMeters = 0.0;
   var _validating = false;
+  var _validationSession = false;
+  Future<void>? _validationStart;
   List<LatLng> _routePoints = [];
-  List<DateTime> _routeRecordedAt = [];
   LatLng _cameraTarget = _fallbackTarget;
   Set<Marker> _markers = {};
   BitmapDescriptor? _meIcon;
@@ -317,8 +318,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
               }
             }
             _routePoints = List<LatLng>.from(_routePoints)..add(target);
-            _routeRecordedAt = List<DateTime>.from(_routeRecordedAt)
-              ..add(DateTime.now());
           }
           _markers = _buildMarkers(target);
         });
@@ -346,8 +345,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       _elapsedSeconds = 0;
       _distanceInMeters = 0.0;
       _routePoints = [];
-      _routeRecordedAt = [];
+      _validationSession = false;
     });
+    _validationStart = _startValidationSession();
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || !isRunning) return;
@@ -377,18 +377,19 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     _positionStreamSubscription = null;
   }
 
-  List<RoutePoint> _trackedRoute() {
-    final count = _routePoints.length < _routeRecordedAt.length
-        ? _routePoints.length
-        : _routeRecordedAt.length;
-    return [
-      for (var i = 0; i < count; i++)
-        RoutePoint(
-          latitude: _routePoints[i].latitude,
-          longitude: _routePoints[i].longitude,
-          recordedAt: _routeRecordedAt[i],
-        ),
-    ];
+  /// Same collectors as the in-challenge finish: pedometer cadence, heart rate
+  /// when Health has it, gyro, and the session GPS route.
+  Future<void> _startValidationSession() async {
+    try {
+      await ref.read(runSessionServiceProvider).start();
+      _validationSession = true;
+    } catch (error) {
+      _validationSession = false;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('센서 시작 실패: $error')),
+      );
+    }
   }
 
   Future<void> _onFinish() async {
@@ -406,9 +407,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       return;
     }
 
-    final distanceKm = _distanceInMeters / 1000.0;
-    final durationSeconds = _elapsedSeconds;
-    final routePoints = _trackedRoute();
     final roomId = widget.roomId;
     final userId = authUser!.uid;
     setState(() {
@@ -420,22 +418,39 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     ref.read(friendGhostPaceProvider.notifier).endRun();
     final coach = _voiceCoach ?? _voiceCoachOf();
     unawaited(coach.onRunFinished());
+    await _validationStart;
+    if (!_validationSession) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppStrings.runValidationFailed)),
+      );
+      setState(() => _validating = false);
+      return;
+    }
 
+    final activityId = 'activity-${DateTime.now().millisecondsSinceEpoch}';
+    CompletedRunSession? session;
     try {
+      session = await ref.read(runSessionServiceProvider).finish(
+            activityId: activityId,
+            userId: userId,
+          );
       final result = await ref
           .read(activityValidationServiceProvider)
           .validateAndPersistResult(
-            activityId: 'activity-${DateTime.now().millisecondsSinceEpoch}',
+            activityId: activityId,
             userId: userId,
-            distanceKm: distanceKm,
-            durationSeconds: durationSeconds,
-            // No gyro samples on this screen. 0 is unmeasured; 1 would
-            // look like a fixed arm if heart rate were present.
-            gyroStabilityScore: 0,
-            routePoints: routePoints,
-            sensorBuffer: EphemeralSensorBuffer(),
+            distanceKm: session.telemetry.distanceKm,
+            durationSeconds: session.telemetry.durationSeconds,
+            gyroStabilityScore: session.telemetry.gyroStabilityScore,
+            routePoints: session.routePoints,
+            sensorBuffer: session.sensorBuffer,
             tournamentId: roomId,
           );
+      final distanceKm = session.telemetry.distanceKm;
+      final durationSeconds = session.telemetry.durationSeconds;
+      session.discardAllSensitive();
+      session = null;
       if (!mounted) return;
       if (!result.verified) {
         final reason = result.reason.trim();
@@ -461,6 +476,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
         ),
       );
     } catch (_) {
+      session?.discardAllSensitive();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text(AppStrings.runValidationFailed)),
@@ -488,6 +504,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(runSessionServiceProvider);
     return Scaffold(
       backgroundColor: LiveRunningScreen._background,
       body: SafeArea(

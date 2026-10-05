@@ -116,7 +116,10 @@ class RunningValidationService:
     ) -> bool:
         if distance_km < VERIFIED_MIN_DISTANCE_KM:
             return False
-        if average_hr < VERIFIED_MIN_HEART_RATE_BPM:
+        # Phone-only: Health has steps but no watch, so heart_rates is empty.
+        # Cadence (steps / minutes) is the running signal. A 6:00/km effort
+        # is already outside the kickboard pace gate (<= 180 s/km).
+        if heart_rate_samples > 0 and average_hr < VERIFIED_MIN_HEART_RATE_BPM:
             return False
         if not (VERIFIED_CADENCE_MIN_SPM <= average_cadence <= VERIFIED_CADENCE_MAX_SPM):
             return False

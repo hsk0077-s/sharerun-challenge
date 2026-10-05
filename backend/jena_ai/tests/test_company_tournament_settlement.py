@@ -98,7 +98,7 @@ def test_plan_pays_config_ranks_then_share_below_them() -> None:
     assert [payout.uid for payout in payouts] == [f"u{index:02d}" for index in range(1, 13)]
     assert payouts[0].dia_requested == 3_000
     assert payouts[0].share == 0
-    assert payouts[9].dia_requested == 200
+    assert payouts[9].dia_requested == 100
     assert payouts[10].dia_requested == 0
     assert payouts[10].share == 20_000
     assert payouts[11].share == 0
@@ -206,7 +206,7 @@ def test_settlement_pays_bonus_dia_share_value_and_km_donation_once() -> None:
     assert donation["receiptIssued"] is False
     assert db.store["companyDonationPools/2026-10"]["totalKrw"] == 3_000
     assert db.store["companyPrizePools/2026-10"]["paidDia"] == 1_800
-    assert len(_wallet_rows(db)) == 14
+    assert len(_wallet_rows(db)) == 17
 
     balances = deepcopy(db.store["users/u01"]["wallet"])
     pool = db.store["companyPrizePools/2026-10"]["paidDia"]
@@ -216,7 +216,7 @@ def test_settlement_pays_bonus_dia_share_value_and_km_donation_once() -> None:
     assert db.store["users/u01"]["wallet"] == balances
     assert db.store["companyPrizePools/2026-10"]["paidDia"] == pool
     assert db.store["companyDonationPools/2026-10"]["totalKrw"] == 3_000
-    assert len(_wallet_rows(db)) == 14
+    assert len(_wallet_rows(db)) == 17
 
     db.store["tournaments/race"]["prizeSettled"] = False
     db.store["tournaments/race"].pop("prizeSettlement")
@@ -224,7 +224,7 @@ def test_settlement_pays_bonus_dia_share_value_and_km_donation_once() -> None:
     assert retry.status == "settled"
     assert db.store["users/u01"]["wallet"] == balances
     assert db.store["companyPrizePools/2026-10"]["paidDia"] == pool
-    assert len(_wallet_rows(db)) == 14
+    assert len(_wallet_rows(db)) == 17
 
 
 def test_monthly_cap_holds_the_overflow_and_logs_it(caplog: pytest.LogCaptureFixture) -> None:
@@ -537,3 +537,190 @@ def test_unverified_identity_is_not_paid_and_resettle_does_not_double_pay() -> N
     assert db.store["users/u2"]["wallet"]["diamondBalance"] == second_balance
     assert db.store["companyPrizePools/2026-10"]["paidDia"] == pool
     assert "walletTransactions/tournament_prize_race_u1" not in db.store
+
+
+def test_ticket_granted_for_each_tier_mapping() -> None:
+    cases = (
+        ("beginner", "mid", 1),
+        ("mid", "advanced", 1),
+        ("advanced", "half", 1),
+        ("half", "half", 10),
+        ("final", None, 1),
+    )
+    for tier, target, rank in cases:
+        db = _MemoryDb()
+        rows = [
+            (f"u{index}", _finisher(f"u{index}", index * 10))
+            for index in range(1, rank + 1)
+        ]
+        _seed_finishers(db, "race", rows, prizeTier=tier)
+        _settle(db)
+        winner = f"u{rank}"
+        ticket_path = f"users/{winner}/prizeTickets/from_race"
+        ledger_path = f"walletTransactions/tournament_ticket_race_{winner}"
+        if target is None:
+            assert ticket_path not in db.store
+            assert ledger_path not in db.store
+            continue
+        ticket = db.store[ticket_path]
+        assert ticket["targetTier"] == target
+        assert ticket["status"] == "valid"
+        assert ticket["transferable"] is False
+        assert ticket["validThroughEdition"] - ticket["validAfterEdition"] == 2
+        ledger = db.store[ledger_path]
+        assert ledger["type"] == "ticket_grant"
+        assert ledger["ticketAmount"] == 1
+        assert ledger["diamondAmount"] == 0
+        assert ledger["shareAmount"] == 0
+        label = db.store[f"tournaments/race/participants/{winner}"]["ticketRewardLabel"]
+        assert "참가권 1장" in label
+        assert "원" not in label
+
+
+def test_half_top_3_receive_a_final_ticket() -> None:
+    db = _MemoryDb()
+    rows = [(f"u{index}", _finisher(f"u{index}", index)) for index in range(1, 5)]
+    _seed_finishers(db, "race", rows, prizeTier="half")
+
+    _settle(db)
+
+    for uid in ("u1", "u2", "u3"):
+        assert db.store[f"users/{uid}/prizeTickets/from_race"]["targetTier"] == "final"
+    assert db.store["users/u4/prizeTickets/from_race"]["targetTier"] == "half"
+    assert "원" not in db.store["tournaments/race/participants/u1"]["ticketRewardLabel"]
+
+
+def test_duplicate_ticket_or_registration_pays_config_entry_share() -> None:
+    db = _MemoryDb()
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 10)), ("u2", _finisher("u2", 20))],
+        prizeTier="mid",
+    )
+    db.store["users/u1/prizeTickets/old"] = {
+        "targetTier": "advanced",
+        "status": "valid",
+        "transferable": False,
+        "validAfterEdition": 0,
+        "validThroughEdition": 2,
+    }
+    db.store["tournaments/next"] = {"prizeTier": "advanced", "status": "recruiting"}
+    db.store["tournaments/next/participants/u2"] = {"uid": "u2", "status": "joined"}
+
+    _settle(db)
+
+    assert "users/u1/prizeTickets/from_race" not in db.store
+    assert "users/u2/prizeTickets/from_race" not in db.store
+    held = db.store["walletTransactions/tournament_ticket_share_race_u1"]
+    registered = db.store["walletTransactions/tournament_ticket_share_race_u2"]
+    assert held["type"] == "ticket_share_fallback"
+    assert held["shareAmount"] == 2_400
+    assert held["reason"] == "already_holds_ticket"
+    assert registered["shareAmount"] == 2_400
+    assert registered["reason"] == "already_registered"
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 2_410
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 2_410
+    assert "원" not in db.store["tournaments/race/participants/u1"]["ticketRewardLabel"]
+
+    db.store["tournaments/race"]["prizeSettled"] = False
+    db.store["tournaments/race"].pop("prizeSettlement")
+    _settle(db)
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 2_410
+    assert (
+        sum(
+            1
+            for path in db.store
+            if path.startswith("walletTransactions/tournament_ticket_share_race_u1")
+        )
+        == 1
+    )
+
+
+def test_resettle_does_not_grant_a_second_ticket() -> None:
+    db = _MemoryDb()
+    _seed_finishers(db, "race", [("u1", _finisher("u1", 10))])
+    _settle(db)
+    balance = deepcopy(db.store["users/u1"]["wallet"])
+    rows = len(_wallet_rows(db))
+
+    db.store["tournaments/race"]["prizeSettled"] = False
+    db.store["tournaments/race"].pop("prizeSettlement")
+    again = _settle(db)
+
+    assert again.status == "settled"
+    assert db.store["users/u1"]["wallet"] == balance
+    assert db.store["users/u1/prizeTickets/from_race"]["status"] == "valid"
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerDiaPrizeIds"]["season_1"] == [
+        "race"
+    ]
+    assert len(_wallet_rows(db)) == rows
+
+
+def test_third_beginner_dia_win_pays_zero_and_grants_ticket(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    db = _MemoryDb()
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 10)), ("u2", _finisher("u2", 20))],
+    )
+    db.store["users/u1/companyPrizeRace/state"] = {
+        "beginnerDiaPrizeIds": {"season_1": ["old-a", "old-b"]},
+    }
+
+    with caplog.at_level(logging.WARNING):
+        result = _settle(db)
+
+    assert result.paid_dia == 500
+    assert result.held_dia == 0
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 60
+    dia = db.store["walletTransactions/tournament_prize_race_u1"]
+    assert dia["diamondAmount"] == 0
+    assert dia["zeroReason"] == "beginner_dia_season_limit"
+    assert db.store["users/u1/prizeTickets/from_race"]["targetTier"] == "mid"
+    assert "beginner_dia_season_limit" in caplog.text
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerDiaPrizeIds"]["season_1"] == [
+        "old-a",
+        "old-b",
+    ]
+    assert db.store["companyPrizePools/2026-10"]["paidDia"] == 500
+    assert db.store["users/u2"]["wallet"]["diamondBalance"] == 560
+
+    db.store["tournaments/race"]["prizeSettled"] = False
+    db.store["tournaments/race"].pop("prizeSettlement")
+    _settle(db)
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 60
+    assert db.store["companyPrizePools/2026-10"]["paidDia"] == 500
+    assert (
+        len(
+            [
+                path
+                for path in db.store
+                if path.startswith("walletTransactions/tournament_ticket_race_u1")
+            ]
+        )
+        == 1
+    )
+
+
+def test_monthly_cap_still_limits_dia_when_tickets_are_granted() -> None:
+    db = _MemoryDb()
+    db.store["config/company_tournament"] = {"monthlyCompanyPrizeCapDia": 1_000}
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 10)), ("u2", _finisher("u2", 20))],
+    )
+
+    result = _settle(db)
+
+    assert result.paid_dia == 1_000
+    assert result.held_dia == 500
+    assert db.store["walletTransactions/tournament_prize_race_u2"]["capReason"] == (
+        "monthly_company_prize_cap"
+    )
+    assert db.store["users/u1/prizeTickets/from_race"]["targetTier"] == "mid"
+    assert db.store["users/u2/prizeTickets/from_race"]["targetTier"] == "mid"
+    assert db.store["companyPrizePools/2026-10"]["paidDia"] == 1_000

@@ -624,3 +624,104 @@ def test_second_entry_same_tier_same_week_is_rejected() -> None:
     mid = _prize_join(db, "u1", "mid")
     assert mid.share_credited == -1_200
     assert db.store["users/u1"]["wallet"]["shareBalance"] == 8_800
+
+
+def _join_method(db: _MemoryDb, uid: str, tournament_id: str, method: str):
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    request = JoinTournamentRequest(
+        tournament_id=tournament_id,
+        diamond_deposit=0,
+        entry_method=method,
+    )
+    return _commit_join_tx.to_wrap(
+        _MemoryTxn(),
+        service,
+        uid,
+        request,
+        db.collection("users").document(uid),
+        db.collection("tournaments").document(tournament_id),
+        db.collection("tournaments")
+        .document(tournament_id)
+        .collection("participants")
+        .document(uid),
+    )
+
+
+def _tier_ticket(target: str) -> dict:
+    return {
+        "targetTier": target,
+        "status": "valid",
+        "transferable": False,
+        "validAfterEdition": 0,
+        "validThroughEdition": 2,
+    }
+
+
+def test_tier_ticket_seat_cap_is_20_percent() -> None:
+    db = _MemoryDb()
+    db.store["config/company_tournament"] = {
+        "tiers": {"mid": {"minEntrants": 1, "targetEntrants": 2, "maxEntrants": 10}},
+    }
+    db.store["tournaments/race"] = _prize_room("mid", edition=1)
+    for uid in ("a", "b", "c"):
+        db.store[f"users/{uid}"] = _prize_user()
+        db.store[f"users/{uid}/prizeTickets/from_src"] = _tier_ticket("mid")
+
+    assert _join_method(db, "a", "race", "tier_ticket").status == "joined_tier_ticket"
+    assert _join_method(db, "b", "race", "tier_ticket").status == "joined_tier_ticket"
+    with pytest.raises(HTTPException) as blocked:
+        _join_method(db, "c", "race", "tier_ticket")
+    assert blocked.value.status_code == 409
+    assert blocked.value.detail == (
+        "Ticket seats for this race are full. You can still join with SHARE."
+    )
+    assert db.store["users/c/prizeTickets/from_src"]["status"] == "valid"
+    assert "tournaments/race/participants/c" not in db.store
+
+    joined = _join_method(db, "c", "race", "share")
+    assert joined.status == "joined"
+    assert db.store["users/c"]["wallet"]["shareBalance"] == 8_800
+    assert db.store["users/a"]["wallet"]["shareBalance"] == 10_000
+    assert db.store["users/a"]["wallet"]["freeTicketBalance"] == 0
+    assert db.store["users/a/prizeTickets/from_src"]["status"] == "used"
+    assert db.store["tournaments/race/participants/a"]["entryMethod"] == "tier_ticket"
+
+    again = _join_method(db, "a", "race", "tier_ticket")
+    assert again.status == "already_joined"
+    assert db.store["users/a/prizeTickets/from_src"]["status"] == "used"
+
+
+def test_final_direct_ticket_seat_cap_is_15_percent() -> None:
+    db = _MemoryDb()
+    db.store["config/company_tournament"] = {
+        "tiers": {"final": {"minEntrants": 1, "targetEntrants": 2, "maxEntrants": 10}},
+    }
+    db.store["tournaments/finals"] = _prize_room("final", edition=1)
+    for uid in ("a", "b"):
+        db.store[f"users/{uid}"] = _prize_user(share=0)
+        db.store[f"users/{uid}/prizeTickets/t"] = _tier_ticket("final")
+
+    assert _join_method(db, "a", "finals", "tier_ticket").status == "joined_tier_ticket"
+    with pytest.raises(HTTPException) as blocked:
+        _join_method(db, "b", "finals", "tier_ticket")
+    assert blocked.value.status_code == 409
+    assert db.store["users/b/prizeTickets/t"]["status"] == "valid"
+    with pytest.raises(HTTPException) as unqualified:
+        _join_method(db, "b", "finals", "share")
+    assert unqualified.value.status_code == 403
+
+
+def test_tier_ticket_rejects_a_later_edition() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user()
+    db.store["tournaments/race"] = _prize_room("mid", edition=3)
+    db.store["users/u1/prizeTickets/from_src"] = _tier_ticket("mid")
+
+    with pytest.raises(HTTPException) as blocked:
+        _join_method(db, "u1", "race", "tier_ticket")
+
+    assert blocked.value.status_code == 400
+    assert blocked.value.detail == "This entry ticket is not valid for this edition."
+    assert "tournaments/race/participants/u1" not in db.store
+    assert db.store["users/u1/prizeTickets/from_src"]["status"] == "valid"
+

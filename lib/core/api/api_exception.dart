@@ -76,6 +76,13 @@ abstract final class ApiErrorMessage {
       'Lower-tier room is locked.' => '내 등급보다 낮은 방은 참가할 수 없습니다.',
       'Insufficient Share balance.' => 'SHARE가 부족합니다.',
       'Insufficient free tickets.' => '무료 참가권이 부족합니다.',
+      'No valid entry ticket for this tier.' => '이 등급에 쓸 수 있는 참가권이 없어요.',
+      'This entry ticket is not valid for this edition.' =>
+        '이 참가권은 이번 회차에는 쓸 수 없어요.',
+      'This race has no edition, so an entry ticket cannot be used.' =>
+        '회차가 없는 대회에는 참가권을 쓸 수 없어요.',
+      'Ticket seats for this race are full. You can still join with SHARE.' =>
+        '참가권 자리가 다 찼습니다. SHARE로는 참가할 수 있어요.',
       'This tier does not accept free tickets.' => '이 대회는 무료 참가권을 사용할 수 없습니다.',
       'Season qualification is required.' => '시즌 진출 자격이 있어야 참가할 수 있습니다.',
       'Boost run already used today.' => '부스트 런은 하루에 1번까지 사용할 수 있습니다.',

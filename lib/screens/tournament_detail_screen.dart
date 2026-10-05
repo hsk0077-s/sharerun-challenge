@@ -136,6 +136,20 @@ class TournamentDetailScreen extends ConsumerWidget {
                   label: Text(quote!.ticketJoinLabel),
                 ),
               ],
+              if (canJoin && quote?.tierTicketJoinLabel != null) ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => joinTournamentWithPreflight(
+                    context: context,
+                    ref: ref,
+                    tournament: room,
+                    entryMethod: 'tier_ticket',
+                    prizeEntryShare: quote!.entryShare,
+                  ),
+                  icon: const Icon(Icons.confirmation_number_outlined),
+                  label: Text(quote!.tierTicketJoinLabel!),
+                ),
+              ],
               if (canJoin && quote != null && !quote.ready)
                 Text(quote.shareJoinLabel)
               else if (authUser == null)
@@ -190,6 +204,7 @@ class _JoinedTournamentDetail extends StatelessWidget {
                 ? 'refunded'
                 : participation.participantStatus,
             joinedAt: participation.joinedAt,
+            ticketRewardLabel: participation.ticketRewardLabel,
           ),
           const SizedBox(height: 16),
           Text(
@@ -236,6 +251,7 @@ class _TournamentInfoCard extends StatelessWidget {
     this.rulesText,
     this.participantStatus,
     this.joinedAt,
+    this.ticketRewardLabel,
   });
 
   final TournamentModel room;
@@ -244,6 +260,7 @@ class _TournamentInfoCard extends StatelessWidget {
   final String? rulesText;
   final String? participantStatus;
   final DateTime? joinedAt;
+  final String? ticketRewardLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -278,6 +295,13 @@ class _TournamentInfoCard extends StatelessWidget {
           if (joinedAt != null) ...[
             const SizedBox(height: 8),
             Text('Joined: ${_formatDate(joinedAt!)}'),
+          ],
+          if (ticketRewardLabel != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              ticketRewardLabel!,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           ],
           const SizedBox(height: 8),
           Text(room.recruitmentSummary),

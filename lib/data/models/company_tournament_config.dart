@@ -16,6 +16,7 @@ class CompanyTournamentConfig {
     this.freeEntryLabelKo,
     this.weeklyLimitLabelKo,
     this.prizeIneligibleReasonKo,
+    this.tierTicketJoinLabels = const {},
   });
 
   final Map<String, CompanyTournamentTier> tiers;
@@ -23,8 +24,15 @@ class CompanyTournamentConfig {
   final String? freeEntryLabelKo;
   final String? weeklyLimitLabelKo;
   final String? prizeIneligibleReasonKo;
+  final Map<String, String> tierTicketJoinLabels;
 
   CompanyTournamentTier? tier(String id) => tiers[id.trim().toLowerCase()];
+
+  String? tierTicketJoinLabel(String tierId) {
+    final label = tierTicketJoinLabels[tierId.trim().toLowerCase()];
+    if (label == null || label.isEmpty) return null;
+    return label;
+  }
 
   factory CompanyTournamentConfig.fromJson(Map<String, dynamic> json) {
     final raw = json['tiers'];
@@ -60,6 +68,7 @@ class CompanyTournamentConfig {
       prizeIneligibleReasonKo: claimLabel is String && claimLabel.isNotEmpty
           ? claimLabel
           : null,
+      tierTicketJoinLabels: _tierTicketLabels(viewer),
     );
   }
 }
@@ -67,4 +76,19 @@ class CompanyTournamentConfig {
 int? _readInt(Object? value) {
   if (value is num) return value.toInt();
   return null;
+}
+
+Map<String, String> _tierTicketLabels(Object? viewer) {
+  if (viewer is! Map) return const {};
+  final raw = viewer['tierTickets'];
+  if (raw is! List) return const {};
+  final labels = <String, String>{};
+  for (final item in raw) {
+    if (item is! Map) continue;
+    final tier = item['targetTier'];
+    final label = item['joinLabelKo'];
+    if (tier is! String || label is! String || label.isEmpty) continue;
+    labels[tier.trim().toLowerCase()] = label;
+  }
+  return labels;
 }

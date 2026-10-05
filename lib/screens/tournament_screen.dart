@@ -205,6 +205,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
       freeTickets: freeTickets,
       prizeReady: ready,
       showTicketJoin: quote?.canUseTickets(freeTickets) ?? false,
+      tierTicketJoinLabel: quote?.tierTicketJoinLabel,
       onJoin: !signedIn
           ? null
           : () => joinTournamentWithPreflight(
@@ -225,6 +226,15 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                 prizeEntryShare: quote!.entryShare,
                 prizeTicketCost: quote.ticketCost,
                 freeTicketBalance: freeTickets,
+              ),
+      onTierTicketJoin: !signedIn || quote?.tierTicketJoinLabel == null
+          ? null
+          : () => joinTournamentWithPreflight(
+                context: context,
+                ref: ref,
+                tournament: room,
+                entryMethod: 'tier_ticket',
+                prizeEntryShare: quote!.entryShare,
               ),
       onSponsor: () => context.push(
         RouteNames.sponsorPayment,
@@ -248,9 +258,11 @@ class _TournamentRoomCard extends StatelessWidget {
     required this.onSponsor,
     this.quote,
     this.onTicketJoin,
+    this.onTierTicketJoin,
     this.freeTickets = 0,
     this.prizeReady = true,
     this.showTicketJoin = false,
+    this.tierTicketJoinLabel,
     super.key,
   });
 
@@ -261,11 +273,13 @@ class _TournamentRoomCard extends StatelessWidget {
   final bool canJoin;
   final VoidCallback? onJoin;
   final VoidCallback? onTicketJoin;
+  final VoidCallback? onTierTicketJoin;
   final VoidCallback onSponsor;
   final PrizeRaceQuote? quote;
   final int freeTickets;
   final bool prizeReady;
   final bool showTicketJoin;
+  final String? tierTicketJoinLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -421,6 +435,17 @@ class _TournamentRoomCard extends StatelessWidget {
                 onPressed: onTicketJoin,
                 icon: const Icon(Icons.confirmation_number_outlined),
                 label: Text(quote?.ticketJoinLabel ?? '무료 참가권으로 참가'),
+              ),
+            ),
+          ],
+          if (tierTicketJoinLabel != null && !isJoined && !locked) ...[
+            SizedBox(height: tokens.spacing.xs),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onTierTicketJoin,
+                icon: const Icon(Icons.confirmation_number_outlined),
+                label: Text(tierTicketJoinLabel!),
               ),
             ),
           ],

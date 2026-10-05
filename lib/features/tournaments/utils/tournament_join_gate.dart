@@ -15,6 +15,7 @@ abstract final class TournamentJoinGate {
     int prizeTicketCost = 0,
     int freeTicketBalance = 0,
     bool payingWithTickets = false,
+    bool payingWithTierTicket = false,
   }) {
     final ticketOpens = extraEntryTickets > 0 && extraEntryCanOpen(tournament);
     if (!signedIn) {
@@ -33,6 +34,7 @@ abstract final class TournamentJoinGate {
       return '대회 정원이 가득 찼습니다.';
     }
     if (tournament.isPrizeRace && prizeEntryShare != null) {
+      if (payingWithTierTicket) return null;
       if (payingWithTickets) {
         if (prizeTicketCost <= 0 || freeTicketBalance < prizeTicketCost) {
           return '무료 참가권이 부족합니다.';

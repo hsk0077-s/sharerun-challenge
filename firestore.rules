@@ -381,6 +381,13 @@ service cloud.firestore {
         allow create, update, delete: if false;
       }
 
+      // Account-bound prize-race entry tickets. Admin SDK grants and spends
+      // them. A phone cannot mint, gift, or sell one.
+      match /prizeTickets/{ticketId} {
+        allow read: if isOwner(uid);
+        allow create, update, delete: if false;
+      }
+
       // Owner-only per-account day. steps is an int in 0..30000.
       // A positive day cannot be replaced by 0. A lower total is allowed
       // only when lastHealth backs a heal (today's Health + 2,000 lead).

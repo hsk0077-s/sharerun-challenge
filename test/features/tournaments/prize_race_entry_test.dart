@@ -150,4 +150,25 @@ void main() {
     expect(missing.shareJoinLabel, '참가비를 불러오지 못했습니다');
     expect(missing.canUseTickets(5), isFalse);
   });
+
+  test('tier ticket join label comes from the server and has no won value', () {
+    final config = CompanyTournamentConfig.fromJson({
+      'tiers': {
+        'mid': {'entryShare': 1200, 'freeTicketCost': 1},
+      },
+      'viewer': {
+        'tierTickets': [
+          {'targetTier': 'mid', 'joinLabelKo': '중급 참가권으로 참가'},
+        ],
+      },
+    });
+    final quote = resolvePrizeRaceQuote(
+      tournament: _race('mid'),
+      configLoading: false,
+      config: config,
+    )!;
+    expect(quote.tierTicketJoinLabel, '중급 참가권으로 참가');
+    expect(quote.tierTicketJoinLabel, isNot(contains('원')));
+    expect(quote.costLabel(0), isNot(contains('원')));
+  });
 }

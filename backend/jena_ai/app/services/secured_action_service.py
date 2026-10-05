@@ -58,11 +58,20 @@ from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
     FREE_ENTRY_TIER,
     IDENTITY_VERIFIED_FIELD,
+    NO_RACE_EDITION,
+    NO_TIER_TICKET,
+    TICKET_EDITION_MISMATCH,
+    TICKET_SEATS_FULL,
     build_prize_viewer,
     identity_check_passed,
     prize_tier_id,
     resolve_account_created_at,
     resolve_company_tournament_config,
+    ticket_is_open,
+    ticket_join_label,
+    ticket_matches_edition,
+    ticket_seat_cap,
+    tournament_edition,
     verified_runs_in_window,
 )
 from app.services.company_tournament_settlement import prize_finish_fields
@@ -2562,7 +2571,30 @@ class SecuredActionService:
             free_used=free_used,
             config=config,
             now=now,
+            tier_tickets=self._open_tier_tickets(uid, config),
         )
+
+    def _open_tier_tickets(self, uid: str, config: dict) -> list[dict]:
+        db = self.firebase_service.db
+        snaps = db.collection("users").document(uid).collection("prizeTickets").get()
+        offers: list[dict] = []
+        seen: set[str] = set()
+        for snap in snaps:
+            row = snap.to_dict() or {}
+            target = row.get("targetTier")
+            if not isinstance(target, str) or target not in config["tiers"] or target in seen:
+                continue
+            if not ticket_is_open(row, _latest_settled_edition(db, target)):
+                continue
+            seen.add(target)
+            offers.append(
+                {
+                    "targetTier": target,
+                    "labelKo": config["tiers"][target]["labelKo"],
+                    "joinLabelKo": ticket_join_label(config, target),
+                }
+            )
+        return offers
 
     def join_tournament(
         self,
@@ -2827,7 +2859,11 @@ class SecuredActionService:
                 status_code=400,
                 detail="Prize race entry does not accept DIA.",
             )
-        if tier["requiresSeasonQualification"] and user.get("seasonQualified") is not True:
+        if (
+            tier["requiresSeasonQualification"]
+            and request.entry_method != "tier_ticket"
+            and user.get("seasonQualified") is not True
+        ):
             raise HTTPException(
                 status_code=403,
                 detail="Season qualification is required.",
@@ -2855,7 +2891,7 @@ class SecuredActionService:
             else 0
         )
         free_entry = (
-            request.entry_method != "ticket"
+            request.entry_method == "share"
             and tier_id == FREE_ENTRY_TIER
             and identity_check_passed(
                 config, user.get(IDENTITY_VERIFIED_FIELD) is True
@@ -2866,8 +2902,35 @@ class SecuredActionService:
         wallet = user.get("wallet") or {}
         share_fee = 0
         ticket_fee = 0
+        tier_ticket_id = None
         moved: dict = {"updates": {}, "ledger": {}}
-        if request.entry_method == "ticket":
+        if request.entry_method == "tier_ticket":
+            edition = tournament_edition(tournament)
+            if edition is None:
+                raise HTTPException(status_code=400, detail=NO_RACE_EDITION)
+            ticket_ref, _ticket_row, held_for_tier = _select_tier_ticket(
+                transaction, user_ref, tier_id, edition
+            )
+            if ticket_ref is None:
+                detail = TICKET_EDITION_MISMATCH if held_for_tier else NO_TIER_TICKET
+                raise HTTPException(status_code=400, detail=detail)
+            seated = _tier_ticket_seats(transaction, tournament_ref)
+            if seated >= ticket_seat_cap(config, tier_id, tier):
+                raise HTTPException(status_code=409, detail=TICKET_SEATS_FULL)
+            transaction.update(
+                ticket_ref,
+                {
+                    "status": "used",
+                    "usedTournamentId": tournament_ref.id,
+                    "usedAt": SERVER_TIMESTAMP,
+                },
+            )
+            tier_ticket_id = ticket_ref.id
+            entry_method = "tier_ticket"
+            result_status = "joined_tier_ticket"
+            reason = "Tournament joined with a tier entry ticket."
+            new_share = share
+        elif request.entry_method == "ticket":
             ticket_fee = int(tier["freeTicketCost"])
             if ticket_fee <= 0:
                 raise HTTPException(
@@ -2937,6 +3000,7 @@ class SecuredActionService:
                 "ticketAmount": ticket_fee,
                 "entryMethod": entry_method,
                 "prizeTier": tier_id,
+                **({"tierTicketId": tier_ticket_id} if tier_ticket_id else {}),
                 "diamondDeposit": 0,
                 "selectedCharity": request.selected_charity or "UNICEF",
                 "joinedAt": SERVER_TIMESTAMP,
@@ -2956,9 +3020,10 @@ class SecuredActionService:
                 "type": "free_entry" if free_entry else "tournament_entry",
                 "shareAmount": -share_fee,
                 "diamondAmount": 0,
-                "ticketAmount": -ticket_fee,
+                "ticketAmount": -1 if tier_ticket_id else -ticket_fee,
                 "entryMethod": entry_method,
                 "prizeTier": tier_id,
+                **({"tierTicketId": tier_ticket_id} if tier_ticket_id else {}),
                 "createdAt": SERVER_TIMESTAMP,
                 **moved["ledger"],
             },
@@ -3847,6 +3912,46 @@ def _commit_shop_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._purchase_shop_item_tx(transaction, uid, item_id, user_ref)
+
+
+def _latest_settled_edition(db, tier_id: str) -> int:
+    snapshot = db.collection("companyPrizeEditions").document(tier_id).get()
+    if not snapshot.exists:
+        return 0
+    value = (snapshot.to_dict() or {}).get("latestSettledEdition")
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return 0
+    return value
+
+
+def _select_tier_ticket(transaction, user_ref, tier_id: str, edition: int):
+    snaps = list(transaction.get(user_ref.collection("prizeTickets")))
+    chosen = None
+    held = False
+    for snap in snaps:
+        if snap.exists is False:
+            continue
+        row = snap.to_dict() or {}
+        if row.get("targetTier") != tier_id or row.get("status") != "valid":
+            continue
+        if row.get("transferable") is True:
+            continue
+        held = True
+        if not ticket_matches_edition(row, edition):
+            continue
+        through = int(row["validThroughEdition"])
+        if chosen is None or through < chosen[0]:
+            chosen = (through, snap.reference, row)
+    if chosen is None:
+        return None, None, held
+    return chosen[1], chosen[2], True
+
+
+def _tier_ticket_seats(transaction, tournament_ref) -> int:
+    query = tournament_ref.collection("participants").where(
+        "entryMethod", "==", "tier_ticket"
+    )
+    return len(list(transaction.get(query)))
 
 
 @firestore.transactional

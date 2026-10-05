@@ -16,8 +16,8 @@ def test_defaults_ignore_a_watch_requirement() -> None:
     assert config["watch_required"] is False
     assert config["runs_required"] == 3
     assert config["referee_milestones"] == [
-        {"run": 1, "share": 1_000},
-        {"run": 3, "share": 4_000},
+        {"run": 1, "share": 10_000},
+        {"run": 3, "share": 40_000},
     ]
 
 
@@ -63,8 +63,8 @@ def test_one_counted_run_per_kst_day_and_three_distinct_days() -> None:
     )
     assert count == 3 and len(set(days)) == 3
     assert milestones_due(count, config) == [
-        {"run": 1, "share": 1_000},
-        {"run": 3, "share": 4_000},
+        {"run": 1, "share": 10_000},
+        {"run": 3, "share": 40_000},
     ]
 
 

@@ -197,18 +197,18 @@ def test_three_distinct_days_pay_referee_and_hold_referrer() -> None:
 
     _persist(service, "u2", "run-1", now=_DAY1, signup_at=_DAY1)
     assert db.store["users/u2"]["economy"]["trialRunCount"] == 1
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
     assert _share(db, "u1") == 20
-    assert db.store["referralPayouts/u2_trial_referee_1"]["amount"] == 1_000
+    assert db.store["referralPayouts/u2_trial_referee_1"]["amount"] == 10_000
     assert "referralPayouts/u2_trial_referrer" not in db.store
 
     _persist(service, "u2", "run-1b", now=_DAY1_LATER, signup_at=_DAY1)
     assert db.store["users/u2"]["economy"]["trialRunCount"] == 1
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
 
     _persist(service, "u2", "run-2", now=_DAY2, signup_at=_DAY1)
     assert db.store["users/u2"]["economy"]["trialRunCount"] == 2
-    assert _share(db, "u2") == 1_040
+    assert _share(db, "u2") == 10_040
     assert _share(db, "u1") == 20
 
     _persist(service, "u2", "run-3", now=_DAY3, signup_at=_DAY1)
@@ -217,29 +217,29 @@ def test_three_distinct_days_pay_referee_and_hold_referrer() -> None:
     assert economy.get("trialMilestoneRewardClaimed") is not True
     assert economy.get("firstTierGranted") is not True
     assert len(set(economy["trialCountedDays"])) == 3
-    assert _share(db, "u2") == 5_040
+    assert _share(db, "u2") == 50_040
     assert _share(db, "u1") == 20
     assert _value(db, "u2") == 7
     assert _value(db, "u1") == 2
     assert db.store["users/u2"]["wallet"]["diamondBalance"] == 3
     assert _payout_count(db, "u1") == 1
-    assert db.store["referralPayouts/u2_trial_referee"]["amount"] == 4_000
+    assert db.store["referralPayouts/u2_trial_referee"]["amount"] == 40_000
     referrer = db.store["referralPayouts/u2_trial_referrer"]
-    assert referrer["amount"] == 3_000
+    assert referrer["amount"] == 30_000
     assert referrer["status"] == "pending"
     assert db.store["users/u1"]["economy"]["referrerHolds"]["u2"]["status"] == (
         "pending"
     )
     receipt = db.store["users/u2/wallet_transactions/referral_u2_trial_referee"]
     assert receipt["title"] == "체험 런 3회 완료"
-    assert receipt["amount"] == 4_000
+    assert receipt["amount"] == 40_000
     hold = db.store["walletTransactions/trial_referrer_hold_u1_u2"]
     assert hold["shareAmount"] == 0
-    assert hold["amount"] == 3_000
+    assert hold["amount"] == 30_000
 
     _persist(service, "u2", "run-3")
     _persist(service, "u2", "run-4", now=_DAY3 + timedelta(days=1), signup_at=_DAY1)
-    assert _share(db, "u2") == 5_040
+    assert _share(db, "u2") == 50_040
     assert _share(db, "u1") == 20
     assert _payout_count(db, "u1") == 1
     assert _value(db, "u2") == 7
@@ -257,17 +257,17 @@ def test_referrer_hold_releases_once_and_clawback_pays_nothing() -> None:
 
     release_at = _DAY3 + timedelta(days=7, seconds=1)
     service._release_referrer_holds_tx(_MemoryTxn(), "u1", release_at)
-    assert _share(db, "u1") == 3_020
+    assert _share(db, "u1") == 30_020
     assert _value(db, "u1") == 2
     released = db.store["walletTransactions/trial_referrer_release_u1_u2"]
     assert released["type"] == "referral_trial_referrer"
-    assert released["shareAmount"] == 3_000
+    assert released["shareAmount"] == 30_000
     assert db.store["users/u1"]["economy"]["referrerHolds"]["u2"]["status"] == (
         "released"
     )
 
     service._release_referrer_holds_tx(_MemoryTxn(), "u1", release_at)
-    assert _share(db, "u1") == 3_020
+    assert _share(db, "u1") == 30_020
 
     flagged = _MemoryDb()
     _seed_pair(flagged, trial_run_count=2)
@@ -325,7 +325,7 @@ def test_same_device_blocks_a_second_trial_and_referrer_reward() -> None:
         signup_at=_DAY1,
         device_id="phone-b",
     )
-    assert _share(shared, "u2") == 5_040
+    assert _share(shared, "u2") == 50_040
     assert _share(shared, "u1") == 20
     assert shared.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
     assert "walletTransactions/trial_referrer_hold_u1_u2" not in shared.store
@@ -345,14 +345,14 @@ def test_eleventh_referral_pays_referrer_nothing() -> None:
     db = _MemoryDb()
     _seed_pair(db, trial_run_count=2, payout_count=10)
     _persist(_service(db), "u2", "run-3", now=_DAY3, signup_at=_DAY1)
-    assert _share(db, "u2") == 5_040
+    assert _share(db, "u2") == 50_040
     assert _share(db, "u1") == 20
     assert _payout_count(db, "u1") == 10
     assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
     assert "walletTransactions/trial_referrer_hold_u1_u2" not in db.store
 
     _persist(_service(db), "u2", "run-3")
-    assert _share(db, "u2") == 5_040
+    assert _share(db, "u2") == 50_040
     assert _share(db, "u1") == 20
 
 
@@ -399,14 +399,14 @@ def test_redeem_after_three_runs_pays_milestones_and_holds_referrer() -> None:
     service = _service(db)
 
     _redeem(service, "u2", "AB23CD45")
-    assert _share(db, "u2") == 15_040
+    assert _share(db, "u2") == 60_040
     assert _share(db, "u1") == 20
     assert _payout_count(db, "u1") == 10
     assert _value(db, "u2") == 7
     assert db.store["referralPayouts/u2_trial_referrer"]["status"] == "pending"
 
     _persist(service, "u2", "run-6", now=_DAY3, signup_at=_DAY1)
-    assert _share(db, "u2") == 15_040
+    assert _share(db, "u2") == 60_040
     assert _share(db, "u1") == 20
     assert _payout_count(db, "u1") == 10
 

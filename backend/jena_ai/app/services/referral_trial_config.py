@@ -1,8 +1,8 @@
 """Referral trial runs. ``config/referral_trial`` overrides these defaults.
 
 A verified run of at least 1km counts once per KST day. Three distinct days
-inside 14 days of signup pay the referee 1,000 then 4,000 SHARE. The
-referrer is owed 3,000 SHARE after that, held 7 days. A watch does not add
+inside 14 days of signup pay the referee 10,000 then 40,000 SHARE. The
+referrer is owed 30,000 SHARE after that, held 7 days. A watch does not add
 SHARE. Bad Firestore fields keep the defaults.
 """
 
@@ -18,10 +18,10 @@ _DEFAULTS = {
     "day_boundary_tz": "Asia/Seoul",
     "completion_window_days": 14,
     "referee_milestones": (
-        {"run": 1, "share": 1_000},
-        {"run": 3, "share": 4_000},
+        {"run": 1, "share": 10_000},
+        {"run": 3, "share": 40_000},
     ),
-    "referrer_reward": 3_000,
+    "referrer_reward": 30_000,
     "referrer_payout_hold_days": 7,
     "referrer_max_referrals": 10,
     "referrer_lock_days": 30,

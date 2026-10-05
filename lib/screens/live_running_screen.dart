@@ -17,6 +17,8 @@ import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/run_tracking/models/route_point.dart';
 import '../features/run_tracking/services/ghost_pace_matcher.dart';
+import '../features/run_tracking/run_recording_checklist.dart';
+import '../features/run_tracking/run_recording_foreground.dart';
 import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/coach_one_point_run.dart';
@@ -54,6 +56,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   Timer? _timer;
   int _elapsedSeconds = 0;
   double _distanceInMeters = 0.0;
+  double _coachedKm = 0;
   var _validating = false;
   var _validationSession = false;
   Future<void>? _validationStart;
@@ -294,14 +297,10 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
       await _positionStreamSubscription?.cancel();
       _positionStreamSubscription = Geolocator.getPositionStream(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          distanceFilter: 5,
-        ),
+        locationSettings: ref.read(gpsTrackingServiceProvider).liveSettings(),
       ).listen((position) {
         if (!mounted) return;
         final target = LatLng(position.latitude, position.longitude);
-        final previousKm = _distanceInMeters / 1000.0;
         setState(() {
           _cameraTarget = target;
           if (isRunning) {
@@ -321,16 +320,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
           }
           _markers = _buildMarkers(target);
         });
-        if (isRunning) {
-          unawaited(
-            _voiceCoachOf().onRunProgress(
-              previousKm: previousKm,
-              currentKm: _distanceInMeters / 1000.0,
-              elapsedSeconds: _elapsedSeconds,
-              targetKm: _raceTargetKm,
-            ),
-          );
-        }
         _mapController?.animateCamera(CameraUpdate.newLatLng(target));
       });
     } catch (_) {
@@ -340,27 +329,50 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   Future<void> _startRun() async {
     if (isRunning) return;
+    await ensureRunRecordingChecklist(context);
+    if (!mounted || isRunning) return;
     setState(() {
       isRunning = true;
       _elapsedSeconds = 0;
       _distanceInMeters = 0.0;
+      _coachedKm = 0;
       _routePoints = [];
       _validationSession = false;
     });
+    unawaited(RunRecordingForeground.start());
     _validationStart = _startValidationSession();
+    final coach = _voiceCoachOf();
+    final started = coach.onRunStarted();
+    _voiceCoachEpoch = coach.liveSessionEpoch;
+    unawaited(started);
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted || !isRunning) return;
+      final previousKm = _coachedKm;
+      final currentKm = _distanceInMeters / 1000.0;
+      _coachedKm = currentKm;
       setState(() => _elapsedSeconds++);
+      unawaited(
+        _voiceCoachOf().onRunProgress(
+          previousKm: previousKm,
+          currentKm: currentKm,
+          elapsedSeconds: _elapsedSeconds,
+          targetKm: _raceTargetKm,
+        ),
+      );
+      if (!_validationSession) {
+        unawaited(
+          RunRecordingForeground.note(
+            elapsedSeconds: _elapsedSeconds,
+            distanceKm: currentKm,
+          ),
+        );
+      }
     });
     try {
       await ref.read(coachOnePointRunProvider.notifier).claimIfNeeded();
     } catch (_) {}
     if (!mounted || !isRunning) return;
-    final coach = _voiceCoachOf();
-    final started = coach.onRunStarted();
-    _voiceCoachEpoch = coach.liveSessionEpoch;
-    unawaited(started);
     unawaited(_startPositionStream());
   }
 
@@ -375,6 +387,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     _timer = null;
     _positionStreamSubscription?.cancel();
     _positionStreamSubscription = null;
+    unawaited(RunRecordingForeground.stop());
   }
 
   /// Same collectors as the in-challenge finish: pedometer cadence, heart rate

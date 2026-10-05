@@ -26,6 +26,8 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/onboarding/widgets/nickname_change_sheet.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import '../features/run_tracking/run_recording_checklist.dart';
+import '../features/run_tracking/run_recording_policy.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
 
@@ -473,6 +475,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         color: AppColors.textGreyLight,
                       ),
                 onTap: _permissionBusy ? null : _reauthLocationAndHealth,
+              ),
+              const Divider(height: 1, color: AppColors.borderLight),
+              ListTile(
+                key: const Key('run-recording-checklist-menu'),
+                leading: const Icon(
+                  Icons.directions_run,
+                  color: AppColors.tealAccent,
+                ),
+                title: Text(
+                  runRecordingChecklistMenuLabel,
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  '위치 · 알림 · 배터리 최적화',
+                  style: AppTextStyles.caption,
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textGreyLight,
+                ),
+                onTap: () => openRunRecordingChecklist(context),
               ),
             ],
           ),

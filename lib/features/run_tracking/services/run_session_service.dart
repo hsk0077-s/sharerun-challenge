@@ -7,6 +7,7 @@ import '../models/route_point.dart';
 import '../models/run_telemetry.dart';
 import 'accelerometer_collector_service.dart';
 import 'ephemeral_sensor_buffer.dart';
+import '../run_recording_foreground.dart';
 import 'gps_tracking_service.dart';
 import 'gyro_stability_service.dart';
 import 'health_data_service.dart';
@@ -39,6 +40,7 @@ class RunSessionService {
   final List<RoutePoint> _routePoints = [];
   final List<TimedIntSample> _heartRateSeries = [];
   final List<TimedIntSample> _cadenceSeries = [];
+  var _disposed = false;
 
   Stream<RunTelemetry> get telemetryStream => _telemetryController.stream;
 
@@ -74,6 +76,9 @@ class RunSessionService {
       (_) => unawaited(_onSecondTick()),
     );
     _emitTelemetry();
+    if (_disposed) return;
+    await RunRecordingForeground.start();
+    if (_disposed) await RunRecordingForeground.stop();
   }
 
   Future<CompletedRunSession> finish({
@@ -92,6 +97,7 @@ class RunSessionService {
     _positionSubscription = null;
     await _gyroStabilityService.stop();
     await _accelerometerCollector.stop();
+    await RunRecordingForeground.stop();
 
     final buffer = EphemeralSensorBuffer();
     final samples = await _healthDataService.readRunSamples(
@@ -175,10 +181,12 @@ class RunSessionService {
   }
 
   Future<void> dispose() async {
+    _disposed = true;
     _ticker?.cancel();
     await _positionSubscription?.cancel();
     await _gyroStabilityService.stop();
     await _accelerometerCollector.stop();
+    await RunRecordingForeground.stop();
     await _telemetryController.close();
   }
 
@@ -246,10 +254,18 @@ class RunSessionService {
       _telemetryController.add(RunTelemetry.empty);
       return;
     }
+    final elapsed = DateTime.now().difference(startedAt).inSeconds;
+    final distanceKm = _distanceMeters / 1000;
+    unawaited(
+      RunRecordingForeground.note(
+        elapsedSeconds: elapsed,
+        distanceKm: distanceKm,
+      ),
+    );
     _telemetryController.add(
       RunTelemetry(
-        distanceKm: _distanceMeters / 1000,
-        durationSeconds: DateTime.now().difference(startedAt).inSeconds,
+        distanceKm: distanceKm,
+        durationSeconds: elapsed,
         currentHeartRate: _currentHeartRate,
         currentCadenceSpm: _currentCadenceSpm,
         gyroStabilityScore: _gyroStabilityService.calculateStabilityScore(),

@@ -30,14 +30,14 @@ class GpsTrackingService {
   }
 
   Stream<Position> watchOutdoorPosition() {
-    return Geolocator.getPositionStream(locationSettings: _liveSettings());
+    return Geolocator.getPositionStream(locationSettings: liveSettings());
   }
 
   Future<Position> getCurrentPosition() {
-    return Geolocator.getCurrentPosition(locationSettings: _liveSettings());
+    return Geolocator.getCurrentPosition(locationSettings: liveSettings());
   }
 
-  LocationSettings _liveSettings() {
+  LocationSettings liveSettings() {
     if (Platform.isAndroid) {
       return AndroidSettings(
         accuracy: LocationAccuracy.bestForNavigation,

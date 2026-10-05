@@ -19,6 +19,7 @@ import '../core/api/api_exception.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/run_tracking/models/route_point.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
+import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/services/ghost_pace_matcher.dart';
 import '../features/run_tracking/services/gps_tracking_service.dart';
 import '../features/run_tracking/services/run_session_service.dart';
@@ -335,6 +336,9 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
         });
         return;
       }
+      if (!mounted) return;
+      await ensureRunRecordingChecklist(context);
+      if (!mounted) return;
       final service = ref.read(runSessionServiceProvider);
       _telemetrySubscription = service.telemetryStream.listen((event) {
         if (!mounted) return;

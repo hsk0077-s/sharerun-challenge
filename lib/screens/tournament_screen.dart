@@ -347,6 +347,13 @@ class _TournamentRoomCard extends StatelessWidget {
               fontWeight: FontWeight.w800,
             ),
           ),
+          if (quote?.rulesLabel != null) ...[
+            SizedBox(height: tokens.spacing.xxs),
+            Text(
+              quote!.rulesLabel!,
+              style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
+            ),
+          ],
           SizedBox(height: tokens.spacing.xxs),
           Text(
             AppStrings.winnerRewardNoConversion,

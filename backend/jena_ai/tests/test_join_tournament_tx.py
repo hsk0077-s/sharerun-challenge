@@ -195,26 +195,27 @@ def _prize_room(tier: str, **extra: object) -> dict:
 def test_prize_race_debits_config_share_not_the_room_fee() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _prize_user()
+    db.store["users/u1/companyPrizeRace/state"] = {"beginnerFreeUsed": 2}
     db.store["tournaments/race"] = _prize_room("beginner")
 
     result = _join(db, "u1", "race")
 
     assert result.status == "joined"
-    assert result.share_credited == -600
+    assert result.share_credited == -300
     assert result.diamond_balance == 50
     wallet = db.store["users/u1"]["wallet"]
-    assert wallet["shareBalance"] == 9400
+    assert wallet["shareBalance"] == 9700
     assert wallet["diamondBalance"] == 50
     assert wallet["paidDiamondBalance"] == 50
     assert wallet["valueTokenBalance"] == 7
     participant = db.store["tournaments/race/participants/u1"]
-    assert participant["entryFeeShare"] == 600
+    assert participant["entryFeeShare"] == 300
     assert participant["entryMethod"] == "share"
     assert participant["diamondDeposit"] == 0
     assert participant["prizeTier"] == "beginner"
     ledger = _ledger(db)
     assert ledger["type"] == "tournament_entry"
-    assert ledger["shareAmount"] == -600
+    assert ledger["shareAmount"] == -300
     assert ledger["diamondAmount"] == 0
     assert ledger["ticketAmount"] == 0
     assert ledger["entryMethod"] == "share"
@@ -222,7 +223,7 @@ def test_prize_race_debits_config_share_not_the_room_fee() -> None:
 
     again = _join(db, "u1", "race")
     assert again.status == "already_joined"
-    assert wallet["shareBalance"] == 9400
+    assert wallet["shareBalance"] == 9700
     assert (
         sum(1 for path in db.store if path.startswith("walletTransactions/")) == 1
     )
@@ -366,19 +367,20 @@ def test_prize_race_enforces_config_max_entrants() -> None:
 
     db.store["tournaments/race"]["participantCount"] = 499
     result = _join(db, "u1", "race")
-    assert result.status == "joined"
+    assert result.status == "joined_free"
 
 
 def test_prize_race_insufficient_share_writes_nothing() -> None:
     db = _MemoryDb()
-    db.store["users/u1"] = _prize_user(share=599)
+    db.store["users/u1"] = _prize_user(share=299)
+    db.store["users/u1/companyPrizeRace/state"] = {"beginnerFreeUsed": 2}
     db.store["tournaments/race"] = _prize_room("beginner")
 
     with pytest.raises(HTTPException) as broke:
         _join(db, "u1", "race")
 
     assert broke.value.status_code == 400
-    assert db.store["users/u1"]["wallet"]["shareBalance"] == 599
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 299
     assert "tournaments/race/participants/u1" not in db.store
     assert not any(path.startswith("walletTransactions/") for path in db.store)
 
@@ -446,9 +448,9 @@ def test_unknown_missing_tournament_stays_404() -> None:
 @pytest.mark.parametrize(
     ("tier", "share_fee", "ticket_fee"),
     [
-        ("beginner", 600, 1),
-        ("mid", 1_800, 1),
-        ("advanced", 3_000, 2),
+        ("beginner", 300, 1),
+        ("mid", 1_200, 1),
+        ("advanced", 2_400, 2),
         ("half", 4_200, 3),
     ],
 )
@@ -459,6 +461,7 @@ def test_prize_tiers_charge_config_share_or_tickets(
 ) -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _prize_user(share=10_000)
+    db.store["users/u1/companyPrizeRace/state"] = {"beginnerFreeUsed": 2}
     db.store["tournaments/race"] = _prize_room(tier, entryFeeShare=99999)
 
     share_join = _join(db, "u1", "race")
@@ -524,3 +527,100 @@ def test_final_rejects_tickets_and_stays_free_for_qualified_users() -> None:
     assert rejected.value.status_code == 400
     assert db.store["users/u1"]["wallet"]["freeTicketBalance"] == 3
     assert "tournaments/finals/participants/u1" not in db.store
+
+
+def _prize_join(db: _MemoryDb, uid: str, tournament_id: str, week: str = "2026-09-28"):
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    service._economy_service.kst_week_key = lambda now=None: week
+    return _commit_join_tx.to_wrap(
+        _MemoryTxn(),
+        service,
+        uid,
+        JoinTournamentRequest(tournament_id=tournament_id, diamond_deposit=0),
+        db.collection("users").document(uid),
+        db.collection("tournaments").document(tournament_id),
+        db.collection("tournaments").document(tournament_id).collection("participants").document(uid),
+    )
+
+
+def test_beginner_free_entries_count_twice_and_retry_is_idempotent() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user(share=10_000, identityVerified=True)
+    for name in ("a", "b", "c"):
+        db.store[f"tournaments/{name}"] = _prize_room("beginner")
+
+    first = _prize_join(db, "u1", "a", "2026-09-28")
+    assert first.status == "joined_free"
+    assert first.share_credited == 0
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 10_000
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerFreeUsed"] == 1
+    free = db.store["walletTransactions/prize_free_entry_a_u1"]
+    assert free["type"] == "free_entry"
+    assert free["shareAmount"] == 0
+
+    again = _prize_join(db, "u1", "a", "2026-09-28")
+    assert again.status == "already_joined"
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerFreeUsed"] == 1
+    assert sum(1 for path in db.store if path.startswith("walletTransactions/")) == 1
+
+    second = _prize_join(db, "u1", "b", "2026-10-05")
+    assert second.status == "joined_free"
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerFreeUsed"] == 2
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 10_000
+
+    third = _prize_join(db, "u1", "c", "2026-10-12")
+    assert third.share_credited == -300
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 9_700
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerFreeUsed"] == 2
+    assert db.store["walletTransactions/prize_entry_c_u1"]["shareAmount"] == -300
+
+    retry = _prize_join(db, "u1", "c", "2026-10-12")
+    assert retry.status == "already_joined"
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 9_700
+
+
+def test_free_beginner_entry_opens_without_identity_until_the_flag_is_on() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user(share=10_000)
+    db.store["tournaments/a"] = _prize_room("beginner")
+
+    opened = _prize_join(db, "u1", "a")
+
+    assert opened.status == "joined_free"
+    assert opened.share_credited == 0
+    assert db.store["users/u1/companyPrizeRace/state"]["beginnerFreeUsed"] == 1
+
+    locked = _MemoryDb()
+    locked.store["config/company_tournament"] = {"requireIdentityVerification": True}
+    locked.store["users/u1"] = _prize_user(share=10_000)
+    locked.store["tournaments/a"] = _prize_room("beginner")
+
+    charged = _prize_join(locked, "u1", "a")
+
+    assert charged.share_credited == -300
+    assert "beginnerFreeUsed" not in locked.store["users/u1/companyPrizeRace/state"]
+    assert locked.store["walletTransactions/prize_entry_a_u1"]["type"] == "tournament_entry"
+
+
+def test_second_entry_same_tier_same_week_is_rejected() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user(share=10_000)
+    db.store["tournaments/a"] = _prize_room("beginner")
+    db.store["tournaments/b"] = _prize_room("beginner")
+    db.store["tournaments/mid"] = _prize_room("mid")
+
+    assert _prize_join(db, "u1", "a").status == "joined_free"
+    with pytest.raises(HTTPException) as rejected:
+        _prize_join(db, "u1", "b")
+    assert rejected.value.status_code == 409
+    assert rejected.value.detail == "Weekly prize-race entry limit reached."
+    assert "tournaments/b/participants/u1" not in db.store
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 10_000
+    assert (
+        db.store["users/u1/companyPrizeRace/state"]["weeks"]["2026-09-28"]["beginner"]
+        == 1
+    )
+
+    mid = _prize_join(db, "u1", "mid")
+    assert mid.share_credited == -1_200
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 8_800

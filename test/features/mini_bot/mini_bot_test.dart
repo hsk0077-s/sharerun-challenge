@@ -9,6 +9,7 @@ import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
+import 'package:share_run_challenge/data/models/company_tournament_config.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_intent.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_navigator.dart';
@@ -177,6 +178,40 @@ void main() {
     expect(join.confirmLabel, '참가하기');
     expect(join.amountLabel, '600 SHARE');
     expect(join.reply, contains('참가는 확정되지 않아요'));
+
+    const prize = CompanyTournamentConfig(
+      tiers: {
+        'beginner': CompanyTournamentTier(entryShare: 300, freeTicketCost: 1),
+        'mid': CompanyTournamentTier(entryShare: 1200, freeTicketCost: 1),
+        'advanced': CompanyTournamentTier(entryShare: 2400, freeTicketCost: 2),
+        'half': CompanyTournamentTier(entryShare: 4200, freeTicketCost: 3),
+      },
+      weeklyLimitLabelKo: '같은 등급은 일주일에 1번만 참가할 수 있어요.',
+    );
+    final race = MiniBotInterpreter.interpret('상금 대회', prizeConfig: prize);
+    expect(race.destination, MiniBotDestination.challengeLobby);
+    expect(race.reply, contains('300 SHARE'));
+    expect(race.reply, contains('1,200 SHARE'));
+    expect(race.reply, contains('2,400 SHARE'));
+    expect(race.reply, contains('4,200 SHARE'));
+    expect(race.reply, contains('일주일에 1번'));
+    expect(race.reply, isNot(contains('첫 2회 무료')));
+
+    final free = MiniBotInterpreter.interpret(
+      '상금',
+      prizeConfig: const CompanyTournamentConfig(
+        tiers: {
+          'beginner': CompanyTournamentTier(entryShare: 300, freeTicketCost: 1),
+        },
+        beginnerFreeEntryEligible: true,
+        freeEntryLabelKo: '첫 2회 무료',
+      ),
+    );
+    expect(free.reply, contains('첫 2회 무료'));
+
+    final pending = MiniBotInterpreter.interpret('상금 대회');
+    expect(pending.reply, contains('확인 중'));
+    expect(pending.reply, isNot(contains('600 SHARE')));
 
     final runner = MiniBotInterpreter.interpret('러너 후원');
     expect(runner.intent, MiniBotIntent.sponsorRunner);

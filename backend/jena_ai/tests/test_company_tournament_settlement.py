@@ -1,7 +1,7 @@
 """Company prize-race settlement: bonus DIA, SHARE, VALUE, cap, km donation."""
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import logging
 from types import SimpleNamespace
 
@@ -27,6 +27,8 @@ NOW = datetime(2026, 10, 4, 3, 0, tzinfo=timezone.utc)
 
 def _wallet() -> dict:
     return {
+        "identityVerified": True,
+        "authCreatedAt": (NOW - timedelta(days=30)).isoformat(),
         "wallet": {
             "shareBalance": 10,
             "freeShareBalance": 4,
@@ -54,6 +56,15 @@ def _seed_finishers(db: _MemoryDb, tournament_id: str, rows: list[tuple[str, dic
     for uid, participant in rows:
         db.store[f"tournaments/{tournament_id}/participants/{uid}"] = participant
         db.store.setdefault(f"users/{uid}", _wallet())
+        for index in range(3):
+            db.store.setdefault(
+                f"activities/{uid}-verified-{index}",
+                {
+                    "userId": uid,
+                    "jenaVerified": True,
+                    "completedAt": (NOW - timedelta(days=1)).isoformat(),
+                },
+            )
 
 
 def _finisher(uid: str, duration: int, *, distance: float = 3, entry_fee: int = 0) -> dict:
@@ -441,3 +452,88 @@ def test_verified_prize_finish_keeps_the_faster_time() -> None:
         other.collection("users").document("u1"),
     )
     assert "verifiedFinish" not in other.store["tournaments/plain/participants/u1"]
+
+
+def _claim_race(days: int, runs: int, *, identity: bool = True):
+    db = _MemoryDb()
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 10)), ("u2", _finisher("u2", 20))],
+    )
+    db.store["users/u1"]["authCreatedAt"] = (NOW - timedelta(days=days)).isoformat()
+    db.store["users/u1"]["identityVerified"] = identity
+    for index in range(runs, 3):
+        del db.store[f"activities/u1-verified-{index}"]
+    return db
+
+
+def test_thirteen_day_account_keeps_rank_and_receives_no_dia() -> None:
+    young = _claim_race(13, 3, identity=False)
+    old = _claim_race(14, 3, identity=False)
+
+    blocked = _settle(young)
+    allowed = _settle(old)
+
+    assert blocked.paid_dia == 500
+    assert young.store["tournaments/race/participants/u1"]["finishRank"] == 1
+    assert young.store["tournaments/race/participants/u1"]["prizeDiaPaid"] == 0
+    assert (
+        young.store["tournaments/race/participants/u1"]["prizeIneligibleReason"]
+        == "account_too_new"
+    )
+    assert young.store["users/u1"]["wallet"]["diamondBalance"] == 60
+    assert "walletTransactions/tournament_prize_race_u1" not in young.store
+    assert young.store["users/u2"]["wallet"]["diamondBalance"] == 560
+    assert young.store["walletTransactions/tournament_prize_race_u2"]["diamondAmount"] == 500
+    assert young.store["companyPrizePools/2026-10"]["paidDia"] == 500
+    assert young.store["walletTransactions/tournament_value_race_u1"]["valueAmount"] == 30
+
+    assert allowed.paid_dia == 1_500
+    assert old.store["users/u1"]["wallet"]["diamondBalance"] == 1_060
+    assert old.store["tournaments/race/participants/u1"].get("prizeIneligibleReason") is None
+
+
+def test_two_verified_runs_block_dia_and_three_do_not() -> None:
+    short = _claim_race(30, 2, identity=False)
+    enough = _claim_race(30, 3, identity=False)
+
+    blocked = _settle(short)
+    allowed = _settle(enough)
+
+    assert blocked.paid_dia == 500
+    assert (
+        short.store["tournaments/race/participants/u1"]["prizeIneligibleReason"]
+        == "not_enough_verified_runs"
+    )
+    assert short.store["users/u1"]["wallet"]["diamondBalance"] == 60
+    assert "walletTransactions/tournament_prize_race_u1" not in short.store
+    assert short.store["users/u2"]["wallet"]["freeDiamondBalance"] == 510
+    assert allowed.paid_dia == 1_500
+
+
+def test_unverified_identity_is_not_paid_and_resettle_does_not_double_pay() -> None:
+    db = _claim_race(30, 3, identity=False)
+    db.store["config/company_tournament"] = {"requireIdentityVerification": True}
+    first = _settle(db)
+    second_balance = db.store["users/u2"]["wallet"]["diamondBalance"]
+    first_balance = db.store["users/u1"]["wallet"]["diamondBalance"]
+    pool = db.store["companyPrizePools/2026-10"]["paidDia"]
+
+    assert first.paid_dia == 500
+    assert (
+        db.store["tournaments/race/participants/u1"]["prizeIneligibleReason"]
+        == "not_identity_verified"
+    )
+    assert first_balance == 60
+    assert "walletTransactions/tournament_prize_race_u1" not in db.store
+
+    db.store["tournaments/race"]["prizeSettled"] = False
+    db.store["tournaments/race"].pop("prizeSettlement")
+    again = _settle(db)
+
+    assert again.paid_dia == 500
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == first_balance
+    assert db.store["users/u2"]["wallet"]["diamondBalance"] == second_balance
+    assert db.store["companyPrizePools/2026-10"]["paidDia"] == pool
+    assert "walletTransactions/tournament_prize_race_u1" not in db.store

@@ -1,5 +1,6 @@
 import '../../core/challenge/challenge_entry_fee.dart';
 import '../../core/strings/app_strings.dart';
+import '../../data/models/company_tournament_config.dart';
 import '../iap/models/coach_plus_product.dart';
 import '../iap/models/share_iap_product.dart';
 import '../shop/providers/shop_tab_provider.dart';
@@ -168,6 +169,32 @@ abstract final class MiniBotCopy {
 
   static const joinLobby = '챌린지 로비로 이동할까요? 로비에서 참가할 방을 고를 수 있어요.';
 
+  static String prizeRace(CompanyTournamentConfig? config) {
+    if (config == null || config.tiers.isEmpty) {
+      return '회사 상금 대회 참가비를 확인 중이에요. '
+          '대회 목록에서 서버 참가비를 확인해 주세요. 여기서는 참가하지 않아요.';
+    }
+    String fee(String id, String label) {
+      final tier = config.tier(id);
+      if (tier == null) return '';
+      return '$label ${_grouped(tier.entryShare)} SHARE';
+    }
+
+    final costs = [
+      fee('beginner', '초급'),
+      fee('mid', '중급'),
+      fee('advanced', '상급'),
+      fee('half', '하프'),
+    ].where((line) => line.isNotEmpty).join(', ');
+    final free = config.beginnerFreeEntryEligible && config.freeEntryLabelKo != null
+        ? ' ${config.freeEntryLabelKo}.'
+        : '';
+    final week = config.weeklyLimitLabelKo ?? '';
+    final claim = config.prizeIneligibleReasonKo ?? '';
+    return '회사 상금 대회로 이동할까요? 참가비는 $costs예요.$free $week $claim '
+        '이동만 하고, 참가는 확정하지 않아요.';
+  }
+
   static String get cpr => '상점의 기록 심폐소생권으로 이동할까요? $itemAmount예요. '
       '구매하기를 눌러도 결제하지 않아요. 상점 화면에서 직접 구매해 주세요.';
 
@@ -245,7 +272,10 @@ abstract final class MiniBotCopy {
 }
 
 abstract final class MiniBotInterpreter {
-  static MiniBotRead interpret(String raw) {
+  static MiniBotRead interpret(
+    String raw, {
+    CompanyTournamentConfig? prizeConfig,
+  }) {
     final text = raw.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     if (text.isEmpty) {
       return const MiniBotRead(
@@ -324,6 +354,15 @@ abstract final class MiniBotInterpreter {
         intent: MiniBotIntent.chargeShare,
         destination: MiniBotDestination.shareCharge,
         reply: MiniBotCopy.charge,
+        needsConfirm: true,
+      );
+    }
+
+    if (text.contains('상금')) {
+      return MiniBotRead(
+        intent: MiniBotIntent.joinChallenge,
+        destination: MiniBotDestination.challengeLobby,
+        reply: MiniBotCopy.prizeRace(prizeConfig),
         needsConfirm: true,
       );
     }

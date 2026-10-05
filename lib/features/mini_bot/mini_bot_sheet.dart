@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/theme.dart';
+import '../../data/models/company_tournament_config.dart';
+import '../tournaments/providers/company_tournament_providers.dart';
 import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
 import 'mini_bot_voice.dart';
@@ -69,6 +72,7 @@ class MiniBotSheet extends StatefulWidget {
     this.voice,
     this.speech,
     this.onExecute,
+    this.prizeConfig,
   });
 
   /// Context that stays mounted after the sheet closes, used for navigation.
@@ -80,13 +84,28 @@ class MiniBotSheet extends StatefulWidget {
   /// When set, confirm calls this instead of navigating. Tests use it.
   final void Function(MiniBotRead read)? onExecute;
 
+  /// Server prize-race fees. Null until config has loaded.
+  final CompanyTournamentConfig? prizeConfig;
+
   static Future<void> show(BuildContext context) {
+    CompanyTournamentConfig? prizeConfig;
+    try {
+      prizeConfig = ProviderScope.containerOf(context, listen: false)
+          .read(companyTournamentConfigProvider)
+          .asData
+          ?.value;
+    } catch (_) {
+      prizeConfig = null;
+    }
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => MiniBotSheet(hostContext: context),
+      builder: (_) => MiniBotSheet(
+        hostContext: context,
+        prizeConfig: prizeConfig,
+      ),
     );
   }
 
@@ -143,7 +162,10 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     final text = raw.trim();
     if (text.isEmpty) return;
     if (_listening) unawaited(_speech.stop());
-    final read = MiniBotInterpreter.interpret(text);
+    final read = MiniBotInterpreter.interpret(
+      text,
+      prizeConfig: widget.prizeConfig,
+    );
     setState(() {
       _lines.add(_MiniBotLine(text: text, fromUser: true));
       _pending = read.awaitsConfirm ? read : null;

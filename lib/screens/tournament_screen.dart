@@ -6,9 +6,12 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
+import '../data/models/company_tournament_config.dart';
 import '../data/models/tournament_model.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/tournaments/providers/company_tournament_providers.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
+import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
 import 'sponsor_payment_screen.dart';
@@ -78,6 +81,10 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
     final extraEntryTickets =
         ref.watch(serverShopInventoryProvider).asData?.value.extraEntryCount ??
             0;
+    final configAsync = ref.watch(companyTournamentConfigProvider);
+    final freeTickets =
+        ref.watch(activeWalletProvider).asData?.value.freeTicketBalance ?? 0;
+    ref.watch(signupFreeTicketGrantProvider);
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final onDonation = Theme.of(context).colorScheme.onTertiary;
@@ -137,33 +144,15 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         ),
         SizedBox(height: tokens.spacing.md),
         for (final room in rooms)
-          _TournamentRoomCard(
-            key: _cardKeys.putIfAbsent(room.id, GlobalKey.new),
+          _roomCard(
             room: room,
             userTier: userTier,
-            highlighted: room.id == widget.initialTournamentId,
-            isJoined: joinedIds.contains(room.id),
-            canJoin: TournamentJoinGate.canAttemptJoin(
-              signedIn: authUser != null,
-              alreadyJoined: joinedIds.contains(room.id),
-              tournament: room,
-              userTier: userTier,
-              extraEntryTickets: extraEntryTickets,
-            ),
-            onJoin: authUser == null
-                ? null
-                : () => joinTournamentWithPreflight(
-                      context: context,
-                      ref: ref,
-                      tournament: room,
-                    ),
-            onSponsor: () => context.push(
-              RouteNames.sponsorPayment,
-              extra: SponsorPaymentArgs(
-                tournamentId: room.id,
-                tournamentTitle: room.title,
-              ),
-            ),
+            joined: joinedIds.contains(room.id),
+            signedIn: authUser != null,
+            extraEntryTickets: extraEntryTickets,
+            configLoading: configAsync.isLoading,
+            config: configAsync.asData?.value,
+            freeTickets: freeTickets,
           ),
         if (rooms.isEmpty)
           SrcSurfaceCard(
@@ -182,6 +171,70 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
       ],
     );
   }
+
+  Widget _roomCard({
+    required TournamentModel room,
+    required int userTier,
+    required bool joined,
+    required bool signedIn,
+    required int extraEntryTickets,
+    required bool configLoading,
+    required CompanyTournamentConfig? config,
+    required int freeTickets,
+  }) {
+    final quote = resolvePrizeRaceQuote(
+      tournament: room,
+      configLoading: configLoading,
+      config: config,
+    );
+    final ready = quote == null || quote.ready;
+    return _TournamentRoomCard(
+      key: _cardKeys.putIfAbsent(room.id, GlobalKey.new),
+      room: room,
+      userTier: userTier,
+      highlighted: room.id == widget.initialTournamentId,
+      isJoined: joined,
+      canJoin: TournamentJoinGate.canAttemptJoin(
+        signedIn: signedIn,
+        alreadyJoined: joined,
+        tournament: room,
+        userTier: userTier,
+        extraEntryTickets: extraEntryTickets,
+      ),
+      quote: quote,
+      freeTickets: freeTickets,
+      prizeReady: ready,
+      showTicketJoin: quote?.canUseTickets(freeTickets) ?? false,
+      onJoin: !signedIn
+          ? null
+          : () => joinTournamentWithPreflight(
+                context: context,
+                ref: ref,
+                tournament: room,
+                prizeEntryShare: quote != null && quote.ready ? quote.entryShare : null,
+                prizeTicketCost: quote?.ticketCost ?? 0,
+                freeTicketBalance: freeTickets,
+              ),
+      onTicketJoin: !signedIn || !(quote?.canUseTickets(freeTickets) ?? false)
+          ? null
+          : () => joinTournamentWithPreflight(
+                context: context,
+                ref: ref,
+                tournament: room,
+                entryMethod: 'ticket',
+                prizeEntryShare: quote!.entryShare,
+                prizeTicketCost: quote.ticketCost,
+                freeTicketBalance: freeTickets,
+              ),
+      onSponsor: () => context.push(
+        RouteNames.sponsorPayment,
+        extra: SponsorPaymentArgs(
+          tournamentId: room.id,
+          tournamentTitle: room.title,
+        ),
+      ),
+    );
+  }
 }
 
 class _TournamentRoomCard extends StatelessWidget {
@@ -193,6 +246,11 @@ class _TournamentRoomCard extends StatelessWidget {
     required this.canJoin,
     required this.onJoin,
     required this.onSponsor,
+    this.quote,
+    this.onTicketJoin,
+    this.freeTickets = 0,
+    this.prizeReady = true,
+    this.showTicketJoin = false,
     super.key,
   });
 
@@ -202,7 +260,12 @@ class _TournamentRoomCard extends StatelessWidget {
   final bool isJoined;
   final bool canJoin;
   final VoidCallback? onJoin;
+  final VoidCallback? onTicketJoin;
   final VoidCallback onSponsor;
+  final PrizeRaceQuote? quote;
+  final int freeTickets;
+  final bool prizeReady;
+  final bool showTicketJoin;
 
   @override
   Widget build(BuildContext context) {
@@ -267,14 +330,18 @@ class _TournamentRoomCard extends StatelessWidget {
           ),
           SizedBox(height: tokens.spacing.xxs + 2),
           Text(
-            '${room.targetDistanceKm.toStringAsFixed(1)}km / '
-            '${room.entryFeeShare} Share entry / '
-            '${room.recruitmentSummary}',
+            quote == null
+                ? '${room.targetDistanceKm.toStringAsFixed(1)}km / '
+                    '${room.entryFeeShare} Share entry / '
+                    '${room.recruitmentSummary}'
+                : '${room.targetDistanceKm.toStringAsFixed(1)}km / '
+                    '${quote!.costLabel(freeTickets)} / '
+                    '${room.recruitmentSummary}',
             style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
           ),
           SizedBox(height: tokens.spacing.xs),
           Text(
-            '${room.entryFeeShare} SHARE',
+            quote?.costLabel(freeTickets) ?? '${room.entryFeeShare} SHARE',
             style: textTheme.labelMedium?.copyWith(
               color: tokens.colors.accent,
               fontWeight: FontWeight.w800,
@@ -300,7 +367,7 @@ class _TournamentRoomCard extends StatelessWidget {
             children: [
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: canJoin ? onJoin : null,
+                  onPressed: canJoin && prizeReady ? onJoin : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: tokens.colors.primary,
                     foregroundColor: tokens.colors.onPrimary,
@@ -317,9 +384,11 @@ class _TournamentRoomCard extends StatelessWidget {
                                 ? '추가 참가권으로 참가'
                                 : room.isFull
                                     ? 'Room full'
-                                    : room.isRecruiting
-                                        ? 'Join with Share'
-                                        : 'Not recruiting',
+                                    : !room.isRecruiting
+                                        ? 'Not recruiting'
+                                        : quote != null
+                                            ? quote!.shareJoinLabel
+                                            : 'Join with Share',
                   ),
                 ),
               ),
@@ -337,6 +406,17 @@ class _TournamentRoomCard extends StatelessWidget {
               ),
             ],
           ),
+          if (showTicketJoin && !isJoined && !locked) ...[
+            SizedBox(height: tokens.spacing.xs),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onTicketJoin,
+                icon: const Icon(Icons.confirmation_number_outlined),
+                label: Text(quote?.ticketJoinLabel ?? '무료 참가권으로 참가'),
+              ),
+            ),
+          ],
           SizedBox(height: tokens.spacing.xs),
           Text(
             'Sponsor options: direct fixed prize support or UNICEF donation.',

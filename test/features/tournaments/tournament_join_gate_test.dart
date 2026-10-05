@@ -180,6 +180,57 @@ void main() {
     );
   });
 
+  test('prize race uses the config fee and tickets, not the room fee', () {
+    final race = _room(entryFeeShare: 99999, prizeTier: 'beginner');
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: race,
+        userTier: 1,
+        shareBalance: 600,
+        prizeEntryShare: 600,
+      ),
+      isNull,
+    );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: race,
+        userTier: 1,
+        shareBalance: 599,
+        prizeEntryShare: 600,
+      ),
+      'Share 잔액이 부족합니다.',
+    );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: race,
+        userTier: 1,
+        shareBalance: 0,
+        prizeEntryShare: 600,
+        prizeTicketCost: 1,
+        freeTicketBalance: 1,
+        payingWithTickets: true,
+      ),
+      isNull,
+    );
+    expect(
+      TournamentJoinGate.blockReason(
+        signedIn: true,
+        alreadyJoined: false,
+        tournament: race,
+        userTier: 1,
+        shareBalance: 0,
+        prizeEntryShare: 0,
+      ),
+      isNull,
+    );
+  });
+
   test('allows a recruiting room when SHARE and tier are valid', () {
     expect(
       TournamentJoinGate.blockReason(

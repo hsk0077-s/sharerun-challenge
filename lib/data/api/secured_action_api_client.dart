@@ -10,6 +10,7 @@ import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../../features/shop/cosmetics_catalog.dart';
 import '../../features/shop/shop_request_ids.dart';
+import '../models/company_tournament_config.dart';
 import '../models/pedometer_harvest_result.dart';
 import '../models/personal_sponsor_donation.dart';
 import '../models/share_to_dia_view.dart';
@@ -84,15 +85,30 @@ class SecuredActionApiClient {
   Future<TournamentJoinResult> joinTournament({
     required String tournamentId,
     bool useExtraEntry = false,
+    String entryMethod = 'share',
   }) async {
     final json = await _post(
       '/actions/tournaments/join',
       {
         'tournament_id': tournamentId,
         if (useExtraEntry) 'use_extra_entry': true,
+        if (entryMethod == 'ticket') 'entry_method': 'ticket',
       },
     );
     return TournamentJoinResult.fromJson(json);
+  }
+
+  Future<CompanyTournamentConfig> fetchCompanyTournamentConfig() async {
+    final json = await _get('/actions/company-tournament/config');
+    return CompanyTournamentConfig.fromJson(json);
+  }
+
+  /// Grants the one signup ticket when this account has never received it.
+  Future<int> ensureSignupFreeTicket() async {
+    final json = await _post('/actions/wallet/signup-ticket', const {});
+    final balance = json['free_ticket_balance'];
+    if (balance is num) return balance.toInt();
+    return 0;
   }
 
   Future<JenaValidationResult> validateRun({
@@ -526,14 +542,25 @@ class SecuredActionApiClient {
       },
       body: jsonEncode(body),
     );
+    return _decode(response);
+  }
 
+  Future<Map<String, dynamic>> _get(String path) async {
+    final token = await _firebaseIdToken();
+    final response = await _httpClient.get(
+      baseUri.resolve(path),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    return _decode(response);
+  }
+
+  Map<String, dynamic> _decode(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ApiException.fromHttpResponse(
         statusCode: response.statusCode,
         body: response.body,
       );
     }
-
     if (response.body.isEmpty) {
       return const {};
     }

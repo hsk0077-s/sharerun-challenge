@@ -13,6 +13,7 @@ from app.models.secured_actions import (
     RedeemReferralResult,
     RefundRequest,
     SecuredActionResult,
+    SignupFreeTicketResult,
     SettleTournamentFailureRequest,
     CoachPlusActivateRequest,
     CreateChallengeRoomRequest,
@@ -79,6 +80,12 @@ def collect_diamond_box(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.collect_diamond_box(uid=uid, request=request)
+
+
+@router.post("/wallet/signup-ticket", response_model=SignupFreeTicketResult)
+def ensure_signup_free_ticket(uid: str = Depends(require_uid)) -> SignupFreeTicketResult:
+    """One first-race ticket per account. A repeat call does not grant another."""
+    return service.ensure_signup_free_ticket(uid=uid)
 
 
 @router.post("/wallet/refund", response_model=SecuredActionResult)

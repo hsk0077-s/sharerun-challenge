@@ -441,3 +441,86 @@ def test_unknown_missing_tournament_stays_404() -> None:
     assert missing.value.detail == "User or tournament not found."
     assert "tournaments/not-a-room" not in db.store
     assert db.store["users/u1"]["wallet"]["shareBalance"] == 100000
+
+
+@pytest.mark.parametrize(
+    ("tier", "share_fee", "ticket_fee"),
+    [
+        ("beginner", 600, 1),
+        ("mid", 1_800, 1),
+        ("advanced", 3_000, 2),
+        ("half", 4_200, 3),
+    ],
+)
+def test_prize_tiers_charge_config_share_or_tickets(
+    tier: str,
+    share_fee: int,
+    ticket_fee: int,
+) -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user(share=10_000)
+    db.store["tournaments/race"] = _prize_room(tier, entryFeeShare=99999)
+
+    share_join = _join(db, "u1", "race")
+
+    assert share_join.share_credited == -share_fee
+    assert db.store["users/u1"]["wallet"]["shareBalance"] == 10_000 - share_fee
+    assert db.store["tournaments/race"]["entryFeeShare"] == 99999
+    assert _ledger(db)["shareAmount"] == -share_fee
+    assert _ledger(db)["ticketAmount"] == 0
+
+    ticket_db = _MemoryDb()
+    ticket_db.store["users/u1"] = _prize_user(share=10_000, tickets=ticket_fee)
+    ticket_db.store["tournaments/race"] = _prize_room(tier, entryFeeShare=99999)
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=ticket_db))
+    request = JoinTournamentRequest(
+        tournament_id="race",
+        diamond_deposit=0,
+        entry_method="ticket",
+    )
+    ticket_join = _commit_join_tx.to_wrap(
+        _MemoryTxn(),
+        service,
+        "u1",
+        request,
+        ticket_db.collection("users").document("u1"),
+        ticket_db.collection("tournaments").document("race"),
+        ticket_db.collection("tournaments")
+        .document("race")
+        .collection("participants")
+        .document("u1"),
+    )
+    assert ticket_join.status == "joined_ticket"
+    assert ticket_join.share_credited == 0
+    assert ticket_db.store["users/u1"]["wallet"]["shareBalance"] == 10_000
+    assert ticket_db.store["users/u1"]["wallet"]["freeTicketBalance"] == 0
+    assert _ledger(ticket_db)["ticketAmount"] == -ticket_fee
+    assert _ledger(ticket_db)["shareAmount"] == 0
+
+
+def test_final_rejects_tickets_and_stays_free_for_qualified_users() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user(share=0, tickets=3, seasonQualified=True)
+    db.store["tournaments/finals"] = _prize_room("final", entryFeeShare=99999)
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    request = JoinTournamentRequest(
+        tournament_id="finals",
+        diamond_deposit=0,
+        entry_method="ticket",
+    )
+    with pytest.raises(HTTPException) as rejected:
+        _commit_join_tx.to_wrap(
+            _MemoryTxn(),
+            service,
+            "u1",
+            request,
+            db.collection("users").document("u1"),
+            db.collection("tournaments").document("finals"),
+            db.collection("tournaments")
+            .document("finals")
+            .collection("participants")
+            .document("u1"),
+        )
+    assert rejected.value.status_code == 400
+    assert db.store["users/u1"]["wallet"]["freeTicketBalance"] == 3
+    assert "tournaments/finals/participants/u1" not in db.store

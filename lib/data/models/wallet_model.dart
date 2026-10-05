@@ -4,6 +4,7 @@ class WalletModel {
     required this.diamondBalance,
     required this.valueTokenBalance,
     required this.totalDonationValue,
+    this.freeTicketBalance = 0,
   });
 
   final int shareBalance;
@@ -11,17 +12,22 @@ class WalletModel {
   final int valueTokenBalance;
   final int totalDonationValue;
 
+  /// Server-granted first-race tickets. Clients do not write this.
+  final int freeTicketBalance;
+
   WalletModel copyWith({
     int? shareBalance,
     int? diamondBalance,
     int? valueTokenBalance,
     int? totalDonationValue,
+    int? freeTicketBalance,
   }) {
     return WalletModel(
       shareBalance: shareBalance ?? this.shareBalance,
       diamondBalance: diamondBalance ?? this.diamondBalance,
       valueTokenBalance: valueTokenBalance ?? this.valueTokenBalance,
       totalDonationValue: totalDonationValue ?? this.totalDonationValue,
+      freeTicketBalance: freeTicketBalance ?? this.freeTicketBalance,
     );
   }
 
@@ -58,6 +64,9 @@ class WalletModel {
       totalDonationValue: _readInt(raw, const [
         'totalDonationValue',
         'donationValue',
+      ]),
+      freeTicketBalance: _readInt(raw, const [
+        'freeTicketBalance',
       ]),
     );
   }

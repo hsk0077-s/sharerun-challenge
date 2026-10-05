@@ -26,6 +26,10 @@ Future<bool> joinTournamentWithPreflight({
   required BuildContext context,
   required WidgetRef ref,
   required TournamentModel tournament,
+  String entryMethod = 'share',
+  int? prizeEntryShare,
+  int prizeTicketCost = 0,
+  int freeTicketBalance = 0,
 }) async {
   // Capture the root container before any await. WidgetRef.read after the
   // join button unmounts throws:
@@ -117,6 +121,7 @@ Future<bool> joinTournamentWithPreflight({
             .extraEntryCount,
       ) ??
       0;
+  final payingWithTickets = entryMethod == 'ticket';
   final blocked = TournamentJoinGate.blockReason(
     signedIn: true,
     alreadyJoined: alreadyPaid,
@@ -124,6 +129,10 @@ Future<bool> joinTournamentWithPreflight({
     userTier: userTier,
     shareBalance: shareBalance,
     extraEntryTickets: extraEntryTickets,
+    prizeEntryShare: prizeEntryShare,
+    prizeTicketCost: prizeTicketCost,
+    freeTicketBalance: freeTicketBalance,
+    payingWithTickets: payingWithTickets,
   );
   if (blocked != null) {
     if (kDebugMode) {
@@ -147,23 +156,28 @@ Future<bool> joinTournamentWithPreflight({
   }
 
   var unlock = false;
+  final chargedShare = payingWithTickets
+      ? 0
+      : (prizeEntryShare ?? tournament.entryFeeShare);
   try {
     TournamentJoinPlan plan;
     try {
       final result =
           await container.read(tournamentRepositoryProvider).joinTournament(
                 tournament: tournament,
-                useExtraEntry: extraEntryTickets > 0 &&
+                useExtraEntry: !payingWithTickets &&
+                    extraEntryTickets > 0 &&
                     TournamentJoinGate.extraEntryCanOpen(tournament),
+                entryMethod: entryMethod,
               );
       plan = TournamentJoinPlanner.fromJenaSuccess(
         result: result,
-        entryFeeShare: tournament.entryFeeShare,
+        entryFeeShare: chargedShare,
       );
     } catch (error) {
       plan = TournamentJoinPlanner.fromJenaError(
         error: error,
-        entryFeeShare: tournament.entryFeeShare,
+        entryFeeShare: chargedShare,
         debugMode: kDebugMode,
         alreadyLocallyJoined: DebugLocalJoinLedger.alreadyPaid(
           localJoinedIds: durablePaid,
@@ -175,7 +189,7 @@ Future<bool> joinTournamentWithPreflight({
     if (kDebugMode) {
       debugPrint(
         '${plan.debugLog} tournament=${tournament.id} '
-        'fee=${tournament.entryFeeShare} persist=${plan.persistLocalJoin}',
+        'fee=$chargedShare persist=${plan.persistLocalJoin}',
       );
     }
 

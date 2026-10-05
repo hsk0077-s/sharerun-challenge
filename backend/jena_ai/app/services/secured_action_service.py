@@ -19,6 +19,7 @@ from app.models.secured_actions import (
     ShareToDiaView,
     CreateChallengeRoomResult,
     SecuredActionResult,
+    SignupFreeTicketResult,
     SettleTournamentFailureRequest,
     ValidateRunRequest,
     Web3TransferRequest,
@@ -165,6 +166,14 @@ _BUILTIN_ROOMS = {
 _OPEN_TIER_ROOM_IDS = frozenset({"beginner-1km-room", "beginner-1km-room-01"})
 
 
+# One first-race ticket. The ledger id is the idempotency key.
+SIGNUP_FREE_TICKET_COUNT = 1
+
+
+def signup_free_ticket_id(uid: str) -> str:
+    return f"signup_free_ticket_{uid}"
+
+
 class InviteCodeCollision(Exception):
     """`referralCodes/{code}` is already owned by a different user."""
 
@@ -210,6 +219,12 @@ class SecuredActionService:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_signup_reward_tx(transaction, self, uid, user_ref)
+
+    def ensure_signup_free_ticket(self, uid: str) -> SignupFreeTicketResult:
+        """Grant the one signup ticket if this account has never received it."""
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_signup_free_ticket_tx(transaction, self, uid, user_ref)
 
     def claim_streak_bonus(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
@@ -1524,12 +1539,14 @@ class SecuredActionService:
             amount=reward,
             tx_type="onboarding_signup_reward",
         )
+        self._grant_signup_free_ticket(transaction, uid, user, user_ref)
         transaction.update(
             user_ref,
             {
                 "economy": {
                     **economy,
                     "signupRewardClaimed": True,
+                    "signupFreeTicketGranted": True,
                     "referralCode": referral_code,
                     "referralPayoutCount": int(economy.get("referralPayoutCount") or 0),
                     "trialRunCount": int(economy.get("trialRunCount") or 0),
@@ -1545,6 +1562,69 @@ class SecuredActionService:
             status="claimed",
             reason=f"Signup reward of {reward} SRV credited.",
         )
+
+    def _grant_signup_free_ticket_tx(
+        self,
+        transaction,
+        uid: str,
+        user_ref,
+    ) -> SignupFreeTicketResult:
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            raise HTTPException(status_code=404, detail="User not found.")
+        user = user_snapshot.to_dict() or {}
+        balance, status_name = self._grant_signup_free_ticket(
+            transaction, uid, user, user_ref
+        )
+        return SignupFreeTicketResult(
+            accepted=True,
+            status=status_name,
+            free_ticket_balance=balance,
+        )
+
+    def _grant_signup_free_ticket(
+        self,
+        transaction,
+        uid: str,
+        user: dict,
+        user_ref,
+    ) -> tuple[int, str]:
+        """Credit one ticket unless the flag or the ledger row already exists."""
+        economy = user.get("economy") or {}
+        owned = int((user.get("wallet") or {}).get("freeTicketBalance") or 0)
+        ledger_ref = self.firebase_service.db.collection("walletTransactions").document(
+            signup_free_ticket_id(uid)
+        )
+        ledger_exists = ledger_ref.get(transaction=transaction).exists
+        flagged = economy.get("signupFreeTicketGranted") is True
+        if flagged or ledger_exists:
+            if not flagged:
+                transaction.update(
+                    user_ref,
+                    {
+                        "economy": {**economy, "signupFreeTicketGranted": True},
+                        "updatedAt": SERVER_TIMESTAMP,
+                    },
+                )
+            return owned, "already_granted"
+        transaction.update(
+            user_ref,
+            {
+                "wallet.freeTicketBalance": owned + SIGNUP_FREE_TICKET_COUNT,
+                "economy": {**economy, "signupFreeTicketGranted": True},
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+        )
+        transaction.set(
+            ledger_ref,
+            {
+                "uid": uid,
+                "type": "signup_free_ticket",
+                "ticketAmount": SIGNUP_FREE_TICKET_COUNT,
+                "createdAt": SERVER_TIMESTAMP,
+            },
+        )
+        return owned + SIGNUP_FREE_TICKET_COUNT, "granted"
 
     def _claim_streak_bonus_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
@@ -2433,6 +2513,8 @@ class SecuredActionService:
         request: JoinTournamentRequest,
     ) -> SecuredActionResult:
         self._ensure_email_verified(uid)
+        # Existing accounts receive the one signup ticket before the fee check.
+        self.ensure_signup_free_ticket(uid)
         transaction = self.firebase_service.db.transaction()
         tournament_ref = self.firebase_service.db.collection("tournaments").document(
             request.tournament_id
@@ -3643,6 +3725,16 @@ def _commit_signup_reward_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._claim_signup_reward_tx(transaction, uid, user_ref)
+
+
+@firestore.transactional
+def _commit_signup_free_ticket_tx(
+    transaction,
+    service,
+    uid: str,
+    user_ref,
+) -> SignupFreeTicketResult:
+    return service._grant_signup_free_ticket_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

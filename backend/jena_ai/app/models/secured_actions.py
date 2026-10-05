@@ -205,6 +205,12 @@ class ShareToDiaView(BaseModel):
     value_token_balance: int | None = None
 
 
+class SignupFreeTicketResult(BaseModel):
+    accepted: bool
+    status: str
+    free_ticket_balance: int
+
+
 class SecuredActionResult(BaseModel):
     accepted: bool
     status: str

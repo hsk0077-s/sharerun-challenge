@@ -22,6 +22,7 @@ class JenaValidationResult {
     required this.decision,
     required this.reason,
     required this.valueTokenReward,
+    this.reasonCode = '',
   });
 
   final bool verified;
@@ -29,8 +30,12 @@ class JenaValidationResult {
   final String reason;
   final int valueTokenReward;
 
+  /// Server `reason_code`. The screen maps this to plain Korean.
+  final String reasonCode;
+
   factory JenaValidationResult.fromJson(Map<String, dynamic> json) {
     final decisionCode = json['decision'] as String? ?? 'rejected_unknown';
+    final rawCode = json['reason_code'] ?? json['reasonCode'];
 
     return JenaValidationResult(
       verified: json['verified'] as bool? ?? false,
@@ -42,6 +47,7 @@ class JenaValidationResult {
         _ => JenaDecision.rejectedUnknown,
       },
       reason: json['reason'] as String? ?? 'No reason provided.',
+      reasonCode: rawCode is String ? rawCode : '',
       valueTokenReward: (json['value_token_reward'] as num?)?.toInt() ?? 0,
     );
   }

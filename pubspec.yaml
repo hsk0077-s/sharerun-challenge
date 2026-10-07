@@ -42,6 +42,8 @@ dependencies:
   # In-sheet mini-bot mic. 7.5.0 needs Dart 3.12; 7.4.0 stays on this SDK floor.
   speech_to_text: 7.4.0
   share_plus: ^12.0.2
+  # App version on the run record. Already in the lockfile via other plugins.
+  package_info_plus: 9.0.1
 
 dev_dependencies:
   flutter_test:

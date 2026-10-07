@@ -313,7 +313,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    const finishText = 'SRC 앱에서 8.35km 완주 후 기부에 동참했습니다! '
+    const finishText = 'SRC 앱에서 8.35km를 달렸어요. '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
     expect(sent, isNotNull);
     expect(sent!.text, finishText);
@@ -694,7 +694,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    const finishText = 'SRC 앱에서 8.35km 완주 후 기부에 동참했습니다! '
+    const finishText = 'SRC 앱에서 8.35km를 달렸어요. '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
     expect(kakaoText, isNull);
     expect(sent, isNotNull);
@@ -748,7 +748,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    const finishText = 'SRC 앱에서 8.35km 완주 후 기부에 동참했습니다! '
+    const finishText = 'SRC 앱에서 8.35km를 달렸어요. '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
     expect(kakaoText, finishText);
     expect(kakaoText, isNot(WalkingChallengeShare.promoText));

@@ -124,6 +124,7 @@ from app.services.streak_protection import (
     CPR_ITEM_ID,
     grant_coach_plus_cpr,
     is_rest_pause,
+    kst_month_key,
     maybe_grant_coach_plus_cpr,
     metric_qualifies,
     purchase_streak_item,
@@ -131,7 +132,11 @@ from app.services.streak_protection import (
     use_streak_item,
 )
 from app.services.personal_sponsor import donate_personal_sponsor as _donate_personal_sponsor
-from app.services.value_items import purchase_value_item, use_value_item
+from app.services.value_items import (
+    COMPANY_SPONSOR_NAME,
+    purchase_value_item,
+    use_value_item,
+)
 from app.services.wallet_funding import (
     assign_free_balances,
     exchange_spendable,
@@ -149,6 +154,21 @@ from app.services.share_activity_items import (
 
 
 _NICKNAME_PATTERN = re.compile(r"^[가-힣a-zA-Z0-9]{2,12}$")
+
+# Company donates this many won per verified kilometre. No monthly cap here.
+VERIFIED_RUN_DONATION_KRW_PER_KM = 100
+
+
+def verified_run_donation_won(distance_km: float) -> int:
+    if distance_km <= 0:
+        return 0
+    return int(round(distance_km * VERIFIED_RUN_DONATION_KRW_PER_KM))
+
+
+def _stored_donation_won(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return 0
+    return int(value)
 
 _COACH_PLUS_DAYS = {
     "coach_plus_monthly": 32,
@@ -988,6 +1008,27 @@ class SecuredActionService:
         ).document(f"crew_cheer_{activity_ref.id}")
         cheer_already = cheer_ledger_ref.get(transaction=transaction).exists
 
+        company_won = (
+            verified_run_donation_won(request.distance_km) if result.verified else 0
+        )
+        donation_counted = company_won > 0
+        if donation_counted:
+            donation_reason = ""
+        elif result.verified:
+            donation_reason = "거리가 짧아 기부 금액이 없어요."
+        else:
+            donation_reason = result.reason or ""
+        raw_name = user.get("nickname")
+        contributor = (
+            raw_name.strip()[:12]
+            if isinstance(raw_name, str) and raw_name.strip()
+            else "회원"
+        )
+        donation_ref = self.firebase_service.db.collection("donationLedger").document(
+            f"verified_run_{activity_ref.id}"
+        )
+        donation_exists = donation_ref.get(transaction=transaction).exists
+
         route = [
             point.model_dump() if hasattr(point, "model_dump") else point.dict()
             for point in request.gps_route
@@ -1019,6 +1060,9 @@ class SecuredActionService:
                 "validationFinalized": True,
                 "effortValueMinted": bool(result.verified and reward_tokens > 0),
                 "depositForfeited": bool(result.forfeit_deposit),
+                "companyDonationWon": company_won if donation_counted else 0,
+                "donationCounted": donation_counted,
+                "donationReason": donation_reason,
                 "sensitiveArraysStored": False,
                 "completedAt": SERVER_TIMESTAMP,
                 "updatedAt": SERVER_TIMESTAMP,
@@ -1027,6 +1071,23 @@ class SecuredActionService:
             },
             merge=True,
         )
+        if donation_counted and not donation_exists:
+            transaction.set(
+                donation_ref,
+                {
+                    "uid": uid,
+                    "type": "verified_run_donation",
+                    "activityId": activity_ref.id,
+                    "distanceKm": request.distance_km,
+                    "krwPerKm": VERIFIED_RUN_DONATION_KRW_PER_KM,
+                    "companyWon": company_won,
+                    "monthKey": kst_month_key(current),
+                    "sponsorName": COMPANY_SPONSOR_NAME,
+                    "contributorName": contributor,
+                    "receiptIssued": False,
+                    "createdAt": SERVER_TIMESTAMP,
+                },
+            )
 
         user_updates: dict = {"updatedAt": SERVER_TIMESTAMP}
         economy_updates: dict = {}
@@ -1133,6 +1194,9 @@ class SecuredActionService:
             daily_cap_applied=daily_cap_applied,
             trial_run_count=trial_run_count if result.verified else None,
             trial_milestone_reached=trial_milestone_reached,
+            company_donation_won=company_won if donation_counted else 0,
+            donation_counted=donation_counted,
+            donation_reason=donation_reason,
         )
 
     SHOP_CATALOG: dict[str, dict] = {
@@ -2868,6 +2932,13 @@ class SecuredActionService:
         )
 
     def _validation_result_from_activity(self, activity: dict) -> ValidationResult:
+        won = _stored_donation_won(activity.get("companyDonationWon"))
+        counted = activity.get("donationCounted") is True and won > 0
+        reason = activity.get("donationReason")
+        if not isinstance(reason, str):
+            reason = ""
+        if not counted and not reason and activity.get("jenaVerified") is not True:
+            reason = activity.get("jenaReason") or ""
         return ValidationResult(
             verified=bool(activity.get("jenaVerified")),
             decision=activity.get("jenaDecision") or "rejected_unknown",
@@ -2878,6 +2949,9 @@ class SecuredActionService:
             trial_run_count=activity.get("trialRunCount"),
             trial_milestone_reached=bool(activity.get("trialMilestoneReached")),
             forfeit_deposit=bool(activity.get("depositForfeited")),
+            company_donation_won=won if counted else 0,
+            donation_counted=counted,
+            donation_reason="" if counted else reason,
         )
 
     def get_company_tournament_config(self, uid: str | None = None) -> dict:

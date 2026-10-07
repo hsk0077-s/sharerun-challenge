@@ -472,7 +472,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       if (!mounted) return;
       if (!result.verified) {
         await showVerificationRejectedDialog(context, result);
-        return;
+        if (!mounted) return;
       }
       setState(() => _validating = false);
       await Navigator.push(
@@ -482,7 +482,13 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             distanceKm: distanceKm,
             durationSeconds: durationSeconds,
             valueTokenReward: result.valueTokenReward,
-            serverConfirmed: true,
+            serverConfirmed: result.verified,
+            serverAnswered: true,
+            companyDonationWon: result.companyDonationWon,
+            donationCounted: result.donationCounted,
+            donationReason: result.verified
+                ? result.donationReason
+                : verificationUserMessage(result),
           ),
         ),
       );

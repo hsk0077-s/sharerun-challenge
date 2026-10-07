@@ -53,12 +53,28 @@ void main() {
     OnboardingRunResultScreen.debugPickPhoto = null;
   });
 
-  test('donation line is omitted when this run has no won amount', () {
+  test('donation line is the server amount, or omitted', () {
     expect(runFinishDonationLine(null), isNull);
     expect(runFinishDonationLine(0), isNull);
     expect(
       runFinishDonationLine(3200),
-      '이 달리기로 3,200원 기부에 함께했어요',
+      '이번 달리기로 회사가 3,200원을 기부해요',
+    );
+    expect(
+      runFinishDonationSkippedLine(''),
+      '이번 달리기는 기부에 포함되지 않았어요.',
+    );
+    expect(
+      runFinishDonationSkippedLine('심박 곡선이 평평합니다.'),
+      '이번 달리기는 기부에 포함되지 않았어요. 심박 곡선이 평평합니다.',
+    );
+    expect(
+      runFinishShareText(distanceKm: '2.40', time: '12:00', donationWon: 200),
+      '이번 달리기로 회사가 200원을 기부해요. SRC 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
+    );
+    expect(
+      runFinishShareText(distanceKm: '2.40', time: '12:00'),
+      'SRC 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
     );
   });
 
@@ -103,7 +119,7 @@ void main() {
       ),
     );
 
-    expect(find.text('이 달리기로 3,200원 기부에 함께했어요'), findsOneWidget);
+    expect(find.text('이번 달리기로 회사가 3,200원을 기부해요'), findsOneWidget);
     expect(find.textContaining('초대'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -420,7 +436,7 @@ void main() {
     expect(find.text('28:15'), findsOneWidget);
     expect(find.text("5'23\""), findsOneWidget);
     expect(find.text('/km'), findsOneWidget);
-    expect(find.text('이 달리기로 3,200원 기부에 함께했어요'), findsOneWidget);
+    expect(find.text('이번 달리기로 회사가 3,200원을 기부해요'), findsOneWidget);
     expect(find.text(RunFinishShareCard.headline), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

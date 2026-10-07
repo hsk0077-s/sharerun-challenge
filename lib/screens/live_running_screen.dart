@@ -466,17 +466,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       session.discardAllSensitive();
       session = null;
       if (!mounted) return;
-      if (!result.verified) {
-        final reason = result.reason.trim();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              reason.isEmpty ? AppStrings.runValidationFailed : reason,
-            ),
-          ),
-        );
-        return;
-      }
       setState(() => _validating = false);
       await Navigator.push(
         context,
@@ -485,7 +474,11 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             distanceKm: distanceKm,
             durationSeconds: durationSeconds,
             valueTokenReward: result.valueTokenReward,
-            serverConfirmed: true,
+            serverConfirmed: result.verified,
+            serverAnswered: true,
+            companyDonationWon: result.companyDonationWon,
+            donationCounted: result.donationCounted,
+            donationReason: result.donationReason,
           ),
         ),
       );

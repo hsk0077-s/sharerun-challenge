@@ -49,10 +49,30 @@ String runFinishDateLabel(DateTime date) {
   return '${date.month}월 ${date.day}일 ${weekdays[date.weekday - 1]}';
 }
 
-/// Warm line. Null when this run has no confirmed won amount.
+/// Company donation the server recorded. Null when nothing was counted.
 String? runFinishDonationLine(int? won) {
   if (won == null || won <= 0) return null;
-  return '이 달리기로 ${_grouped(won)}원 기부에 함께했어요';
+  return '이번 달리기로 회사가 ${_grouped(won)}원을 기부해요';
+}
+
+/// Server did not count a donation. [reason] is the server's explanation.
+String runFinishDonationSkippedLine(String reason) {
+  final detail = reason.trim();
+  const lead = '이번 달리기는 기부에 포함되지 않았어요.';
+  if (detail.isEmpty) return lead;
+  return '$lead $detail';
+}
+
+/// Share text. Donation wording is included only for a server-counted amount.
+String runFinishShareText({
+  required String distanceKm,
+  required String time,
+  int? donationWon,
+}) {
+  final record = 'SRC 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time';
+  final donation = runFinishDonationLine(donationWon);
+  if (donation == null) return record;
+  return '$donation. $record';
 }
 
 String _grouped(int value) {

@@ -43,6 +43,10 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
     this.durationSeconds = 0,
     this.valueTokenReward = 0,
     this.serverConfirmed = false,
+    this.serverAnswered = false,
+    this.companyDonationWon = 0,
+    this.donationCounted = false,
+    this.donationReason = '',
   });
 
   /// Tracked kilometres passed through server validation.
@@ -56,6 +60,18 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
 
   /// True only after the server marked the run verified.
   final bool serverConfirmed;
+
+  /// True after POST /actions/runs/validate returned, including a rejection.
+  final bool serverAnswered;
+
+  /// `company_donation_won` from the validate response. Not kilometres × 100.
+  final int companyDonationWon;
+
+  /// `donation_counted` from the validate response.
+  final bool donationCounted;
+
+  /// Why the server did not count a donation. Empty when it did.
+  final String donationReason;
 
   static const photoGalleryKey = Key('run-finish-photo-gallery');
   static const photoCameraKey = Key('run-finish-photo-camera');
@@ -91,6 +107,15 @@ class _OnboardingRunResultScreenState
 
   String get _paceLabel =>
       _formatRunPace(widget.distanceKm, widget.durationSeconds);
+
+  int? get _serverDonationWon =>
+      widget.serverConfirmed && widget.donationCounted
+          ? widget.companyDonationWon
+          : null;
+
+  String get _donationStatus =>
+      runFinishDonationLine(_serverDonationWon) ??
+      runFinishDonationSkippedLine(widget.donationReason);
 
   @override
   void initState() {
@@ -166,6 +191,7 @@ class _OnboardingRunResultScreenState
       time: _timeLabel,
       pace: _paceLabel,
       date: _finishedOn,
+      donationWon: _serverDonationWon,
       photo: style == RunFinishCardTheme.photo ? _photo : null,
       frameColor: cosmeticAccentColor(accent),
     );
@@ -263,8 +289,11 @@ class _OnboardingRunResultScreenState
   }
 
   Future<void> _onShare(BuildContext buttonContext) async {
-    final shareText = 'SRC 앱에서 ${_distanceLabel}km 완주 후 기부에 동참했습니다! '
-        '⏱ 기록: $_timeLabel';
+    final shareText = runFinishShareText(
+      distanceKm: _distanceLabel,
+      time: _timeLabel,
+      donationWon: _serverDonationWon,
+    );
 
     try {
       await WalkingChallengeShare.openChooser(
@@ -288,11 +317,29 @@ class _OnboardingRunResultScreenState
             child: Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 28),
-                child: Text(
-                  AppStrings.runResultUnconfirmed,
-                  style: AppTextStyles.header1.copyWith(fontSize: 18),
-                  textAlign: TextAlign.center,
-                ),
+                child: widget.serverAnswered
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _donationStatus,
+                            key: const Key('run-finish-donation-status'),
+                            style: AppTextStyles.header1.copyWith(fontSize: 18),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
+                          _RecordCard(
+                            distance: '$_distanceLabel km',
+                            time: _timeLabel,
+                            pace: _paceLabel,
+                          ),
+                        ],
+                      )
+                    : Text(
+                        AppStrings.runResultUnconfirmed,
+                        style: AppTextStyles.header1.copyWith(fontSize: 18),
+                        textAlign: TextAlign.center,
+                      ),
               ),
             ),
           ),
@@ -383,25 +430,25 @@ class _OnboardingRunResultScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Material(
-                          color: AppColors.primaryMint.withValues(alpha: 0.35),
-                          borderRadius:
-                              BorderRadius.circular(AppShapes.cardRadius),
-                          clipBehavior: Clip.antiAlias,
-                          child: InkWell(
-                            onTap: null,
-                            child: SizedBox(
-                              height: AppShapes.buttonHeight,
-                              child: Center(
-                                child: Text(
-                                  AppStrings.runResultDonatePending,
-                                  style: AppTextStyles.buttonText.copyWith(
-                                    color: AppColors.textBlack,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
+                        Container(
+                          key: const Key('run-finish-donation-status'),
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceWhite,
+                            borderRadius:
+                                BorderRadius.circular(AppShapes.cardRadius),
+                          ),
+                          child: Text(
+                            _donationStatus,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.buttonText.copyWith(
+                              color: AppColors.textBlack,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),

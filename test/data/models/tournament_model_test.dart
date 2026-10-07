@@ -94,7 +94,8 @@ void main() {
 
       expect(room.hasCapacityLimit, isFalse);
       expect(room.isFull, isFalse);
-      expect(room.recruitmentSummary, '99/10 BEP');
+      expect(room.recruitmentSummary, '참가자 99명');
+      expect(room.recruitmentSummary, isNot(contains('BEP')));
     });
 
     test('marks room full when participant count reaches cap', () {
@@ -102,7 +103,8 @@ void main() {
 
       expect(room.hasCapacityLimit, isTrue);
       expect(room.isFull, isTrue);
-      expect(room.recruitmentSummary, '20/10 BEP · 20/20 capacity');
+      expect(room.recruitmentSummary, '참가자 20/20명');
+      expect(room.recruitmentSummary, isNot(contains('BEP')));
     });
   });
 }

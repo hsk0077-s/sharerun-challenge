@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/data/models/company_tournament_config.dart';
 import 'package:share_run_challenge/data/models/tournament_model.dart';
+import 'package:share_run_challenge/features/tournaments/utils/prize_display.dart';
 import 'package:share_run_challenge/features/tournaments/utils/prize_race_entry.dart';
 
 TournamentModel _race(String tier) {
@@ -170,5 +171,76 @@ void main() {
     expect(quote.tierTicketJoinLabel, '중급 참가권으로 참가');
     expect(quote.tierTicketJoinLabel, isNot(contains('원')));
     expect(quote.costLabel(0), isNot(contains('원')));
+  });
+
+  test('prize copy uses the server DIA total and won rate', () {
+    final config = CompanyTournamentConfig.fromJson({
+      'diaKrw': 100,
+      'tiers': {
+        'beginner': {
+          'entryShare': 300,
+          'freeTicketCost': 1,
+          'prizeDiaByRank': {'1': 1000, '2': 500, '3': 300},
+        },
+      },
+    });
+    expect(config.diaKrw, 100);
+    expect(config.tier('beginner')!.advertisedPrizeDia, 1800);
+    expect(
+      prizePoolLine(
+        room: _race('beginner'),
+        configLoading: false,
+        config: config,
+      ),
+      '18만 원 상당 다이아',
+    );
+
+    final advertised = CompanyTournamentConfig.fromJson({
+      'diaKrw': 100,
+      'tiers': {
+        'mid': {
+          'entryShare': 1200,
+          'freeTicketCost': 1,
+          'advertisedPrizeDia': 7200,
+          'prizeDiaByRank': {'1': 1},
+        },
+      },
+    });
+    expect(
+      prizePoolLine(
+        room: _race('mid'),
+        configLoading: false,
+        config: advertised,
+      ),
+      '72만 원 상당 다이아',
+    );
+  });
+
+  test('a missing won rate does not invent a prize amount', () {
+    final config = CompanyTournamentConfig.fromJson({
+      'tiers': {
+        'beginner': {
+          'entryShare': 300,
+          'freeTicketCost': 1,
+          'advertisedPrizeDia': 1800,
+        },
+      },
+    });
+    expect(
+      prizePoolLine(
+        room: _race('beginner'),
+        configLoading: false,
+        config: config,
+      ),
+      '상금을 불러오지 못했어요',
+    );
+    expect(
+      prizePoolLine(
+        room: _race('beginner'),
+        configLoading: true,
+        config: null,
+      ),
+      '상금을 확인하는 중이에요',
+    );
   });
 }

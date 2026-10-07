@@ -58,12 +58,12 @@ class TournamentModel {
 
   bool get isFull => hasCapacityLimit && participantCount >= maxParticipants;
 
+  /// Headcount users see. The minimum-to-open figure stays off this line.
   String get recruitmentSummary {
-    final bep = '$participantCount/$minParticipantsBep BEP';
     if (hasCapacityLimit) {
-      return '$bep · $participantCount/$maxParticipants capacity';
+      return '참가자 $participantCount/$maxParticipants명';
     }
-    return bep;
+    return '참가자 $participantCount명';
   }
 
   bool get _prizeTakenFromEntryFee {

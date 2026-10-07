@@ -25,7 +25,8 @@ class ServerItemUseButton extends ConsumerStatefulWidget {
   /// Disables the button at quantity 0 and replaces the count with this hint.
   final String? emptyHint;
 
-  /// Stops further taps after this many confirmed uses. Display stays server-side.
+  /// Stops further taps after this many confirmed uses.
+  /// The label uses the server count, and never prints a count above this.
   final int? maxUses;
   final Alignment alignment;
 
@@ -49,13 +50,15 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
             ?.value
             .countFor(widget.itemId) ??
         0;
-    final atCap = widget.maxUses != null && _used >= widget.maxUses!;
+    final cap = widget.maxUses;
+    final atCap = cap != null && _used >= cap;
     final showBuyHint = count <= 0 && widget.emptyHint != null;
+    final shown = cap == null || count <= cap ? count : cap;
     final text = showBuyHint
         ? '${widget.label} · ${widget.emptyHint}'
-        : widget.maxUses == null
+        : cap == null
             ? '${widget.label} · 보유 $count'
-            : '${widget.label} · 보유 $count/${widget.maxUses}';
+            : '${widget.label} · 보유 $shown/$cap';
     final blocked = atCap || showBuyHint;
     return Align(
       alignment: widget.alignment,

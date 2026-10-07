@@ -83,10 +83,11 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
           for (final room in rooms) ...[
             _OpenRoomCard(
               title: room.title,
-              subtitle:
-                  '${room.targetDistanceKm.toStringAsFixed(0)}km · '
-                  '${room.participantCount}/${room.maxParticipants}명 · '
-                  'BEP ${((room.participantCount / room.minParticipantsBep.clamp(1, 1 << 20)) * 100).clamp(0, 999).toStringAsFixed(0)}%',
+              subtitle: room.maxParticipants > 0
+                  ? '${room.targetDistanceKm.toStringAsFixed(0)}km · '
+                      '${room.participantCount}/${room.maxParticipants}명'
+                  : '${room.targetDistanceKm.toStringAsFixed(0)}km · '
+                      '참가자 ${room.participantCount}명',
               onEnter: () => _onOpenLiveRoom(room),
             ),
             SizedBox(height: tokens.spacing.sm),
@@ -501,4 +502,3 @@ class _FeaturedRoomCard extends StatelessWidget {
     );
   }
 }
-

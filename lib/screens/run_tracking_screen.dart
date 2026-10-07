@@ -10,6 +10,9 @@ import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
+import '../data/models/user_model.dart';
+import '../features/jena_validation/models/jena_validation_result.dart';
+import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
 import 'run_result_screen.dart';
@@ -201,10 +204,16 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
             routePoints: completedRun.routePoints,
             sensorBuffer: completedRun.sensorBuffer,
             totalSteps: completedRun.totalSteps,
+            watchType: ref.read(activeUserProfileProvider).value?.watchType ??
+                WatchType.none,
           );
 
       if (!mounted) {
         return;
+      }
+      if (!result.verified && result.decision != JenaDecision.pending) {
+        await showVerificationRejectedDialog(context, result);
+        if (!mounted) return;
       }
       context.go(
         RouteNames.runResult,

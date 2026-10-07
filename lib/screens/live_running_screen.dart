@@ -20,6 +20,8 @@ import '../features/run_tracking/services/ghost_pace_matcher.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/run_recording_foreground.dart';
 import '../features/run_tracking/services/run_session_service.dart';
+import '../data/models/user_model.dart';
+import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/friend_ghost_run.dart';
@@ -460,12 +462,18 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             sensorBuffer: session.sensorBuffer,
             tournamentId: roomId,
             totalSteps: session.totalSteps,
+            watchType: ref.read(activeUserProfileProvider).value?.watchType ??
+                WatchType.none,
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;
       session.discardAllSensitive();
       session = null;
       if (!mounted) return;
+      if (!result.verified) {
+        await showVerificationRejectedDialog(context, result);
+        if (!mounted) return;
+      }
       setState(() => _validating = false);
       await Navigator.push(
         context,
@@ -478,7 +486,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             serverAnswered: true,
             companyDonationWon: result.companyDonationWon,
             donationCounted: result.donationCounted,
-            donationReason: result.donationReason,
+            donationReason: result.verified
+                ? result.donationReason
+                : verificationUserMessage(result),
           ),
         ),
       );

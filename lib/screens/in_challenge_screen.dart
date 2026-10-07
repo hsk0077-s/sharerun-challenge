@@ -16,7 +16,9 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/api/api_exception.dart';
+import '../data/models/user_model.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
+import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/models/route_point.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
@@ -439,6 +441,8 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
             sensorBuffer: session.sensorBuffer,
             tournamentId: widget.roomId,
             totalSteps: session.totalSteps,
+            watchType: ref.read(activeUserProfileProvider).value?.watchType ??
+                WatchType.none,
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;
@@ -446,6 +450,10 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       session.discardAllSensitive();
 
       if (!mounted) return;
+      if (!result.verified && result.decision != JenaDecision.pending) {
+        await showVerificationRejectedDialog(context, result);
+        if (!mounted) return;
+      }
       if (result.decision == JenaDecision.pending) {
         await showDialog<void>(
           context: context,

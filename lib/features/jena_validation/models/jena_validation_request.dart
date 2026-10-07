@@ -1,3 +1,5 @@
+import '../run_device_info.dart';
+
 class JenaValidationRequest {
   const JenaValidationRequest({
     required this.activityId,
@@ -8,6 +10,7 @@ class JenaValidationRequest {
     required this.cadenceSpm,
     required this.gyroStabilityScore,
     this.totalSteps,
+    this.deviceInfo,
   });
 
   final String activityId;
@@ -18,6 +21,7 @@ class JenaValidationRequest {
   final List<int> cadenceSpm;
   final double gyroStabilityScore;
   final int? totalSteps;
+  final RunDeviceInfo? deviceInfo;
 
   Map<String, dynamic> toJson() {
     return {
@@ -29,6 +33,7 @@ class JenaValidationRequest {
       'cadence_spm': cadenceSpm,
       'gyro_stability_score': gyroStabilityScore,
       if (totalSteps != null) 'total_steps': totalSteps,
+      if (deviceInfo != null) 'device_info': deviceInfo!.toJson(),
     };
   }
 }

@@ -42,7 +42,7 @@ from app.constants.economy_constants import (
     TEST_WALLET_GRANT_FLAG,
 )
 from app.models.validation_request import ValidationRequest
-from app.models.validation_result import ValidationResult
+from app.models.validation_result import ValidationResult, with_reason_code
 from app.services.economy_service import EconomyService
 from app.services.referral_trial_config import (
     advance_trial_count,
@@ -53,6 +53,7 @@ from app.services.referral_trial_config import (
     referrer_due,
 )
 from app.services.mercy_rule_service import MercyRuleService
+from app.services.run_device_info import device_info_document
 from app.services.play_billing import (
     consume_play_product_purchase,
     dia_pack_by_id,
@@ -884,7 +885,7 @@ class SecuredActionService:
                     detail="Activity belongs to another user.",
                 )
             if activity.get("validationFinalized") is True:
-                return self._validation_result_from_activity(activity)
+                return with_reason_code(self._validation_result_from_activity(activity))
 
         user_snapshot = user_ref.get(transaction=transaction)
         user = user_snapshot.to_dict() or {} if user_snapshot.exists else {}
@@ -1037,6 +1038,8 @@ class SecuredActionService:
             if request.distance_km <= 0
             else request.duration_seconds / request.distance_km
         )
+        result = with_reason_code(result)
+        device_info = device_info_document(getattr(request, "device_info", None))
 
         transaction.set(
             activity_ref,
@@ -1063,6 +1066,8 @@ class SecuredActionService:
                 "sensitiveArraysStored": False,
                 "completedAt": SERVER_TIMESTAMP,
                 "updatedAt": SERVER_TIMESTAMP,
+                # Diagnostics only. Not a walletTransactions row.
+                **({"deviceInfo": device_info} if device_info is not None else {}),
             },
             merge=True,
         )

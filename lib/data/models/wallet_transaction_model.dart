@@ -37,7 +37,7 @@ class WalletTransactionModel {
       'tournament_top_percent_share' => '대회 상위 완주 SHARE',
       'tournament_finisher_value' => '대회 완주 VALUE',
       'cash_refund_requested' => '현금 환불 요청',
-      'bep_refund' => 'BEP 환불',
+      'bep_refund' => '모집 미달 환불',
       'diamond_box_collect' => '다이아 수집',
       'effort_value_mint' => '러닝 SRV 채굴',
       'onboarding_signup_reward' => '신규 가입 보상',

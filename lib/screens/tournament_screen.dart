@@ -11,6 +11,7 @@ import '../data/models/tournament_model.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/tournaments/providers/company_tournament_providers.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
+import '../features/tournaments/utils/prize_display.dart';
 import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
@@ -203,6 +204,11 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
       ),
       quote: quote,
       freeTickets: freeTickets,
+      prizeLine: prizePoolLine(
+        room: room,
+        configLoading: configLoading,
+        config: config,
+      ),
       prizeReady: ready,
       showTicketJoin: quote?.canUseTickets(freeTickets) ?? false,
       tierTicketJoinLabel: quote?.tierTicketJoinLabel,
@@ -260,6 +266,7 @@ class _TournamentRoomCard extends StatelessWidget {
     this.onTicketJoin,
     this.onTierTicketJoin,
     this.freeTickets = 0,
+    this.prizeLine = AppStrings.noCashPrizePool,
     this.prizeReady = true,
     this.showTicketJoin = false,
     this.tierTicketJoinLabel,
@@ -277,6 +284,7 @@ class _TournamentRoomCard extends StatelessWidget {
   final VoidCallback onSponsor;
   final PrizeRaceQuote? quote;
   final int freeTickets;
+  final String prizeLine;
   final bool prizeReady;
   final bool showTicketJoin;
   final String? tierTicketJoinLabel;
@@ -377,7 +385,7 @@ class _TournamentRoomCard extends StatelessWidget {
             ),
           ),
           Text(
-            room.cashPrizePoolLabel ?? AppStrings.noCashPrizePool,
+            prizeLine,
             style: textTheme.bodySmall?.copyWith(
               color: tokens.colors.donation,
               fontWeight: FontWeight.w600,

@@ -40,6 +40,9 @@ void main() {
     await pumpDetail(tester, cprCount: 2);
 
     expect(find.text('1km 초보 챌린지'), findsOneWidget);
+    expect(find.text('상금: 3만 원'), findsNothing);
+    expect(find.textContaining('BEP'), findsNothing);
+    expect(find.text('현금 상금 없음'), findsOneWidget);
     expect(find.text('심폐소생권 보유: 2/3'), findsNothing);
     expect(find.text('심폐소생권 사용 · 보유 2/3'), findsOneWidget);
     expect(

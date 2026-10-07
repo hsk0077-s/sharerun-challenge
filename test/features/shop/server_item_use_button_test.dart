@@ -144,7 +144,8 @@ void main() {
     }
 
     expect(calls, 3);
-    expect(find.text('심폐소생권 사용 · 보유 5/3'), findsOneWidget);
+    expect(find.text('심폐소생권 사용 · 보유 5/3'), findsNothing);
+    expect(find.text('심폐소생권 사용 · 보유 3/3'), findsOneWidget);
     expect(
       tester
           .widget<TextButton>(

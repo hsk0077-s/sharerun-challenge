@@ -159,7 +159,7 @@ abstract final class AppStrings {
   static const lobbySubtitle =
       '전 세계 러너들과 함께 달리고 가치를 증명하세요.';
   static const lobbyRoom1Title = '중급 3km 골드 챌린지 🏆';
-  static const lobbyRoom1Sub = '참가자 12/20 · BEP: 283/400';
+  static const lobbyRoom1Sub = '참가자 12/20명';
   static const lobbyRoom2Title = '크루 대항 주말 10K 매치 🔥';
   static const lobbyRoom2Sub = '참가 크루 8팀 · 주말 오전 09:00 시작';
   static const lobbyRoom3Title = '초보 1km 챌린지';
@@ -209,12 +209,11 @@ abstract final class AppStrings {
   static const challengeDetailTitle = '3km 중급 챌린지 (골드 방)';
   static const challengeDetailEntryFee = '참가비: 1,200 SHARE';
   static const challengeDetailGoldBadge = 'Gold';
-  static const challengeDetailPrize = '상금: 50만 원';
-  static const challengeDetailDonation = '기부금: 유니세프 기부 50만 원';
+  static const challengeDetailPrize = noCashPrizePool;
+  static const challengeDetailDonation = '기부: 유니세프(결식아동)';
   static const challengeDetailDistance = '거리: 3km';
   static const challengeDetailTimeRemaining = '남은 시간: 2일 14시간';
-  static const challengeDetailRecruitment =
-      '모집 인원: 290 / 400명 (최소 BEP: 283명)';
+  static const challengeDetailRecruitment = '모집 인원: 290 / 400명';
   static const challengeDetailDonationTarget =
       '타겟 기부처: 유니세프(결식아동)';
   static const challengeDetailValueTip =
@@ -458,7 +457,8 @@ abstract final class AppStrings {
   static const refundGuaranteeTitle = '안전 환불 보장';
   static const refundPolicy1 =
       '- 전자상거래법에 의거, 결제 후 7일 이내 미사용 재화는 수수료 없이 100% 현금 환불됩니다.';
-  static const refundPolicy2 = '- 대회 모집 인원(BEP) 미달 시 전액 원복됩니다.';
+  static const refundPolicy2 =
+      '- 최소 인원이 모이지 않으면 참가비가 전액 돌아옵니다.';
   static const refundTargetItem = '[ 50,000 SHARE (미사용) ]';
   static const refundPaymentDate = 'Payment Date: 2026.06.25';
   static const refundTotalAmount = '총 환불 예정 금액: 50,000 KRW';

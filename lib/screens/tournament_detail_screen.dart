@@ -14,6 +14,7 @@ import '../features/run_tracking/utils/run_start_preflight.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/tournaments/providers/company_tournament_providers.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
+import '../features/tournaments/utils/prize_display.dart';
 import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
@@ -40,10 +41,17 @@ class TournamentDetailScreen extends ConsumerWidget {
       }
     }
 
+    final configAsync = ref.watch(companyTournamentConfigProvider);
+
     if (participation != null) {
       return _JoinedTournamentDetail(
         participation: participation,
         profile: ref.watch(activeUserProfileProvider).value,
+        prizeLine: prizePoolLine(
+          room: participation.tournament,
+          configLoading: configAsync.isLoading,
+          config: configAsync.asData?.value,
+        ),
       );
     }
 
@@ -54,7 +62,6 @@ class TournamentDetailScreen extends ConsumerWidget {
     final extraEntryTickets =
         ref.watch(serverShopInventoryProvider).asData?.value.extraEntryCount ??
             0;
-    final configAsync = ref.watch(companyTournamentConfigProvider);
     final freeTickets =
         ref.watch(activeWalletProvider).asData?.value.freeTicketBalance ?? 0;
     ref.watch(signupFreeTicketGrantProvider);
@@ -98,6 +105,14 @@ class TournamentDetailScreen extends ConsumerWidget {
                 feeText: quote?.costLabel(freeTickets),
                 rulesText: quote?.rulesLabel,
                 participantStatus: isJoined ? 'joined' : null,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                prizePoolLine(
+                  room: room,
+                  configLoading: configAsync.isLoading,
+                  config: configAsync.asData?.value,
+                ),
               ),
               const SizedBox(height: 24),
               if (canJoin && prizeReady)
@@ -182,10 +197,12 @@ class _JoinedTournamentDetail extends StatelessWidget {
   const _JoinedTournamentDetail({
     required this.participation,
     required this.profile,
+    required this.prizeLine,
   });
 
   final TournamentParticipationModel participation;
   final UserModel? profile;
+  final String prizeLine;
 
   @override
   Widget build(BuildContext context) {
@@ -215,7 +232,7 @@ class _JoinedTournamentDetail extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(room.cashPrizePoolLabel ?? AppStrings.noCashPrizePool),
+          Text(prizeLine),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () => startRunWithPreflight(
@@ -279,7 +296,9 @@ class _TournamentInfoCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text('Target: ${room.targetDistanceKm.toStringAsFixed(1)} km'),
           const SizedBox(height: 8),
-          Text(feeText == null ? 'Entry: $entryFeeShare Share' : 'Entry: $feeText'),
+          Text(feeText == null
+              ? 'Entry: $entryFeeShare Share'
+              : 'Entry: $feeText'),
           if (rulesText != null) ...[
             const SizedBox(height: 8),
             Text(rulesText!),
@@ -288,7 +307,7 @@ class _TournamentInfoCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               participantStatus == 'refunded'
-                  ? 'Refund: BEP refund processed'
+                  ? '모집 인원이 차지 않아 참가비를 돌려드렸어요.'
                   : 'Participant status: $participantStatus',
             ),
           ],

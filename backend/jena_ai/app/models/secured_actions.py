@@ -50,6 +50,16 @@ class RoutePointPayload(BaseModel):
     recordedAt: str
 
 
+class RunDeviceInfo(BaseModel):
+    """Diagnostics on the run record. No account, serial, or location."""
+
+    model: str = ""
+    os_version: str = ""
+    app_version: str = ""
+    watch_used: bool = False
+    heart_rate_used: bool = False
+
+
 class ValidateRunRequest(BaseModel):
     activity_id: str
     distance_km: float = Field(gt=0)
@@ -65,6 +75,8 @@ class ValidateRunRequest(BaseModel):
     device_id: str | None = Field(default=None, max_length=128)
     # Set on a race finish. Crew cheer reads this room's SHARE reward only.
     tournament_id: str | None = Field(default=None, max_length=128)
+    # Optional. Stored on the activity, never on the wallet ledger.
+    device_info: RunDeviceInfo | None = None
 
 
 class ApplyReferralRequest(BaseModel):

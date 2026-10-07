@@ -9,6 +9,7 @@ import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../data/models/winner_reward_action.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
+import '../features/jena_validation/verification_reason.dart';
 import '../features/reward/view/winner_honor_popup.dart';
 import '../features/run_tracking/models/route_point.dart';
 
@@ -51,6 +52,11 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
     final canProcessReward =
         result.verified && result.valueTokenReward > 0 && !rewardProcessed;
     final color = result.verified ? AppColors.neonLime : AppColors.dangerRed;
+    final headline = result.verified
+        ? 'Verified Run'
+        : result.decision == JenaDecision.pending
+            ? 'Invalid Activity'
+            : '검증되지 않은 기록';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Jena Result')),
@@ -69,14 +75,14 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    result.verified ? 'Verified Run' : 'Invalid Activity',
+                    headline,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           color: color,
                           fontWeight: FontWeight.w900,
                         ),
                   ),
                   const SizedBox(height: 16),
-                  Text(result.reason),
+                  Text(verificationUserMessage(result)),
                   const SizedBox(height: 16),
                   Text('Decision: ${result.decision.name}'),
                   Text('Value Token Reward: ${result.valueTokenReward}'),

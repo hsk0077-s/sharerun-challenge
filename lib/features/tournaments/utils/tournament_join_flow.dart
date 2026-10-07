@@ -10,6 +10,7 @@ import '../../wallet/debug_local_wallet_store.dart';
 import '../../wallet/providers/debug_local_share_history_provider.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../../shop/providers/server_shop_inventory_provider.dart';
+import '../../jena_validation/verification_guidance.dart';
 import '../providers/local_joined_ids_provider.dart';
 import 'tournament_join_gate.dart';
 import 'tournament_join_outcome.dart';
@@ -145,9 +146,15 @@ Future<bool> joinTournamentWithPreflight({
     }
     snack(blocked);
     if (blocked == '이미 참가한 챌린지입니다.') {
-      return TournamentJoinPlanner.unlockWhenAlreadyJoinedBlocked(
+      final unlock = TournamentJoinPlanner.unlockWhenAlreadyJoinedBlocked(
         remoteOrJenaJoined: remoteJoined.contains(tournament.id),
         durablePaidJoin: alreadyPaid,
+      );
+      if (!unlock || !context.mounted) return unlock;
+      return confirmVerificationGuidance(
+        context,
+        roomDistanceKm: tournament.targetDistanceKm,
+        requiresHeartRate: roomRequiresWatchHeartRate(tournament.prizeTier),
       );
     }
     return false;
@@ -162,6 +169,14 @@ Future<bool> joinTournamentWithPreflight({
       ? 0
       : (prizeEntryShare ?? tournament.entryFeeShare);
   try {
+    if (!context.mounted) return false;
+    final guided = await confirmVerificationGuidance(
+      context,
+      roomDistanceKm: tournament.targetDistanceKm,
+      requiresHeartRate: roomRequiresWatchHeartRate(tournament.prizeTier),
+    );
+    if (!guided) return false;
+
     TournamentJoinPlan plan;
     try {
       final result =

@@ -2,7 +2,9 @@ import '../../../data/api/secured_action_api_client.dart';
 import '../../../data/models/user_model.dart';
 import '../../run_tracking/models/route_point.dart';
 import '../../run_tracking/services/ephemeral_sensor_buffer.dart';
+import '../models/jena_validation_request.dart';
 import '../models/jena_validation_result.dart';
+import '../run_device_info.dart';
 import '../schema/src_running_payload_normalizer.dart';
 
 class ActivityValidationService {
@@ -54,10 +56,24 @@ class ActivityValidationService {
       payload,
       totalSteps: totalSteps,
     );
+    final withDevice = JenaValidationRequest(
+      activityId: request.activityId,
+      userId: request.userId,
+      distanceKm: request.distanceKm,
+      durationSeconds: request.durationSeconds,
+      heartRates: request.heartRates,
+      cadenceSpm: request.cadenceSpm,
+      gyroStabilityScore: request.gyroStabilityScore,
+      totalSteps: request.totalSteps,
+      deviceInfo: await RunDeviceInfo.collect(
+        watchUsed: watchType != WatchType.none,
+        heartRateUsed: request.heartRates.any((bpm) => bpm > 0),
+      ),
+    );
 
     try {
-      return _securedActionApiClient.validateRun(
-        request: request,
+      return await _securedActionApiClient.validateRun(
+        request: withDevice,
         routePoints: routePoints,
         tournamentId: tournamentId,
       );

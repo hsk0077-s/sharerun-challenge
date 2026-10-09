@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/src_logo_header.dart';
+import 'run_card_summary.dart';
 
 /// Story poster for one finished run. 1080×1920, safe from story chrome.
 ///
@@ -98,6 +99,8 @@ class RunFinishShareCard extends StatelessWidget {
     required this.pace,
     required this.date,
     this.donationWon,
+    this.splitPaces,
+    this.averageHeartRate,
     this.route,
     this.photo,
     this.frameColor,
@@ -119,6 +122,8 @@ class RunFinishShareCard extends StatelessWidget {
   static const appNameKey = Key('run-finish-app-name');
   static const headlineKey = Key('run-finish-headline');
   static const photoKey = Key('run-finish-photo');
+  static const heartRateKey = Key('run-finish-heart-rate');
+  static const splitGraphKey = Key('run-finish-split-graph');
 
   static const appName = '쉐어 런';
   static const headline = '오늘의 러닝';
@@ -130,6 +135,12 @@ class RunFinishShareCard extends StatelessWidget {
   final String pace;
   final DateTime date;
   final int? donationWon;
+
+  /// 1km 구간 페이스(초/km). 2개 미만이면 그래프를 그리지 않는다.
+  final List<int>? splitPaces;
+
+  /// 평균 심박. 없으면 줄을 그리지 않는다.
+  final int? averageHeartRate;
 
   /// Normalized 0–1 points. Omitted when the finish screen has no route.
   final List<Offset>? route;
@@ -228,6 +239,8 @@ class RunFinishShareCard extends StatelessWidget {
                     paceNumber: paceParts.value,
                     paceUnit: paceParts.unit,
                     donation: donation,
+                    splitPaces: splitPaces,
+                    averageHeartRate: averageHeartRate,
                   ),
                 ),
                 if (frameColor != null)
@@ -263,6 +276,8 @@ class _RecordColumn extends StatelessWidget {
     required this.paceNumber,
     required this.paceUnit,
     required this.donation,
+    required this.splitPaces,
+    required this.averageHeartRate,
   });
 
   final _CardPalette palette;
@@ -272,9 +287,12 @@ class _RecordColumn extends StatelessWidget {
   final String paceNumber;
   final String paceUnit;
   final String? donation;
+  final List<int>? splitPaces;
+  final int? averageHeartRate;
 
   @override
   Widget build(BuildContext context) {
+    final splits = splitPaces == null ? null : bucketSplitPaces(splitPaces!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -337,6 +355,24 @@ class _RecordColumn extends StatelessWidget {
           paceNumber: paceNumber,
           paceUnit: paceUnit,
         ),
+        if (averageHeartRate != null) ...[
+          const SizedBox(height: 18),
+          Text(
+            '평균 심박 $averageHeartRate bpm',
+            key: RunFinishShareCard.heartRateKey,
+            style: TextStyle(
+              fontFamily: RunFinishShareCard.fontFamily,
+              fontSize: 32,
+              fontWeight: FontWeight.w600,
+              color: palette.muted,
+              height: 1.35,
+            ),
+          ),
+        ],
+        if (splits != null && splits.length >= 2) ...[
+          const SizedBox(height: 28),
+          _SplitGraph(palette: palette, paces: splits),
+        ],
         if (donation != null) ...[
           const SizedBox(height: 28),
           _DonationBadge(palette: palette, donation: donation!),
@@ -344,6 +380,77 @@ class _RecordColumn extends StatelessWidget {
         const Spacer(),
         _BrandLockup(palette: palette),
       ],
+    );
+  }
+}
+
+/// 구간 페이스 막대. 빠를수록 길고, 반투명이라 사진 위에서도 글자를 가리지 않는다.
+class _SplitGraph extends StatelessWidget {
+  const _SplitGraph({required this.palette, required this.paces});
+
+  final _CardPalette palette;
+  final List<int> paces;
+
+  double _height(int pace, int fastest, int slowest) {
+    if (slowest == fastest) return 1.0;
+    return 0.35 + 0.65 * (slowest - pace) / (slowest - fastest);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fastest = paces.reduce((a, b) => a < b ? a : b);
+    final slowest = paces.reduce((a, b) => a > b ? a : b);
+    return DecoratedBox(
+      key: RunFinishShareCard.splitGraphKey,
+      decoration: BoxDecoration(
+        color: palette.chip,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: palette.hairline),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(26, 22, 26, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '구간 페이스',
+              style: TextStyle(
+                fontFamily: RunFinishShareCard.fontFamily,
+                fontSize: 26,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 4,
+                color: palette.unit,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 150,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final pace in paces)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: FractionallySizedBox(
+                          heightFactor: _height(pace, fastest, slowest),
+                          alignment: Alignment.bottomCenter,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: palette.hero.withValues(alpha: 0.42),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

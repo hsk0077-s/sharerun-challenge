@@ -1,4 +1,5 @@
 import '../../jena_validation/models/jena_validation_request.dart';
+import '../../run_result/run_card_summary.dart';
 
 /// In-memory-only buffer for heart-rate and cadence samples.
 ///
@@ -10,6 +11,9 @@ class EphemeralSensorBuffer {  final List<int> _heartRates = [];
   void addHeartRate(int bpm) {
     _heartRates.add(bpm);
   }
+
+  /// 공유 카드용 평균 심박 한 개. 샘플은 밖으로 내보내지 않는다.
+  int? get averageHeartRate => averageHeartRateOf(_heartRates);
 
   void addCadence(int spm) {
     _cadenceSpm.add(spm);

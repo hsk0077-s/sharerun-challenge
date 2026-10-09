@@ -48,6 +48,8 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
     this.donationCounted = false,
     this.donationReason = '',
     this.donationCapReached = false,
+    this.splitPaces,
+    this.averageHeartRate,
   });
 
   /// Tracked kilometres passed through server validation.
@@ -76,6 +78,12 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
 
   /// `donation_cap_reached` from the validate response.
   final bool donationCapReached;
+
+  /// 기기 안에서 만든 1km 구간 페이스. 서버로 보내거나 저장하지 않는다.
+  final List<int>? splitPaces;
+
+  /// 평균 심박. 없으면 카드에 넣지 않는다.
+  final int? averageHeartRate;
 
   static const photoGalleryKey = Key('run-finish-photo-gallery');
   static const photoCameraKey = Key('run-finish-photo-camera');
@@ -198,6 +206,8 @@ class _OnboardingRunResultScreenState
       pace: _paceLabel,
       date: _finishedOn,
       donationWon: _serverDonationWon,
+      splitPaces: widget.splitPaces,
+      averageHeartRate: widget.averageHeartRate,
       photo: style == RunFinishCardTheme.photo ? _photo : null,
       frameColor: cosmeticAccentColor(accent),
     );

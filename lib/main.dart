@@ -15,6 +15,7 @@ import 'core/config/app_env.dart';
 import 'core/notifications/notification_service.dart';
 import 'data/firebase/firebase_bootstrap.dart';
 import 'features/iap/widgets/iap_lifecycle_host.dart';
+import 'features/launch/intro_store.dart';
 import 'features/pedometer/kst_calendar.dart';
 import 'features/pedometer/solo_pedometer_foreground.dart';
 import 'features/pedometer/walking_challenge_notification_service.dart';
@@ -41,6 +42,11 @@ Future<void> main() async {
 
   final bootstrap = await AuthSessionBootstrap.run();
   AppConfig.initialRoute = bootstrap.initialRoute;
+  // 소개는 첫 설치 때만. 이미 로그인한 기존 사용자는 봤다고 보고 건너뛴다.
+  const introStore = IntroStore();
+  final introSeen = await introStore.seen();
+  if (bootstrap.session != null && !introSeen) await introStore.markSeen();
+  AppConfig.showIntro = bootstrap.session == null && !introSeen;
 
   // TODO: PM TEST INITIALIZATION — debug only. Release must not seed balances.
   if (kDebugMode) {

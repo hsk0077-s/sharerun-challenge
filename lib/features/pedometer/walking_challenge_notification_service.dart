@@ -25,6 +25,10 @@ abstract final class WalkingChallengeNotificationService {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   static var _ready = false;
+
+  /// 알림을 눌러 앱이 열렸으면 true. 시작 화면을 건너뛰는 데 쓴다.
+  static final ValueNotifier<bool> launchedFromNotification =
+      ValueNotifier<bool>(false);
   static var _tzReady = false;
 
   static void _ensureTimeZones() {
@@ -70,6 +74,9 @@ abstract final class WalkingChallengeNotificationService {
       );
       _ready = true;
       final launch = await _plugin.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp == true) {
+        launchedFromNotification.value = true;
+      }
       final payload = launch?.notificationResponse?.payload;
       if (launch?.didNotificationLaunchApp == true && payload == _payload) {
         WidgetsBinding.instance.addPostFrameCallback((_) {

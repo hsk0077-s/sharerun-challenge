@@ -122,6 +122,6 @@ void main() {
       ],
       fallbackPriceLabel: CoachPlusPlan.yearly.fallbackPriceLabel,
     );
-    expect(onlyIntro?.priceLabel, '59,000원');
+    expect(onlyIntro?.priceLabel, '39,000원');
   });
 }

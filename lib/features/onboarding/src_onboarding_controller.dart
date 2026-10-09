@@ -108,7 +108,7 @@ extension TierMedalX on TierMedal {
       };
 }
 
-/// 동물군 × 메달 = 총 25티어. 평균 페이스(초/km)로 산정.
+/// 동물군 × 메달 = 총 25티어. 서버가 세 기록의 중간 페이스로 산정한다.
 /// `snail`은 예비 심사 미완/우회 전용 임시 등급이며 서브 티어 수식에서 제외한다.
 @immutable
 class UserTier {
@@ -275,143 +275,9 @@ class UserTier {
     return UserTier(animal: animal, medal: medal);
   }
 
-  /// 5회 예비 완주 전·심사 우회 시 달팽이 강제 폴백.
-  static UserTier resolveForProgress({
-    required int preliminaryRunPacesLength,
-    UserTier? assigned,
-    int firestoreRank = 0,
-  }) {
-    if (preliminaryRunPacesLength < EconomyConstants.trialRunsRequired) {
-      return const UserTier(
-        group: AnimalGroup.snail,
-        subTier: SubTier.bronze,
-      );
-    }
-    if (assigned != null && !assigned.isSnail) {
-      return assigned;
-    }
-    return tryFromRankScore(firestoreRank) ??
-        const UserTier(
-          group: AnimalGroup.snail,
-          subTier: SubTier.bronze,
-        );
-  }
-
   static String _titleCase(String raw) {
     if (raw.isEmpty) return raw;
     return '${raw[0].toUpperCase()}${raw.substring(1)}';
-  }
-
-  /// 1km × 5회 평균 페이스(초/km) → 25티어. 경계 공백 없음.
-  factory UserTier.fromAveragePaceSeconds(int paceSecPerKm) {
-    final pace = paceSecPerKm < 0 ? 0 : paceSecPerKm;
-
-    if (pace >= 450) {
-      // 🐢 거북이
-      if (pace <= 479) {
-        return const UserTier(animal: TierAnimal.turtle, medal: TierMedal.master);
-      }
-      if (pace <= 509) {
-        return const UserTier(
-          animal: TierAnimal.turtle,
-          medal: TierMedal.diamond,
-        );
-      }
-      if (pace <= 539) {
-        return const UserTier(animal: TierAnimal.turtle, medal: TierMedal.gold);
-      }
-      if (pace <= 569) {
-        return const UserTier(
-          animal: TierAnimal.turtle,
-          medal: TierMedal.silver,
-        );
-      }
-      return const UserTier(animal: TierAnimal.turtle, medal: TierMedal.bronze);
-    }
-
-    if (pace >= 360) {
-      // 🐇 토끼 360~449
-      if (pace <= 377) {
-        return const UserTier(animal: TierAnimal.rabbit, medal: TierMedal.master);
-      }
-      if (pace <= 395) {
-        return const UserTier(
-          animal: TierAnimal.rabbit,
-          medal: TierMedal.diamond,
-        );
-      }
-      if (pace <= 413) {
-        return const UserTier(animal: TierAnimal.rabbit, medal: TierMedal.gold);
-      }
-      if (pace <= 431) {
-        return const UserTier(
-          animal: TierAnimal.rabbit,
-          medal: TierMedal.silver,
-        );
-      }
-      return const UserTier(animal: TierAnimal.rabbit, medal: TierMedal.bronze);
-    }
-
-    if (pace >= 300) {
-      // 🐺 늑대 300~359
-      if (pace <= 311) {
-        return const UserTier(animal: TierAnimal.wolf, medal: TierMedal.master);
-      }
-      if (pace <= 323) {
-        return const UserTier(animal: TierAnimal.wolf, medal: TierMedal.diamond);
-      }
-      if (pace <= 335) {
-        return const UserTier(animal: TierAnimal.wolf, medal: TierMedal.gold);
-      }
-      if (pace <= 347) {
-        return const UserTier(animal: TierAnimal.wolf, medal: TierMedal.silver);
-      }
-      return const UserTier(animal: TierAnimal.wolf, medal: TierMedal.bronze);
-    }
-
-    if (pace >= 240) {
-      // 🦌 가젤 240~299
-      if (pace <= 251) {
-        return const UserTier(
-          animal: TierAnimal.gazelle,
-          medal: TierMedal.master,
-        );
-      }
-      if (pace <= 263) {
-        return const UserTier(
-          animal: TierAnimal.gazelle,
-          medal: TierMedal.diamond,
-        );
-      }
-      if (pace <= 275) {
-        return const UserTier(animal: TierAnimal.gazelle, medal: TierMedal.gold);
-      }
-      if (pace <= 287) {
-        return const UserTier(
-          animal: TierAnimal.gazelle,
-          medal: TierMedal.silver,
-        );
-      }
-      return const UserTier(animal: TierAnimal.gazelle, medal: TierMedal.bronze);
-    }
-
-    // 🐆 치타 ≤239
-    if (pace <= 199) {
-      return const UserTier(animal: TierAnimal.cheetah, medal: TierMedal.master);
-    }
-    if (pace <= 209) {
-      return const UserTier(
-        animal: TierAnimal.cheetah,
-        medal: TierMedal.diamond,
-      );
-    }
-    if (pace <= 219) {
-      return const UserTier(animal: TierAnimal.cheetah, medal: TierMedal.gold);
-    }
-    if (pace <= 229) {
-      return const UserTier(animal: TierAnimal.cheetah, medal: TierMedal.silver);
-    }
-    return const UserTier(animal: TierAnimal.cheetah, medal: TierMedal.bronze);
   }
 
   @override
@@ -659,7 +525,7 @@ enum OnboardingPhase {
   /// 3.5단계: 푸시 알림 Soft-prompt (바텀시트)
   pushSoftPrompt,
 
-  /// 4단계: 5회 예비 심사 + 티어 판정 / 보상
+  /// 4단계: 검증 달리기 3회 → 서버 등급 배정
   preliminaryEval,
 
   /// 온보딩 완료 → 메인
@@ -692,7 +558,7 @@ abstract final class SoloQuickStartRouting {
       return true;
     }
     final tier = resolvedTier ??
-        UserTier.tryFromRankScore(profile.tier) ??
+        UserTier.tryFromRankScore(profile.gradeRank) ??
         onboarding.assignedTier ??
         UserTier.unratedFallback;
     return tier.isSnail || tier.group == AnimalGroup.snail;
@@ -766,7 +632,7 @@ class SrcOnboardingState {
   final bool signupRewardApplied;
   final bool trialRewardApplied;
 
-  /// 1km 예비 러닝 페이스(초/km), 최대 5회.
+  /// 서버가 센 등급용 검증 달리기 횟수만큼의 자리표시(최대 3).
   final List<int> preliminaryPaceSeconds;
 
   final UserTier? assignedTier;
@@ -787,15 +653,6 @@ class SrcOnboardingState {
       nativeWatchLinked || isGarminConnected || deviceSynced;
 
   bool get canProceedFromConsent => locationConsent;
-
-  bool get isPreliminaryComplete =>
-      preliminaryPaceSeconds.length >= EconomyConstants.trialRunsRequired;
-
-  int? get averagePaceSeconds {
-    if (preliminaryPaceSeconds.isEmpty) return null;
-    final sum = preliminaryPaceSeconds.fold<int>(0, (a, b) => a + b);
-    return sum ~/ preliminaryPaceSeconds.length;
-  }
 
   SrcOnboardingState copyWith({
     OnboardingPhase? phase,
@@ -1155,11 +1012,8 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
   SrcOnboardingState _stateFromProfile(UserModel profile) {
     final economy = profile.economy;
     final phase = _inferPhase(profile);
-    final assigned = UserTier.resolveForProgress(
-      preliminaryRunPacesLength: economy.trialRunCount,
-      assigned: UserTier.tryFromRankScore(profile.tier),
-      firestoreRank: profile.tier,
-    );
+    final assigned = UserTier.tryFromRankScore(profile.gradeRank) ??
+        UserTier.unratedFallback;
     return SrcOnboardingState(
       phase: phase,
       locationConsent: profile.sensitiveDataConsent || profile.termsAccepted,
@@ -1172,7 +1026,7 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
       assignedTier: assigned,
       displayNickname: profile.nickname.trim(),
       preliminaryPaceSeconds: List<int>.filled(
-        economy.trialRunCount.clamp(0, EconomyConstants.trialRunsRequired),
+        economy.gradeRunCount.clamp(0, EconomyConstants.trialRunsRequired),
         0,
         growable: true,
       ),
@@ -1191,7 +1045,7 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
     if (profile.watchType == WatchType.none) {
       return OnboardingPhase.deviceSync;
     }
-    if (profile.economy.trialRunCount < EconomyConstants.trialRunsRequired) {
+    if (profile.gradeRank <= 0) {
       return OnboardingPhase.preliminaryEval;
     }
     return OnboardingPhase.completed;
@@ -1497,109 +1351,6 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
     );
   }
 
-  // ── 4단계: 5회 예비 심사 + 지연 추천 보상 ────────────────────────────────
-
-  /// 1km 예비 러닝 1회 페이스(초/km) 기록. 5회 도달 시 티어 확정·보상.
-  Future<UserTier?> recordPreliminaryPaceSeconds(int paceSecPerKm) async {
-    if (paceSecPerKm < 0) {
-      throw ArgumentError.value(paceSecPerKm, 'paceSecPerKm', '음수 불가');
-    }
-    if (state.trialRewardApplied || state.isPreliminaryComplete) {
-      return state.assignedTier;
-    }
-
-    final nextPaces = List<int>.of(state.preliminaryPaceSeconds)
-      ..add(paceSecPerKm);
-    if (nextPaces.length > EconomyConstants.trialRunsRequired) {
-      nextPaces.removeRange(
-        0,
-        nextPaces.length - EconomyConstants.trialRunsRequired,
-      );
-    }
-
-    state = state.copyWith(
-      preliminaryPaceSeconds: nextPaces,
-      phase: OnboardingPhase.preliminaryEval,
-      assignedTier: nextPaces.length < EconomyConstants.trialRunsRequired
-          ? const UserTier(
-              group: AnimalGroup.snail,
-              subTier: SubTier.bronze,
-            )
-          : state.assignedTier,
-    );
-
-    if (nextPaces.length < EconomyConstants.trialRunsRequired) {
-      final uid = _currentUid();
-      if (uid != null) {
-        await ref.read(userRepositoryProvider).updateTrialRunCount(
-              uid: uid,
-              trialRunCount: nextPaces.length,
-            );
-      }
-      return null;
-    }
-
-    return _finalizePreliminaryEvaluation(nextPaces);
-  }
-
-  Future<UserTier> _finalizePreliminaryEvaluation(List<int> paces) async {
-    state = state.copyWith(actionStatus: const AsyncLoading());
-    try {
-      final uid = _requireUid();
-      final sum = paces.fold<int>(0, (a, b) => a + b);
-      final avg = sum ~/ paces.length;
-      final tier = UserTier.fromAveragePaceSeconds(avg);
-
-      final trialReward =
-          await ref.read(userRepositoryProvider).completePreliminaryEvaluation(
-                uid: uid,
-                tierRank: tier.rankScore,
-                tierCode: tier.firestoreCode,
-                averagePaceSeconds: avg,
-                trialShareReward: EconomyConstants.trialCompletionRewardSrv,
-              );
-      if (trialReward != null) {
-        ref.read(walletProvider.notifier).applyWalletSnapshot(
-              shareBalance: trialReward.shareBalance,
-              diamondBalance: trialReward.diamondBalance,
-              valueBalance: trialReward.valueTokenBalance,
-            );
-      }
-
-      // 추천인 300 토큰 지연 지급 — 최대 10명 한도 락 해제 지시 (비동기 인계).
-      // 실패해도 본인 온보딩 완료는 유지.
-      unawaited(
-        ref
-            .read(userRepositoryProvider)
-            .enqueueReferralUnlock(
-              referredUid: uid,
-              rewardShare: EconomyConstants.referralRewardSrv,
-              maxPayouts: EconomyConstants.maxReferralPayouts,
-            )
-            .catchError((Object error, StackTrace stackTrace) {
-          debugPrint(
-            'SrcOnboardingController referral unlock: $error\n$stackTrace',
-          );
-        }),
-      );
-
-      state = state.copyWith(
-        assignedTier: tier,
-        trialRewardApplied: true,
-        phase: OnboardingPhase.completed,
-        actionStatus: const AsyncData(null),
-        clearLastError: true,
-      );
-      return tier;
-    } catch (error, stackTrace) {
-      state = state.copyWith(
-        actionStatus: AsyncError(error, stackTrace),
-        lastError: error.toString(),
-      );
-      rethrow;
-    }
-  }
-
   // ── 요구사항 3: 닉네임 + 100 DIA + Jena 강제 승급 ────────────────────────
 
   /// 공백 제외 2~12자, 한글/영문/숫자만. 비속어 포함 시 에러.
@@ -1702,37 +1453,6 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
     }
   }
 
-  /// Jena 검시관 샌드배깅 탐지 → 타겟 티어로 강제 승급.
-  Future<void> forcePromoteTierByJena(UserTier targetTier) async {
-    state = state.copyWith(actionStatus: const AsyncLoading());
-    try {
-      final uid = _requireUid();
-      final current = state.assignedTier;
-      if (current != null && targetTier.rankScore <= current.rankScore) {
-        // 강제 승급만 허용 (동급·강등 패킷은 무시).
-        state = state.copyWith(actionStatus: const AsyncData(null));
-        return;
-      }
-
-      await ref.read(userRepositoryProvider).forceSetTierFromJena(
-            uid: uid,
-            tierRank: targetTier.rankScore,
-            tierCode: targetTier.firestoreCode,
-          );
-
-      state = state.copyWith(
-        assignedTier: targetTier,
-        actionStatus: const AsyncData(null),
-        clearLastError: true,
-      );
-    } catch (error, stackTrace) {
-      state = state.copyWith(
-        actionStatus: AsyncError(error, stackTrace),
-        lastError: error.toString(),
-      );
-      rethrow;
-    }
-  }
 }
 
 final srcOnboardingControllerProvider =
@@ -1850,15 +1570,11 @@ final needsNicknameSetupProvider = Provider<bool>((ref) {
   );
 });
 
-/// 5회 예선 페이스로 확정된 25티어. 미완주·우회는 달팽이 폴백.
+/// 서버가 검증 달리기 3회로 배정한 25티어(`gradeRank`). 배정 전은 달팽이.
 final activeUserTierStructProvider = Provider<UserTier?>((ref) {
-  final onboarding = ref.watch(srcOnboardingControllerProvider);
   final profile = ref.watch(activeUserProfileProvider).asData?.value;
-  return UserTier.resolveForProgress(
-    preliminaryRunPacesLength: onboarding.preliminaryPaceSeconds.length,
-    assigned: onboarding.assignedTier,
-    firestoreRank: profile?.tier ?? 0,
-  );
+  return UserTier.tryFromRankScore(profile?.gradeRank ?? 0) ??
+      UserTier.unratedFallback;
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

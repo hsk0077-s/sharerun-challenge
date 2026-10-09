@@ -91,8 +91,8 @@ abstract final class AppStrings {
       '💎 보유 다이아몬드: $count개';
   static String dashboardValueBalanceOf(String amount) =>
       '🌱 보유 밸류(VALUE): $amount';
-  static const dashboardGradeRunLabel = '등급 심사 달리기:';
-  static const dashboardGradeRunProgress = '3/5회 완료 >';
+  static const dashboardGradeRunLabel = '등급 배정 달리기:';
+  static const dashboardGradeRunProgress = '2/3회 완료 >';
   static const dashboardDailyMissionCapsule = '📍 오늘의 미션 확인하기 >';
   static const dashboardStampMapTooltip = '오늘의 미션 · 스탬프 투어';
   static const dashboardOngoingChallenges = '진행 중인 챌린지';
@@ -129,7 +129,7 @@ abstract final class AppStrings {
   static const myWalletInventoryOpen = '보관함 보기';
   static String myWalletInventoryCount(int count) => '보유 $count';
   static String myWalletGradeProgress(int done, int total) =>
-      '등급 심사 달리기: $done/$total회 완료 >';
+      '등급 배정 달리기: $done/$total회 완료 >';
   /// 레거시 alias (구 4탭 '하트' 라벨).
   static const dashboardNavHeart = dashboardNavChallenge;
 
@@ -138,9 +138,9 @@ abstract final class AppStrings {
       '나눔의 질주를 잠시 쉬어가시겠습니까? 한 번 더 누르시면 종료됩니다.';
 
   // ── Level Test Running (Screen 6) ─────────────────────────────────
-  static const levelTestTitle = '혼자 뛰기 챌린지 (등급 심사)';
+  static const levelTestTitle = '혼자 뛰기 챌린지 (등급 배정)';
   static const levelTestSubtitle =
-      '5회 혼자 달리기를 완주하면 등급 심사가 완료됩니다.';
+      '검증된 달리기를 서로 다른 날 3번 마치면 등급이 배정됩니다.';
   static const levelTestStatDistance = '현재 거리';
   static const levelTestStatDistanceValue = '3.52 KM';
   static const levelTestStatTime = '경과 시간';
@@ -148,10 +148,10 @@ abstract final class AppStrings {
   static const levelTestStatPace = '현재 페이스';
   static const levelTestStatPaceValue = '5:10 /KM';
   static const levelTestChallengeProgress =
-      '챌린지 진행 상황: 3/5회 완료 (3.52/5.00 KM)';
+      '챌린지 진행 상황: 2/3회 완료 (3.52/5.00 KM)';
   static const levelTestGhostPace = '[고스트 페이스]';
   static const levelTestMyLocation = '[나(현재 위치)]';
-  static const levelTestStartRun = '4회차 달리기 시작하기';
+  static const levelTestStartRun = '3회차 달리기 시작하기';
 
   // ── Challenge Lobby (Screen 7) ────────────────────────────────────
   static const lobbyCreateRoom = '+ 방 개설하기';

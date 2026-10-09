@@ -206,7 +206,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
     final onboarding = ref.watch(onboardingProvider);
     final showGradeEval = onboarding.currentStep != OnboardingStep.completed;
-    final trialDone = onboarding.preliminaryPaceSeconds.length.clamp(0, 5);
+    final trialDone = onboarding.preliminaryPaceSeconds.length.clamp(0, 3);
 
     return ListView(
       padding: EdgeInsets.all(tokens.spacing.page),
@@ -297,7 +297,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () => context.pushNamed(RouteNames.preliminaryEvalName),
             icon: const Icon(Icons.emoji_events_outlined),
             label: Text(
-              '등급 심사 (예비 $trialDone/5회)',
+              '등급 배정 ($trialDone/3회)',
               style:
                   textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
             ),

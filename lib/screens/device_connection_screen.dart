@@ -132,7 +132,7 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
                           // 1단계: 이미 권한이 부여되어 있는지 사전 체크
                           bool? hasPermissions = await Health().hasPermissions(types);
                           if (hasPermissions == true) {
-                            // 이미 연동된 경우 팝업 후 5회 등급심사로 진행
+                            // 이미 연동된 경우 팝업 후 등급 배정 안내로 진행
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('이미 구글 헬스 커넥트와 연동되어 있습니다.'), backgroundColor: Color(0xFF00CBA9)),
@@ -250,12 +250,12 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
     } catch (e) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('등급심사 화면 이동 실패: $e')),
+        SnackBar(content: Text('등급 배정 화면 이동 실패: $e')),
       );
     }
   }
 
-  /// Persist watch link (when possible) then continue onboarding → 5회 등급심사.
+  /// Persist watch link (when possible) then continue onboarding → 등급 배정 안내.
   Future<void> _finishWatchAndContinue({
     required String? uid,
     required WatchType watchType,

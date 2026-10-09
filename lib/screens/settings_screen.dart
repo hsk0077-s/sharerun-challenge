@@ -26,6 +26,7 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/onboarding/widgets/nickname_change_sheet.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import '../features/launch/intro_screen.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/run_recording_policy.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
@@ -165,6 +166,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context,
       RouteNames.runningGearProTools,
       materialBuilder: (_) => const ProToolsScreen(),
+    );
+  }
+
+  void _replayIntro() {
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
+        builder: (routeContext) => IntroScreen(
+          replay: true,
+          onFinished: () => Navigator.of(routeContext).pop(),
+        ),
+      ),
     );
   }
 
@@ -569,6 +581,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _SettingsCategoryCard(
             title: '약관 및 계정 지원',
             children: [
+              ListTile(
+                key: const Key('intro-replay-settings'),
+                leading: const Icon(
+                  Icons.slideshow_outlined,
+                  color: AppColors.tealAccent,
+                ),
+                title: Text(
+                  '소개 다시 보기',
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text('쉐어 런 첫 소개 3장', style: AppTextStyles.caption),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textGreyLight,
+                ),
+                onTap: _replayIntro,
+              ),
+              const Divider(height: 1, color: AppColors.borderLight),
               ListTile(
                 leading: const Icon(
                   Icons.description_outlined,

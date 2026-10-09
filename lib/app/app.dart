@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import '../features/launch/intro_screen.dart';
+import '../features/launch/launch_splash.dart';
 import '../screens/settings_screen.dart';
 import '../screens/personal_sponsor_screen.dart';
 import '../screens/store_screen.dart';
@@ -55,9 +57,14 @@ class ShareRunChallengeApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       navigatorKey: rootNavigatorKey,
-      home: AppConfig.initialRoute == RouteNames.home
-          ? const AuthenticatedApp()
-          : const LoginScreen(),
+      home: AppConfig.showIntro
+          ? IntroScreen(
+              onFinished: () => rootNavigatorKey.currentState
+                  ?.pushReplacementNamed(RouteNames.login),
+            )
+          : AppConfig.initialRoute == RouteNames.home
+              ? const LaunchSplashGate(child: AuthenticatedApp())
+              : const LoginScreen(),
       routes: {
         RouteNames.login: (_) => const LoginScreen(),
         RouteNames.termsAgreement: (_) => const TermsAgreementScreen(),

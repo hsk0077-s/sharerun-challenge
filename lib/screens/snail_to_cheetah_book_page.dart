@@ -19,8 +19,8 @@ class SnailToCheetahBookPage extends ConsumerWidget {
     final displayName = SrcOnboardingController.isUnsetNickname(nickname)
         ? '러너'
         : nickname;
-    final onboarding = ref.watch(srcOnboardingControllerProvider);
-    final paceLabel = _formatPace(onboarding.averagePaceSeconds);
+    // 서버가 배정한 등급만 쓴다. 폰에서 페이스를 다시 계산하지 않는다.
+    final paceLabel = _formatPace(null);
 
     return Scaffold(
       backgroundColor: AppColors.settingsBackground,

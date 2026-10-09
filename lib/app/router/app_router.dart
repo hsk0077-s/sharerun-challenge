@@ -28,7 +28,7 @@ String? _authRedirect(Ref ref, GoRouterState state) {
   final path = state.uri.path;
   // Hidden unless the remote flag is on. Covers links and pushed routes.
   if (path == RouteNames.stampTour &&
-      ref.read(stampTourEnabledProvider).value != true) {
+      ref.read(stampTourEnabledProvider).asData?.value != true) {
     return RouteNames.mainDashboard;
   }
   final onLogin = path == RouteNames.login;

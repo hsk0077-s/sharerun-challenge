@@ -625,6 +625,13 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Company donation total per KST month. Aggregate numbers only (no uid),
+    // so any signed-in user may read. Admin SDK writes in the donation transaction.
+    match /donationMonthTotals/{month} {
+      allow read: if signedIn() || isAdmin();
+      allow create, update, delete: if false;
+    }
+
     // Invite-code index. Minted only by the secured API (Admin SDK).
     match /referralCodes/{code} {
       allow read, write: if false;

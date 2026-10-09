@@ -5,6 +5,7 @@ import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import 'appeal_center_screen.dart';
+import 'donation_settlement_screen.dart';
 import 'fair_earning_policy_screen.dart';
 import 'wallet_history_screen.dart';
 
@@ -16,6 +17,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
   static const policyTileKey = Key('security-center-fair-earning');
   static const appealTileKey = Key('security-center-appeal');
   static const historyTileKey = Key('security-center-history');
+  static const donationTileKey = Key('security-center-donation');
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '적립 규칙, 내 거래 내역, 기록 이의 신청을 한곳에서 확인해요.',
+            '적립 규칙, 내 거래 내역, 기부 정산, 기록 이의 신청을 한곳에서 확인해요.',
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -70,6 +72,18 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                     context,
                     RouteNames.securityTransactions,
                     materialBuilder: (_) => const WalletHistoryScreen(),
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.borderLight),
+                _CenterTile(
+                  tileKey: donationTileKey,
+                  icon: Icons.volunteer_activism_outlined,
+                  title: '기부 정산',
+                  subtitle: '내가 기여한 금액 · 이번 달 기부',
+                  onTap: () => AppRouteNav.push<void>(
+                    context,
+                    RouteNames.donationSettlement,
+                    materialBuilder: (_) => const DonationSettlementScreen(),
                   ),
                 ),
                 const Divider(height: 1, color: AppColors.borderLight),

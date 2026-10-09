@@ -52,6 +52,7 @@ class EconomyStateModel {
     required this.referralPayoutCount,
     required this.dailyMining,
     this.referredBy,
+    this.gradeRunCount = 0,
   });
 
   final bool signupRewardClaimed;
@@ -63,6 +64,9 @@ class EconomyStateModel {
   final String? referredBy;
   final int referralPayoutCount;
   final DailyMiningModel dailyMining;
+
+  /// Verified 1km runs the server has counted toward the grade (0-3).
+  final int gradeRunCount;
 
   double get trialProgress =>
       (trialRunCount / EconomyConstants.referralTrialRunsRequired)
@@ -103,6 +107,7 @@ class EconomyStateModel {
       referralPayoutCount:
           (economy['referralPayoutCount'] as num?)?.toInt() ?? 0,
       dailyMining: DailyMiningModel.fromJson(dailyMining),
+      gradeRunCount: (economy['gradeRuns'] as List?)?.length ?? 0,
     );
   }
 }

@@ -96,8 +96,8 @@ const _chapters = <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 0,
     title: '달팽이 (Unrated)',
-    subtitle: '예비 심사 미완료 / 건너뛰기 전용 임시 등급',
-    paceGuide: '심사 완료 전 · 서브 티어 없음',
+    subtitle: '등급 배정 전 임시 등급',
+    paceGuide: '검증 달리기 3회 전 · 서브 티어 없음',
     animal: TierAnimal.snail,
     isSnail: true,
   ),

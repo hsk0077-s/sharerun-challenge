@@ -7,6 +7,7 @@ from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
     CreatePrizeRaceResult,
+    GradeBackfillResult,
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
@@ -16,6 +17,7 @@ from app.services.company_tournament_settlement import (
     settle_company_prize_race,
 )
 from app.services.firebase_service import FirebaseService
+from app.services.grade_assignment import backfill_grades
 from app.services.notification_service import send_tournament_topic_notification
 from app.services.wallet_funding import move_currency
 
@@ -45,6 +47,11 @@ class OpsService:
             refunded_share_total=refunded_total,
             status="cancelled_bep_not_met",
             reason="Tournament cancelled because BEP was not met; Share refunded without fee.",
+        )
+
+    def backfill_grades(self, dry_run: bool = True) -> GradeBackfillResult:
+        return GradeBackfillResult(
+            **backfill_grades(self.firebase_service.db, dry_run=dry_run)
         )
 
     def activate_tournament(self, tournament_id: str) -> ActivateTournamentResult:

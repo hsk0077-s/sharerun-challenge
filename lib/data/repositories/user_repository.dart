@@ -313,35 +313,6 @@ class UserRepository {
     }
   }
 
-  Future<void> updateTrialRunCount({
-    required String uid,
-    required int trialRunCount,
-  }) {
-    debugPrint(
-      'updateTrialRunCount skipped (server-owned economy): uid=$uid count=$trialRunCount',
-    );
-    return Future<void>.value();
-  }
-
-  /// 예비 평가 완료 5,000 SHARE. 서버가 계정당 한 번만 원장에 적습니다.
-  /// [trialShareReward]는 호출부 상수이며, 지급액은 서버가 정합니다.
-  Future<PedometerHarvestResult?> completePreliminaryEvaluation({
-    required String uid,
-    required int tierRank,
-    required String tierCode,
-    required int averagePaceSeconds,
-    required int trialShareReward,
-  }) async {
-    final api = _securedActionApiClient;
-    if (api == null) {
-      debugPrint(
-        'completePreliminaryEvaluation skipped: secured API client missing uid=$uid',
-      );
-      return null;
-    }
-    return api.claimTrialReward();
-  }
-
   /// Referral payouts are applied by the secured run-validation / referral APIs.
   Future<void> enqueueReferralUnlock({
     required String referredUid,
@@ -447,15 +418,4 @@ class UserRepository {
     }
   }
 
-  /// Jena 샌드배깅 탐지 패킷 — tier is server-owned.
-  Future<void> forceSetTierFromJena({
-    required String uid,
-    required int tierRank,
-    required String tierCode,
-  }) {
-    debugPrint(
-      'forceSetTierFromJena skipped (server-owned economy): uid=$uid',
-    );
-    return Future<void>.value();
-  }
 }

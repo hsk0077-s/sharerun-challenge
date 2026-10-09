@@ -66,6 +66,7 @@ class UserModel {
     required this.termsAccepted,
     required this.pushNotificationsEnabled,
     required this.economy,
+    this.gradeRank = 0,
     this.nickname = '',
     this.preliminaryRunsCount = 0,
     this.gender = 'male',
@@ -91,6 +92,9 @@ class UserModel {
   final WatchType watchType;
   final WalletModel wallet;
   final int tier;
+
+  /// Server-set grade 1-25 from three verified runs. 0 until assigned.
+  final int gradeRank;
   final bool healthDataConsent;
   final bool sensitiveDataConsent;
   final bool termsAccepted;
@@ -249,6 +253,7 @@ class UserModel {
     WatchType? watchType,
     WalletModel? wallet,
     int? tier,
+    int? gradeRank,
     bool? healthDataConsent,
     bool? sensitiveDataConsent,
     bool? termsAccepted,
@@ -279,6 +284,7 @@ class UserModel {
       watchType: watchType ?? this.watchType,
       wallet: wallet ?? this.wallet,
       tier: tier ?? this.tier,
+      gradeRank: gradeRank ?? this.gradeRank,
       healthDataConsent: healthDataConsent ?? this.healthDataConsent,
       sensitiveDataConsent: sensitiveDataConsent ?? this.sensitiveDataConsent,
       termsAccepted: termsAccepted ?? this.termsAccepted,
@@ -380,6 +386,7 @@ class UserModel {
           ...?walletMap,
         }),
         tier: (json['tier'] as num?)?.toInt() ?? 0,
+        gradeRank: (json['gradeRank'] as num?)?.toInt() ?? 0,
         healthDataConsent: json['healthDataConsent'] as bool? ??
             json['sensitiveDataConsent'] as bool? ??
             false,

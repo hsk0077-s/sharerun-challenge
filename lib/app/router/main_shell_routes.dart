@@ -44,6 +44,7 @@ import '../../screens/solo_pedometer_screen.dart';
 import '../../screens/sponsor_payment_screen.dart';
 import '../../screens/fair_earning_policy_screen.dart';
 import '../../screens/security_privacy_center_screen.dart';
+import '../../screens/wallet_history_screen.dart';
 import '../../screens/stamp_tour_screen.dart';
 import '../../screens/subscription_management_screen.dart';
 import '../../screens/tournament_detail_screen.dart';
@@ -370,6 +371,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.fairEarningPolicy,
       pageBuilder: _fadePage(const FairEarningPolicyScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.securityTransactions,
+      pageBuilder: _fadePage(const WalletHistoryScreen()),
     ),
     GoRoute(
       path: RouteNames.proTools,

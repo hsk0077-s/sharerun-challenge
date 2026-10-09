@@ -8,7 +8,7 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 /// Display targets (the store price is the source of truth once Play Billing
 /// or StoreKit returns a product):
 /// * [monthly] ₩6,900
-/// * [yearly] ₩59,000
+/// * [yearly] ₩39,000
 ///
 /// TODO(console): a 7-day free trial cannot be created from app code.
 /// Create it in the store consoles, then this client will use it:
@@ -50,7 +50,7 @@ class CoachPlusPlan {
   static const yearly = CoachPlusPlan(
     productId: 'coach_plus_yearly',
     periodLabel: '연간',
-    fallbackPriceLabel: '59,000원',
+    fallbackPriceLabel: '39,000원',
     localActiveWindow: Duration(days: 370),
   );
 

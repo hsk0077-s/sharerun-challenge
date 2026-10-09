@@ -18,6 +18,7 @@ import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/stamp/providers/stamp_tour_enabled_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'in_app_billing_screen.dart';
 import 'my_wallet_screen.dart';
@@ -222,6 +223,8 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                   _DashboardHeader(
                     onNotificationTap: _onOpenNotificationCenter,
                     onStampTour: _onOpenStampTour,
+                    showStampTour:
+                        ref.watch(stampTourEnabledProvider).value == true,
                   ),
                   SizedBox(height: tokens.spacing.md),
                   _WalletCard(
@@ -314,10 +317,12 @@ class _DashboardHeader extends StatelessWidget {
   const _DashboardHeader({
     required this.onNotificationTap,
     required this.onStampTour,
+    required this.showStampTour,
   });
 
   final VoidCallback onNotificationTap;
   final VoidCallback onStampTour;
+  final bool showStampTour;
 
   @override
   Widget build(BuildContext context) {
@@ -328,12 +333,13 @@ class _DashboardHeader extends StatelessWidget {
         const Expanded(child: HomeUserIdentityHeader()),
         Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.map_outlined),
-              color: tokens.colors.accent,
-              tooltip: AppStrings.dashboardStampMapTooltip,
-              onPressed: onStampTour,
-            ),
+            if (showStampTour)
+              IconButton(
+                icon: const Icon(Icons.map_outlined),
+                color: tokens.colors.accent,
+                tooltip: AppStrings.dashboardStampMapTooltip,
+                onPressed: onStampTour,
+              ),
             IconButton(
               icon: const Icon(Icons.notifications_none_rounded),
               color: tokens.colors.ink,

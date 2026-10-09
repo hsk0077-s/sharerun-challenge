@@ -13,10 +13,12 @@ class ValidationResult(BaseModel):
     trial_milestone_reached: bool = False
     forfeit_deposit: bool = False
     # Company won recorded for this run. The phone displays this and does not
-    # multiply kilometres itself. The monthly cap is a later change.
+    # multiply kilometres itself. A run over the monthly cap records only what
+    # is left, and cap_reached marks a month with nothing left.
     company_donation_won: int = 0
     donation_counted: bool = False
     donation_reason: str = ""
+    donation_cap_reached: bool = False
 
 
 _DECISION_REASON_CODES = {

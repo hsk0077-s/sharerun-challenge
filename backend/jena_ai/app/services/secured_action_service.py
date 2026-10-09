@@ -81,6 +81,13 @@ from app.services.company_tournament_config import (
     verified_runs_in_window,
 )
 from app.services.company_tournament_settlement import prize_finish_fields
+from app.services.donation_cap import (
+    CAP_REACHED,
+    DONATION_MONTH_TOTALS,
+    month_total_won,
+    read_monthly_cap_won,
+    won_within_cap,
+)
 from app.services.battle_pass import NOT_SPENT, purchase_battle_pass
 from app.services.cosmetics import (
     NOT_SPENT as COSMETIC_NOT_SPENT,
@@ -155,7 +162,7 @@ from app.services.share_activity_items import (
 
 _NICKNAME_PATTERN = re.compile(r"^[가-힣a-zA-Z0-9]{2,12}$")
 
-# Company donates this many won per verified kilometre. No monthly cap here.
+# Company donates this many won per verified kilometre, up to the monthly cap.
 VERIFIED_RUN_DONATION_KRW_PER_KM = 100
 
 
@@ -1008,12 +1015,41 @@ class SecuredActionService:
         ).document(f"crew_cheer_{activity_ref.id}")
         cheer_already = cheer_ledger_ref.get(transaction=transaction).exists
 
-        company_won = (
+        requested_won = (
             verified_run_donation_won(request.distance_km) if result.verified else 0
         )
+        month_key = kst_month_key(current)
+        donation_ref = self.firebase_service.db.collection("donationLedger").document(
+            f"verified_run_{activity_ref.id}"
+        )
+        donation_snapshot = donation_ref.get(transaction=transaction)
+        donation_exists = donation_snapshot.exists
+        totals_ref = self.firebase_service.db.collection(
+            DONATION_MONTH_TOTALS
+        ).document(month_key)
+        month_total = 0
+        cap_won = 0
+        if requested_won > 0:
+            # Reads stay ahead of every write in this transaction.
+            totals_snapshot = totals_ref.get(transaction=transaction)
+            month_total = month_total_won(
+                totals_snapshot.to_dict() if totals_snapshot.exists else None
+            )
+            cap_won = read_monthly_cap_won(self.firebase_service.db, transaction)
+        if donation_exists:
+            company_won = _stored_donation_won(
+                (donation_snapshot.to_dict() or {}).get("companyWon")
+            )
+        else:
+            company_won = won_within_cap(requested_won, month_total, cap_won)
         donation_counted = company_won > 0
+        cap_reached = requested_won > 0 and (
+            company_won < requested_won or month_total + company_won >= cap_won
+        )
         if donation_counted:
             donation_reason = ""
+        elif requested_won > 0:
+            donation_reason = CAP_REACHED
         elif result.verified:
             donation_reason = "거리가 짧아 기부 금액이 없어요."
         else:
@@ -1024,10 +1060,6 @@ class SecuredActionService:
             if isinstance(raw_name, str) and raw_name.strip()
             else "회원"
         )
-        donation_ref = self.firebase_service.db.collection("donationLedger").document(
-            f"verified_run_{activity_ref.id}"
-        )
-        donation_exists = donation_ref.get(transaction=transaction).exists
 
         route = [
             point.model_dump() if hasattr(point, "model_dump") else point.dict()
@@ -1063,6 +1095,7 @@ class SecuredActionService:
                 "companyDonationWon": company_won if donation_counted else 0,
                 "donationCounted": donation_counted,
                 "donationReason": donation_reason,
+                "donationCapReached": cap_reached,
                 "sensitiveArraysStored": False,
                 "completedAt": SERVER_TIMESTAMP,
                 "updatedAt": SERVER_TIMESTAMP,
@@ -1081,12 +1114,27 @@ class SecuredActionService:
                     "distanceKm": request.distance_km,
                     "krwPerKm": VERIFIED_RUN_DONATION_KRW_PER_KM,
                     "companyWon": company_won,
-                    "monthKey": kst_month_key(current),
+                    **(
+                        {"requestedWon": requested_won, "capped": True}
+                        if company_won < requested_won
+                        else {}
+                    ),
+                    "monthKey": month_key,
                     "sponsorName": COMPANY_SPONSOR_NAME,
                     "contributorName": contributor,
                     "receiptIssued": False,
                     "createdAt": SERVER_TIMESTAMP,
                 },
+            )
+            transaction.set(
+                totals_ref,
+                {
+                    "monthKey": month_key,
+                    "totalWon": month_total + company_won,
+                    "capWon": cap_won,
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+                merge=True,
             )
 
         user_updates: dict = {"updatedAt": SERVER_TIMESTAMP}
@@ -1197,6 +1245,7 @@ class SecuredActionService:
             company_donation_won=company_won if donation_counted else 0,
             donation_counted=donation_counted,
             donation_reason=donation_reason,
+            donation_cap_reached=cap_reached,
         )
 
     SHOP_CATALOG: dict[str, dict] = {
@@ -2952,6 +3001,7 @@ class SecuredActionService:
             company_donation_won=won if counted else 0,
             donation_counted=counted,
             donation_reason="" if counted else reason,
+            donation_cap_reached=activity.get("donationCapReached") is True,
         )
 
     def get_company_tournament_config(self, uid: str | None = None) -> dict:

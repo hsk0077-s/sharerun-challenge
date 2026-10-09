@@ -38,6 +38,12 @@ from app.services.company_tournament_config import (
     tournament_edition,
     verified_runs_in_window,
 )
+from app.services.donation_cap import (
+    DONATION_MONTH_TOTALS,
+    month_total_won,
+    read_monthly_cap_won,
+    won_within_cap,
+)
 from app.services.streak_protection import kst_month_key
 from app.services.wallet_funding import move_currency
 
@@ -62,6 +68,7 @@ class _Payout:
         self.share = 0
         self.value = 0
         self.donation_krw = 0
+        self.activity_id: str | None = None
         self.ineligible_reason: str | None = None
         self.dia_zero_reason: str | None = None
         self.ticket_kind: str | None = None
@@ -121,7 +128,11 @@ def plan_payouts(config: dict, tier_id: str, finishers: list[dict]) -> list[_Pay
         )
         payout.dia_requested = int(prizes.get(str(index), 0))
         payout.value = int(payout.distance_km * per_km)
-        payout.donation_krw = int(round(payout.distance_km * krw_per_km))
+        payout.activity_id = row.get("activity_id")
+        # The finishing run was validated through the run donation path, which
+        # already recorded (or capped) this km under verified_run_{id}.
+        if not payout.activity_id:
+            payout.donation_krw = int(round(payout.distance_km * krw_per_km))
         payouts.append(payout)
 
     percent = int(config["topPercent"])
@@ -231,6 +242,7 @@ def settle_company_prize_race(
     else:
         budget = _reserve_prize_budget(db, month, tournament_id, requested, cap)
     assign_dia_budget(payouts, budget)
+    _apply_monthly_donation_cap(db, payouts, month, tournament_id)
     donation_krw = sum(payout.donation_krw for payout in payouts)
     _record_donation_total(db, month, tournament_id, donation_krw)
 
@@ -443,9 +455,7 @@ def _apply_payout(
     dia_ref = _wallet_ref(db, f"tournament_prize_{tournament_id}_{payout.uid}")
     share_ref = _wallet_ref(db, f"tournament_share_{tournament_id}_{payout.uid}")
     value_ref = _wallet_ref(db, f"tournament_value_{tournament_id}_{payout.uid}")
-    donation_ref = db.collection(DONATION_LEDGER).document(
-        f"tournament_km_{tournament_id}_{payout.uid}"
-    )
+    donation_ref = _tournament_donation_ref(db, tournament_id, payout.uid)
     grant_ref = _wallet_ref(db, f"tournament_ticket_{tournament_id}_{payout.uid}")
     ticket_share_ref = _wallet_ref(
         db, f"tournament_ticket_share_{tournament_id}_{payout.uid}"
@@ -995,6 +1005,40 @@ def _reserve_prize_budget(db, month: str, tournament_id: str, requested: int, ca
     return _tx(db.transaction())
 
 
+def _tournament_donation_ref(db, tournament_id: str, uid: str):
+    return db.collection(DONATION_LEDGER).document(f"tournament_km_{tournament_id}_{uid}")
+
+
+def _apply_monthly_donation_cap(
+    db, payouts: list[_Payout], month: str, tournament_id: str
+) -> None:
+    """Fit settlement-only donations (no finish run id) under the monthly cap."""
+    pending = [
+        payout
+        for payout in payouts
+        if payout.donation_krw > 0
+        and not _tournament_donation_ref(db, tournament_id, payout.uid).get().exists
+    ]
+    if not pending:
+        return
+    totals_ref = db.collection(DONATION_MONTH_TOTALS).document(month)
+    total = month_total_won(_read(totals_ref))
+    cap = read_monthly_cap_won(db)
+    for payout in pending:
+        payout.donation_krw = won_within_cap(payout.donation_krw, total, cap)
+        total += payout.donation_krw
+    _save(
+        db,
+        totals_ref,
+        {
+            "monthKey": month,
+            "totalWon": total,
+            "capWon": cap,
+            "updatedAt": SERVER_TIMESTAMP,
+        },
+    )
+
+
 def _record_donation_total(db, month: str, tournament_id: str, krw: int) -> None:
     ref = db.collection(DONATION_POOLS).document(month)
     current = _read(ref) or {}
@@ -1037,10 +1081,14 @@ def _finisher_row(doc_id: str, participant: dict, target_km: float) -> dict | No
         return None
     if target_km > 0 and distance + 1e-9 < target_km:
         return None
+    activity_id = participant.get("finishActivityId")
     return {
         "uid": doc_id,
         "distance_km": distance,
         "duration_seconds": duration,
+        "activity_id": activity_id.strip()
+        if isinstance(activity_id, str) and activity_id.strip()
+        else None,
     }
 
 

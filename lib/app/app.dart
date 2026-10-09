@@ -22,7 +22,9 @@ import '../screens/watch_connection_screen.dart';
 import '../screens/appeal_center_screen.dart';
 import '../screens/health_data_consent_screen.dart';
 import '../screens/terms_agreement_screen.dart';
+import '../screens/fair_earning_policy_screen.dart';
 import '../screens/preliminary_eval_screen.dart';
+import '../screens/security_privacy_center_screen.dart';
 import '../screens/solo_pedometer_screen.dart';
 import '../screens/my_wallet_screen.dart';
 import 'authenticated_app.dart';
@@ -93,6 +95,8 @@ class ShareRunChallengeApp extends StatelessWidget {
         RouteNames.settings: (_) => const SettingsScreen(),
         RouteNames.personalSponsor: (_) => const PersonalSponsorScreen(),
         RouteNames.settingsLegal: (_) => const SettingsLegalWebViewScreen(),
+        RouteNames.securityCenter: (_) => const SecurityPrivacyCenterScreen(),
+        RouteNames.fairEarningPolicy: (_) => const FairEarningPolicyScreen(),
         RouteNames.onboardingStoreFunding: (_) => const StoreScreen(),
         RouteNames.inAppBilling: (_) => const InAppBillingScreen(),
         RouteNames.myWallet: (_) => const MyWalletScreen(),

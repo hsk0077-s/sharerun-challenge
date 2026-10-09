@@ -66,6 +66,7 @@ abstract final class RouteNames {
   static const securityCenter = '/security-center';
   static const fairEarningPolicy = '/security-center/fair-earning';
   static const securityTransactions = '/security-center/transactions';
+  static const donationSettlement = '/security-center/donations';
 
   /// Tab 2 — 상점/기부 펀딩 (src-13). [store]는 동일 경로 alias.
   static const shop = '/shop';

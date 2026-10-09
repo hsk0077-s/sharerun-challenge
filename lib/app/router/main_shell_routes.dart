@@ -42,6 +42,7 @@ import '../../screens/dia_pack_store_screen.dart';
 import '../../screens/share_dia_exchange_screen.dart';
 import '../../screens/solo_pedometer_screen.dart';
 import '../../screens/sponsor_payment_screen.dart';
+import '../../screens/donation_settlement_screen.dart';
 import '../../screens/fair_earning_policy_screen.dart';
 import '../../screens/security_privacy_center_screen.dart';
 import '../../screens/wallet_history_screen.dart';
@@ -375,6 +376,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.securityTransactions,
       pageBuilder: _fadePage(const WalletHistoryScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.donationSettlement,
+      pageBuilder: _fadePage(const DonationSettlementScreen()),
     ),
     GoRoute(
       path: RouteNames.proTools,

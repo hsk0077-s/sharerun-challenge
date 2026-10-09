@@ -229,6 +229,32 @@ class WalletRepository {
     );
   }
 
+  /// 서버 원장 `walletTransactions`의 한 쪽(최신순). 규칙상 본인 행만 읽힌다.
+  Future<WalletHistoryPage> fetchTransactionPage(
+    String uid, {
+    Object? cursor,
+    int limit = 30,
+  }) async {
+    var query = _firestoreService
+        .collection(FirestorePaths.walletTransactions)
+        .where('uid', isEqualTo: uid)
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+    if (cursor is DocumentSnapshot<Map<String, dynamic>>) {
+      query = query.startAfterDocument(cursor);
+    }
+    final snapshot = await query.get();
+    final docs = snapshot.docs;
+    return WalletHistoryPage(
+      rows: [
+        for (final doc in docs)
+          WalletTransactionModel.fromFirestore(id: doc.id, data: doc.data()),
+      ],
+      cursor: docs.isEmpty ? null : docs.last,
+      hasMore: docs.length >= limit,
+    );
+  }
+
   Stream<List<WalletTransactionModel>> watchRecentTransactions(String uid) {
     return _firestoreService
         .collection(FirestorePaths.walletTransactions)

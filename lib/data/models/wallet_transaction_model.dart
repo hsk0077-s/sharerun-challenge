@@ -63,6 +63,21 @@ class WalletTransactionModel {
       'personal_sponsor_prize' => '챌린지 상금 지원 후원',
       'cosmetic_equip' => '코스메틱 장착',
       'debug_test_grant_1m' => '디버그 테스트 지급',
+      'share_to_dia' => 'SHARE → 다이아 전환',
+      'dia_pack_purchase' => '다이아 구매',
+      'streak_bonus' => '연속 달리기 보너스',
+      'nickname_change' => '닉네임 변경',
+      'crew_create' => '크루 만들기',
+      'crew_item_gift' => '크루 선물',
+      'crew_cheer_share' => '크루 응원 SHARE',
+      'challenge_room_create' => '챌린지 방 만들기',
+      'hall_of_fame_donation' => '명예의 전당 기부',
+      'free_entry' => '무료 대회 참가',
+      'ticket_grant' => '참가권 지급',
+      'ticket_share_fallback' => '참가권 대신 SHARE 지급',
+      'referral_trial_referrer_clawback' => '친구 체험 보상 회수',
+      'trial_referrer' => '친구 체험 런 3회',
+      'cpr_coach_plus_grant' => 'Coach+ 심폐소생권 지급',
       _ => type,
     };
   }
@@ -72,7 +87,7 @@ class WalletTransactionModel {
     final debit = _isDebitType;
 
     if (shareAmount != 0) {
-      parts.add(_formatAmount(shareAmount, 'Share', debit: debit));
+      parts.add(_formatAmount(shareAmount, 'Share', debit: debit || shareAmount < 0));
     }
     if (valueAmount != 0) {
       parts.add(_formatAmount(valueAmount, 'Value', debit: valueAmount < 0));
@@ -127,4 +142,17 @@ class WalletTransactionModel {
       ticketAmount: (data['ticketAmount'] as num?)?.toInt() ?? 0,
     );
   }
+}
+
+/// 서버 원장 한 쪽. [cursor]를 다음 쪽 요청에 그대로 넘긴다.
+class WalletHistoryPage {
+  const WalletHistoryPage({
+    required this.rows,
+    required this.cursor,
+    required this.hasMore,
+  });
+
+  final List<WalletTransactionModel> rows;
+  final Object? cursor;
+  final bool hasMore;
 }

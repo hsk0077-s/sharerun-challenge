@@ -6,6 +6,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import 'appeal_center_screen.dart';
 import 'fair_earning_policy_screen.dart';
+import 'wallet_history_screen.dart';
 
 /// 보안·프라이버시 센터. 지금은 정책 안내와 기록 소명으로 가는 입구다.
 /// 새 기능은 하위 PR에서 한 줄씩 늘린다.
@@ -14,6 +15,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
 
   static const policyTileKey = Key('security-center-fair-earning');
   static const appealTileKey = Key('security-center-appeal');
+  static const historyTileKey = Key('security-center-history');
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '적립 규칙과 기록 이의 신청을 한곳에서 확인해요.',
+            '적립 규칙, 내 거래 내역, 기록 이의 신청을 한곳에서 확인해요.',
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -56,6 +58,18 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                     context,
                     RouteNames.fairEarningPolicy,
                     materialBuilder: (_) => const FairEarningPolicyScreen(),
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.borderLight),
+                _CenterTile(
+                  tileKey: historyTileKey,
+                  icon: Icons.receipt_long_outlined,
+                  title: '내 거래 내역',
+                  subtitle: '서버 원장에 기록된 지급·사용 내역',
+                  onTap: () => AppRouteNav.push<void>(
+                    context,
+                    RouteNames.securityTransactions,
+                    materialBuilder: (_) => const WalletHistoryScreen(),
                   ),
                 ),
                 const Divider(height: 1, color: AppColors.borderLight),

@@ -30,6 +30,7 @@ import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/run_recording_policy.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
+import 'security_privacy_center_screen.dart';
 
 /// 마이페이지 종합 설정 화면 — 계정·알림·프로툴·약관/지원.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -164,6 +165,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context,
       RouteNames.runningGearProTools,
       materialBuilder: (_) => const ProToolsScreen(),
+    );
+  }
+
+  void _openSecurityCenter() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.securityCenter,
+      materialBuilder: (_) => const SecurityPrivacyCenterScreen(),
     );
   }
 
@@ -525,6 +534,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.textGreyLight,
                 ),
                 onTap: _openProTools,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _SettingsCategoryCard(
+            title: '보안·프라이버시',
+            children: [
+              ListTile(
+                key: const Key('security-center-settings'),
+                leading: const Icon(
+                  Icons.shield_outlined,
+                  color: AppColors.tealAccent,
+                ),
+                title: Text(
+                  '보안·프라이버시 센터',
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  '공정한 적립 정책 · 기록 소명',
+                  style: AppTextStyles.caption,
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textGreyLight,
+                ),
+                onTap: _openSecurityCenter,
               ),
             ],
           ),

@@ -42,6 +42,8 @@ import '../../screens/dia_pack_store_screen.dart';
 import '../../screens/share_dia_exchange_screen.dart';
 import '../../screens/solo_pedometer_screen.dart';
 import '../../screens/sponsor_payment_screen.dart';
+import '../../screens/fair_earning_policy_screen.dart';
+import '../../screens/security_privacy_center_screen.dart';
 import '../../screens/stamp_tour_screen.dart';
 import '../../screens/subscription_management_screen.dart';
 import '../../screens/tournament_detail_screen.dart';
@@ -360,6 +362,14 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.settingsLegal,
       pageBuilder: _fadePage(const SettingsLegalWebViewScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.securityCenter,
+      pageBuilder: _fadePage(const SecurityPrivacyCenterScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.fairEarningPolicy,
+      pageBuilder: _fadePage(const FairEarningPolicyScreen()),
     ),
     GoRoute(
       path: RouteNames.proTools,

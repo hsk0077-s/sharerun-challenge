@@ -63,6 +63,8 @@ abstract final class RouteNames {
   static const settings = '/settings';
   /// 설정 > 이용약관·개인정보 처리방침 웹뷰.
   static const settingsLegal = '/settings-legal';
+  static const securityCenter = '/security-center';
+  static const fairEarningPolicy = '/security-center/fair-earning';
 
   /// Tab 2 — 상점/기부 펀딩 (src-13). [store]는 동일 경로 alias.
   static const shop = '/shop';

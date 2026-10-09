@@ -5,6 +5,7 @@ from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
     CreatePrizeRaceResult,
+    GradeBackfillResult,
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
@@ -83,3 +84,11 @@ def purge_deleted_accounts(
     _: None = Depends(require_ops_admin),
 ) -> PurgeDeletedAccountsResult:
     return service.purge_deleted_accounts()
+
+
+@router.post("/grades/backfill", response_model=GradeBackfillResult)
+def backfill_grades(
+    dry_run: bool = True,
+    _: None = Depends(require_ops_admin),
+) -> GradeBackfillResult:
+    return service.backfill_grades(dry_run=dry_run)

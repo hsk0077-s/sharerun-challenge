@@ -56,3 +56,19 @@ class PurgeDeletedAccountsResult(BaseModel):
     purged_users: list[str]
     status: str
     reason: str
+
+
+class GradeBackfillItem(BaseModel):
+    uid: str
+    gradeCode: str
+    gradeRank: int
+    medianPaceSec: int
+
+
+class GradeBackfillResult(BaseModel):
+    dry_run: bool
+    scanned: int
+    skipped: int
+    planned: int
+    written: int
+    grades: list[GradeBackfillItem]

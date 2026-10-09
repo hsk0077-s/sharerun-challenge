@@ -30,6 +30,9 @@ class _MemoryDoc:
         snapshot.to_dict.return_value = None if data is None else deepcopy(data)
         return snapshot
 
+    def set(self, data: dict, merge: bool = False) -> None:
+        _MemoryTxn().set(self, data, merge=merge)
+
     def collection(self, name: str) -> "_MemoryCollection":
         return _MemoryCollection(self._store, f"{self.path}/{name}")
 

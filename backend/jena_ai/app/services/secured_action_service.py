@@ -47,6 +47,7 @@ from app.services.economy_service import EconomyService
 from app.services.referral_trial_config import (
     advance_trial_count,
     distinct_day_count,
+    kst_day_key,
     milestones_due,
     progress_count,
     read_referral_trial_config,
@@ -81,6 +82,14 @@ from app.services.company_tournament_config import (
     verified_runs_in_window,
 )
 from app.services.company_tournament_settlement import prize_finish_fields
+from app.services.grade_assignment import (
+    GRADE_ASSIGNMENTS,
+    advance_grade_runs,
+    assignment_document,
+    assignment_from_runs,
+    counts_for_grade,
+    run_pace_sec_per_km,
+)
 from app.services.donation_cap import (
     CAP_REACHED,
     DONATION_MONTH_TOTALS,
@@ -170,6 +179,11 @@ def verified_run_donation_won(distance_km: float) -> int:
     if distance_km <= 0:
         return 0
     return int(round(distance_km * VERIFIED_RUN_DONATION_KRW_PER_KM))
+
+
+def _has_grade(user: dict) -> bool:
+    rank = user.get("gradeRank")
+    return isinstance(rank, int) and not isinstance(rank, bool) and rank > 0
 
 
 def _stored_donation_won(value: object) -> int:
@@ -1139,6 +1153,38 @@ class SecuredActionService:
 
         user_updates: dict = {"updatedAt": SERVER_TIMESTAMP}
         economy_updates: dict = {}
+
+        grade_pace = run_pace_sec_per_km(request.distance_km, request.duration_seconds)
+        if (
+            result.verified
+            and grade_pace is not None
+            and counts_for_grade(request.distance_km)
+            and not _has_grade(user)
+        ):
+            grade_runs, grade_counted = advance_grade_runs(
+                economy.get("gradeRuns"),
+                activity_id=activity_ref.id,
+                day_key=kst_day_key(current),
+                pace_sec=grade_pace,
+            )
+            if grade_counted:
+                economy_updates["gradeRuns"] = grade_runs
+                assigned = assignment_from_runs(grade_runs)
+                if assigned is not None:
+                    user_updates["gradeCode"] = assigned["gradeCode"]
+                    user_updates["gradeRank"] = assigned["gradeRank"]
+                    user_updates["gradeAssignedAt"] = SERVER_TIMESTAMP
+                    transaction.set(
+                        self.firebase_service.db.collection(GRADE_ASSIGNMENTS).document(
+                            uid
+                        ),
+                        assignment_document(
+                            uid,
+                            assigned,
+                            source="trial_runs",
+                            server_time=SERVER_TIMESTAMP,
+                        ),
+                    )
 
         if result.verified and reward_tokens > 0:
             self._credit_value_tx(

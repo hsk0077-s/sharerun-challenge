@@ -26,6 +26,7 @@ class JenaValidationResult {
     this.companyDonationWon = 0,
     this.donationCounted = false,
     this.donationReason = '',
+    this.donationCapReached = false,
   });
 
   final bool verified;
@@ -40,6 +41,9 @@ class JenaValidationResult {
   final int companyDonationWon;
   final bool donationCounted;
   final String donationReason;
+
+  /// True when this month's company donation limit is used up.
+  final bool donationCapReached;
 
   factory JenaValidationResult.fromJson(Map<String, dynamic> json) {
     final decisionCode = json['decision'] as String? ?? 'rejected_unknown';
@@ -60,6 +64,7 @@ class JenaValidationResult {
       companyDonationWon: (json['company_donation_won'] as num?)?.toInt() ?? 0,
       donationCounted: json['donation_counted'] as bool? ?? false,
       donationReason: json['donation_reason'] as String? ?? '',
+      donationCapReached: json['donation_cap_reached'] as bool? ?? false,
     );
   }
 }

@@ -486,6 +486,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             serverAnswered: true,
             companyDonationWon: result.companyDonationWon,
             donationCounted: result.donationCounted,
+            donationCapReached: result.donationCapReached,
             donationReason: result.verified
                 ? result.donationReason
                 : verificationUserMessage(result),

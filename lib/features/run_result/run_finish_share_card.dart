@@ -55,9 +55,13 @@ String? runFinishDonationLine(int? won) {
   return '이번 달리기로 회사가 ${_grouped(won)}원을 기부해요';
 }
 
+/// Shown when this month's company donation limit is used up.
+const runFinishDonationCapLine = '이번 달 기부 목표 달성!';
+
 /// Server did not count a donation. [reason] is the server's explanation.
 String runFinishDonationSkippedLine(String reason) {
   final detail = reason.trim();
+  if (detail == 'cap_reached') return runFinishDonationCapLine;
   const lead = '이번 달리기는 기부에 포함되지 않았어요.';
   if (detail.isEmpty) return lead;
   return '$lead $detail';

@@ -153,3 +153,57 @@ def test_unverified_run_records_no_donation() -> None:
     assert replay.donation_counted is False
     assert replay.donation_reason == reason
     assert _donations(db) == []
+
+
+def _month_total(db: _MemoryDb) -> int:
+    return db.store["donationMonthTotals/2026-10"]["totalWon"]
+
+
+def test_run_that_crosses_the_cap_records_only_what_is_left() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["config/company_donation"] = {"monthlyCapWon": 1_000}
+    db.store["donationMonthTotals/2026-10"] = {"totalWon": 900}
+
+    outcome = _persist(db, "act-edge", 3)
+
+    assert outcome.company_donation_won == 100
+    assert outcome.donation_counted is True
+    assert outcome.donation_cap_reached is True
+    row = db.store["donationLedger/verified_run_act-edge"]
+    assert row["companyWon"] == 100
+    assert row["requestedWon"] == 300
+    assert row["capped"] is True
+    assert _month_total(db) == 1_000
+
+    after = _persist(db, "act-after", 2)
+    assert after.company_donation_won == 0
+    assert after.donation_counted is False
+    assert after.donation_reason == "cap_reached"
+    assert after.donation_cap_reached is True
+    assert "donationLedger/verified_run_act-after" not in db.store
+    assert _month_total(db) == 1_000
+
+
+def test_cap_defaults_to_one_million() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["donationMonthTotals/2026-10"] = {"totalWon": 999_900}
+
+    outcome = _persist(db, "act-default", 5)
+    assert outcome.company_donation_won == 100
+    assert _month_total(db) == 1_000_000
+
+
+def test_replaying_a_capped_run_does_not_change_the_total() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["config/company_donation"] = {"monthlyCapWon": 1_000}
+    db.store["donationMonthTotals/2026-10"] = {"totalWon": 900}
+
+    first = _persist(db, "act-edge", 3)
+    again = _persist(db, "act-edge", 3)
+
+    assert again.company_donation_won == first.company_donation_won == 100
+    assert len(_donations(db)) == 1
+    assert _month_total(db) == 1_000

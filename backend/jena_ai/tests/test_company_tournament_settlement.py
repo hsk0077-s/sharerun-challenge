@@ -922,3 +922,35 @@ def test_create_prize_race_route_uses_the_ops_secret(monkeypatch: pytest.MonkeyP
     assert again.json()["status"] == "already_created"
     assert blocked.status_code == 409
     assert blocked.json()["detail"] == FINAL_SEASON_TAKEN
+
+
+def test_settlement_skips_donation_already_recorded_for_the_finish_run() -> None:
+    db = _MemoryDb()
+    first = _finisher("u1", 600, distance=3)
+    first["finishActivityId"] = "act-1"
+    _seed_finishers(db, "race", [("u1", first), ("u2", _finisher("u2", 700, distance=3))])
+    db.store["donationLedger/verified_run_act-1"] = {"companyWon": 300}
+
+    result = _settle(db)
+
+    assert "donationLedger/tournament_km_race_u1" not in db.store
+    assert db.store["donationLedger/tournament_km_race_u2"]["companyWon"] == 300
+    assert result.donation_krw == 300
+    assert db.store["companyDonationPools/2026-10"]["totalKrw"] == 300
+    assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 300
+
+
+def test_settlement_only_donation_respects_the_monthly_cap() -> None:
+    db = _MemoryDb()
+    db.store["config/company_donation"] = {"monthlyCapWon": 400}
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 600, distance=3)), ("u2", _finisher("u2", 700, distance=3))],
+    )
+
+    _settle(db)
+
+    assert db.store["donationLedger/tournament_km_race_u1"]["companyWon"] == 300
+    assert db.store["donationLedger/tournament_km_race_u2"]["companyWon"] == 100
+    assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 400

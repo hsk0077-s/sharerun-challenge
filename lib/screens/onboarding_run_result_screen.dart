@@ -47,6 +47,7 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
     this.companyDonationWon = 0,
     this.donationCounted = false,
     this.donationReason = '',
+    this.donationCapReached = false,
   });
 
   /// Tracked kilometres passed through server validation.
@@ -72,6 +73,9 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
 
   /// Why the server did not count a donation. Empty when it did.
   final String donationReason;
+
+  /// `donation_cap_reached` from the validate response.
+  final bool donationCapReached;
 
   static const photoGalleryKey = Key('run-finish-photo-gallery');
   static const photoCameraKey = Key('run-finish-photo-camera');
@@ -113,9 +117,11 @@ class _OnboardingRunResultScreenState
           ? widget.companyDonationWon
           : null;
 
-  String get _donationStatus =>
-      runFinishDonationLine(_serverDonationWon) ??
-      runFinishDonationSkippedLine(widget.donationReason);
+  String get _donationStatus {
+    final line = runFinishDonationLine(_serverDonationWon);
+    if (line == null) return runFinishDonationSkippedLine(widget.donationReason);
+    return widget.donationCapReached ? '$line $runFinishDonationCapLine' : line;
+  }
 
   @override
   void initState() {

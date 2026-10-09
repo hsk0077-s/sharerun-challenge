@@ -9,6 +9,7 @@ import 'package:share_run_challenge/data/models/tournament_model.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/stamp/providers/stamp_tour_enabled_provider.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
 import 'package:share_run_challenge/screens/home_screen.dart';
@@ -156,7 +157,8 @@ void main() {
     expect(find.text(AppStrings.dashboardChallenge1Sub), findsOneWidget);
     expect(find.text(AppStrings.dashboardChallenge2Sub), findsOneWidget);
     expect(find.byIcon(Icons.mail_outline_rounded), findsNothing);
-    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
+    // 스탬프 투어는 원격 설정이 꺼져 있으면 숨긴다.
+    expect(find.byIcon(Icons.map_outlined), findsNothing);
     expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
@@ -173,6 +175,29 @@ void main() {
         )
         .style;
     expect(valueStyle?.color, AppColors.angelGold);
+  });
+
+  testWidgets('Home shows the stamp tour button only when the flag is on',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      _scopedApp(
+        home: ProviderScope(
+          overrides: [
+            stampTourEnabledProvider.overrideWith((ref) async => true),
+          ],
+          child: const MainDashboardScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byIcon(Icons.map_outlined), findsOneWidget);
   });
 
   testWidgets('Home wallet icon opens the same My Wallet screen as walking',

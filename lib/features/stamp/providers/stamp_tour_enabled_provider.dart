@@ -10,10 +10,12 @@ bool stampTourEnabledFrom(Map<String, dynamic>? data) => data?['enabled'] == tru
 /// Read once per sign-in. A new value shows up after the app is reopened.
 /// A missing doc, a missing field, or a read error all mean hidden.
 final stampTourEnabledProvider = FutureProvider<bool>((ref) async {
-  ref.watch(authStateChangesProvider);
   try {
-    final snap =
-        await ref.watch(firestoreServiceProvider).doc(FirestorePaths.stampTourConfig).get();
+    ref.watch(authStateChangesProvider);
+    final snap = await ref
+        .read(firestoreServiceProvider)
+        .doc(FirestorePaths.stampTourConfig)
+        .get();
     return stampTourEnabledFrom(snap.data());
   } catch (e) {
     debugPrint('stampTourEnabledProvider: $e');

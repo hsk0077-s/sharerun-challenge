@@ -224,7 +224,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                     onNotificationTap: _onOpenNotificationCenter,
                     onStampTour: _onOpenStampTour,
                     showStampTour:
-                        ref.watch(stampTourEnabledProvider).value == true,
+                        ref.watch(stampTourEnabledProvider).asData?.value == true,
                   ),
                   SizedBox(height: tokens.spacing.md),
                   _WalletCard(

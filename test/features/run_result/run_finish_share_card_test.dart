@@ -125,6 +125,64 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('split graph and heart rate appear only when there is data',
+      (tester) async {
+    await _pumpCard(
+      tester,
+      RunFinishShareCard(
+        style: RunFinishCardTheme.dark,
+        distanceKm: '5.02',
+        time: '28:10',
+        pace: '5:36 /KM',
+        date: DateTime(2026, 10, 3),
+        donationWon: 500,
+        splitPaces: const [340, 332, 330, 329, 331],
+        averageHeartRate: 152,
+      ),
+    );
+    expect(find.byKey(RunFinishShareCard.splitGraphKey), findsOneWidget);
+    expect(find.text('평균 심박 152 bpm'), findsOneWidget);
+    expect(find.byKey(RunFinishShareCard.donationKey), findsOneWidget);
+    expect(find.textContaining('초대'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    await _pumpCard(
+      tester,
+      RunFinishShareCard(
+        style: RunFinishCardTheme.dark,
+        distanceKm: '1.20',
+        time: '06:40',
+        pace: '5:33 /KM',
+        date: DateTime(2026, 10, 3),
+        splitPaces: const [333],
+      ),
+    );
+    expect(find.byKey(RunFinishShareCard.splitGraphKey), findsNothing);
+    expect(find.byKey(RunFinishShareCard.heartRateKey), findsNothing);
+    expect(find.byKey(RunFinishShareCard.donationKey), findsNothing);
+  });
+
+  testWidgets('a long run with every extra still lays out on each theme',
+      (tester) async {
+    for (final style in RunFinishCardTheme.colorThemes) {
+      await _pumpCard(
+        tester,
+        RunFinishShareCard(
+          style: style,
+          distanceKm: '21.10',
+          time: '1:58:30',
+          pace: '5:37 /KM',
+          date: DateTime(2026, 10, 3),
+          donationWon: 2100,
+          splitPaces: List<int>.generate(21, (i) => 330 + (i % 5) * 4),
+          averageHeartRate: 158,
+        ),
+      );
+      expect(find.byKey(RunFinishShareCard.splitGraphKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    }
+  });
+
   testWidgets('yellow theme lays out without overflow', (tester) async {
     await _pumpCard(
       tester,

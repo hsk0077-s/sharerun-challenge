@@ -15,6 +15,7 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
+import '../features/run_result/run_card_summary.dart';
 import '../features/run_tracking/models/route_point.dart';
 import '../features/run_tracking/services/ghost_pace_matcher.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
@@ -467,6 +468,9 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
           );
       final distanceKm = session.telemetry.distanceKm;
       final durationSeconds = session.telemetry.durationSeconds;
+      // 카드용 요약만 남기고 좌표·센서 원본은 바로 파기한다.
+      final splitPaces = kmSplitPaceSeconds(session.routePoints);
+      final averageHeartRate = session.sensorBuffer.averageHeartRate;
       session.discardAllSensitive();
       session = null;
       if (!mounted) return;
@@ -487,6 +491,8 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
             companyDonationWon: result.companyDonationWon,
             donationCounted: result.donationCounted,
             donationCapReached: result.donationCapReached,
+            splitPaces: splitPaces,
+            averageHeartRate: averageHeartRate,
             donationReason: result.verified
                 ? result.donationReason
                 : verificationUserMessage(result),

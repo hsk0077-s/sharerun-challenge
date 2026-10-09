@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/stamp/providers/stamp_tour_enabled_provider.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/onboarding_screen.dart';
 import '../providers/app_providers.dart';
@@ -25,6 +26,11 @@ User? _resolveAuthUser(Ref ref) {
 
 String? _authRedirect(Ref ref, GoRouterState state) {
   final path = state.uri.path;
+  // Hidden unless the remote flag is on. Covers links and pushed routes.
+  if (path == RouteNames.stampTour &&
+      ref.read(stampTourEnabledProvider).value != true) {
+    return RouteNames.mainDashboard;
+  }
   final onLogin = path == RouteNames.login;
   final onOnboarding = path == RouteNames.onboarding;
   // 온보딩·헬스 동의·워치 연동 중에는 로그인으로 튕기지 않음.

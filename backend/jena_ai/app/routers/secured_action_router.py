@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
+    AiLearningRequest,
     ApplyReferralRequest,
     CollectDiamondBoxRequest,
     DebugTestGrantRequest,
@@ -38,6 +39,7 @@ from app.models.secured_actions import (
 from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
+from app.services import privacy_settings
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -349,4 +351,19 @@ def grant_dia_pack(
         uid=uid,
         product_id=request.product_id,
         purchase_token=request.purchase_token,
+    )
+
+
+@router.get("/privacy/settings")
+def get_privacy_settings(uid: str = Depends(require_uid)) -> dict:
+    return privacy_settings.read_settings(service.firebase_service.db, uid)
+
+
+@router.post("/privacy/ai-learning")
+def set_ai_learning(
+    request: AiLearningRequest,
+    uid: str = Depends(require_uid),
+) -> dict:
+    return privacy_settings.set_ai_learning(
+        service.firebase_service.db, uid, request.enabled
     )

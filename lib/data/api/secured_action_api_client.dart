@@ -104,6 +104,20 @@ class SecuredActionApiClient {
     return CompanyTournamentConfig.fromJson(json);
   }
 
+  /// Server value of the "use my data to improve AI" switch (default off).
+  Future<bool> fetchAiLearning() async {
+    final json = await _get('/actions/privacy/settings');
+    return json['ai_learning'] == true;
+  }
+
+  /// Saves the switch on the server and returns the value it stored.
+  Future<bool> setAiLearning(bool enabled) async {
+    final json = await _post('/actions/privacy/ai-learning', {
+      'enabled': enabled,
+    });
+    return json['ai_learning'] == true;
+  }
+
   /// Grants the one signup ticket when this account has never received it.
   Future<int> ensureSignupFreeTicket() async {
     final json = await _post('/actions/wallet/signup-ticket', const {});

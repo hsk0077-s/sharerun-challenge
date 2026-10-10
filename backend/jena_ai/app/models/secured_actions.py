@@ -246,3 +246,7 @@ class SecuredActionResult(BaseModel):
 class CreateChallengeRoomResult(SecuredActionResult):
     tournament_id: str
     entry_fee_share: int
+
+
+class AiLearningRequest(BaseModel):
+    enabled: bool

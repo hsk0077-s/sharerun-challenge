@@ -11,6 +11,7 @@ import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/donation/today_donation.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/features/profile/widgets/retention_widgets.dart';
 import 'package:share_run_challenge/features/stamp/providers/stamp_tour_enabled_provider.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
@@ -46,8 +47,8 @@ class _SeededWalletNotifier extends WalletNotifier {
   WalletState build() => WalletState.fromModel(_wallet);
 }
 
-Widget _scopedApp({required Widget home}) {
-  final profile =
+Widget _scopedApp({required Widget home, UserModel? profileOverride}) {
+  final profile = profileOverride ??
       UserModel.dashboardDefault(uid: 'test-home').copyWith(nickname: '테스트러너');
   return ProviderScope(
     overrides: [
@@ -320,5 +321,35 @@ void main() {
       find.byType(MainDashboardScreen),
       matchesGoldenFile('goldens/home_dashboard_tokens.png'),
     );
+  });
+
+  testWidgets(
+      'hero shows the SHARE the server gave today, even if this phone walked less',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final today = PedometerKstClock.dateKey();
+    final profile =
+        UserModel.dashboardDefault(uid: 'test-home').copyWith(
+      nickname: '테스트러너',
+      pedometerHarvestDateKey: today,
+      pedometerHarvestedShare: 600,
+      pedometerClaimedSteps: 7100,
+    );
+    await tester.pumpWidget(
+      _scopedApp(
+        profileOverride: profile,
+        home: Scaffold(body: SoloQuickStartBanner(onTap: () {})),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('받은 SHARE 600'), findsOneWidget);
+    expect(find.text('다른 폰에서 이미 SHARE가 반영됐어요'), findsOneWidget);
+    expect(find.text('줍기 대기 0'), findsOneWidget);
   });
 }

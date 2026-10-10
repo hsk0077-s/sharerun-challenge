@@ -20,6 +20,7 @@ class IntroScreen extends StatefulWidget {
 
   static const skipKey = Key('intro-skip');
   static const nextKey = Key('intro-next');
+  static const shareCoinKey = Key('intro-share-coin');
   static const startKey = Key('intro-start');
   static const loginKey = Key('intro-login');
   static const closeKey = Key('intro-close');
@@ -300,26 +301,30 @@ class _ShareGraphic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 8),
-        Container(
-          width: 112,
-          height: 112,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [Color(0xFFF2D27A), AppColors.angelGold],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        Center(
+          child: Container(
+            key: IntroScreen.shareCoinKey,
+            width: 112,
+            height: 112,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [Color(0xFFF2D27A), AppColors.angelGold],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-          ),
-          child: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('S', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white)),
-              Text('SHARE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
-            ],
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('S', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white)),
+                Text('SHARE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 18),

@@ -216,4 +216,17 @@ void main() {
     expect(find.byKey(FirstRunSplash.splashKey), findsNothing);
     expect(find.byKey(IntroScreen.nextKey), findsOneWidget);
   });
+
+  testWidgets('the first intro page keeps the SHARE coin centred',
+      (tester) async {
+    tester.view.physicalSize = const Size(1080, 2340);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(_intro(onFinished: () {}));
+    await tester.pumpAndSettle();
+
+    final coin = tester.getCenter(find.byKey(IntroScreen.shareCoinKey));
+    final screen = tester.getCenter(find.byType(IntroScreen));
+    expect((coin.dx - screen.dx).abs(), lessThan(1));
+  });
 }

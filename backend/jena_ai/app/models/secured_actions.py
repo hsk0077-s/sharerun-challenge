@@ -250,3 +250,10 @@ class CreateChallengeRoomResult(SecuredActionResult):
 
 class AiLearningRequest(BaseModel):
     enabled: bool
+
+
+class LoginDeviceRequest(BaseModel):
+    device_id: str = Field(max_length=128)
+    model: str = Field(default="", max_length=200)
+    os_version: str = Field(default="", max_length=200)
+    app_version: str = Field(default="", max_length=100)

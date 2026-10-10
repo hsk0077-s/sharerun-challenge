@@ -104,6 +104,35 @@ class SecuredActionApiClient {
     return CompanyTournamentConfig.fromJson(json);
   }
 
+  /// Records this install as a signed-in device (model, OS, app version only).
+  Future<void> registerLoginDevice({
+    required String deviceId,
+    required String model,
+    required String osVersion,
+    required String appVersion,
+  }) async {
+    await _post('/actions/security/devices/register', {
+      'device_id': deviceId,
+      'model': model,
+      'os_version': osVersion,
+      'app_version': appVersion,
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> fetchLoginDevices(String deviceId) async {
+    final json = await _get(
+      '/actions/security/devices?device_id=${Uri.encodeQueryComponent(deviceId)}',
+    );
+    final rows = json['devices'];
+    if (rows is! List) return const [];
+    return rows.whereType<Map<String, dynamic>>().toList();
+  }
+
+  /// Signs the account out on every device, this one included.
+  Future<void> signOutEverywhere() async {
+    await _post('/actions/security/sign-out-everywhere', const {});
+  }
+
   /// Server value of the "use my data to improve AI" switch (default off).
   Future<bool> fetchAiLearning() async {
     final json = await _get('/actions/privacy/settings');

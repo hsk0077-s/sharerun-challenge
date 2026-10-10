@@ -11,7 +11,8 @@ class LaunchSplashView extends StatelessWidget {
   const LaunchSplashView({super.key});
 
   static const photoAsset = 'assets/images/splash_morning_run.jpg';
-  static const logoAsset = 'assets/images/src_logo_mark.png';
+  /// 실제 로고(로그인 화면과 같은 파일). `src_logo_mark.png`는 1x1 자리표시 이미지라 쓰지 않는다.
+  static const logoAsset = 'assets/images/sharerun_logo.png';
   static const slogan = '심장이 뛰는 한,\n나눔도 달린다';
   static const sloganKey = Key('launch-splash-slogan');
 
@@ -97,11 +98,16 @@ class LaunchSplashView extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Image.asset(
-                                logoAsset,
-                                height: 20,
-                                errorBuilder: (_, __, ___) =>
-                                    const SizedBox.shrink(),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(6),
+                                child: Image.asset(
+                                  logoAsset,
+                                  width: 24,
+                                  height: 24,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                      const SizedBox(width: 24, height: 24),
+                                ),
                               ),
                               const SizedBox(width: 8),
                               const Text(

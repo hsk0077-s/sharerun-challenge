@@ -16,29 +16,49 @@ class AuthBootstrapResult {
   final LocalAuthSession? session;
 }
 
-/// Reads device-local guest login only — no Firebase or network calls.
+/// What Firebase says about the signed-in user right now.
+/// [known] is false when Firebase cannot be asked (not started, or too slow).
+typedef FirebaseUserProbe = Future<({bool known, String uid, bool anonymous})>
+    Function();
+
+Future<({bool known, String uid, bool anonymous})> _probeFirebaseUser() async {
+  if (Firebase.apps.isEmpty) return (known: false, uid: '', anonymous: false);
+  try {
+    final user = await FirebaseAuth.instance
+        .authStateChanges()
+        .first
+        .timeout(const Duration(seconds: 3));
+    return (
+      known: true,
+      uid: user?.uid ?? '',
+      anonymous: user?.isAnonymous ?? false
+    );
+  } catch (e) {
+    debugPrint('AuthSessionBootstrap firebase user: $e');
+    return (known: false, uid: '', anonymous: false);
+  }
+}
+
+/// Decides the first screen. The server login (Firebase) is the truth: a
+/// login note left on the phone is only trusted while Firebase agrees.
+/// A phone that received the note without the login (for example from an
+/// app-data restore) goes to the login screen instead of an empty home.
 abstract final class AuthSessionBootstrap {
-  static Future<AuthBootstrapResult> run() async {
+  static Future<AuthBootstrapResult> run({FirebaseUserProbe? probe}) async {
     final store = LocalAuthStore();
     var session = await store.read();
 
-    if (session == null || session.uid.isEmpty) {
-      try {
-        if (Firebase.apps.isNotEmpty) {
-          final firebaseUser = FirebaseAuth.instance.currentUser;
-          if (firebaseUser != null && firebaseUser.uid.isNotEmpty) {
-            session = LocalAuthSession(
-              uid: firebaseUser.uid,
-              isGuest: firebaseUser.isAnonymous,
-            );
-            await store.saveSession(
-              uid: session.uid,
-              isGuest: session.isGuest,
-            );
-          }
-        }
-      } catch (e) {
-        debugPrint('AuthSessionBootstrap firebase user: $e');
+    final firebase = await (probe ?? _probeFirebaseUser)();
+    if (firebase.known) {
+      if (firebase.uid.isEmpty) {
+        if (session != null) await store.clear();
+        session = null;
+      } else if (session == null || session.uid != firebase.uid) {
+        session = LocalAuthSession(
+          uid: firebase.uid,
+          isGuest: firebase.anonymous,
+        );
+        await store.saveSession(uid: session.uid, isGuest: session.isGuest);
       }
     }
 

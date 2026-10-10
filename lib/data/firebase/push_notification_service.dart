@@ -33,6 +33,15 @@ class PushNotificationService {
         settings.authorizationStatus == AuthorizationStatus.provisional;
   }
 
+  /// 이 기기의 푸시 토큰. 없거나 오래 걸리면 null.
+  Future<String?> currentToken() async {
+    try {
+      return await _messaging.getToken().timeout(const Duration(seconds: 5));
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<void> syncTokenForUser({
     required String uid,
     required UserRepository userRepository,

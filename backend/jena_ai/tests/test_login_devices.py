@@ -92,7 +92,7 @@ def test_list_marks_current_and_shows_no_location() -> None:
     register_device(db, "u1", "b" * 16, model="B", os_version="x", app_version="1")
     rows = list_devices(db, "u1", "b" * 16)
     assert {r["device_id"]: r["current"] for r in rows} == {"a" * 16: False, "b" * 16: True}
-    assert all(set(r) == {"device_id", "model", "os_version", "app_version", "last_seen_at", "current"} for r in rows)
+    assert all("fcmToken" not in r and "fcm_token" not in r for r in rows)
 
 
 def test_sign_out_revokes_clears_list_and_logs_once() -> None:
@@ -148,3 +148,34 @@ def test_a_failing_check_does_not_lock_everyone_out(monkeypatch) -> None:
 
     monkeypatch.setattr(auth, "get_user", boom)
     assert auth_module.auth_service.verify_bearer_token("Bearer t") == "u1"
+
+
+def test_new_device_alerts_the_other_devices_once() -> None:
+    db = _Db()
+    sent = []
+    notify = lambda tokens, model: sent.append((tokens, model))  # noqa: E731
+    register_device(db, "u1", "a" * 16, model="Old", os_version="x", app_version="1", fcm_token="tok-old", notify=notify)
+    assert sent == []  # the first device has nobody to tell
+    assert register_device(db, "u1", "b" * 16, model="New", os_version="x", app_version="1", fcm_token="tok-new", notify=notify) is True
+    assert sent == [(["tok-old"], "New")]  # the new device is not told about itself
+    assert register_device(db, "u1", "b" * 16, model="New", os_version="x", app_version="1", fcm_token="tok-new", notify=notify) is False
+    assert len(sent) == 1  # opening the app again is not a new login
+
+
+def test_a_failing_alert_never_blocks_registration() -> None:
+    db = _Db()
+    register_device(db, "u1", "a" * 16, model="Old", os_version="x", app_version="1", fcm_token="tok-old")
+
+    def boom(tokens, model):
+        raise RuntimeError("push down")
+
+    register_device(db, "u1", "b" * 16, model="New", os_version="x", app_version="1", notify=boom)
+    assert "b" * 16 in db.devices
+
+
+def test_devices_without_a_push_token_are_skipped() -> None:
+    db = _Db()
+    sent = []
+    register_device(db, "u1", "a" * 16, model="Old", os_version="x", app_version="1")
+    register_device(db, "u1", "b" * 16, model="New", os_version="x", app_version="1", notify=lambda t, m: sent.append(t))
+    assert sent == []

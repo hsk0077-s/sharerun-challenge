@@ -142,7 +142,13 @@ class _DeviceTile extends StatelessWidget {
       color: AppColors.surfaceWhite,
       child: ListTile(
         leading: const Icon(Icons.smartphone, color: AppColors.tealAccent),
-        title: Text(device.current ? '$name (이 기기)' : name),
+        title: Text(
+          device.current
+              ? '$name (이 기기)'
+              : device.isNew()
+                  ? '$name · 새 기기'
+                  : name,
+        ),
         subtitle: Text(
           '${device.osVersion} · 앱 ${device.appVersion}\n마지막으로 연 시각 $when',
           style: AppTextStyles.caption,

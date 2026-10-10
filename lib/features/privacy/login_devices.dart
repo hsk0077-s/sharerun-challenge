@@ -15,6 +15,7 @@ class LoginDevice {
     required this.appVersion,
     required this.lastSeenAt,
     required this.current,
+    this.firstSeenAt,
   });
 
   final String deviceId;
@@ -22,7 +23,15 @@ class LoginDevice {
   final String osVersion;
   final String appVersion;
   final DateTime? lastSeenAt;
+  final DateTime? firstSeenAt;
   final bool current;
+
+  /// 이 계정에 처음 나타난 지 하루가 안 된 다른 기기.
+  bool isNew({DateTime? now}) {
+    final first = firstSeenAt;
+    if (current || first == null) return false;
+    return (now ?? DateTime.now()).difference(first).inHours < 24;
+  }
 
   factory LoginDevice.fromJson(Map<String, dynamic> json) {
     return LoginDevice(
@@ -31,6 +40,7 @@ class LoginDevice {
       osVersion: json['os_version'] as String? ?? '',
       appVersion: json['app_version'] as String? ?? '',
       lastSeenAt: DateTime.tryParse(json['last_seen_at'] as String? ?? ''),
+      firstSeenAt: DateTime.tryParse(json['first_seen_at'] as String? ?? ''),
       current: json['current'] == true,
     );
   }
@@ -64,6 +74,9 @@ Future<void> registerThisDevice(WidgetRef ref) async {
           model: info.model,
           osVersion: info.osVersion,
           appVersion: info.appVersion,
+          fcmToken:
+              await ref.read(pushNotificationServiceProvider).currentToken() ??
+                  '',
         );
   } catch (_) {}
 }

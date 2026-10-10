@@ -110,8 +110,10 @@ class SecuredActionApiClient {
     required String model,
     required String osVersion,
     required String appVersion,
+    String fcmToken = '',
   }) async {
     await _post('/actions/security/devices/register', {
+      if (fcmToken.isNotEmpty) 'fcm_token': fcmToken,
       'device_id': deviceId,
       'model': model,
       'os_version': osVersion,

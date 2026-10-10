@@ -41,6 +41,7 @@ from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
 from app.services import login_devices, privacy_settings
+from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services.secured_action_service import SecuredActionService
 
@@ -386,6 +387,8 @@ def register_login_device(
         model=request.model,
         os_version=request.os_version,
         app_version=request.app_version,
+        fcm_token=request.fcm_token,
+        notify=send_new_device_alert,
     )
     return {"status": "ok"}
 

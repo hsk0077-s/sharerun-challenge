@@ -118,7 +118,8 @@
         android:icon="@mipmap/ic_launcher"
         android:label="쉐어 런"
         android:usesCleartextTraffic="false"
-        tools:replace="android:usesCleartextTraffic">
+        android:allowBackup="false"
+        tools:replace="android:usesCleartextTraffic,android:allowBackup">
 
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyA-qQCDl1affyv8CPF6RWSHHxyw32618E0"/>
 

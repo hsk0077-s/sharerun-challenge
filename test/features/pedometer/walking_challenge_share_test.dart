@@ -50,12 +50,12 @@ void main() {
   test('promo text is Korean walking invite, not a brag card', () {
     expect(WalkingChallengeShare.promoText, contains('워킹챌린지'));
     expect(WalkingChallengeShare.promoText, contains('SHARE'));
-    expect(WalkingChallengeShare.promoText, contains('SRC'));
+    expect(WalkingChallengeShare.promoText, contains('쉐어런'));
     expect(WalkingChallengeShare.promoText, contains(RegExp(r'[가-힣]')));
     expect(WalkingChallengeShare.promoText.toLowerCase(),
         isNot(contains('kakao sdk')));
     expect(WalkingChallengeShare.promoText, isNot(contains('오늘의 목표 달성')));
-    expect(WalkingChallengeShare.subject, 'SRC 워킹챌린지');
+    expect(WalkingChallengeShare.subject, '쉐어런 워킹챌린지');
     expect(WalkingChallengeShare.buttonTooltip, '공유');
   });
 
@@ -63,7 +63,7 @@ void main() {
     expect(WalkingChallengeShare.dailyGoalBragText, contains('오늘의 목표 달성'));
     expect(WalkingChallengeShare.dailyGoalBragText, contains('워킹챌린지'));
     expect(WalkingChallengeShare.dailyGoalBragText, contains('SHARE'));
-    expect(WalkingChallengeShare.dailyGoalBragText, contains('SRC'));
+    expect(WalkingChallengeShare.dailyGoalBragText, contains('쉐어런'));
     expect(WalkingChallengeShare.dailyGoalBragText, contains(RegExp(r'[가-힣]')));
     expect(
       WalkingChallengeShare.dailyGoalBragText.toLowerCase(),
@@ -73,7 +73,7 @@ void main() {
       WalkingChallengeShare.dailyGoalBragText,
       isNot(equals(WalkingChallengeShare.promoText)),
     );
-    expect(WalkingChallengeShare.dailyGoalBragSubject, 'SRC 오늘의 목표 달성');
+    expect(WalkingChallengeShare.dailyGoalBragSubject, '쉐어런 오늘의 목표 달성');
     expect(WalkingChallengeShare.dailyGoalBragButtonLabel, '자랑하기');
   });
 
@@ -313,12 +313,12 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    const finishText = 'SRC 앱에서 8.35km를 달렸어요. '
+    const finishText = '쉐어런 앱에서 8.35km를 달렸어요. '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
     expect(sent, isNotNull);
     expect(sent!.text, finishText);
-    expect(sent!.subject, 'SRC 완주 기록');
-    expect(sent!.title, 'SRC 완주 기록');
+    expect(sent!.subject, '쉐어런 완주 기록');
+    expect(sent!.title, '쉐어런 완주 기록');
     expect(sent!.sharePositionOrigin, isNotNull);
     expect(sent!.files, isNull);
     expect(sent!.text, isNot(WalkingChallengeShare.promoText));
@@ -361,10 +361,10 @@ void main() {
     expect(sent, isNotNull);
     expect(
       sent!.text,
-      'SRC $roomTitle 방에 같이 도전해요!\n#SRC #ShareRunChallenge',
+      '쉐어런 $roomTitle 방에 같이 도전해요!\n#쉐어런 #ShareRun',
     );
-    expect(sent!.subject, 'SRC 챌린지 초대');
-    expect(sent!.title, 'SRC 챌린지 초대');
+    expect(sent!.subject, '쉐어런 챌린지 초대');
+    expect(sent!.title, '쉐어런 챌린지 초대');
     expect(sent!.sharePositionOrigin, isNotNull);
     expect(sent!.files, isNull);
     expect(sent!.text, isNot(WalkingChallengeShare.promoText));
@@ -694,12 +694,12 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    const finishText = 'SRC 앱에서 8.35km를 달렸어요. '
+    const finishText = '쉐어런 앱에서 8.35km를 달렸어요. '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
     expect(kakaoText, isNull);
     expect(sent, isNotNull);
     expect(sent!.text, finishText);
-    expect(sent!.subject, 'SRC 완주 기록');
+    expect(sent!.subject, '쉐어런 완주 기록');
     expect(sent!.files, isNull);
     expect(
       platformCalls.where((call) => call.method.startsWith('Clipboard')),
@@ -748,7 +748,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    const finishText = 'SRC 앱에서 8.35km를 달렸어요. '
+    const finishText = '쉐어런 앱에서 8.35km를 달렸어요. '
         '⏱ 기록: ${AppStrings.runResultFinalTimeValue}';
     expect(kakaoText, finishText);
     expect(kakaoText, isNot(WalkingChallengeShare.promoText));

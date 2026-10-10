@@ -50,7 +50,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
     final sponsorBuff = ref.watch(activeSponsorBuffProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('SRC Run Tracking')),
+      appBar: AppBar(title: const Text('달리기 기록')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

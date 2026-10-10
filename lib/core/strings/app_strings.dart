@@ -3,7 +3,7 @@
 /// Intl 패키지 도입 전까지 하드코딩 문자열을 이곳에 모읍니다.
 abstract final class AppStrings {
   // ── Login (Screen 1) ──────────────────────────────────────────────
-  static const loginLogoMark = 'SRC';
+  static const loginLogoMark = '쉐어런';
   static const loginTitle = '쉐어런';
   static const loginSubtitle = '세계를 향한 나눔의 질주';
 
@@ -35,7 +35,7 @@ abstract final class AppStrings {
   static const termsTitle =
       '환영합니다!\n시작 전 약관 동의가\n필요합니다.';
   static const termsSubtitle =
-      '안전하고 공정한 SRC 생태계를 위해 필수\n항목에 동의해 주세요.';
+      '안전하고 공정한 쉐어런 생태계를 위해 필수\n항목에 동의해 주세요.';
 
   static const termsAllAgree = '[전체 동의] 쉐어런챌린지 이용약관';
   static const termsRequiredService = '[필수] 쉐어런챌린지 서비스 이용약관';
@@ -354,7 +354,7 @@ abstract final class AppStrings {
       '후원 시 프로필에 천사 뱃지가 영구 노출됩니다';
   static const personalSponsorAmount = '50,000 SHARE';
   static const personalSponsorMonthlyToggle =
-      "월간 '셰어 멤버십'으로 매월 정기 후원하기";
+      "월간 'SHARE 멤버십'으로 매월 정기 후원하기";
   static const personalSponsorPurposeLabel =
       '후원금의 사용 목적을 직접 선택해 주세요.';
   static const personalSponsorPrizeTitle = '[순수 상금 지원]';
@@ -507,7 +507,7 @@ abstract final class AppStrings {
   static const subscriptionDonationTitle = '글로벌 결식아동 정기 후원';
   static const subscriptionDonationStatus =
       '매월 10,000 SHARE 자동 후원 중\n(다음 결제일: 2026.07.15)';
-  static const subscriptionPremiumTitle = 'SRC 프리미엄 멤버십';
+  static const subscriptionPremiumTitle = '쉐어런 프리미엄 멤버십';
   static const subscriptionPremiumBenefit1 = '모든 전면 광고 제거 (예정)';
   static const subscriptionPremiumBenefit2 = 'AI 심층 분석 리포트 무제한 (예정)';
   static const subscriptionPremiumNotice =

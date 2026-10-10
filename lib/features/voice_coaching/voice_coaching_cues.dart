@@ -35,7 +35,7 @@ abstract final class VoiceCoachingCues {
 
   static const walkHarvest = VoiceCue(
     id: 'walk.harvest',
-    ko: '셰어를 수확했어요. 수고했어요.',
+    ko: 'SHARE를 수확했어요. 수고했어요.',
     en: 'SHARE harvested. Nice work.',
   );
 

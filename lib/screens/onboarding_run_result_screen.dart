@@ -315,7 +315,7 @@ class _OnboardingRunResultScreenState
       await WalkingChallengeShare.openChooser(
         buttonContext,
         text: shareText,
-        subject: 'SRC 완주 기록',
+        subject: '쉐어런 완주 기록',
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {

@@ -97,7 +97,7 @@ class NotificationService {
       hour: 8,
       minute: 30,
       title: '🏃 활기찬 아침, 오늘의 첫걸음을 시작해 보세요!',
-      body: '오늘 하루 걷는 모든 발걸음이 소중한 쉐어토큰이 됩니다.',
+      body: '오늘 하루 걷는 모든 발걸음이 소중한 SHARE가 됩니다.',
     );
     await _scheduleDaily(
       id: _lunchId,
@@ -110,7 +110,7 @@ class NotificationService {
       id: _eveningId,
       hour: 20,
       minute: 30,
-      title: '🎁 오늘 획득할 수 있는 쉐어토큰이 남아있어요!',
+      title: '🎁 오늘 획득할 수 있는 SHARE가 남아있어요!',
       body: '오늘의 걸음을 인증하고 준비된 토큰 보상을 놓치지 마세요.',
     );
   }

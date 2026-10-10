@@ -74,7 +74,7 @@ String runFinishShareText({
   required String time,
   int? donationWon,
 }) {
-  final record = 'SRC 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time';
+  final record = '쉐어런 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time';
   final donation = runFinishDonationLine(donationWon);
   if (donation == null) return record;
   return '$donation. $record';

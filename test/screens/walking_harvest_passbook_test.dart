@@ -65,7 +65,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
 
-    expect(find.text('내 누적 셰어 통장 🏦'), findsOneWidget);
+    expect(find.text('내 누적 SHARE 통장 🏦'), findsOneWidget);
     expect(find.text('970000 SHARE'), findsOneWidget);
 
     final element = tester.element(find.byType(SoloPedometerScreen));

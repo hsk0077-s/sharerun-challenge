@@ -17,7 +17,7 @@ class CrewRankingModel {
   }) {
     return CrewRankingModel(
       id: id,
-      name: json['name'] as String? ?? 'SRC Crew',
+      name: json['name'] as String? ?? '쉐어런 크루',
       totalValue: (json['totalValue'] as num?)?.toInt() ?? 0,
       memberCount: (json['memberCount'] as num?)?.toInt() ?? 0,
     );

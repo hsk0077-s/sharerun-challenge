@@ -485,7 +485,7 @@ class _MissingRouteArgsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('SRC')),
+      appBar: AppBar(title: const Text('쉐어런')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

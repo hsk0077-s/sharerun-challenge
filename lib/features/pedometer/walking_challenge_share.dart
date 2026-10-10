@@ -19,7 +19,7 @@ enum KakaoDirectShareStatus { sent, notInstalled, failed }
 abstract final class WalkingChallengeShare {
   static const buttonKey = Key('walking-system-share');
   static const buttonTooltip = '공유';
-  static const subject = 'SRC 워킹챌린지';
+  static const subject = '쉐어런 워킹챌린지';
 
   static const kakaoChoiceKey = Key('share-kakao-talk');
   static const systemChoiceKey = Key('share-other-apps');
@@ -30,18 +30,18 @@ abstract final class WalkingChallengeShare {
   /// Kakao text templates reject bodies longer than this.
   static const kakaoTextLimit = 200;
 
-  static const promoText = 'SRC 워킹챌린지에서 함께 걷고 SHARE를 모아보세요!\n'
+  static const promoText = '쉐어런 워킹챌린지에서 함께 걷고 SHARE를 모아보세요!\n'
       '걸을수록 쌓이는 SHARE, 친구와 같이 시작해요.\n'
-      '#SRC #워킹챌린지 #ShareRunChallenge';
+      '#쉐어런 #워킹챌린지 #ShareRun';
 
   static const dailyGoalBragKey = Key('walking-daily-goal-brag');
   static const dailyGoalBragButtonLabel = '자랑하기';
-  static const dailyGoalBragSubject = 'SRC 오늘의 목표 달성';
+  static const dailyGoalBragSubject = '쉐어런 오늘의 목표 달성';
 
   static const dailyGoalBragText = '오늘의 목표 달성! 🎉\n'
-      'SRC 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n'
+      '쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n'
       '걷고 SHARE 모으고, 내일도 같이 걸어요!\n'
-      '#SRC #워킹챌린지 #오늘의목표달성';
+      '#쉐어런 #워킹챌린지 #오늘의목표달성';
 
   /// Test hook. Production always uses [SharePlus.instance].
   @visibleForTesting

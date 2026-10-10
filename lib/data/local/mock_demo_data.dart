@@ -136,9 +136,9 @@ abstract final class MockDemoData {
           'participantCount': 12,
           'requiredTier': 1,
           'status': 'active',
-          'sponsorName': 'SRC Sponsor',
+          'sponsorName': '쉐어런 스폰서',
           'sponsorBillboardMessages': [
-            '⚡ Neon 5K Sprint — SRC 스폰서가 응원합니다!',
+            '⚡ Neon 5K Sprint — 쉐어런 스폰서가 응원합니다!',
             '🔥 완주 시 밸류 토큰 채굴 보너스 이벤트 진행 중',
             '🏆 크루원과 함께 페이스를 맞춰 보세요',
           ],

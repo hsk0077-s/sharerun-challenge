@@ -17,7 +17,7 @@ const myPageInvitePlayStoreUrl =
 
 /// Short invite body. No reward amounts — payout copy is a later step.
 String myPageInviteShareText(String code) {
-  return '쉐어 런에 초대해요!\n'
+  return '쉐어런에 초대해요!\n'
       '초대 코드: $code\n'
       '$myPageInvitePlayStoreUrl';
 }
@@ -52,7 +52,7 @@ class MyPageInviteCodeCard extends ConsumerStatefulWidget {
   static const copiedMessage = '복사했어요';
   static const loadFailedMessage = '초대 코드를 불러오지 못했어요. 다시 시도';
   static const kakaoButtonLabel = '카카오톡으로 초대하기';
-  static const shareSubject = '쉐어 런 초대';
+  static const shareSubject = '쉐어런 초대';
 
   @override
   ConsumerState<MyPageInviteCodeCard> createState() =>

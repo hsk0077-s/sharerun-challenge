@@ -111,7 +111,7 @@ class LaunchSplashView extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               const Text(
-                                '쉐어 런',
+                                '쉐어런',
                                 style: TextStyle(
                                   color: _green,
                                   fontWeight: FontWeight.w800,

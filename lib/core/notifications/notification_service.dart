@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'reminder_schedule.dart';
 
 /// 워킹챌린지 매일 반복 로컬 푸시 (08:30 / 12:30 / 20:30 KST).
 class NotificationService {
@@ -142,7 +143,7 @@ class NotificationService {
       body,
       _nextKst(hour, minute),
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: reminderScheduleMode,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,

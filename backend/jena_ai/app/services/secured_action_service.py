@@ -26,6 +26,7 @@ from app.models.secured_actions import (
     WinnerRewardRequest,
 )
 from app.services.firebase_service import FirebaseService
+from app.services.route_privacy import trim_route
 from app.constants.economy_constants import (
     HALL_OF_FAME_DONATE_VALUE,
     PEDOMETER_HOURLY_STEP_CAP,
@@ -1079,6 +1080,8 @@ class SecuredActionService:
             point.model_dump() if hasattr(point, "model_dump") else point.dict()
             for point in request.gps_route
         ]
+        # Only the stored copy is trimmed; validation above used the full route.
+        route = trim_route(route)
         average_pace = (
             None
             if request.distance_km <= 0

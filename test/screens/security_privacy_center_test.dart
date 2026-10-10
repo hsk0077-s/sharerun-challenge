@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,6 +37,35 @@ void main() {
 
     expect(saved, [true]);
     expect(sw().value, isTrue);
+  });
+
+  testWidgets('a slow save shows progress, then the value the server returned',
+      (tester) async {
+    final reply = Completer<bool>();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          aiLearningProvider.overrideWith((ref) async => false),
+          aiLearningSaverProvider.overrideWithValue(
+            (bool next) => reply.future,
+          ),
+        ],
+        child: const MaterialApp(home: Scaffold(body: AiLearningTile())),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(AiLearningTile.switchKey));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byKey(AiLearningTile.switchKey), findsNothing);
+
+    reply.complete(true);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Switch>(find.byKey(AiLearningTile.switchKey)).value,
+      isTrue,
+    );
   });
 
   testWidgets('a failed save keeps the server value and says so',

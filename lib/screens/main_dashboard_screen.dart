@@ -175,18 +175,10 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
 
   void _onOpenStore({required StoreFocus focus}) {
     ref.read(storeFocusProvider.notifier).setFocus(focus);
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      try {
-        context.pushNamed(
-          RouteNames.store,
-          queryParameters: {'focus': focus.name},
-        );
-        return;
-      } catch (_) {
-        DashboardTabNavigation.go(context, DashboardTabNavigation.shop);
-        return;
-      }
+    // 상점은 탭이다. 탭으로 옮겨야 뒤로가기가 홈으로 돌아온다.
+    if (GoRouter.maybeOf(context) != null) {
+      DashboardTabNavigation.go(context, DashboardTabNavigation.shop);
+      return;
     }
     AppRouteNav.push<void>(
       context,

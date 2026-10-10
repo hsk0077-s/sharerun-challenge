@@ -13,7 +13,7 @@ abstract final class LegalConstants {
   static const pushNotificationsTitle = '마케팅·활동 알림 (선택)';
 
   static const termsOfServiceSummary =
-      'SRC는 검증된 러닝 활동, 대회 참가, 기부형 리워드를 제공합니다. '
+      '쉐어런은 검증된 러닝 활동, 대회 참가, 기부형 리워드를 제공합니다. '
       '부정 러닝·결제 어뷰징은 계정 제한 대상이 될 수 있습니다.';
 
   static const privacyPolicySummary =

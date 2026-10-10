@@ -30,7 +30,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              'Welcome to SRC',
+              '쉐어런에 오신 걸 환영해요',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),

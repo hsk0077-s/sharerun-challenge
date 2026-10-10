@@ -74,7 +74,7 @@ String runFinishShareText({
   required String time,
   int? donationWon,
 }) {
-  final record = 'SRC 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time';
+  final record = '쉐어런 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time';
   final donation = runFinishDonationLine(donationWon);
   if (donation == null) return record;
   return '$donation. $record';
@@ -125,7 +125,7 @@ class RunFinishShareCard extends StatelessWidget {
   static const heartRateKey = Key('run-finish-heart-rate');
   static const splitGraphKey = Key('run-finish-split-graph');
 
-  static const appName = '쉐어 런';
+  static const appName = '쉐어런';
   static const headline = '오늘의 러닝';
   static const fontFamily = 'ShareRunCard';
 

@@ -21,7 +21,7 @@ abstract final class AppTextStyles {
     height: 1.0,
   );
 
-  /// 메인 타이틀 — "쉐어 런 챌린지 (SRC)"
+  /// 메인 타이틀 — "쉐어런 챌린지 (SRC)"
   static const header1 = TextStyle(
     fontFamily: _fontFamily,
     fontSize: 24,

@@ -34,7 +34,7 @@ class _SponsorBillboardState extends ConsumerState<SponsorBillboard>
   @override
   Widget build(BuildContext context) {
     final buff = ref.watch(activeSponsorBuffProvider);
-    final headline = buff?.sponsorName ?? 'UNICEF × SRC';
+    final headline = buff?.sponsorName ?? 'UNICEF × 쉐어런';
     final message = buff?.message ??
         '검증된 러닝 한 걸음이 식수 지원으로 이어집니다';
 

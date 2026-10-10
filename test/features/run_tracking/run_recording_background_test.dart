@@ -50,7 +50,7 @@ void main() {
   });
 
   test('korean copy does not offer resume or a reward', () {
-    expect(runRecordingNotificationTitle, '쉐어 런 · 달리기 기록 중');
+    expect(runRecordingNotificationTitle, '쉐어런 · 달리기 기록 중');
     expect(runRecordingChecklistMenuLabel, '달리기 기록 설정 점검');
     expect(runRecordingBatteryGuidance, contains('제한 없음'));
     expect(interruptedRunTitle, '이전 달리기가 중단되었습니다');

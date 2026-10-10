@@ -53,6 +53,7 @@ void main() {
     expect(find.text('Pixel 8'), findsOneWidget);
     expect(find.textContaining('IP 주소는 저장하지 않아요'), findsOneWidget);
     expect(find.byKey(LoginDevicesScreen.signOutKey), findsOneWidget);
+    expect(find.byKey(LoginDevicesScreen.noteKey), findsOneWidget);
   });
 
   testWidgets('sign out everywhere asks first and cancel does nothing',

@@ -71,11 +71,11 @@ void main() {
     expect(runFinishDonationSkippedLine('cap_reached'), '이번 달 기부 목표 달성!');
     expect(
       runFinishShareText(distanceKm: '2.40', time: '12:00', donationWon: 200),
-      '이번 달리기로 회사가 200원을 기부해요. SRC 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
+      '이번 달리기로 회사가 200원을 기부해요. 쉐어런 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
     );
     expect(
       runFinishShareText(distanceKm: '2.40', time: '12:00'),
-      'SRC 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
+      '쉐어런 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
     );
   });
 

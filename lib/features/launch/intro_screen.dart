@@ -77,7 +77,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     const Icon(Icons.favorite, color: AppColors.tealAccent, size: 20),
                     const SizedBox(width: 6),
                     const Text(
-                      '쉐어 런',
+                      '쉐어런',
                       style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                     ),
                     const Spacer(),

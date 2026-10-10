@@ -3,8 +3,8 @@
 /// Intl 패키지 도입 전까지 하드코딩 문자열을 이곳에 모읍니다.
 abstract final class AppStrings {
   // ── Login (Screen 1) ──────────────────────────────────────────────
-  static const loginLogoMark = 'SRC';
-  static const loginTitle = '쉐어 런';
+  static const loginLogoMark = '쉐어런';
+  static const loginTitle = '쉐어런';
   static const loginSubtitle = '세계를 향한 나눔의 질주';
 
   static const loginGoogle = 'Google로 계속하기';
@@ -35,10 +35,10 @@ abstract final class AppStrings {
   static const termsTitle =
       '환영합니다!\n시작 전 약관 동의가\n필요합니다.';
   static const termsSubtitle =
-      '안전하고 공정한 SRC 생태계를 위해 필수\n항목에 동의해 주세요.';
+      '안전하고 공정한 쉐어런 생태계를 위해 필수\n항목에 동의해 주세요.';
 
-  static const termsAllAgree = '[전체 동의] 셰어런챌린지 이용약관';
-  static const termsRequiredService = '[필수] 셰어런챌린지 서비스 이용약관';
+  static const termsAllAgree = '[전체 동의] 쉐어런챌린지 이용약관';
+  static const termsRequiredService = '[필수] 쉐어런챌린지 서비스 이용약관';
   static const termsRequiredPrivacy = '[필수] 개인정보 수집 및 이용 동의';
   static const termsRequiredLocation = '[필수] 위치기반서비스 이용약관 동의';
   static const termsOptionalHealth =
@@ -67,7 +67,7 @@ abstract final class AppStrings {
   static const deviceConnectionConnect = '기기 연결';
   static const deviceConnectionDisconnect = '연동 해제';
   static const deviceConnectionSingleActiveNote =
-      '쉐어 런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
+      '쉐어런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
 
   // ── Garmin OAuth (Screen 4) ───────────────────────────────────────
@@ -354,7 +354,7 @@ abstract final class AppStrings {
       '후원 시 프로필에 천사 뱃지가 영구 노출됩니다';
   static const personalSponsorAmount = '50,000 SHARE';
   static const personalSponsorMonthlyToggle =
-      "월간 '셰어 멤버십'으로 매월 정기 후원하기";
+      "월간 'SHARE 멤버십'으로 매월 정기 후원하기";
   static const personalSponsorPurposeLabel =
       '후원금의 사용 목적을 직접 선택해 주세요.';
   static const personalSponsorPrizeTitle = '[순수 상금 지원]';
@@ -507,7 +507,7 @@ abstract final class AppStrings {
   static const subscriptionDonationTitle = '글로벌 결식아동 정기 후원';
   static const subscriptionDonationStatus =
       '매월 10,000 SHARE 자동 후원 중\n(다음 결제일: 2026.07.15)';
-  static const subscriptionPremiumTitle = 'SRC 프리미엄 멤버십';
+  static const subscriptionPremiumTitle = '쉐어런 프리미엄 멤버십';
   static const subscriptionPremiumBenefit1 = '모든 전면 광고 제거 (예정)';
   static const subscriptionPremiumBenefit2 = 'AI 심층 분석 리포트 무제한 (예정)';
   static const subscriptionPremiumNotice =

@@ -593,7 +593,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                subtitle: Text('쉐어 런 첫 소개 3장', style: AppTextStyles.caption),
+                subtitle: Text('쉐어런 첫 소개 3장', style: AppTextStyles.caption),
                 trailing: const Icon(
                   Icons.chevron_right_rounded,
                   color: AppColors.textGreyLight,

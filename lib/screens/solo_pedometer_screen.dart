@@ -1544,7 +1544,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('셰어 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
+            content: Text('SHARE 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
           ),
         );
       }
@@ -1831,7 +1831,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '내 누적 셰어 통장 🏦',
+                  '내 누적 SHARE 통장 🏦',
                   style: textTheme.labelMedium?.copyWith(
                     color: tokens.colors.muted,
                     fontWeight: FontWeight.w600,

@@ -34,8 +34,8 @@ class ChallengeDetailScreen extends StatelessWidget {
     if (title.isEmpty) return;
     try {
       await WalkingChallengeShare.openSystemSheet(
-        text: 'SRC $title 방에 같이 도전해요!\n#SRC #ShareRunChallenge',
-        subject: 'SRC 챌린지 초대',
+        text: '쉐어런 $title 방에 같이 도전해요!\n#쉐어런 #ShareRun',
+        subject: '쉐어런 챌린지 초대',
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {

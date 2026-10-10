@@ -45,7 +45,7 @@ class SRCLogo extends StatelessWidget {
           width: width,
           fit: BoxFit.fitWidth,
           filterQuality: FilterQuality.high,
-          semanticLabel: 'SRC logo',
+          semanticLabel: '쉐어런 로고',
           errorBuilder: _errorBuilder,
         ),
       );
@@ -57,7 +57,7 @@ class SRCLogo extends StatelessWidget {
       height: height,
       fit: fit,
       filterQuality: FilterQuality.high,
-      semanticLabel: 'SRC logo',
+      semanticLabel: '쉐어런 로고',
       errorBuilder: _errorBuilder,
     );
   }

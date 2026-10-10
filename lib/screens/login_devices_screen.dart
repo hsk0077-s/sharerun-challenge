@@ -14,6 +14,7 @@ class LoginDevicesScreen extends ConsumerStatefulWidget {
 
   static const signOutKey = Key('login-devices-sign-out');
   static const retryKey = Key('login-devices-retry');
+  static const noteKey = Key('login-devices-note');
 
   @override
   ConsumerState<LoginDevicesScreen> createState() => _LoginDevicesScreenState();
@@ -81,6 +82,12 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
           Text(
             '이 계정으로 앱을 연 기기예요. 기기 이름과 마지막으로 연 시각만 저장하고, '
             '위치나 IP 주소는 저장하지 않아요.',
+            style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '앱 데이터를 지우거나 다시 설치하면 같은 폰이 한 줄 더 보일 수 있어요.',
+            key: LoginDevicesScreen.noteKey,
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),

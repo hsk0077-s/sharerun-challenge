@@ -18,7 +18,7 @@ abstract final class RunFinishImageShare {
   static const moreLabel = '더보기';
   static const captureFailedMessage = '공유 이미지를 만들지 못했어요.';
   static const instagramFailedMessage = 'Instagram 스토리로 공유하지 못했어요.';
-  static const subject = '쉐어 런 완주';
+  static const subject = '쉐어런 완주';
 
   static const instagramButtonKey = Key('run-finish-instagram');
   static const tiktokButtonKey = Key('run-finish-tiktok');

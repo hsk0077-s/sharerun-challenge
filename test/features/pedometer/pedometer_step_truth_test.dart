@@ -716,7 +716,7 @@ void main() {
   group('WalkingChallengeNotificationCopy', () {
     test('0 daily steps names the harvest rule with a zero count', () {
       final copy = WalkingChallengeNotificationCopy.fromDailySteps(0);
-      expect(copy.title, contains('셰어런 챌린지 대기 중'));
+      expect(copy.title, contains('쉐어런 챌린지 대기 중'));
       expect(
         copy.body,
         '0보 · 줍기 가능 약 0 SHARE (100걸음당 10, 하루 최대 600)',

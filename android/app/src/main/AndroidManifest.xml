@@ -116,7 +116,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="쉐어 런"
+        android:label="쉐어런"
         android:usesCleartextTraffic="false"
         android:allowBackup="false"
         tools:replace="android:usesCleartextTraffic,android:allowBackup">
@@ -129,7 +129,7 @@
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
-            android:label="쉐어 런"
+            android:label="쉐어런"
             android:theme="@style/LaunchTheme"
             android:windowSoftInputMode="adjustResize">
 

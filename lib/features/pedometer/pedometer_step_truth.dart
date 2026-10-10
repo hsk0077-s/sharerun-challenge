@@ -304,7 +304,7 @@ abstract final class WalkingChallengeNotificationCopy {
     if (currentSteps >= 1500) {
       return (title: '숲길 걷는 중 👟', body: body);
     }
-    return (title: '셰어런 챌린지 대기 중 🎯', body: body);
+    return (title: '쉐어런 챌린지 대기 중 🎯', body: body);
   }
 
   /// Morning, lunch, and evening alarms repeat every day at the same clock

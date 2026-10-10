@@ -125,7 +125,7 @@ class RunFinishShareCard extends StatelessWidget {
   static const heartRateKey = Key('run-finish-heart-rate');
   static const splitGraphKey = Key('run-finish-split-graph');
 
-  static const appName = '쉐어 런';
+  static const appName = '쉐어런';
   static const headline = '오늘의 러닝';
   static const fontFamily = 'ShareRunCard';
 

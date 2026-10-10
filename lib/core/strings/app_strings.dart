@@ -4,7 +4,7 @@
 abstract final class AppStrings {
   // ── Login (Screen 1) ──────────────────────────────────────────────
   static const loginLogoMark = 'SRC';
-  static const loginTitle = '쉐어 런';
+  static const loginTitle = '쉐어런';
   static const loginSubtitle = '세계를 향한 나눔의 질주';
 
   static const loginGoogle = 'Google로 계속하기';
@@ -37,8 +37,8 @@ abstract final class AppStrings {
   static const termsSubtitle =
       '안전하고 공정한 SRC 생태계를 위해 필수\n항목에 동의해 주세요.';
 
-  static const termsAllAgree = '[전체 동의] 셰어런챌린지 이용약관';
-  static const termsRequiredService = '[필수] 셰어런챌린지 서비스 이용약관';
+  static const termsAllAgree = '[전체 동의] 쉐어런챌린지 이용약관';
+  static const termsRequiredService = '[필수] 쉐어런챌린지 서비스 이용약관';
   static const termsRequiredPrivacy = '[필수] 개인정보 수집 및 이용 동의';
   static const termsRequiredLocation = '[필수] 위치기반서비스 이용약관 동의';
   static const termsOptionalHealth =
@@ -67,7 +67,7 @@ abstract final class AppStrings {
   static const deviceConnectionConnect = '기기 연결';
   static const deviceConnectionDisconnect = '연동 해제';
   static const deviceConnectionSingleActiveNote =
-      '쉐어 런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
+      '쉐어런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
 
   // ── Garmin OAuth (Screen 4) ───────────────────────────────────────

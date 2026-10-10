@@ -1,5 +1,5 @@
 /// Copy and decisions for background run recording. No plugins.
-const runRecordingNotificationTitle = '쉐어 런 · 달리기 기록 중';
+const runRecordingNotificationTitle = '쉐어런 · 달리기 기록 중';
 
 const interruptedRunTitle = '이전 달리기가 중단되었습니다';
 
@@ -12,7 +12,7 @@ const recordingMayStopWarning = '화면이 꺼지면 달리기 기록이 중단�
 const runRecordingChecklistMenuLabel = '달리기 기록 설정 점검';
 
 const runRecordingBatteryGuidance =
-    "시스템 배터리 최적화 화면에서 쉐어 런을 찾아 주세요. "
+    "시스템 배터리 최적화 화면에서 쉐어런을 찾아 주세요. "
     "삼성 갤럭시는 '제한 없음'으로 바꿔 주세요.";
 
 const runChecklistCompletedKey = 'src_run_checklist_done';

@@ -111,7 +111,7 @@ class LaunchSplashView extends StatelessWidget {
                               ),
                               const SizedBox(width: 8),
                               const Text(
-                                '쉐어 런',
+                                '쉐어런',
                                 style: TextStyle(
                                   color: _green,
                                   fontWeight: FontWeight.w800,
@@ -233,7 +233,7 @@ class _LaunchSplashGateState extends ConsumerState<LaunchSplashGate> {
 class FirstRunSplash extends StatefulWidget {
   const FirstRunSplash({
     required this.child,
-    this.duration = const Duration(milliseconds: 1500),
+    this.duration = const Duration(milliseconds: 2500),
     super.key,
   });
 

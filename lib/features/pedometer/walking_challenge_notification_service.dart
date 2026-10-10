@@ -7,6 +7,7 @@ import '../../app/router/route_names.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import 'pedometer_step_truth.dart';
 import 'solo_pedometer_foreground.dart';
+import '../../core/notifications/reminder_schedule.dart';
 
 const _goldenChannelId = 'src_walking_golden_hour';
 const _goldenChannelName = '워킹챌린지 코인 줍기';
@@ -170,7 +171,7 @@ abstract final class WalkingChallengeNotificationService {
       body,
       _nextKst(hour, minute),
       details,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: reminderScheduleMode,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,

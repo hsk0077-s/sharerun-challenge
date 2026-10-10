@@ -5,6 +5,8 @@ class WalletModel {
     required this.valueTokenBalance,
     required this.totalDonationValue,
     this.freeTicketBalance = 0,
+    this.freeDiamondBalance = 0,
+    this.paidDiamondBalance = 0,
   });
 
   final int shareBalance;
@@ -15,12 +17,25 @@ class WalletModel {
   /// Server-granted first-race tickets. Clients do not write this.
   final int freeTicketBalance;
 
+  /// 서버 지갑의 보너스 다이아(대회 상금 등)와 결제 다이아. 보너스부터 쓴다.
+  final int freeDiamondBalance;
+  final int paidDiamondBalance;
+
+  /// 두 값이 총 다이아와 맞을 때만 나눠서 보여 준다(옛 지갑은 나눔 값이 없을 수 있음).
+  bool get hasDiamondSplit =>
+      diamondBalance > 0 &&
+      freeDiamondBalance >= 0 &&
+      paidDiamondBalance >= 0 &&
+      freeDiamondBalance + paidDiamondBalance == diamondBalance;
+
   WalletModel copyWith({
     int? shareBalance,
     int? diamondBalance,
     int? valueTokenBalance,
     int? totalDonationValue,
     int? freeTicketBalance,
+    int? freeDiamondBalance,
+    int? paidDiamondBalance,
   }) {
     return WalletModel(
       shareBalance: shareBalance ?? this.shareBalance,
@@ -28,6 +43,8 @@ class WalletModel {
       valueTokenBalance: valueTokenBalance ?? this.valueTokenBalance,
       totalDonationValue: totalDonationValue ?? this.totalDonationValue,
       freeTicketBalance: freeTicketBalance ?? this.freeTicketBalance,
+      freeDiamondBalance: freeDiamondBalance ?? this.freeDiamondBalance,
+      paidDiamondBalance: paidDiamondBalance ?? this.paidDiamondBalance,
     );
   }
 
@@ -68,6 +85,8 @@ class WalletModel {
       freeTicketBalance: _readInt(raw, const [
         'freeTicketBalance',
       ]),
+      freeDiamondBalance: _readInt(raw, const ['freeDiamondBalance']),
+      paidDiamondBalance: _readInt(raw, const ['paidDiamondBalance']),
     );
   }
 

@@ -412,13 +412,17 @@ class _SnailGraphic extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: unknown ? AppColors.borderLight : const Color(0xFFD8EBDD),
+                backgroundColor: unknown ? AppColors.borderLight : Colors.white,
                 child: unknown
                     ? const Text('?', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: AppColors.textGrey))
-                    : Image.asset(
-                        'assets/images/characters/chibi_snail_disappointed.png',
-                        width: 34,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                    : ClipOval(
+                        child: Image.asset(
+                          'assets/images/characters/chibi_snail_disappointed.png',
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
                       ),
               ),
               const SizedBox(height: 6),
@@ -428,10 +432,18 @@ class _SnailGraphic extends StatelessWidget {
         );
     return Column(
       children: [
-        Image.asset(
-          'assets/images/characters/chibi_snail_disappointed.png',
-          height: 150,
-          errorBuilder: (_, __, ___) => const SizedBox(height: 150),
+        ClipOval(
+          child: ColoredBox(
+            color: Colors.white,
+            child: Image.asset(
+              'assets/images/characters/chibi_snail_disappointed.png',
+              height: 150,
+              width: 150,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  const SizedBox(height: 150, width: 150),
+            ),
+          ),
         ),
         const SizedBox(height: 8),
         const _Card(

@@ -60,9 +60,11 @@ class ShareRunChallengeApp extends StatelessWidget {
       ],
       navigatorKey: rootNavigatorKey,
       home: AppConfig.showIntro
-          ? IntroScreen(
-              onFinished: () => rootNavigatorKey.currentState
-                  ?.pushReplacementNamed(RouteNames.login),
+          ? FirstRunSplash(
+              child: IntroScreen(
+                onFinished: () => rootNavigatorKey.currentState
+                    ?.pushReplacementNamed(RouteNames.login),
+              ),
             )
           : AppConfig.initialRoute == RouteNames.home
               ? const LaunchSplashGate(child: AuthenticatedApp())

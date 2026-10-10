@@ -199,4 +199,21 @@ void main() {
       expect(find.text('home'), findsOneWidget);
     });
   });
+
+  testWidgets('first run shows the photo splash, then the intro', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: FirstRunSplash(
+          duration: const Duration(milliseconds: 300),
+          child: IntroScreen(onFinished: () {}),
+        ),
+      ),
+    );
+    expect(find.byKey(FirstRunSplash.splashKey), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    expect(find.byKey(FirstRunSplash.splashKey), findsNothing);
+    expect(find.byKey(IntroScreen.nextKey), findsOneWidget);
+  });
 }

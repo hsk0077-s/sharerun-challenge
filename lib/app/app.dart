@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/launch/intro_screen.dart';
 import '../features/launch/launch_splash.dart';
@@ -34,6 +35,7 @@ import '../screens/my_wallet_screen.dart';
 import 'authenticated_app.dart';
 import 'app_config.dart';
 import 'root_navigator.dart';
+import 'router/dashboard_router.dart';
 import 'router/route_names.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../data/models/activity_model.dart';
@@ -151,5 +153,15 @@ class ShareRunChallengeApp extends StatelessWidget {
 
 /// Clears session and returns to the login route via the root navigator.
 void navigateToLoginScreen() {
+  // 대시보드 라우터는 앱이 켜져 있는 동안 유지된다. 다시 로그인했을 때
+  // 로그아웃하던 화면이 아니라 홈이 나오도록 위치를 홈으로 돌려 둔다.
+  final context = rootNavigatorKey.currentContext;
+  if (context != null) {
+    try {
+      ProviderScope.containerOf(context, listen: false)
+          .read(dashboardRouterProvider)
+          .go(RouteNames.mainDashboard);
+    } catch (_) {}
+  }
   rootNavigatorKey.currentState?.pushReplacementNamed(RouteNames.login);
 }

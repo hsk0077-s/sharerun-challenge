@@ -9,6 +9,7 @@ import '../../../data/repositories/wallet_repository.dart';
 import '../models/coach_plus_product.dart';
 import '../models/iap_ui_event.dart';
 import '../models/share_iap_product.dart';
+import '../payment_auth.dart';
 
 /// 앱 가동 시점부터 [purchaseStream]을 구독하는 IAP 라이프사이클 게이트웨이.
 class IapPurchaseController {
@@ -18,8 +19,10 @@ class IapPurchaseController {
     required String? Function() readUid,
     void Function(int shareAmount)? onLocalProvisionFallback,
     Future<void> Function(String productId)? onCoachPlusPurchased,
+    Future<PaymentAuthResult> Function()? confirmPayment,
     InAppPurchase? iap,
-  })  : _purchaseRepository = purchaseRepository,
+  })  : _confirmPayment = confirmPayment,
+        _purchaseRepository = purchaseRepository,
         _walletRepository = walletRepository,
         _readUid = readUid,
         _onLocalProvisionFallback = onLocalProvisionFallback,
@@ -35,6 +38,9 @@ class IapPurchaseController {
   final void Function(int shareAmount)? _onLocalProvisionFallback;
   final Future<void> Function(String productId)? _onCoachPlusPurchased;
   final InAppPurchase _iap;
+
+  /// 결제창을 열기 직전의 본인 확인. 없으면 확인하지 않는다(테스트용).
+  final Future<PaymentAuthResult> Function()? _confirmPayment;
 
   StreamSubscription<List<PurchaseDetails>>? _subscription;
   final _ui = StreamController<IapUiEvent>.broadcast();
@@ -84,6 +90,8 @@ class IapPurchaseController {
       );
       return;
     }
+
+    if (!await _paymentConfirmed()) return;
 
     try {
       final response = await _iap.queryProductDetails({plan.productId});
@@ -149,6 +157,23 @@ class IapPurchaseController {
     }
   }
 
+  /// 실결제 직전 본인 확인. 통과하지 못하면 이유를 알리고 false.
+  Future<bool> _paymentConfirmed() async {
+    final confirm = _confirmPayment;
+    if (confirm == null) return true;
+    final result = await confirm();
+    if (result == PaymentAuthResult.approved) return true;
+    _emit(
+      IapUiEvent(
+        kind: result == PaymentAuthResult.canceled
+            ? IapUiKind.canceled
+            : IapUiKind.error,
+        message: paymentAuthMessage(result),
+      ),
+    );
+    return false;
+  }
+
   Future<void> buyConsumablePack(ShareIapProduct product) async {
     final available = await isStoreAvailable();
     if (!available) {
@@ -160,6 +185,8 @@ class IapPurchaseController {
       );
       return;
     }
+
+    if (!await _paymentConfirmed()) return;
 
     try {
       final response = await _iap.queryProductDetails({product.productId});

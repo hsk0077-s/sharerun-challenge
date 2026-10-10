@@ -34,6 +34,7 @@ dependencies:
   webview_flutter: any
   image_picker: any
   in_app_purchase: any
+  local_auth: any
   flutter_naver_login: ^2.1.1
   kakao_flutter_sdk_user: ^2.0.0+1
   # Same native app key as login. Default text template; no custom template id.

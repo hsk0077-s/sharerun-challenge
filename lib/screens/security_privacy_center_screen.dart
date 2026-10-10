@@ -5,6 +5,7 @@ import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/privacy/ai_learning_tile.dart';
+import '../features/privacy/payment_auth_tile.dart';
 import 'appeal_center_screen.dart';
 import 'donation_settlement_screen.dart';
 import 'fair_earning_policy_screen.dart';
@@ -101,6 +102,8 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+                const Divider(height: 1, color: AppColors.borderLight),
+                const PaymentAuthTile(),
                 const Divider(height: 1, color: AppColors.borderLight),
                 const AiLearningTile(),
                 const Divider(height: 1, color: AppColors.borderLight),

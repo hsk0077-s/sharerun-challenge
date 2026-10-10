@@ -6,12 +6,15 @@ import '../../../app/providers/app_providers.dart';
 import '../../../data/repositories/purchase_repository.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../models/iap_ui_event.dart';
+import '../payment_auth.dart';
 import '../services/iap_purchase_controller.dart';
 import 'coach_plus_providers.dart';
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>(
   (ref) => PurchaseRepository(ref.watch(firestoreServiceProvider)),
 );
+
+final paymentAuthGateProvider = Provider<PaymentAuthGate>((ref) => PaymentAuthGate());
 
 final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
   final controller = IapPurchaseController(
@@ -37,6 +40,7 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
             ),
       );
     },
+    confirmPayment: ref.read(paymentAuthGateProvider).confirm,
     onCoachPlusPurchased: (productId) {
       return ref.read(coachPlusActiveProvider.notifier).grant(productId);
     },

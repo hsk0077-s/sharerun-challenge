@@ -54,4 +54,10 @@ void main() {
     expect(json['device_info'].keys, isNot(contains('email')));
     expect(json.containsKey('device_id'), isFalse);
   });
+
+  test('Android release number becomes a readable OS label', () {
+    expect(androidOsLabel('12'), 'Android 12');
+    expect(androidOsLabel(' 16\n'), 'Android 16');
+    expect(androidOsLabel(''), isNull);
+  });
 }

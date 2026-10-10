@@ -84,14 +84,30 @@ String _platformOsLabel() {
 
 Future<({String model, String osVersion})> readPhoneDevice() async {
   var model = Platform.isAndroid ? '' : Platform.operatingSystem;
+  var release = '';
   if (Platform.isAndroid) {
     try {
       final result = await Process.run('getprop', ['ro.product.model']);
       model = '${result.stdout}'.trim();
     } catch (_) {}
+    try {
+      final result =
+          await Process.run('getprop', ['ro.build.version.release']);
+      release = '${result.stdout}'.trim();
+    } catch (_) {}
   }
   if (model.isEmpty) model = Platform.operatingSystem;
-  return (model: model, osVersion: _platformOsLabel());
+  return (
+    model: model,
+    osVersion: androidOsLabel(release) ?? _platformOsLabel(),
+  );
+}
+
+/// 안드로이드 버전 번호("12")를 "Android 12"로. 비어 있으면 null.
+String? androidOsLabel(String release) {
+  final trimmed = release.trim();
+  if (trimmed.isEmpty) return null;
+  return 'Android $trimmed';
 }
 
 Future<String> readInstalledAppVersion() async {

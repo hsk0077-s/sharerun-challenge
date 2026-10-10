@@ -227,3 +227,56 @@ class _LaunchSplashGateState extends ConsumerState<LaunchSplashGate> {
     );
   }
 }
+
+/// 처음 설치해서 소개 화면으로 가기 전에, 사진 시작 화면을 잠깐 보여준다.
+/// 서버 데이터를 기다리지 않고 [duration]이 지나면 걷힌다.
+class FirstRunSplash extends StatefulWidget {
+  const FirstRunSplash({
+    required this.child,
+    this.duration = const Duration(milliseconds: 1500),
+    super.key,
+  });
+
+  final Widget child;
+  final Duration duration;
+
+  static const splashKey = Key('first-run-splash');
+
+  @override
+  State<FirstRunSplash> createState() => _FirstRunSplashState();
+}
+
+class _FirstRunSplashState extends State<FirstRunSplash> {
+  bool _visible = true;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.duration, () {
+      if (mounted) setState(() => _visible = false);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        widget.child,
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          child: _visible
+              ? const LaunchSplashView(key: FirstRunSplash.splashKey)
+              : const SizedBox.shrink(key: ValueKey('first-run-splash-gone')),
+        ),
+      ],
+    );
+  }
+}

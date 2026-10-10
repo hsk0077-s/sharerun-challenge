@@ -30,12 +30,14 @@ class AiLearningTile extends ConsumerStatefulWidget {
 class _AiLearningTileState extends ConsumerState<AiLearningTile> {
   bool _saving = false;
 
+  /// 저장 응답으로 서버가 돌려준 값. 없으면 처음 불러온 서버 값을 쓴다.
+  bool? _confirmed;
+
   Future<void> _change(bool next) async {
     setState(() => _saving = true);
     try {
-      await ref.read(aiLearningSaverProvider)(next);
-      ref.invalidate(aiLearningProvider);
-      await ref.read(aiLearningProvider.future);
+      final saved = await ref.read(aiLearningSaverProvider)(next);
+      if (mounted) setState(() => _confirmed = saved);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,23 +52,29 @@ class _AiLearningTileState extends ConsumerState<AiLearningTile> {
   @override
   Widget build(BuildContext context) {
     final value = ref.watch(aiLearningProvider);
-    final Widget trailing = value.when(
-      data: (on) => Switch(
-        key: AiLearningTile.switchKey,
-        value: on,
-        onChanged: _saving ? null : _change,
-      ),
-      loading: () => const SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
-      error: (_, __) => TextButton(
-        key: AiLearningTile.retryKey,
-        onPressed: () => ref.invalidate(aiLearningProvider),
-        child: const Text('다시 불러오기'),
-      ),
+    const spinner = SizedBox(
+      width: 24,
+      height: 24,
+      child: CircularProgressIndicator(strokeWidth: 2),
     );
+    final Widget trailing = _saving
+        ? spinner // 서버가 확인할 때까지 기존 값을 그대로 두고 저장 중만 알린다.
+        : value.when(
+            data: (on) => Switch(
+              key: AiLearningTile.switchKey,
+              value: _confirmed ?? on,
+              onChanged: _change,
+            ),
+            loading: () => spinner,
+            error: (_, __) => TextButton(
+              key: AiLearningTile.retryKey,
+              onPressed: () {
+                _confirmed = null;
+                ref.invalidate(aiLearningProvider);
+              },
+              child: const Text('다시 불러오기'),
+            ),
+          );
     return ListTile(
       leading: const Icon(
         Icons.psychology_alt_outlined,

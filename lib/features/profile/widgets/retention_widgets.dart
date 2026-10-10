@@ -83,6 +83,7 @@ class SoloQuickStartBanner extends ConsumerStatefulWidget {
   static const pendingKey = Key('home-hero-pending');
   static const receivedKey = Key('home-hero-received');
   static const buttonKey = Key('home-hero-button');
+  static const otherPhoneKey = Key('home-hero-hint');
 
   @override
   ConsumerState<SoloQuickStartBanner> createState() =>
@@ -98,7 +99,12 @@ class HomeHeroNumbers {
     required this.progress,
   });
 
-  factory HomeHeroNumbers.from({required int steps, required int claimed}) {
+  /// [serverReceived]: 서버가 오늘 계정에 지급한 SHARE(같은 계정은 어느 폰에서나 같다).
+  factory HomeHeroNumbers.from({
+    required int steps,
+    required int claimed,
+    required int serverReceived,
+  }) {
     final safeSteps = steps < 0 ? 0 : steps;
     return HomeHeroNumbers(
       steps: safeSteps,
@@ -106,9 +112,7 @@ class HomeHeroNumbers {
         steps: safeSteps,
         claimedSteps: claimed,
       ),
-      receivedShare: PedometerHarvestLedger.todayMinedShare(
-        claimedSteps: claimed,
-      ),
+      receivedShare: serverReceived < 0 ? 0 : serverReceived,
       progress:
           (safeSteps / PedometerHarvestLedger.stepsForDailyCap).clamp(0.0, 1.0),
     );
@@ -191,10 +195,24 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
       fromPrefix: 0,
       fromSession: PedometerHarvestLedger.sessionClaimed(today),
     );
-    final numbers = HomeHeroNumbers.from(steps: steps, claimed: claimed);
+    // 같은 계정의 다른 폰이 이미 올린 걸음은 서버 기준선에 들어 있다.
+    final profile = ref.watch(activeUserProfileProvider).asData?.value;
+    final serverToday = profile != null && profile.pedometerHarvestDateKey == today;
+    final serverClaimed = serverToday ? profile.pedometerClaimedSteps : 0;
+    final effectiveClaimed = claimed > serverClaimed ? claimed : serverClaimed;
+    final numbers = HomeHeroNumbers.from(
+      steps: steps,
+      claimed: effectiveClaimed,
+      serverReceived: PedometerHarvestLedger.displayHarvestedShare(
+        dateKey: profile?.pedometerHarvestDateKey ?? '',
+        harvestedShare: profile?.pedometerHarvestedShare ?? 0,
+        todayKey: today,
+      ),
+    );
+    final otherPhoneAhead = serverClaimed > steps;
     final canCollect = PedometerHarvestLedger.pickupReady(
       steps: steps,
-      claimedSteps: claimed,
+      claimedSteps: effectiveClaimed,
     );
     final tier = ref.watch(activeUserTierStructProvider) ??
         UserTier.unratedFallback;
@@ -238,7 +256,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          '오늘 걸음',
+                          '오늘 걸음 (이 폰)',
                           style: TextStyle(color: Colors.white70, fontSize: 13),
                         ),
                         FittedBox(
@@ -254,9 +272,13 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
                             ),
                           ),
                         ),
-                        const Text(
-                          '100걸음 → 10 SHARE · 하루 최대 600',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        Text(
+                          otherPhoneAhead
+                              ? '다른 폰에서 이미 SHARE가 반영됐어요'
+                              : '100걸음 → 10 SHARE · 하루 최대 600',
+                          key: SoloQuickStartBanner.otherPhoneKey,
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),

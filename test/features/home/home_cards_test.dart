@@ -26,19 +26,42 @@ Map<String, dynamic> _row(DateTime at, int won) => {
 
 void main() {
   group('hero numbers', () {
+    test('received SHARE is the server value, not this phone\'s own count',
+        () {
+      final phone = HomeHeroNumbers.from(
+        steps: 2345,
+        claimed: 2345,
+        serverReceived: 600,
+      );
+      expect(phone.receivedShare, 600);
+      expect(phone.pendingShare, 0);
+    });
+
     test('pending and received come only from steps and the claimed watermark',
         () {
-      final n = HomeHeroNumbers.from(steps: 2500, claimed: 1000);
+      final n = HomeHeroNumbers.from(
+        steps: 2500,
+        claimed: 1000,
+        serverReceived: 100,
+      );
       expect(n.pendingShare, 150); // 1,500 steps / 10
       expect(n.receivedShare, 100);
       expect(n.steps, 2500);
     });
 
     test('the daily SHARE cap and a negative step count are respected', () {
-      final capped = HomeHeroNumbers.from(steps: 20000, claimed: 0);
+      final capped = HomeHeroNumbers.from(
+        steps: 20000,
+        claimed: 0,
+        serverReceived: 0,
+      );
       expect(capped.pendingShare, 600);
       expect(capped.progress, 1.0);
-      final odd = HomeHeroNumbers.from(steps: -5, claimed: 0);
+      final odd = HomeHeroNumbers.from(
+        steps: -5,
+        claimed: 0,
+        serverReceived: 0,
+      );
       expect(odd.steps, 0);
       expect(odd.pendingShare, 0);
     });

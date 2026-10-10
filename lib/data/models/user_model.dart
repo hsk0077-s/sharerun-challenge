@@ -86,6 +86,7 @@ class UserModel {
     this.coachPlusActiveUntil = '',
     this.pedometerHarvestedShare = 0,
     this.pedometerHarvestDateKey = '',
+    this.pedometerClaimedSteps = 0,
   });
 
   final String uid;
@@ -157,6 +158,9 @@ class UserModel {
 
   /// Server `pedometerHarvest.dateKey` (KST). Empty when the field is absent.
   final String pedometerHarvestDateKey;
+
+  /// Server `pedometerHarvest.claimedSteps` (the account's step watermark today).
+  final int pedometerClaimedSteps;
 
   /// Convenience alias used by dashboard wallet bindings.
   int get share => wallet.shareBalance;
@@ -278,6 +282,7 @@ class UserModel {
     String? coachPlusActiveUntil,
     int? pedometerHarvestedShare,
     String? pedometerHarvestDateKey,
+    int? pedometerClaimedSteps,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -315,6 +320,8 @@ class UserModel {
           pedometerHarvestedShare ?? this.pedometerHarvestedShare,
       pedometerHarvestDateKey:
           pedometerHarvestDateKey ?? this.pedometerHarvestDateKey,
+      pedometerClaimedSteps:
+          pedometerClaimedSteps ?? this.pedometerClaimedSteps,
     );
   }
 
@@ -429,6 +436,9 @@ class UserModel {
         coachPlusActiveUntil: _coachPlusActiveUntil(json['coachPlus']),
         pedometerHarvestedShare: _pedometerHarvestedShare(json),
         pedometerHarvestDateKey: _pedometerHarvestDateKey(json),
+        pedometerClaimedSteps: nonNegativeInt(
+          _pedometerHarvest(json)?['claimedSteps'],
+        ),
       );
     } catch (_) {
       return UserModel.dashboardDefault(

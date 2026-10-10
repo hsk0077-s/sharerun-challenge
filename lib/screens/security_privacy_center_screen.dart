@@ -8,6 +8,7 @@ import '../features/privacy/ai_learning_tile.dart';
 import 'appeal_center_screen.dart';
 import 'donation_settlement_screen.dart';
 import 'fair_earning_policy_screen.dart';
+import 'login_devices_screen.dart';
 import 'wallet_history_screen.dart';
 
 /// 보안·프라이버시 센터. 지금은 정책 안내와 기록 소명으로 가는 입구다.
@@ -19,6 +20,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
   static const appealTileKey = Key('security-center-appeal');
   static const historyTileKey = Key('security-center-history');
   static const donationTileKey = Key('security-center-donation');
+  static const devicesTileKey = Key('security-center-devices');
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +87,18 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                     context,
                     RouteNames.donationSettlement,
                     materialBuilder: (_) => const DonationSettlementScreen(),
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.borderLight),
+                _CenterTile(
+                  tileKey: devicesTileKey,
+                  icon: Icons.devices_outlined,
+                  title: '로그인된 기기',
+                  subtitle: '내 계정을 연 기기 · 모든 기기에서 로그아웃',
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LoginDevicesScreen(),
+                    ),
                   ),
                 ),
                 const Divider(height: 1, color: AppColors.borderLight),

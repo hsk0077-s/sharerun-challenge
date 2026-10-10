@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
     AiLearningRequest,
+    LoginDeviceRequest,
     ApplyReferralRequest,
     CollectDiamondBoxRequest,
     DebugTestGrantRequest,
@@ -39,7 +40,8 @@ from app.models.secured_actions import (
 from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
-from app.services import privacy_settings
+from app.services import login_devices, privacy_settings
+from app.services.auth_service import forget_sign_out_cache
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -367,3 +369,47 @@ def set_ai_learning(
     return privacy_settings.set_ai_learning(
         service.firebase_service.db, uid, request.enabled
     )
+
+
+@router.post("/security/devices/register")
+def register_login_device(
+    request: LoginDeviceRequest,
+    uid: str = Depends(require_uid),
+) -> dict:
+    device_id = login_devices.clean_device_id(request.device_id)
+    if device_id is None:
+        raise HTTPException(status_code=400, detail="invalid_device_id")
+    login_devices.register_device(
+        service.firebase_service.db,
+        uid,
+        device_id,
+        model=request.model,
+        os_version=request.os_version,
+        app_version=request.app_version,
+    )
+    return {"status": "ok"}
+
+
+@router.get("/security/devices")
+def list_login_devices(
+    device_id: str | None = None,
+    uid: str = Depends(require_uid),
+) -> dict:
+    return {
+        "devices": login_devices.list_devices(
+            service.firebase_service.db,
+            uid,
+            login_devices.clean_device_id(device_id),
+        )
+    }
+
+
+@router.post("/security/sign-out-everywhere")
+def sign_out_everywhere(uid: str = Depends(require_uid)) -> dict:
+    from firebase_admin import auth as firebase_auth
+
+    login_devices.sign_out_everywhere(
+        service.firebase_service.db, uid, firebase_auth.revoke_refresh_tokens
+    )
+    forget_sign_out_cache(uid)
+    return {"status": "signed_out"}

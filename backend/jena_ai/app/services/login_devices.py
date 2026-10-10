@@ -30,9 +30,23 @@ def _devices(db, uid: str):
 
 
 def register_device(
-    db, uid: str, device_id: str, *, model: str, os_version: str, app_version: str
-) -> None:
+    db,
+    uid: str,
+    device_id: str,
+    *,
+    model: str,
+    os_version: str,
+    app_version: str,
+    fcm_token: str = "",
+    notify=None,
+) -> bool:
+    """Record this device. Returns True when it is new to the account.
+
+    A new device alerts the account's other devices that have a push token
+    (`notify(tokens, model)`). The alert is best effort and never blocks.
+    """
     ref = _devices(db, uid).document(device_id)
+    is_new = not ref.get().exists
     fields = {
         "deviceId": device_id,
         "model": _clip(model, 80),
@@ -40,9 +54,25 @@ def register_device(
         "appVersion": _clip(app_version, 32),
         "lastSeenAt": SERVER_TIMESTAMP,
     }
-    if not ref.get().exists:
+    token = fcm_token.strip() if isinstance(fcm_token, str) else ""
+    if token and len(token) <= 4096:
+        fields["fcmToken"] = token
+    if is_new:
         fields["firstSeenAt"] = SERVER_TIMESTAMP
+        others = [
+            (snapshot.to_dict() or {}).get("fcmToken")
+            for snapshot in _devices(db, uid).get()
+            if snapshot.id != device_id
+        ]
     ref.set(fields, merge=True)
+    if is_new and notify is not None:
+        tokens = [t for t in others if isinstance(t, str) and t]
+        if tokens:
+            try:
+                notify(tokens, fields["model"])
+            except Exception:
+                pass
+    return is_new
 
 
 def _iso(value: object) -> str:
@@ -60,6 +90,7 @@ def list_devices(db, uid: str, current_id: str | None) -> list[dict]:
                 "os_version": data.get("osVersion", ""),
                 "app_version": data.get("appVersion", ""),
                 "last_seen_at": _iso(data.get("lastSeenAt")),
+                "first_seen_at": _iso(data.get("firstSeenAt")),
                 "current": bool(current_id) and data.get("deviceId") == current_id,
             }
         )

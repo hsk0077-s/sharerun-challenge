@@ -68,4 +68,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('이 폰을 포함해'), findsNothing);
   });
+
+  test('only another device first seen within a day counts as new', () {
+    final now = DateTime.utc(2026, 10, 10, 12);
+    LoginDevice row({required bool current, required DateTime first}) =>
+        LoginDevice.fromJson({
+          'device_id': 'x',
+          'current': current,
+          'first_seen_at': first.toIso8601String(),
+        });
+    expect(
+      row(current: false, first: now.subtract(const Duration(hours: 2)))
+          .isNew(now: now),
+      isTrue,
+    );
+    expect(
+      row(current: false, first: now.subtract(const Duration(days: 3)))
+          .isNew(now: now),
+      isFalse,
+    );
+    expect(
+      row(current: true, first: now.subtract(const Duration(hours: 2)))
+          .isNew(now: now),
+      isFalse,
+    );
+  });
 }

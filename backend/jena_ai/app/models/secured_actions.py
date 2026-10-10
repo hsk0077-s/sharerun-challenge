@@ -257,3 +257,4 @@ class LoginDeviceRequest(BaseModel):
     model: str = Field(default="", max_length=200)
     os_version: str = Field(default="", max_length=200)
     app_version: str = Field(default="", max_length=100)
+    fcm_token: str = Field(default="", max_length=4096)

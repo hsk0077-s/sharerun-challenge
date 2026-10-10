@@ -233,7 +233,7 @@ class _LaunchSplashGateState extends ConsumerState<LaunchSplashGate> {
 class FirstRunSplash extends StatefulWidget {
   const FirstRunSplash({
     required this.child,
-    this.duration = const Duration(milliseconds: 1500),
+    this.duration = const Duration(milliseconds: 2500),
     super.key,
   });
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
+import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -20,6 +21,9 @@ import '../features/profile/widgets/retention_widgets.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/stamp/providers/stamp_tour_enabled_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../features/home/home_cards.dart';
+import '../data/models/wallet_model.dart';
+import 'donation_settlement_screen.dart';
 import 'in_app_billing_screen.dart';
 import 'my_wallet_screen.dart';
 import 'notification_center_screen.dart';
@@ -71,6 +75,14 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
       context,
       RouteNames.stampTour,
       materialBuilder: (_) => const StampTourScreen(),
+    );
+  }
+
+  void _onOpenDonationSettlement() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.donationSettlement,
+      materialBuilder: (_) => const DonationSettlementScreen(),
     );
   }
 
@@ -227,13 +239,20 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                         ref.watch(stampTourEnabledProvider).asData?.value == true,
                   ),
                   SizedBox(height: tokens.spacing.md),
+                  SoloQuickStartBanner(onTap: _onOpenSoloQuickStart),
+                  SizedBox(height: tokens.spacing.sm),
+                  HomeDiamondCard(
+                    wallet: (ref.watch(activeWalletProvider).asData?.value ??
+                            WalletModel.empty())
+                        .copyWith(diamondBalance: wallet.diamondBalance),
+                    onOpenStore: () => _onOpenStore(focus: StoreFocus.items),
+                  ),
+                  SizedBox(height: tokens.spacing.sm),
                   _WalletCard(
                     share: wallet.shareBalance,
-                    diamond: wallet.diamondBalance,
                     value: wallet.valueBalance,
                     onWalletTap: () => MyWalletScreen.open(context),
                     onShareTap: _onOpenInAppBilling,
-                    onDiamondTap: () => _onOpenStore(focus: StoreFocus.items),
                     onValueTap: () => _onOpenStore(focus: StoreFocus.donate),
                     showGradeEval: !onboardingDone,
                     gradeCompletedCount: trialDone,
@@ -241,13 +260,20 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                     dailyKm: dailyKm,
                   ),
                   SizedBox(height: tokens.spacing.sm),
-                  SoloQuickStartBanner(onTap: _onOpenSoloQuickStart),
+                  HomeDonationCard(onOpenSettlement: _onOpenDonationSettlement),
                   SizedBox(height: tokens.spacing.sm),
                   AngelSponsorBanner(onTap: _onOpenPersonalSponsor),
                   SizedBox(height: tokens.spacing.lg),
                   Text(
                     AppStrings.dashboardOngoingChallenges,
                     style: textTheme.titleLarge,
+                  ),
+                  SizedBox(height: tokens.spacing.xxs),
+                  Text(
+                    '상품은 다이아예요 · ${AppStrings.noCashPrizePool}',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: tokens.colors.muted,
+                    ),
                   ),
                   SizedBox(height: tokens.spacing.sm),
                   _ChallengeCard(
@@ -355,11 +381,9 @@ class _DashboardHeader extends StatelessWidget {
 class _WalletCard extends StatelessWidget {
   const _WalletCard({
     required this.share,
-    required this.diamond,
     required this.value,
     required this.onWalletTap,
     required this.onShareTap,
-    required this.onDiamondTap,
     required this.onValueTap,
     required this.showGradeEval,
     required this.gradeCompletedCount,
@@ -368,11 +392,9 @@ class _WalletCard extends StatelessWidget {
   });
 
   final int share;
-  final int diamond;
   final int value;
   final VoidCallback onWalletTap;
   final VoidCallback onShareTap;
-  final VoidCallback onDiamondTap;
   final VoidCallback onValueTap;
   final bool showGradeEval;
   final int gradeCompletedCount;
@@ -421,17 +443,6 @@ class _WalletCard extends StatelessWidget {
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: tokens.colors.accent,
-              ),
-            ),
-          ),
-          SizedBox(height: tokens.spacing.sm),
-          _WalletTapSegment(
-            onTap: onDiamondTap,
-            child: Text(
-              AppStrings.dashboardDiamondBalanceOf(diamond),
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: tokens.colors.primary,
               ),
             ),
           ),

@@ -10,6 +10,7 @@ import '../../../screens/solo_pedometer_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../pedometer/pedometer_harvest_ledger.dart';
 import '../../pedometer/pedometer_health_cap.dart';
+import '../../home/home_cards.dart';
 import '../my_page_activity_stats.dart';
 
 /// 지갑 카드 내부 일일 5km 채굴 게이지.
@@ -70,39 +71,69 @@ class DailyCapGauge extends StatelessWidget {
   }
 }
 
-/// 워킹챌린지 홈 CTA. 10걸음(1 SHARE) 단위로 아직 안 주운 SHARE가 있을 때만 줍기.
+/// 홈 맨 위 걸음 카드. 오늘 걸음과 줍기 대기 SHARE를 보여 주고, 줍기는 걷기 챌린지
+/// 화면에서 한다(서버가 확인한 뒤에만 SHARE가 늘어난다). 걸음 수 기준은 걷기
+/// 화면과 같은 장부(`PedometerHarvestLedger`)다.
 class SoloQuickStartBanner extends ConsumerStatefulWidget {
   const SoloQuickStartBanner({super.key, required this.onTap});
 
   final VoidCallback onTap;
+
+  static const stepsKey = Key('home-hero-steps');
+  static const pendingKey = Key('home-hero-pending');
+  static const receivedKey = Key('home-hero-received');
+  static const buttonKey = Key('home-hero-button');
 
   @override
   ConsumerState<SoloQuickStartBanner> createState() =>
       _SoloQuickStartBannerState();
 }
 
-class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _glow;
+/// 카드에 쓰는 숫자. 걸음 수와 이미 주운 걸음 수에서만 나온다.
+class HomeHeroNumbers {
+  const HomeHeroNumbers({
+    required this.steps,
+    required this.pendingShare,
+    required this.receivedShare,
+    required this.progress,
+  });
+
+  factory HomeHeroNumbers.from({required int steps, required int claimed}) {
+    final safeSteps = steps < 0 ? 0 : steps;
+    return HomeHeroNumbers(
+      steps: safeSteps,
+      pendingShare: PedometerHarvestLedger.pendingShareFloor(
+        steps: safeSteps,
+        claimedSteps: claimed,
+      ),
+      receivedShare: PedometerHarvestLedger.todayMinedShare(
+        claimedSteps: claimed,
+      ),
+      progress:
+          (safeSteps / PedometerHarvestLedger.stepsForDailyCap).clamp(0.0, 1.0),
+    );
+  }
+
+  final int steps;
+  final int pendingShare;
+  final int receivedShare;
+  final double progress;
+}
+
+class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
   var _storedSteps = 0;
   var _claimedSteps = 0;
+
+  static const _green = Color(0xFF0E3B2E);
+  static const _greenLight = Color(0xFF1B6B54);
+  static const _gold = Color(0xFFE8B84B);
 
   @override
   void initState() {
     super.initState();
-    _glow = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_hydrateStepsFromPrefs());
     });
-  }
-
-  @override
-  void dispose() {
-    _glow.dispose();
-    super.dispose();
   }
 
   Future<void> _hydrateStepsFromPrefs() async {
@@ -160,74 +191,171 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner>
       fromPrefix: 0,
       fromSession: PedometerHarvestLedger.sessionClaimed(today),
     );
+    final numbers = HomeHeroNumbers.from(steps: steps, claimed: claimed);
     final canCollect = PedometerHarvestLedger.pickupReady(
       steps: steps,
       claimedSteps: claimed,
     );
-    final label = canCollect ? '워킹챌린지 코인줍기' : '워킹 챌린지 시작';
+    final tier = ref.watch(activeUserTierStructProvider) ??
+        UserTier.unratedFallback;
+    final km = ref.watch(pedometerStateProvider).km;
     final tokens = context.srcTokens;
-    final glowColor = tokens.colors.primary;
-    return AnimatedBuilder(
-      animation: _glow,
-      builder: (context, child) {
-        final pulse = 0.32 + _glow.value * 0.58;
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: tokens.radii.panel,
-            boxShadow: canCollect
-                ? [
-                    BoxShadow(
-                      color: glowColor.withValues(alpha: pulse),
-                      blurRadius: 20 + _glow.value * 16,
-                      spreadRadius: 2 + _glow.value * 4,
-                    ),
-                    BoxShadow(
-                      color: glowColor.withValues(alpha: pulse * 0.7),
-                      blurRadius: 10 + _glow.value * 8,
-                      spreadRadius: 0.5,
-                    ),
-                  ]
-                : AppShadows.card,
+    return MediaQuery.withClampedTextScaling(
+      maxScaleFactor: 1.3,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [_green, _greenLight],
           ),
-          child: child,
-        );
-      },
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: widget.onTap,
-          borderRadius: tokens.radii.panel,
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: tokens.radii.panel,
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  tokens.colors.primary,
-                  tokens.colors.accent,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  // 캐릭터 그림은 배경이 흰색이라 둥근 흰 판 안에 넣는다.
+                  ClipOval(
+                    child: ColoredBox(
+                      color: Colors.white,
+                      child: Image.asset(
+                        tier.avatarAssetPath,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) =>
+                            const SizedBox(width: 72, height: 72),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '오늘 걸음',
+                          style: TextStyle(color: Colors.white70, fontSize: 13),
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            '${groupedNumber(numbers.steps)} 걸음',
+                            key: SoloQuickStartBanner.stepsKey,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 34,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                        const Text(
+                          '100걸음 → 10 SHARE · 하루 최대 600',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              border: Border.all(
-                color: canCollect
-                    ? glowColor
-                    : tokens.colors.accent.withValues(alpha: 0.55),
-                width: canCollect ? 2 : 1.2,
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: numbers.progress,
+                  minHeight: 6,
+                  color: const Color(0xFF7FE3C0),
+                  backgroundColor: Colors.white24,
+                ),
               ),
-            ),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: tokens.spacing.md,
-                vertical: tokens.spacing.sm,
-              ),
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: tokens.colors.onPrimary,
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _HeroChip(
+                      label: '오늘 거리 ${km.toStringAsFixed(1)} km',
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _HeroChip(
+                      key: SoloQuickStartBanner.receivedKey,
+                      label: '받은 SHARE ${numbers.receivedShare}',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _HeroChip(
+                      key: SoloQuickStartBanner.pendingKey,
+                      label: '줍기 대기 ${numbers.pendingShare}',
+                      highlight: canCollect,
+                    ),
+                  ),
+                ],
               ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 48,
+                child: FilledButton(
+                  key: SoloQuickStartBanner.buttonKey,
+                  onPressed: widget.onTap,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: _gold,
+                    foregroundColor: const Color(0xFF1E1E1E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: tokens.radii.card,
+                    ),
+                  ),
+                  child: Text(
+                    canCollect
+                        ? '${numbers.pendingShare} SHARE 줍기'
+                        : '걷기 챌린지 보기',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroChip extends StatelessWidget {
+  const _HeroChip({super.key, required this.label, this.highlight = false});
+
+  final String label;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: highlight ? const Color(0xFFE8B84B) : Colors.white24,
+        ),
+        color: Colors.white.withValues(alpha: 0.08),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: highlight ? const Color(0xFFE8B84B) : Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 12.5,
             ),
           ),
         ),

@@ -8,6 +8,8 @@ import 'package:share_run_challenge/core/widgets/currency_badge.dart';
 import 'package:share_run_challenge/data/models/tournament_model.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
+import 'package:share_run_challenge/features/donation/today_donation.dart';
+import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/stamp/providers/stamp_tour_enabled_provider.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
@@ -49,6 +51,9 @@ Widget _scopedApp({required Widget home}) {
       UserModel.dashboardDefault(uid: 'test-home').copyWith(nickname: '테스트러너');
   return ProviderScope(
     overrides: [
+      todayDonationLoaderProvider.overrideWithValue(
+        () async => const TodayDonation(todayWon: 300, capReached: false),
+      ),
       needsNicknameSetupProvider.overrideWith((ref) => false),
       userNicknameProvider.overrideWith((ref) => '테스트러너'),
       activeUserProfileProvider.overrideWith(
@@ -149,10 +154,15 @@ void main() {
 
     expect(find.text('나의 지갑'), findsOneWidget);
     expect(find.textContaining('보유 SHARE: 90,000'), findsOneWidget);
-    expect(find.textContaining('보유 다이아몬드: 5개'), findsOneWidget);
+    // 다이아는 홈 맨 위 카드(총 다이아, 누르면 보너스/결제로 펼침)에 있다.
+    expect(find.byKey(HomeDiamondCard.totalKey), findsOneWidget);
+    expect(find.text('5 DIA'), findsOneWidget);
+    expect(find.byKey(HomeDonationCard.amountKey), findsOneWidget);
+    expect(find.text('300원'), findsOneWidget);
+    expect(find.textContaining('현금 상금 없음'), findsOneWidget);
     expect(find.textContaining('보유 밸류(VALUE): 5,200'), findsOneWidget);
     expect(find.text('방 상세 보기'), findsNWidgets(2));
-    expect(find.text('워킹 챌린지 시작'), findsOneWidget);
+    expect(find.text('걷기 챌린지 보기'), findsOneWidget);
     expect(find.textContaining('내 이름으로 달리기 후원하기'), findsOneWidget);
     expect(find.text(AppStrings.dashboardChallenge1Sub), findsOneWidget);
     expect(find.text(AppStrings.dashboardChallenge2Sub), findsOneWidget);
@@ -175,6 +185,34 @@ void main() {
         )
         .style;
     expect(valueStyle?.color, AppColors.angelGold);
+  });
+
+  testWidgets('new home fits a small phone with the largest text size',
+      (tester) async {
+    tester.view.physicalSize = const Size(360 * 2, 640 * 2);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      MediaQuery(
+        data: const MediaQueryData(
+          size: Size(360, 640),
+          textScaler: TextScaler.linear(2.0),
+        ),
+        child: _scopedApp(home: const MainDashboardScreen()),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(tester.takeException(), isNull);
+
+    // Open the diamond card and scroll to the bottom: nothing may overflow.
+    await tester.tap(find.byKey(HomeDiamondCard.toggleKey));
+    await tester.pump();
+    await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -3000));
+    await tester.pump();
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('Home shows the stamp tour button only when the flag is on',

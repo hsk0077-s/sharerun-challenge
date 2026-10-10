@@ -42,4 +42,13 @@ void main() {
         .toList();
     expect(bad, isEmpty);
   });
+
+  test('the iPhone settings file follows the same naming rules', () {
+    final plist = File('ios/Runner/Info.plist').readAsStringSync();
+    expect(plist.contains('셰어런'), isFalse);
+    expect(plist.contains('쉐어 런'), isFalse);
+    expect(RegExp(r'(?<![A-Za-z0-9_])SRC(?![A-Za-z0-9_])').hasMatch(plist),
+        isFalse);
+    expect(plist.contains('NSFaceIDUsageDescription'), isTrue);
+  });
 }

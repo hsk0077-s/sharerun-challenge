@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
@@ -127,6 +129,16 @@ void main() {
     await tester.pumpWidget(big(const MaterialApp(home: LaunchSplashView())));
     await tester.pump();
     expect(tester.takeException(), isNull, reason: 'splash');
+  });
+
+  test('splash photo and logo are real images, not placeholders', () async {
+    for (final asset in [LaunchSplashView.photoAsset, LaunchSplashView.logoAsset]) {
+      final data = await rootBundle.load(asset);
+      final codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final frame = await codec.getNextFrame();
+      expect(frame.image.width, greaterThanOrEqualTo(64), reason: asset);
+      expect(frame.image.height, greaterThanOrEqualTo(64), reason: asset);
+    }
   });
 
   group('launch splash', () {

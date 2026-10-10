@@ -20,7 +20,8 @@ def _tokens_valid_after(uid: str) -> int:
     cached = _valid_after.get(uid)
     if cached and now - cached[0] < _CHECK_SECONDS:
         return cached[1]
-    value = int(auth.get_user(uid).tokens_valid_after_timestamp or 0)
+    # firebase_admin returns milliseconds; token `iat` is in seconds.
+    value = int(auth.get_user(uid).tokens_valid_after_timestamp or 0) // 1000
     _valid_after[uid] = (now, value)
     return value
 

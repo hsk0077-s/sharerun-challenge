@@ -8,6 +8,8 @@ import '../../core/theme/app_text_styles.dart';
 /// 서버에 저장된 "AI 학습 사용" 값. 기본은 끔이다.
 final aiLearningProvider = FutureProvider.autoDispose<bool>(
   (ref) => ref.watch(securedActionApiClientProvider).fetchAiLearning(),
+  // 실패하면 계속 돌지 말고 바로 "다시 불러오기"를 보여준다.
+  retry: (_, __) => null,
 );
 
 /// 값을 서버에 저장하고, 서버가 돌려준 값을 돌려준다.

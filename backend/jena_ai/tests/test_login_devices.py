@@ -111,7 +111,7 @@ def test_server_rejects_tokens_issued_before_the_sign_out(monkeypatch) -> None:
     monkeypatch.setattr(auth, "verify_id_token", lambda token: {"uid": "u1", "iat": 100})
 
     class User:
-        tokens_valid_after_timestamp = 200
+        tokens_valid_after_timestamp = 200_000  # milliseconds, as firebase_admin returns
 
     monkeypatch.setattr(auth, "get_user", lambda uid: User())
     with pytest.raises(HTTPException) as caught:
@@ -120,6 +120,21 @@ def test_server_rejects_tokens_issued_before_the_sign_out(monkeypatch) -> None:
 
     auth_module._valid_after.clear()
     monkeypatch.setattr(auth, "verify_id_token", lambda token: {"uid": "u1", "iat": 300})
+    assert auth_module.auth_service.verify_bearer_token("Bearer t") == "u1"
+
+
+def test_a_normal_recent_login_is_never_rejected(monkeypatch) -> None:
+    """Real shape: validSince in ms from account creation, iat in seconds now."""
+    auth_module._valid_after.clear()
+    monkeypatch.setattr(auth_module, "FirebaseService", lambda: None)
+    monkeypatch.setattr(
+        auth, "verify_id_token", lambda token: {"uid": "u1", "iat": 1_760_000_000}
+    )
+
+    class User:
+        tokens_valid_after_timestamp = 1_750_000_000_000
+
+    monkeypatch.setattr(auth, "get_user", lambda uid: User())
     assert auth_module.auth_service.verify_bearer_token("Bearer t") == "u1"
 
 

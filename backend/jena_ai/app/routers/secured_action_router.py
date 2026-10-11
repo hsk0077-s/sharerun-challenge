@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
     AppealRequest,
+    IntegrityReportRequest,
     AiLearningRequest,
     LoginDeviceRequest,
     ApplyReferralRequest,
@@ -41,7 +42,7 @@ from app.models.secured_actions import (
 from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
-from app.services import appeals, login_devices, privacy_settings
+from app.services import appeals, integrity, login_devices, privacy_settings
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services.secured_action_service import SecuredActionService
@@ -432,3 +433,17 @@ def submit_appeal(
         reason_detail=request.reason_detail,
         proof_base64=request.proof_base64,
     )
+
+
+@router.get("/integrity/nonce")
+def integrity_nonce(uid: str = Depends(require_uid)) -> dict:
+    return {"nonce": integrity.issue_nonce(service.firebase_service.db, uid)}
+
+
+@router.post("/integrity/report")
+def integrity_report(
+    request: IntegrityReportRequest,
+    uid: str = Depends(require_uid),
+) -> dict:
+    # Record-only: the result never changes what this account can do.
+    return integrity.record_check(service.firebase_service.db, uid, request.token)

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/theme/src_theme.dart';
 import '../features/privacy/login_devices.dart';
+import '../features/integrity/integrity_check.dart';
 import '../features/run_tracking/run_recording_foreground.dart';
 import '../features/run_tracking/run_recording_policy.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
@@ -56,6 +57,7 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     );
     unawaited(_bootBackgroundRun());
     unawaited(registerThisDevice(ref));
+    unawaited(reportDeviceIntegrity(ref));
   }
 
   Future<void> _bootBackgroundRun() async {

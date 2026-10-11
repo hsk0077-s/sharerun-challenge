@@ -146,6 +146,16 @@ class SecuredActionApiClient {
     });
   }
 
+  Future<String> fetchIntegrityNonce() async {
+    final json = await _get('/actions/integrity/nonce');
+    return json['nonce'] as String? ?? '';
+  }
+
+  /// Hands the server an integrity token. The server only records it.
+  Future<void> reportIntegrity(String token) async {
+    await _post('/actions/integrity/report', {'token': token});
+  }
+
   /// Signs the account out on every device, this one included.
   Future<void> signOutEverywhere() async {
     await _post('/actions/security/sign-out-everywhere', const {});

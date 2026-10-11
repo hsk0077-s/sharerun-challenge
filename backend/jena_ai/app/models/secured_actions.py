@@ -266,3 +266,7 @@ class AppealRequest(BaseModel):
     reason_detail: str = Field(default="", max_length=2000)
     # Base64 of one JPEG/PNG. The server rejects anything over 700 KB.
     proof_base64: str = Field(max_length=1_100_000)
+
+
+class IntegrityReportRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=20_000)

@@ -52,8 +52,7 @@ class CosmeticsShopSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           for (final item in catalog.items)
-            if (item.category == category &&
-                !(item.retired && !ownedIds.contains(item.id))) ...[
+            if (item.category == category) ...[
               _CosmeticRow(
                 item: item,
                 onSale: catalog.onSale(item),

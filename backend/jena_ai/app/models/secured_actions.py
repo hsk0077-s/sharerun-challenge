@@ -191,8 +191,6 @@ class CosmeticCatalogItem(BaseModel):
     accent: str
     # Chosen for free, never bought.
     free: bool = False
-    # No longer sold. Owners keep it.
-    retired: bool = False
 
 
 class CosmeticCatalogView(BaseModel):

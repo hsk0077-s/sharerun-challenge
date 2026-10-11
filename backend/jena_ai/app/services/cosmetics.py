@@ -29,7 +29,6 @@ SHARE_FRAME = "share_frame"
 CATEGORIES = (RUNNER_AVATAR, SHOE_SKIN, SHARE_FRAME)
 ALREADY_OWNED = "Cosmetic already owned."
 NOT_ON_SALE = "Season item is not on sale."
-NO_LONGER_SOLD = "Item is no longer sold."
 FREE_ITEM = "Free item cannot be purchased."
 NOT_OWNED = "Cosmetic is not owned."
 NOT_SPENT = "Cosmetic item is not spent."
@@ -52,42 +51,6 @@ DEFAULT_ITEMS = (
         "accent": "",
         # Everyone has the snail. It is chosen for free, never bought.
         "free": True,
-    },
-    {
-        "id": "avatar_rabbit",
-        "name": "토끼 러너",
-        "category": RUNNER_AVATAR,
-        "price": 80,
-        "limited": False,
-        "season": "",
-        "asset": f"{_CHARACTERS}/chibi_rabbit_pure.png",
-        "accent": "",
-        # No longer sold. People who already own it keep it and can equip it.
-        "retired": True,
-    },
-    {
-        "id": "avatar_cheetah",
-        "name": "치타 러너",
-        "category": RUNNER_AVATAR,
-        "price": 150,
-        "limited": False,
-        "season": "",
-        "asset": f"{_CHARACTERS}/chibi_cheetah_pure.png",
-        "accent": "",
-        # No longer sold. People who already own it keep it and can equip it.
-        "retired": True,
-    },
-    {
-        "id": "avatar_season_wolf",
-        "name": "시즌 1 늑대 러너",
-        "category": RUNNER_AVATAR,
-        "price": 280,
-        "limited": True,
-        "season": CURRENT_SEASON,
-        "asset": f"{_CHARACTERS}/chibi_wolf_pure.png",
-        "accent": "",
-        # No longer sold. People who already own it keep it and can equip it.
-        "retired": True,
     },
     {
         "id": "shoe_mint",
@@ -232,8 +195,6 @@ def purchase_cosmetic(
     if ledger_ref.get(transaction=transaction).exists:
         user = _user(user_ref, transaction)
         return _result(user, "already_purchased", "Purchase already recorded.")
-    if item.get("retired"):
-        raise HTTPException(status_code=400, detail=NO_LONGER_SOLD)
     if item.get("free"):
         raise HTTPException(status_code=400, detail=FREE_ITEM)
 

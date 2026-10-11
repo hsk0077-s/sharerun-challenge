@@ -7,7 +7,6 @@ import pytest
 
 from app.services.cosmetics import (
     FREE_ITEM,
-    NO_LONGER_SOLD,
     ALREADY_OWNED,
     CURRENT_SEASON,
     LOADOUT_ID,
@@ -29,7 +28,6 @@ from app.services.secured_action_service import (
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
 AVATAR = "avatar_snail"
-WOLF = "avatar_season_wolf"
 SEASON_SHOE = "shoe_season_gold"
 SHOE = "shoe_mint"
 FRAME = "frame_blue"
@@ -87,7 +85,7 @@ def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None
         ceiling = MAX_LIMITED_PRICE if row["limited"] else MAX_PRICE
         assert MIN_PRICE <= row["price"] <= ceiling
         assert row["name"]
-    assert len(by_category["runner_avatar"]) == 4
+    assert len(by_category["runner_avatar"]) == 1
     assert len(by_category["shoe_skin"]) == 4
     assert len(by_category["share_frame"]) == 4
     assert resolve_cosmetics_catalog(None)["items"][0]["price"] == 30
@@ -97,7 +95,7 @@ def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None
             "season": "NOPE",
             "items": {
                 AVATAR: {"price": 10, "name": ""},
-                WOLF: {"price": 250},
+                "shoe_season_gold": {"price": 250},
                 "bonus_frame": {
                     "name": "보너스 프레임",
                     "category": "share_frame",
@@ -120,8 +118,8 @@ def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None
     assert overridden["season"] == CURRENT_SEASON
     assert prices[AVATAR]["price"] == 30
     assert prices[AVATAR]["name"] == "달팽이 러너"
-    assert prices[WOLF]["price"] == 250
-    assert prices[WOLF]["limited"] is True
+    assert prices["shoe_season_gold"]["price"] == 250
+    assert prices["shoe_season_gold"]["limited"] is True
     assert prices["bonus_frame"]["name"] == "보너스 프레임"
     assert "gacha_box" not in prices
 
@@ -311,27 +309,15 @@ def test_short_request_id_is_rejected() -> None:
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 150
 
 
-def test_animal_avatars_are_no_longer_sold_but_owners_keep_them() -> None:
-    for animal in ("avatar_rabbit", "avatar_cheetah", WOLF):
-        db = _MemoryDb()
-        db.store["users/u1"] = _wallet(free=400, paid=0)
-        with pytest.raises(HTTPException) as exc:
-            _buy(db, animal, "req-animal1")
-        assert exc.value.detail == NO_LONGER_SOLD
-        assert db.store["users/u1"]["wallet"]["diamondBalance"] == 400
-        assert not any(path.startswith("walletTransactions/") for path in db.store)
-
-    owner = _MemoryDb()
-    owner.store["users/u1"] = _wallet()
-    owner.store["users/u1/shopInventory/avatar_rabbit"] = {
-        "itemId": "avatar_rabbit",
-        "quantity": 1,
-        "category": "runner_avatar",
-    }
-    equipped = _equip(owner, "avatar_rabbit", "req-equip10")
-    assert equipped.status == "equipped"
-    slot = owner.store[f"users/u1/shopInventory/{LOADOUT_ID}"]["slots"]["runner_avatar"]
-    assert slot["id"] == "avatar_rabbit"
+def test_animal_avatars_are_gone_from_the_catalog() -> None:
+    ids = {row["id"] for row in resolve_cosmetics_catalog(None)["items"]}
+    assert not ids & {"avatar_rabbit", "avatar_cheetah", "avatar_season_wolf"}
+    db = _MemoryDb()
+    db.store["users/u1"] = _wallet(free=400, paid=0)
+    with pytest.raises(HTTPException) as exc:
+        _buy(db, "avatar_rabbit", "req-animal1")
+    assert exc.value.status_code == 404
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 400
 
 
 def test_the_snail_is_free_for_everyone_and_cannot_be_bought() -> None:
@@ -352,11 +338,9 @@ def test_the_snail_is_free_for_everyone_and_cannot_be_bought() -> None:
     assert left.status == "unequipped"
 
 
-def test_a_config_doc_cannot_put_a_retired_animal_back_on_sale() -> None:
+def test_a_config_doc_cannot_make_the_snail_a_paid_item() -> None:
     catalog = resolve_cosmetics_catalog(
-        {"items": {"avatar_rabbit": {"price": 50, "retired": False}}}
+        {"items": {AVATAR: {"price": 50, "free": False}}}
     )
-    row = next(item for item in catalog["items"] if item["id"] == "avatar_rabbit")
-    assert row["retired"] is True
     snail = next(item for item in catalog["items"] if item["id"] == AVATAR)
     assert snail["free"] is True

@@ -259,7 +259,6 @@ def cosmetics_catalog(uid: str = Depends(require_uid)) -> CosmeticCatalogView:
                 asset=row["asset"],
                 accent=row["accent"],
                 free=bool(row.get("free")),
-                retired=bool(row.get("retired")),
             )
             for row in catalog["items"]
         ],

@@ -11,7 +11,7 @@ void main() {
     expect(defaults.season, 'season_1');
     expect(
       defaults.items.where((item) => item.category == runnerAvatar),
-      hasLength(4),
+      hasLength(1),
     );
     expect(
       defaults.items.where((item) => item.category == shoeSkin),
@@ -45,7 +45,7 @@ void main() {
     expect(parsed.items.single.name, '느린 달팽이');
     expect(parsed.items.single.price, 45);
     expect(parsed.onSale(parsed.items.single), isTrue);
-    expect(CosmeticsCatalog.fromJson(const {}).items, hasLength(12));
+    expect(CosmeticsCatalog.fromJson(const {}).items, hasLength(9));
   });
 
   test('inventory docs own a cosmetic and keep the equipped slot', () {
@@ -116,7 +116,7 @@ void main() {
     expect(find.textContaining(AppStrings.storeCosmeticLimited), findsWidgets);
     expect(find.textContaining('랜덤'), findsNothing);
     expect(find.text(AppStrings.storeCosmeticsNote), findsOneWidget);
-    // 판매를 멈춘 동물은 가진 사람에게만 보인다.
+    // 동물 아바타는 상점에서 없앴다.
     expect(find.text('토끼 러너'), findsNothing);
     expect(find.text('치타 러너'), findsNothing);
     expect(find.text('시즌 1 늑대 러너'), findsNothing);
@@ -135,39 +135,5 @@ void main() {
     await tester.pump();
     expect(equipped, 'frame_blue:true');
     expect(bought, isNull);
-  });
-
-  testWidgets('an owner of a retired animal still sees and can equip it',
-      (tester) async {
-    await tester.binding.setSurfaceSize(const Size(400, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-    String? equipped;
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: ListView(
-            children: [
-              CosmeticsShopSection(
-                catalog: CosmeticsCatalog.defaults,
-                diamondBalance: 0,
-                ownedIds: const {'avatar_rabbit'},
-                loadout: const CosmeticLoadout(),
-                busyId: '',
-                onPurchase: (item) async {},
-                onEquip: (item, equip) async {
-                  equipped = '${item.id}:$equip';
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-
-    expect(find.text('토끼 러너'), findsOneWidget);
-    expect(find.text('치타 러너'), findsNothing);
-    await tester.tap(find.byKey(const Key('cosmetic-equip-avatar_rabbit')));
-    await tester.pump();
-    expect(equipped, 'avatar_rabbit:true');
   });
 }

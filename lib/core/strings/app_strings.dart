@@ -280,6 +280,7 @@ abstract final class AppStrings {
   static const storeCosmeticsNote =
       '무료 DIA로 살 수 있습니다. 기록과 랭킹은 바뀌지 않습니다.';
   static const storeCosmeticOwned = '보유';
+  static const storeCosmeticFree = '기본 제공';
   static const storeCosmeticEquip = '장착';
   static const storeCosmeticUnequip = '해제';
   static const storeCosmeticSeasonEnded = '시즌 종료';

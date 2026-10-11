@@ -13,6 +13,7 @@ class CosmeticItem {
     required this.season,
     required this.asset,
     required this.accent,
+    this.free = false,
   });
 
   final String id;
@@ -23,6 +24,9 @@ class CosmeticItem {
   final String season;
   final String asset;
   final String accent;
+
+  /// 누구나 무료로 고르는 기본 아이템. 사지 않는다.
+  final bool free;
 
   factory CosmeticItem.fromJson(Map<String, dynamic> json) {
     final price = json['price'];
@@ -35,6 +39,7 @@ class CosmeticItem {
       season: _text(json['season']),
       asset: _text(json['asset']),
       accent: _text(json['accent']),
+      free: json['free'] == true,
     );
   }
 }
@@ -57,36 +62,7 @@ class CosmeticsCatalog {
         season: '',
         asset: 'assets/images/characters/chibi_snail_smiling.png',
         accent: '',
-      ),
-      CosmeticItem(
-        id: 'avatar_rabbit',
-        name: '토끼 러너',
-        category: runnerAvatar,
-        price: 80,
-        limited: false,
-        season: '',
-        asset: 'assets/images/characters/chibi_rabbit_pure.png',
-        accent: '',
-      ),
-      CosmeticItem(
-        id: 'avatar_cheetah',
-        name: '치타 러너',
-        category: runnerAvatar,
-        price: 150,
-        limited: false,
-        season: '',
-        asset: 'assets/images/characters/chibi_cheetah_pure.png',
-        accent: '',
-      ),
-      CosmeticItem(
-        id: 'avatar_season_wolf',
-        name: '시즌 1 늑대 러너',
-        category: runnerAvatar,
-        price: 280,
-        limited: true,
-        season: 'season_1',
-        asset: 'assets/images/characters/chibi_wolf_pure.png',
-        accent: '',
+        free: true,
       ),
       CosmeticItem(
         id: 'shoe_mint',

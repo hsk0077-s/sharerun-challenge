@@ -56,7 +56,7 @@ class CosmeticsShopSection extends StatelessWidget {
               _CosmeticRow(
                 item: item,
                 onSale: catalog.onSale(item),
-                owned: ownedIds.contains(item.id),
+                owned: item.free || ownedIds.contains(item.id),
                 equipped: loadout.slotFor(category).id == item.id,
                 canAfford: diamondBalance >= item.price,
                 busy: busyId == item.id,
@@ -124,9 +124,11 @@ class _CosmeticRow extends StatelessWidget {
                       ),
                     ),
                   Text(
-                    owned
-                        ? AppStrings.storeCosmeticOwned
-                        : '${item.price} DIA',
+                    item.free
+                        ? AppStrings.storeCosmeticFree
+                        : owned
+                            ? AppStrings.storeCosmeticOwned
+                            : '${item.price} DIA',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.tealAccent,
                       fontWeight: FontWeight.w800,

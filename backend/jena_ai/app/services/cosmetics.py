@@ -29,6 +29,7 @@ SHARE_FRAME = "share_frame"
 CATEGORIES = (RUNNER_AVATAR, SHOE_SKIN, SHARE_FRAME)
 ALREADY_OWNED = "Cosmetic already owned."
 NOT_ON_SALE = "Season item is not on sale."
+FREE_ITEM = "Free item cannot be purchased."
 NOT_OWNED = "Cosmetic is not owned."
 NOT_SPENT = "Cosmetic item is not spent."
 _ACCENTS = frozenset({"", "dark", "blue", "pink", "yellow", "mint"})
@@ -48,36 +49,8 @@ DEFAULT_ITEMS = (
         "season": "",
         "asset": f"{_CHARACTERS}/chibi_snail_smiling.png",
         "accent": "",
-    },
-    {
-        "id": "avatar_rabbit",
-        "name": "토끼 러너",
-        "category": RUNNER_AVATAR,
-        "price": 80,
-        "limited": False,
-        "season": "",
-        "asset": f"{_CHARACTERS}/chibi_rabbit_pure.png",
-        "accent": "",
-    },
-    {
-        "id": "avatar_cheetah",
-        "name": "치타 러너",
-        "category": RUNNER_AVATAR,
-        "price": 150,
-        "limited": False,
-        "season": "",
-        "asset": f"{_CHARACTERS}/chibi_cheetah_pure.png",
-        "accent": "",
-    },
-    {
-        "id": "avatar_season_wolf",
-        "name": "시즌 1 늑대 러너",
-        "category": RUNNER_AVATAR,
-        "price": 280,
-        "limited": True,
-        "season": CURRENT_SEASON,
-        "asset": f"{_CHARACTERS}/chibi_wolf_pure.png",
-        "accent": "",
+        # Everyone has the snail. It is chosen for free, never bought.
+        "free": True,
     },
     {
         "id": "shoe_mint",
@@ -222,6 +195,8 @@ def purchase_cosmetic(
     if ledger_ref.get(transaction=transaction).exists:
         user = _user(user_ref, transaction)
         return _result(user, "already_purchased", "Purchase already recorded.")
+    if item.get("free"):
+        raise HTTPException(status_code=400, detail=FREE_ITEM)
 
     user = _user(user_ref, transaction)
     inventory_ref = user_ref.collection("shopInventory").document(item_id)
@@ -290,7 +265,7 @@ def equip_cosmetic(
         return _result(user, "already_equipped", "Equip already recorded.")
 
     inventory_ref = user_ref.collection("shopInventory").document(item_id)
-    if equip and _quantity(inventory_ref, transaction) < 1:
+    if equip and not item.get("free") and _quantity(inventory_ref, transaction) < 1:
         raise HTTPException(status_code=400, detail=NOT_OWNED)
 
     loadout_ref = user_ref.collection("shopInventory").document(LOADOUT_ID)

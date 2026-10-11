@@ -212,9 +212,10 @@ final recentActivitiesProvider = StreamProvider<List<ActivityModel>>((ref) {
       if (user == null) {
         return Stream.value(const []);
       }
-      return ref.watch(activityRepositoryProvider).watchRecentActivities(user.uid).map(
-            ActivityModel.withLatestForcedPending,
-          );
+      // 서버가 정한 검증 상태를 그대로 쓴다. (테스트용 강제 보류는 목 데이터에만 쓴다.)
+      return ref
+          .watch(activityRepositoryProvider)
+          .watchRecentActivities(user.uid);
     },
     loading: () => Stream.value(const []),
     error: (_, __) => Stream.value(const []),

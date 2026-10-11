@@ -258,3 +258,11 @@ class LoginDeviceRequest(BaseModel):
     os_version: str = Field(default="", max_length=200)
     app_version: str = Field(default="", max_length=100)
     fcm_token: str = Field(default="", max_length=4096)
+
+
+class AppealRequest(BaseModel):
+    activity_id: str = Field(min_length=1, max_length=128)
+    reason_category: str = Field(default="other", max_length=40)
+    reason_detail: str = Field(default="", max_length=2000)
+    # Base64 of one JPEG/PNG. The server rejects anything over 700 KB.
+    proof_base64: str = Field(max_length=1_100_000)

@@ -7,14 +7,12 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/providers/app_providers.dart';
+import '../core/api/api_exception.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/appeal/appeal_hold.dart';
-import '../features/appeal/appeal_repository.dart';
-import '../features/appeal/models/appeal_packet.dart';
-import '../features/onboarding/src_onboarding_controller.dart';
 
 /// src-27 기록 소명 및 고객센터.
 class AppealCenterScreen extends ConsumerStatefulWidget {
@@ -157,7 +155,9 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
       final picker = ImagePicker();
       final file = await picker.pickImage(
         source: ImageSource.gallery,
-        imageQuality: 85,
+        maxWidth: 1280,
+        maxHeight: 1280,
+        imageQuality: 70,
       );
       if (!mounted || file == null) return;
       setState(() => _proofImage = file);
@@ -179,40 +179,15 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
       return;
     }
 
-    final authUser = ref.read(authStateChangesProvider).value;
-    final localSession = ref.read(persistedAuthSessionProvider);
-    final userId = authUser?.uid ?? localSession?.uid;
-    if (userId == null || userId.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 후 소명 자료를 제출할 수 있습니다.')),
-      );
-      return;
-    }
-
     setState(() => _busy = true);
     try {
-      final now = DateTime.now().toUtc();
-      final appealId = 'appeal-${now.millisecondsSinceEpoch}';
-      final activityId = hold.activity.id;
-      final expireAt = now.add(AppealRepository.proofTtl);
-      final packet = AppealPacket(
-        appealId: appealId,
-        userId: userId,
-        userNickname: ref.read(userNicknameProvider),
-        activityId: activityId,
-        reasonCategory: _selectedReason,
-        reasonDetail: _detailController.text.trim(),
-        proofImageUri: 'gs://src-appeal-proofs/$userId/$appealId.jpg',
-        status: AppealPacketStatus.underReview,
-        createdAt: now,
-        expireAt: expireAt,
-        purgeAt: expireAt,
-        challengeTitle: hold.title,
-      );
-
-      await ref
-          .read(appealRepositoryProvider)
-          .submitAppealPacket(packet: packet);
+      final bytes = await _proofImage!.readAsBytes();
+      await ref.read(securedActionApiClientProvider).submitAppeal(
+            activityId: hold.activity.id,
+            reasonCategory: _selectedReason,
+            reasonDetail: _detailController.text.trim(),
+            proofBytes: bytes,
+          );
       if (!mounted) return;
       await showDialog<void>(
         context: context,
@@ -237,9 +212,14 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
     } catch (error, stackTrace) {
       debugPrint('Appeal submit failed: $error\n$stackTrace');
       if (!mounted) return;
+      final tooLarge = error is ApiException && error.statusCode == 413;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('소명을 접수하지 못했어요. 잠시 후 다시 시도해 주세요.'),
+        SnackBar(
+          content: Text(
+            tooLarge
+                ? '사진 용량이 너무 커요. 다른 사진으로 다시 시도해 주세요.'
+                : '소명을 접수하지 못했어요. 잠시 후 다시 시도해 주세요.',
+          ),
         ),
       );
     } finally {

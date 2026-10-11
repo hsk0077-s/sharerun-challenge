@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
+    AppealRequest,
     AiLearningRequest,
     LoginDeviceRequest,
     ApplyReferralRequest,
@@ -40,7 +41,7 @@ from app.models.secured_actions import (
 from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
-from app.services import login_devices, privacy_settings
+from app.services import appeals, login_devices, privacy_settings
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services.secured_action_service import SecuredActionService
@@ -416,3 +417,18 @@ def sign_out_everywhere(uid: str = Depends(require_uid)) -> dict:
     )
     forget_sign_out_cache(uid)
     return {"status": "signed_out"}
+
+
+@router.post("/appeals")
+def submit_appeal(
+    request: AppealRequest,
+    uid: str = Depends(require_uid),
+) -> dict:
+    return appeals.submit_appeal(
+        service.firebase_service.db,
+        uid,
+        activity_id=request.activity_id,
+        reason_category=request.reason_category,
+        reason_detail=request.reason_detail,
+        proof_base64=request.proof_base64,
+    )

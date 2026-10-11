@@ -88,4 +88,29 @@ void main() {
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNull);
   });
+
+  group('which runs can be appealed', () {
+    test('a rejected run is appealable for 14 days, then not', () {
+      final fresh = _run('a', status: ActivityValidationStatus.rejected,
+          at: DateTime.now().subtract(const Duration(days: 2)));
+      final old = _run('b', status: ActivityValidationStatus.rejected,
+          at: DateTime.now().subtract(const Duration(days: 15)));
+      expect(fresh.needsJenaAppeal, isTrue);
+      expect(old.needsJenaAppeal, isFalse);
+    });
+
+    test('verified and under-review runs are not appealable', () {
+      final now = DateTime.now();
+      expect(
+        _run('v', status: ActivityValidationStatus.verified, at: now)
+            .needsJenaAppeal,
+        isFalse,
+      );
+      expect(
+        _run('u', status: ActivityValidationStatus.underReview, at: now)
+            .needsJenaAppeal,
+        isFalse,
+      );
+    });
+  });
 }

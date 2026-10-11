@@ -130,6 +130,22 @@ class SecuredActionApiClient {
     return rows.whereType<Map<String, dynamic>>().toList();
   }
 
+  /// Sends an appeal with one proof photo. The server checks the run, keeps
+  /// the photo for 14 days and locks the run while it is under review.
+  Future<void> submitAppeal({
+    required String activityId,
+    required String reasonCategory,
+    required String reasonDetail,
+    required List<int> proofBytes,
+  }) async {
+    await _post('/actions/appeals', {
+      'activity_id': activityId,
+      'reason_category': reasonCategory,
+      'reason_detail': reasonDetail,
+      'proof_base64': base64Encode(proofBytes),
+    });
+  }
+
   /// Signs the account out on every device, this one included.
   Future<void> signOutEverywhere() async {
     await _post('/actions/security/sign-out-everywhere', const {});

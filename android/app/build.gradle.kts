@@ -51,4 +51,6 @@ flutter {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation("androidx.multidex:multidex:2.0.1")
+    // Play Integrity: device/app verdict, recorded by the server only.
+    implementation("com.google.android.play:integrity:1.4.0")
 }

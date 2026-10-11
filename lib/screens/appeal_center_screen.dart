@@ -11,6 +11,7 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../features/appeal/appeal_hold.dart';
 import '../features/appeal/appeal_repository.dart';
 import '../features/appeal/models/appeal_packet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
@@ -20,11 +21,9 @@ class AppealCenterScreen extends ConsumerStatefulWidget {
   const AppealCenterScreen({
     super.key,
     this.activityId,
-    this.challengeTitle = '중급 3km 챌린지',
   });
 
   final String? activityId;
-  final String challengeTitle;
 
   @override
   ConsumerState<AppealCenterScreen> createState() => _AppealCenterScreenState();
@@ -45,6 +44,12 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final activities = ref.watch(recentActivitiesProvider);
+    final loaded = activities.hasValue;
+    final hold = pendingHoldFor(
+      activities.asData?.value ?? const [],
+      activityId: widget.activityId,
+    );
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,
       body: SafeArea(
@@ -81,19 +86,20 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                   children: [
-                    _JenaHoldBanner(challengeTitle: widget.challengeTitle),
+                    _JenaHoldBanner(hold: hold, loaded: loaded),
                     const SizedBox(height: 20),
-                    _AppealFormCard(
-                      selectedReason: _selectedReason,
-                      reasons: AppStrings.appealReasonOptions,
-                      onReasonChanged: (value) {
-                        if (value == null) return;
-                        setState(() => _selectedReason = value);
-                      },
-                      proofImage: _proofImage,
-                      onUpload: _busy ? null : _pickProof,
-                      detailController: _detailController,
-                    ),
+                    if (hold != null)
+                      _AppealFormCard(
+                        selectedReason: _selectedReason,
+                        reasons: AppStrings.appealReasonOptions,
+                        onReasonChanged: (value) {
+                          if (value == null) return;
+                          setState(() => _selectedReason = value);
+                        },
+                        proofImage: _proofImage,
+                        onUpload: _busy ? null : _pickProof,
+                        detailController: _detailController,
+                      ),
                   ],
                 ),
               ),
@@ -107,7 +113,8 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
                   child: SizedBox(
                     height: AppShapes.buttonHeight,
                     child: FilledButton(
-                      onPressed: _busy ? null : _submit,
+                      onPressed:
+                          (_busy || hold == null) ? null : () => _submit(hold),
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.tealAccent,
                         disabledBackgroundColor: AppColors.buttonDisabled,
@@ -163,7 +170,7 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
     }
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(AppealHold hold) async {
     if (_busy) return;
     if (_proofImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -186,10 +193,7 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
     try {
       final now = DateTime.now().toUtc();
       final appealId = 'appeal-${now.millisecondsSinceEpoch}';
-      final activityId = (widget.activityId != null &&
-              widget.activityId!.trim().isNotEmpty)
-          ? widget.activityId!.trim()
-          : 'activity-$userId-pending';
+      final activityId = hold.activity.id;
       final expireAt = now.add(AppealRepository.proofTtl);
       final packet = AppealPacket(
         appealId: appealId,
@@ -203,10 +207,12 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
         createdAt: now,
         expireAt: expireAt,
         purgeAt: expireAt,
-        challengeTitle: widget.challengeTitle,
+        challengeTitle: hold.title,
       );
 
-      await ref.read(appealRepositoryProvider).submitAppealPacket(packet: packet);
+      await ref
+          .read(appealRepositoryProvider)
+          .submitAppealPacket(packet: packet);
       if (!mounted) return;
       await showDialog<void>(
         context: context,
@@ -232,7 +238,9 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
       debugPrint('Appeal submit failed: $error\n$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('소명 제출에 실패했습니다. $error')),
+        const SnackBar(
+          content: Text('소명을 접수하지 못했어요. 잠시 후 다시 시도해 주세요.'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -255,17 +263,32 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
 }
 
 class _JenaHoldBanner extends StatelessWidget {
-  const _JenaHoldBanner({required this.challengeTitle});
+  const _JenaHoldBanner({required this.hold, required this.loaded});
 
-  final String challengeTitle;
+  final AppealHold? hold;
+  final bool loaded;
+
+  static const holdKey = Key('appeal-hold-banner');
+  static const emptyKey = Key('appeal-empty-banner');
 
   @override
   Widget build(BuildContext context) {
+    final current = hold;
+    final title = current != null
+        ? '⚠️ 기록 검증 보류 안내'
+        : (loaded ? '소명할 기록이 없어요' : '기록을 불러오는 중이에요');
+    final body = current != null
+        ? '${current.dateLabel.isEmpty ? '' : '${current.dateLabel} '}'
+            '${current.title} 기록이 검증 보류 상태예요.\n'
+            '이유: ${current.reason}\n'
+            '억울한 경우 아래에서 소명 자료를 제출해 주세요.'
+        : (loaded ? '검증이 보류된 달리기가 생기면 여기에서 소명할 수 있어요.' : '잠시만 기다려 주세요.');
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: Container(
+          key: current != null ? holdKey : emptyKey,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: AppColors.warningFill.withValues(alpha: 0.88),
@@ -276,7 +299,7 @@ class _JenaHoldBanner extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '⚠️ Jena AI 기록 검증 보류 안내',
+                title,
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
@@ -285,7 +308,7 @@ class _JenaHoldBanner extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                '최근 제출하신 [$challengeTitle] 기록이 비정상적인 GPS/심박수 패턴으로 인해 보류 처리되었습니다. 억울한 경우 아래 폼을 통해 소명 자료를 제출해 주세요.',
+                body,
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontSize: 14,
                   height: 1.45,
@@ -421,7 +444,9 @@ class _DashedUploadBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         child: CustomPaint(
           painter: _DashedRRectPainter(
-            color: proofImage == null ? AppColors.borderGrey : AppColors.tealAccent,
+            color: proofImage == null
+                ? AppColors.borderGrey
+                : AppColors.tealAccent,
             radius: 16,
           ),
           child: SizedBox(

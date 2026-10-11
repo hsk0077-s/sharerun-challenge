@@ -478,10 +478,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
         if (!mounted) return;
         await Navigator.of(context).pushReplacement(
           MaterialPageRoute<void>(
-            builder: (_) => AppealCenterScreen(
-              activityId: activityId,
-              challengeTitle: widget.roomTitle ?? '중급 3km 챌린지',
-            ),
+            builder: (_) => AppealCenterScreen(activityId: activityId),
           ),
         );
         return;

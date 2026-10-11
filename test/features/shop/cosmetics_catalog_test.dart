@@ -112,17 +112,20 @@ void main() {
     );
 
     expect(find.text('달팽이 러너'), findsOneWidget);
+    expect(find.text(AppStrings.storeCosmeticFree), findsOneWidget);
     expect(find.textContaining(AppStrings.storeCosmeticLimited), findsWidgets);
     expect(find.textContaining('랜덤'), findsNothing);
     expect(find.text(AppStrings.storeCosmeticsNote), findsOneWidget);
-    final wolf = tester.widget<TextButton>(
-      find.byKey(const Key('cosmetic-buy-avatar_season_wolf')),
-    );
-    expect(wolf.onPressed, isNull);
+    // 판매를 멈춘 동물은 가진 사람에게만 보인다.
+    expect(find.text('토끼 러너'), findsNothing);
+    expect(find.text('치타 러너'), findsNothing);
+    expect(find.text('시즌 1 늑대 러너'), findsNothing);
+    expect(find.byKey(const Key('cosmetic-buy-avatar_snail')), findsNothing);
 
-    await tester.tap(find.byKey(const Key('cosmetic-buy-avatar_snail')));
+    await tester.tap(find.byKey(const Key('cosmetic-equip-avatar_snail')));
     await tester.pump();
-    expect(bought?.id, 'avatar_snail');
+    expect(equipped, 'avatar_snail:true');
+    equipped = null;
 
     await tester.scrollUntilVisible(
       find.byKey(const Key('cosmetic-equip-frame_blue')),
@@ -131,5 +134,40 @@ void main() {
     await tester.tap(find.byKey(const Key('cosmetic-equip-frame_blue')));
     await tester.pump();
     expect(equipped, 'frame_blue:true');
+    expect(bought, isNull);
+  });
+
+  testWidgets('an owner of a retired animal still sees and can equip it',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    String? equipped;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ListView(
+            children: [
+              CosmeticsShopSection(
+                catalog: CosmeticsCatalog.defaults,
+                diamondBalance: 0,
+                ownedIds: const {'avatar_rabbit'},
+                loadout: const CosmeticLoadout(),
+                busyId: '',
+                onPurchase: (item) async {},
+                onEquip: (item, equip) async {
+                  equipped = '${item.id}:$equip';
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('토끼 러너'), findsOneWidget);
+    expect(find.text('치타 러너'), findsNothing);
+    await tester.tap(find.byKey(const Key('cosmetic-equip-avatar_rabbit')));
+    await tester.pump();
+    expect(equipped, 'avatar_rabbit:true');
   });
 }

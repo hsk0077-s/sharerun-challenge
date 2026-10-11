@@ -6,6 +6,8 @@ from fastapi import HTTPException
 import pytest
 
 from app.services.cosmetics import (
+    FREE_ITEM,
+    NO_LONGER_SOLD,
     ALREADY_OWNED,
     CURRENT_SEASON,
     LOADOUT_ID,
@@ -28,6 +30,7 @@ from test_redeem_referral import _MemoryDb, _MemoryTxn
 
 AVATAR = "avatar_snail"
 WOLF = "avatar_season_wolf"
+SEASON_SHOE = "shoe_season_gold"
 SHOE = "shoe_mint"
 FRAME = "frame_blue"
 
@@ -138,34 +141,34 @@ def test_purchase_spends_free_dia_first_and_replay_does_not_charge() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet()
 
-    result = _buy(db, AVATAR, "req-avatar1")
+    result = _buy(db, SHOE, "req-shoe01")
 
     assert result.status == "purchased"
-    assert result.diamond_balance == 120
+    assert result.diamond_balance == 110
     assert result.share_balance == 4000
     assert result.value_token_balance == 7
     wallet = db.store["users/u1"]["wallet"]
-    assert wallet["freeDiamondBalance"] == 70
+    assert wallet["freeDiamondBalance"] == 60
     assert wallet["paidDiamondBalance"] == 50
-    owned = db.store[f"users/u1/shopInventory/{AVATAR}"]
+    owned = db.store[f"users/u1/shopInventory/{SHOE}"]
     assert owned["quantity"] == 1
-    assert owned["category"] == "runner_avatar"
-    assert owned["title"] == "달팽이 러너"
+    assert owned["category"] == "shoe_skin"
+    assert owned["title"] == "민트 러닝화"
     row = _ledger(db)[0]
     assert row["type"] == "shop_purchase"
-    assert row["diamondAmount"] == -30
-    assert row["diamondFreeAmount"] == -30
+    assert row["diamondAmount"] == -40
+    assert row["diamondFreeAmount"] == -40
     assert row["diamondPaidAmount"] == 0
-    assert row["itemId"] == AVATAR
+    assert row["itemId"] == SHOE
     assert db.store["users/u1"]["rankScore"] == 9
     assert not any(
         path.startswith(("activities/", "dailyMetrics/", "tournaments/", "rankings/"))
         for path in db.store
     )
 
-    again = _buy(db, AVATAR, "req-avatar1")
+    again = _buy(db, SHOE, "req-shoe01")
     assert again.status == "already_purchased"
-    assert wallet["diamondBalance"] == 120
+    assert wallet["diamondBalance"] == 110
     assert len(_ledger(db)) == 1
     assert owned["quantity"] == 1
 
@@ -173,26 +176,26 @@ def test_purchase_spends_free_dia_first_and_replay_does_not_charge() -> None:
 def test_second_request_does_not_sell_another_copy() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet()
-    _buy(db, AVATAR, "req-avatar1")
+    _buy(db, SHOE, "req-shoe01")
     with pytest.raises(HTTPException) as exc:
-        _buy(db, AVATAR, "req-avatar2")
+        _buy(db, SHOE, "req-shoe02")
     assert exc.value.detail == ALREADY_OWNED
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 120
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 110
     assert len(_ledger(db)) == 1
 
 
 def test_spend_uses_free_dia_then_paid() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet(free=20, paid=50)
-    result = _buy(db, AVATAR, "req-split01")
+    result = _buy(db, SHOE, "req-split01")
     assert result.status == "purchased"
     wallet = db.store["users/u1"]["wallet"]
     assert wallet["freeDiamondBalance"] == 0
-    assert wallet["paidDiamondBalance"] == 40
-    assert wallet["diamondBalance"] == 40
+    assert wallet["paidDiamondBalance"] == 30
+    assert wallet["diamondBalance"] == 30
     row = _ledger(db)[0]
     assert row["diamondFreeAmount"] == -20
-    assert row["diamondPaidAmount"] == -10
+    assert row["diamondPaidAmount"] == -20
 
 
 def test_free_dia_alone_can_buy_and_a_short_balance_does_not() -> None:
@@ -215,15 +218,15 @@ def test_free_dia_alone_can_buy_and_a_short_balance_does_not() -> None:
 def test_season_item_follows_the_config_season() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet(free=400, paid=0)
-    bought = _buy(db, WOLF, "req-wolf001")
+    bought = _buy(db, SEASON_SHOE, "req-gold001")
     assert bought.status == "purchased"
-    assert db.store["users/u1"]["wallet"]["freeDiamondBalance"] == 120
+    assert db.store["users/u1"]["wallet"]["freeDiamondBalance"] == 100
 
     closed = _MemoryDb()
     closed.store["users/u1"] = _wallet(free=400, paid=0)
     closed.store["config/cosmetics_catalog"] = {"season": "season_2"}
     with pytest.raises(HTTPException) as exc:
-        _buy(closed, WOLF, "req-wolf002")
+        _buy(closed, SEASON_SHOE, "req-gold002")
     assert exc.value.detail == NOT_ON_SALE
     assert closed.store["users/u1"]["wallet"]["diamondBalance"] == 400
 
@@ -274,17 +277,17 @@ def test_equip_requires_ownership_and_use_does_not_consume() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet()
     with pytest.raises(HTTPException) as missing:
-        _equip(db, AVATAR, "req-equip03")
+        _equip(db, SHOE, "req-equip03")
     assert missing.value.detail == NOT_OWNED
     assert f"users/u1/shopInventory/{LOADOUT_ID}" not in db.store
 
-    _buy(db, AVATAR, "req-avatar1")
+    _buy(db, SHOE, "req-shoe01")
     service = _service(db)
     user_ref = db.collection("users").document("u1")
     with pytest.raises(HTTPException) as used:
-        _commit_use_shop_tx.to_wrap(_MemoryTxn(), service, "u1", AVATAR, user_ref)
+        _commit_use_shop_tx.to_wrap(_MemoryTxn(), service, "u1", SHOE, user_ref)
     assert used.value.detail == NOT_SPENT
-    assert db.store[f"users/u1/shopInventory/{AVATAR}"]["quantity"] == 1
+    assert db.store[f"users/u1/shopInventory/{SHOE}"]["quantity"] == 1
 
 
 def test_generic_shop_purchase_does_not_sell_a_cosmetic() -> None:
@@ -306,3 +309,54 @@ def test_short_request_id_is_rejected() -> None:
         _buy(db, AVATAR, "short")
     assert exc.value.detail == "request_id is required."
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 150
+
+
+def test_animal_avatars_are_no_longer_sold_but_owners_keep_them() -> None:
+    for animal in ("avatar_rabbit", "avatar_cheetah", WOLF):
+        db = _MemoryDb()
+        db.store["users/u1"] = _wallet(free=400, paid=0)
+        with pytest.raises(HTTPException) as exc:
+            _buy(db, animal, "req-animal1")
+        assert exc.value.detail == NO_LONGER_SOLD
+        assert db.store["users/u1"]["wallet"]["diamondBalance"] == 400
+        assert not any(path.startswith("walletTransactions/") for path in db.store)
+
+    owner = _MemoryDb()
+    owner.store["users/u1"] = _wallet()
+    owner.store["users/u1/shopInventory/avatar_rabbit"] = {
+        "itemId": "avatar_rabbit",
+        "quantity": 1,
+        "category": "runner_avatar",
+    }
+    equipped = _equip(owner, "avatar_rabbit", "req-equip10")
+    assert equipped.status == "equipped"
+    slot = owner.store[f"users/u1/shopInventory/{LOADOUT_ID}"]["slots"]["runner_avatar"]
+    assert slot["id"] == "avatar_rabbit"
+
+
+def test_the_snail_is_free_for_everyone_and_cannot_be_bought() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _wallet()
+    with pytest.raises(HTTPException) as exc:
+        _buy(db, AVATAR, "req-snail01")
+    assert exc.value.detail == FREE_ITEM
+
+    equipped = _equip(db, AVATAR, "req-equip20")
+    assert equipped.status == "equipped"
+    slot = db.store[f"users/u1/shopInventory/{LOADOUT_ID}"]["slots"]["runner_avatar"]
+    assert slot["id"] == AVATAR
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 150
+    assert f"users/u1/shopInventory/{AVATAR}" not in db.store
+
+    left = _equip(db, AVATAR, "req-equip21", equip=False)
+    assert left.status == "unequipped"
+
+
+def test_a_config_doc_cannot_put_a_retired_animal_back_on_sale() -> None:
+    catalog = resolve_cosmetics_catalog(
+        {"items": {"avatar_rabbit": {"price": 50, "retired": False}}}
+    )
+    row = next(item for item in catalog["items"] if item["id"] == "avatar_rabbit")
+    assert row["retired"] is True
+    snail = next(item for item in catalog["items"] if item["id"] == AVATAR)
+    assert snail["free"] is True

@@ -533,13 +533,16 @@ service cloud.firestore {
     match /appeals/{appealId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.activityId is string
-        && request.resource.data.proofImageUri is string
-        && request.resource.data.status == 'under_review'
-        && request.resource.data.ttlDays == 14;
+      // Created by POST /actions/appeals (Admin SDK). The server checks the
+      // run, stores the proof photo and locks the run in one step.
+      allow create: if false;
       allow update, delete: if isAdmin();
+    }
+
+    // Proof photos. Only the server writes them; src-admin-2 reads them
+    // through the Admin SDK. A TTL policy on purgeAt removes them in 14 days.
+    match /appealProofs/{proofId} {
+      allow read, write: if false;
     }
 
     match /activities/{activityId} {

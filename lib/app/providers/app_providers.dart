@@ -26,7 +26,6 @@ import '../../data/models/user_model.dart';
 import '../../data/models/wallet_model.dart';
 import '../../data/models/wallet_transaction_model.dart';
 import '../../data/repositories/activity_repository.dart';
-import '../../features/appeal/appeal_repository.dart';
 import '../../data/repositories/crew_repository.dart';
 import '../../data/repositories/diamond_box_repository.dart';
 import '../../data/repositories/payment_repository.dart';
@@ -125,10 +124,6 @@ final userRepositoryProvider = Provider<UserRepository>(
 
 final activityRepositoryProvider = Provider<ActivityRepository>(
   (ref) => ActivityRepository(ref.watch(firestoreServiceProvider)),
-);
-
-final appealRepositoryProvider = Provider<AppealRepository>(
-  (ref) => AppealRepository(ref.watch(firestoreServiceProvider)),
 );
 
 final diamondBoxRepositoryProvider = Provider<DiamondBoxRepository>(

@@ -65,9 +65,16 @@ class ActivityModel {
           ActivityStatus.pending,
       };
 
-  /// 미소명 보류. 소명 제출([underReview])은 제외한다.
-  bool get needsJenaAppeal =>
-      validationStatus == ActivityValidationStatus.pending;
+  /// 소명 가능한 기록. 서버가 인정하지 않은 기록이 14일 안에 있을 때만이며,
+  /// 이미 소명을 낸 기록([underReview])은 제외한다.
+  bool get needsJenaAppeal {
+    if (validationStatus == ActivityValidationStatus.pending) return true;
+    if (validationStatus != ActivityValidationStatus.rejected) return false;
+    final at = completedAt;
+    return at != null && DateTime.now().difference(at) <= appealWindow;
+  }
+
+  static const appealWindow = Duration(days: 14);
 
   ActivityModel copyWith({
     String? id,

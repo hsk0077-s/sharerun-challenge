@@ -50,7 +50,7 @@ class MiniBotEntryButton extends StatelessWidget {
     final tokens = context.srcTokens;
     return FloatingActionButton.small(
       heroTag: heroTag,
-      tooltip: '미니봇',
+      tooltip: '달팽이봇',
       backgroundColor: tokens.colors.primary,
       foregroundColor: tokens.colors.onPrimary,
       onPressed: () => MiniBotSheet.show(context),
@@ -362,7 +362,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '쉐어런 미니봇',
+                          '달팽이봇',
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: tokens.colors.ink,

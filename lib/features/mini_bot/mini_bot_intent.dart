@@ -131,7 +131,8 @@ abstract final class MiniBotPrompts {
 }
 
 abstract final class MiniBotCopy {
-  static const greeting = '안녕하세요. 쉐어런 미니봇이에요. 안내하고, 추천한 뒤, 확인받아야만 이동해요.';
+  static const greeting = '저는 당신의 달리기 친구, 달팽이예요. 말로 물어보면 바로 도와드릴게요. '
+      '이동하거나 결제하기 전에는 꼭 확인받아요.';
 
   static const intro = '쉐어런은 함께 걷고 달리는 챌린지 앱이에요. '
       '홈에서 오늘 상태를 보고, 챌린지 로비나 초보 1km 방에서 레이스에 참가할 수 있어요. '

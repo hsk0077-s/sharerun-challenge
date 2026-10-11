@@ -10,6 +10,7 @@ import '../tournaments/providers/company_tournament_providers.dart';
 import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
 import 'mini_bot_voice.dart';
+import '../snail_faq/snail_faq.dart';
 
 /// Extra space under the shell mic so it sits fully above the tab bar.
 const double miniBotFabBottomClearance = 24;
@@ -73,7 +74,11 @@ class MiniBotSheet extends StatefulWidget {
     this.speech,
     this.onExecute,
     this.prizeConfig,
+    this.faq,
   });
+
+  /// 미리 써 둔 FAQ. 비워 두면 앱에 든 파일을 읽는다. 시험에서 바꿔 끼운다.
+  final SnailFaq? faq;
 
   /// Context that stays mounted after the sheet closes, used for navigation.
   final BuildContext? hostContext;
@@ -119,6 +124,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   late final MiniBotVoice _voice;
   late final MiniBotSpeechToText _speech;
   late final bool _ownsVoice;
+  SnailFaq? _faq;
 
   final _lines = <_MiniBotLine>[];
   MiniBotRead? _pending;
@@ -132,6 +138,17 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     _speech = widget.speech ?? MiniBotSpeechToTextHook();
     _lines.add(const _MiniBotLine(text: MiniBotCopy.greeting, fromUser: false));
     unawaited(_voice.speak(MiniBotCopy.greeting));
+    _faq = widget.faq;
+    if (_faq == null) unawaited(_loadFaq());
+  }
+
+  Future<void> _loadFaq() async {
+    try {
+      final faq = await SnailFaq.load();
+      if (mounted) _faq = faq;
+    } catch (error) {
+      debugPrint('mini-bot faq: $error');
+    }
   }
 
   @override
@@ -166,12 +183,20 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
       text,
       prizeConfig: widget.prizeConfig,
     );
+    // 이동·결제로 이어지는 말은 기존 확인 흐름이 먼저다. 그 밖의 질문은 FAQ가 답한다.
+    var reply = read.reply;
+    if (read.intent == MiniBotIntent.unknown) {
+      final faq = _faq;
+      if (faq != null) {
+        reply = faq.match(text)?.answer ?? faq.fallbackAnswer ?? read.reply;
+      }
+    }
     setState(() {
       _lines.add(_MiniBotLine(text: text, fromUser: true));
       _pending = read.awaitsConfirm ? read : null;
-      _lines.add(_MiniBotLine(text: read.reply, fromUser: false));
+      _lines.add(_MiniBotLine(text: reply, fromUser: false));
     });
-    unawaited(_voice.speak(read.reply));
+    unawaited(_voice.speak(reply));
     _scrollToEnd();
     _input.clear();
   }

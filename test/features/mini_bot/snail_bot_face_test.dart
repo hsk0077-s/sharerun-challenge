@@ -80,6 +80,8 @@ void main() {
       ),
     );
 
+    await tester.pump();
+
     expect(find.byType(SnailBotFace), findsOneWidget);
     expect(find.byIcon(Icons.mic_none_rounded), findsNothing);
     expect(

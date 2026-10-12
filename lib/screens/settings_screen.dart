@@ -29,6 +29,7 @@ import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/launch/intro_screen.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/run_recording_policy.dart';
+import '../features/mini_bot/mini_bot_dock.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
 import 'security_privacy_center_screen.dart';
@@ -450,6 +451,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   );
                 },
               ),
+              const Divider(height: 1, color: AppColors.borderLight),
+              ValueListenableBuilder<bool>(
+                valueListenable: MiniBotDockSettings.visible,
+                builder: (context, visible, _) => SwitchListTile.adaptive(
+                  key: const Key('mini-bot-visible-switch'),
+                  secondary: const Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    color: AppColors.tealAccent,
+                  ),
+                  title: Text(
+                    '달팽이봇 버튼 보이기',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    '홈과 대회 화면에 달팽이 버튼을 보여요. 끌어서 옮기고, 옆으로 밀면 접혀요.',
+                    style: AppTextStyles.caption,
+                  ),
+                  value: visible,
+                  activeThumbColor: AppColors.tealAccent,
+                  activeTrackColor: AppColors.tealAccent.withValues(alpha: 0.4),
+                  onChanged: (value) =>
+                      unawaited(MiniBotDockSettings.setVisible(value)),
+                ),
+              ),
+              const Divider(height: 1, color: AppColors.borderLight),
               ListTile(
                 key: const Key('coach-plus-settings'),
                 leading: const Icon(

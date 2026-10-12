@@ -13,7 +13,7 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/google_signin_button.dart';
 import '../core/widgets/kakao_login_button.dart';
-import '../core/widgets/social_brand_icons.dart';
+import '../core/widgets/naver_login_button.dart';
 import '../core/widgets/src_button.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../core/widgets/src_logo_header.dart';
@@ -247,12 +247,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
-                        // 3) Naver
-                        SRCButton.naver(
-                          label: AppStrings.loginNaver,
-                          leading: const NaverIcon(size: 20),
-                          onPressed: _onNaver,
-                        ),
+                        // 3) Naver — 네이버 공식 버튼 이미지
+                        NaverLoginButton(onPressed: _onNaver),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
                         // 4) Kakao — 카카오 공식 버튼 이미지

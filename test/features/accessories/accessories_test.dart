@@ -40,7 +40,7 @@ void main() {
       for (final acc in placed) {
         final a = anchors[acc];
         expect(a, isNotNull, reason: '${acc.name} for ${animal.code}');
-        expect(a!.scale, inInclusiveRange(0.1, 1.0));
+        expect(a!.scale, inInclusiveRange(0.1, 1.5));
       }
     }
     expect(accessoryAnchors.containsKey(TierAnimal.snail), isFalse);

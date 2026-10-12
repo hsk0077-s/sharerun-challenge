@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/theme.dart';
+import '../../app/providers/app_providers.dart';
 import '../../data/models/company_tournament_config.dart';
+import '../donation/today_donation.dart';
+import '../onboarding/src_onboarding_controller.dart' show UserTier;
 import '../tournaments/providers/company_tournament_providers.dart';
 import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
@@ -17,6 +20,18 @@ import 'snail_bot_face.dart';
 /// Extra space under the shell mic so it sits fully above the tab bar.
 const double miniBotFabBottomClearance = 24;
 
+/// 달팽이봇을 연 화면. 화면마다 추천 질문 칩이 다르다.
+enum MiniBotScreen { home, lobby }
+
+/// 화면별 추천 질문. FAQ id로 가리키고 글자는 FAQ에서 가져온다.
+abstract final class MiniBotFaqChips {
+  static const home = ['DO-03', 'SH-05', 'GR-07', 'SH-03'];
+  static const lobby = ['CO-01', 'CO-02', 'CO-08', 'CO-03'];
+
+  static List<String> forScreen(MiniBotScreen screen) =>
+      screen == MiniBotScreen.lobby ? lobby : home;
+}
+
 /// Home tab (0) and challenge lobby tab (2) only. The tab shell owns the
 /// button so the screen goldens stay the same.
 Widget? miniBotEntryForTab(int index) {
@@ -26,6 +41,7 @@ Widget? miniBotEntryForTab(int index) {
         child: MiniBotEntryButton(
           key: Key('mini-bot-entry-home'),
           heroTag: 'mini-bot-shell',
+          screen: MiniBotScreen.home,
         ),
       ),
     2 => const Padding(
@@ -33,6 +49,7 @@ Widget? miniBotEntryForTab(int index) {
         child: MiniBotEntryButton(
           key: Key('mini-bot-entry-lobby'),
           heroTag: 'mini-bot-shell',
+          screen: MiniBotScreen.lobby,
         ),
       ),
     _ => null,
@@ -43,16 +60,20 @@ class MiniBotEntryButton extends StatelessWidget {
   const MiniBotEntryButton({
     super.key,
     required this.heroTag,
+    this.screen = MiniBotScreen.home,
   });
 
   final Object heroTag;
+  final MiniBotScreen screen;
 
   /// 얼굴 버튼 크기. 둥근 테두리까지 그림에 들어 있다.
   static const double faceSize = MiniBotDockMath.size;
 
   @override
   Widget build(BuildContext context) {
-    return MiniBotDock(onOpen: () => MiniBotSheet.show(context));
+    return MiniBotDock(
+      onOpen: () => MiniBotSheet.show(context, screen: screen),
+    );
   }
 }
 
@@ -72,7 +93,15 @@ class MiniBotSheet extends StatefulWidget {
     this.onExecute,
     this.prizeConfig,
     this.faq,
+    this.faqValues = const {},
+    this.screen = MiniBotScreen.home,
   });
+
+  /// 열 때 서버에서 확인된 내 값(SHARE 잔액 등). 없는 값은 지어내지 않는다.
+  final Map<String, String> faqValues;
+
+  /// 이 화면에 맞는 추천 질문 칩을 고른다.
+  final MiniBotScreen screen;
 
   /// 미리 써 둔 FAQ. 비워 두면 앱에 든 파일을 읽는다. 시험에서 바꿔 끼운다.
   final SnailFaq? faq;
@@ -89,7 +118,10 @@ class MiniBotSheet extends StatefulWidget {
   /// Server prize-race fees. Null until config has loaded.
   final CompanyTournamentConfig? prizeConfig;
 
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(
+    BuildContext context, {
+    MiniBotScreen screen = MiniBotScreen.home,
+  }) {
     CompanyTournamentConfig? prizeConfig;
     try {
       prizeConfig = ProviderScope.containerOf(context, listen: false)
@@ -99,6 +131,7 @@ class MiniBotSheet extends StatefulWidget {
     } catch (_) {
       prizeConfig = null;
     }
+    final values = _confirmedValues(context);
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -107,8 +140,42 @@ class MiniBotSheet extends StatefulWidget {
       builder: (_) => MiniBotSheet(
         hostContext: context,
         prizeConfig: prizeConfig,
+        faqValues: values,
+        screen: screen,
       ),
     );
+  }
+
+  /// 서버가 확인해 앱에 내려온 값만 모은다. 아직 못 받은 값은 넣지 않는다.
+  static Map<String, String> _confirmedValues(BuildContext context) {
+    final values = <String, String>{};
+    try {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final wallet = container.read(activeWalletProvider).asData?.value;
+      if (wallet != null) {
+        values['SHARE잔액'] = _grouped(wallet.shareBalance);
+        values['VALUE잔액'] = _grouped(wallet.valueTokenBalance);
+      }
+      final profile = container.read(activeUserProfileProvider).asData?.value;
+      if (profile != null) {
+        final tier = UserTier.tryFromRankScore(profile.gradeRank) ??
+            UserTier.unratedFallback;
+        values['등급'] = tier.koreanName;
+      }
+      final donation = container.read(todayDonationProvider).asData?.value;
+      if (donation != null) values['오늘기부기여'] = _grouped(donation.todayWon);
+    } catch (_) {}
+    return values;
+  }
+
+  static String _grouped(int value) {
+    final text = value.abs().toString();
+    final buffer = StringBuffer(value < 0 ? '-' : '');
+    for (var i = 0; i < text.length; i++) {
+      if (i > 0 && (text.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(text[i]);
+    }
+    return buffer.toString();
   }
 
   @override
@@ -143,7 +210,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   Future<void> _loadFaq() async {
     try {
       final faq = await SnailFaq.load();
-      if (mounted) _faq = faq;
+      if (mounted) setState(() => _faq = faq);
     } catch (error) {
       debugPrint('mini-bot faq: $error');
     }
@@ -177,19 +244,33 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     final text = raw.trim();
     if (text.isEmpty) return;
     if (_listening) unawaited(_speech.stop());
-    final read = MiniBotInterpreter.interpret(
-      text,
-      prizeConfig: widget.prizeConfig,
-    );
-    // 이동·결제로 이어지는 말은 기존 확인 흐름이 먼저다. 그 밖의 질문은 FAQ가 답한다.
+    final faq = _faq;
+    final faqHit = faq?.matchScored(text);
+    // FAQ에 적어 둔 질문과 거의 같은 말은 이동·결제 해석보다 FAQ가 먼저 답한다.
+    // (예: "대회 참가비는 얼마예요?"를 "참가하기"로 오해하지 않게.)
+    final strongFaq =
+        faqHit != null && faqHit.score >= SnailFaq.strongScore ? faqHit : null;
+    final read = strongFaq != null
+        ? MiniBotRead(
+            intent: MiniBotIntent.unknown,
+            destination: MiniBotDestination.none,
+            reply: strongFaq.entry.answer,
+            needsConfirm: false,
+          )
+        : MiniBotInterpreter.interpret(
+            text,
+            prizeConfig: widget.prizeConfig,
+          );
+    // 그 밖의 이동·결제로 이어지는 말은 기존 확인 흐름이 먼저다. 나머지 질문은 FAQ가 답한다.
     var reply = read.reply;
     var mood = SnailBotMood.smiling;
     if (read.intent == MiniBotIntent.unknown) {
-      final faq = _faq;
-      final match = faq?.match(text);
+      final match = strongFaq?.entry ?? faq?.match(text);
       if (match != null) {
-        reply = match.answer;
-        mood = SnailBotMood.joy;
+        reply = SnailFaq.answerFor(match, widget.faqValues);
+        mood = reply == SnailFaq.valueUnavailable
+            ? SnailBotMood.disappointed
+            : SnailBotMood.joy;
       } else {
         reply = faq?.fallbackAnswer ?? read.reply;
         mood = SnailBotMood.disappointed;
@@ -468,6 +549,13 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
+                    for (final id in MiniBotFaqChips.forScreen(widget.screen))
+                      if (_faq?.questionOf(id) case final question?)
+                        _Chip(
+                          key: Key('mini-bot-faq-chip-$id'),
+                          label: question,
+                          onTap: () => _submit(question),
+                        ),
                     for (final chip in MiniBotPrompts.chips)
                       _Chip(
                         key: Key('mini-bot-chip-${chip.id}'),

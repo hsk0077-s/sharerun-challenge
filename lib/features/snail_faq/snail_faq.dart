@@ -10,6 +10,7 @@ class FaqEntry {
     required this.question,
     required this.aliases,
     required this.answer,
+    this.needs = const [],
   });
 
   final String id;
@@ -17,6 +18,9 @@ class FaqEntry {
   final String question;
   final List<String> aliases;
   final String answer;
+
+  /// 답에 들어갈 내 값의 이름. 비어 있으면 그대로 보여 준다.
+  final List<String> needs;
 
   factory FaqEntry.fromJson(Map<String, dynamic> json) {
     return FaqEntry(
@@ -28,6 +32,10 @@ class FaqEntry {
           if (alias is String) alias,
       ],
       answer: json['answer'] as String? ?? '',
+      needs: [
+        for (final key in (json['needs'] as List? ?? const []))
+          if (key is String) key,
+      ],
     );
   }
 }
@@ -71,6 +79,30 @@ class SnailFaq {
     ]);
   }
 
+  /// 내 값이 필요한 답인데 서버에서 확인한 값이 아직 없을 때의 안내.
+  static const valueUnavailable = '지금은 값을 불러오지 못했어요. 연결된 뒤에 다시 물어봐 주세요.';
+
+  /// 답 문장을 만든다. 내 값이 필요한 답은 [values]로 채우고,
+  /// 하나라도 없으면 지어내지 않고 [valueUnavailable]을 돌려준다.
+  static String answerFor(FaqEntry entry, Map<String, String> values) {
+    if (entry.needs.isEmpty) return entry.answer;
+    var text = entry.answer;
+    for (final key in entry.needs) {
+      final value = values[key];
+      if (value == null || value.isEmpty) return valueUnavailable;
+      text = text.replaceAll('{$key}', value);
+    }
+    return text;
+  }
+
+  /// id로 찾은 FAQ 질문. 추천 칩 글자를 FAQ와 똑같이 맞출 때 쓴다.
+  String? questionOf(String id) {
+    for (final entry in entries) {
+      if (entry.id == id) return entry.question;
+    }
+    return null;
+  }
+
   /// 맞는 답이 없을 때 쓰는 안내 문구. FAQ에 없으면 null.
   String? get fallbackAnswer {
     for (final entry in entries) {
@@ -79,8 +111,14 @@ class SnailFaq {
     return null;
   }
 
+  /// 이 점수 이상이면 FAQ에 적어 둔 질문과 거의 같은 말이다. 다른 해석보다 먼저 답한다.
+  static const strongScore = 0.9;
+
   /// 가장 비슷한 FAQ. 충분히 비슷한 것이 없으면 null.
-  FaqEntry? match(String text) {
+  FaqEntry? match(String text) => matchScored(text)?.entry;
+
+  /// [match]와 같고 비슷한 정도(0~1)도 돌려준다.
+  ({FaqEntry entry, double score})? matchScored(String text) {
     final query = _normalize(text);
     if (query.length < 2) return null;
     final grams = _bigrams(query);
@@ -95,7 +133,9 @@ class SnailFaq {
         }
       }
     }
-    return bestScore >= minScore ? best : null;
+    final found = best;
+    if (found == null || bestScore < minScore) return null;
+    return (entry: found, score: bestScore);
   }
 
   static double _score(String query, Set<String> queryGrams, String phrase) {

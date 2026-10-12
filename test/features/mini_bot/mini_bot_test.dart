@@ -672,7 +672,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('mini-bot-sheet')), findsOneWidget);
-    expect(find.text('쉐어런 미니봇'), findsOneWidget);
+    expect(find.text('달팽이봇'), findsOneWidget);
     expect(find.text(MiniBotCopy.greeting), findsOneWidget);
   });
 

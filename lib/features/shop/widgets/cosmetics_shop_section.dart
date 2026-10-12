@@ -42,7 +42,7 @@ class CosmeticsShopSection extends StatelessWidget {
           style: AppTextStyles.caption.copyWith(fontSize: 12, height: 1.4),
         ),
         const SizedBox(height: 12),
-        for (final category in const [runnerAvatar, shoeSkin, shareFrame]) ...[
+        for (final category in const [shoeSkin, shareFrame]) ...[
           Text(
             cosmeticCategoryLabel(category),
             style: AppTextStyles.agreementLabel.copyWith(
@@ -56,7 +56,7 @@ class CosmeticsShopSection extends StatelessWidget {
               _CosmeticRow(
                 item: item,
                 onSale: catalog.onSale(item),
-                owned: item.free || ownedIds.contains(item.id),
+                owned: ownedIds.contains(item.id),
                 equipped: loadout.slotFor(category).id == item.id,
                 canAfford: diamondBalance >= item.price,
                 busy: busyId == item.id,
@@ -124,11 +124,9 @@ class _CosmeticRow extends StatelessWidget {
                       ),
                     ),
                   Text(
-                    item.free
-                        ? AppStrings.storeCosmeticFree
-                        : owned
-                            ? AppStrings.storeCosmeticOwned
-                            : '${item.price} DIA',
+                    owned
+                        ? AppStrings.storeCosmeticOwned
+                        : '${item.price} DIA',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.tealAccent,
                       fontWeight: FontWeight.w800,

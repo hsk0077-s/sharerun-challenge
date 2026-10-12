@@ -13,7 +13,6 @@ class CosmeticItem {
     required this.season,
     required this.asset,
     required this.accent,
-    this.free = false,
   });
 
   final String id;
@@ -24,9 +23,6 @@ class CosmeticItem {
   final String season;
   final String asset;
   final String accent;
-
-  /// 누구나 무료로 고르는 기본 아이템. 사지 않는다.
-  final bool free;
 
   factory CosmeticItem.fromJson(Map<String, dynamic> json) {
     final price = json['price'];
@@ -39,7 +35,6 @@ class CosmeticItem {
       season: _text(json['season']),
       asset: _text(json['asset']),
       accent: _text(json['accent']),
-      free: json['free'] == true,
     );
   }
 }
@@ -53,17 +48,6 @@ class CosmeticsCatalog {
   static const defaults = CosmeticsCatalog(
     season: 'season_1',
     items: [
-      CosmeticItem(
-        id: 'avatar_snail',
-        name: '달팽이 러너',
-        category: runnerAvatar,
-        price: 30,
-        limited: false,
-        season: '',
-        asset: 'assets/images/characters/chibi_snail_smiling.png',
-        accent: '',
-        free: true,
-      ),
       CosmeticItem(
         id: 'shoe_mint',
         name: '민트 러닝화',
@@ -174,15 +158,13 @@ class CosmeticsCatalog {
   }
 }
 
-const runnerAvatar = 'runner_avatar';
 const shoeSkin = 'shoe_skin';
 const shareFrame = 'share_frame';
 const cosmeticLoadoutDocId = 'cosmetic_loadout';
-const cosmeticCategories = {runnerAvatar, shoeSkin, shareFrame};
+const cosmeticCategories = {shoeSkin, shareFrame};
 
 String cosmeticCategoryLabel(String category) {
   return switch (category) {
-    runnerAvatar => '러너 아바타',
     shoeSkin => '러닝화 스킨',
     shareFrame => '결과 카드 프레임',
     _ => category,
@@ -217,18 +199,15 @@ class CosmeticSlot {
 
 class CosmeticLoadout {
   const CosmeticLoadout({
-    this.avatar = const CosmeticSlot(),
     this.shoe = const CosmeticSlot(),
     this.frame = const CosmeticSlot(),
   });
 
-  final CosmeticSlot avatar;
   final CosmeticSlot shoe;
   final CosmeticSlot frame;
 
   CosmeticSlot slotFor(String category) {
     return switch (category) {
-      runnerAvatar => avatar,
       shoeSkin => shoe,
       shareFrame => frame,
       _ => const CosmeticSlot(),
@@ -239,7 +218,6 @@ class CosmeticLoadout {
     final slots = data?['slots'];
     if (slots is! Map) return const CosmeticLoadout();
     return CosmeticLoadout(
-      avatar: CosmeticSlot.fromJson(slots[runnerAvatar]),
       shoe: CosmeticSlot.fromJson(slots[shoeSkin]),
       frame: CosmeticSlot.fromJson(slots[shareFrame]),
     );

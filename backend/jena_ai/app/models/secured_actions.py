@@ -189,8 +189,6 @@ class CosmeticCatalogItem(BaseModel):
     season: str
     asset: str
     accent: str
-    # Chosen for free, never bought.
-    free: bool = False
 
 
 class CosmeticCatalogView(BaseModel):

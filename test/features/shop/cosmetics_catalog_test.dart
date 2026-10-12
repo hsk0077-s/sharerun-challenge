@@ -10,8 +10,8 @@ void main() {
     final defaults = CosmeticsCatalog.defaults;
     expect(defaults.season, 'season_1');
     expect(
-      defaults.items.where((item) => item.category == runnerAvatar),
-      hasLength(1),
+      defaults.items.where((item) => !cosmeticCategories.contains(item.category)),
+      isEmpty,
     );
     expect(
       defaults.items.where((item) => item.category == shoeSkin),
@@ -31,38 +31,38 @@ void main() {
       'season': 'season_1',
       'items': [
         {
-          'id': 'avatar_snail',
-          'name': '느린 달팽이',
-          'category': runnerAvatar,
+          'id': 'shoe_mint',
+          'name': '느린 러닝화',
+          'category': shoeSkin,
           'price': 45,
           'limited': false,
           'season': '',
-          'asset': 'assets/images/characters/chibi_snail_smiling.png',
-          'accent': '',
+          'asset': '',
+          'accent': '#1E6A58',
         },
       ],
     });
-    expect(parsed.items.single.name, '느린 달팽이');
+    expect(parsed.items.single.name, '느린 러닝화');
     expect(parsed.items.single.price, 45);
     expect(parsed.onSale(parsed.items.single), isTrue);
-    expect(CosmeticsCatalog.fromJson(const {}).items, hasLength(9));
+    expect(CosmeticsCatalog.fromJson(const {}).items, hasLength(8));
   });
 
   test('inventory docs own a cosmetic and keep the equipped slot', () {
     final inventory = ServerShopInventory.fromDocMaps({
-      'avatar_snail': {
+      'shoe_mint': {
         'quantity': 1,
-        'category': runnerAvatar,
+        'category': shoeSkin,
       },
       'record_cpr_ticket': {'quantity': 2},
       cosmeticLoadoutDocId: {
         'quantity': 0,
         'slots': {
-          runnerAvatar: {
-            'id': 'avatar_snail',
-            'name': '달팽이 러너',
-            'asset': 'assets/images/characters/chibi_snail_smiling.png',
-            'accent': '',
+          shoeSkin: {
+            'id': 'shoe_mint',
+            'name': '민트 러닝화',
+            'asset': '',
+            'accent': '#1E6A58',
           },
           shareFrame: {
             'id': 'frame_blue',
@@ -75,8 +75,8 @@ void main() {
     });
 
     expect(inventory.cprCount, 2);
-    expect(inventory.ownedCosmeticIds, {'avatar_snail'});
-    expect(inventory.loadout.avatar.asset, contains('chibi_snail'));
+    expect(inventory.ownedCosmeticIds, {'shoe_mint'});
+    expect(inventory.loadout.shoe.id, 'shoe_mint');
     expect(inventory.loadout.frame.accent, 'blue');
     expect(cosmeticAccentColor('blue'), const Color(0xFF1A56C4));
     expect(cosmeticAccentColor('#FFC857'), const Color(0xFFFFC857));
@@ -111,21 +111,15 @@ void main() {
       ),
     );
 
-    expect(find.text('달팽이 러너'), findsOneWidget);
-    expect(find.text(AppStrings.storeCosmeticFree), findsOneWidget);
     expect(find.textContaining(AppStrings.storeCosmeticLimited), findsWidgets);
     expect(find.textContaining('랜덤'), findsNothing);
     expect(find.text(AppStrings.storeCosmeticsNote), findsOneWidget);
-    // 동물 아바타는 상점에서 없앴다.
-    expect(find.text('토끼 러너'), findsNothing);
-    expect(find.text('치타 러너'), findsNothing);
-    expect(find.text('시즌 1 늑대 러너'), findsNothing);
-    expect(find.byKey(const Key('cosmetic-buy-avatar_snail')), findsNothing);
-
-    await tester.tap(find.byKey(const Key('cosmetic-equip-avatar_snail')));
-    await tester.pump();
-    expect(equipped, 'avatar_snail:true');
-    equipped = null;
+    // 동물 캐릭터는 상점에서 팔지 않는다. 티어로만 정해진다.
+    for (final name in ['달팽이 러너', '토끼 러너', '치타 러너', '시즌 1 늑대 러너']) {
+      expect(find.text(name), findsNothing);
+    }
+    expect(find.text(cosmeticCategoryLabel('runner_avatar')), findsNothing);
+    expect(find.byKey(const Key('cosmetic-buy-shoe_mint')), findsOneWidget);
 
     await tester.scrollUntilVisible(
       find.byKey(const Key('cosmetic-equip-frame_blue')),

@@ -6,7 +6,6 @@ from fastapi import HTTPException
 import pytest
 
 from app.services.cosmetics import (
-    FREE_ITEM,
     ALREADY_OWNED,
     CURRENT_SEASON,
     LOADOUT_ID,
@@ -27,7 +26,7 @@ from app.services.secured_action_service import (
 )
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
-AVATAR = "avatar_snail"
+GONE_AVATAR = "avatar_snail"
 SEASON_SHOE = "shoe_season_gold"
 SHOE = "shoe_mint"
 FRAME = "frame_blue"
@@ -76,7 +75,7 @@ def _ledger(db: _MemoryDb) -> list[dict]:
     ]
 
 
-def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None:
+def test_defaults_cover_two_categories_and_a_bad_price_stays_default() -> None:
     catalog = resolve_cosmetics_catalog(None)
     assert catalog["season"] == CURRENT_SEASON
     by_category: dict[str, list] = {}
@@ -85,16 +84,16 @@ def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None
         ceiling = MAX_LIMITED_PRICE if row["limited"] else MAX_PRICE
         assert MIN_PRICE <= row["price"] <= ceiling
         assert row["name"]
-    assert len(by_category["runner_avatar"]) == 1
+    assert "runner_avatar" not in by_category
     assert len(by_category["shoe_skin"]) == 4
     assert len(by_category["share_frame"]) == 4
-    assert resolve_cosmetics_catalog(None)["items"][0]["price"] == 30
+    assert resolve_cosmetics_catalog(None)["items"][0]["price"] == 40
 
     overridden = resolve_cosmetics_catalog(
         {
             "season": "NOPE",
             "items": {
-                AVATAR: {"price": 10, "name": ""},
+                SHOE: {"price": 10, "name": ""},
                 "shoe_season_gold": {"price": 250},
                 "bonus_frame": {
                     "name": "보너스 프레임",
@@ -116,8 +115,8 @@ def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None
     )
     prices = {row["id"]: row for row in overridden["items"]}
     assert overridden["season"] == CURRENT_SEASON
-    assert prices[AVATAR]["price"] == 30
-    assert prices[AVATAR]["name"] == "달팽이 러너"
+    assert prices[SHOE]["price"] == 40
+    assert prices[SHOE]["name"] == "민트 러닝화"
     assert prices["shoe_season_gold"]["price"] == 250
     assert prices["shoe_season_gold"]["limited"] is True
     assert prices["bonus_frame"]["name"] == "보너스 프레임"
@@ -127,12 +126,12 @@ def test_defaults_cover_three_categories_and_a_bad_price_stays_default() -> None
 def test_catalog_endpoint_uses_the_config_doc() -> None:
     db = _MemoryDb()
     db.store["config/cosmetics_catalog"] = {
-        "items": {AVATAR: {"price": 45, "name": "느린 달팽이"}}
+        "items": {SHOE: {"price": 45, "name": "느린 러닝화"}}
     }
     catalog = _service(db).cosmetics_catalog()
-    row = next(item for item in catalog["items"] if item["id"] == AVATAR)
+    row = next(item for item in catalog["items"] if item["id"] == SHOE)
     assert row["price"] == 45
-    assert row["name"] == "느린 달팽이"
+    assert row["name"] == "느린 러닝화"
 
 
 def test_purchase_spends_free_dia_first_and_replay_does_not_charge() -> None:
@@ -294,7 +293,7 @@ def test_generic_shop_purchase_does_not_sell_a_cosmetic() -> None:
     service = _service(db)
     user_ref = db.collection("users").document("u1")
     with pytest.raises(HTTPException) as exc:
-        _commit_shop_tx.to_wrap(_MemoryTxn(), service, "u1", AVATAR, user_ref)
+        _commit_shop_tx.to_wrap(_MemoryTxn(), service, "u1", SHOE, user_ref)
     assert exc.value.status_code == 404
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 150
     assert not any(path.startswith("walletTransactions/") for path in db.store)
@@ -304,43 +303,22 @@ def test_short_request_id_is_rejected() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet()
     with pytest.raises(HTTPException) as exc:
-        _buy(db, AVATAR, "short")
+        _buy(db, SHOE, "short")
     assert exc.value.detail == "request_id is required."
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 150
 
 
-def test_animal_avatars_are_gone_from_the_catalog() -> None:
+def test_animal_avatars_are_not_in_the_shop() -> None:
+    """Tier animals come from the grade, not from the shop."""
     ids = {row["id"] for row in resolve_cosmetics_catalog(None)["items"]}
-    assert not ids & {"avatar_rabbit", "avatar_cheetah", "avatar_season_wolf"}
-    db = _MemoryDb()
-    db.store["users/u1"] = _wallet(free=400, paid=0)
-    with pytest.raises(HTTPException) as exc:
-        _buy(db, "avatar_rabbit", "req-animal1")
-    assert exc.value.status_code == 404
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 400
-
-
-def test_the_snail_is_free_for_everyone_and_cannot_be_bought() -> None:
-    db = _MemoryDb()
-    db.store["users/u1"] = _wallet()
-    with pytest.raises(HTTPException) as exc:
-        _buy(db, AVATAR, "req-snail01")
-    assert exc.value.detail == FREE_ITEM
-
-    equipped = _equip(db, AVATAR, "req-equip20")
-    assert equipped.status == "equipped"
-    slot = db.store[f"users/u1/shopInventory/{LOADOUT_ID}"]["slots"]["runner_avatar"]
-    assert slot["id"] == AVATAR
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 150
-    assert f"users/u1/shopInventory/{AVATAR}" not in db.store
-
-    left = _equip(db, AVATAR, "req-equip21", equip=False)
-    assert left.status == "unequipped"
-
-
-def test_a_config_doc_cannot_make_the_snail_a_paid_item() -> None:
-    catalog = resolve_cosmetics_catalog(
-        {"items": {AVATAR: {"price": 50, "free": False}}}
-    )
-    snail = next(item for item in catalog["items"] if item["id"] == AVATAR)
-    assert snail["free"] is True
+    assert not any(item_id.startswith("avatar_") for item_id in ids)
+    for gone in ("avatar_rabbit", "avatar_cheetah", "avatar_season_wolf", GONE_AVATAR):
+        db = _MemoryDb()
+        db.store["users/u1"] = _wallet(free=400, paid=0)
+        with pytest.raises(HTTPException) as exc:
+            _buy(db, gone, "req-animal1")
+        assert exc.value.status_code == 404
+        assert db.store["users/u1"]["wallet"]["diamondBalance"] == 400
+        with pytest.raises(HTTPException) as equip:
+            _equip(db, gone, "req-equip30")
+        assert equip.value.status_code == 404

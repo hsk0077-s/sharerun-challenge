@@ -18,12 +18,12 @@ void main() {
         reason: '${order[i].code} should be larger than ${order[i - 1].code}',
       );
     }
-    // 아주 조금씩: 한 단계에 5%를 넘지 않고, 전체도 20% 안.
+    // 폰에서 보이게 한 단계에 4%보다 크게, 그래도 한 단계 10%는 넘지 않게.
     expect(TierBookScale.of(TierAnimal.turtle), 1.0);
-    expect(
-      TierBookScale.of(TierAnimal.cheetah) - TierBookScale.of(TierAnimal.turtle),
-      lessThan(0.2),
-    );
+    for (var i = 1; i < order.length; i++) {
+      final step = TierBookScale.of(order[i]) - TierBookScale.of(order[i - 1]);
+      expect(step, inInclusiveRange(0.05, 0.10), reason: order[i].code);
+    }
   });
 
   testWidgets('the book draws bigger animals in the same slot height',

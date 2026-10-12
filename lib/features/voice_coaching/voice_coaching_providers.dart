@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../iap/providers/coach_plus_providers.dart';
 import '../shop/coach_one_point_run.dart';
+import 'recorded_voice_speaker.dart';
 import 'voice_coach_output_mute.dart';
 import 'voice_coaching_controller.dart';
 import 'voice_coaching_cues.dart';
@@ -24,7 +25,10 @@ final voiceCoachMuteProbeProvider = Provider<VoiceCoachMuteProbe>(
 );
 
 final voiceCoachingSpeakerProvider = Provider<VoiceCoachingSpeaker>((ref) {
-  final speaker = FlutterTtsVoiceCoachingSpeaker();
+  // 미리 만든 음성 파일이 있는 문구는 파일로, 나머지는 폰 음성으로 읽는다.
+  final speaker = RecordedVoiceCoachingSpeaker(
+    fallback: FlutterTtsVoiceCoachingSpeaker(),
+  );
   ref.onDispose(() {
     speaker.dispose();
   });

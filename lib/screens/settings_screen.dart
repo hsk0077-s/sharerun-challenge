@@ -467,7 +467,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   subtitle: const Text(
-                    '홈과 대회 화면에 달팽이 버튼을 보여요. 끌어서 옮기고, 옆으로 밀면 접혀요.',
+                    '홈과 대회 화면에 달팽이 버튼을 보여요. 끌어서 옮길 수 있어요.',
                     style: AppTextStyles.caption,
                   ),
                   value: visible,

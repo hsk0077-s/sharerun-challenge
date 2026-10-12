@@ -42,34 +42,16 @@ abstract final class MiniBotDockSettings {
   }
 }
 
-/// 버튼이 붙어 있는 쪽. [none]이면 화면 안에 완전히 펴져 있다.
-enum MiniBotDockEdge { none, left, right }
-
-/// 버튼 위치와 접힘 상태.
+/// 버튼 위치.
 @immutable
 class MiniBotDockState {
-  const MiniBotDockState({
-    this.dx = 0,
-    this.dy = 0,
-    this.edge = MiniBotDockEdge.none,
-  });
+  const MiniBotDockState({this.dx = 0, this.dy = 0});
 
   /// 기본 자리(하단 탭 위 오른쪽)에서 얼마나 옮겼는지.
   final double dx;
   final double dy;
-  final MiniBotDockEdge edge;
 
-  bool get folded => edge != MiniBotDockEdge.none;
-
-  MiniBotDockState copyWith({double? dx, double? dy, MiniBotDockEdge? edge}) {
-    return MiniBotDockState(
-      dx: dx ?? this.dx,
-      dy: dy ?? this.dy,
-      edge: edge ?? this.edge,
-    );
-  }
-
-  String encode() => jsonEncode({'dx': dx, 'dy': dy, 'edge': edge.name});
+  String encode() => jsonEncode({'dx': dx, 'dy': dy});
 
   static MiniBotDockState decode(String? raw) {
     if (raw == null || raw.isEmpty) return const MiniBotDockState();
@@ -78,13 +60,10 @@ class MiniBotDockState {
       if (json is! Map) return const MiniBotDockState();
       final dx = json['dx'];
       final dy = json['dy'];
+      // 예전 버전이 저장한 접힘 값('edge')은 읽지 않는다.
       return MiniBotDockState(
         dx: dx is num && dx.isFinite ? dx.toDouble() : 0,
         dy: dy is num && dy.isFinite ? dy.toDouble() : 0,
-        edge: MiniBotDockEdge.values.firstWhere(
-          (e) => e.name == json['edge'],
-          orElse: () => MiniBotDockEdge.none,
-        ),
       );
     } catch (_) {
       return const MiniBotDockState();
@@ -92,18 +71,9 @@ class MiniBotDockState {
   }
 }
 
-/// 접기·끌기 계산. 화면 크기와 기본 자리만 받는 순수 함수라서 시험하기 쉽다.
+/// 끌기 계산. 화면 크기와 기본 자리만 받는 순수 함수라서 시험하기 쉽다.
 abstract final class MiniBotDockMath {
   static const double size = 56;
-
-  /// 접혔을 때 화면에 남는 폭.
-  static const double foldedVisible = 24;
-
-  /// 가장자리에서 이 거리 안에서 손을 떼면 접는다.
-  static const double edgeSnap = 8;
-
-  /// 이 속도(px/초) 이상으로 옆으로 밀면 접는다.
-  static const double flingSpeed = 800;
 
   /// 펴져 있을 때 가장자리와 띄우는 여백.
   static const double margin = 4;
@@ -124,34 +94,12 @@ abstract final class MiniBotDockMath {
 
   static double clamp(double v, (double, double) range) =>
       v.clamp(range.$1, range.$2).toDouble();
-
-  /// 접힌 버튼의 dx. 왼쪽 면 가장자리에 24px만 보이게 한다.
-  static double foldedDx(MiniBotDockEdge edge, Rect anchor, double screenWidth) {
-    return switch (edge) {
-      MiniBotDockEdge.left => -(size - foldedVisible) - anchor.left,
-      MiniBotDockEdge.right => screenWidth - foldedVisible - anchor.left,
-      MiniBotDockEdge.none => 0,
-    };
-  }
-
-  /// 손을 뗀 자리에서 접을지, 접는다면 어느 쪽인지.
-  static MiniBotDockEdge edgeForRelease({
-    required Rect face,
-    required double screenWidth,
-    required double velocityX,
-  }) {
-    if (face.left <= edgeSnap) return MiniBotDockEdge.left;
-    if (face.right >= screenWidth - edgeSnap) return MiniBotDockEdge.right;
-    if (velocityX < -flingSpeed) return MiniBotDockEdge.left;
-    if (velocityX > flingSpeed) return MiniBotDockEdge.right;
-    return MiniBotDockEdge.none;
-  }
 }
 
-/// 끌어서 옮기고, 옆으로 밀면 접히고, 접힌 탭을 누르면 펴지는 달팽이 얼굴 버튼.
+/// 끌어서 옮기고, 누르면 열리는 달팽이 얼굴 버튼.
 ///
 /// 버튼은 화면 위 겹침층에 그린다. 자리는 [anchor]가 잡고, 얼굴은 그 자리를 기준으로 움직인다.
-/// 누르면 [onOpen]이 불린다. 접힌 상태에서 누르면 열지 않고 펴기만 한다.
+/// 누르면 [onOpen]이 불린다.
 class MiniBotDock extends StatefulWidget {
   const MiniBotDock({super.key, required this.onOpen});
 
@@ -199,7 +147,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
       if (!mounted) return;
       setState(() {
         _state = saved;
-        _showHint = !seen && !saved.folded;
+        _showHint = !seen;
       });
       if (_showHint) {
         _hintTimer = Timer(const Duration(seconds: 6), _dismissHint);
@@ -232,19 +180,13 @@ class _MiniBotDockState extends State<MiniBotDock> {
     return box.localToGlobal(Offset.zero) & box.size;
   }
 
-  /// 화면에 그릴 때 쓰는 기본 자리 기준 이동량. 접혔으면 가장자리 값으로 바꾼다.
+  /// 화면에 그릴 때 쓰는 기본 자리 기준 이동량.
   Offset _offset(Rect? anchor, Size screen, double topInset) {
     if (anchor == null) return Offset(_state.dx, _state.dy);
     final dy = MiniBotDockMath.clamp(
       _state.dy,
       MiniBotDockMath.dyRange(anchor, topInset),
     );
-    if (_state.folded) {
-      return Offset(
-        MiniBotDockMath.foldedDx(_state.edge, anchor, screen.width),
-        dy,
-      );
-    }
     final dx = MiniBotDockMath.clamp(
       _state.dx,
       MiniBotDockMath.dxRange(anchor, screen.width),
@@ -260,68 +202,23 @@ class _MiniBotDockState extends State<MiniBotDock> {
     final media = MediaQuery.of(context);
     final base = _offset(anchor, media.size, media.padding.top);
     setState(() {
-      // 접힌 채로 끌면 먼저 펴진 위치에서 시작한다.
-      final from = _state.folded
-          ? Offset(
-              _state.edge == MiniBotDockEdge.left
-                  ? MiniBotDockMath.dxRange(anchor, media.size.width).$1
-                  : MiniBotDockMath.dxRange(anchor, media.size.width).$2,
-              base.dy,
-            )
-          : base;
       _state = MiniBotDockState(
         dx: MiniBotDockMath.clamp(
-          from.dx + details.delta.dx,
+          base.dx + details.delta.dx,
           MiniBotDockMath.dxRange(anchor, media.size.width),
         ),
         dy: MiniBotDockMath.clamp(
-          from.dy + details.delta.dy,
+          base.dy + details.delta.dy,
           MiniBotDockMath.dyRange(anchor, media.padding.top),
         ),
       );
     });
   }
 
-  void _onPanEnd(DragEndDetails details) {
-    final anchor = _anchorRect();
-    if (anchor == null) return;
-    final media = MediaQuery.of(context);
-    final offset = _offset(anchor, media.size, media.padding.top);
-    final face = Rect.fromLTWH(
-      anchor.left + offset.dx,
-      anchor.top + offset.dy,
-      MiniBotDockMath.size,
-      MiniBotDockMath.size,
-    );
-    final edge = MiniBotDockMath.edgeForRelease(
-      face: face,
-      screenWidth: media.size.width,
-      velocityX: details.velocity.pixelsPerSecond.dx,
-    );
-    setState(() => _state = _state.copyWith(edge: edge));
-    unawaited(_save());
-  }
+  void _onPanEnd(DragEndDetails _) => unawaited(_save());
 
   void _onTap() {
     _dismissHint();
-    if (_state.folded) {
-      final anchor = _anchorRect();
-      final media = MediaQuery.of(context);
-      final left = _state.edge == MiniBotDockEdge.left;
-      setState(() {
-        if (anchor == null) {
-          _state = const MiniBotDockState();
-        } else {
-          final range = MiniBotDockMath.dxRange(anchor, media.size.width);
-          _state = MiniBotDockState(
-            dx: left ? range.$1 : range.$2,
-            dy: _state.dy,
-          );
-        }
-      });
-      unawaited(_save());
-      return;
-    }
     widget.onOpen();
   }
 
@@ -364,7 +261,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
                   Positioned.fill(
                     child: Semantics(
                       button: true,
-                      label: _state.folded ? '달팽이봇 펴기' : '달팽이봇',
+                      label: '달팽이봇',
                       child: GestureDetector(
                         key: MiniBotDock.faceKey,
                         behavior: HitTestBehavior.opaque,
@@ -374,8 +271,8 @@ class _MiniBotDockState extends State<MiniBotDock> {
                         onPanStart: _onPanStart,
                         onPanUpdate: _onPanUpdate,
                         onPanEnd: _onPanEnd,
-                        child: DecoratedBox(
-                          decoration: const BoxDecoration(
+                        child: const DecoratedBox(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -388,19 +285,14 @@ class _MiniBotDockState extends State<MiniBotDock> {
                           child: ClipOval(
                             child: ColoredBox(
                               color: Colors.white,
-                              child: Opacity(
-                                opacity: _state.folded ? 0.92 : 1,
-                                child: const SnailBotFace(
-                                  size: MiniBotDockMath.size,
-                                ),
-                              ),
+                              child: SnailBotFace(size: MiniBotDockMath.size),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  if (_showHint && !_state.folded)
+                  if (_showHint)
                     const Positioned(
                       right: 0,
                       bottom: MiniBotDockMath.size + 8,
@@ -428,7 +320,7 @@ class _DockHint extends StatelessWidget {
         child: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            '끌어서 옮기고, 옆으로 밀면 접혀요',
+            '끌어서 옮길 수 있어요',
             style: TextStyle(color: Colors.white, fontSize: 12),
             softWrap: false,
           ),

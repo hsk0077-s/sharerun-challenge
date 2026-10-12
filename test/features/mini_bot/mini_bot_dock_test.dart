@@ -49,57 +49,9 @@ Future<void> _done(WidgetTester tester) async {
 }
 
 void main() {
-  group('fold and drag math', () {
+  group('drag math', () {
     const screen = 390.0;
     const anchor = Rect.fromLTWH(318, 700, 56, 56);
-
-    test('a button let go at an edge folds to that edge', () {
-      Rect at(double left) => Rect.fromLTWH(left, 400, 56, 56);
-      expect(
-        MiniBotDockMath.edgeForRelease(
-          face: at(4),
-          screenWidth: screen,
-          velocityX: 0,
-        ),
-        MiniBotDockEdge.left,
-      );
-      expect(
-        MiniBotDockMath.edgeForRelease(
-          face: at(screen - 56 - 4),
-          screenWidth: screen,
-          velocityX: 0,
-        ),
-        MiniBotDockEdge.right,
-      );
-      expect(
-        MiniBotDockMath.edgeForRelease(
-          face: at(150),
-          screenWidth: screen,
-          velocityX: 100,
-        ),
-        MiniBotDockEdge.none,
-      );
-    });
-
-    test('a quick push sideways folds even in the middle', () {
-      const face = Rect.fromLTWH(150, 400, 56, 56);
-      expect(
-        MiniBotDockMath.edgeForRelease(
-          face: face,
-          screenWidth: screen,
-          velocityX: -1500,
-        ),
-        MiniBotDockEdge.left,
-      );
-      expect(
-        MiniBotDockMath.edgeForRelease(
-          face: face,
-          screenWidth: screen,
-          velocityX: 1500,
-        ),
-        MiniBotDockEdge.right,
-      );
-    });
 
     test('the button stays on screen and above its home spot', () {
       final dx = MiniBotDockMath.dxRange(anchor, screen);
@@ -110,25 +62,12 @@ void main() {
       expect(anchor.top + dy.$1, 47 + 8);
     });
 
-    test('a folded button leaves 24px on screen', () {
-      final left = MiniBotDockMath.foldedDx(MiniBotDockEdge.left, anchor, screen);
-      expect(anchor.left + left + 56, MiniBotDockMath.foldedVisible);
-      final right =
-          MiniBotDockMath.foldedDx(MiniBotDockEdge.right, anchor, screen);
-      expect(screen - (anchor.left + right), MiniBotDockMath.foldedVisible);
-    });
-
     test('saved state survives a round trip and bad data is ignored', () {
-      const state = MiniBotDockState(
-        dx: -12.5,
-        dy: -40,
-        edge: MiniBotDockEdge.left,
-      );
+      const state = MiniBotDockState(dx: -12.5, dy: -40);
       final back = MiniBotDockState.decode(state.encode());
       expect(back.dx, -12.5);
       expect(back.dy, -40);
-      expect(back.edge, MiniBotDockEdge.left);
-      expect(MiniBotDockState.decode('not json').folded, isFalse);
+      expect(MiniBotDockState.decode('not json').dx, 0);
       expect(MiniBotDockState.decode(null).dx, 0);
     });
   });
@@ -146,7 +85,8 @@ void main() {
     await _pump(tester);
     final start = _face(tester);
 
-    await tester.drag(find.byKey(MiniBotDock.faceKey), const Offset(-120, -200));
+    await tester.drag(
+        find.byKey(MiniBotDock.faceKey), const Offset(-120, -200));
     await tester.pumpAndSettle();
 
     final moved = _face(tester);
@@ -159,7 +99,6 @@ void main() {
       prefs.getString(MiniBotDockSettings.dockKey),
     );
     expect(saved.dx, closeTo(-120, 2));
-    expect(saved.folded, isFalse);
 
     await _done(tester);
     // 다시 열어도 같은 자리.
@@ -171,53 +110,40 @@ void main() {
     await _done(tester);
   });
 
-  testWidgets('a push sideways folds it, a tap on the tab unfolds it',
-      (tester) async {
+  testWidgets('pushing it to the edge never folds it away', (tester) async {
     await _pump(tester);
-    final open = _face(tester);
 
     await tester.fling(
       find.byKey(MiniBotDock.faceKey),
-      const Offset(200, 0),
-      1800,
+      const Offset(400, 0),
+      3000,
     );
     await tester.pumpAndSettle();
 
-    final folded = _face(tester);
-    expect(
-      _screen.width - folded.left,
-      closeTo(MiniBotDockMath.foldedVisible, 0.01),
-    );
+    final face = _face(tester);
+    expect(face.width, 56);
+    expect(face.right, lessThanOrEqualTo(_screen.width));
+    expect(face.right, greaterThan(_screen.width - 8));
     expect(find.byKey(const Key('mini-bot-sheet')), findsNothing);
 
-    // 접힌 탭을 누르면 열리지 않고 펴지기만 한다.
-    await tester.tapAt(Offset(_screen.width - 10, folded.center.dy));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('mini-bot-sheet')), findsNothing);
-    final unfolded = _face(tester);
-    expect(unfolded.right, lessThanOrEqualTo(_screen.width));
-    expect(unfolded.center.dy, closeTo(open.center.dy, 2));
-
-    // 펴진 뒤에 누르면 열린다.
+    // 가장자리에 있어도 누르면 바로 열린다.
     await tester.tap(find.byKey(MiniBotDock.faceKey));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('mini-bot-sheet')), findsOneWidget);
     await _done(tester);
   });
 
-  testWidgets('a folded button comes back folded after a restart',
+  testWidgets('a spot saved by the old folding version opens unfolded',
       (tester) async {
     await _pump(
       tester,
       prefs: {
-        MiniBotDockSettings.dockKey: const MiniBotDockState(
-          dy: -60,
-          edge: MiniBotDockEdge.left,
-        ).encode(),
+        MiniBotDockSettings.dockKey: '{"dx":0,"dy":-60,"edge":"left"}',
       },
     );
     final face = _face(tester);
-    expect(face.right, closeTo(MiniBotDockMath.foldedVisible, 0.01));
+    expect(face.left, greaterThanOrEqualTo(0));
+    expect(face.right, lessThanOrEqualTo(_screen.width));
     await _done(tester);
   });
 

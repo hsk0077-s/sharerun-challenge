@@ -11,6 +11,7 @@ import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
 import 'mini_bot_voice.dart';
 import '../snail_faq/snail_faq.dart';
+import 'mini_bot_dock.dart';
 import 'snail_bot_face.dart';
 
 /// Extra space under the shell mic so it sits fully above the tab bar.
@@ -47,38 +48,11 @@ class MiniBotEntryButton extends StatelessWidget {
   final Object heroTag;
 
   /// 얼굴 버튼 크기. 둥근 테두리까지 그림에 들어 있다.
-  static const double faceSize = 56;
+  static const double faceSize = MiniBotDockMath.size;
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: '달팽이봇',
-      child: Tooltip(
-        message: '달팽이봇',
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Material(
-            type: MaterialType.circle,
-            color: Colors.white,
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => MiniBotSheet.show(context),
-              child: const SnailBotFace(size: faceSize),
-            ),
-          ),
-        ),
-      ),
-    );
+    return MiniBotDock(onOpen: () => MiniBotSheet.show(context));
   }
 }
 

@@ -668,6 +668,7 @@ void main() {
       ),
     );
 
+    await tester.pump();
     await tester.tap(find.byKey(const Key('mini-bot-entry-home')));
     await tester.pumpAndSettle();
 
@@ -904,6 +905,7 @@ void main() {
       ),
     );
 
+    await tester.pump();
     await tester.tap(find.byType(MiniBotEntryButton));
     await tester.pumpAndSettle();
 

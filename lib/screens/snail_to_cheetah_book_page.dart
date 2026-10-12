@@ -295,15 +295,16 @@ class _TierChapterCard extends StatelessWidget {
   }
 }
 
-/// 도감에서 티어가 올라갈수록 캐릭터를 아주 조금씩 크게 그린다. 거북이가 기준(1.0).
+/// 도감에서 티어가 올라갈수록 캐릭터를 조금씩 크게 그린다. 거북이가 기준(1.0).
+/// 한 단계에 8%. 4%일 때는 폰에서 차이가 보이지 않았다.
 abstract final class TierBookScale {
   static double of(TierAnimal animal) => switch (animal) {
-        TierAnimal.snail => 0.96,
+        TierAnimal.snail => 0.92,
         TierAnimal.turtle => 1.0,
-        TierAnimal.maltese => 1.04,
-        TierAnimal.wolf => 1.08,
-        TierAnimal.horse => 1.12,
-        TierAnimal.cheetah => 1.16,
+        TierAnimal.maltese => 1.08,
+        TierAnimal.wolf => 1.16,
+        TierAnimal.horse => 1.24,
+        TierAnimal.cheetah => 1.32,
       };
 
   /// 칸 높이. 가장 큰 치타에 맞춰서 줄이 흔들리지 않게 한다.

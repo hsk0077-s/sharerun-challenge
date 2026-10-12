@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import config  # noqa: F401 — loads .env on import
 
 from app.routers.admin_router import router as admin_router
+from app.routers.identity_router import router as identity_router
 from app.routers.ops_router import router as ops_router
 from app.routers.payment_router import router as payment_router
 from app.routers.secured_action_router import router as secured_action_router
@@ -52,6 +53,7 @@ def health_ready() -> dict[str, str]:
 
 
 app.include_router(admin_router)
+app.include_router(identity_router)
 app.include_router(validation_router)
 app.include_router(payment_router)
 app.include_router(secured_action_router)

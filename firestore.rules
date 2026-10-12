@@ -545,6 +545,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Which Kakao (or other provider) id belongs to which account, and the
+    // append-only record of logins and links. Only the server reads or writes
+    // these; the phone never sees a provider id.
+    match /authIdentities/{identityId} {
+      allow read, write: if false;
+    }
+    match /authIdentityLog/{logId} {
+      allow read, write: if false;
+    }
+
     match /activities/{activityId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.userId == request.auth.uid);

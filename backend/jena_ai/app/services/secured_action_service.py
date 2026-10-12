@@ -25,6 +25,7 @@ from app.models.secured_actions import (
     Web3TransferRequest,
     WinnerRewardRequest,
 )
+from app.services import identities
 from app.services.firebase_service import FirebaseService
 from app.services.route_privacy import trim_route
 from app.constants.economy_constants import (
@@ -4182,6 +4183,8 @@ class SecuredActionService:
             firebase_auth.delete_user(uid)
         except firebase_auth.UserNotFoundError:
             pass
+        # Free the Kakao (or other provider) id so it can sign up again.
+        identities.forget_account(db, uid)
 
         return SecuredActionResult(
             accepted=True,

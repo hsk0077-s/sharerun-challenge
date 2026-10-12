@@ -65,10 +65,69 @@ class ChibiTierAvatar extends StatelessWidget {
       );
     }
 
+    // 새 그림에는 목걸이 메달이 없어서, 메달 등급은 모서리 배지로 보여 준다.
+    if (resolved != null && !resolved.isSnail) {
+      mascot = SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(child: mascot),
+            Positioned(
+              right: size * 0.04,
+              bottom: size * 0.02,
+              child: TierMedalBadge(
+                medal: resolved.medal,
+                size: size * 0.26,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (floating) {
       return _FloatingBob(child: mascot);
     }
     return mascot;
+  }
+}
+
+/// 메달 등급(브론즈~마스터)을 작은 원 배지로 보여 준다.
+class TierMedalBadge extends StatelessWidget {
+  const TierMedalBadge({super.key, required this.medal, required this.size});
+
+  final TierMedal medal;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: medal.labelKo,
+      child: Container(
+        key: const Key('tier-medal-badge'),
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: medal.medalColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: size * 0.08),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 4,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.star_rounded,
+          size: size * 0.62,
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 }
 
@@ -153,9 +212,9 @@ class _ChibiPainter extends CustomPainter {
     if (tier == null) return AppColors.primaryMint;
     return switch (tier!.animal) {
       TierAnimal.turtle => const Color(0xFF66BB6A),
-      TierAnimal.rabbit => const Color(0xFFFFCC80),
+      TierAnimal.maltese => const Color(0xFFF5F5F5),
       TierAnimal.wolf => const Color(0xFF90A4AE),
-      TierAnimal.gazelle => const Color(0xFFA1887F),
+      TierAnimal.horse => const Color(0xFFA1887F),
       TierAnimal.cheetah => const Color(0xFFFFB74D),
       TierAnimal.snail => const Color(0xFFA8B5A0),
     };
@@ -256,7 +315,7 @@ class _ChibiPainter extends CustomPainter {
     );
 
     // Animal emoji hint (ear / shell cue).
-    if (tier?.animal == TierAnimal.rabbit ||
+    if (tier?.animal == TierAnimal.maltese ||
         tier?.animal == TierAnimal.cheetah) {
       final ear = Paint()..color = _bodyColor;
       canvas.drawOval(

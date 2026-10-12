@@ -110,10 +110,10 @@ const _chapters = <_ChapterSpec>[
   ),
   _ChapterSpec(
     unlockRank: 2,
-    title: '토끼',
+    title: '몰티즈',
     subtitle: '가벼운 조깅을 즐기는 러닝 입문자',
     paceGuide: '평균 페이스 6분 00초 ~ 7분 29초',
-    animal: TierAnimal.rabbit,
+    animal: TierAnimal.maltese,
   ),
   _ChapterSpec(
     unlockRank: 3,
@@ -124,10 +124,10 @@ const _chapters = <_ChapterSpec>[
   ),
   _ChapterSpec(
     unlockRank: 4,
-    title: '가젤',
+    title: '말',
     subtitle: '러닝 숙련자 수준',
     paceGuide: '평균 페이스 4분 00초 ~ 4분 59초',
-    animal: TierAnimal.gazelle,
+    animal: TierAnimal.horse,
   ),
   _ChapterSpec(
     unlockRank: 5,
@@ -307,9 +307,6 @@ class _UnlockedMascot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final needsFlip = animal == TierAnimal.turtle ||
-        animal == TierAnimal.wolf ||
-        animal == TierAnimal.cheetah;
     final path = UserTier(
       animal: animal,
       medal: TierMedal.gold,
@@ -321,7 +318,6 @@ class _UnlockedMascot extends StatelessWidget {
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
     );
-    if (!needsFlip) return mascot;
-    return Transform.flip(flipX: true, child: mascot);
+    return mascot;
   }
 }

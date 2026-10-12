@@ -30,9 +30,9 @@ import '../wallet/providers/wallet_provider.dart';
 /// 끼어들지 않도록 **항상 마지막**에 둔다.
 enum TierAnimal {
   turtle,
-  rabbit,
+  maltese,
   wolf,
-  gazelle,
+  horse,
   cheetah,
   snail,
 }
@@ -43,27 +43,27 @@ typedef AnimalGroup = TierAnimal;
 extension TierAnimalX on TierAnimal {
   String get code => switch (this) {
         TierAnimal.turtle => 'turtle',
-        TierAnimal.rabbit => 'rabbit',
+        TierAnimal.maltese => 'maltese',
         TierAnimal.wolf => 'wolf',
-        TierAnimal.gazelle => 'gazelle',
+        TierAnimal.horse => 'horse',
         TierAnimal.cheetah => 'cheetah',
         TierAnimal.snail => 'snail',
       };
 
   String get labelKo => switch (this) {
         TierAnimal.turtle => '거북이',
-        TierAnimal.rabbit => '토끼',
+        TierAnimal.maltese => '몰티즈',
         TierAnimal.wolf => '늑대',
-        TierAnimal.gazelle => '가젤',
+        TierAnimal.horse => '말',
         TierAnimal.cheetah => '치타',
         TierAnimal.snail => '달팽이',
       };
 
   String get emoji => switch (this) {
         TierAnimal.turtle => '🐢',
-        TierAnimal.rabbit => '🐇',
+        TierAnimal.maltese => '🐶',
         TierAnimal.wolf => '🐺',
-        TierAnimal.gazelle => '🦌',
+        TierAnimal.horse => '🐴',
         TierAnimal.cheetah => '🐆',
         TierAnimal.snail => '🐌',
       };
@@ -154,50 +154,40 @@ class UserTier {
 
   String get displayNameWithEmoji => '${animal.emoji} $koreanName';
 
-  /// Chibi SD 의인화 러닝 마스코트 + 목걸이 메달 에셋.
-  /// 달팽이: 실망하고 한숨 쉬는 깜찍한 비주얼.
-  String get avatarAssetPath => switch (group) {
-        AnimalGroup.snail =>
-          'assets/images/characters/chibi_snail_disappointed.png',
-        AnimalGroup.turtle =>
-          'assets/images/characters/chibi_turtle_gold_medal.png',
-        AnimalGroup.rabbit =>
-          'assets/images/characters/chibi_rabbit_gold_medal.png',
-        AnimalGroup.wolf =>
-          'assets/images/characters/chibi_wolf_gold_medal.png',
-        AnimalGroup.gazelle =>
-          'assets/images/characters/chibi_gazelle_gold_medal.png',
-        AnimalGroup.cheetah =>
-          'assets/images/characters/chibi_cheetah_gold_medal.png',
-      };
+  /// 티어 마스코트 그림. 모두 오른쪽을 본다. 메달은 그림에 없고
+  /// 화면에서 [TierMedalBadge]로 따로 보여 준다.
+  /// 달팽이(등급 미배정): 실망하고 한숨 쉬는 깜찍한 비주얼.
+  String get avatarAssetPath => isSnail
+      ? 'assets/images/characters/chibi_snail_disappointed.png'
+      : 'assets/images/characters/tier_${animal.code}.png';
 
-  /// 만보기 전용 — 금메달 없는 순수 티어 마스코트.
+  /// 만보기 전용 — 메달 없는 순수 티어 마스코트. 모두 오른쪽을 본다.
   String get pureAvatarAssetPath => isSnail
       ? 'assets/images/characters/chibi_snail_running.png'
-      : 'assets/images/characters/chibi_${animal.code}_pure.png';
+      : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 일일 목표 거리.
   double get targetKm => switch (group) {
         AnimalGroup.snail => 3.0,
         AnimalGroup.turtle => 5.0,
-        AnimalGroup.rabbit || AnimalGroup.wolf => 7.0,
-        AnimalGroup.gazelle || AnimalGroup.cheetah => 10.0,
+        AnimalGroup.maltese || AnimalGroup.wolf => 7.0,
+        AnimalGroup.horse || AnimalGroup.cheetah => 10.0,
       };
 
   /// 만보기 일일 목표 걸음 수 (1 SHARE = 1km 환산과 별개, 3.0km ≈ 4,500보).
   int get targetSteps => switch (group) {
         AnimalGroup.snail => 4500,
         AnimalGroup.turtle => 7500,
-        AnimalGroup.rabbit || AnimalGroup.wolf => 10500,
-        AnimalGroup.gazelle || AnimalGroup.cheetah => 15000,
+        AnimalGroup.maltese || AnimalGroup.wolf => 10500,
+        AnimalGroup.horse || AnimalGroup.cheetah => 15000,
       };
 
   /// 만보기 SHARE 드랍 주기(km).
   double get dropIntervalKm => switch (group) {
         AnimalGroup.snail => 0.05,
         AnimalGroup.turtle => 0.1,
-        AnimalGroup.rabbit || AnimalGroup.wolf => 0.14,
-        AnimalGroup.gazelle || AnimalGroup.cheetah => 0.2,
+        AnimalGroup.maltese || AnimalGroup.wolf => 0.14,
+        AnimalGroup.horse || AnimalGroup.cheetah => 0.2,
       };
 
   /// 만보기 일일 최대 채굴 SHARE.
@@ -221,18 +211,18 @@ class UserTier {
   Color get walkCanvasStart => switch (group) {
         AnimalGroup.snail => const Color(0xFFE8EDE4),
         AnimalGroup.turtle => const Color(0xFFDFF5EA),
-        AnimalGroup.rabbit => const Color(0xFFFFF0E3),
+        AnimalGroup.maltese => const Color(0xFFFFF0E3),
         AnimalGroup.wolf => const Color(0xFFE8EEF3),
-        AnimalGroup.gazelle => const Color(0xFFF7ECDD),
+        AnimalGroup.horse => const Color(0xFFF7ECDD),
         AnimalGroup.cheetah => const Color(0xFFFFF1D6),
       };
 
   Color get walkCanvasEnd => switch (group) {
         AnimalGroup.snail => const Color(0xFFD5DDD0),
         AnimalGroup.turtle => const Color(0xFFBFE8D4),
-        AnimalGroup.rabbit => const Color(0xFFFFD9C2),
+        AnimalGroup.maltese => const Color(0xFFFFD9C2),
         AnimalGroup.wolf => const Color(0xFFD2DCE6),
-        AnimalGroup.gazelle => const Color(0xFFE8D4B8),
+        AnimalGroup.horse => const Color(0xFFE8D4B8),
         AnimalGroup.cheetah => const Color(0xFFFFE0A3),
       };
 
@@ -241,9 +231,9 @@ class UserTier {
     if (isSnail) return 0;
     final animalBase = switch (animal) {
       TierAnimal.turtle => 0,
-      TierAnimal.rabbit => 5,
+      TierAnimal.maltese => 5,
       TierAnimal.wolf => 10,
-      TierAnimal.gazelle => 15,
+      TierAnimal.horse => 15,
       TierAnimal.cheetah => 20,
       TierAnimal.snail => 0,
     };
@@ -262,9 +252,9 @@ class UserTier {
 
   static const List<TierAnimal> rankedAnimals = <TierAnimal>[
     TierAnimal.turtle,
-    TierAnimal.rabbit,
+    TierAnimal.maltese,
     TierAnimal.wolf,
-    TierAnimal.gazelle,
+    TierAnimal.horse,
     TierAnimal.cheetah,
   ];
 

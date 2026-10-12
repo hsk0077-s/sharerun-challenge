@@ -383,8 +383,9 @@ class _WalkingMascotState extends State<WalkingMascot>
                 scaleX: scaleX,
                 scaleY: scaleY,
                 alignment: Alignment.bottomCenter,
+                // 달팽이 그림만 왼쪽을 봐서 뒤집는다. 티어 동물은 오른쪽을 본다.
                 child: Transform.flip(
-                  flipX: true,
+                  flipX: widget.tier.isSnail,
                   child: child,
                 ),
               ),

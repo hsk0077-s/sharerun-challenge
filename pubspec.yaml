@@ -68,5 +68,6 @@ flutter:
     - assets/images/src_logo_mark.png
     - assets/images/tiers/
     - assets/images/characters/
+    - assets/images/snailbot/
     - assets/faq/
     - assets/images/wings/

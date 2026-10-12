@@ -8,10 +8,14 @@ class GoogleSignInButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     this.label = defaultLabel,
+    this.fullWidth = false,
   });
 
   final VoidCallback onPressed;
   final String label;
+
+  /// 자리 너비를 꽉 채운다(구글 규격의 최대 너비 400까지). 아니면 내용만큼만 차지한다.
+  final bool fullWidth;
 
   static const defaultLabel = 'Google 계정으로 로그인';
   static const buttonKey = Key('google-signin-button');
@@ -20,55 +24,66 @@ class GoogleSignInButton extends StatelessWidget {
   static const _border = Color(0xFF747775);
   static const _text = Color(0xFF1F1F1F);
 
+  /// 로그인 화면에서 다른 소셜 버튼과 맞추는 높이. 구글 규격의 최소 높이(40)보다 크다.
+  static const double fullWidthHeight = 44;
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Semantics(
-        button: true,
-        label: label,
-        excludeSemantics: true,
-        child: Material(
-          key: buttonKey,
-          color: Colors.white,
-          shape: const StadiumBorder(side: BorderSide(color: _border)),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onPressed,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 40, maxWidth: 400),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      key: logoKey,
-                      width: 20,
-                      height: 20,
-                      child: CustomPaint(painter: GoogleGLogoPainter()),
-                    ),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Text(
-                        label,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontFamily: 'Roboto',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: _text,
-                          height: 1.2,
-                        ),
+    final button = Semantics(
+      button: true,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        key: buttonKey,
+        color: Colors.white,
+        shape: const StadiumBorder(side: BorderSide(color: _border)),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onPressed,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: fullWidth ? fullWidthHeight : 40,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    key: logoKey,
+                    width: 20,
+                    height: 20,
+                    child: CustomPaint(painter: GoogleGLogoPainter()),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Roboto',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _text,
+                        height: 1.2,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
         ),
+      ),
+    );
+    if (!fullWidth) return Center(child: button);
+    // 구글 규격의 최대 너비(400)까지만 넓어진다.
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: SizedBox(width: double.infinity, child: button),
       ),
     );
   }

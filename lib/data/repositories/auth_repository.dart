@@ -48,14 +48,16 @@ class AuthRepository {
       await _ensureGoogleInitialized();
 
       // 2. [v7 API 대규모 변경점] signIn()이 삭제되고 authenticate()로 교체되었습니다.
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-      
+      final GoogleSignInAccount? googleUser =
+          await _googleSignIn.authenticate();
+
       if (googleUser == null) {
         return null; // 사용자가 로그인 창을 닫은 경우
       }
 
       // 3. 인증 정보 획득
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // 4. [v7 API 대규모 변경점] accessToken이 분리되었으므로, Firebase 통신에 필수적인 idToken만 주입합니다.
       final OAuthCredential credential = GoogleAuthProvider.credential(
@@ -63,7 +65,6 @@ class AuthRepository {
       );
 
       return await _firebaseAuth.signInWithCredential(credential);
-      
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return null;
@@ -76,7 +77,9 @@ class AuthRepository {
     }
   }
 
-  Future<Object?> signInWithNaver() async {
+  /// 네이버 로그인 창을 띄워 액세스 토큰만 받는다. 닫으면 null.
+  /// 이름, 이메일 같은 개인정보는 읽지 않는다. 서버가 토큰으로 네이버 사용자 번호만 확인한다.
+  Future<String?> naverAccessToken() async {
     try {
       final result = await FlutterNaverLogin.logIn();
 
@@ -88,13 +91,12 @@ class AuthRepository {
       }
 
       // 앱 전환 후에도 토큰이 유지되는지 재확인
-      final token = result.accessToken ??
-          await FlutterNaverLogin.getCurrentAccessToken();
+      final token =
+          result.accessToken ?? await FlutterNaverLogin.getCurrentAccessToken();
       if (token.accessToken.isEmpty) {
         throw Exception('네이버 액세스 토큰을 가져오지 못했습니다.');
       }
-
-      return result;
+      return token.accessToken;
     } catch (e) {
       throw Exception('네이버 로그인 중 오류 발생: $e');
     }

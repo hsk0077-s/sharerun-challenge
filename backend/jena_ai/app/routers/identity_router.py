@@ -43,6 +43,23 @@ def kakao_unlink(uid: str = Depends(require_uid)) -> dict:
     return identities.unlink(_db(), uid, "kakao")
 
 
+@router.post("/naver/login")
+def naver_login(body: ProviderTokenRequest, request: Request) -> dict:
+    if not identities.allow_login_attempt(_client(request), time.monotonic()):
+        raise HTTPException(status_code=429, detail="too_many_attempts")
+    return identities.login(_db(), "naver", body.access_token)
+
+
+@router.post("/naver/link")
+def naver_link(body: ProviderTokenRequest, uid: str = Depends(require_uid)) -> dict:
+    return identities.link(_db(), uid, "naver", body.access_token)
+
+
+@router.post("/naver/unlink")
+def naver_unlink(uid: str = Depends(require_uid)) -> dict:
+    return identities.unlink(_db(), uid, "naver")
+
+
 @router.get("/identities")
 def list_identities(uid: str = Depends(require_uid)) -> dict:
     return identities.list_providers(_db(), uid)

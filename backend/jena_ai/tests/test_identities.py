@@ -209,7 +209,7 @@ def test_deleting_an_account_frees_the_kakao_id() -> None:
 
 def test_unknown_provider_is_refused() -> None:
     with pytest.raises(HTTPException) as caught:
-        identities.login(_Db(), "naver", "t" * 20, verify=_verify("1"), fb_auth=_FbAuth())
+        identities.login(_Db(), "apple", "t" * 20, verify=_verify("1"), fb_auth=_FbAuth())
     assert caught.value.detail == "unknown_provider"
 
 
@@ -298,3 +298,94 @@ def test_routes_are_wired_and_only_login_is_open() -> None:
     assert client.post("/auth/kakao/link", json={"access_token": "t" * 20}).status_code == 401
     assert client.post("/auth/kakao/unlink").status_code == 401
     assert client.get("/auth/identities").status_code == 401
+
+
+def test_naver_works_like_kakao_and_both_can_share_one_account() -> None:
+    db, fb = _Db(), _FbAuth(providers=["google.com"])
+    fb.users["g1"] = True
+    identities.link(db, "g1", "kakao", "t" * 20, verify=_verify("777"))
+    assert identities.link(db, "g1", "naver", "t" * 20, verify=_verify("n55")) == {
+        "linked": True,
+        "already": False,
+    }
+    assert db.stores[identities.IDENTITIES]["naver:n55"]["uid"] == "g1"
+    out = identities.login(db, "naver", "t" * 20, verify=_verify("n55"), fb_auth=fb)
+    assert out == {"custom_token": "custom-for-g1", "new_account": False}
+    assert identities.list_providers(db, "g1", fb_auth=fb) == {
+        "providers": ["google", "kakao", "naver"]
+    }
+
+
+def test_a_new_naver_user_gets_a_new_account() -> None:
+    db, fb = _Db(), _FbAuth()
+    out = identities.login(db, "naver", "t" * 20, verify=_verify("n1"), fb_auth=fb)
+    assert out["new_account"] is True
+    assert db.stores[identities.IDENTITIES]["naver:n1"]["provider"] == "naver"
+
+
+def test_naver_unlink_is_allowed_when_kakao_remains() -> None:
+    db, fb = _Db(), _FbAuth()
+    fb.users["u1"] = True
+    identities.link(db, "u1", "kakao", "t" * 20, verify=_verify("k1"))
+    identities.link(db, "u1", "naver", "t" * 20, verify=_verify("n1"))
+    assert identities.unlink(db, "u1", "naver", fb_auth=fb) == {"unlinked": True}
+    # 이제 카카오가 마지막 방법이다.
+    with pytest.raises(HTTPException) as caught:
+        identities.unlink(db, "u1", "kakao", fb_auth=fb)
+    assert caught.value.detail == "last_login_method"
+
+
+def test_naver_token_is_read_from_the_profile_answer(monkeypatch) -> None:
+    monkeypatch.setattr(
+        identities.urllib.request,
+        "urlopen",
+        lambda req, timeout=0: _Resp(
+            b'{"resultcode":"00","message":"success","response":{"id":"abc123"}}'
+        ),
+    )
+    assert identities.verify_naver_token("t" * 20) == "abc123"
+
+
+def test_naver_bad_answers_are_refused(monkeypatch) -> None:
+    import urllib.error
+
+    for body in (
+        b'{"resultcode":"024","message":"Authentication failed"}',
+        b'{"resultcode":"00","message":"success","response":{}}',
+        b"{}",
+    ):
+        monkeypatch.setattr(
+            identities.urllib.request,
+            "urlopen",
+            lambda req, timeout=0, b=body: _Resp(b),
+        )
+        with pytest.raises(HTTPException) as caught:
+            identities.verify_naver_token("t" * 20)
+        assert caught.value.detail == "invalid_provider_token"
+
+    def boom(req, timeout=0):
+        raise urllib.error.HTTPError(req.full_url, 401, "no", {}, None)
+
+    monkeypatch.setattr(identities.urllib.request, "urlopen", boom)
+    with pytest.raises(HTTPException) as caught:
+        identities.verify_naver_token("t" * 20)
+    assert caught.value.status_code == 401
+
+    def down(req, timeout=0):
+        raise urllib.error.URLError("down")
+
+    monkeypatch.setattr(identities.urllib.request, "urlopen", down)
+    with pytest.raises(HTTPException) as unreachable:
+        identities.verify_naver_token("t" * 20)
+    assert unreachable.value.status_code == 502
+
+
+def test_naver_routes_are_wired_like_kakao() -> None:
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    client = TestClient(app)
+    assert client.post("/auth/naver/login", json={"access_token": "x"}).status_code == 422
+    assert client.post("/auth/naver/link", json={"access_token": "t" * 20}).status_code == 401
+    assert client.post("/auth/naver/unlink").status_code == 401

@@ -33,25 +33,13 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _referralController = TextEditingController();
   var _kakaoBusy = false;
+  var _naverBusy = false;
   var _referralFieldVisible = false;
 
   @override
   void dispose() {
     _referralController.dispose();
     super.dispose();
-  }
-
-  String? _socialAccountUid(Object? result, {required String prefix}) {
-    if (result == null) return null;
-    try {
-      final dynamic value = result;
-      final id = value.account?.id ?? value.id ?? value.userId;
-      final text = '$id';
-      if (text.isEmpty || text == 'null') return null;
-      return '${prefix}_$text';
-    } catch (_) {
-      return null;
-    }
   }
 
   Future<void> _rememberLogin({String? uid}) async {
@@ -135,25 +123,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _onNaver() async {
+    if (_naverBusy) return;
+    setState(() => _naverBusy = true);
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final result = await authRepo.signInWithNaver();
+      final token = await ref.read(naverAccessTokenProvider)();
+      if (token == null || !mounted) return; // 사용자가 창을 닫음
 
-      if (result != null && mounted) {
-        await _rememberLogin(uid: _socialAccountUid(result, prefix: 'naver'));
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('네이버 로그인에 성공했습니다!')),
-        );
-        await _redeemEnteredReferral();
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(RouteNames.termsAgreement);
-      }
+      // 서버가 네이버 토큰을 확인하고 우리 계정과 짝지어 로그인 열쇠를 준다.
+      final result =
+          await ref.read(identityApiClientProvider).naverLogin(token);
+      final credential = await ref
+          .read(authRepositoryProvider)
+          .signInWithCustomToken(result.customToken);
+      if (!mounted) return;
+
+      await _rememberLogin(uid: credential.user?.uid);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('네이버 로그인에 성공했습니다!'),
+          duration: Duration(milliseconds: 1300),
+        ),
+      );
+      await _redeemEnteredReferral();
+      if (!mounted) return;
+      final termsAccepted =
+          ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
+      Navigator.of(context).pushReplacementNamed(
+        !result.newAccount && termsAccepted
+            ? RouteNames.home
+            : RouteNames.termsAgreement,
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('네이버 로그인 실패: $e')),
+        SnackBar(content: Text('네이버 로그인 실패: ${ApiErrorMessage.from(e)}')),
       );
+    } finally {
+      if (mounted) setState(() => _naverBusy = false);
     }
   }
 
@@ -245,7 +252,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
                         // 3) Naver — 네이버 공식 버튼 이미지
-                        NaverLoginButton(onPressed: _onNaver),
+                        NaverLoginButton(busy: _naverBusy, onPressed: _onNaver),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
                         // 4) Kakao — 카카오 공식 버튼 이미지

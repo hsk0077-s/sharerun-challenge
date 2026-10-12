@@ -34,6 +34,18 @@ class _FakeIdentityApi implements IdentityApiClient {
   }
 
   @override
+  Future<void> linkNaver(String accessToken) async {
+    calls.add('link-naver:$accessToken');
+    providers = [...providers, 'naver'];
+  }
+
+  @override
+  Future<void> unlinkNaver() async {
+    calls.add('unlink-naver');
+    providers = providers.where((p) => p != 'naver').toList();
+  }
+
+  @override
   Future<KakaoLoginResult> kakaoLogin(String accessToken) =>
       throw UnimplementedError();
 
@@ -56,12 +68,20 @@ Future<void> _pump(
         kakaoAccessTokenProvider.overrideWithValue(
           kakaoToken ?? () async => 'kakao-token-12345',
         ),
+        naverAccessTokenProvider.overrideWithValue(
+          () async => 'naver-token-12345',
+        ),
       ],
       child: const MaterialApp(home: LoginConnectionsScreen()),
     ),
   );
   await tester.pumpAndSettle();
 }
+
+Finder _inKakaoRow(String text) => find.descendant(
+      of: find.byKey(LoginConnectionsScreen.kakaoRowKey),
+      matching: find.text(text),
+    );
 
 void main() {
   testWidgets('shows what is connected and what is not', (tester) async {
@@ -80,8 +100,8 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('연결하기'), findsOneWidget);
-    expect(find.text('준비 중'), findsNWidgets(2)); // 네이버, 애플
+    expect(_inKakaoRow('연결하기'), findsOneWidget);
+    expect(find.text('준비 중'), findsOneWidget); // 애플
   });
 
   testWidgets('connecting Kakao sends the token and refreshes', (tester) async {
@@ -92,7 +112,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.calls, ['list', 'link:kakao-token-12345', 'list']);
-    expect(find.text('해제'), findsOneWidget);
+    expect(_inKakaoRow('해제'), findsOneWidget);
     expect(find.text('카카오 계정을 연결했어요.'), findsOneWidget);
   });
 
@@ -104,7 +124,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.calls, ['list']);
-    expect(find.text('연결하기'), findsOneWidget);
+    expect(_inKakaoRow('연결하기'), findsOneWidget);
   });
 
   testWidgets('a Kakao account owned by someone else is refused kindly',
@@ -120,7 +140,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('이 계정은 이미 다른 쉐어런 계정에 연결돼 있어요.'), findsOneWidget);
-    expect(find.text('연결하기'), findsOneWidget);
+    expect(_inKakaoRow('연결하기'), findsOneWidget);
   });
 
   testWidgets('disconnecting asks first and then unlinks', (tester) async {
@@ -136,7 +156,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.calls, ['list', 'unlink', 'list']);
-    expect(find.text('연결하기'), findsOneWidget);
+    expect(_inKakaoRow('연결하기'), findsOneWidget);
   });
 
   testWidgets('cancelling the disconnect dialog sends nothing', (tester) async {
@@ -149,6 +169,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(api.calls, ['list']);
-    expect(find.text('해제'), findsOneWidget);
+    expect(_inKakaoRow('해제'), findsOneWidget);
+  });
+
+  testWidgets('Naver connects and disconnects like Kakao', (tester) async {
+    final api = _FakeIdentityApi(['google', 'kakao']);
+    await _pump(tester, api);
+    expect(
+      find.descendant(
+        of: find.byKey(LoginConnectionsScreen.naverRowKey),
+        matching: find.text('연결 안 됨'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(LoginConnectionsScreen.naverActionKey));
+    await tester.pumpAndSettle();
+    expect(api.calls, ['list', 'link-naver:naver-token-12345', 'list']);
+    expect(find.text('네이버 계정을 연결했어요.'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(LoginConnectionsScreen.naverRowKey),
+        matching: find.text('연결됨'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(LoginConnectionsScreen.naverActionKey));
+    await tester.pumpAndSettle();
+    expect(find.text('네이버 연결 해제'), findsOneWidget);
+    await tester.tap(find.byKey(LoginConnectionsScreen.unlinkConfirmKey));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'list');
+    expect(api.calls, contains('unlink-naver'));
+    // 해제 뒤 네이버 줄이 다시 "연결 안 됨"이 된다.
+    expect(
+      find.descendant(
+        of: find.byKey(LoginConnectionsScreen.naverRowKey),
+        matching: find.text('연결 안 됨'),
+      ),
+      findsOneWidget,
+    );
   });
 }

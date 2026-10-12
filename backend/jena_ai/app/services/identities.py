@@ -1,4 +1,4 @@
-"""Sign-in with Kakao that ends in a normal Firebase account.
+"""Sign-in with Kakao or Naver that ends in a normal Firebase account.
 
 The phone sends the Kakao access token. The server asks Kakao whether it is
 valid and was issued to this app, then maps the Kakao user id to one Firebase
@@ -30,8 +30,9 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 IDENTITIES = "authIdentities"
 LOG = "authIdentityLog"
-PROVIDERS = ("kakao",)
+PROVIDERS = ("kakao", "naver")
 KAKAO_TOKEN_INFO_URL = "https://kapi.kakao.com/v1/user/access_token_info"
+NAVER_PROFILE_URL = "https://openapi.naver.com/v1/nid/me"
 
 _FIREBASE_PROVIDER_NAMES = {
     "google.com": "google",
@@ -87,7 +88,38 @@ def verify_kakao_token(token: str) -> str:
     return str(user_id)
 
 
-VERIFIERS: dict[str, Callable[[str], str]] = {"kakao": verify_kakao_token}
+def verify_naver_token(token: str) -> str:
+    """Returns the Naver user id if the token is valid.
+
+    Unlike Kakao, Naver gives the server no way to tell which app the token was
+    issued to, so only the user id is checked. Sign-up through this provider is
+    a product decision made with that in mind.
+    """
+    request = urllib.request.Request(
+        NAVER_PROFILE_URL, headers={"Authorization": f"Bearer {token}"}
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=5) as response:
+            info = json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as error:
+        if error.code in (400, 401, 403):
+            raise HTTPException(status_code=401, detail="invalid_provider_token")
+        raise HTTPException(status_code=502, detail="provider_unreachable")
+    except (urllib.error.URLError, TimeoutError, ValueError):
+        raise HTTPException(status_code=502, detail="provider_unreachable")
+
+    if str(info.get("resultcode")) != "00":
+        raise HTTPException(status_code=401, detail="invalid_provider_token")
+    user_id = (info.get("response") or {}).get("id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="invalid_provider_token")
+    return str(user_id)
+
+
+VERIFIERS: dict[str, Callable[[str], str]] = {
+    "kakao": verify_kakao_token,
+    "naver": verify_naver_token,
+}
 
 
 def _doc_id(provider: str, provider_user_id: str) -> str:

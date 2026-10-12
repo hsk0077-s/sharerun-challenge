@@ -15,3 +15,8 @@ final identityApiClientProvider = Provider<IdentityApiClient>(
 final kakaoAccessTokenProvider = Provider<Future<String?> Function()>(
   (ref) => ref.watch(authRepositoryProvider).kakaoAccessToken,
 );
+
+/// 네이버 로그인 창을 띄워 토큰을 받는다. 닫으면 null. 시험에서는 이 값을 바꿔 끼운다.
+final naverAccessTokenProvider = Provider<Future<String?> Function()>(
+  (ref) => ref.watch(authRepositoryProvider).naverAccessToken,
+);

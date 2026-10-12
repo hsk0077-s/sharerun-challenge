@@ -40,6 +40,8 @@ dependencies:
   # Same native app key as login. Default text template; no custom template id.
   kakao_flutter_sdk_share: 2.0.0+1
   flutter_tts: ^4.2.3
+  # 미리 만든 코치 음성(mp3) 재생. 파일이 없으면 flutter_tts로 읽는다.
+  audioplayers: ^6.4.0
   # In-sheet mini-bot mic. 7.5.0 needs Dart 3.12; 7.4.0 stays on this SDK floor.
   speech_to_text: 7.4.0
   share_plus: ^12.0.2
@@ -70,4 +72,5 @@ flutter:
     - assets/images/characters/
     - assets/images/snailbot/
     - assets/faq/
+    - assets/voice/
     - assets/images/wings/

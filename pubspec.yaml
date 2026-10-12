@@ -72,6 +72,7 @@ flutter:
     - assets/images/characters/
     - assets/images/snailbot/
     - assets/images/kakao/
+    - assets/images/naver/
     - assets/images/accessories/items/
     - assets/images/accessories/feet/
     - assets/images/accessories/fist/

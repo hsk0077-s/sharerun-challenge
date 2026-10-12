@@ -11,12 +11,14 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../core/widgets/kakao_login_button.dart';
 import '../core/widgets/social_brand_icons.dart';
 import '../core/widgets/src_button.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../core/widgets/src_logo_header.dart';
 import '../core/widgets/src_text_field.dart';
 import '../data/repositories/auth_repository.dart';
+import '../features/auth/login_connection_providers.dart';
 
 /// 로그인 화면 (Screen 1) — src-1 목업 정합 UI.
 /// 버튼 순서: Google → Apple → Naver → Kakao.
@@ -158,23 +160,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_kakaoBusy) return;
     setState(() => _kakaoBusy = true);
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final result = await authRepo.signInWithKakao();
+      final token = await ref.read(kakaoAccessTokenProvider)();
+      if (token == null || !mounted) return; // 사용자가 창을 닫음
 
-      if (result != null && mounted) {
-        await _rememberLogin(uid: _socialAccountUid(result, prefix: 'kakao'));
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('카카오 로그인에 성공했습니다!')),
-        );
-        await _redeemEnteredReferral();
-        if (!mounted) return;
-        Navigator.of(context).pushReplacementNamed(RouteNames.termsAgreement);
-      }
+      // 서버가 카카오 토큰을 확인하고 우리 계정과 짝지어 로그인 열쇠를 준다.
+      final result = await ref.read(identityApiClientProvider).kakaoLogin(token);
+      final credential = await ref
+          .read(authRepositoryProvider)
+          .signInWithCustomToken(result.customToken);
+      if (!mounted) return;
+
+      await _rememberLogin(uid: credential.user?.uid);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('카카오 로그인에 성공했습니다!'),
+          duration: Duration(milliseconds: 1300),
+        ),
+      );
+      await _redeemEnteredReferral();
+      if (!mounted) return;
+      final termsAccepted =
+          ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
+      Navigator.of(context).pushReplacementNamed(
+        !result.newAccount && termsAccepted
+            ? RouteNames.home
+            : RouteNames.termsAgreement,
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('카카오 로그인 실패: $e')),
+        SnackBar(content: Text('카카오 로그인 실패: ${ApiErrorMessage.from(e)}')),
       );
     } finally {
       if (mounted) setState(() => _kakaoBusy = false);
@@ -248,12 +264,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
-                        // 4) Kakao — 직전 벡터 말풍선 로고 유지
-                        SRCButton.kakao(
-                          label: AppStrings.loginKakao,
-                          leading: const KakaoIcon(size: 22),
-                          enabled: !_kakaoBusy,
-                          isLoading: _kakaoBusy,
+                        // 4) Kakao — 카카오 공식 버튼 이미지
+                        KakaoLoginButton(
+                          busy: _kakaoBusy,
                           onPressed: _onKakao,
                         ),
 

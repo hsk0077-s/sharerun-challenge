@@ -11,6 +11,7 @@ import 'mini_bot_intent.dart';
 import 'mini_bot_navigator.dart';
 import 'mini_bot_voice.dart';
 import '../snail_faq/snail_faq.dart';
+import 'snail_bot_face.dart';
 
 /// Extra space under the shell mic so it sits fully above the tab bar.
 const double miniBotFabBottomClearance = 24;
@@ -45,16 +46,38 @@ class MiniBotEntryButton extends StatelessWidget {
 
   final Object heroTag;
 
+  /// 얼굴 버튼 크기. 둥근 테두리까지 그림에 들어 있다.
+  static const double faceSize = 56;
+
   @override
   Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return FloatingActionButton.small(
-      heroTag: heroTag,
-      tooltip: '달팽이봇',
-      backgroundColor: tokens.colors.primary,
-      foregroundColor: tokens.colors.onPrimary,
-      onPressed: () => MiniBotSheet.show(context),
-      child: const Icon(Icons.mic_none_rounded),
+    return Semantics(
+      button: true,
+      label: '달팽이봇',
+      child: Tooltip(
+        message: '달팽이봇',
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Material(
+            type: MaterialType.circle,
+            color: Colors.white,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => MiniBotSheet.show(context),
+              child: const SnailBotFace(size: faceSize),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -125,6 +148,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   late final MiniBotSpeechToText _speech;
   late final bool _ownsVoice;
   SnailFaq? _faq;
+  var _mood = SnailBotMood.smiling;
 
   final _lines = <_MiniBotLine>[];
   MiniBotRead? _pending;
@@ -185,13 +209,20 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     );
     // 이동·결제로 이어지는 말은 기존 확인 흐름이 먼저다. 그 밖의 질문은 FAQ가 답한다.
     var reply = read.reply;
+    var mood = SnailBotMood.smiling;
     if (read.intent == MiniBotIntent.unknown) {
       final faq = _faq;
-      if (faq != null) {
-        reply = faq.match(text)?.answer ?? faq.fallbackAnswer ?? read.reply;
+      final match = faq?.match(text);
+      if (match != null) {
+        reply = match.answer;
+        mood = SnailBotMood.joy;
+      } else {
+        reply = faq?.fallbackAnswer ?? read.reply;
+        mood = SnailBotMood.disappointed;
       }
     }
     setState(() {
+      _mood = mood;
       _lines.add(_MiniBotLine(text: text, fromUser: true));
       _pending = read.awaitsConfirm ? read : null;
       _lines.add(_MiniBotLine(text: reply, fromUser: false));
@@ -203,6 +234,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
 
   void _reply(String text, {bool clearPending = false}) {
     setState(() {
+      _mood = SnailBotMood.disappointed;
       if (clearPending) _pending = null;
       _lines.add(_MiniBotLine(text: text, fromUser: false));
     });
@@ -215,7 +247,10 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
       await _speech.stop();
       return;
     }
-    setState(() => _listening = true);
+    setState(() {
+      _listening = true;
+      _mood = SnailBotMood.listening;
+    });
     await _voice.stop();
     if (!mounted) return;
     MiniBotListen heard;
@@ -226,7 +261,10 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
       heard = const MiniBotListen.unavailable();
     }
     if (!mounted) return;
-    setState(() => _listening = false);
+    setState(() {
+      _listening = false;
+      if (_mood == SnailBotMood.listening) _mood = SnailBotMood.smiling;
+    });
     switch (heard.kind) {
       case MiniBotListenKind.cancelled:
         return;
@@ -253,6 +291,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
   void _onCancel() {
     if (_pending == null) return;
     setState(() {
+      _mood = SnailBotMood.smiling;
       _pending = null;
       _lines.add(
         const _MiniBotLine(text: MiniBotCopy.cancelled, fromUser: false),
@@ -268,6 +307,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     final executed = MiniBotCopy.executed(pending.destination);
     if (widget.onExecute != null) {
       setState(() {
+        _mood = SnailBotMood.joy;
         _pending = null;
         _lines.add(_MiniBotLine(text: executed, fromUser: false));
       });
@@ -355,7 +395,11 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.mic_none_rounded, color: tokens.colors.primary),
+                  SnailBotFace(
+                    key: const Key('mini-bot-face'),
+                    size: 40,
+                    mood: _mood,
+                  ),
                   SizedBox(width: tokens.spacing.xs),
                   Expanded(
                     child: Column(

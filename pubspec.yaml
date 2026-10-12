@@ -71,6 +71,7 @@ flutter:
     - assets/images/tiers/
     - assets/images/characters/
     - assets/images/snailbot/
+    - assets/images/kakao/
     - assets/images/accessories/items/
     - assets/images/accessories/feet/
     - assets/images/accessories/fist/

@@ -100,12 +100,12 @@ class AuthRepository {
     }
   }
 
-  /// Kakao Account interactive login → token.
+  /// 카카오 계정 로그인 창을 띄워 액세스 토큰만 받는다. 취소하면 null.
   ///
-  /// KakaoTalk SSO can return a token with no UI ("prepass").
-  /// Always clear local tokens and use Account login with [Prompt.login]
-  /// so the official Kakao consent / account UI is shown.
-  Future<Object?> signInWithKakao() async {
+  /// 카톡 앱 자동 로그인이 화면 없이 토큰을 줄 수 있어서, 저장된 토큰을 지우고
+  /// [kakao.Prompt.login]으로 항상 계정 선택 화면을 보여 준다. 이름, 이메일 같은
+  /// 개인정보는 읽지 않는다. 서버가 토큰으로 카카오 사용자 번호만 확인한다.
+  Future<String?> kakaoAccessToken() async {
     try {
       try {
         await kakao.TokenManagerProvider.instance.manager.clear();
@@ -116,11 +116,10 @@ class AuthRepository {
         }
       } catch (_) {}
 
-      await kakao.UserApi.instance.loginWithKakaoAccount(
+      final token = await kakao.UserApi.instance.loginWithKakaoAccount(
         prompts: [kakao.Prompt.login],
       );
-
-      return kakao.UserApi.instance.me();
+      return token.accessToken;
     } on kakao.KakaoClientException catch (e) {
       if (e.reason == kakao.ClientErrorCause.cancelled) {
         return null;
@@ -129,6 +128,11 @@ class AuthRepository {
     } catch (e) {
       throw Exception('카카오 로그인 중 오류 발생: $e');
     }
+  }
+
+  /// 서버가 준 로그인 열쇠로 Firebase에 로그인한다.
+  Future<UserCredential> signInWithCustomToken(String token) {
+    return _firebaseAuth.signInWithCustomToken(token);
   }
 
   Future<void> signOut() async {
@@ -140,5 +144,9 @@ class AuthRepository {
     } catch (e) {
       throw Exception('로그아웃 실패: $e');
     }
+    // 카카오 토큰이 폰에 남지 않게 지운다. 실패해도 로그아웃은 끝난 것으로 본다.
+    try {
+      await kakao.TokenManagerProvider.instance.manager.clear();
+    } catch (_) {}
   }
 }

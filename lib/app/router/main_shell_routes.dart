@@ -44,6 +44,7 @@ import '../../screens/solo_pedometer_screen.dart';
 import '../../screens/sponsor_payment_screen.dart';
 import '../../screens/donation_settlement_screen.dart';
 import '../../screens/fair_earning_policy_screen.dart';
+import '../../screens/login_connections_screen.dart';
 import '../../screens/security_privacy_center_screen.dart';
 import '../../screens/wallet_history_screen.dart';
 import '../../screens/stamp_tour_screen.dart';
@@ -364,6 +365,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.settingsLegal,
       pageBuilder: _fadePage(const SettingsLegalWebViewScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.loginConnections,
+      pageBuilder: _fadePage(const LoginConnectionsScreen()),
     ),
     GoRoute(
       path: RouteNames.securityCenter,

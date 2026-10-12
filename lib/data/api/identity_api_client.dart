@@ -1,0 +1,106 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+
+import '../../core/api/api_exception.dart';
+
+class KakaoLoginResult {
+  const KakaoLoginResult({required this.customToken, required this.newAccount});
+
+  final String customToken;
+  final bool newAccount;
+}
+
+/// 로그인 방법을 계정에 잇는 서버 API. 로그인 요청만 Firebase 인증 없이 부른다.
+class IdentityApiClient {
+  IdentityApiClient({
+    required this.baseUri,
+    Future<String?> Function()? idToken,
+    FirebaseAuth? firebaseAuth,
+    http.Client? httpClient,
+  })  : _idToken = idToken ??
+            (() async => (firebaseAuth ?? FirebaseAuth.instance)
+                .currentUser
+                ?.getIdToken(true)),
+        _httpClient = httpClient ?? http.Client();
+
+  final Uri baseUri;
+  final Future<String?> Function() _idToken;
+  final http.Client _httpClient;
+
+  static const _timeout = Duration(seconds: 20);
+
+  /// 카카오 토큰을 서버에 보내고 Firebase 로그인 열쇠를 받는다.
+  Future<KakaoLoginResult> kakaoLogin(String accessToken) async {
+    final response = await _httpClient
+        .post(
+          baseUri.resolve('/auth/kakao/login'),
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({'access_token': accessToken}),
+        )
+        .timeout(_timeout);
+    final json = _decode(response);
+    final token = json['custom_token'];
+    if (token is! String || token.isEmpty) {
+      throw StateError('Login token missing from server response.');
+    }
+    return KakaoLoginResult(
+      customToken: token,
+      newAccount: json['new_account'] == true,
+    );
+  }
+
+  Future<void> linkKakao(String accessToken) async {
+    await _signedIn('POST', '/auth/kakao/link', {'access_token': accessToken});
+  }
+
+  Future<void> unlinkKakao() async {
+    await _signedIn('POST', '/auth/kakao/unlink', const {});
+  }
+
+  /// 이 계정으로 로그인할 수 있는 방법. 예: ['google', 'kakao'].
+  Future<List<String>> fetchProviders() async {
+    final json = await _signedIn('GET', '/auth/identities', null);
+    final list = json['providers'];
+    if (list is! List) return const [];
+    return [
+      for (final item in list)
+        if (item is String) item
+    ];
+  }
+
+  Future<Map<String, dynamic>> _signedIn(
+    String method,
+    String path,
+    Map<String, dynamic>? body,
+  ) async {
+    final token = await _idToken();
+    if (token == null || token.isEmpty) {
+      throw StateError('Firebase ID token is required.');
+    }
+    final headers = {
+      'Authorization': 'Bearer $token',
+      if (body != null) 'Content-Type': 'application/json',
+    };
+    final uri = baseUri.resolve(path);
+    final response = method == 'GET'
+        ? await _httpClient.get(uri, headers: headers).timeout(_timeout)
+        : await _httpClient
+            .post(uri, headers: headers, body: jsonEncode(body ?? const {}))
+            .timeout(_timeout);
+    return _decode(response);
+  }
+
+  Map<String, dynamic> _decode(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw ApiException.fromHttpResponse(
+        statusCode: response.statusCode,
+        body: response.body,
+      );
+    }
+    if (response.body.isEmpty) return const {};
+    final decoded = jsonDecode(response.body);
+    return decoded is Map<String, dynamic> ? decoded : const {};
+  }
+}

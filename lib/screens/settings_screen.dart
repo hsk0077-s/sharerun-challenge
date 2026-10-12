@@ -32,6 +32,7 @@ import '../features/run_tracking/run_recording_policy.dart';
 import '../features/mini_bot/mini_bot_dock.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
+import 'login_connections_screen.dart';
 import 'security_privacy_center_screen.dart';
 
 /// 마이페이지 종합 설정 화면 — 계정·알림·프로툴·약관/지원.
@@ -178,6 +179,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onFinished: () => Navigator.of(routeContext).pop(),
         ),
       ),
+    );
+  }
+
+  void _openLoginConnections() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.loginConnections,
+      materialBuilder: (_) => const LoginConnectionsScreen(),
     );
   }
 
@@ -368,6 +377,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   color: AppColors.textGreyLight,
                 ),
                 onTap: () => NicknameChangeSheet.show(context),
+              ),
+              const Divider(height: 1, color: AppColors.borderLight),
+              ListTile(
+                key: const Key('login-connections-settings'),
+                leading: const Icon(
+                  Icons.link_rounded,
+                  color: AppColors.tealAccent,
+                ),
+                title: Text(
+                  '로그인 연결',
+                  style: AppTextStyles.agreementLabel.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: const Text(
+                  '구글·카카오를 한 계정으로',
+                  style: AppTextStyles.caption,
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textGreyLight,
+                ),
+                onTap: _openLoginConnections,
               ),
               const Divider(height: 1, color: AppColors.borderLight),
               ListTile(

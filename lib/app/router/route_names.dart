@@ -63,6 +63,8 @@ abstract final class RouteNames {
   static const settings = '/settings';
   /// 설정 > 이용약관·개인정보 처리방침 웹뷰.
   static const settingsLegal = '/settings-legal';
+  /// 설정 > 로그인 연결(구글·카카오).
+  static const loginConnections = '/settings/login-connections';
   static const securityCenter = '/security-center';
   static const fairEarningPolicy = '/security-center/fair-earning';
   static const securityTransactions = '/security-center/transactions';

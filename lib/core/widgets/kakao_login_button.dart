@@ -1,0 +1,80 @@
+import 'package:flutter/material.dart';
+
+/// 카카오가 배포한 공식 "카카오 로그인" 버튼 이미지를 그대로 쓴다. 직접 그린 모양이나 색을
+/// 쓰지 않는다. 공식 이미지는 높이가 46으로 같고 너비만 네 가지(112, 224, 336, 448)라서,
+/// 자리에 맞는 가장 가까운 큰 것을 골라 비율을 지켜 줄여서 보여 준다.
+class KakaoLoginButton extends StatelessWidget {
+  const KakaoLoginButton({
+    super.key,
+    required this.onPressed,
+    this.busy = false,
+  });
+
+  final VoidCallback onPressed;
+
+  /// 로그인 중. 눌러도 반응하지 않고 흐리게 보인다.
+  final bool busy;
+
+  static const imageKey = Key('kakao-login-button-image');
+
+  /// 공식 이미지의 높이(논리 픽셀). 네 가지 너비 모두 같다.
+  static const double _height = 46;
+
+  static const _variants = <(String, double)>[
+    ('small', 112),
+    ('medium', 224),
+    ('large', 336),
+    ('xlarge', 448),
+  ];
+
+  /// 자리 너비 [available] 이상인 가장 작은 공식 이미지. 가장 큰 것(448)보다 넓으면 그것.
+  static String variantFor(double available) {
+    for (final (name, width) in _variants) {
+      if (width >= available) return name;
+    }
+    return _variants.last.$1;
+  }
+
+  static double widthOf(String variant) =>
+      _variants.firstWhere((v) => v.$1 == variant).$2;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth.isFinite
+            ? constraints.maxWidth
+            : _variants.last.$2;
+        final variant = variantFor(available);
+        final width =
+            available < widthOf(variant) ? available : widthOf(variant);
+        return Center(
+          child: Semantics(
+            button: true,
+            enabled: !busy,
+            label: '카카오 로그인',
+            excludeSemantics: true,
+            child: Opacity(
+              opacity: busy ? 0.6 : 1,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: busy ? null : onPressed,
+                child: SizedBox(
+                  width: width,
+                  // 이미지가 읽히기 전에도 자리가 흔들리지 않게 공식 비율(높이 46)로 미리 잡는다.
+                  height: width * _height / widthOf(variant),
+                  child: Image.asset(
+                    'assets/images/kakao/kakao_login_kr_$variant.png',
+                    key: imageKey,
+                    fit: BoxFit.fill,
+                    filterQuality: FilterQuality.high,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

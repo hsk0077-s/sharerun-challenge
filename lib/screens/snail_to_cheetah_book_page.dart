@@ -295,7 +295,23 @@ class _TierChapterCard extends StatelessWidget {
   }
 }
 
+/// 도감에서 티어가 올라갈수록 캐릭터를 아주 조금씩 크게 그린다. 거북이가 기준(1.0).
+abstract final class TierBookScale {
+  static double of(TierAnimal animal) => switch (animal) {
+        TierAnimal.snail => 0.96,
+        TierAnimal.turtle => 1.0,
+        TierAnimal.maltese => 1.04,
+        TierAnimal.wolf => 1.08,
+        TierAnimal.horse => 1.12,
+        TierAnimal.cheetah => 1.16,
+      };
+
+  /// 칸 높이. 가장 큰 치타에 맞춰서 줄이 흔들리지 않게 한다.
+  static double slot(double size) => size * of(TierAnimal.cheetah);
+}
+
 /// 달성 여부와 무관하게 순정 풀 컬러 마스코트만 그린다.
+/// 칸 크기는 같고, 캐릭터는 발이 닿는 아래쪽 기준선에 맞춰 티어별로 크기만 다르다.
 class _UnlockedMascot extends StatelessWidget {
   const _UnlockedMascot({
     required this.animal,
@@ -311,13 +327,22 @@ class _UnlockedMascot extends StatelessWidget {
       animal: animal,
       medal: TierMedal.gold,
     ).avatarAssetPath;
-    final mascot = Image.asset(
-      path,
-      width: size,
-      height: size,
-      fit: BoxFit.contain,
-      filterQuality: FilterQuality.high,
+    final slot = TierBookScale.slot(size);
+    final drawn = size * TierBookScale.of(animal);
+    return SizedBox(
+      key: Key('tier-book-mascot-${animal.code}'),
+      width: slot,
+      height: slot,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Image.asset(
+          path,
+          width: drawn,
+          height: drawn,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
+      ),
     );
-    return mascot;
   }
 }

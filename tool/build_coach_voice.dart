@@ -2,11 +2,12 @@
 //
 // 준비: gcloud 로그인이 되어 있어야 한다.  gcloud auth login
 // 먼저 두 개만 시험:
-//   dart run tool/build_coach_voice.dart --model <모델 이름> --limit 2
+//   dart run tool/build_coach_voice.dart --limit 2
 // 전부 만들기:
-//   dart run tool/build_coach_voice.dart --model <모델 이름>
+//   dart run tool/build_coach_voice.dart
 //
-// 모델 이름은 콘솔 데모의 "Show request"에 나오는 modelName 값이다.
+// 기본은 정식 계열 Chirp 3 HD 목소리 ko-KR-Chirp3-HD-Leda (콘솔 데모의 Show request와 같은 요청).
+// 시험판 Gemini TTS를 쓰려면 --model <modelName> 을 붙인다(말투 지시 --prompt 도 함께 쓰인다).
 // 이미 있는 파일은 다시 만들지 않는다. 문구가 바뀐 것만 새로 만든다. (--force로 전부 다시)
 // 결과: assets/voice/<해시>.mp3 와 assets/voice/manifest.json
 import 'dart:convert';
@@ -19,18 +20,22 @@ const _defaultPrompt =
 
 Future<void> main(List<String> args) async {
   final options = _parse(args);
-  final model = options['model'];
-  if (model == null || model.isEmpty) {
-    stderr.writeln('--model <모델 이름>이 필요해요. (콘솔 데모의 Show request에서 확인)');
-    exit(64);
-  }
-  final voice = options['voice'] ?? 'Leda';
+  // --model이 없으면 Chirp 3 HD(정식). 있으면 Gemini TTS(시험판)로 요청한다.
+  final model = options['model'] ?? '';
+  final gemini = model.isNotEmpty;
+  final voice =
+      options['voice'] ?? (gemini ? 'Leda' : 'ko-KR-Chirp3-HD-Leda');
   final language = options['language'] ?? 'ko-KR';
+  final rate = double.tryParse(options['rate'] ?? '') ?? 1.0;
   final project = options['project'] ?? 'share-run-challenge';
   final prompt = options['prompt'] ?? _defaultPrompt;
   final limit = int.tryParse(options['limit'] ?? '') ?? 1 << 30;
   final force = options.containsKey('force');
   final encoding = options['encoding'] ?? 'MP3';
+  if (encoding.toUpperCase() == 'LINEAR16') {
+    stderr.writeln('LINEAR16(wav)은 파일이 너무 커요. MP3를 쓰세요.');
+    exit(64);
+  }
 
   final dir = Directory('assets/voice')..createSync(recursive: true);
   final token = await _accessToken();
@@ -53,13 +58,14 @@ Future<void> main(List<String> args) async {
       token: token,
       project: project,
       body: {
-        'input': {'text': text, 'prompt': prompt},
+        // 말투 지시(prompt)는 Gemini TTS에만 있다. Chirp 3 HD에는 보내지 않는다.
+        'input': {'text': text, if (gemini) 'prompt': prompt},
         'voice': {
           'languageCode': language,
           'name': voice,
-          'modelName': model,
+          if (gemini) 'modelName': model,
         },
-        'audioConfig': {'audioEncoding': encoding},
+        'audioConfig': {'audioEncoding': encoding, 'speakingRate': rate},
       },
     );
     file.writeAsBytesSync(bytes);
@@ -119,7 +125,7 @@ Future<List<int>> _synthesize(
   required Map<String, Object?> body,
 }) async {
   final request = await client.postUrl(
-    Uri.parse('https://texttospeech.googleapis.com/v1/text:synthesize'),
+    Uri.parse('https://texttospeech.googleapis.com/v1beta1/text:synthesize'),
   );
   request.headers
     ..set('Authorization', 'Bearer $token')

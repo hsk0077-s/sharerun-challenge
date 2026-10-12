@@ -11,10 +11,10 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../core/widgets/apple_login_button.dart';
 import '../core/widgets/google_signin_button.dart';
 import '../core/widgets/kakao_login_button.dart';
 import '../core/widgets/naver_login_button.dart';
-import '../core/widgets/src_button.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../core/widgets/src_logo_header.dart';
 import '../core/widgets/src_text_field.dart';
@@ -165,7 +165,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (token == null || !mounted) return; // 사용자가 창을 닫음
 
       // 서버가 카카오 토큰을 확인하고 우리 계정과 짝지어 로그인 열쇠를 준다.
-      final result = await ref.read(identityApiClientProvider).kakaoLogin(token);
+      final result =
+          await ref.read(identityApiClientProvider).kakaoLogin(token);
       final credential = await ref
           .read(authRepositoryProvider)
           .signInWithCustomToken(result.customToken);
@@ -224,17 +225,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const Spacer(flex: 3),
 
                         // 1) Google — 구글 공식 규격 버튼(글자만 한국어)
-                        GoogleSignInButton(onPressed: _onGoogle),
+                        GoogleSignInButton(
+                            onPressed: _onGoogle, fullWidth: true),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
-                        // 2) Apple (구글 아래 유지)
-                        SRCButton.apple(
+                        // 2) Apple (구글 아래 유지) — 준비 중
+                        AppleLoginButton(
                           label: AppStrings.loginApple,
-                          leading: const Icon(
-                            Icons.apple,
-                            color: AppColors.textWhite,
-                            size: 26,
-                          ),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

@@ -61,4 +61,27 @@ void main() {
     await tester.tap(find.byKey(GoogleSignInButton.buttonKey));
     expect(taps, 1);
   });
+
+  testWidgets('full width fills the space up to 400 and is 44 tall',
+      (tester) async {
+    Future<Size> sizeAt(double width) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Align(
+              alignment: Alignment.topLeft,
+              child: SizedBox(
+                width: width,
+                child: GoogleSignInButton(onPressed: () {}, fullWidth: true),
+              ),
+            ),
+          ),
+        ),
+      );
+      return tester.getSize(find.byKey(GoogleSignInButton.buttonKey));
+    }
+
+    expect(await sizeAt(324), const Size(324, 44));
+    expect(await sizeAt(700), const Size(400, 44));
+  });
 }

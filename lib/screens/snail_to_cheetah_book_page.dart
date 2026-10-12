@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../features/accessories/accessory_catalog.dart';
+import '../features/accessories/try_on_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 
@@ -48,7 +50,7 @@ class SnailToCheetahBookPage extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '달팽이부터 치타까지 모든 등급을 열람할 수 있습니다.',
+            '달팽이부터 치타까지 모든 등급을 열람할 수 있습니다. 카드를 누르면 액세서리를 입혀 볼 수 있어요.',
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -209,7 +211,7 @@ class _TierChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
@@ -290,6 +292,21 @@ class _TierChapterCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+    // 달팽이는 입힐 그림이 없어서 눌러도 열리지 않는다.
+    if (!canDress(chapter.animal)) return card;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: Key('tier-book-try-on-${chapter.animal.code}'),
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => TryOnSheet.show(
+          context,
+          animal: chapter.animal,
+          title: chapter.title,
+        ),
+        child: card,
       ),
     );
   }

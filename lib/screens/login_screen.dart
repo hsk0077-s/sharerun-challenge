@@ -11,6 +11,7 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
+import '../core/widgets/google_signin_button.dart';
 import '../core/widgets/kakao_login_button.dart';
 import '../core/widgets/social_brand_icons.dart';
 import '../core/widgets/src_button.dart';
@@ -222,18 +223,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SRCLogoHeader(),
                         const Spacer(flex: 3),
 
-                        // 1) Google — 흰 배경 + 회색 테두리 + 컬러 G
-                        SRCButton.google(
-                          label: AppStrings.loginGoogle,
-                          leading: Image.asset(
-                            'assets/images/google_logo.png',
-                            width: 22,
-                            height: 22,
-                            errorBuilder: (_, __, ___) =>
-                                const GoogleIcon(size: 22),
-                          ),
-                          onPressed: _onGoogle,
-                        ),
+                        // 1) Google — 구글 공식 규격 버튼(글자만 한국어)
+                        GoogleSignInButton(onPressed: _onGoogle),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
                         // 2) Apple (구글 아래 유지)

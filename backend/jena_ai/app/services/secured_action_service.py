@@ -301,6 +301,81 @@ class SecuredActionService:
             account_created_at=created_at,
         )
 
+    def approve_appeal(
+        self,
+        appeal_id: str,
+        *,
+        actor_uid: str,
+        note: str = "",
+        now: datetime | None = None,
+    ) -> dict:
+        """Accept an appealed run: settle it like a verified run, once.
+
+        The run's own numbers (distance, time) are used as stored. Race prizes
+        are not paid because the run does not remember its room. The appeal,
+        the proof photo and the run change in one transaction.
+        """
+        db = self.firebase_service.db
+        appeal_ref = db.collection("appeals").document(appeal_id)
+        snap = appeal_ref.get()
+        appeal_doc = snap.to_dict() if snap.exists else None
+        if not appeal_doc:
+            raise HTTPException(status_code=404, detail="appeal_not_found")
+        if appeal_doc.get("status") == "approved":
+            return {"status": "approved", "appeal_id": appeal_id, "already": True}
+        if appeal_doc.get("status") != "under_review":
+            raise HTTPException(status_code=409, detail="already_decided")
+        uid = str(appeal_doc.get("userId") or "")
+        activity_id = str(appeal_doc.get("activityId") or "")
+        activity_ref = db.collection("activities").document(activity_id)
+        activity_snap = activity_ref.get()
+        activity = activity_snap.to_dict() if activity_snap.exists else None
+        if not uid or not activity or activity.get("userId") != uid:
+            raise HTTPException(status_code=404, detail="activity_not_found")
+        try:
+            distance_km = float(activity.get("distanceKm"))
+            duration_seconds = int(activity.get("durationSeconds"))
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=409, detail="activity_incomplete")
+        gyro = activity.get("gyroStabilityScore")
+        gyro = float(gyro) if isinstance(gyro, (int, float)) and 0 <= gyro <= 1 else 1.0
+        request = ValidateRunRequest(
+            activity_id=activity_id,
+            distance_km=distance_km,
+            duration_seconds=duration_seconds,
+            gyro_stability_score=gyro,
+        )
+        result = ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="소명이 승인되어 인정된 기록이에요.",
+            reason_code="verified",
+            value_token_reward=0,
+        )
+        try:
+            created_at = self._auth_account_created_at(uid)
+        except HTTPException:
+            created_at = None
+        user_ref = db.collection("users").document(uid)
+        _commit_appeal_approval_tx(
+            db.transaction(),
+            self,
+            uid,
+            request,
+            result,
+            activity_ref,
+            user_ref,
+            {
+                "appeal_ref": appeal_ref,
+                "proof_ref": db.collection("appealProofs").document(appeal_id),
+                "actor_uid": actor_uid,
+                "note": (note or "")[:300],
+            },
+            account_created_at=created_at,
+            now=now,
+        )
+        return {"status": "approved", "appeal_id": appeal_id}
+
     def _validation_policy(self, tournament_id: str | None):
         """Room distance from the tournament doc. Prize HR rule from config."""
         tid = (tournament_id or "").strip()
@@ -898,17 +973,31 @@ class SecuredActionService:
         user_ref,
         account_created_at: datetime | None = None,
         now: datetime | None = None,
+        appeal: dict | None = None,
     ) -> ValidationResult:
+        """Settle one run. ``appeal`` is set only when an admin approves an
+        appeal: the run was finalized as rejected, so the finalized check is
+        replaced by "appeal still under review", and the approval is written in
+        the same transaction (appeal, proof delete, run fields)."""
         activity_snapshot = activity_ref.get(transaction=transaction)
+        existing: dict = {}
         if activity_snapshot.exists:
             activity = activity_snapshot.to_dict() or {}
+            existing = activity
             if activity.get("userId") != uid:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Activity belongs to another user.",
                 )
-            if activity.get("validationFinalized") is True:
-                return with_reason_code(self._validation_result_from_activity(activity))
+            if appeal is None:
+                if activity.get("validationFinalized") is True:
+                    return with_reason_code(
+                        self._validation_result_from_activity(activity)
+                    )
+            elif activity.get("appealStatus") != "under_review":
+                raise HTTPException(status_code=409, detail="already_decided")
+        elif appeal is not None:
+            raise HTTPException(status_code=404, detail="activity_not_found")
 
         user_snapshot = user_ref.get(transaction=transaction)
         user = user_snapshot.to_dict() or {} if user_snapshot.exists else {}
@@ -1083,6 +1172,10 @@ class SecuredActionService:
         ]
         # Only the stored copy is trimmed; validation above used the full route.
         route = trim_route(route)
+        if appeal is not None:
+            # The approval has no route of its own. Keep the one already stored.
+            stored_route = existing.get("gpsRoute")
+            route = stored_route if isinstance(stored_route, list) else []
         average_pace = (
             None
             if request.distance_km <= 0
@@ -1109,19 +1202,52 @@ class SecuredActionService:
                 "dailyCountedKm": counted_km,
                 "validationFinalized": True,
                 "effortValueMinted": bool(result.verified and reward_tokens > 0),
-                "depositForfeited": bool(result.forfeit_deposit),
+                "depositForfeited": (
+                    bool(existing.get("depositForfeited"))
+                    if appeal is not None
+                    else bool(result.forfeit_deposit)
+                ),
                 "companyDonationWon": company_won if donation_counted else 0,
                 "donationCounted": donation_counted,
                 "donationReason": donation_reason,
                 "donationCapReached": cap_reached,
                 "sensitiveArraysStored": False,
-                "completedAt": SERVER_TIMESTAMP,
+                # An approved appeal keeps the day the run really happened.
+                "completedAt": (
+                    (existing.get("completedAt") or SERVER_TIMESTAMP)
+                    if appeal is not None
+                    else SERVER_TIMESTAMP
+                ),
                 "updatedAt": SERVER_TIMESTAMP,
+                **(
+                    {
+                        "appealStatus": "approved",
+                        "locked": False,
+                        "appealPriorDecision": existing.get("jenaDecision"),
+                        "appealPriorReason": existing.get("jenaReason"),
+                    }
+                    if appeal is not None
+                    else {}
+                ),
                 # Diagnostics only. Not a walletTransactions row.
                 **({"deviceInfo": device_info} if device_info is not None else {}),
             },
             merge=True,
         )
+        if appeal is not None:
+            transaction.set(
+                appeal["appeal_ref"],
+                {
+                    "status": "approved",
+                    "decidedBy": appeal["actor_uid"],
+                    "decidedAt": SERVER_TIMESTAMP,
+                    "adminNote": appeal["note"],
+                    "proofPurged": True,
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+            transaction.delete(appeal["proof_ref"])
         if donation_counted and not donation_exists:
             transaction.set(
                 donation_ref,
@@ -4443,6 +4569,32 @@ def _commit_validation_tx(
         user_ref,
         account_created_at=account_created_at,
         now=now,
+    )
+
+
+@firestore.transactional
+def _commit_appeal_approval_tx(
+    transaction,
+    service,
+    uid: str,
+    request: ValidateRunRequest,
+    result: ValidationResult,
+    activity_ref,
+    user_ref,
+    appeal: dict,
+    account_created_at: datetime | None = None,
+    now: datetime | None = None,
+) -> ValidationResult:
+    return service._persist_validation_tx(
+        transaction,
+        uid,
+        request,
+        result,
+        activity_ref,
+        user_ref,
+        account_created_at=account_created_at,
+        now=now,
+        appeal=appeal,
     )
 
 

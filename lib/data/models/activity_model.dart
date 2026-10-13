@@ -45,6 +45,7 @@ class ActivityModel {
     required this.completedAt,
     required this.validationStatus,
     required this.jenaReason,
+    this.appealRejected = false,
   });
 
   final String id;
@@ -55,6 +56,9 @@ class ActivityModel {
   final DateTime? completedAt;
   final ActivityValidationStatus validationStatus;
   final String? jenaReason;
+
+  /// 소명을 냈다가 관리자가 기각한 기록. 다시 소명할 수 없다.
+  final bool appealRejected;
 
   /// Jena 검증 상태 — Passed / Pending / Failed.
   ActivityStatus get jenaStatus => switch (validationStatus) {
@@ -68,6 +72,7 @@ class ActivityModel {
   /// 소명 가능한 기록. 서버가 인정하지 않은 기록이 14일 안에 있을 때만이며,
   /// 이미 소명을 낸 기록([underReview])은 제외한다.
   bool get needsJenaAppeal {
+    if (appealRejected) return false;
     if (validationStatus == ActivityValidationStatus.pending) return true;
     if (validationStatus != ActivityValidationStatus.rejected) return false;
     final at = completedAt;
@@ -85,6 +90,7 @@ class ActivityModel {
     DateTime? completedAt,
     ActivityValidationStatus? validationStatus,
     String? jenaReason,
+    bool? appealRejected,
   }) {
     return ActivityModel(
       id: id ?? this.id,
@@ -96,6 +102,7 @@ class ActivityModel {
       completedAt: completedAt ?? this.completedAt,
       validationStatus: validationStatus ?? this.validationStatus,
       jenaReason: jenaReason ?? this.jenaReason,
+      appealRejected: appealRejected ?? this.appealRejected,
     );
   }
 

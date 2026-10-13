@@ -103,6 +103,7 @@ class ActivityRepository {
       completedAt: completedDate,
       validationStatus: validationStatus,
       jenaReason: data['jenaReason'] as String?,
+      appealRejected: appealStatus == 'rejected',
     );
   }
 }

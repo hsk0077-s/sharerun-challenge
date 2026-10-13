@@ -12,6 +12,7 @@ ActivityModel _run(
   DateTime? at,
   String? reason = '러닝 케이던스(120~210 SPM) 범위를 벗어났습니다.',
   double km = 3.2,
+  bool appealRejected = false,
 }) {
   return ActivityModel(
     id: id,
@@ -22,6 +23,7 @@ ActivityModel _run(
     completedAt: at ?? DateTime.utc(2026, 10, 10, 9),
     validationStatus: status,
     jenaReason: reason,
+    appealRejected: appealRejected,
   );
 }
 
@@ -41,6 +43,25 @@ void main() {
         _run('a', status: ActivityValidationStatus.verified),
       ]);
       expect(hold, isNull);
+    });
+
+    test('a run whose appeal an admin turned down is not offered again', () {
+      final rejected = _run(
+        'no',
+        status: ActivityValidationStatus.rejected,
+        at: DateTime.now().subtract(const Duration(days: 1)),
+        appealRejected: true,
+      );
+      expect(rejected.needsJenaAppeal, isFalse);
+      expect(pendingHoldFor([rejected]), isNull);
+      expect(
+        _run(
+          'again',
+          status: ActivityValidationStatus.rejected,
+          at: DateTime.now().subtract(const Duration(days: 1)),
+        ).needsJenaAppeal,
+        isTrue,
+      );
     });
 
     test('with no id the latest held run is chosen', () {
@@ -91,9 +112,11 @@ void main() {
 
   group('which runs can be appealed', () {
     test('a rejected run is appealable for 14 days, then not', () {
-      final fresh = _run('a', status: ActivityValidationStatus.rejected,
+      final fresh = _run('a',
+          status: ActivityValidationStatus.rejected,
           at: DateTime.now().subtract(const Duration(days: 2)));
-      final old = _run('b', status: ActivityValidationStatus.rejected,
+      final old = _run('b',
+          status: ActivityValidationStatus.rejected,
           at: DateTime.now().subtract(const Duration(days: 15)));
       expect(fresh.needsJenaAppeal, isTrue);
       expect(old.needsJenaAppeal, isFalse);

@@ -12,7 +12,7 @@ import '../../onboarding/widgets/nickname_setup_sheet.dart';
 import '../avatar_choice.dart';
 import '../avatar_choice_provider.dart';
 import '../user_profile_notifier.dart';
-import 'angel_tier_widgets.dart';
+import 'tier_circle_badge.dart';
 
 abstract final class GenderAvatarAssets {
   static const male = 'assets/images/characters/avatar_gender_male.png';
@@ -118,6 +118,26 @@ class HomeUserIdentityHeader extends ConsumerWidget {
     DashboardTabNavigation.go(context, DashboardTabNavigation.myPage);
   }
 
+  /// 동물 티어 도감, 천사 도감을 연다.
+  static void openBook(BuildContext context, String routeName) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      try {
+        context.pushNamed(routeName);
+        return;
+      } catch (_) {}
+    }
+    Navigator.of(context).pushNamed(routeName);
+  }
+
+  /// 사진 크기. 원 세 개와 간격이 자리에 들어가도록 좁은 화면에서는 줄인다.
+  static double circleSize(double availableWidth) {
+    const gaps = 12.0 * 2;
+    final fit = (availableWidth - gaps) / 3;
+    if (!fit.isFinite) return 72;
+    return fit.clamp(48.0, 72.0).toDouble();
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final nickname = ref.watch(userNicknameProvider);
@@ -130,59 +150,74 @@ class HomeUserIdentityHeader extends ConsumerWidget {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const GenderProfileAvatar(size: 72),
-        SizedBox(height: tokens.spacing.sm),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              if (SrcOnboardingController.isUnsetNickname(nickname)) {
-                NicknameSetupSheet.show(context);
-              } else {
-                NicknameChangeSheet.show(context);
-              }
-            },
-            borderRadius: BorderRadius.circular(tokens.radii.xs),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: tokens.spacing.xxs / 2,
-                vertical: tokens.spacing.xxs / 2,
+    return LayoutBuilder(builder: (context, constraints) {
+      final size = circleSize(constraints.maxWidth);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GenderProfileAvatar(size: size),
+              const SizedBox(width: 12),
+              TierCircleBadge(
+                key: const Key('home-tier-animal'),
+                imagePath: tier.avatarAssetPath,
+                label: tier.circleLabel,
+                subLabel: tier.circleSubLabel,
+                borderColor: AppColors.tealAccent,
+                size: size,
+                onTap: () => openBook(context, RouteNames.tierBook),
               ),
-              child: Text(
-                displayName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: textTheme.titleMedium?.copyWith(
-                  fontSize: 18,
-                  fontWeight: angel.emphasizeNickname
-                      ? FontWeight.w800
-                      : FontWeight.w700,
-                  color: angel.goldNickname
-                      ? tokens.colors.donation
-                      : tokens.colors.ink,
+              const SizedBox(width: 12),
+              TierCircleBadge(
+                key: const Key('home-tier-angel'),
+                imagePath: angel.avatarAssetPath,
+                label: angel.circleLabel,
+                borderColor: AppColors.angelGold,
+                size: size,
+                fallbackEmoji: angel.emoji,
+                onTap: () => openBook(context, RouteNames.angelBook),
+              ),
+            ],
+          ),
+          SizedBox(height: tokens.spacing.sm),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                if (SrcOnboardingController.isUnsetNickname(nickname)) {
+                  NicknameSetupSheet.show(context);
+                } else {
+                  NicknameChangeSheet.show(context);
+                }
+              },
+              borderRadius: BorderRadius.circular(tokens.radii.xs),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: tokens.spacing.xxs / 2,
+                  vertical: tokens.spacing.xxs / 2,
+                ),
+                child: Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontSize: 18,
+                    fontWeight: angel.emphasizeNickname
+                        ? FontWeight.w800
+                        : FontWeight.w700,
+                    color: angel.goldNickname
+                        ? tokens.colors.donation
+                        : tokens.colors.ink,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        SizedBox(height: tokens.spacing.xxs),
-        Wrap(
-          spacing: tokens.spacing.xs,
-          runSpacing: tokens.spacing.xxs,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            TextTierLabel(
-              tier: tier,
-              onTap: () => openMyPage(context),
-            ),
-            AngelTierBadge(tier: angel),
-          ],
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 }
 

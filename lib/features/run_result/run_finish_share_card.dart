@@ -3,6 +3,24 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/src_logo_header.dart';
 import 'run_card_summary.dart';
 
+/// 자랑 카드 오른쪽 위에 넣는 두 개의 동그란 등급 배지(동물 티어, 천사 등급).
+/// 기부 금액은 담지 않는다. 공유할 때 빼려면 카드에 넘기지 않는다.
+class RunFinishTierBadges {
+  const RunFinishTierBadges({
+    required this.animalImage,
+    required this.animalLabel,
+    required this.angelImage,
+    required this.angelLabel,
+    this.angelEmoji,
+  });
+
+  final String animalImage;
+  final String animalLabel;
+  final String angelImage;
+  final String angelLabel;
+  final String? angelEmoji;
+}
+
 /// Story poster for one finished run. 1080×1920, safe from story chrome.
 ///
 /// Record, optional donation line, date, and the Share Run mark only.
@@ -104,6 +122,7 @@ class RunFinishShareCard extends StatelessWidget {
     this.route,
     this.photo,
     this.frameColor,
+    this.badges,
     super.key,
   });
 
@@ -124,6 +143,7 @@ class RunFinishShareCard extends StatelessWidget {
   static const photoKey = Key('run-finish-photo');
   static const heartRateKey = Key('run-finish-heart-rate');
   static const splitGraphKey = Key('run-finish-split-graph');
+  static const badgesKey = Key('run-finish-tier-badges');
 
   static const appName = '쉐어런';
   static const headline = '오늘의 러닝';
@@ -150,6 +170,9 @@ class RunFinishShareCard extends StatelessWidget {
 
   /// Owned share-card frame. Null keeps the card unchanged.
   final Color? frameColor;
+
+  /// 동물 티어·천사 등급 원. null이면 그리지 않는다.
+  final RunFinishTierBadges? badges;
 
   _PaceParts get _paceParts {
     var trimmed = pace.trim();
@@ -243,6 +266,16 @@ class RunFinishShareCard extends StatelessWidget {
                     averageHeartRate: averageHeartRate,
                   ),
                 ),
+                if (badges != null)
+                  Positioned(
+                    top: storySafeInset + 4,
+                    right: 76,
+                    child: _TierBadgeRow(
+                      key: RunFinishShareCard.badgesKey,
+                      badges: badges!,
+                      palette: palette,
+                    ),
+                  ),
                 if (frameColor != null)
                   IgnorePointer(
                     child: DecoratedBox(
@@ -257,6 +290,76 @@ class RunFinishShareCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TierBadgeRow extends StatelessWidget {
+  const _TierBadgeRow({super.key, required this.badges, required this.palette});
+
+  final RunFinishTierBadges badges;
+  final _CardPalette palette;
+
+  static const _size = 150.0;
+
+  Widget _circle(String image, String label, Color border, String? emoji) {
+    return SizedBox(
+      width: _size,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: _size,
+            height: _size,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              border: Border.all(color: border, width: 5),
+            ),
+            child: ClipOval(
+              child: Transform.scale(
+                scale: 1.25,
+                child: Image.asset(
+                  image,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Center(
+                    child:
+                        Text(emoji ?? '', style: const TextStyle(fontSize: 64)),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: RunFinishShareCard.fontFamily,
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              color: palette.hero,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _circle(badges.animalImage, badges.animalLabel, const Color(0xFF14B8A6),
+            null),
+        const SizedBox(width: 24),
+        _circle(badges.angelImage, badges.angelLabel, const Color(0xFFF5B800),
+            badges.angelEmoji),
+      ],
     );
   }
 }

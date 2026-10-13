@@ -36,7 +36,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             // 릴리스의 코드 최적화(R8)가 네이버 로그인 SDK를 지우지 않게 하는 규칙.
             proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
+                getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
         }

@@ -74,9 +74,13 @@ void main() {
       angel: AngelTier.archangel,
     );
 
-    expect(find.text('거북이'), findsOneWidget);
-    expect(find.text(TierMedal.gold.labelKo), findsOneWidget);
-    expect(find.text('대천사'), findsOneWidget);
+    // 원 아래에는 이름을 쓰지 않는다. 화면 읽기용 설명만 남는다.
+    expect(find.text('거북이'), findsNothing);
+    expect(find.text(TierMedal.gold.labelKo), findsNothing);
+    expect(find.text('대천사'), findsNothing);
+    expect(
+        find.bySemanticsLabel('거북이 ${TierMedal.gold.labelKo}'), findsOneWidget);
+    expect(find.bySemanticsLabel('대천사'), findsOneWidget);
     // 예전 글자 칩은 없다.
     expect(find.textContaining('['), findsNothing);
 
@@ -102,15 +106,18 @@ void main() {
     expect(photo.width, 72);
   });
 
-  testWidgets('a runner without a grade shows the snail and the pre-angel',
+  testWidgets(
+      'a runner without a grade still gets the snail and the pre-angel circles',
       (tester) async {
     await _pump(
       tester,
       tier: UserTier.unratedFallback,
       angel: AngelTier.preAngel,
     );
-    expect(find.text('달팽이'), findsOneWidget);
-    expect(find.text('예비 천사'), findsOneWidget);
+    expect(find.text('달팽이'), findsNothing);
+    expect(find.text('예비 천사'), findsNothing);
+    expect(find.bySemanticsLabel('달팽이'), findsOneWidget);
+    expect(find.bySemanticsLabel('예비 천사'), findsOneWidget);
     expect(find.textContaining('Pre-Angel'), findsNothing);
   });
 
@@ -146,5 +153,27 @@ void main() {
     await tester.tap(find.byKey(const Key('home-tier-angel')));
     await tester.pumpAndSettle();
     expect(opened.last, RouteNames.angelBook);
+  });
+
+  testWidgets('the nickname and the photo ring stay easy to see', (tester) async {
+    await _pump(
+      tester,
+      tier: const UserTier(animal: TierAnimal.turtle, medal: TierMedal.gold),
+      angel: AngelTier.archangel,
+    );
+    final name = tester.widget<Text>(find.text('테스트러너'));
+    expect(name.style?.color, HomeUserIdentityHeader.goldNicknameColor);
+    // 연한 금색이 아니라 흰 배경에서 읽히는 진한 금색이다.
+    expect(name.style!.color!.computeLuminance(), lessThan(0.3));
+
+    final ring = tester
+        .widget<Ink>(find.descendant(
+          of: find.byKey(const Key('home-header-avatar')),
+          matching: find.byType(Ink),
+        ))
+        .decoration! as BoxDecoration;
+    final border = ring.border! as Border;
+    expect(border.top.width, 2);
+    expect(border.top.color.a, 1);
   });
 }

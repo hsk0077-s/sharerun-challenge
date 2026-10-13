@@ -15,6 +15,7 @@ class TierCircleBadge extends StatelessWidget {
     required this.onTap,
     this.subLabel,
     this.fallbackEmoji,
+    this.showLabel = true,
   });
 
   final String imagePath;
@@ -26,6 +27,9 @@ class TierCircleBadge extends StatelessWidget {
   final double size;
   final VoidCallback onTap;
   final String? fallbackEmoji;
+
+  /// false면 원 아래 이름(과 둘째 줄)을 그리지 않는다. 화면 읽기용 설명은 그대로 남는다.
+  final bool showLabel;
 
   /// 원 안에서 캐릭터를 키우는 배율. 그림 가장자리의 빈 곳을 채워 원이 꽉 차 보이게 한다.
   static const imageScale = 1.25;
@@ -72,20 +76,21 @@ class TierCircleBadge extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    height: 1.15,
-                    color: AppColors.textBlack,
+                if (showLabel) const SizedBox(height: 3),
+                if (showLabel)
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.15,
+                      color: AppColors.textBlack,
+                    ),
                   ),
-                ),
-                if (subLabel != null)
+                if (showLabel && subLabel != null)
                   Text(
                     subLabel!,
                     maxLines: 1,

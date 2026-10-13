@@ -48,10 +48,8 @@ class GenderProfileAvatar extends ConsumerWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: tokens.colors.primary.withValues(alpha: 0.16),
-            border: Border.all(
-              color: tokens.colors.accent.withValues(alpha: 0.45),
-              width: 1.5,
-            ),
+            // 옆의 티어·천사 원과 같은 두께와 진하기로 맞춰 또렷하게 보이게 한다.
+            border: Border.all(color: AppColors.tealAccent, width: 2),
             boxShadow: AppShadows.rest,
           ),
           child: ClipOval(
@@ -131,6 +129,9 @@ class HomeUserIdentityHeader extends ConsumerWidget {
   }
 
   /// 사진 크기. 원 세 개와 간격이 자리에 들어가도록 좁은 화면에서는 줄인다.
+  /// 대천사 이상의 금색 닉네임. 연한 기부 금색은 흰 배경에서 안 보여서 진하게 쓴다.
+  static const goldNicknameColor = Color(0xFF9A6200);
+
   static double circleSize(double availableWidth) {
     const gaps = 12.0 * 2;
     final fit = (availableWidth - gaps) / 3;
@@ -166,6 +167,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
                 label: tier.circleLabel,
                 subLabel: tier.circleSubLabel,
                 borderColor: AppColors.tealAccent,
+                showLabel: false,
                 size: size,
                 onTap: () => openBook(context, RouteNames.tierBook),
               ),
@@ -175,6 +177,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
                 imagePath: angel.avatarAssetPath,
                 label: angel.circleLabel,
                 borderColor: AppColors.angelGold,
+                showLabel: false,
                 size: size,
                 fallbackEmoji: angel.emoji,
                 onTap: () => openBook(context, RouteNames.angelBook),
@@ -208,7 +211,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
                         ? FontWeight.w800
                         : FontWeight.w700,
                     color: angel.goldNickname
-                        ? tokens.colors.donation
+                        ? HomeUserIdentityHeader.goldNicknameColor
                         : tokens.colors.ink,
                   ),
                 ),

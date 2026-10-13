@@ -7,13 +7,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/widgets/src_logo_header.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
+import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
+import 'package:share_run_challenge/features/profile/user_profile_notifier.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_image_share.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_share_card.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_theme_store.dart';
@@ -87,11 +90,26 @@ void main() {
 
     await pumpCard(null);
     expect(find.byKey(RunFinishShareCard.badgesKey), findsNothing);
+
+    // 등급이 없는 쪽은 그 원만 빠진다. 둘 다 없으면 아무것도 그리지 않는다.
+    await pumpCard(const RunFinishTierBadges(
+      angelImage: 'assets/images/tier/none.png',
+      angelLabel: '대천사',
+    ));
+    expect(find.text('대천사'), findsOneWidget);
+    expect(find.text('거북이'), findsNothing);
+    await pumpCard(const RunFinishTierBadges());
+    expect(find.byKey(RunFinishShareCard.badgesKey), findsNothing);
   });
 
   testWidgets('the finish screen switch removes the circles from the card',
       (tester) async {
-    await _pumpFinish(tester);
+    await _pumpFinish(tester, overrides: [
+      activeUserTierStructProvider.overrideWith(
+        (ref) => const UserTier(animal: TierAnimal.turtle, medal: TierMedal.gold),
+      ),
+      userAngelTierProvider.overrideWith((ref) => AngelTier.archangel),
+    ]);
     await tester.pump(const Duration(seconds: 1));
     expect(find.byKey(RunFinishShareCard.badgesKey), findsWidgets);
     final toggle = find.byKey(OnboardingRunResultScreen.tierBadgeSwitchKey);
@@ -622,13 +640,17 @@ Future<void> _pumpCard(WidgetTester tester, RunFinishShareCard card) async {
   await tester.pump();
 }
 
-Future<void> _pumpFinish(WidgetTester tester) async {
+Future<void> _pumpFinish(
+  WidgetTester tester, {
+  List<Override> overrides = const [],
+}) async {
   tester.view.physicalSize = const Size(390, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   await tester.pumpWidget(
     ProviderScope(
+      overrides: overrides,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: SrcTheme.light,

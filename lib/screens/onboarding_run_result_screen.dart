@@ -212,10 +212,13 @@ class _OnboardingRunResultScreenState
     return RunFinishShareCard(
       badges: _showTierBadges
           ? RunFinishTierBadges(
-              animalImage: tier.avatarAssetPath,
-              animalLabel: tier.circleLabel,
-              angelImage: angel.avatarAssetPath,
-              angelLabel: angel.circleLabel,
+              // 아직 등급이 없으면(달팽이, 예비 천사) 그 원은 카드에 넣지 않는다.
+              animalImage: tier.isSnail ? null : tier.avatarAssetPath,
+              animalLabel: tier.isSnail ? null : tier.circleLabel,
+              angelImage:
+                  angel == AngelTier.preAngel ? null : angel.avatarAssetPath,
+              angelLabel:
+                  angel == AngelTier.preAngel ? null : angel.circleLabel,
               angelEmoji: angel.emoji,
             )
           : null,

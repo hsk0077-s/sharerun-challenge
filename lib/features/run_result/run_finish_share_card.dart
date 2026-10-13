@@ -7,18 +7,23 @@ import 'run_card_summary.dart';
 /// 기부 금액은 담지 않는다. 공유할 때 빼려면 카드에 넘기지 않는다.
 class RunFinishTierBadges {
   const RunFinishTierBadges({
-    required this.animalImage,
-    required this.animalLabel,
-    required this.angelImage,
-    required this.angelLabel,
+    this.animalImage,
+    this.animalLabel,
+    this.angelImage,
+    this.angelLabel,
     this.angelEmoji,
   });
 
-  final String animalImage;
-  final String animalLabel;
-  final String angelImage;
-  final String angelLabel;
+  /// 아직 등급이 없는 쪽(달팽이, 예비 천사)은 null로 두면 그 원은 그리지 않는다.
+  final String? animalImage;
+  final String? animalLabel;
+  final String? angelImage;
+  final String? angelLabel;
   final String? angelEmoji;
+
+  bool get hasAnimal => animalImage != null && animalLabel != null;
+  bool get hasAngel => angelImage != null && angelLabel != null;
+  bool get isEmpty => !hasAnimal && !hasAngel;
 }
 
 /// Story poster for one finished run. 1080×1920, safe from story chrome.
@@ -266,7 +271,7 @@ class RunFinishShareCard extends StatelessWidget {
                     averageHeartRate: averageHeartRate,
                   ),
                 ),
-                if (badges != null)
+                if (badges != null && !badges!.isEmpty)
                   Positioned(
                     top: storySafeInset + 4,
                     right: 76,
@@ -354,11 +359,13 @@ class _TierBadgeRow extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _circle(badges.animalImage, badges.animalLabel, const Color(0xFF14B8A6),
-            null),
-        const SizedBox(width: 24),
-        _circle(badges.angelImage, badges.angelLabel, const Color(0xFFF5B800),
-            badges.angelEmoji),
+        if (badges.hasAnimal)
+          _circle(badges.animalImage!, badges.animalLabel!,
+              const Color(0xFF14B8A6), null),
+        if (badges.hasAnimal && badges.hasAngel) const SizedBox(width: 24),
+        if (badges.hasAngel)
+          _circle(badges.angelImage!, badges.angelLabel!,
+              const Color(0xFFF5B800), badges.angelEmoji),
       ],
     );
   }

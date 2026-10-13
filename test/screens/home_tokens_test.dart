@@ -261,7 +261,7 @@ void main() {
     expect(find.text(AppStrings.myWalletRecentTransactions), findsOneWidget);
   });
 
-  testWidgets('Home avatar sheet offers gender, snail and gallery, not tier animals',
+  testWidgets('Home avatar sheet offers male, female and gallery, not tier animals',
       (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
@@ -279,7 +279,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 80));
 
     expect(find.text(AppStrings.avatarCustomizeTitle), findsOneWidget);
-    expect(find.byKey(const Key('avatar-preset-snail')), findsOneWidget);
+    expect(find.byKey(const Key('avatar-preset-snail')), findsNothing);
     expect(find.byKey(const Key('avatar-preset-male')), findsOneWidget);
     expect(find.byKey(const Key('avatar-preset-female')), findsOneWidget);
     // 동물 티어는 달려서 받는 것이라 고르는 목록에 없다.
@@ -287,7 +287,7 @@ void main() {
     expect(find.byKey(const Key('avatar-preset-turtle')), findsNothing);
     expect(find.byKey(const Key('avatar-pick-gallery')), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('avatar-preset-snail')));
+    await tester.tap(find.byKey(const Key('avatar-preset-female')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
     expect(find.text(AppStrings.avatarCustomizeTitle), findsNothing);

@@ -26,15 +26,15 @@ void main() {
     expect(stored!.presetId, 'snail');
     expect(stored.isPhoto, isFalse);
     expect(AvatarPresets.byId('snail').label, '달팽이');
-    expect(AvatarPresets.all.length, greaterThan(2));
+    expect(AvatarPresets.all.length, 2);
   });
 
   test(
-      'the picker offers only male, female and snail, but old animal picks '
+      'the picker offers only male and female, but old animal picks '
       'still resolve', () {
     expect(
       AvatarPresets.all.map((p) => p.id),
-      [AvatarChoice.maleId, AvatarChoice.femaleId, 'snail'],
+      [AvatarChoice.maleId, AvatarChoice.femaleId],
     );
     expect(AvatarPresets.byId('turtle').label, '거북이');
     expect(AvatarPresets.byId('rabbit').id, 'maltese');

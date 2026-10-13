@@ -29,6 +29,18 @@ void main() {
     expect(AvatarPresets.all.length, greaterThan(2));
   });
 
+  test(
+      'the picker offers only male, female and snail, but old animal picks '
+      'still resolve', () {
+    expect(
+      AvatarPresets.all.map((p) => p.id),
+      [AvatarChoice.maleId, AvatarChoice.femaleId, 'snail'],
+    );
+    expect(AvatarPresets.byId('turtle').label, '거북이');
+    expect(AvatarPresets.byId('rabbit').id, 'maltese');
+    expect(AvatarPresets.byId('없는것').id, AvatarChoice.maleId);
+  });
+
   test('persists a gallery photo as cosmetic-only bytes', () async {
     const store = AvatarChoiceStore();
     final bytes = base64Encode(List<int>.generate(16, (i) => i));

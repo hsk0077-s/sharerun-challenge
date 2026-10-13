@@ -30,6 +30,18 @@ abstract final class MiniBotFaqChips {
 
   static List<String> forScreen(MiniBotScreen screen) =>
       screen == MiniBotScreen.lobby ? lobby : home;
+
+  /// 칩에 보여 줄 짧은 이름. 누르면 FAQ의 원래 질문이 그대로 전달된다.
+  static const shortLabels = {
+    'DO-03': '오늘 내 기부',
+    'SH-05': '내 SHARE',
+    'GR-07': '내 등급',
+    'SH-03': '하루 SHARE 한도',
+    'CO-01': '어떤 대회?',
+    'CO-02': '참가비',
+    'CO-08': '순위별 상금',
+    'CO-03': '초급은 무료?',
+  };
 }
 
 /// Home tab (0) and challenge lobby tab (2) only. The tab shell owns the
@@ -468,7 +480,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                           ),
                         ),
                         Text(
-                          '안내 → 추천 → 확인 → 실행',
+                          '궁금한 걸 물어보세요',
                           style: textTheme.labelSmall?.copyWith(
                             color: tokens.colors.muted,
                           ),
@@ -553,7 +565,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       if (_faq?.questionOf(id) case final question?)
                         _Chip(
                           key: Key('mini-bot-faq-chip-$id'),
-                          label: question,
+                          label: MiniBotFaqChips.shortLabels[id] ?? question,
                           onTap: () => _submit(question),
                         ),
                     for (final chip in MiniBotPrompts.chips)

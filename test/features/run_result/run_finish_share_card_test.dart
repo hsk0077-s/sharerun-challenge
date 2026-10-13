@@ -53,6 +53,55 @@ void main() {
     OnboardingRunResultScreen.debugPickPhoto = null;
   });
 
+  testWidgets('the card shows the two tier circles only when given them',
+      (tester) async {
+    const badges = RunFinishTierBadges(
+      animalImage: 'assets/images/tier/none.png',
+      animalLabel: '거북이',
+      angelImage: 'assets/images/tier/none.png',
+      angelLabel: '대천사',
+    );
+    Future<void> pumpCard(RunFinishTierBadges? b) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: FittedBox(
+            child: RunFinishShareCard(
+              style: RunFinishCardTheme.dark,
+              distanceKm: '5.02',
+              time: '30:00',
+              pace: '5:58 /km',
+              date: DateTime(2026, 10, 13),
+              donationWon: 1000,
+              badges: b,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    await pumpCard(badges);
+    expect(find.byKey(RunFinishShareCard.badgesKey), findsOneWidget);
+    expect(find.text('거북이'), findsOneWidget);
+    expect(find.text('대천사'), findsOneWidget);
+
+    await pumpCard(null);
+    expect(find.byKey(RunFinishShareCard.badgesKey), findsNothing);
+  });
+
+  testWidgets('the finish screen switch removes the circles from the card',
+      (tester) async {
+    await _pumpFinish(tester);
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byKey(RunFinishShareCard.badgesKey), findsWidgets);
+    final toggle = find.byKey(OnboardingRunResultScreen.tierBadgeSwitchKey);
+    expect(toggle, findsOneWidget);
+    await tester.ensureVisible(toggle);
+    await tester.tap(toggle);
+    await tester.pump();
+    expect(find.byKey(RunFinishShareCard.badgesKey), findsNothing);
+  });
+
   test('donation line is the server amount, or omitted', () {
     expect(runFinishDonationLine(null), isNull);
     expect(runFinishDonationLine(0), isNull);

@@ -11,6 +11,9 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/onboarding/src_onboarding_controller.dart';
+import '../features/profile/user_profile_notifier.dart';
+import '../features/profile/widgets/tier_circle_badge.dart';
 import '../features/shop/cosmetics_catalog.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/pedometer/walking_challenge_share.dart';
@@ -86,6 +89,7 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
   final int? averageHeartRate;
 
   static const photoGalleryKey = Key('run-finish-photo-gallery');
+  static const tierBadgeSwitchKey = Key('run-finish-tier-badge-switch');
   static const photoCameraKey = Key('run-finish-photo-camera');
   static const photoCameraLabel = '사진 찍기';
   static const photoGalleryLabel = '갤러리에서 고르기';
@@ -105,6 +109,9 @@ class _OnboardingRunResultScreenState
   var _instagramInstalled = false;
   var _tiktokInstalled = false;
   var _sharingImage = false;
+
+  /// 카드에 동물 티어·천사 등급 원을 넣을지. 공유할 때만 빼는 용도라 저장하지 않는다.
+  var _showTierBadges = true;
 
   /// Scenery for this visit only. Never saved, never uploaded.
   ImageProvider? _photo;
@@ -199,7 +206,19 @@ class _OnboardingRunResultScreenState
         .loadout
         .frame
         .accent;
+    final tier =
+        ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
+    final angel = ref.watch(userAngelTierProvider);
     return RunFinishShareCard(
+      badges: _showTierBadges
+          ? RunFinishTierBadges(
+              animalImage: tier.avatarAssetPath,
+              animalLabel: tier.circleLabel,
+              angelImage: angel.avatarAssetPath,
+              angelLabel: angel.circleLabel,
+              angelEmoji: angel.emoji,
+            )
+          : null,
       style: style,
       distanceKm: _distanceLabel,
       time: _timeLabel,
@@ -424,7 +443,16 @@ class _OnboardingRunResultScreenState
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
+                          SwitchListTile(
+                            key: OnboardingRunResultScreen.tierBadgeSwitchKey,
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('티어·천사 등급 넣기'),
+                            value: _showTierBadges,
+                            onChanged: (v) =>
+                                setState(() => _showTierBadges = v),
+                          ),
+                          const SizedBox(height: 12),
                           _RecordCard(
                             distance: '$_distanceLabel km',
                             time: _timeLabel,

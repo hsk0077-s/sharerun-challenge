@@ -7,13 +7,15 @@ import '../core/theme/app_text_styles.dart';
 import '../features/auth/login_connection_providers.dart';
 
 /// 설정 > 로그인 연결. 이 계정으로 들어올 수 있는 방법을 보고, 카카오를 붙이고 뗀다.
-/// 구글은 보여 주기만 한다(구글로 로그인한 계정이면 연결됨으로 나온다).
+/// 구글은 보여 주기만 하고, 카카오와 네이버는 붙이고 뗀다(구글로 로그인한 계정이면 연결됨으로 나온다).
 class LoginConnectionsScreen extends ConsumerStatefulWidget {
   const LoginConnectionsScreen({super.key});
 
   static const googleRowKey = Key('login-connection-google');
   static const kakaoRowKey = Key('login-connection-kakao');
   static const kakaoActionKey = Key('login-connection-kakao-action');
+  static const naverRowKey = Key('login-connection-naver');
+  static const naverActionKey = Key('login-connection-naver-action');
   static const unlinkConfirmKey = Key('login-connection-unlink-confirm');
 
   @override
@@ -51,15 +53,19 @@ class _LoginConnectionsScreenState
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _linkKakao() async {
+  Future<void> _link({
+    required Future<String?> Function() askToken,
+    required Future<void> Function(String token) send,
+    required String doneMessage,
+  }) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
-      final token = await ref.read(kakaoAccessTokenProvider)();
+      final token = await askToken();
       if (token == null || !mounted) return;
-      await ref.read(identityApiClientProvider).linkKakao(token);
+      await send(token);
       if (!mounted) return;
-      _say('카카오 계정을 연결했어요.');
+      _say(doneMessage);
       await _load();
     } catch (e) {
       if (mounted) _say(ApiErrorMessage.from(e));
@@ -68,14 +74,17 @@ class _LoginConnectionsScreenState
     }
   }
 
-  Future<void> _unlinkKakao() async {
+  Future<void> _unlink({
+    required String name,
+    required Future<void> Function() send,
+  }) async {
     if (_busy) return;
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('카카오 연결 해제'),
-        content: const Text(
-          '해제하면 이 카카오 계정으로는 이 쉐어런 계정에 들어올 수 없어요. 다른 로그인 방법으로는 계속 쓸 수 있어요.',
+        title: Text('$name 연결 해제'),
+        content: Text(
+          '해제하면 이 $name 계정으로는 이 쉐어런 계정에 들어올 수 없어요. 다른 로그인 방법으로는 계속 쓸 수 있어요.',
         ),
         actions: [
           TextButton(
@@ -93,9 +102,9 @@ class _LoginConnectionsScreenState
     if (ok != true || !mounted) return;
     setState(() => _busy = true);
     try {
-      await ref.read(identityApiClientProvider).unlinkKakao();
+      await send();
       if (!mounted) return;
-      _say('카카오 연결을 해제했어요.');
+      _say('$name 연결을 해제했어요.');
       await _load();
     } catch (e) {
       if (mounted) _say(ApiErrorMessage.from(e));
@@ -104,11 +113,34 @@ class _LoginConnectionsScreenState
     }
   }
 
+  Future<void> _linkKakao() => _link(
+        askToken: ref.read(kakaoAccessTokenProvider),
+        send: ref.read(identityApiClientProvider).linkKakao,
+        doneMessage: '카카오 계정을 연결했어요.',
+      );
+
+  Future<void> _linkNaver() => _link(
+        askToken: ref.read(naverAccessTokenProvider),
+        send: ref.read(identityApiClientProvider).linkNaver,
+        doneMessage: '네이버 계정을 연결했어요.',
+      );
+
+  Future<void> _unlinkKakao() => _unlink(
+        name: '카카오',
+        send: ref.read(identityApiClientProvider).unlinkKakao,
+      );
+
+  Future<void> _unlinkNaver() => _unlink(
+        name: '네이버',
+        send: ref.read(identityApiClientProvider).unlinkNaver,
+      );
+
   @override
   Widget build(BuildContext context) {
     final providers = _providers;
     final googleLinked = providers?.contains('google') ?? false;
     final kakaoLinked = providers?.contains('kakao') ?? false;
+    final naverLinked = providers?.contains('naver') ?? false;
     return Scaffold(
       backgroundColor: AppColors.settingsBackground,
       appBar: AppBar(
@@ -176,10 +208,21 @@ class _LoginConnectionsScreenState
                     ),
                   ),
                   const Divider(height: 1, color: AppColors.borderLight),
-                  const ListTile(
-                    leading: Icon(Icons.north_east_rounded),
-                    title: Text('네이버'),
-                    trailing: Text('준비 중', style: AppTextStyles.caption),
+                  ListTile(
+                    key: LoginConnectionsScreen.naverRowKey,
+                    leading: const Icon(Icons.north_east_rounded),
+                    title: const Text('네이버'),
+                    subtitle: Text(
+                      naverLinked ? '연결됨' : '연결 안 됨',
+                      style: AppTextStyles.caption,
+                    ),
+                    trailing: TextButton(
+                      key: LoginConnectionsScreen.naverActionKey,
+                      onPressed: _busy
+                          ? null
+                          : (naverLinked ? _unlinkNaver : _linkNaver),
+                      child: Text(naverLinked ? '해제' : '연결하기'),
+                    ),
                   ),
                   const Divider(height: 1, color: AppColors.borderLight),
                   const ListTile(

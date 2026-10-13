@@ -130,7 +130,7 @@ abstract final class ApiErrorMessage {
       'not_linked' => '연결된 계정이 아니에요.',
       'invalid_provider_token' => '로그인 확인에 실패했어요. 다시 시도해 주세요.',
       'provider_token_for_other_app' => '로그인 확인에 실패했어요. 다시 시도해 주세요.',
-      'provider_unreachable' => '카카오 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
+      'provider_unreachable' => '로그인 서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.',
       'kakao_not_configured' => '카카오 로그인이 아직 준비되지 않았어요.',
       'custom_token_unavailable' => '잠시 후 다시 시도해 주세요.',
       'too_many_attempts' => '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.',

@@ -5,12 +5,16 @@ import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
 
-class KakaoLoginResult {
-  const KakaoLoginResult({required this.customToken, required this.newAccount});
+class ProviderLoginResult {
+  const ProviderLoginResult(
+      {required this.customToken, required this.newAccount});
 
   final String customToken;
   final bool newAccount;
 }
+
+/// 예전 이름. 카카오만 있던 때의 이름을 그대로 쓰는 곳을 위해 남긴다.
+typedef KakaoLoginResult = ProviderLoginResult;
 
 /// 로그인 방법을 계정에 잇는 서버 API. 로그인 요청만 Firebase 인증 없이 부른다.
 class IdentityApiClient {
@@ -32,10 +36,26 @@ class IdentityApiClient {
   static const _timeout = Duration(seconds: 20);
 
   /// 카카오 토큰을 서버에 보내고 Firebase 로그인 열쇠를 받는다.
-  Future<KakaoLoginResult> kakaoLogin(String accessToken) async {
+  Future<ProviderLoginResult> kakaoLogin(String accessToken) =>
+      _login('kakao', accessToken);
+
+  /// 네이버 토큰을 서버에 보내고 Firebase 로그인 열쇠를 받는다.
+  Future<ProviderLoginResult> naverLogin(String accessToken) =>
+      _login('naver', accessToken);
+
+  Future<void> linkKakao(String accessToken) => _link('kakao', accessToken);
+
+  Future<void> linkNaver(String accessToken) => _link('naver', accessToken);
+
+  Future<void> unlinkKakao() => _unlink('kakao');
+
+  Future<void> unlinkNaver() => _unlink('naver');
+
+  Future<ProviderLoginResult> _login(
+      String provider, String accessToken) async {
     final response = await _httpClient
         .post(
-          baseUri.resolve('/auth/kakao/login'),
+          baseUri.resolve('/auth/$provider/login'),
           headers: const {'Content-Type': 'application/json'},
           body: jsonEncode({'access_token': accessToken}),
         )
@@ -45,18 +65,19 @@ class IdentityApiClient {
     if (token is! String || token.isEmpty) {
       throw StateError('Login token missing from server response.');
     }
-    return KakaoLoginResult(
+    return ProviderLoginResult(
       customToken: token,
       newAccount: json['new_account'] == true,
     );
   }
 
-  Future<void> linkKakao(String accessToken) async {
-    await _signedIn('POST', '/auth/kakao/link', {'access_token': accessToken});
+  Future<void> _link(String provider, String accessToken) async {
+    await _signedIn(
+        'POST', '/auth/$provider/link', {'access_token': accessToken});
   }
 
-  Future<void> unlinkKakao() async {
-    await _signedIn('POST', '/auth/kakao/unlink', const {});
+  Future<void> _unlink(String provider) async {
+    await _signedIn('POST', '/auth/$provider/unlink', const {});
   }
 
   /// 이 계정으로 로그인할 수 있는 방법. 예: ['google', 'kakao'].

@@ -112,4 +112,33 @@ void main() {
       expect(ApiErrorMessage.forDetail(detail), isNot(detail), reason: detail);
     }
   });
+
+  test('Naver uses its own routes the same way as Kakao', () async {
+    final seen = <http.Request>[];
+    final api = client((request) async {
+      seen.add(request);
+      if (request.url.path == '/auth/naver/login') {
+        return http.Response(
+          jsonEncode({'custom_token': 'nv', 'new_account': false}),
+          200,
+        );
+      }
+      return http.Response('{}', 200);
+    });
+
+    final result = await api.naverLogin('naver-token-12345');
+    expect(result.customToken, 'nv');
+    expect(result.newAccount, isFalse);
+    expect(seen.first.headers.containsKey('Authorization'), isFalse);
+
+    await api.linkNaver('naver-token-12345');
+    await api.unlinkNaver();
+    expect(seen.map((r) => r.url.path), [
+      '/auth/naver/login',
+      '/auth/naver/link',
+      '/auth/naver/unlink',
+    ]);
+    expect(seen[1].headers['Authorization'], 'Bearer id-token');
+    expect(seen[2].headers['Authorization'], 'Bearer id-token');
+  });
 }

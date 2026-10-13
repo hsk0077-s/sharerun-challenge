@@ -251,19 +251,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 
-                        // 3) Naver — 네이버 공식 버튼 이미지
-                        NaverLoginButton(
-                          busy: _naverBusy,
-                          maxWidth: contentWidth,
-                          onPressed: _onNaver,
-                        ),
-                        const SizedBox(height: AppShapes.loginButtonSpacing),
-
-                        // 4) Kakao — 카카오 공식 버튼 이미지
+                        // 3) Kakao — 카카오 공식 버튼 이미지
                         KakaoLoginButton(
                           busy: _kakaoBusy,
                           maxWidth: contentWidth,
                           onPressed: _onKakao,
+                        ),
+                        const SizedBox(height: AppShapes.loginButtonSpacing),
+
+                        // 4) Naver — 네이버 공식 버튼 이미지
+                        NaverLoginButton(
+                          busy: _naverBusy,
+                          maxWidth: contentWidth,
+                          onPressed: _onNaver,
                         ),
 
                         const Spacer(flex: 2),

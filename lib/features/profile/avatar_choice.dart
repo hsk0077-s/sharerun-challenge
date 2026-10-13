@@ -121,11 +121,18 @@ abstract final class AvatarPresets {
     asset: 'assets/images/characters/tier_cheetah.png',
   );
 
-  /// 고르기 화면에 보여 주는 목록. 동물 티어는 달려서 받는 것이라 여기서 고르게 하지 않는다.
-  static const all = <AvatarPreset>[male, female, snail];
+  /// 고르기 화면에 보여 주는 목록. 동물(달팽이 포함)은 티어 캐릭터라 여기서 고르게 하지 않는다.
+  static const all = <AvatarPreset>[male, female];
 
   /// 예전에 동물을 골라 둔 사람의 사진이 깨지지 않게 [byId]는 이 목록까지 찾는다.
-  static const _legacy = <AvatarPreset>[turtle, maltese, wolf, horse, cheetah];
+  static const _legacy = <AvatarPreset>[
+    snail,
+    turtle,
+    maltese,
+    wolf,
+    horse,
+    cheetah,
+  ];
 
   static AvatarPreset byId(String id) {
     // 예전에 저장된 이름을 새 이름으로 이어 준다.

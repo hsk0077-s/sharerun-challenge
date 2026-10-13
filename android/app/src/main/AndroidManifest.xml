@@ -143,6 +143,19 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- 카카오톡 공유 메시지의 "자세히 보기"가 앱을 열 때 쓰는 주소(kakao{앱키}://kakaolink).
+                 이 입구가 없으면 눌러도 아무 일도 일어나지 않는다. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="kakaoc45c63710e60f98b3fe617ae0b75c274"
+                    android:host="kakaolink" />
+            </intent-filter>
+            <!-- 이 주소는 앱만 열고, 화면 이동에는 쓰지 않는다. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
         </activity>
 
         <!-- Health Connect rationale — MainActivity와 분리 (클론 아이콘/태스크 방지). -->

@@ -26,11 +26,13 @@ Future<void> _pump(
 }
 
 void main() {
-  test('it picks the smallest official image that is wide enough', () {
+  test('it picks the official image whose height stays closest to 46', () {
     expect(KakaoLoginButton.variantFor(100), 'small');
     expect(KakaoLoginButton.variantFor(112), 'small');
     expect(KakaoLoginButton.variantFor(200), 'medium');
     expect(KakaoLoginButton.variantFor(324), 'large');
+    // 노트10처럼 넓은 폰(약 371): 448짜리를 줄이면 높이 38이라 336짜리를 늘린다.
+    expect(KakaoLoginButton.variantFor(371), 'large');
     expect(KakaoLoginButton.variantFor(400), 'xlarge');
     expect(KakaoLoginButton.variantFor(900), 'xlarge');
   });
@@ -54,6 +56,18 @@ void main() {
     final size = tester.getSize(find.byKey(KakaoLoginButton.imageKey));
     expect(size.width, closeTo(324, 0.01));
     expect(size.height, closeTo(46 * 324 / 336, 0.5));
+  });
+
+  testWidgets(
+      'on a wide phone it keeps a tall button instead of shrinking '
+      'the biggest image', (tester) async {
+    await _pump(tester, width: 371, onPressed: () {});
+    final size = tester.getSize(find.byKey(KakaoLoginButton.imageKey));
+    expect(size.width, closeTo(371, 0.01));
+    expect(size.height, closeTo(46 * 371 / 336, 0.5));
+    expect(size.height, greaterThan(46));
+    // 공식 이미지의 가로세로 비율(336:46)은 그대로다.
+    expect(size.width / size.height, closeTo(336 / 46, 0.05));
   });
 
   testWidgets('it never grows past the biggest official size', (tester) async {

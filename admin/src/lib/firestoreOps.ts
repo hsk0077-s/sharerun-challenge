@@ -6,7 +6,6 @@ import {
   onSnapshot,
   orderBy,
   query,
-  updateDoc,
   where,
   type Unsubscribe,
 } from 'firebase/firestore';
@@ -72,7 +71,6 @@ export type AdminAppeal = {
   userNickname: string;
   activityId: string;
   reasonDetail: string;
-  proofImageUri: string;
   status: string;
   createdAt: string;
 };
@@ -271,7 +269,6 @@ export function subscribeAppeals(
       userNickname: readText(data.userNickname),
       activityId: readText(data.activityId),
       reasonDetail: readText(data.reasonDetail),
-      proofImageUri: readText(data.proofImageUri),
       status: readText(data.status),
       createdAt: toIso(data.createdAt),
     }),
@@ -340,13 +337,4 @@ export async function fetchTrialRunCounts(
     })
   );
   return Object.fromEntries(entries);
-}
-
-/** Appeals rules allow `isAdmin()` to update. Status only — not wallet or users. */
-export async function updateAppealStatus(
-  appealId: string,
-  status: 'approved' | 'rejected'
-): Promise<void> {
-  await ensureAdminAuth();
-  await updateDoc(doc(getDb(), 'appeals', appealId), { status });
 }

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, Header, Query
+from fastapi import APIRouter, Depends, Header, Query, Response
 
 from app.models.admin_api import (
+    AppealDecisionRequest,
     AuditPingRequest,
     AuditPingResult,
     DailyStepsResult,
@@ -9,12 +10,15 @@ from app.models.admin_api import (
     WalletLedgerResult,
     WhoAmIResult,
 )
+from app.services import appeals
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
 from app.services.admin_daily_steps_service import admin_daily_steps_service
 from app.services.admin_referral_service import admin_referral_service
 from app.services.admin_wallet_anomaly_service import admin_wallet_anomaly_service
 from app.services.admin_wallet_ledger_service import admin_wallet_ledger_service
+from app.services.firebase_service import FirebaseService
+from app.services.secured_action_service import SecuredActionService
 
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -98,3 +102,60 @@ def get_wallet_ledger(
         actor_uid=str(actor["uid"]),
         actor_email=email if isinstance(email, str) else None,
     )
+
+
+def _actor_email(actor: dict) -> str | None:
+    email = actor.get("email")
+    return email if isinstance(email, str) else None
+
+
+@router.get("/appeals/{appeal_id}/proof")
+def get_appeal_proof(
+    appeal_id: str,
+    actor: dict = Depends(require_admin_user),
+) -> Response:
+    """The proof photo for one appeal. Every look is written to the audit log."""
+    data, content_type = appeals.get_proof(FirebaseService().db, appeal_id)
+    admin_audit_service.write(
+        uid=str(actor["uid"]),
+        email=_actor_email(actor),
+        action="appeal_proof_view",
+        target_uid=None,
+        reason=appeal_id,
+    )
+    return Response(
+        content=data,
+        media_type=content_type,
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@router.post("/appeals/{appeal_id}/decision")
+def decide_appeal(
+    appeal_id: str,
+    body: AppealDecisionRequest,
+    actor: dict = Depends(require_admin_user),
+) -> dict:
+    """Approve (settle the run like a verified one) or reject an appeal."""
+    actions = SecuredActionService()
+    if body.decision == "approved":
+        outcome = actions.approve_appeal(
+            appeal_id, actor_uid=str(actor["uid"]), note=body.note
+        )
+    else:
+        outcome = appeals.reject_appeal(
+            actions.firebase_service.db,
+            appeal_id,
+            actor_uid=str(actor["uid"]),
+            note=body.note,
+        )
+    admin_audit_service.write(
+        uid=str(actor["uid"]),
+        email=_actor_email(actor),
+        action=f"appeal_{body.decision}",
+        target_uid=None,
+        before={"status": "under_review"},
+        after={"status": outcome.get("status")},
+        reason=f"{appeal_id}: {body.note[:120]}",
+    )
+    return outcome

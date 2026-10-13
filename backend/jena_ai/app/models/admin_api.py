@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from typing import Literal
+from pydantic import BaseModel, Field
 
 
 class WhoAmIResult(BaseModel):
@@ -108,3 +109,8 @@ class WalletLedgerResult(BaseModel):
     truncated: bool
     currencies: list[WalletLedgerCurrency]
     entries: list[WalletLedgerEntry]
+
+
+class AppealDecisionRequest(BaseModel):
+    decision: Literal["approved", "rejected"]
+    note: str = Field(default="", max_length=300)

@@ -51,6 +51,50 @@ async function jenaGet<T>(path: string, idToken: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+/** 소명 증빙 사진. 서버가 열람 기록을 남기고, 결정 뒤에는 지워져서 404가 된다. */
+export async function fetchAppealProof(idToken: string, appealId: string): Promise<Blob> {
+  const response = await fetch(
+    `${jenaBaseUrl()}/admin/appeals/${encodeURIComponent(appealId)}/proof`,
+    { headers: { Authorization: `Bearer ${idToken}` } }
+  );
+  if (!response.ok) {
+    if (response.status === 404) throw new Error('proof_gone');
+    throw new Error(response.status === 401 || response.status === 403 ? 'forbidden' : 'jena');
+  }
+  return response.blob();
+}
+
+export type AppealDecisionResult = {
+  status: 'approved' | 'rejected';
+  appeal_id: string;
+  already?: boolean;
+};
+
+/** 승인하면 서버가 그 달리기를 인정된 기록으로 정산한다. 같은 요청을 다시 보내도 한 번만 처리된다. */
+export async function decideAppeal(
+  idToken: string,
+  appealId: string,
+  decision: 'approved' | 'rejected',
+  note: string
+): Promise<AppealDecisionResult> {
+  const response = await fetch(
+    `${jenaBaseUrl()}/admin/appeals/${encodeURIComponent(appealId)}/decision`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision, note }),
+    }
+  );
+  if (!response.ok) {
+    const detail = await response
+      .json()
+      .then((body: { detail?: unknown }) => (typeof body.detail === 'string' ? body.detail : ''))
+      .catch(() => '');
+    throw new Error(detail || (response.status === 401 || response.status === 403 ? 'forbidden' : 'jena'));
+  }
+  return response.json() as Promise<AppealDecisionResult>;
+}
+
 export function fetchWhoAmI(idToken: string): Promise<JenaWhoAmI> {
   return jenaGet<JenaWhoAmI>('/admin/whoami', idToken);
 }

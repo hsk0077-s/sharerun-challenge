@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, CheckCircle, ShieldAlert, XCircle } from 'lucide-react';
+import { ensureAdminAuth } from '../../lib/adminAuth';
+import { decideAppeal, fetchAppealProof } from '../../lib/jenaApi';
 import {
   subscribeActivities,
   subscribeAppeals,
-  updateAppealStatus,
   type AdminActivity,
   type AdminAppeal,
 } from '../../lib/firestoreOps';
@@ -45,21 +46,58 @@ function isServerDecided(activity: AdminActivity): boolean {
   return activity.jenaDecision != null && SERVER_DECISIONS.has(activity.jenaDecision);
 }
 
-function ProofBlock({ uri }: { uri: string }) {
-  const [broken, setBroken] = useState(false);
-  const http = uri.startsWith('https://') || uri.startsWith('http://');
-  if (!uri) return <p className="text-sm text-gray-500">증빙 주소 없음</p>;
+/** 증빙 사진은 서버에서만 받을 수 있다. 열 때마다 서버에 열람 기록이 남고, 결정 뒤에는 지워진다. */
+function ProofBlock({ appealId, waiting }: { appealId: string; waiting: boolean }) {
+  const [result, setResult] = useState<{
+    id: string;
+    url: string | null;
+    message: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!waiting) return;
+    let cancelled = false;
+    let objectUrl: string | null = null;
+    void (async () => {
+      try {
+        const user = await ensureAdminAuth();
+        if (!user) throw new Error('forbidden');
+        const blob = await fetchAppealProof(await user.getIdToken(), appealId);
+        if (cancelled) return;
+        objectUrl = URL.createObjectURL(blob);
+        setResult({ id: appealId, url: objectUrl, message: null });
+      } catch (err) {
+        if (cancelled) return;
+        setResult({
+          id: appealId,
+          url: null,
+          message:
+            err instanceof Error && err.message === 'proof_gone'
+              ? '증빙 사진이 이미 삭제되었습니다.'
+              : '증빙 사진을 불러오지 못했습니다.',
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [appealId, waiting]);
+
+  const current = result && result.id === appealId ? result : null;
+  const message = !waiting
+    ? '결정이 끝나 증빙 사진은 삭제되었습니다.'
+    : current
+      ? current.message
+      : '불러오는 중...';
+  const url = waiting ? (current?.url ?? null) : null;
+
   return (
     <div className="space-y-2">
-      {http && !broken ? (
-        <img
-          src={uri}
-          alt="소명 증빙"
-          className="max-h-64 rounded-lg border border-gray-700"
-          onError={() => setBroken(true)}
-        />
+      {url ? (
+        <img src={url} alt="소명 증빙" className="max-h-96 rounded-lg border border-gray-700" />
       ) : null}
-      <p className="text-xs text-gray-400 break-all">{uri}</p>
+      {message ? <p className="text-sm text-gray-500">{message}</p> : null}
     </div>
   );
 }
@@ -72,6 +110,7 @@ export default function AbuseAudit() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     return subscribeAppeals(
@@ -137,9 +176,18 @@ export default function AbuseAudit() {
     setBusy(true);
     setActionError(null);
     try {
-      await updateAppealStatus(selected.id, status);
+      const user = await ensureAdminAuth();
+      if (!user) throw new Error('forbidden');
+      await decideAppeal(await user.getIdToken(), selected.id, status, note.trim());
+      setNote('');
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : '소명 상태를 바꾸지 못했습니다.');
+      setActionError(
+        err instanceof Error && err.message === 'already_decided'
+          ? '이미 다른 관리자가 결정한 소명입니다.'
+          : err instanceof Error
+            ? err.message
+            : '소명 상태를 바꾸지 못했습니다.'
+      );
     } finally {
       setBusy(false);
     }
@@ -247,8 +295,8 @@ export default function AbuseAudit() {
                 </div>
 
                 <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-2 font-medium">증빙 (proofImageUri)</p>
-                  <ProofBlock uri={selected.proofImageUri} />
+                  <p className="text-xs text-gray-500 mb-2 font-medium">증빙 사진</p>
+                  <ProofBlock appealId={selected.id} waiting={isWaitingAppeal(selected.status)} />
                 </div>
 
                 <div className="bg-gray-900/70 border border-gray-700 rounded-xl p-4 text-sm text-gray-300 space-y-1">
@@ -268,6 +316,19 @@ export default function AbuseAudit() {
                   )}
                 </div>
 
+                <label className="block text-xs text-gray-500">
+                  결정 메모 (선택, 300자)
+                  <input
+                    type="text"
+                    value={note}
+                    maxLength={300}
+                    onChange={(event) => setNote(event.target.value)}
+                    className="mt-1 w-full rounded-lg bg-gray-900 border border-gray-700 px-3 py-2 text-sm text-gray-200"
+                  />
+                </label>
+                <p className="text-xs text-gray-500">
+                  승인하면 이 달리기가 인정된 기록으로 정산됩니다(기부, SHARE, 등급 진행). 한 번만 처리됩니다.
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"

@@ -130,3 +130,59 @@ def submit_appeal(
         merge=True,
     )
     return {"status": "under_review", "appeal_id": appeal_id}
+
+
+def get_proof(db, appeal_id: str) -> tuple[bytes, str]:
+    """The proof photo for an admin to look at. 404 once it was purged."""
+    snap = db.collection("appealProofs").document(appeal_id).get()
+    data = snap.to_dict() if snap.exists else None
+    raw = data.get("bytes") if data else None
+    if raw is None:
+        raise HTTPException(status_code=404, detail="proof_not_found")
+    content_type = str(data.get("contentType") or "image/jpeg")
+    return bytes(raw), content_type
+
+
+def reject_appeal(
+    db,
+    appeal_id: str,
+    *,
+    actor_uid: str,
+    note: str = "",
+) -> dict:
+    """Turn an appeal down. The run stays unaccepted and cannot be appealed
+    again. The proof photo is deleted at once."""
+    appeal_ref = db.collection("appeals").document(appeal_id)
+    snap = appeal_ref.get()
+    appeal = snap.to_dict() if snap.exists else None
+    if not appeal:
+        raise HTTPException(status_code=404, detail="appeal_not_found")
+    if appeal.get("status") == "rejected":
+        return {"status": "rejected", "appeal_id": appeal_id, "already": True}
+    if appeal.get("status") != "under_review":
+        raise HTTPException(status_code=409, detail="already_decided")
+    batch = db.batch()
+    batch.set(
+        appeal_ref,
+        {
+            "status": "rejected",
+            "decidedBy": actor_uid,
+            "decidedAt": SERVER_TIMESTAMP,
+            "adminNote": _clip(note, 300),
+            "proofPurged": True,
+            "updatedAt": SERVER_TIMESTAMP,
+        },
+        merge=True,
+    )
+    batch.set(
+        db.collection("activities").document(str(appeal.get("activityId") or "-")),
+        {
+            "appealStatus": "rejected",
+            "locked": False,
+            "updatedAt": SERVER_TIMESTAMP,
+        },
+        merge=True,
+    )
+    batch.delete(db.collection("appealProofs").document(appeal_id))
+    batch.commit()
+    return {"status": "rejected", "appeal_id": appeal_id}

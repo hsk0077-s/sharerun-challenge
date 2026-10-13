@@ -166,6 +166,9 @@ class _MemoryTxn:
             nested[child] = value
             current[parent] = nested
 
+    def delete(self, ref: _MemoryDoc) -> None:
+        ref._store.pop(ref.path, None)
+
     def get(self, ref_or_query):
         return ref_or_query.get(transaction=self)
 

@@ -536,7 +536,9 @@ service cloud.firestore {
       // Created by POST /actions/appeals (Admin SDK). The server checks the
       // run, stores the proof photo and locks the run in one step.
       allow create: if false;
-      allow update, delete: if isAdmin();
+      // Decisions go through POST /admin/appeals/{id}/decision (Admin SDK),
+      // which settles the run and deletes the proof in one step.
+      allow update, delete: if false;
     }
 
     // Proof photos. Only the server writes them; src-admin-2 reads them

@@ -354,11 +354,14 @@ def test_donation_match_records_company_won_and_the_user() -> None:
     assert donation["valueAmount"] == -80
     assert donation["receiptIssued"] is False
     assert db.store["donationPools/2026-10"]["totalWon"] == 1000
+    # 앱의 "이번 달 기부"가 읽는 월 합계에도 같이 올라간다.
+    assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 1000
 
     replay = _match(db, "req-match-0001")
     assert replay.status == "already_matched"
     assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 20
     assert db.store["donationPools/2026-10"]["totalWon"] == 1000
+    assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 1000
     assert len(_donations(db)) == 1
     assert len(_wallet_rows(db)) == 1
 
@@ -490,3 +493,22 @@ def test_generic_shop_path_does_not_sell_value_items() -> None:
     assert used.value.detail == "request_id is required."
     assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 200
     assert _wallet_rows(db) == []
+
+def test_donation_match_adds_to_the_run_month_total_and_respects_its_cap() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _user(value=100)
+    db.store["donationMonthTotals/2026-10"] = {"monthKey": "2026-10", "totalWon": 400}
+
+    assert _match(db, "req-match-run").status == "matched"
+    assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 1400
+
+    # 월 한도(1,000,000원)에 거의 찼으면 매칭도 거절하고 VALUE를 빼지 않는다.
+    db2 = _MemoryDb()
+    db2.store["users/u1"] = _user(value=100)
+    db2.store["donationMonthTotals/2026-10"] = {"totalWon": 999_500}
+    with pytest.raises(HTTPException) as raised:
+        _match(db2, "req-match-full")
+    assert raised.value.detail == "Donation match company cap reached."
+    assert db2.store["users/u1"]["wallet"]["valueTokenBalance"] == 100
+    assert db2.store["donationMonthTotals/2026-10"]["totalWon"] == 999_500
+    assert not _donations(db2)

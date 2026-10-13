@@ -11,7 +11,8 @@ the streak. It is not a run and it is not a CPR or safeguard cover.
 기부 매칭권: 100 VALUE once per user per KST month. The company adds
 1,000원 to the run donation pool under the company name, with the user's
 name on the row. No receipt and no user money. The company month cap
-rejects the request before VALUE is debited.
+rejects the request before VALUE is debited. The won also counts in
+``donationMonthTotals`` and the monthly donation cap, like a run donation.
 """
 
 from datetime import date, datetime, timedelta, timezone
@@ -20,6 +21,11 @@ from fastapi import HTTPException
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from app.models.secured_actions import SecuredActionResult
+from app.services.donation_cap import (
+    DONATION_MONTH_TOTALS,
+    month_total_won,
+    read_monthly_cap_won,
+)
 from app.services.item_price_config import (
     DONATION_MATCH_COMPANY_CAP_ID,
     DONATION_MATCH_ID,
@@ -124,6 +130,13 @@ def apply_donation_match(
     total = int(pool.get("totalWon") or 0)
     if total + won > company_cap:
         raise HTTPException(status_code=400, detail="Donation match company cap reached.")
+    # 달리기 기부와 같은 월 합계·월 한도에 매칭 기부도 함께 센다.
+    totals_ref = service.firebase_service.db.collection(DONATION_MONTH_TOTALS).document(month)
+    totals_snap = totals_ref.get(transaction=transaction)
+    month_total = month_total_won(totals_snap.to_dict() if totals_snap.exists else None)
+    month_cap = read_monthly_cap_won(service.firebase_service.db, transaction)
+    if month_total + won > month_cap:
+        raise HTTPException(status_code=400, detail="Donation match company cap reached.")
 
     wallet = user.get("wallet") or {}
     balance = int(wallet.get("valueTokenBalance") or 0)
@@ -149,6 +162,16 @@ def apply_donation_match(
             "capWon": company_cap,
             "updatedAt": SERVER_TIMESTAMP,
         },
+    )
+    transaction.set(
+        totals_ref,
+        {
+            "monthKey": month,
+            "totalWon": month_total + won,
+            "capWon": month_cap,
+            "updatedAt": SERVER_TIMESTAMP,
+        },
+        merge=True,
     )
     transaction.set(
         wallet_ref,

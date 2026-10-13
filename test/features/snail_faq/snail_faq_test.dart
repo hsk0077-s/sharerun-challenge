@@ -27,7 +27,10 @@ void main() {
           .toSet();
       expect(braces, entry.needs.toSet(), reason: entry.id);
     }
-    final personal = {for (final e in faq.entries) if (e.needs.isNotEmpty) e.id};
+    final personal = {
+      for (final e in faq.entries)
+        if (e.needs.isNotEmpty) e.id
+    };
     expect(personal, {'SH-05', 'GR-18', 'GR-07', 'DO-03'});
   });
 
@@ -46,8 +49,7 @@ void main() {
     expect(SnailFaq.answerFor(plain, const {}), plain.answer);
   });
 
-  test('how the speech engine writes SHARE and the app name still matches',
-      () {
+  test('how the speech engine writes SHARE and the app name still matches', () {
     expect(idFor('셰어는 현금으로 바꿀 수 있어요'), 'SH-12');
     expect(idFor('쉐어는 현금으로 바꿀 수 있어요'), 'SH-12');
     expect(idFor('셰어런이 뭐예요'), 'AP-01');
@@ -82,7 +84,8 @@ void main() {
     }
     // 같은 뜻의 질문이 여러 항목에 있어 일부는 다른 항목에 닿을 수 있다.
     expect(
-      misses.length / faq.entries.fold<int>(0, (n, e) => n + 1 + e.aliases.length),
+      misses.length /
+          faq.entries.fold<int>(0, (n, e) => n + 1 + e.aliases.length),
       lessThan(0.08),
       reason: misses.take(20).join('\n'),
     );
@@ -126,7 +129,8 @@ void main() {
     expect(find.byKey(const Key('mini-bot-confirm')), findsNothing);
   });
 
-  testWidgets('my confirmed value is read out, and missing ones are not guessed',
+  testWidgets(
+      'my confirmed value is read out, and missing ones are not guessed',
       (tester) async {
     Future<void> open(Map<String, String> values) => tester.pumpWidget(
           MaterialApp(
@@ -188,10 +192,13 @@ void main() {
     expect(find.byKey(const Key('mini-bot-faq-chip-CO-02')), findsOneWidget);
     expect(find.byKey(const Key('mini-bot-faq-chip-DO-03')), findsNothing);
 
-    // 칩을 누르면 그 질문의 답이 나온다.
+    // 칩에는 짧은 이름이 보이고, 누르면 원래 질문의 답이 나온다.
+    expect(find.text('참가비'), findsOneWidget);
+    expect(find.text(faq.questionOf('CO-02')!), findsNothing);
     await tester.tap(find.byKey(const Key('mini-bot-faq-chip-CO-02')));
     await tester.pump();
-    expect(find.text(faq.match(faq.questionOf('CO-02')!)!.answer), findsOneWidget);
+    expect(
+        find.text(faq.match(faq.questionOf('CO-02')!)!.answer), findsOneWidget);
   });
 
   testWidgets('a question nobody wrote gets the fallback, not a guess',

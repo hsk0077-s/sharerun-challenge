@@ -73,4 +73,33 @@ void main() {
     await tester.tap(find.byKey(KakaoLoginButton.imageKey));
     expect(taps, 1);
   });
+
+  testWidgets('with maxWidth it works inside IntrinsicHeight (debug builds)',
+      (tester) async {
+    // 로그인 화면처럼 높이를 맞추는 틀 안에 둬도 디버그에서 오류가 나지 않아야 한다.
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 600, maxWidth: 324),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    const Spacer(),
+                    KakaoLoginButton(onPressed: () {}, maxWidth: 324),
+                    const Spacer(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+    final size = tester.getSize(find.byKey(KakaoLoginButton.imageKey));
+    expect(size.width, closeTo(324, 0.01));
+  });
 }

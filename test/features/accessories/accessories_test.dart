@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
-import 'package:share_run_challenge/features/accessories/accessory_anchors.dart';
 import 'package:share_run_challenge/features/accessories/accessory_catalog.dart';
 import 'package:share_run_challenge/features/accessories/dressed_mascot.dart';
 import 'package:share_run_challenge/features/accessories/try_on_sheet.dart';
@@ -14,78 +13,89 @@ import 'package:share_run_challenge/screens/snail_to_cheetah_book_page.dart';
 void main() {
   final dressable = TierAnimal.values.where(canDress).toList(growable: false);
 
-  test('there are 12 accessories and every picture file exists', () {
-    expect(Accessory.values, hasLength(12));
-    for (final animal in dressable) {
-      for (final acc in Accessory.values) {
+  Accessory byId(String id) => accessoryCatalog.firstWhere((a) => a.id == id);
+
+  test('the catalog has 46 items with unique ids', () {
+    expect(accessoryCatalog, hasLength(46));
+    expect(accessoryCatalog.map((a) => a.id).toSet(), hasLength(46));
+    expect(
+      accessoryCatalog.where((a) => a.slot == AccessorySlot.skin),
+      hasLength(9),
+    );
+  });
+
+  test('every ready picture exists for all five animals', () {
+    for (final acc in accessoryCatalog.where((a) => a.ready)) {
+      for (final animal in dressable) {
         expect(
           File(acc.assetPath(animal)).existsSync(),
           isTrue,
-          reason: '${acc.name} for ${animal.code}',
+          reason: '${acc.id} ${acc.file} for ${animal.code}',
         );
+        final front = acc.frontAssetPath(animal);
+        if (front != null) {
+          expect(File(front).existsSync(), isTrue, reason: front);
+        }
       }
-      expect(
-        File('assets/images/accessories/fist/fist-front-${animal.code}.png')
-            .existsSync(),
-        isTrue,
-      );
     }
   });
 
-  test('every animal has a position for every item that needs one', () {
-    final placed = Accessory.values.where((a) => !a.perAnimal).toList();
-    expect(placed, hasLength(10));
-    for (final animal in dressable) {
-      final anchors = accessoryAnchors[animal]!;
-      for (final acc in placed) {
-        final a = anchors[acc];
-        expect(a, isNotNull, reason: '${acc.name} for ${animal.code}');
-        expect(a!.scale, inInclusiveRange(0.1, 1.5));
-      }
-    }
-    expect(accessoryAnchors.containsKey(TierAnimal.snail), isFalse);
-    expect(canDress(TierAnimal.snail), isFalse);
+  test('the angel wings are held back until the art is fixed', () {
+    final wings = byId('P047');
+    expect(wings.ready, isFalse);
+    expect(accessoriesIn(AccessorySlot.back).contains(wings), isFalse);
+    expect(accessoriesIn(AccessorySlot.back), hasLength(2));
+  });
+
+  test('each slot lists what the designers delivered', () {
+    final counts = {
+      for (final s in AccessorySlot.values) s: accessoriesIn(s).length,
+    };
+    expect(counts, {
+      AccessorySlot.back: 2,
+      AccessorySlot.bottom: 2,
+      AccessorySlot.top: 4,
+      AccessorySlot.feet: 3,
+      AccessorySlot.hand: 10,
+      AccessorySlot.eyes: 5,
+      AccessorySlot.head: 10,
+      AccessorySlot.skin: 9,
+    });
+  });
+
+  test('tier locks and price labels follow the catalog', () {
+    final locked = accessoryCatalog.where((a) => a.tierLock != null).toList();
+    expect(locked.map((a) => a.id), ['S001', 'S002', 'S003', 'S004', 'S009']);
+    expect(byId('S004').tierLock, TierAnimal.cheetah);
+    expect(byId('P001').priceLabel, '400 SHARE');
+    expect(byId('P004').priceLabel, '40 DIA');
+    expect(byId('P015').priceLabel, '티어 보상');
+    // 값이 비어 있던 스톱워치는 임시값이라는 표시가 붙는다.
+    expect(byId('STOPWATCH').provisional, isTrue);
+    expect(byId('STOPWATCH').priceLabel, '300 SHARE');
   });
 
   test('wearing something replaces the item in the same slot', () {
+    final cap = byId('P001');
+    final baton = byId('P030');
     var worn = <Accessory>{};
-    worn = toggleAccessory(worn, Accessory.cap);
-    worn = toggleAccessory(worn, Accessory.trophy);
-    expect(worn, {Accessory.cap, Accessory.trophy});
+    worn = toggleAccessory(worn, cap);
+    worn = toggleAccessory(worn, baton);
+    expect(worn, {cap, baton});
     // 모자 → 머리띠: 머리 칸은 하나만.
-    worn = toggleAccessory(worn, Accessory.headband);
-    expect(worn, {Accessory.headband, Accessory.trophy});
-    // 선글라스와 안경도 눈 칸 하나.
-    worn = toggleAccessory(worn, Accessory.aviator);
-    worn = toggleAccessory(worn, Accessory.roundGlasses);
-    expect(worn.where((a) => a.slot == AccessorySlot.eyes), [
-      Accessory.roundGlasses,
-    ]);
+    worn = toggleAccessory(worn, byId('P002'));
+    expect(worn, {byId('P002'), baton});
     // 입은 것을 다시 누르면 벗는다.
-    worn = toggleAccessory(worn, Accessory.trophy);
-    expect(worn.contains(Accessory.trophy), isFalse);
+    worn = toggleAccessory(worn, baton);
+    expect(worn.contains(baton), isFalse);
   });
 
-  test('placement keeps the item centre where the art guide puts it', () {
-    // 돌리지 않은 소품: 왼쪽 위가 (x, y), 한 변이 512×scale.
-    const flat = AccessoryAnchor(scale: 0.5, rotateDeg: 0, x: 100, y: 200);
-    final p = DressedMascot.placement(flat, 1);
-    expect(p.rect.left, closeTo(100, 0.001));
-    expect(p.rect.top, closeTo(200, 0.001));
-    expect(p.rect.width, closeTo(256, 0.001));
-    expect(p.angle, 0);
-    // 화면 크기를 반으로 줄이면 모든 값이 반이 된다.
-    final half = DressedMascot.placement(flat, 0.5);
-    expect(half.rect.left, closeTo(50, 0.001));
-    expect(half.rect.width, closeTo(128, 0.001));
-    // 15도 돌린 소품: 돌려서 커진 네모의 왼쪽 위가 (x, y)이고 방향은 반시계.
-    const turned = AccessoryAnchor(scale: 0.36, rotateDeg: -15, x: 553, y: 128);
-    final t = DressedMascot.placement(turned, 1);
-    expect(t.angle, closeTo(15 * 3.141592653589793 / 180, 1e-9));
-    final side = 512 * 0.36;
-    final grown = side * (0.9659258 + 0.2588190);
-    expect(t.rect.center.dx, closeTo(553 + grown / 2, 0.01));
-    expect(t.rect.center.dy, closeTo(128 + grown / 2, 0.01));
+  test('a skin replaces everything and any item takes the skin off', () {
+    final skin = byId('S005');
+    var worn = toggleAccessory({byId('P001'), byId('P030')}, skin);
+    expect(worn, {skin});
+    worn = toggleAccessory(worn, byId('P022'));
+    expect(worn, {byId('P022')});
   });
 
   Future<void> pumpMascot(WidgetTester tester, Set<Accessory> worn) async {
@@ -93,6 +103,7 @@ void main() {
       MaterialApp(
         home: Center(
           child: DressedMascot(
+            key: const Key('stage'),
             animal: TierAnimal.wolf,
             worn: worn,
             size: 300,
@@ -103,27 +114,73 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('the mascot draws the body plus each worn item', (tester) async {
+  /// 그려진 그림 파일 이름을 아래층부터 순서대로.
+  List<String> layers(WidgetTester tester) => [
+        for (final image in tester.widgetList<Image>(
+          find.descendant(
+            of: find.byKey(const Key('stage')),
+            matching: find.byType(Image),
+          ),
+        ))
+          ((image.image as ResizeImage).imageProvider as AssetImage)
+              .assetName
+              .split('/')
+              .last,
+      ];
+
+  testWidgets('the mascot stacks the layers in the agreed order',
+      (tester) async {
     await pumpMascot(tester, {});
-    expect(find.byType(Image), findsOneWidget);
+    expect(layers(tester), ['tier_wolf.png']);
 
-    await pumpMascot(tester, {Accessory.cap, Accessory.cape});
-    expect(find.byType(Image), findsNWidgets(3));
+    await pumpMascot(tester, {
+      byId('P001'),
+      byId('P022'),
+      byId('P030'),
+      byId('P074'),
+      byId('P059'),
+      byId('P067'),
+      byId('P046'),
+    });
+    expect(layers(tester), [
+      'cape-wolf.webp',
+      'tier_wolf.png',
+      'P067-shorts-racing-pink-wolf.webp',
+      'P059-singlet-lime-wolf.webp',
+      'P074-shoes-neon-wolf.webp',
+      'hand-baton-held-wolf.webp',
+      'aviator-wolf.webp',
+      'cap-wolf.webp',
+    ]);
+    expect(
+      tester.getSize(find.byKey(const Key('stage'))),
+      const Size(300, 300),
+    );
+  });
 
-    // 손에 드는 소품은 주먹 그림이 하나 더 붙는다.
-    await pumpMascot(tester, {Accessory.trophy});
-    expect(find.byType(Image), findsNWidgets(3));
+  testWidgets('the backpack strap goes over the top, a skin stands alone',
+      (tester) async {
+    await pumpMascot(tester, {byId('P045'), byId('P058')});
+    expect(layers(tester), [
+      'backpack-wolf.webp',
+      'tier_wolf.png',
+      'P058-tee-white-mesh-wolf.webp',
+      'backpack-strap-wolf.webp',
+    ]);
 
-    // 운동화·손목밴드는 판 전체 그림이라 같은 크기로 겹친다.
-    await pumpMascot(tester, {Accessory.shoes, Accessory.wristband});
-    final size = tester.getSize(find.byKey(const Key('dressed-mascot-wolf')));
-    expect(size, const Size(300, 300));
-    expect(find.byType(Image), findsNWidgets(3));
+    await pumpMascot(tester, {byId('S003')});
+    expect(layers(tester), ['S003-wolf-master-wolf.webp']);
+  });
+
+  testWidgets('wings that are held back are not drawn', (tester) async {
+    await pumpMascot(tester, {byId('P047')});
+    expect(layers(tester), ['tier_wolf.png']);
   });
 
   testWidgets('the book opens the try-on sheet; the snail does not',
       (tester) async {
-    tester.view.physicalSize = const Size(400, 3000);
+    // 칸 버튼 8개가 한 줄에 다 보이도록 넉넉한 폭.
+    tester.view.physicalSize = const Size(900, 3000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
@@ -146,24 +203,45 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('구경용이에요. 저장되거나 구매되지 않아요.'), findsOneWidget);
-    expect(find.byKey(const Key('dressed-mascot-wolf')), findsOneWidget);
+    final stage = find.byKey(const Key('dressed-mascot-wolf'));
+    expect(stage, findsOneWidget);
+    int drawn() => tester
+        .widgetList<Image>(
+          find.descendant(of: stage, matching: find.byType(Image)),
+        )
+        .length;
+    expect(drawn(), 1);
 
-    final before = tester.widgetList<Image>(find.byType(Image)).length;
-    await tester.tap(find.byKey(TryOnSheet.chipKey(Accessory.cap)));
+    // 머리 칸이 처음 열려 있다. 모자를 누르면 한 장, 머리띠로 바꾸면 그대로 한 장.
+    await tester.tap(find.byKey(TryOnSheet.chipKey(byId('P001'))));
     await tester.pump();
-    expect(
-      tester.widgetList<Image>(find.byType(Image)).length,
-      before + 1,
-    );
-    // 머리띠로 바꾸면 그림 수는 그대로.
-    await tester.tap(find.byKey(TryOnSheet.chipKey(Accessory.headband)));
+    expect(drawn(), 2);
+    await tester.tap(find.byKey(TryOnSheet.chipKey(byId('P002'))));
     await tester.pump();
-    expect(
-      tester.widgetList<Image>(find.byType(Image)).length,
-      before + 1,
-    );
+    expect(drawn(), 2);
+
+    // 다른 칸으로 옮겨서 하나 더 입는다.
+    await tester.tap(find.byKey(TryOnSheet.slotKey(AccessorySlot.eyes)));
+    await tester.pump();
+    await tester.tap(find.byKey(TryOnSheet.chipKey(byId('P021'))));
+    await tester.pump();
+    expect(drawn(), 3);
+
+    // 스킨을 입으면 한 장만 남는다.
+    await tester.tap(find.byKey(TryOnSheet.slotKey(AccessorySlot.skin)));
+    await tester.pump();
+    await tester.tap(find.byKey(TryOnSheet.chipKey(byId('S001'))));
+    await tester.pump();
+    expect(drawn(), 1);
+
     await tester.tap(find.byKey(const Key('try-on-clear')));
     await tester.pump();
-    expect(tester.widgetList<Image>(find.byType(Image)).length, before);
+    expect(drawn(), 1);
+    expect(
+      tester
+          .widget<TextButton>(find.byKey(const Key('try-on-clear')))
+          .onPressed,
+      isNull,
+    );
   });
 }

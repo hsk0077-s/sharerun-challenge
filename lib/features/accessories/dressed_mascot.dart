@@ -1,104 +1,73 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../onboarding/src_onboarding_controller.dart';
-import 'accessory_anchors.dart';
 import 'accessory_catalog.dart';
 
-/// 티어 동물에 액세서리를 입혀서 그린다. 그림 위치는 1024 판 기준 값을 [size]에 맞춰 줄인다.
-/// 보여 주기만 하고 아무것도 저장하지 않는다.
+/// 티어 동물에 소품을 입혀서 그린다. 보여 주기만 하고 아무것도 저장하지 않는다.
+///
+/// 모든 그림이 같은 1024 판이라 위치를 계산하지 않고 순서대로 겹친다.
+/// 순서: 등 → 동물 → 하의 → 상의(+백팩 끈) → 신발 → 손 → 눈 → 머리.
+/// 스킨을 입으면 동물 그림 대신 스킨 그림 한 장만 그린다.
 class DressedMascot extends StatelessWidget {
   const DressedMascot({
     super.key,
     required this.animal,
     required this.worn,
     required this.size,
+    this.detail = 1,
   });
 
   final TierAnimal animal;
   final Set<Accessory> worn;
   final double size;
 
-  static const double _canvas = 1024;
-  static const double _item = 512;
-
-  /// 한 소품의 자리. [rect]는 돌리기 전 네모, [angle]은 시계 방향 라디안.
-  @visibleForTesting
-  static ({Rect rect, double angle}) placement(
-    AccessoryAnchor a,
-    double unit,
-  ) {
-    final side = _item * a.scale * unit;
-    final rad = a.rotateDeg * math.pi / 180;
-    // 돌려서 커진 네모의 왼쪽 위가 (x, y). 그 중심에 돌리기 전 네모를 놓는다.
-    final grown = side * (math.cos(rad).abs() + math.sin(rad).abs());
-    final cx = a.x * unit + grown / 2;
-    final cy = a.y * unit + grown / 2;
-    return (
-      rect: Rect.fromCenter(center: Offset(cx, cy), width: side, height: side),
-      angle: -rad,
-    );
-  }
+  /// 확대해서 보여 줄 때 그림을 더 선명하게 읽는 배수.
+  final double detail;
 
   @override
   Widget build(BuildContext context) {
-    final unit = size / _canvas;
-    final anchors = accessoryAnchors[animal] ?? const {};
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final px = (size * dpr * detail).ceil().clamp(96, 1024);
 
-    Widget item(Accessory acc) {
-      final path = acc.assetPath(animal);
-      if (acc.perAnimal) {
-        // 운동화·손목밴드는 판 전체 크기 그림이라 (0, 0)에 그대로 겹친다.
-        return Positioned.fill(
-          child: Image.asset(path, fit: BoxFit.fill, gaplessPlayback: true),
+    Widget layer(String path) => Positioned.fill(
+          child: Image.asset(
+            path,
+            fit: BoxFit.fill,
+            cacheWidth: px,
+            filterQuality: FilterQuality.high,
+            gaplessPlayback: true,
+          ),
         );
+
+    Accessory? at(AccessorySlot slot) {
+      for (final a in worn) {
+        if (a.slot == slot && a.ready) return a;
       }
-      final anchor = anchors[acc];
-      if (anchor == null) return const SizedBox.shrink();
-      final p = placement(anchor, unit);
-      return Positioned.fromRect(
-        rect: p.rect,
-        child: Transform.rotate(
-          angle: p.angle,
-          child: Image.asset(path, fit: BoxFit.fill, gaplessPlayback: true),
-        ),
-      );
+      return null;
     }
 
-    final hasHandItem = worn.any(
-      (a) =>
-          a == Accessory.trophy || a == Accessory.torch || a == Accessory.baton,
-    );
+    final skin = at(AccessorySlot.skin);
+    final back = at(AccessorySlot.back);
 
     return SizedBox(
-      key: Key('dressed-mascot-${animal.code}'),
       width: size,
       height: size,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          if (worn.contains(Accessory.cape)) item(Accessory.cape),
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/characters/tier_${animal.code}.png',
-              fit: BoxFit.contain,
-              filterQuality: FilterQuality.high,
-              gaplessPlayback: true,
-            ),
-          ),
-          for (final slot in accessoryDrawOrder) ...[
-            for (final acc in Accessory.values)
-              if (acc.slot == slot && worn.contains(acc)) item(acc),
-            // 손에 든 소품 위에 주먹을 덮어서 쥔 모양으로 만든다.
-            if (slot == AccessorySlot.hand && hasHandItem)
-              Positioned.fill(
-                child: Image.asset(
-                  'assets/images/accessories/fist/fist-front-${animal.code}.png',
-                  fit: BoxFit.fill,
-                  gaplessPlayback: true,
-                ),
-              ),
+          if (skin != null)
+            layer(skin.assetPath(animal))
+          else ...[
+            if (back != null) layer(back.assetPath(animal)),
+            layer('assets/images/characters/tier_${animal.code}.png'),
+            for (final slot in accessoryDrawOrder)
+              if (slot != AccessorySlot.back) ...[
+                if (at(slot) case final acc?) layer(acc.assetPath(animal)),
+                // 백팩 끈은 상의 위에 한 번 더 겹친다.
+                if (slot == AccessorySlot.top &&
+                    back?.frontAssetPath(animal) != null)
+                  layer(back!.frontAssetPath(animal)!),
+              ],
           ],
         ],
       ),

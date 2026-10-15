@@ -64,11 +64,11 @@ void main() {
     );
   });
 
-  test('harvest gold stays on the donation token', () {
-    expect(WalkingLook.harvestLo, AppColors.angelGold);
+  test('harvest button uses the lime of the new design', () {
+    expect(WalkingLook.harvestHi, AppColors.nightLime);
     expect(
       WalkingLook.harvestGradient.colors,
-      contains(AppColors.angelGold),
+      contains(AppColors.nightLime),
     );
   });
 

@@ -1635,8 +1635,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
+    final tokens = SrcTokens.night;
+    final textTheme = SrcTheme.night.textTheme;
     final live = ref.watch(pedometerStateProvider);
     final running =
         ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
@@ -1698,7 +1698,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final isMaxDailyReached =
         serverMined >= PedometerHarvestLedger.dailyShareCap;
 
-    return PopScope(
+    return Theme(
+      data: SrcTheme.night,
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light
+            .copyWith(statusBarColor: Colors.transparent),
+        child: PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
@@ -1797,14 +1802,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           ),
         ),
       ),
+        ),
+      ),
     );
   }
 
   Widget _buildCumulativeShareAccountCard() {
     // Spendable SHARE — same ledger as Home 나의 지갑. Do not show local
     // milestone `_collectedShareCoins` (that is the 20 SHARE desync).
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
+    final tokens = SrcTokens.night;
+    final textTheme = SrcTheme.night.textTheme;
     final walletShare = ref.watch(walletProvider).shareBalance;
     final harvestProfile =
         ref.watch(activeUserProfileProvider).asData?.value;
@@ -1815,7 +1822,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     );
     return SrcSurfaceCard(
       key: const Key('walking-share-account'),
-      color: AppColors.glassFill,
+      color: AppColors.nightCard,
       borderColor: const Color(0x14FFFFFF),
       padding: EdgeInsets.fromLTRB(
         tokens.spacing.lg,
@@ -1958,8 +1965,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     required bool moving,
     required int pickupNonce,
   }) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
+    final tokens = SrcTokens.night;
+    final textTheme = SrcTheme.night.textTheme;
     final finalProgress = _hybridProgress(
       tier: tier,
       currentKm: currentKm,
@@ -2020,8 +2027,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
-                                    Color(0xFF7EE0C8),
-                                    Color(0xFFB8F3DE),
+                                    Color(0xFFB4E03A),
+                                    Color(0xFFD4FF4A),
                                   ],
                                 ),
                               ),
@@ -2260,7 +2267,7 @@ class _WalkingHeroBloom extends StatelessWidget {
             center: const Alignment(0.0, -0.15),
             radius: 0.85,
             colors: [
-              const Color(0x66F6D56B),
+              const Color(0x33D4FF4A),
               WalkingLook.heroLift.withValues(alpha: 0.28),
               Colors.transparent,
             ],
@@ -2504,7 +2511,7 @@ class _WeekJournalCard extends StatelessWidget {
           );
 
     return SrcSurfaceCard(
-      color: AppColors.glassFill,
+      color: AppColors.nightCard,
       borderColor: const Color(0x14FFFFFF),
       padding: EdgeInsets.fromLTRB(
         tokens.spacing.md,

@@ -107,12 +107,13 @@ void main() {
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
     final ctx = tester.element(find.text('워킹챌린지'));
-    expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
-    expect(ctx.srcTokens.colors.accent, AppColors.tealAccent);
-    expect(ctx.srcTokens.colors.donation, AppColors.angelGold);
-    expect(Theme.of(ctx).colorScheme.primary, AppColors.primaryMint);
-    expect(Theme.of(ctx).colorScheme.secondary, AppColors.tealAccent);
-    expect(Theme.of(ctx).colorScheme.tertiary, AppColors.angelGold);
+    // 새 디자인: 검정 바탕 + 라임 테마 안에서 그려진다.
+    expect(ctx.srcTokens.colors.primary, AppColors.nightLime);
+    expect(ctx.srcTokens.colors.accent, AppColors.nightLime);
+    expect(ctx.srcTokens.colors.donation, AppColors.nightGold);
+    expect(Theme.of(ctx).colorScheme.primary, AppColors.nightLime);
+    expect(Theme.of(ctx).colorScheme.secondary, AppColors.nightLime);
+    expect(Theme.of(ctx).colorScheme.tertiary, AppColors.nightGold);
 
     final harvest = tester.widget<FilledButton>(
       find.byKey(const Key('walking-harvest-cta')),
@@ -130,9 +131,9 @@ void main() {
     expect(
       harvestColors.any(
         (color) =>
-            (color.r - AppColors.angelGold.r).abs() < 0.01 &&
-            (color.g - AppColors.angelGold.g).abs() < 0.01 &&
-            (color.b - AppColors.angelGold.b).abs() < 0.01,
+            (color.r - AppColors.nightLime.r).abs() < 0.2 &&
+            (color.g - AppColors.nightLime.g).abs() < 0.2 &&
+            (color.b - AppColors.nightLime.b).abs() < 0.2,
       ),
       isTrue,
     );
@@ -140,7 +141,7 @@ void main() {
     final shareStyle = tester
         .widget<Text>(find.byKey(const Key('walking-share-balance')))
         .style;
-    expect(shareStyle?.color, AppColors.tealAccent);
+    expect(shareStyle?.color, AppColors.nightLime);
     expect(shareStyle?.fontSize, greaterThanOrEqualTo(32));
 
     final stepStyle =

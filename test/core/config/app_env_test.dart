@@ -114,6 +114,43 @@ void main() {
     expect(AppEnv.isLoopbackJenaUrl(cloudRun), isFalse);
   });
 
+  test('release ignores a dev PC address left in .env (LAN, not just loopback)',
+      () {
+    const cloudRun = 'https://src-jena-ai-hash.asia-northeast3.run.app';
+    // 실제로 줍기가 실패했던 값: 개발 PC의 집 안 주소.
+    for (final lan in [
+      'http://192.168.0.28:8080',
+      'http://10.1.2.3:8080',
+      'http://172.16.5.9:8080',
+      'http://172.31.255.1:8080',
+      'http://169.254.10.10:8080',
+      'http://my-pc.local:8080',
+    ]) {
+      expect(AppEnv.isLocalNetworkJenaUrl(lan), isTrue, reason: lan);
+      expect(
+        AppEnv.resolveJenaBaseUrl(
+          debugMode: false,
+          configured: lan,
+          productionUrl: cloudRun,
+        ),
+        cloudRun,
+        reason: lan,
+      );
+    }
+    expect(AppEnv.isLocalNetworkJenaUrl('http://172.32.0.1:8080'), isFalse);
+    expect(AppEnv.isLocalNetworkJenaUrl('https://8.8.8.8'), isFalse);
+    expect(AppEnv.isLocalNetworkJenaUrl(cloudRun), isFalse);
+    // 디버그 빌드는 집 안 주소를 그대로 쓴다(개발용).
+    expect(
+      AppEnv.resolveJenaBaseUrl(
+        debugMode: true,
+        configured: 'http://192.168.0.28:8080',
+        productionUrl: cloudRun,
+      ),
+      'http://192.168.0.28:8080',
+    );
+  });
+
   test('Firebase emulator is debug-only so release mints production ID tokens',
       () {
     expect(

@@ -8,6 +8,7 @@ import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
+import '../core/theme/src_theme.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../data/models/user_model.dart';
@@ -49,7 +50,9 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
     ref.watch(runSessionServiceProvider);
     final sponsorBuff = ref.watch(activeSponsorBuffProvider);
 
-    return Scaffold(
+    return Theme(
+      data: SrcTheme.night,
+      child: Scaffold(
       appBar: AppBar(title: const Text('달리기 기록')),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -63,7 +66,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.cardBlack,
+                color: AppColors.nightCard,
                 borderRadius: BorderRadius.circular(28),
               ),
               child: Column(
@@ -71,7 +74,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
                   Text(
                     '${telemetry.distanceKm.toStringAsFixed(2)} km',
                     style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppColors.neonLime,
+                          color: AppColors.nightLime,
                           fontWeight: FontWeight.w900,
                         ),
                   ),
@@ -90,7 +93,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
                     const SizedBox(height: 16),
                     Text(
                       startError!,
-                      style: const TextStyle(color: AppColors.dangerRed),
+                      style: const TextStyle(color: AppColors.nightDanger),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -118,6 +121,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

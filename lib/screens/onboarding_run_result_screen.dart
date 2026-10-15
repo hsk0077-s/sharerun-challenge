@@ -21,6 +21,10 @@ import '../features/run_result/run_finish_image_share.dart';
 import '../features/run_result/run_finish_share_card.dart';
 import '../features/run_result/run_finish_theme_store.dart';
 
+const _nightFlat = LinearGradient(
+  colors: [AppColors.nightBg, AppColors.nightBg],
+);
+
 String _formatRunClock(int seconds) {
   final safe = seconds < 0 ? 0 : seconds;
   final minutes = safe ~/ 60;
@@ -349,8 +353,9 @@ class _OnboardingRunResultScreenState
   Widget build(BuildContext context) {
     if (!widget.serverConfirmed) {
       return Scaffold(
-        backgroundColor: AppColors.bgGradientEnd,
+        backgroundColor: AppColors.nightBg,
         body: SRCGradientBackground(
+          gradient: _nightFlat,
           child: SafeArea(
             child: Center(
               child: Padding(
@@ -362,7 +367,7 @@ class _OnboardingRunResultScreenState
                           Text(
                             _donationStatus,
                             key: const Key('run-finish-donation-status'),
-                            style: AppTextStyles.header1.copyWith(fontSize: 18),
+                            style: AppTextStyles.header1.copyWith(fontSize: 18, color: AppColors.nightInk),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 20),
@@ -375,7 +380,7 @@ class _OnboardingRunResultScreenState
                       )
                     : Text(
                         AppStrings.runResultUnconfirmed,
-                        style: AppTextStyles.header1.copyWith(fontSize: 18),
+                        style: AppTextStyles.header1.copyWith(fontSize: 18, color: AppColors.nightInk),
                         textAlign: TextAlign.center,
                       ),
               ),
@@ -386,8 +391,9 @@ class _OnboardingRunResultScreenState
     }
     final valueTokens = widget.valueTokenReward;
     return Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
+      backgroundColor: AppColors.nightBg,
       body: SRCGradientBackground(
+        gradient: _nightFlat,
         child: SafeArea(
           child: Stack(
             children: [
@@ -408,7 +414,7 @@ class _OnboardingRunResultScreenState
                           const SizedBox(height: 16),
                           Text(
                             AppStrings.runResultTitle,
-                            style: AppTextStyles.header1.copyWith(fontSize: 28),
+                            style: AppTextStyles.header1.copyWith(fontSize: 28, color: AppColors.nightInk),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 20),
@@ -485,7 +491,7 @@ class _OnboardingRunResultScreenState
                             vertical: 14,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.surfaceWhite,
+                            color: AppColors.nightCard,
                             borderRadius:
                                 BorderRadius.circular(AppShapes.cardRadius),
                           ),
@@ -493,7 +499,7 @@ class _OnboardingRunResultScreenState
                             _donationStatus,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.buttonText.copyWith(
-                              color: AppColors.textBlack,
+                              color: AppColors.nightInk,
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -503,7 +509,7 @@ class _OnboardingRunResultScreenState
                         Builder(
                           builder: (buttonContext) {
                             return Material(
-                              color: AppColors.garminAuthButton,
+                              color: AppColors.nightLime,
                               borderRadius: BorderRadius.circular(
                                 AppShapes.cardRadius,
                               ),
@@ -516,9 +522,9 @@ class _OnboardingRunResultScreenState
                                     child: Text(
                                       AppStrings.runResultShare,
                                       style: AppTextStyles.buttonText.copyWith(
-                                        color: AppColors.textWhite,
+                                        color: AppColors.nightOnLime,
                                         fontSize: 15,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ),
@@ -650,7 +656,7 @@ class _ImageShareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surfaceWhite,
+      color: AppColors.nightCard,
       borderRadius: BorderRadius.circular(AppShapes.cardRadius),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -660,14 +666,14 @@ class _ImageShareButton extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: AppColors.nightLine),
           ),
           child: Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.buttonText.copyWith(
-              color: AppColors.textBlack,
+              color: AppColors.nightInk,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -691,7 +697,7 @@ class _CelebrationGraphic extends StatelessWidget {
           Icon(
             Icons.celebration_rounded,
             size: 72,
-            color: AppColors.primaryMint.withValues(alpha: 0.35),
+            color: AppColors.nightLime.withValues(alpha: 0.35),
           ),
           Positioned(
             top: 8,
@@ -708,7 +714,7 @@ class _CelebrationGraphic extends StatelessWidget {
             child: Icon(
               Icons.auto_awesome,
               size: 22,
-              color: AppColors.primaryMint,
+              color: AppColors.nightLime,
             ),
           ),
           Positioned(
@@ -719,7 +725,7 @@ class _CelebrationGraphic extends StatelessWidget {
           Positioned(
             top: 28,
             right: 56,
-            child: _ConfettiDot(color: AppColors.primaryMint),
+            child: _ConfettiDot(color: AppColors.nightLime),
           ),
           Positioned(
             bottom: 20,
@@ -835,7 +841,7 @@ class _RewardCard extends StatelessWidget {
                 children: [
                   Text(
                     '+$valueTokens',
-                    style: AppTextStyles.header1.copyWith(fontSize: 36),
+                    style: AppTextStyles.header1.copyWith(fontSize: 36, color: AppColors.nightInk),
                   ),
                   Text(
                     'VALUE 획득',
@@ -849,12 +855,12 @@ class _RewardCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Divider(color: AppColors.borderLight, height: 1),
+          Divider(color: AppColors.nightLine, height: 1),
           const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.agreementBoxFill,
+              color: AppColors.nightCard,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -866,7 +872,7 @@ class _RewardCard extends StatelessWidget {
                     AppStrings.runResultValueReward(valueTokens),
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 12,
-                      color: AppColors.textGrey,
+                      color: AppColors.nightMuted,
                     ),
                   ),
                 ),
@@ -890,11 +896,11 @@ class _ResultCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
+        color: AppColors.nightCard,
         borderRadius: BorderRadius.circular(AppShapes.cardRadius),
         boxShadow: [
           BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.06),
+            color: AppColors.nightInk.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),

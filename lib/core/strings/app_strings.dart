@@ -155,6 +155,8 @@ abstract final class AppStrings {
 
   // ── Challenge Lobby (Screen 7) ────────────────────────────────────
   static const lobbyCreateRoom = '+ 방 개설하기';
+  /// 앱 대표 슬로건. 시작 화면·홈이 같이 쓴다.
+  static const slogan = '심장이 뛰는 한,\n나눔도 달린다';
   static const lobbyTitle = '챌린지 로비';
   static const lobbySubtitle =
       '전 세계 러너들과 함께 달리고 가치를 증명하세요.';

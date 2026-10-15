@@ -314,6 +314,20 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 80));
 
+    // 사진이 늦게 읽혀 비교 이미지가 들쭉날쭉하지 않게 미리 읽어 둔다.
+    await tester.runAsync(() async {
+      final context = tester.element(find.byType(Scaffold).first);
+      for (final asset in [
+        'assets/images/splash_morning_run.jpg',
+        'assets/images/characters/avatar_gender_male.png',
+        'assets/images/characters/chibi_snail_disappointed.png',
+        'assets/images/characters/chibi_pre_angel_bandaid.png',
+      ]) {
+        await precacheImage(AssetImage(asset), context);
+      }
+    });
+    await tester.pump(const Duration(milliseconds: 80));
+
     await expectLater(
       find.byType(HomeScreen),
       matchesGoldenFile('goldens/home_screen_tokens.png'),
@@ -330,6 +344,20 @@ void main() {
       _scopedApp(home: const MainDashboardScreen()),
     );
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 80));
+
+    // 사진이 늦게 읽혀 비교 이미지가 들쭉날쭉하지 않게 미리 읽어 둔다.
+    await tester.runAsync(() async {
+      final context = tester.element(find.byType(Scaffold).first);
+      for (final asset in [
+        'assets/images/splash_morning_run.jpg',
+        'assets/images/characters/avatar_gender_male.png',
+        'assets/images/characters/chibi_snail_disappointed.png',
+        'assets/images/characters/chibi_pre_angel_bandaid.png',
+      ]) {
+        await precacheImage(AssetImage(asset), context);
+      }
+    });
     await tester.pump(const Duration(milliseconds: 80));
 
     await expectLater(

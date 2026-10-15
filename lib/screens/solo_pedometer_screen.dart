@@ -1858,7 +1858,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                 ),
                 SizedBox(height: tokens.spacing.xxs),
                 Text(
-                  '오늘의 채굴 : $todayCollectedCoins / ${PedometerHarvestLedger.dailyShareCap} SHARE 🪙',
+                  '오늘의 땀방울 : $todayCollectedCoins / ${PedometerHarvestLedger.dailyShareCap} SHARE 🪙',
                   style: textTheme.bodySmall?.copyWith(
                     color: tokens.colors.muted,
                     fontWeight: FontWeight.w700,

@@ -1734,10 +1734,10 @@ abstract final class RetentionAlertEngine {
       payloads.add(
         const RetentionPushPayload(
           code: 'golden_hour',
-          title: '골든 아워 채굴',
+          title: '골든 아워 땀방울',
           body:
               '오늘의 영웅이 될 준비가 되셨나요? 러너님만을 위한 골든 아워입니다. '
-              '가볍게 걷고 일일 5km / 50 SRV 채굴 캡을 달성해 보세요! 👼',
+              '가볍게 걷고 일일 5km / 50 SRV 땀방울 한도를 채워 보세요! 👼',
           routeName: RouteNames.soloPedometer,
         ),
       );

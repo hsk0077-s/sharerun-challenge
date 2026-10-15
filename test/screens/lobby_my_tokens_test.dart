@@ -9,6 +9,7 @@ import 'package:share_run_challenge/data/models/tournament_model.dart';
 import 'package:share_run_challenge/data/models/tournament_participation_model.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
+import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/pedometer/account_daily_steps_provider.dart';
 import 'package:share_run_challenge/features/pedometer/kst_calendar.dart';
@@ -235,54 +236,74 @@ void main() {
     expect(join.onPressed, isNull);
   });
 
-  testWidgets('My page uses SRC tokens and keeps profile actions',
+  testWidgets('My page shows village, identity, wallet chips and keeps actions',
       (tester) async {
     await pumpSized(tester, const OnboardingMyPageScreen());
 
-    expect(find.text(AppStrings.myPageTitle), findsWidgets);
-    expect(find.text(AppStrings.myPageSettings), findsOneWidget);
-    expect(find.text(AppStrings.myPageSubscriptionManage), findsOneWidget);
+    // 새 구성: 마을 풍경 + 원 세 개 + 잔액 칩 + 땀방울 게이지 + 바로가기 4칸
+    expect(find.byKey(const Key('my-village-hero')), findsOneWidget);
+    expect(find.text('MY VILLAGE'), findsOneWidget);
+    expect(find.byKey(const Key('my-tier-animal')), findsOneWidget);
+    expect(find.byKey(const Key('my-user-circle')), findsOneWidget);
+    expect(find.byKey(const Key('my-tier-angel')), findsOneWidget);
     expect(find.text('테스트러너'), findsOneWidget);
-    expect(find.text('나의 천사 연대기'), findsOneWidget);
-    expect(find.text('러닝 로그'), findsOneWidget);
-    expect(find.text('최근 러닝 기록이 없습니다'), findsOneWidget);
-    expect(find.text('0.0 KM'), findsOneWidget);
-    expect(find.text('—'), findsOneWidget);
-    expect(find.text('🔥 0일째 불꽃 유지 중!'), findsOneWidget);
-    expect(find.text('🔥 현재 연속 출석(Streak): 0일'), findsOneWidget);
-    expect(find.text('42.5 KM'), findsNothing);
-    expect(find.text('5:40 /KM'), findsNothing);
-    expect(find.textContaining('12일'), findsNothing);
+    expect(find.text('프로필 꾸미기'), findsOneWidget);
+    expect(find.text('천사 도감'), findsOneWidget);
+
+    // 지갑 잔액은 마이 탭에 있다(홈에서 옮겨 옴).
+    expect(find.byKey(const Key('my-chip-share')), findsOneWidget);
+    expect(find.text('90,000'), findsOneWidget);
+    expect(find.text('SHARE'), findsOneWidget);
+    expect(find.text('DIAMOND'), findsOneWidget);
+    expect(find.text('VALUE'), findsOneWidget);
+    expect(find.text('5,200'), findsOneWidget);
+    expect(find.text('오늘 모은 땀방울 1.5km / 5.0km (30%)'), findsOneWidget);
+    expect(find.textContaining('채굴'), findsNothing);
+    for (final label in ['내 지갑', '기부 정산', '티어 도감', '설정']) {
+      expect(find.text(label), findsOneWidget);
+    }
+    expect(find.byKey(HomeDiamondCard.toggleKey), findsOneWidget);
+
+    // 설정·구독 관리 진입점은 그대로 있다.
     expect(find.byKey(const Key('my-page-settings')), findsOneWidget);
-    expect(find.byKey(const Key('my-page-subscription')), findsOneWidget);
     expect(
-      tester.widget<InkWell>(find.byKey(const Key('my-page-settings'))).onTap,
+      tester
+          .widget<IconButton>(find.byKey(const Key('my-page-settings')))
+          .onPressed,
       isNotNull,
     );
+    expect(find.text(AppStrings.myPageSubscriptionManage), findsOneWidget);
     expect(
       tester
           .widget<InkWell>(find.byKey(const Key('my-page-subscription')))
           .onTap,
       isNotNull,
     );
+
+    // 아래 카드들은 그대로 이어진다.
+    expect(find.text('나의 천사 연대기'), findsOneWidget);
+    expect(find.text('🔥 0일째 불꽃 유지 중!'), findsOneWidget);
+    expect(find.text('🔥 현재 연속 출석(Streak): 0일'), findsOneWidget);
+    expect(find.text('러닝 로그'), findsOneWidget);
+    expect(find.text('최근 러닝 기록이 없습니다'), findsOneWidget);
+    expect(find.text('0.0 KM'), findsOneWidget);
+    expect(find.text('—'), findsOneWidget);
+    expect(find.text('42.5 KM'), findsNothing);
+    expect(find.text('5:40 /KM'), findsNothing);
+    expect(find.textContaining('12일'), findsNothing);
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
-    final ctx = tester.element(find.text(AppStrings.myPageTitle).first);
-    expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
-    expect(ctx.srcTokens.colors.accent, AppColors.tealAccent);
-    expect(ctx.srcTokens.colors.donation, AppColors.angelGold);
-    expect(Theme.of(ctx).colorScheme.tertiary, AppColors.angelGold);
-
+    // 마이 탭은 검정+라임 테마다.
+    final ctx = tester.element(find.byKey(const Key('my-tile-wallet')));
+    expect(ctx.srcTokens.colors.primary, AppColors.nightLime);
+    expect(ctx.srcTokens.colors.canvas, AppColors.nightBg);
+    expect(Theme.of(ctx).colorScheme.primary, AppColors.nightLime);
     expect(
       tester
           .widget<Text>(find.text(AppStrings.myPageSubscriptionManage))
           .style
           ?.color,
-      AppColors.tealAccent,
-    );
-    expect(
-      tester.widget<Text>(find.text('0.0 KM')).style?.color,
-      AppColors.tealAccent,
+      AppColors.nightLime,
     );
   });
 
@@ -419,6 +440,25 @@ void main() {
       const OnboardingMyPageScreen(),
       size: const Size(390, 844),
     );
+    // 마을 그림과 원 안의 동물이 늦게 읽혀 비교 이미지가 들쭉날쭉하지 않게 미리 읽어 둔다.
+    await tester.runAsync(() async {
+      final context = tester.element(find.byType(OnboardingMyPageScreen));
+      for (final name in [
+        'tier_turtle',
+        'tier_maltese',
+        'tier_horse',
+        'tier_cheetah',
+        'chibi_snail_disappointed',
+        'chibi_pre_angel_bandaid',
+        'avatar_gender_male',
+      ]) {
+        await precacheImage(
+          AssetImage('assets/images/characters/$name.png'),
+          context,
+        );
+      }
+    });
+    await tester.pump(const Duration(milliseconds: 100));
 
     await expectLater(
       find.byType(OnboardingMyPageScreen),

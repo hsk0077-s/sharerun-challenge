@@ -27,7 +27,7 @@ class EconomyStatusCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '온보딩 & 채굴 현황',
+            '온보딩 & 땀방울 현황',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
@@ -51,7 +51,7 @@ class EconomyStatusCard extends StatelessWidget {
           const SizedBox(height: 12),
           _ProgressRow(
             icon: Icons.bolt_rounded,
-            label: '일일 채굴 캡',
+            label: '일일 땀방울 한도',
             detail:
                 '${daily.earnedKm.toStringAsFixed(1)}/${EconomyConstants.dailyCapKm}km · ${daily.earnedSrvTokens}/${EconomyConstants.dailyCapSrvTokens} SRV',
             progress: daily.tokenProgress,

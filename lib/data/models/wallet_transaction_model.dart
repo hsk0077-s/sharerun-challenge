@@ -39,7 +39,7 @@ class WalletTransactionModel {
       'cash_refund_requested' => '현금 환불 요청',
       'bep_refund' => '모집 미달 환불',
       'diamond_box_collect' => '다이아 수집',
-      'effort_value_mint' => '러닝 SRV 채굴',
+      'effort_value_mint' => '러닝 땀방울 적립',
       'onboarding_signup_reward' => '신규 가입 보상',
       'signup_free_ticket' => '첫 경기 무료 참가권',
       'trial_milestone_reward' => '예비 러닝 3회 달성',

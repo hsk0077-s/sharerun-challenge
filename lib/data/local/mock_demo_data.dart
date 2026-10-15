@@ -139,7 +139,7 @@ abstract final class MockDemoData {
           'sponsorName': '쉐어런 스폰서',
           'sponsorBillboardMessages': [
             '⚡ Neon 5K Sprint — 쉐어런 스폰서가 응원합니다!',
-            '🔥 완주 시 밸류 토큰 채굴 보너스 이벤트 진행 중',
+            '🔥 완주 시 밸류 토큰 적립 보너스 이벤트 진행 중',
             '🏆 크루원과 함께 페이스를 맞춰 보세요',
           ],
         },

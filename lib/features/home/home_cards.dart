@@ -201,7 +201,6 @@ class HomeDonationCard extends ConsumerWidget {
   static const rule = '검증된 모든 달리기, 1km마다 회사·스폰서 이름으로 100원을 기부해요.';
   static const budget = '회사의 월 기부 예산 안에서 진행돼요.';
   static const capReachedLine = '이번 달 기부 목표 달성!';
-  static const slogan = '심장이 뛰는 한, 나눔도 달린다';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -297,14 +296,6 @@ class HomeDonationCard extends ConsumerWidget {
             style: textTheme.bodySmall?.copyWith(
               color: tokens.colors.muted,
               height: 1.45,
-            ),
-          ),
-          SizedBox(height: tokens.spacing.xs),
-          Text(
-            HomeDonationCard.slogan,
-            style: textTheme.labelMedium?.copyWith(
-              color: tokens.colors.donation,
-              fontWeight: FontWeight.w800,
             ),
           ),
         ],

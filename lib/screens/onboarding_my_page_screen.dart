@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,15 +10,16 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
-import '../core/widgets/src_gradient_background.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
-import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/profile/my_page_activity_stats.dart';
 import '../features/profile/widgets/activity_list_card.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
+import '../features/profile/widgets/my_dashboard_sections.dart';
 import '../features/profile/widgets/my_page_invite_code_card.dart';
 import '../features/profile/widgets/my_page_referral_code_entry.dart';
+import '../features/profile/widgets/my_village_hero.dart';
 import '../features/profile/widgets/retention_widgets.dart';
+import 'donation_settlement_screen.dart';
 import 'settings_screen.dart';
 import 'snail_to_cheetah_book_page.dart';
 import 'subscription_management_screen.dart';
@@ -54,36 +56,56 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
     );
   }
 
+  void _onDonationSettlement() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.donationSettlement,
+      materialBuilder: (_) => const DonationSettlementScreen(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
+    final tokens = SrcTokens.night;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
-    final scaffold = Scaffold(
-      backgroundColor: tokens.colors.canvas,
-      body: SRCGradientBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    tokens.spacing.page,
-                    tokens.spacing.sm,
-                    tokens.spacing.page,
-                    tokens.spacing.md,
+    final scaffold = Theme(
+      data: SrcTheme.night,
+      child: Scaffold(
+        backgroundColor: tokens.colors.canvas,
+        body: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle.light,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 96),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Consumer(
+                  builder: (context, ref, _) => MyVillageHero(
+                    tier: ref.watch(activeUserTierStructProvider) ??
+                        UserTier.unratedFallback,
+                    onSettings: _onSettings,
                   ),
+                ),
+                const MyIdentityRow(),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: tokens.spacing.page),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      _MyPageHeader(
+                      const MyWalletChips(),
+                      const SizedBox(height: 8),
+                      MyQuickSection(
+                        onDonation: _onDonationSettlement,
+                        onTierBook: () => _openTierBook(context),
                         onSettings: _onSettings,
-                        onSubscriptionManage: _onSubscriptionManage,
                       ),
-                      SizedBox(height: tokens.spacing.md),
-                      const _ProfileCard(),
-                      const SizedBox(height: 14),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _SubscriptionLink(
+                          onTap: _onSubscriptionManage,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
                       const MyPageInviteCodeCard(),
                       const MyPageReferralCodeEntry(),
                       const SizedBox(height: 14),
@@ -99,17 +121,17 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
+        bottomNavigationBar: embedNav
+            ? DashboardBottomNav(
+                currentIndex: _currentNavIndex,
+                onTap: _onNavTap,
+              )
+            : null,
       ),
-      bottomNavigationBar: embedNav
-          ? DashboardBottomNav(
-              currentIndex: _currentNavIndex,
-              onTap: _onNavTap,
-            )
-          : null,
     );
     return embedNav
         ? SrcExitGuard(
@@ -120,83 +142,29 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
   }
 }
 
-class _MyPageHeader extends StatelessWidget {
-  const _MyPageHeader({
-    required this.onSettings,
-    required this.onSubscriptionManage,
-  });
+class _SubscriptionLink extends StatelessWidget {
+  const _SubscriptionLink({required this.onTap});
 
-  final VoidCallback onSettings;
-  final VoidCallback onSubscriptionManage;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          AppStrings.myPageTitle,
-          style: textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: tokens.colors.ink,
-          ),
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            InkWell(
-              key: const Key('my-page-subscription'),
-              onTap: onSubscriptionManage,
-              borderRadius: BorderRadius.circular(tokens.radii.sm),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: tokens.spacing.xxs,
-                  vertical: tokens.spacing.xxs,
-                ),
-                child: Text(
-                  AppStrings.myPageSubscriptionManage,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontSize: 14,
-                    color: tokens.colors.accent,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+    return InkWell(
+      key: const Key('my-page-subscription'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(tokens.radii.sm),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+        child: Text(
+          AppStrings.myPageSubscriptionManage,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontSize: 14,
+                color: tokens.colors.accent,
+                fontWeight: FontWeight.w700,
               ),
-            ),
-            InkWell(
-              key: const Key('my-page-settings'),
-              onTap: onSettings,
-              borderRadius: BorderRadius.circular(tokens.radii.sm),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: tokens.spacing.xxs,
-                  vertical: tokens.spacing.xxs,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.settings_outlined,
-                      size: 20,
-                      color: tokens.colors.ink,
-                    ),
-                    SizedBox(width: tokens.spacing.xxs),
-                    Text(
-                      AppStrings.myPageSettings,
-                      style: textTheme.titleSmall?.copyWith(
-                        fontSize: 14,
-                        color: tokens.colors.ink,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -217,99 +185,6 @@ void _openTierBook(BuildContext context) {
     RouteNames.tierBook,
     materialBuilder: (_) => const SnailToCheetahBookPage(),
   );
-}
-
-class _ProfileCard extends ConsumerWidget {
-  const _ProfileCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    final nickname = ref.watch(userNicknameProvider);
-    final displayName = SrcOnboardingController.isUnsetNickname(nickname)
-        ? AppStrings.myPageNickname
-        : nickname;
-    final tier =
-        ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
-
-    return SrcSurfaceCard(
-      padding: EdgeInsets.all(tokens.spacing.md),
-      child: Row(
-        children: [
-          InkWell(
-            onTap: () => _openTierBook(context),
-            borderRadius: BorderRadius.circular(tokens.radii.md),
-            child: _TierCharacterAvatar(tier: tier),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  displayName,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 17,
-                    color: tokens.colors.ink,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs + 2),
-                InkWell(
-                  onTap: () => _openTierBook(context),
-                  borderRadius: BorderRadius.circular(tokens.radii.xs + 2),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 2,
-                      vertical: 2,
-                    ),
-                    child: Text(
-                      '[${tier.koreanName}]',
-                      style: textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                        color: tokens.colors.accent,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TierCharacterAvatar extends StatelessWidget {
-  const _TierCharacterAvatar({required this.tier});
-
-  final UserTier tier;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        color: tokens.colors.primary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(tokens.radii.md),
-        border: Border.all(
-          color: tokens.colors.accent.withValues(alpha: 0.35),
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.asset(
-        tier.avatarAssetPath,
-        fit: BoxFit.contain,
-        filterQuality: FilterQuality.high,
-        errorBuilder: (_, __, ___) => ChibiTierAvatar(tier: tier, size: 72),
-      ),
-    );
-  }
 }
 
 class _CalendarCard extends ConsumerWidget {

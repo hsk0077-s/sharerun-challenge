@@ -13,7 +13,7 @@ import '../../pedometer/pedometer_health_cap.dart';
 import '../../home/home_cards.dart';
 import '../my_page_activity_stats.dart';
 
-/// 지갑 카드 내부 일일 5km 채굴 게이지.
+/// 지갑 카드 내부 일일 5km 땀방울 게이지.
 class DailyCapGauge extends StatelessWidget {
   const DailyCapGauge({super.key, required this.dailyKm});
 
@@ -31,7 +31,7 @@ class DailyCapGauge extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          '${km.toStringAsFixed(1)}km / ${cap.toStringAsFixed(1)}km 채굴 완료 ($percent%)',
+          '오늘 모은 땀방울 ${km.toStringAsFixed(1)}km / ${cap.toStringAsFixed(1)}km ($percent%)',
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: tokens.colors.accent,

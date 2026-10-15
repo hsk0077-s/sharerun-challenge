@@ -339,9 +339,28 @@ class _HomeHero extends StatelessWidget {
                     Color(0xB8000000),
                     Color(0x00000000),
                     Color(0x00000000),
-                    Color(0x59000000),
+                    Color(0xB3000000),
                   ],
-                  stops: [0, 0.26, 0.8, 1],
+                  stops: [0, 0.26, 0.55, 1],
+                ),
+              ),
+            ),
+            // 앱 대표 슬로건. 시작 화면과 같은 문장이다.
+            Positioned(
+              left: tokens.spacing.page + 2,
+              right: tokens.spacing.page,
+              bottom: 26,
+              child: const Text(
+                AppStrings.slogan,
+                key: Key('home-slogan'),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  height: 1.3,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    Shadow(blurRadius: 12, color: Color(0x99000000)),
+                  ],
                 ),
               ),
             ),

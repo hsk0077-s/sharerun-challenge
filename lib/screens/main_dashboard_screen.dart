@@ -313,7 +313,8 @@ class _HomeHero extends StatelessWidget {
     final now = DateTime.now();
     final date = 'TODAY · ${now.month.toString().padLeft(2, '0')}.'
         '${now.day.toString().padLeft(2, '0')} ${_weekdays[now.weekday - 1]}';
-    final height = (MediaQuery.sizeOf(context).height * 0.46).clamp(300.0, 440.0);
+    // 사진 비율에 맞춰 폭의 1.18배. 러너와 강아지가 모두 보이는 높이다.
+    final height = MediaQuery.sizeOf(context).width * 1.18;
     return SizedBox(
       height: height,
       child: ClipRRect(
@@ -344,8 +345,8 @@ class _HomeHero extends StatelessWidget {
                 ),
               ),
             ),
-            SafeArea(
-              bottom: false,
+            Align(
+              alignment: Alignment.topCenter,
               child: Padding(
                 padding: EdgeInsets.fromLTRB(
                   tokens.spacing.page,

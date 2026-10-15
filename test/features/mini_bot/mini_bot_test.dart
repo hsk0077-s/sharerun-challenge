@@ -9,6 +9,7 @@ import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
+import 'package:share_run_challenge/core/widgets/src_dashboard_bottom_nav.dart';
 import 'package:share_run_challenge/data/models/company_tournament_config.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_intent.dart';
@@ -842,7 +843,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final fab = tester.getRect(find.byType(MiniBotEntryButton));
-    final nav = tester.getRect(find.byType(BottomNavigationBar));
+    final nav = tester.getRect(find.byType(DashboardBottomNav));
     expect(fab.overlaps(nav), isFalse);
     expect(
       nav.top - fab.bottom,
@@ -866,7 +867,7 @@ void main() {
     await tester.pumpAndSettle();
     final lobbyFab =
         tester.getRect(find.byKey(const Key('mini-bot-entry-lobby')));
-    final lobbyNav = tester.getRect(find.byType(BottomNavigationBar));
+    final lobbyNav = tester.getRect(find.byType(DashboardBottomNav));
     expect(lobbyFab.overlaps(lobbyNav), isFalse);
     expect(
       lobbyNav.top - lobbyFab.bottom,

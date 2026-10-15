@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
+import '../core/theme/src_theme.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
@@ -351,6 +352,14 @@ class _OnboardingRunResultScreenState
 
   @override
   Widget build(BuildContext context) {
+    // 새 디자인: 이 화면 안의 기본 글자색·스위치 색도 검정 + 라임 테마를 따른다.
+    return Theme(
+      data: SrcTheme.night,
+      child: Builder(builder: _buildNight),
+    );
+  }
+
+  Widget _buildNight(BuildContext context) {
     if (!widget.serverConfirmed) {
       return Scaffold(
         backgroundColor: AppColors.nightBg,

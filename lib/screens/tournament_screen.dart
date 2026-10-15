@@ -6,6 +6,7 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
+import '../features/challenge/widgets/challenge_look.dart';
 import '../data/models/company_tournament_config.dart';
 import '../data/models/tournament_model.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
@@ -88,62 +89,63 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
     ref.watch(signupFreeTicketGrantProvider);
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
-    final onDonation = Theme.of(context).colorScheme.onTertiary;
 
     return ListView(
       controller: _scrollController,
-      padding: EdgeInsets.all(tokens.spacing.page),
+      padding: EdgeInsets.fromLTRB(
+        tokens.spacing.page,
+        tokens.spacing.md,
+        tokens.spacing.page,
+        96,
+      ),
       children: [
-        SrcSurfaceCard(
-          color: tokens.colors.donation.withValues(alpha: 0.16),
-          borderColor: tokens.colors.donation.withValues(alpha: 0.45),
-          padding: EdgeInsets.all(tokens.spacing.md + 2),
-          child: Text(
-            'Sponsor Boost: Every verified sweat drop funds real impact.',
-            style: textTheme.titleSmall?.copyWith(
-              color: onDonation,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        SizedBox(height: tokens.spacing.xl),
         Row(
           children: [
-            Expanded(
-              child: Text(
-                'Tournament Rooms',
-                style: textTheme.headlineSmall?.copyWith(
-                  color: tokens.colors.ink,
-                ),
-              ),
-            ),
-            Chip(
-              label: Text('My Tier $userTier'),
-              backgroundColor: tokens.colors.primary.withValues(alpha: 0.16),
-              side: BorderSide(color: tokens.colors.primary.withValues(alpha: 0.4)),
-              labelStyle: textTheme.labelMedium?.copyWith(
-                color: tokens.colors.ink,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            const ChallengeTag('TOURNAMENT'),
+            const Spacer(),
+            ChallengeTag('내 티어 $userTier', color: tokens.colors.accent),
           ],
         ),
         SizedBox(height: tokens.spacing.sm),
+        Text(
+          'Sponsor Boost: Every verified sweat drop funds real impact.',
+          style: textTheme.bodySmall?.copyWith(
+            color: tokens.colors.donation,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const ChallengeSectionLabel('Tournament Rooms'),
         Align(
-          alignment: Alignment.centerRight,
+          alignment: Alignment.centerLeft,
           child: TextButton.icon(
-            onPressed: () => context.push(RouteNames.myTournaments),
-            icon: Icon(Icons.list_alt_rounded, color: tokens.colors.accent),
+            onPressed: () {
+              final tabs = DefaultTabController.maybeOf(context);
+              if (tabs != null) {
+                tabs.animateTo(2);
+              } else {
+                context.push(RouteNames.myTournaments);
+              }
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            icon: Icon(
+              Icons.list_alt_rounded,
+              size: 18,
+              color: tokens.colors.accent,
+            ),
             label: Text(
               'My Tournaments (${joinedIds.length})',
               style: textTheme.labelLarge?.copyWith(
                 color: tokens.colors.accent,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
         ),
-        SizedBox(height: tokens.spacing.md),
+        SizedBox(height: tokens.spacing.sm),
         for (final room in rooms)
           _roomCard(
             room: room,
@@ -306,41 +308,34 @@ class _TournamentRoomCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                locked ? Icons.lock_rounded : Icons.lock_open_rounded,
-                color: locked ? tokens.colors.muted : tokens.colors.primary,
+              ChallengeTag(
+                'TIER ${room.requiredTier}',
+                color: locked ? tokens.colors.muted : tokens.colors.accent,
               ),
-              SizedBox(width: tokens.spacing.sm),
-              Expanded(
-                child: Text(
-                  room.title,
-                  style: textTheme.titleLarge?.copyWith(
-                    color: tokens.colors.ink,
+              const Spacer(),
+              if (isJoined)
+                Text(
+                  'Joined',
+                  style: textTheme.labelMedium?.copyWith(
+                    color: tokens.colors.accent,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-              ),
-              Text(
-                'Tier ${room.requiredTier}',
-                style: textTheme.labelMedium?.copyWith(
+              if (locked)
+                Icon(
+                  Icons.lock_outline_rounded,
+                  size: 16,
                   color: tokens.colors.muted,
                 ),
-              ),
-              if (isJoined) ...[
-                SizedBox(width: tokens.spacing.xs),
-                Chip(
-                  label: const Text('Joined'),
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: tokens.colors.accent.withValues(alpha: 0.14),
-                  side: BorderSide(
-                    color: tokens.colors.accent.withValues(alpha: 0.4),
-                  ),
-                  labelStyle: textTheme.labelSmall?.copyWith(
-                    color: tokens.colors.accent,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
             ],
+          ),
+          SizedBox(height: tokens.spacing.xs),
+          Text(
+            room.title,
+            style: textTheme.titleLarge?.copyWith(
+              color: locked ? tokens.colors.muted : tokens.colors.ink,
+              fontWeight: FontWeight.w900,
+            ),
           ),
           SizedBox(height: tokens.spacing.sm),
           Text(

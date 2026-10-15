@@ -123,12 +123,16 @@ void main() {
   }
 
   testWidgets(
-      'Lobby uses SRC tokens, Battle Pass, create room, and live tournament data',
+      'Lobby shows three top tabs, night tokens, Battle Pass, create room, and live tournament data',
       (tester) async {
     await pumpSized(tester, const ChallengeLobbyScreen());
 
-    expect(find.text(AppStrings.lobbyTitle), findsOneWidget);
-    expect(find.byKey(const Key('lobby-header-logo')), findsOneWidget);
+    // 상단 탭 3개: 챌린지 · 대회 · 내 기록
+    expect(find.byKey(const Key('lobby-top-tabs')), findsOneWidget);
+    expect(find.text('챌린지'), findsWidgets);
+    expect(find.text('대회'), findsOneWidget);
+    expect(find.text('내 기록'), findsOneWidget);
+
     expect(find.text(AppStrings.lobbyCreateRoom), findsOneWidget);
     expect(find.text(AppStrings.lobbyBattlePassCta), findsOneWidget);
     expect(find.text(AppStrings.lobbySponsorRoomTitle), findsOneWidget);
@@ -143,15 +147,17 @@ void main() {
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
     expect(find.byKey(const Key('lobby-create-room')), findsOneWidget);
     expect(find.byKey(const Key('lobby-battle-pass')), findsOneWidget);
-    expect(find.byType(SrcSurfaceCard), findsWidgets);
+    expect(find.byKey(const Key('lobby-sponsor-card')), findsOneWidget);
+    // 맨 위 큰 카드가 1번, 목록은 2번부터 번호가 붙는다.
+    expect(find.text('02'), findsOneWidget);
+    expect(find.text('05'), findsOneWidget);
+    expect(find.text('06'), findsNothing);
 
-    final ctx = tester.element(find.text(AppStrings.lobbyTitle));
-    expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
-    expect(ctx.srcTokens.colors.accent, AppColors.tealAccent);
-    expect(ctx.srcTokens.colors.donation, AppColors.angelGold);
-    expect(Theme.of(ctx).colorScheme.primary, AppColors.primaryMint);
-    expect(Theme.of(ctx).colorScheme.secondary, AppColors.tealAccent);
-    expect(Theme.of(ctx).colorScheme.tertiary, AppColors.angelGold);
+    // 챌린지 탭은 검정+라임 테마다.
+    final ctx = tester.element(find.byKey(const Key('lobby-battle-pass')));
+    expect(ctx.srcTokens.colors.primary, AppColors.nightLime);
+    expect(ctx.srcTokens.colors.canvas, AppColors.nightBg);
+    expect(Theme.of(ctx).colorScheme.primary, AppColors.nightLime);
 
     final create = tester.widget<OutlinedButton>(
       find.byKey(const Key('lobby-create-room')),
@@ -164,29 +170,17 @@ void main() {
     expect(battlePass.onPressed, isNotNull);
     expect(
       battlePass.style?.foregroundColor?.resolve(const <WidgetState>{}),
-      AppColors.tealAccent,
+      AppColors.nightLime,
     );
-
-    final sponsorTitle =
-        tester.widget<Text>(find.text(AppStrings.lobbySponsorRoomTitle)).style;
-    expect(sponsorTitle?.color, AppColors.angelGold);
 
     final beginnerEnter = find.descendant(
       of: find.ancestor(
         of: find.text(AppStrings.lobbyRoom3Sub),
-        matching: find.byType(SrcSurfaceCard),
-      ),
+        matching: find.byType(Row),
+      ).first,
       matching: find.text(AppStrings.lobbyEnterRoom),
     );
     expect(beginnerEnter, findsOneWidget);
-    final intermediateEnter = find.descendant(
-      of: find.ancestor(
-        of: find.text(AppStrings.lobbyRoom1Title),
-        matching: find.byType(SrcSurfaceCard),
-      ),
-      matching: find.text(AppStrings.lobbyEnterRoom),
-    );
-    expect(intermediateEnter, findsOneWidget);
 
     await tester.tap(beginnerEnter);
     await tester.pump();
@@ -391,6 +385,14 @@ void main() {
       const ChallengeLobbyScreen(),
       size: const Size(390, 844),
     );
+    // 큰 사진이 늦게 읽혀 비교 이미지가 들쭉날쭉하지 않게 미리 읽어 둔다.
+    await tester.runAsync(() async {
+      await precacheImage(
+        const AssetImage('assets/images/challenge_track.jpg'),
+        tester.element(find.byType(ChallengeLobbyScreen)),
+      );
+    });
+    await tester.pump();
 
     await expectLater(
       find.byType(ChallengeLobbyScreen),

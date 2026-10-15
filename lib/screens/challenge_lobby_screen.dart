@@ -8,14 +8,16 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
-import '../core/widgets/src_gradient_background.dart';
 import '../data/models/tournament_model.dart';
 import '../features/challenge/providers/challenge_room_providers.dart';
+import '../features/challenge/widgets/challenge_look.dart';
 import '../features/mini_bot/mini_bot_sheet.dart';
 import 'battle_pass_screen.dart';
 import 'brand_sponsor_screen.dart';
 import 'challenge_detail_screen.dart';
 import 'create_challenge_room_screen.dart';
+import 'my_tournaments_screen.dart';
+import 'tournament_screen.dart';
 
 /// 다자간 챌린지 실시간 로비 화면 (Screen 7).
 class ChallengeLobbyScreen extends ConsumerStatefulWidget {
@@ -63,220 +65,240 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
     );
   }
 
-  List<Widget> _liveTournamentCards(BuildContext context, WidgetRef ref) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
+  /// 실시간으로 열린 방. 번호는 앞 목록에 이어서 붙인다.
+  List<_RoomRow> _liveTournamentRows(BuildContext context, WidgetRef ref) {
     final asyncRooms = ref.watch(tournamentListProvider);
     return asyncRooms.maybeWhen(
-      data: (rooms) {
-        if (rooms.isEmpty) return const [];
-        return [
-          SizedBox(height: tokens.spacing.md),
-          Text(
-            '실시간 개설 · 참가 가능 방',
-            style: textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: tokens.colors.ink,
+      data: (rooms) => [for (final room in rooms) room],
+      orElse: () => const [],
+    ).map((room) => _RoomRow(
+          number: 0,
+          title: room.title,
+          subtitle: room.maxParticipants > 0
+              ? '${room.targetDistanceKm.toStringAsFixed(0)}km · '
+                  '${room.participantCount}/${room.maxParticipants}명'
+              : '${room.targetDistanceKm.toStringAsFixed(0)}km · '
+                  '참가자 ${room.participantCount}명',
+          onEnter: () => _onOpenLiveRoom(room),
+        )).toList();
+  }
+
+  Widget _challengeTab(BuildContext context, WidgetRef ref) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    final live = _liveTournamentRows(context, ref);
+    final fixed = <_RoomRow>[
+      _RoomRow(
+        number: 0,
+        title: AppStrings.lobbyRoom1Title,
+        subtitle: AppStrings.lobbyRoom1Sub,
+        onEnter: () {
+          AppRouteNav.push<void>(
+            context,
+            RouteNames.challengeDetail,
+            materialBuilder: (_) => const ChallengeDetailScreen(),
+          );
+        },
+      ),
+      _RoomRow(
+        number: 0,
+        title: AppStrings.lobbyRoom2Title,
+        subtitle: AppStrings.lobbyRoom2Sub,
+        onEnter: _onEnterRoom,
+      ),
+      _RoomRow(
+        number: 0,
+        title: AppStrings.lobbyRoom3Title,
+        subtitle: AppStrings.lobbyRoom3Sub,
+        onEnter: () {
+          AppRouteNav.push<void>(
+            context,
+            RouteNames.challengeDetailForRoom(RouteNames.beginner1kmRoomId),
+            extra: RouteNames.beginner1kmRoomId,
+            materialBuilder: (_) => const ChallengeDetailScreen(
+              roomId: RouteNames.beginner1kmRoomId,
+            ),
+          );
+        },
+      ),
+    ];
+    // 맨 위 큰 카드가 1번이라 목록은 2번부터 센다.
+    final total = 1 + fixed.length + live.length;
+    var n = 2;
+    Widget numbered(_RoomRow row) => _RoomRow(
+          number: n++,
+          title: row.title,
+          subtitle: row.subtitle,
+          onEnter: row.onEnter,
+        );
+    return ListView(
+      padding: EdgeInsets.fromLTRB(
+        tokens.spacing.page,
+        tokens.spacing.md,
+        tokens.spacing.page,
+        96,
+      ),
+      children: [
+        Text(
+          '$total개 챌린지가\n열려 있어요',
+          style: textTheme.headlineMedium?.copyWith(
+            color: tokens.colors.ink,
+            fontWeight: FontWeight.w900,
+            height: 1.1,
+          ),
+        ),
+        SizedBox(height: tokens.spacing.xs),
+        Text(
+          AppStrings.lobbySubtitle,
+          style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
+        ),
+        SizedBox(height: tokens.spacing.md),
+        _HeroRoomCard(
+          title: AppStrings.lobbySponsorRoomTitle,
+          subtitle: AppStrings.lobbySponsorRoomSub,
+          onEnter: () {
+            AppRouteNav.push<void>(
+              context,
+              RouteNames.brandSponsor,
+              materialBuilder: (_) => const BrandSponsorScreen(),
+            );
+          },
+        ),
+        SizedBox(height: tokens.spacing.xs),
+        for (final row in fixed) numbered(row),
+        if (live.isNotEmpty) ...[
+          const ChallengeSectionLabel('실시간 개설 · 참가 가능 방'),
+          for (final row in live) numbered(row),
+        ],
+        SizedBox(height: tokens.spacing.sm),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton(
+            key: const Key('lobby-battle-pass'),
+            onPressed: _onOpenBattlePass,
+            style: TextButton.styleFrom(
+              foregroundColor: tokens.colors.accent,
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              AppStrings.lobbyBattlePassCta,
+              style: textTheme.labelMedium?.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: tokens.colors.accent,
+              ),
             ),
           ),
-          SizedBox(height: tokens.spacing.sm),
-          for (final room in rooms) ...[
-            _OpenRoomCard(
-              title: room.title,
-              subtitle: room.maxParticipants > 0
-                  ? '${room.targetDistanceKm.toStringAsFixed(0)}km · '
-                      '${room.participantCount}/${room.maxParticipants}명'
-                  : '${room.targetDistanceKm.toStringAsFixed(0)}km · '
-                      '참가자 ${room.participantCount}명',
-              onEnter: () => _onOpenLiveRoom(room),
-            ),
-            SizedBox(height: tokens.spacing.sm),
-          ],
-        ];
-      },
-      orElse: () => const [],
+        ),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
+    final night = SrcTheme.night;
+    final tokens = SrcTokens.night;
+    final textTheme = night.textTheme;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
-    final scaffold = Scaffold(
-      backgroundColor: tokens.colors.canvas,
-      body: SRCGradientBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  tokens.spacing.page,
-                  tokens.spacing.xs,
-                  tokens.spacing.page,
-                  0,
-                ),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: OutlinedButton(
-                    key: const Key('lobby-create-room'),
-                    onPressed: _onCreateRoom,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: tokens.colors.primary,
-                      side: BorderSide(
-                        color: tokens.colors.primary,
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: tokens.radii.capsule,
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: tokens.spacing.md,
-                        vertical: tokens.spacing.xs,
-                      ),
-                    ),
-                    child: Text(
-                      AppStrings.lobbyCreateRoom,
-                      style: textTheme.labelLarge?.copyWith(
-                        color: tokens.colors.primary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  tokens.spacing.page,
-                  tokens.spacing.sm,
-                  tokens.spacing.page,
-                  tokens.spacing.md,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Image.asset(
-                      'assets/images/sharerun_logo.png',
-                      key: const Key('lobby-header-logo'),
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.contain,
-                      semanticLabel: 'ShareRun',
-                    ),
-                    SizedBox(height: tokens.spacing.sm),
-                    Text(
-                      AppStrings.lobbyTitle,
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: tokens.colors.ink,
-                      ),
-                    ),
-                    SizedBox(height: tokens.spacing.xs),
-                    Text(
-                      AppStrings.lobbySubtitle,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: tokens.colors.muted,
-                      ),
-                    ),
-                    SizedBox(height: tokens.spacing.sm),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton(
-                        key: const Key('lobby-battle-pass'),
-                        onPressed: _onOpenBattlePass,
-                        style: TextButton.styleFrom(
-                          foregroundColor: tokens.colors.accent,
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          AppStrings.lobbyBattlePassCta,
-                          style: textTheme.labelMedium?.copyWith(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: tokens.colors.accent,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
+    final scaffold = Theme(
+      data: night,
+      child: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          backgroundColor: tokens.colors.canvas,
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
                   padding: EdgeInsets.fromLTRB(
                     tokens.spacing.page,
-                    0,
+                    tokens.spacing.sm,
                     tokens.spacing.page,
-                    tokens.spacing.md,
+                    0,
                   ),
-                  children: [
-                    _SponsorRoomCard(
-                      title: AppStrings.lobbySponsorRoomTitle,
-                      subtitle: AppStrings.lobbySponsorRoomSub,
-                      onEnter: () {
-                        AppRouteNav.push<void>(
-                          context,
-                          RouteNames.brandSponsor,
-                          materialBuilder: (_) => const BrandSponsorScreen(),
-                        );
-                      },
-                    ),
-                    SizedBox(height: tokens.spacing.sm),
-                    _OpenRoomCard(
-                      title: AppStrings.lobbyRoom1Title,
-                      subtitle: AppStrings.lobbyRoom1Sub,
-                      onEnter: () {
-                        AppRouteNav.push<void>(
-                          context,
-                          RouteNames.challengeDetail,
-                          materialBuilder: (_) => const ChallengeDetailScreen(),
-                        );
-                      },
-                    ),
-                    SizedBox(height: tokens.spacing.sm),
-                    _FeaturedRoomCard(
-                      title: AppStrings.lobbyRoom2Title,
-                      subtitle: AppStrings.lobbyRoom2Sub,
-                      onEnter: _onEnterRoom,
-                    ),
-                    SizedBox(height: tokens.spacing.sm),
-                    _OpenRoomCard(
-                      title: AppStrings.lobbyRoom3Title,
-                      subtitle: AppStrings.lobbyRoom3Sub,
-                      onEnter: () {
-                        AppRouteNav.push<void>(
-                          context,
-                          RouteNames.challengeDetailForRoom(
-                            RouteNames.beginner1kmRoomId,
+                  child: Row(
+                    children: [
+                      const ChallengeTag('CHALLENGE'),
+                      const Spacer(),
+                      OutlinedButton(
+                        key: const Key('lobby-create-room'),
+                        onPressed: _onCreateRoom,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: tokens.colors.primary,
+                          side: BorderSide(
+                            color: tokens.colors.primary,
+                            width: 1.5,
                           ),
-                          extra: RouteNames.beginner1kmRoomId,
-                          materialBuilder: (_) => const ChallengeDetailScreen(
-                            roomId: RouteNames.beginner1kmRoomId,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: tokens.radii.capsule,
                           ),
-                        );
-                      },
-                    ),
-                    ..._liveTournamentCards(context, ref),
+                          minimumSize: Size.zero,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: tokens.spacing.md,
+                            vertical: tokens.spacing.xs,
+                          ),
+                        ),
+                        child: Text(
+                          AppStrings.lobbyCreateRoom,
+                          style: textTheme.labelLarge?.copyWith(
+                            color: tokens.colors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: tokens.spacing.xs),
+                TabBar(
+                  key: const Key('lobby-top-tabs'),
+                  dividerColor: tokens.colors.outline,
+                  indicatorColor: tokens.colors.primary,
+                  indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  labelColor: tokens.colors.ink,
+                  unselectedLabelColor: tokens.colors.muted,
+                  labelStyle: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                  unselectedLabelStyle: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                  tabs: const [
+                    Tab(text: '챌린지'),
+                    Tab(text: '대회'),
+                    Tab(text: '내 기록'),
                   ],
                 ),
-              ),
-            ],
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      Builder(
+                        builder: (tabContext) => _challengeTab(tabContext, ref),
+                      ),
+                      const TournamentScreen(),
+                      const MyTournamentsScreen(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
+          floatingActionButton:
+              embedNav ? miniBotEntryForTab(_currentNavIndex) : null,
+          bottomNavigationBar: embedNav
+              ? DashboardBottomNav(
+                  currentIndex: _currentNavIndex,
+                  onTap: _onNavTap,
+                )
+              : null,
         ),
       ),
-      floatingActionButton:
-          embedNav ? miniBotEntryForTab(_currentNavIndex) : null,
-      bottomNavigationBar: embedNav
-          ? DashboardBottomNav(
-              currentIndex: _currentNavIndex,
-              onTap: _onNavTap,
-            )
-          : null,
     );
     return embedNav
         ? SrcExitGuard(
@@ -284,6 +306,164 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
             child: scaffold,
           )
         : scaffold;
+  }
+}
+
+/// 맨 위 큰 사진 카드. 후원 방으로 들어간다.
+class _HeroRoomCard extends StatelessWidget {
+  const _HeroRoomCard({
+    required this.title,
+    required this.subtitle,
+    required this.onEnter,
+  });
+
+  final String title;
+  final String subtitle;
+  final VoidCallback onEnter;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return SizedBox(
+      key: const Key('lobby-sponsor-card'),
+      height: 210,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/images/challenge_track.jpg',
+              fit: BoxFit.cover,
+              alignment: const Alignment(0, 0.4),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.black.withValues(alpha: 0.9),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 18,
+              right: 18,
+              bottom: 16,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          title,
+                          style: textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: tokens.spacing.sm),
+                  _LobbyEnterChip(
+                    buttonKey: const Key('lobby-sponsor-enter'),
+                    onEnter: onEnter,
+                    background: tokens.colors.primary,
+                    foreground: tokens.colors.onPrimary,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 번호 붙은 한 줄. 지도의 `02 모닝런 챌린지` 모양.
+class _RoomRow extends StatelessWidget {
+  const _RoomRow({
+    required this.number,
+    required this.title,
+    required this.subtitle,
+    required this.onEnter,
+  });
+
+  final int number;
+  final String title;
+  final String subtitle;
+  final VoidCallback onEnter;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: tokens.colors.outline)),
+      ),
+      child: Row(
+        children: [
+          if (number > 0)
+            SizedBox(
+              width: 48,
+              child: Text(
+                number.toString().padLeft(2, '0'),
+                style: textTheme.headlineSmall?.copyWith(
+                  color: tokens.colors.muted,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: tokens.colors.ink,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: tokens.colors.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(width: tokens.spacing.sm),
+          _LobbyEnterChip(
+            onEnter: onEnter,
+            background: tokens.colors.primary,
+            foreground: tokens.colors.onPrimary,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -332,172 +512,6 @@ class _LobbyEnterChip extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SponsorRoomCard extends StatelessWidget {
-  const _SponsorRoomCard({
-    required this.title,
-    required this.subtitle,
-    required this.onEnter,
-  });
-
-  final String title;
-  final String subtitle;
-  final VoidCallback onEnter;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    final onDonation = Theme.of(context).colorScheme.onTertiary;
-    return SrcSurfaceCard(
-      key: const Key('lobby-sponsor-card'),
-      color: tokens.colors.donation.withValues(alpha: 0.14),
-      borderColor: tokens.colors.donation.withValues(alpha: 0.55),
-      padding: EdgeInsets.all(tokens.spacing.md),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: tokens.colors.donation,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs + 2),
-                Text(
-                  subtitle,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: tokens.colors.ink.withValues(alpha: 0.78),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: tokens.spacing.sm),
-          _LobbyEnterChip(
-            buttonKey: const Key('lobby-sponsor-enter'),
-            onEnter: onEnter,
-            background: tokens.colors.donation,
-            foreground: onDonation,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OpenRoomCard extends StatelessWidget {
-  const _OpenRoomCard({
-    required this.title,
-    required this.subtitle,
-    required this.onEnter,
-  });
-
-  final String title;
-  final String subtitle;
-  final VoidCallback onEnter;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    return SrcSurfaceCard(
-      color: tokens.colors.primary.withValues(alpha: 0.10),
-      borderColor: tokens.colors.primary.withValues(alpha: 0.55),
-      padding: EdgeInsets.all(tokens.spacing.md),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: tokens.colors.ink,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs + 2),
-                Text(
-                  subtitle,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: tokens.colors.muted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: tokens.spacing.sm),
-          _LobbyEnterChip(
-            onEnter: onEnter,
-            background: tokens.colors.primary,
-            foreground: tokens.colors.onPrimary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeaturedRoomCard extends StatelessWidget {
-  const _FeaturedRoomCard({
-    required this.title,
-    required this.subtitle,
-    required this.onEnter,
-  });
-
-  final String title;
-  final String subtitle;
-  final VoidCallback onEnter;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    return SrcSurfaceCard(
-      color: tokens.colors.primary,
-      borderColor: tokens.colors.primary,
-      padding: EdgeInsets.all(tokens.spacing.md),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: tokens.colors.onPrimary,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs + 2),
-                Text(
-                  subtitle,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: tokens.colors.onPrimary.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: tokens.spacing.sm),
-          _LobbyEnterChip(
-            onEnter: onEnter,
-            background: tokens.colors.accent,
-            foreground: tokens.colors.onAccent,
-            borderColor: tokens.colors.onPrimary,
-          ),
-        ],
       ),
     );
   }

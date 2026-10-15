@@ -137,4 +137,70 @@ abstract final class SrcTheme {
 
   /// No separate dark theme — keeps the mint light shell.
   static ThemeData get dark => light;
+
+  /// 검정 바탕 + 라임 포인트. 새 디자인으로 바뀐 화면만 `Theme(data: SrcTheme.night)`로 감싼다.
+  /// 글자 색은 [SrcTokens.night]의 ink/muted로 맞춘다.
+  static ThemeData get night {
+    const tokens = SrcTokens.night;
+    const c = SrcColorRoles.night;
+    final scheme = ColorScheme.fromSeed(
+      seedColor: c.primary,
+      brightness: Brightness.dark,
+      surface: c.surface,
+      primary: c.primary,
+      onPrimary: c.onPrimary,
+      secondary: c.accent,
+      onSecondary: c.onAccent,
+      tertiary: c.donation,
+      onTertiary: c.onPrimary,
+      error: c.danger,
+      outline: c.outline,
+    );
+    final base = light.textTheme.apply(
+      bodyColor: c.ink,
+      displayColor: c.ink,
+    );
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      fontFamily: AppTextStyles.fontFamily,
+      scaffoldBackgroundColor: c.canvas,
+      colorScheme: scheme,
+      extensions: const <ThemeExtension<dynamic>>[tokens],
+      textTheme: base.copyWith(
+        bodySmall: base.bodySmall?.copyWith(color: c.muted),
+        labelMedium: base.labelMedium?.copyWith(color: c.ink),
+      ),
+      appBarTheme: AppBarTheme(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: Colors.transparent,
+        foregroundColor: c.ink,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+      ),
+      dividerTheme: DividerThemeData(color: c.outline, thickness: 1, space: 1),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: c.primary,
+          foregroundColor: c.onPrimary,
+          textStyle: AppTextStyles.buttonText,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: c.primary,
+          side: BorderSide(color: c.primary),
+          textStyle: AppTextStyles.buttonText,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: c.primary,
+          textStyle: AppTextStyles.link.copyWith(
+            decoration: TextDecoration.none,
+          ),
+        ),
+      ),
+    );
+  }
 }

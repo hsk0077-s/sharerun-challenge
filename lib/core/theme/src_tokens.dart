@@ -22,6 +22,13 @@ class SrcTokens extends ThemeExtension<SrcTokens> {
     radii: SrcRadiiTokens.standard,
   );
 
+  /// 검정 바탕 + 라임 포인트. 새 디자인 화면에서 [SrcTheme.night]와 함께 쓴다.
+  static const night = SrcTokens(
+    colors: SrcColorRoles.night,
+    spacing: SrcSpacingTokens.standard,
+    radii: SrcRadiiTokens.standard,
+  );
+
   final SrcColorRoles colors;
   final SrcSpacingTokens spacing;
   final SrcRadiiTokens radii;
@@ -80,6 +87,22 @@ class SrcColorRoles {
     danger: AppColors.error,
     success: AppColors.success,
     warning: AppColors.warning,
+  );
+
+  static const night = SrcColorRoles(
+    primary: AppColors.nightLime,
+    onPrimary: AppColors.nightOnLime,
+    accent: AppColors.nightLime,
+    onAccent: AppColors.nightOnLime,
+    donation: AppColors.nightGold,
+    canvas: AppColors.nightBg,
+    surface: AppColors.nightCard,
+    ink: AppColors.nightInk,
+    muted: AppColors.nightMuted,
+    outline: AppColors.nightLine,
+    danger: AppColors.nightDanger,
+    success: AppColors.nightLime,
+    warning: AppColors.nightGold,
   );
 
   final Color primary;

@@ -17,6 +17,7 @@ import 'package:share_run_challenge/features/wallet/providers/wallet_provider.da
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
 import 'package:share_run_challenge/screens/home_screen.dart';
 import 'package:share_run_challenge/screens/main_dashboard_screen.dart';
+import 'package:share_run_challenge/screens/my_page_screen.dart';
 import 'package:share_run_challenge/screens/my_wallet_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -140,7 +141,7 @@ void main() {
     expect(find.byType(SrcSurfaceCard), findsWidgets);
   });
 
-  testWidgets('live Home tab paints token wallet colors and challenge CTAs',
+  testWidgets('live Home tab shows steps, donation and challenge CTAs',
       (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
@@ -153,15 +154,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('나의 지갑'), findsOneWidget);
-    expect(find.textContaining('보유 SHARE: 90,000'), findsOneWidget);
-    // 다이아는 홈 맨 위 카드(총 다이아, 누르면 보너스/결제로 펼침)에 있다.
-    expect(find.byKey(HomeDiamondCard.totalKey), findsOneWidget);
-    expect(find.text('5 DIA'), findsOneWidget);
+    expect(find.byKey(const Key('home-greeting')), findsOneWidget);
     expect(find.byKey(HomeDonationCard.amountKey), findsOneWidget);
     expect(find.text('300원'), findsOneWidget);
     expect(find.textContaining('현금 상금 없음'), findsOneWidget);
-    expect(find.textContaining('보유 밸류(VALUE): 5,200'), findsOneWidget);
     expect(find.text('방 상세 보기'), findsNWidgets(2));
     expect(find.text('걷기 챌린지 보기'), findsOneWidget);
     expect(find.textContaining('내 이름으로 달리기 후원하기'), findsOneWidget);
@@ -172,18 +168,35 @@ void main() {
     expect(find.byIcon(Icons.map_outlined), findsNothing);
     expect(find.byIcon(Icons.notifications_none_rounded), findsOneWidget);
     expect(find.byType(SrcSurfaceCard), findsWidgets);
+    // 새 디자인: 지갑·다이아·프로필 원은 마이로 옮겼다.
+    expect(find.byKey(HomeDiamondCard.totalKey), findsNothing);
+    expect(find.byKey(const Key('home-my-wallet-icon')), findsNothing);
+    expect(find.byKey(const Key('home-header-avatar')), findsNothing);
+  });
+
+  testWidgets('My page holds the diamond card and the wallet with token colors',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(_scopedApp(home: const Scaffold(body: MyPageScreen())));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('나의 지갑'), findsOneWidget);
+    expect(find.textContaining('보유 SHARE: 90,000'), findsOneWidget);
+    expect(find.byKey(HomeDiamondCard.totalKey), findsOneWidget);
+    expect(find.text('5 DIA'), findsOneWidget);
+    expect(find.textContaining('보유 밸류(VALUE): 5,200'), findsOneWidget);
 
     final shareStyle = tester
-        .widget<Text>(
-          find.textContaining('보유 SHARE: 90,000'),
-        )
+        .widget<Text>(find.textContaining('보유 SHARE: 90,000'))
         .style;
     expect(shareStyle?.color, AppColors.tealAccent);
-
     final valueStyle = tester
-        .widget<Text>(
-          find.textContaining('보유 밸류(VALUE): 5,200'),
-        )
+        .widget<Text>(find.textContaining('보유 밸류(VALUE): 5,200'))
         .style;
     expect(valueStyle?.color, AppColors.angelGold);
   });
@@ -208,9 +221,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(tester.takeException(), isNull);
 
-    // Open the diamond card and scroll to the bottom: nothing may overflow.
-    await tester.tap(find.byKey(HomeDiamondCard.toggleKey));
-    await tester.pump();
+    // Scroll to the bottom: nothing may overflow.
     await tester.drag(find.byType(SingleChildScrollView).first, const Offset(0, -3000));
     await tester.pump();
     expect(tester.takeException(), isNull);
@@ -239,7 +250,7 @@ void main() {
     expect(find.byIcon(Icons.map_outlined), findsOneWidget);
   });
 
-  testWidgets('Home wallet icon opens the same My Wallet screen as walking',
+  testWidgets('My page wallet icon opens the same My Wallet screen as walking',
       (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
@@ -247,7 +258,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      _scopedApp(home: const MainDashboardScreen()),
+      _scopedApp(home: const Scaffold(body: MyPageScreen())),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
@@ -261,7 +272,7 @@ void main() {
     expect(find.text(AppStrings.myWalletRecentTransactions), findsOneWidget);
   });
 
-  testWidgets('Home avatar sheet offers male, female and gallery, not tier animals',
+  testWidgets('My page avatar sheet offers male, female and gallery, not tier animals',
       (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
@@ -269,7 +280,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      _scopedApp(home: const MainDashboardScreen()),
+      _scopedApp(home: const Scaffold(body: MyPageScreen())),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));

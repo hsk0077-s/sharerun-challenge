@@ -10,6 +10,17 @@ import 'package:flutter/material.dart';
 ///
 /// 시각 언어: 프라이머리 민트 1 + 액센트 틸 1 + 뉴트럴. 기부 감정은 골드.
 abstract final class AppColors {
+  // Night — 검정 바탕 + 라임 (새 디자인). [SrcTheme.night]에서만 쓴다.
+  static const nightBg = Color(0xFF070B09);
+  static const nightCard = Color(0xFF101813);
+  static const nightLine = Color(0xFF1F2B24);
+  static const nightInk = Color(0xFFE8EFE6);
+  static const nightMuted = Color(0xFF93A299);
+  static const nightLime = Color(0xFFD4FF4A);
+  static const nightOnLime = Color(0xFF0A1410);
+  static const nightGold = Color(0xFFE8B84B);
+  static const nightDanger = Color(0xFFFF6B6B);
+
   // Brand — primary
   static const primaryMint = Color(0xFF76C8A7);
   static const primaryMintDark = Color(0xFF5BB896);

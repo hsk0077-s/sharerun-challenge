@@ -196,6 +196,7 @@ def purchase_shop_item(
         uid=uid,
         item_id=request.item_id,
         request_id=request.request_id,
+        pay_with=request.pay_with,
     )
 
 

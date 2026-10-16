@@ -92,6 +92,8 @@ class ShopPurchaseRequest(BaseModel):
     activity_id: str | None = Field(default=None, max_length=128)
     # Rest-day ticket only. Empty means today (KST). Yesterday is allowed.
     rest_day: str | None = Field(default=None, max_length=10)
+    # Challenge ticket only: "share" or "dia". Paid DIA is never accepted.
+    pay_with: str | None = Field(default=None, max_length=8)
 
 
 class CrewSpendRequest(BaseModel):

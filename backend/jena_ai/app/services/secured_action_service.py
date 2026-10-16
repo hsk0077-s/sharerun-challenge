@@ -110,6 +110,7 @@ from app.services.cosmetics import (
 from app.services.item_price_config import (
     BATTLE_PASS_ITEM_IDS,
     COACH_ONE_POINT_ITEM_ID,
+    CHALLENGE_TICKET_ITEM_ID,
     CREW_CHEER_FLAG_ITEM_ID,
     CREW_CREATE_DIA_ID,
     CREW_CREATE_SHARE_ID,
@@ -123,6 +124,7 @@ from app.services.item_price_config import (
     VALUE_ITEM_IDS,
     read_item_prices,
 )
+from app.services.challenge_tickets import purchase_challenge_ticket
 from app.services.run_access_items import (
     consume_extra_entry_ticket,
     extra_entry_opens_closed,
@@ -618,9 +620,19 @@ class SecuredActionService:
         uid: str,
         item_id: str,
         request_id: str | None = None,
+        pay_with: str | None = None,
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
+        if item_id == CHALLENGE_TICKET_ITEM_ID:
+            return _commit_challenge_ticket_tx(
+                transaction,
+                self,
+                uid,
+                pay_with,
+                require_request_id(request_id),
+                user_ref,
+            )
         if item_id in STREAK_ITEM_IDS:
             return _commit_streak_purchase_tx(
                 transaction,
@@ -4995,6 +5007,20 @@ def _commit_cosmetic_equip_tx(
 ) -> SecuredActionResult:
     return equip_cosmetic(
         service, transaction, uid, item_id, request_id, user_ref, equip
+    )
+
+
+@firestore.transactional
+def _commit_challenge_ticket_tx(
+    transaction,
+    service,
+    uid: str,
+    pay_with: str | None,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_challenge_ticket(
+        service, transaction, uid, pay_with, request_id, user_ref
     )
 
 

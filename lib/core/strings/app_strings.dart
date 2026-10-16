@@ -259,6 +259,15 @@ abstract final class AppStrings {
   // ── My Page (Screen 12) ───────────────────────────────────────────
   static const myPageTitle = '마이페이지';
   static const myPageSettings = '설정';
+
+  // 승급 점수(대회 성적으로 모아 메달 한 칸씩 오른다)
+  static const promotionTitle = '다음 메달까지';
+  static String promotionProgress(int points, int step) => '$points / $step점';
+  static const promotionHint = '대회에서 입상하면 점수가 쌓여요';
+  static const promotionBlockedCooldown = '승급은 일주일에 한 번이에요. 점수는 그대로 모여 있어요';
+  static const promotionBlockedTournaments = '다음 동물로 가려면 대회를 몇 번 더 완주해야 해요';
+  static const promotionBlockedPace = '다음 동물로 가려면 최근 30일 안에 더 빠른 달리기가 필요해요';
+  static const promotionBlockedSeason = '다음 동물은 시즌 성적으로 정해져요';
   static const myPageSubscriptionManage = '구독 관리';
   static const myPageNickname = '러너상기';
   static const myPageGoldGrade = '골드 등급';

@@ -468,6 +468,8 @@ def award_tournament_results(
                 "tournaments": result["tournaments"],
                 "lastPromotedAt": result["lastPromotedAt"],
                 "blocked": result["blocked"],
+                # The app shows these as sent: points toward the next medal.
+                "step": medal_step(rules, animal_of_rank(result["gradeRank"])),
             }
         }
         if result["promoted"]:

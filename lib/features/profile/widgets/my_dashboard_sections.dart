@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../app/router/route_names.dart';
+import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
 import '../../../data/models/wallet_model.dart';
 import '../../../screens/my_wallet_screen.dart';
@@ -283,7 +284,8 @@ class MyWalletChips extends ConsumerWidget {
           'VALUE',
           wallet.valueBalance,
           tokens.colors.donation,
-          () => HomeNavigation.openStore(context, ref, focus: StoreFocus.donate),
+          () =>
+              HomeNavigation.openStore(context, ref, focus: StoreFocus.donate),
           key: const Key('my-chip-value'),
         ),
       ],
@@ -403,6 +405,99 @@ class MyQuickSection extends ConsumerWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+/// 마이: 다음 메달까지 승급 점수. 서버가 보낸 점수만 보여 준다.
+/// 등급이 없는 달팽이는 점수 대상이 아니라서 보이지 않는다.
+class PromotionProgressCard extends ConsumerWidget {
+  const PromotionProgressCard({super.key});
+
+  static const barKey = Key('promotion-progress-bar');
+
+  /// 서버가 `promotion.step`을 아직 안 보낸 사람(대회 결과 전)용 기본값.
+  /// 서버 기본 설정과 같은 값이다: 거북 20 · 말티즈 30 · 늑대 40 · 말 60 · 치타 60.
+  static int fallbackStep(int gradeRank) {
+    const steps = [20, 30, 40, 60, 60];
+    final animal = ((gradeRank - 1) ~/ 5).clamp(0, 4);
+    return steps[animal];
+  }
+
+  static String? blockedText(String reason) => switch (reason) {
+        'cooldown' => AppStrings.promotionBlockedCooldown,
+        'tournaments' => AppStrings.promotionBlockedTournaments,
+        'pace' => AppStrings.promotionBlockedPace,
+        'season' => AppStrings.promotionBlockedSeason,
+        _ => null,
+      };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(userProfileProvider);
+    if (profile.gradeRank <= 0 || profile.gradeRank >= 25) {
+      return const SizedBox.shrink();
+    }
+    final tokens = context.srcTokens;
+    final step = profile.promotionStep > 0
+        ? profile.promotionStep
+        : fallbackStep(profile.gradeRank);
+    final points = profile.promotionPoints.clamp(0, step);
+    final note =
+        blockedText(profile.promotionBlocked) ?? AppStrings.promotionHint;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: tokens.colors.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: tokens.colors.outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    AppStrings.promotionTitle,
+                    style: TextStyle(
+                      color: tokens.colors.ink,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                Text(
+                  AppStrings.promotionProgress(points, step),
+                  style: TextStyle(
+                    color: tokens.colors.primary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                key: barKey,
+                value: points / step,
+                minHeight: 8,
+                backgroundColor: tokens.colors.outline,
+                color: tokens.colors.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              note,
+              style: TextStyle(color: tokens.colors.muted, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

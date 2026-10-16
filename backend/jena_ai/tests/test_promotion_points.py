@@ -182,6 +182,7 @@ def test_award_writes_ledger_once_and_updates_the_grade() -> None:
     assert f"{PROMOTION_LEDGER}/t1__a" in db.store
     winner = db.store["users/a"]
     assert winner["promotion"]["points"] >= 0
+    assert winner["promotion"]["step"] == 20  # turtle medal step
     again = award_tournament_results(
         db, tournament_id="t1", tournament_class="company", results=results, now=NOW
     )

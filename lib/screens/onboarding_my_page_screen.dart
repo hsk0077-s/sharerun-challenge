@@ -92,6 +92,7 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const PromotionProgressCard(),
                       const MyWalletChips(),
                       const SizedBox(height: 8),
                       MyQuickSection(

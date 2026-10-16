@@ -216,7 +216,7 @@ class _UnratedGuide extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: c.surface,
               shape: BoxShape.circle,
               border: Border.all(color: c.primary, width: 3),
             ),
@@ -224,7 +224,7 @@ class _UnratedGuide extends StatelessWidget {
             child: Transform.scale(
               scale: 1.25,
               child: Image.asset(
-                'assets/images/characters/chibi_snail_disappointed.png',
+                'assets/images/characters/chibi_snail_smiling.png',
                 fit: BoxFit.contain,
               ),
             ),

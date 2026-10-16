@@ -320,7 +320,7 @@ void main() {
       for (final asset in [
         'assets/images/splash_morning_run.jpg',
         'assets/images/characters/avatar_gender_male.png',
-        'assets/images/characters/chibi_snail_disappointed.png',
+        'assets/images/characters/chibi_snail_smiling.png',
         'assets/images/characters/chibi_pre_angel_bandaid.png',
       ]) {
         await precacheImage(AssetImage(asset), context);
@@ -352,7 +352,7 @@ void main() {
       for (final asset in [
         'assets/images/splash_morning_run.jpg',
         'assets/images/characters/avatar_gender_male.png',
-        'assets/images/characters/chibi_snail_disappointed.png',
+        'assets/images/characters/chibi_snail_smiling.png',
         'assets/images/characters/chibi_pre_angel_bandaid.png',
       ]) {
         await precacheImage(AssetImage(asset), context);

@@ -156,14 +156,14 @@ class UserTier {
 
   /// 티어 마스코트 그림. 모두 오른쪽을 본다. 메달은 그림에 없고
   /// 화면에서 [TierMedalBadge]로 따로 보여 준다.
-  /// 달팽이(등급 미배정): 실망하고 한숨 쉬는 깜찍한 비주얼.
+  /// 달팽이(등급 미배정): 워킹 챌린지에서 쓰는 웃는 달팽이. 바탕은 투명하다.
   String get avatarAssetPath => isSnail
-      ? 'assets/images/characters/chibi_snail_disappointed.png'
+      ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 전용 — 메달 없는 순수 티어 마스코트. 모두 오른쪽을 본다.
   String get pureAvatarAssetPath => isSnail
-      ? 'assets/images/characters/chibi_snail_running.png'
+      ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 일일 목표 거리.

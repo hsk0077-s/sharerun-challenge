@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/theme/app_colors.dart';
 import 'snail_bot_face.dart';
 
 /// 달팽이봇 버튼 설정. 폰에만 저장하고 서버와 무관하다.
@@ -274,19 +275,20 @@ class _MiniBotDockState extends State<MiniBotDock> {
                         child: const DecoratedBox(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            color: AppColors.nightCard,
+                            border: Border.fromBorderSide(
+                              BorderSide(color: AppColors.nightLime, width: 2),
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Color(0x33000000),
+                                color: Color(0x66000000),
                                 blurRadius: 8,
                                 offset: Offset(0, 2),
                               ),
                             ],
                           ),
                           child: ClipOval(
-                            child: ColoredBox(
-                              color: Colors.white,
-                              child: SnailBotFace(size: MiniBotDockMath.size),
-                            ),
+                            child: SnailBotFace(size: MiniBotDockMath.size),
                           ),
                         ),
                       ),

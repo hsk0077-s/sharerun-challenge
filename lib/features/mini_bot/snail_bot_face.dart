@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 /// 달팽이봇 얼굴. 같은 그림을 버튼과 대화 화면 머리글이 함께 쓴다.
 enum SnailBotMood {
-  /// 기본.
-  smiling('assets/images/snailbot/face_smiling.png'),
+  /// 기본. 워킹 챌린지에서 쓰는 웃는 달팽이(바탕 투명).
+  smiling('assets/images/characters/chibi_snail_smiling.png'),
 
   /// 마이크로 듣는 중.
   listening('assets/images/snailbot/face_listening.png'),

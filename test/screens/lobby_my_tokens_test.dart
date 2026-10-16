@@ -448,7 +448,7 @@ void main() {
         'tier_maltese',
         'tier_horse',
         'tier_cheetah',
-        'chibi_snail_disappointed',
+        'chibi_snail_smiling',
         'chibi_pre_angel_bandaid',
         'avatar_gender_male',
       ]) {

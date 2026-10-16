@@ -459,13 +459,13 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'S002',
-    nameKo: '몰티즈 마스터',
+    nameKo: '비글 마스터',
     slot: AccessorySlot.skin,
-    file: 'S002-maltese-master',
+    file: 'S002-beagle-master',
     rarity: AccessoryRarity.legend,
     currency: AccessoryCurrency.dia,
     price: 220,
-    tierLock: TierAnimal.maltese,
+    tierLock: TierAnimal.beagle,
   ),
   Accessory(
     id: 'S003',
@@ -525,13 +525,13 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'S009',
-    nameKo: '말 마스터',
+    nameKo: '얼룩말 마스터',
     slot: AccessorySlot.skin,
-    file: 'S009-horse-master',
+    file: 'S009-zebra-master',
     rarity: AccessoryRarity.legend,
     currency: AccessoryCurrency.dia,
     price: 250,
-    tierLock: TierAnimal.horse,
+    tierLock: TierAnimal.zebra,
     provisional: true,
   ),
 ];

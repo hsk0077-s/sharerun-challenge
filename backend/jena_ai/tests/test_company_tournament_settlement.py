@@ -968,9 +968,9 @@ def test_settlement_gives_promotion_points_to_graded_finishers_once() -> None:
 
     ledger = db.store["promotionLedger/race__u01"]
     assert ledger["rank"] == 1 and ledger["points"] == 60  # 40 x 1.0 x 1.5
-    # 10 finishers in an official race: a turtle winner goes straight to maltese.
+    # 10 finishers in an official race: a turtle winner goes straight to beagle.
     assert db.store["users/u01"]["gradeRank"] == 6
-    assert db.store["users/u01"]["gradeCode"] == "maltese_bronze"
+    assert db.store["users/u01"]["gradeCode"] == "beagle_bronze"
     # 25 x 1.5 = 37 points: one 20-point medal step, 17 stay banked.
     assert db.store["users/u02"]["gradeRank"] == 3
     assert db.store["users/u02"]["promotion"]["points"] == 17

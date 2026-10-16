@@ -30,9 +30,9 @@ import '../wallet/providers/wallet_provider.dart';
 /// 끼어들지 않도록 **항상 마지막**에 둔다.
 enum TierAnimal {
   turtle,
-  maltese,
+  beagle,
   wolf,
-  horse,
+  zebra,
   cheetah,
   snail,
 }
@@ -43,27 +43,27 @@ typedef AnimalGroup = TierAnimal;
 extension TierAnimalX on TierAnimal {
   String get code => switch (this) {
         TierAnimal.turtle => 'turtle',
-        TierAnimal.maltese => 'maltese',
+        TierAnimal.beagle => 'beagle',
         TierAnimal.wolf => 'wolf',
-        TierAnimal.horse => 'horse',
+        TierAnimal.zebra => 'zebra',
         TierAnimal.cheetah => 'cheetah',
         TierAnimal.snail => 'snail',
       };
 
   String get labelKo => switch (this) {
         TierAnimal.turtle => '거북이',
-        TierAnimal.maltese => '몰티즈',
+        TierAnimal.beagle => '비글',
         TierAnimal.wolf => '늑대',
-        TierAnimal.horse => '말',
+        TierAnimal.zebra => '얼룩말',
         TierAnimal.cheetah => '치타',
         TierAnimal.snail => '달팽이',
       };
 
   String get emoji => switch (this) {
         TierAnimal.turtle => '🐢',
-        TierAnimal.maltese => '🐶',
+        TierAnimal.beagle => '🐶',
         TierAnimal.wolf => '🐺',
-        TierAnimal.horse => '🐴',
+        TierAnimal.zebra => '🦓',
         TierAnimal.cheetah => '🐆',
         TierAnimal.snail => '🐌',
       };
@@ -170,24 +170,24 @@ class UserTier {
   double get targetKm => switch (group) {
         AnimalGroup.snail => 3.0,
         AnimalGroup.turtle => 5.0,
-        AnimalGroup.maltese || AnimalGroup.wolf => 7.0,
-        AnimalGroup.horse || AnimalGroup.cheetah => 10.0,
+        AnimalGroup.beagle || AnimalGroup.wolf => 7.0,
+        AnimalGroup.zebra || AnimalGroup.cheetah => 10.0,
       };
 
   /// 만보기 일일 목표 걸음 수 (1 SHARE = 1km 환산과 별개, 3.0km ≈ 4,500보).
   int get targetSteps => switch (group) {
         AnimalGroup.snail => 4500,
         AnimalGroup.turtle => 7500,
-        AnimalGroup.maltese || AnimalGroup.wolf => 10500,
-        AnimalGroup.horse || AnimalGroup.cheetah => 15000,
+        AnimalGroup.beagle || AnimalGroup.wolf => 10500,
+        AnimalGroup.zebra || AnimalGroup.cheetah => 15000,
       };
 
   /// 만보기 SHARE 드랍 주기(km).
   double get dropIntervalKm => switch (group) {
         AnimalGroup.snail => 0.05,
         AnimalGroup.turtle => 0.1,
-        AnimalGroup.maltese || AnimalGroup.wolf => 0.14,
-        AnimalGroup.horse || AnimalGroup.cheetah => 0.2,
+        AnimalGroup.beagle || AnimalGroup.wolf => 0.14,
+        AnimalGroup.zebra || AnimalGroup.cheetah => 0.2,
       };
 
   /// 만보기 일일 최대 채굴 SHARE.
@@ -211,18 +211,18 @@ class UserTier {
   Color get walkCanvasStart => switch (group) {
         AnimalGroup.snail => const Color(0xFFE8EDE4),
         AnimalGroup.turtle => const Color(0xFFDFF5EA),
-        AnimalGroup.maltese => const Color(0xFFFFF0E3),
+        AnimalGroup.beagle => const Color(0xFFFFF0E3),
         AnimalGroup.wolf => const Color(0xFFE8EEF3),
-        AnimalGroup.horse => const Color(0xFFF7ECDD),
+        AnimalGroup.zebra => const Color(0xFFF7ECDD),
         AnimalGroup.cheetah => const Color(0xFFFFF1D6),
       };
 
   Color get walkCanvasEnd => switch (group) {
         AnimalGroup.snail => const Color(0xFFD5DDD0),
         AnimalGroup.turtle => const Color(0xFFBFE8D4),
-        AnimalGroup.maltese => const Color(0xFFFFD9C2),
+        AnimalGroup.beagle => const Color(0xFFFFD9C2),
         AnimalGroup.wolf => const Color(0xFFD2DCE6),
-        AnimalGroup.horse => const Color(0xFFE8D4B8),
+        AnimalGroup.zebra => const Color(0xFFE8D4B8),
         AnimalGroup.cheetah => const Color(0xFFFFE0A3),
       };
 
@@ -231,9 +231,9 @@ class UserTier {
     if (isSnail) return 0;
     final animalBase = switch (animal) {
       TierAnimal.turtle => 0,
-      TierAnimal.maltese => 5,
+      TierAnimal.beagle => 5,
       TierAnimal.wolf => 10,
-      TierAnimal.horse => 15,
+      TierAnimal.zebra => 15,
       TierAnimal.cheetah => 20,
       TierAnimal.snail => 0,
     };
@@ -252,9 +252,9 @@ class UserTier {
 
   static const List<TierAnimal> rankedAnimals = <TierAnimal>[
     TierAnimal.turtle,
-    TierAnimal.maltese,
+    TierAnimal.beagle,
     TierAnimal.wolf,
-    TierAnimal.horse,
+    TierAnimal.zebra,
     TierAnimal.cheetah,
   ];
 

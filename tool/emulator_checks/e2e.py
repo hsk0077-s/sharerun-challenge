@@ -35,7 +35,7 @@ check('inventory 1', db.document('users/w/shopInventory/challenge_ticket').get()
 # 2. tournaments through ops
 ops.create_ranked_tournament('up', kind='tier', title='말 5km', target_distance_km=5, tier_animal=4, entry_fee_share=100)
 ops.create_ranked_tournament('same', kind='tier', title='늑대 5km', target_distance_km=5, tier_animal=3, entry_fee_share=100)
-ops.create_ranked_tournament('low', kind='tier', title='말티즈', target_distance_km=5, tier_animal=2, entry_fee_share=100)
+ops.create_ranked_tournament('low', kind='tier', title='비글', target_distance_km=5, tier_animal=2, entry_fee_share=100)
 def join(tid, uid='w'):
     return svc.join_tournament(uid, JoinTournamentRequest(tournament_id=tid))
 try: join('low'); check('lower tournament refused', False)

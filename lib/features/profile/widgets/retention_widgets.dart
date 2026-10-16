@@ -193,7 +193,8 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
     );
     // 같은 계정의 다른 폰이 이미 올린 걸음은 서버 기준선에 들어 있다.
     final profile = ref.watch(activeUserProfileProvider).asData?.value;
-    final serverToday = profile != null && profile.pedometerHarvestDateKey == today;
+    final serverToday =
+        profile != null && profile.pedometerHarvestDateKey == today;
     final serverClaimed = serverToday ? profile.pedometerClaimedSteps : 0;
     final effectiveClaimed = claimed > serverClaimed ? claimed : serverClaimed;
     final numbers = HomeHeroNumbers.from(
@@ -296,9 +297,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
                   shape: const StadiumBorder(),
                 ),
                 child: Text(
-                  canCollect
-                      ? '${numbers.pendingShare} SHARE 줍기'
-                      : '걷기 챌린지 보기',
+                  canCollect ? '${numbers.pendingShare} SHARE 줍기' : '걷기 챌린지 보기',
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,

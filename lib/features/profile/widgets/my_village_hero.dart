@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
 import '../../onboarding/src_onboarding_controller.dart';
+import '../village_scene.dart';
 
 /// 마이 탭 맨 위 마을 풍경. 하늘, 겹친 언덕, 굽이치는 길, 나무, 깃발을 그린다.
 /// 가운데에 내 티어 동물, 양옆에 나머지 동물 친구들이 선다.
@@ -10,12 +11,18 @@ class MyVillageHero extends StatelessWidget {
   const MyVillageHero({
     required this.tier,
     required this.onSettings,
+    this.onChangeVillage,
+    this.scene = defaultVillageScene,
     this.height = 250,
     super.key,
   });
 
   final UserTier tier;
   final VoidCallback onSettings;
+
+  /// null 이면 마을 바꾸기 버튼을 숨긴다.
+  final VoidCallback? onChangeVillage;
+  final VillageScene scene;
   final double height;
 
   static String _asset(TierAnimal a) =>
@@ -25,9 +32,9 @@ class MyVillageHero extends StatelessWidget {
   static List<TierAnimal> friendsOf(TierAnimal mine) {
     final all = [
       TierAnimal.turtle,
-      TierAnimal.maltese,
+      TierAnimal.beagle,
       TierAnimal.wolf,
-      TierAnimal.horse,
+      TierAnimal.zebra,
       TierAnimal.cheetah,
     ].where((a) => a != mine).toList();
     if (all.length > 4) all.remove(TierAnimal.wolf);
@@ -55,7 +62,14 @@ class MyVillageHero extends StatelessWidget {
             child: ClipRRect(
               borderRadius:
                   const BorderRadius.vertical(bottom: Radius.circular(40)),
-              child: const CustomPaint(painter: VillagePainter()),
+              child: scene.asset == null
+                  ? const CustomPaint(painter: VillagePainter())
+                  : Image.asset(
+                      scene.asset!,
+                      key: Key('my-village-bg-${scene.id}'),
+                      fit: BoxFit.cover,
+                      alignment: Alignment.bottomCenter,
+                    ),
             ),
           ),
           if (left.isNotEmpty)
@@ -99,6 +113,17 @@ class MyVillageHero extends StatelessWidget {
                           ),
                     ),
                     const Spacer(),
+                    if (onChangeVillage != null)
+                      IconButton(
+                        key: const Key('my-village-change'),
+                        onPressed: onChangeVillage,
+                        tooltip: '마을 바꾸기',
+                        icon: const Icon(
+                          Icons.landscape_outlined,
+                          color: AppColors.nightOnLime,
+                          size: 22,
+                        ),
+                      ),
                     IconButton(
                       key: const Key('my-page-settings'),
                       onPressed: onSettings,

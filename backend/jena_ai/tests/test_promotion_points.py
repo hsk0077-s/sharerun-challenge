@@ -59,7 +59,7 @@ def test_other_finishers_and_top_quarter() -> None:
 def test_rank_to_grade_matches_server_codes() -> None:
     assert rank_to_grade(1) == ("turtle_bronze", 1)
     assert rank_to_grade(5) == ("turtle_master", 5)
-    assert rank_to_grade(6) == ("maltese_bronze", 6)
+    assert rank_to_grade(6) == ("beagle_bronze", 6)
     assert rank_to_grade(25) == ("cheetah_master", 25)
 
 
@@ -131,7 +131,7 @@ def test_wolf_gate_needs_a_recent_fast_run() -> None:
     assert fast["promoted"] and fast["gradeRank"] == 11
 
 
-def test_horse_to_cheetah_waits_for_the_season_rule() -> None:
+def test_zebra_to_cheetah_waits_for_the_season_rule() -> None:
     out = apply_award(
         CFG, grade_rank=20, state={"points": 60, "tournaments": 8}, points=0,
         counts_tournament=False, first_place_instant=False,
@@ -140,7 +140,7 @@ def test_horse_to_cheetah_waits_for_the_season_rule() -> None:
     assert not out["promoted"] and out["blocked"] == "season"
 
 
-def test_instant_win_for_turtle_goes_to_maltese_bronze() -> None:
+def test_instant_win_for_turtle_goes_to_beagle_bronze() -> None:
     out = apply_award(
         CFG, grade_rank=4, state={}, points=40, counts_tournament=True,
         first_place_instant=True, best_recent_pace_sec=None, now=NOW,

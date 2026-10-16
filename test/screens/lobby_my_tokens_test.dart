@@ -444,8 +444,8 @@ void main() {
       final context = tester.element(find.byType(OnboardingMyPageScreen));
       for (final name in [
         'tier_turtle',
-        'tier_maltese',
-        'tier_horse',
+        'tier_beagle',
+        'tier_zebra',
         'tier_cheetah',
         'chibi_snail_smiling',
         'chibi_pre_angel_bandaid',

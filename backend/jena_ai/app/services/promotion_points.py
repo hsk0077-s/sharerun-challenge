@@ -12,7 +12,7 @@ a missing or invalid field keeps the default.
   a recent verified run at the next animal's pace.
 * One step per award and one promotion per 7 days. There is no demotion here.
 * A win in an official race can promote at once (turtle with 10 finishers,
-  maltese with 30). Wolf and above are not covered yet.
+  beagle with 30). Wolf and above are not covered yet.
 * The ledger doc ``promotionLedger/{tournamentId}__{uid}`` is written once, so
   settling again never pays twice. Points have no cash or DIA value.
 """
@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 PROMOTION_CONFIG_ID = "promotion"
 PROMOTION_LEDGER = "promotionLedger"
 
-ANIMALS = ("turtle", "maltese", "wolf", "horse", "cheetah")
+ANIMALS = ("turtle", "beagle", "wolf", "zebra", "cheetah")
 MEDALS = ("bronze", "silver", "gold", "diamond", "master")
 
 DEFAULT_CONFIG: dict = {
@@ -53,9 +53,9 @@ DEFAULT_CONFIG: dict = {
     # per animal: points to leave the animal, min tournaments, pace gate (sec/km)
     "animals": {
         "turtle": {"threshold": 100, "minTournaments": 3, "paceGateSec": 0},
-        "maltese": {"threshold": 150, "minTournaments": 5, "paceGateSec": 359},
+        "beagle": {"threshold": 150, "minTournaments": 5, "paceGateSec": 359},
         "wolf": {"threshold": 200, "minTournaments": 6, "paceGateSec": 299},
-        "horse": {"threshold": 300, "minTournaments": 8, "paceGateSec": 239},
+        "zebra": {"threshold": 300, "minTournaments": 8, "paceGateSec": 239},
         "cheetah": {"threshold": 300, "minTournaments": 0, "paceGateSec": 0},
     },
     "paceGateDays": 30,
@@ -65,7 +65,7 @@ DEFAULT_CONFIG: dict = {
     "newAccountWinFactor": 0.5,
     "promotionCooldownDays": 7,
     # instant promotion: animal -> minimum finishers; official races only
-    "instantWin": {"turtle": 10, "maltese": 30},
+    "instantWin": {"turtle": 10, "beagle": 30},
     "instantWinClasses": ["company", "sponsor", "final"],
 }
 
@@ -276,8 +276,8 @@ def apply_award(
             outcome["blocked"] = "tournaments"
             return outcome
         gate = int(rule["paceGateSec"])
-        if animal == "horse":
-            # Season top 10 percent is not tracked yet, so a horse stays put
+        if animal == "zebra":
+            # Season top 10 percent is not tracked yet, so a zebra stays put
             # until that rule exists. A cheetah placement by pace still works.
             outcome["blocked"] = "season"
             return outcome

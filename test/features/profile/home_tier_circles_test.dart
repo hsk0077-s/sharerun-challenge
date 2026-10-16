@@ -124,7 +124,7 @@ void main() {
   testWidgets('it does not overflow on a narrow space', (tester) async {
     await _pump(
       tester,
-      tier: const UserTier(animal: TierAnimal.maltese, medal: TierMedal.master),
+      tier: const UserTier(animal: TierAnimal.beagle, medal: TierMedal.master),
       angel: AngelTier.seraphim,
       width: 190,
     );

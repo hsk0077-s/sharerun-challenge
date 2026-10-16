@@ -423,27 +423,27 @@ class AngelChronicleCard extends ConsumerWidget {
               ),
             ),
           ),
-            if (isPreAngel) ...[
-              SizedBox(height: tokens.spacing.sm),
-              Text(
-                '아직 등 뒤에 장착된 진짜 날개가 없습니다. '
-                '단 1회 기부로 귀여운 아기 날개를 달아보세요!',
-                style: textTheme.bodySmall?.copyWith(
-                  fontSize: 12,
-                  height: 1.45,
-                  color: tokens.colors.muted,
-                ),
+          if (isPreAngel) ...[
+            SizedBox(height: tokens.spacing.sm),
+            Text(
+              '아직 등 뒤에 장착된 진짜 날개가 없습니다. '
+              '단 1회 기부로 귀여운 아기 날개를 달아보세요!',
+              style: textTheme.bodySmall?.copyWith(
+                fontSize: 12,
+                height: 1.45,
+                color: tokens.colors.muted,
               ),
-              SizedBox(height: tokens.spacing.sm),
-              const _FirstWingCta(),
-            ] else ...[
-              SizedBox(height: tokens.spacing.sm),
-              AngelProgressBar(progress: progress, label: gap),
-              SizedBox(height: tokens.spacing.sm),
-              const _PromoteAngelCta(),
-            ],
+            ),
+            SizedBox(height: tokens.spacing.sm),
+            const _FirstWingCta(),
+          ] else ...[
+            SizedBox(height: tokens.spacing.sm),
+            AngelProgressBar(progress: progress, label: gap),
+            SizedBox(height: tokens.spacing.sm),
+            const _PromoteAngelCta(),
           ],
-        ),
+        ],
+      ),
     );
   }
 }

@@ -417,7 +417,7 @@ class PromotionProgressCard extends ConsumerWidget {
   static const barKey = Key('promotion-progress-bar');
 
   /// 서버가 `promotion.step`을 아직 안 보낸 사람(대회 결과 전)용 기본값.
-  /// 서버 기본 설정과 같은 값이다: 거북 20 · 말티즈 30 · 늑대 40 · 말 60 · 치타 60.
+  /// 서버 기본 설정과 같은 값이다: 거북 20 · 비글 30 · 늑대 40 · 얼룩말 60 · 치타 60.
   static int fallbackStep(int gradeRank) {
     const steps = [20, 30, 40, 60, 60];
     final animal = ((gradeRank - 1) ~/ 5).clamp(0, 4);

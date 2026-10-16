@@ -19,6 +19,7 @@ import '../features/profile/widgets/my_page_invite_code_card.dart';
 import '../features/profile/widgets/my_page_referral_code_entry.dart';
 import '../features/profile/widgets/my_village_hero.dart';
 import '../features/profile/widgets/retention_widgets.dart';
+import '../features/profile/village_scene.dart';
 import 'donation_settlement_screen.dart';
 import 'settings_screen.dart';
 import 'snail_to_cheetah_book_page.dart';
@@ -84,11 +85,14 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                     tier: ref.watch(activeUserTierStructProvider) ??
                         UserTier.unratedFallback,
                     onSettings: _onSettings,
+                    scene: ref.watch(villageSceneProvider),
+                    onChangeVillage: () => VillagePicker.show(context),
                   ),
                 ),
                 const MyIdentityRow(),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: tokens.spacing.page),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: tokens.spacing.page),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [

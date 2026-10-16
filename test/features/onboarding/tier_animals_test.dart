@@ -9,17 +9,17 @@ import 'package:share_run_challenge/features/profile/avatar_choice.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('the five tier animals are turtle, maltese, wolf, horse, cheetah', () {
+  test('the five tier animals are turtle, beagle, wolf, zebra, cheetah', () {
     expect(
       UserTier.rankedAnimals.map((a) => a.code),
-      ['turtle', 'maltese', 'wolf', 'horse', 'cheetah'],
+      ['turtle', 'beagle', 'wolf', 'zebra', 'cheetah'],
     );
     expect(
       UserTier.rankedAnimals.map((a) => a.labelKo),
-      ['거북이', '몰티즈', '늑대', '말', '치타'],
+      ['거북이', '비글', '늑대', '얼룩말', '치타'],
     );
-    expect(UserTier.tryFromRankScore(6)?.animal, TierAnimal.maltese);
-    expect(UserTier.tryFromRankScore(16)?.animal, TierAnimal.horse);
+    expect(UserTier.tryFromRankScore(6)?.animal, TierAnimal.beagle);
+    expect(UserTier.tryFromRankScore(16)?.animal, TierAnimal.zebra);
     expect(UserTier.tryFromRankScore(1)?.firestoreCode, 'turtle_bronze');
     expect(UserTier.tryFromRankScore(11)?.firestoreCode, 'wolf_bronze');
   });
@@ -55,10 +55,10 @@ void main() {
   });
 
   test('old saved avatar names still find the new animals', () {
-    expect(AvatarPresets.byId('rabbit').id, 'maltese');
-    expect(AvatarPresets.byId('gazelle').id, 'horse');
-    expect(AvatarPresets.byId('maltese').label, '몰티즈');
-    expect(AvatarPresets.byId('horse').label, '말');
+    expect(AvatarPresets.byId('rabbit').id, 'beagle');
+    expect(AvatarPresets.byId('gazelle').id, 'zebra');
+    expect(AvatarPresets.byId('beagle').label, '비글');
+    expect(AvatarPresets.byId('zebra').label, '얼룩말');
   });
 
   testWidgets('no mascot is mirrored on the walking track: the snail PNG faces right too',

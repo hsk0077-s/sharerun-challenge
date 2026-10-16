@@ -37,7 +37,7 @@ void main() {
       [AvatarChoice.maleId, AvatarChoice.femaleId],
     );
     expect(AvatarPresets.byId('turtle').label, '거북이');
-    expect(AvatarPresets.byId('rabbit').id, 'maltese');
+    expect(AvatarPresets.byId('rabbit').id, 'beagle');
     expect(AvatarPresets.byId('없는것').id, AvatarChoice.maleId);
   });
 

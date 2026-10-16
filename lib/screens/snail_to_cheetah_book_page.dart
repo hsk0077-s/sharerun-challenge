@@ -292,10 +292,10 @@ const _chapters = <_ChapterSpec>[
   ),
   _ChapterSpec(
     unlockRank: 2,
-    title: '몰티즈',
+    title: '비글',
     subtitle: '가벼운 조깅을 즐기는 러닝 입문자',
     paceGuide: '평균 페이스 6분 00초 ~ 7분 29초',
-    animal: TierAnimal.maltese,
+    animal: TierAnimal.beagle,
   ),
   _ChapterSpec(
     unlockRank: 3,
@@ -306,10 +306,10 @@ const _chapters = <_ChapterSpec>[
   ),
   _ChapterSpec(
     unlockRank: 4,
-    title: '말',
+    title: '얼룩말',
     subtitle: '러닝 숙련자 수준',
     paceGuide: '평균 페이스 4분 00초 ~ 4분 59초',
-    animal: TierAnimal.horse,
+    animal: TierAnimal.zebra,
   ),
   _ChapterSpec(
     unlockRank: 5,
@@ -432,9 +432,9 @@ abstract final class TierBookScale {
   static double of(TierAnimal animal) => switch (animal) {
         TierAnimal.snail => 0.92,
         TierAnimal.turtle => 1.0,
-        TierAnimal.maltese => 1.08,
+        TierAnimal.beagle => 1.08,
         TierAnimal.wolf => 1.16,
-        TierAnimal.horse => 1.24,
+        TierAnimal.zebra => 1.24,
         TierAnimal.cheetah => 1.32,
       };
 

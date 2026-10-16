@@ -323,7 +323,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SizedBox(width: tokens.spacing.xs),
                     Expanded(
                       child: Text(
-                        'My Wallet',
+                        '내 지갑',
                         style: textTheme.titleLarge,
                       ),
                     ),
@@ -337,7 +337,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: _HomeWalletBadgeTap(
                       onTap: _onOpenInAppBilling,
                       child: CurrencyBadge(
-                        label: 'Share',
+                        label: 'SHARE',
                         amount: wallet.shareBalance,
                         color: tokens.colors.accent,
                       ),
@@ -348,7 +348,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: _HomeWalletBadgeTap(
                       onTap: () => _onOpenStore(focus: StoreFocus.items),
                       child: CurrencyBadge(
-                        label: 'Diamond',
+                        label: 'DIA',
                         amount: wallet.diamondBalance,
                         color: tokens.colors.primary,
                       ),
@@ -359,7 +359,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: _HomeWalletBadgeTap(
                       onTap: () => _onOpenStore(focus: StoreFocus.donate),
                       child: CurrencyBadge(
-                        label: 'Value',
+                        label: 'VALUE',
                         amount: wallet.valueBalance,
                         color: tokens.colors.donation,
                       ),
@@ -380,7 +380,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SizedBox(height: tokens.spacing.xxl),
         _HomeStartButton(onPressed: _onStartRun),
         SizedBox(height: tokens.spacing.xxl),
-        Text('Active Challenges', style: textTheme.titleLarge),
+        Text('모집 중인 챌린지', style: textTheme.titleLarge),
         SizedBox(height: tokens.spacing.md),
         AsyncValueSection<List<TournamentModel>>(
           asyncValue: challengesAsync,
@@ -392,7 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (activeChallenges.isEmpty) {
               return SrcSurfaceCard(
                 child: Text(
-                  'No recruiting tournament rooms yet.',
+                  '모집 중인 대회가 아직 없어요.',
                   style: textTheme.bodyMedium?.copyWith(
                     color: tokens.colors.muted,
                   ),
@@ -443,7 +443,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Diamond Balance',
+                      'DIA 잔액',
                       style: textTheme.labelMedium?.copyWith(
                         color: tokens.colors.muted,
                         fontWeight: FontWeight.w600,
@@ -542,9 +542,9 @@ class _ActiveChallengeCard extends StatelessWidget {
             isJoined
                 ? AppStrings.winnerRewardNoConversion
                 : locked
-                    ? 'Tier ${room.requiredTier} room locked'
+                    ? '티어 ${room.requiredTier} 방은 잠겨 있어요'
                     : full
-                        ? 'Room full'
+                        ? '정원이 가득 찼어요'
                         : AppStrings.winnerRewardNoConversion,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

@@ -31,6 +31,6 @@ abstract final class LegalConstants {
       '언제든 MyPage에서 변경할 수 있습니다.';
 
   static const ephemeralSensorPolicy =
-      'Heart-rate and cadence arrays are ephemeral: validated in memory, then destroyed. '
-      'Only jenaVerified summary fields are persisted.';
+      '심박수·케이던스 원본 데이터는 기기 메모리에서 검증한 뒤 바로 폐기하며, '
+      '검증 결과 요약만 저장합니다.';
 }

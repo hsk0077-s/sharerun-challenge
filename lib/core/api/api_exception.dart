@@ -57,6 +57,8 @@ class ApiException implements Exception {
 }
 
 abstract final class ApiErrorMessage {
+  static const _genericFailure = '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.';
+
   static String from(Object error) {
     if (error is ApiException) {
       return error.userMessage;
@@ -100,13 +102,13 @@ abstract final class ApiErrorMessage {
       'Cheer flag is already up for this crew today.' =>
         '이 크루의 응원 깃발은 오늘 이미 걸려 있습니다.',
       'Friend recorded run is required.' => '친구의 검증된 기록을 선택해 주세요.',
-      'Refund exceeds Share balance.' => '환불 가능한 Share 잔액을 초과했습니다.',
+      'Refund exceeds Share balance.' => '환불 가능한 SHARE 잔액을 초과했습니다.',
       'Move closer to collect.' => '다이아 상자에 더 가까이 이동해 주세요.',
       'Diamond box already collected.' => '이미 수집한 다이아 상자입니다.',
       'Verified own activity required.' => '본인의 검증 완료 러닝만 처리할 수 있습니다.',
       'Reward already processed.' => '이미 처리된 우승 보상입니다.',
       'No reward available.' => '수령 가능한 보상이 없습니다.',
-      'Insufficient Value to donate.' => '기부할 Value Token이 부족합니다.',
+      'Insufficient Value to donate.' => '기부할 VALUE가 부족합니다.',
       'Insufficient Value balance.' => 'VALUE가 부족합니다.',
       'That day already counts.' => '이미 기록이 있는 날은 휴식일로 지정할 수 없습니다.',
       'That day is already a rest day.' => '그 날은 이미 휴식일입니다.',
@@ -134,6 +136,60 @@ abstract final class ApiErrorMessage {
       'kakao_not_configured' => '카카오 로그인이 아직 준비되지 않았어요.',
       'custom_token_unavailable' => '잠시 후 다시 시도해 주세요.',
       'too_many_attempts' => '시도가 너무 많아요. 잠시 후 다시 시도해 주세요.',
+      'A challenge ticket can be used once a week.' =>
+        '챌린지 참가권은 일주일에 한 번만 쓸 수 있어요.',
+      'No challenge ticket.' => '챌린지 참가권이 없어요.',
+      'Choose SHARE or free DIA.' => 'SHARE 또는 무료 DIA로 결제해 주세요.',
+      'Insufficient Diamond deposit.' => 'DIA 예치금이 부족해요.',
+      'Insufficient SRV (Value Token) balance.' => 'VALUE가 부족합니다.',
+      'Invalid crew emblem.' => '엠블럼을 확인해 주세요.',
+      'Invalid crew name.' => '크루 이름을 확인해 주세요.',
+      'Invalid crew payment.' => '크루 결제 방법을 확인해 주세요.',
+      'Invalid nickname.' => '닉네임을 확인해 주세요.',
+      'Invalid room title.' => '방 제목을 확인해 주세요.',
+      'You do not own a crew.' => '내 크루가 없어요.',
+      'Cannot use your own referral code.' => AppStrings.referralRedeemSelf,
+      'Referral code not found.' => AppStrings.referralRedeemInvalid,
+      'Referral code is required.' => '초대 코드를 입력해 주세요.',
+      'Referral code can only be applied before trial completion.' =>
+        '체험 런을 끝내기 전에만 초대 코드를 쓸 수 있어요.',
+      'Diamond box not found.' => '다이아 상자를 찾지 못했어요.',
+      'Diamond box is inactive.' => '이 다이아 상자는 지금 쓸 수 없어요.',
+      'Weekly prize-race entry limit reached.' =>
+        '이번 주 상금 대회 참가 한도에 도달했어요.',
+      'Prize race entry does not accept DIA.' => '상금 대회는 DIA로 참가할 수 없어요.',
+      'Streak is not broken.' => '연속 기록이 끊기지 않았어요.',
+      'Streak break is outside 72 hours.' => '끊긴 지 72시간이 지나 지킬 수 없어요.',
+      'No missed day to protect.' => '지킬 빠진 날이 없어요.',
+      'Safeguard hold cap is 2.' => '보호권은 2개까지 보관할 수 있어요.',
+      'CPR monthly use cap is 2.' => 'CPR은 한 달에 2번까지 쓸 수 있어요.',
+      'Purchase token already used.' => '이미 처리된 결제예요.',
+      'Purchase is not completed.' => '결제가 아직 끝나지 않았어요.',
+      'Purchase token could not be verified.' => '결제를 확인하지 못했어요.',
+      'Unknown DIA pack.' => '알 수 없는 DIA 상품이에요.',
+      'Unknown Coach+ product.' => '알 수 없는 코치+ 상품이에요.',
+      'Shop item not found.' => '상점 아이템을 찾지 못했어요.',
+      'Extra entry ticket is spent by joining a race.' ||
+      'Friend ghost pack is spent as single uses.' =>
+        '이 아이템은 한 번 쓸 때마다 하나씩 사라져요.',
+      'User not found.' => '사용자 정보를 찾을 수 없어요.',
+      'Not found.' => '찾을 수 없어요.',
+      'Missing Firebase ID token.' ||
+      'Firebase token did not include uid.' =>
+        '로그인 인증이 만료되었습니다. 다시 로그인해 주세요.',
+      'Tournament does not exist.' ||
+      'Tournament document does not exist.' =>
+        '대회 정보를 찾을 수 없습니다.',
+      'Tournament participation not found.' => '참가 기록을 찾을 수 없어요.',
+      'Recorded run belongs to another runner.' => '다른 사람의 기록이에요.',
+      'Recorded run has no pace.' ||
+      'Recorded run is not verified.' ||
+      'Recorded run not found.' =>
+        '친구의 검증된 기록을 선택해 주세요.',
+      'Mission completed. Mercy settlement is not required.' =>
+        '미션을 이미 완료해서 기부 정산이 필요 없어요.',
+      'Signed out.' => '로그아웃되었어요.',
+      _ when !RegExp(r'[가-힣]').hasMatch(detail) => _genericFailure,
       _ => detail,
     };
   }

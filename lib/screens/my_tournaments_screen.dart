@@ -30,7 +30,7 @@ class MyTournamentsScreen extends ConsumerWidget {
       children: [
         if (!inTabs) ...[
           Text(
-            'My Tournaments',
+            '내 대회',
             style: textTheme.headlineSmall?.copyWith(color: tokens.colors.ink),
           ),
           SizedBox(height: tokens.spacing.xs),
@@ -124,7 +124,7 @@ class MyTournamentsScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '${p.entryFeeShare} Share entry · '
+                    '참가비 ${p.entryFeeShare} SHARE · '
                     '${p.tournament.recruitmentSummary}',
                     style: textTheme.bodySmall?.copyWith(
                       color: tokens.colors.muted,
@@ -134,7 +134,7 @@ class MyTournamentsScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              p.isRefunded ? 'Refunded' : 'Joined',
+              p.isRefunded ? '환불됨' : '참가 중',
               style: textTheme.labelLarge?.copyWith(
                 color: p.isRefunded
                     ? tokens.colors.muted

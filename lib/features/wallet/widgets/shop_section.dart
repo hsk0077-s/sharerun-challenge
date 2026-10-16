@@ -40,7 +40,7 @@ class ShopSection extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.diamond_outlined),
-          label: Text(buyingDiamonds ? '결제 준비 중...' : 'Diamond 충전하기'),
+          label: Text(buyingDiamonds ? '결제 준비 중...' : 'DIA 충전하기'),
         ),
         const SizedBox(height: 10),
         Container(

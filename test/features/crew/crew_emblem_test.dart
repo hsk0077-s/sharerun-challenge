@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -83,7 +85,20 @@ void main() {
 void groupsTest() {
   test('groups cover every icon exactly once', () {
     final listed = [for (final g in CrewEmblem.groups.values) ...g];
-    expect(listed.length, CrewEmblem.icons.length);
-    expect(listed.toSet(), CrewEmblem.icons.keys.toSet());
+    expect(listed.length, CrewEmblem.icons.length + CrewEmblem.glyphIds.length);
+    expect(
+      listed.toSet(),
+      {...CrewEmblem.icons.keys, ...CrewEmblem.glyphIds},
+    );
+  });
+
+  test('every glyph id has a PNG asset and parses', () {
+    expect(CrewEmblem.glyphIds.length, 30);
+    for (final id in CrewEmblem.glyphIds) {
+      expect(File(CrewEmblem.glyphAssetOf(id)).existsSync(), isTrue,
+          reason: id);
+      expect(CrewEmblem.parse('$id:lime'), isNotNull, reason: id);
+    }
+    expect(CrewEmblem.parse('g_nope:lime'), isNull);
   });
 }

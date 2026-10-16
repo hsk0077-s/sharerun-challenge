@@ -151,3 +151,11 @@ def test_emblem_route() -> None:
         app.dependency_overrides.clear()
     assert response.status_code == 200, response.text
     assert seen == {"uid": "u1", "emblem": "sun:sky"}
+
+
+def test_glyph_emblems_are_accepted():
+    from app.services.crew_emblem import CREW_EMBLEM_SHAPES, normalize_crew_emblem
+
+    glyphs = [s for s in CREW_EMBLEM_SHAPES if s.startswith("g_")]
+    assert len(glyphs) == 30
+    assert normalize_crew_emblem("g_wolf:pink") == "g_wolf:pink"

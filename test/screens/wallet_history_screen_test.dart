@@ -48,7 +48,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('SHARE → 다이아 전환'), findsOneWidget);
-    expect(find.text('-1200 Share · +1 Diamond'), findsOneWidget);
+    expect(find.text('-1200 SHARE · +1 DIA'), findsOneWidget);
     expect(find.byKey(WalletHistoryScreen.moreButtonKey), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(WalletHistoryScreen.moreButtonKey));
@@ -96,7 +96,7 @@ void main() {
   test('negative ledger share is shown as a debit with a readable label', () {
     final row = _row('x', 'share_to_dia', share: -1200);
     expect(row.displayLabel, 'SHARE → 다이아 전환');
-    expect(row.amountSummary, '-1200 Share');
-    expect(_row('y', 'share_top_up', share: 500).amountSummary, '+500 Share');
+    expect(row.amountSummary, '-1200 SHARE');
+    expect(_row('y', 'share_top_up', share: 500).amountSummary, '+500 SHARE');
   });
 }

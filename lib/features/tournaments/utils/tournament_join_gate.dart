@@ -42,12 +42,12 @@ abstract final class TournamentJoinGate {
         return null;
       }
       if (prizeEntryShare > 0 && shareBalance < prizeEntryShare) {
-        return 'Share 잔액이 부족합니다.';
+        return 'SHARE 잔액이 부족합니다.';
       }
       return null;
     }
     if (shareBalance < tournament.entryFeeShare) {
-      return 'Share 잔액이 부족합니다.';
+      return 'SHARE 잔액이 부족합니다.';
     }
     return null;
   }

@@ -79,7 +79,7 @@ class TournamentModel {
             (winnerRewardValue <= 0 && donationValue <= 0))) {
       return null;
     }
-    return 'Donation pool: $donationValue Value';
+    return '기부 풀: $donationValue VALUE';
   }
 
   factory TournamentModel.fromJson({

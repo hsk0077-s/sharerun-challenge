@@ -198,37 +198,36 @@ void main() {
       const Scaffold(body: TournamentScreen()),
     );
 
-    expect(find.text('Tournament Rooms'), findsOneWidget);
+    expect(find.text('대회 방'), findsOneWidget);
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
-    expect(find.text('Sponsor: UNICEF Partner'), findsOneWidget);
+    expect(find.text('후원  UNICEF Partner'), findsOneWidget);
     expect(find.text('100 SHARE'), findsOneWidget);
+    expect(find.text('100 SHARE로 참가'), findsOneWidget);
     expect(find.text(AppStrings.winnerRewardNoConversion), findsOneWidget);
     expect(find.textContaining('+500 밸류'), findsNothing);
-    expect(find.text('Donation pool: 200 Value'), findsOneWidget);
-    expect(find.text('Join with Share'), findsOneWidget);
-    expect(find.textContaining('My Tournaments'), findsOneWidget);
-    expect(find.byType(SrcSurfaceCard), findsWidgets);
+    expect(find.text('기부 풀: 200 VALUE'), findsOneWidget);
+    expect(find.textContaining('내 대회'), findsOneWidget);
 
-    final ctx = tester.element(find.text('Tournament Rooms'));
+    final ctx = tester.element(find.text('대회 방'));
     expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
     expect(ctx.srcTokens.colors.accent, AppColors.tealAccent);
     expect(ctx.srcTokens.colors.donation, AppColors.angelGold);
 
     expect(
       tester.widget<Text>(find.text('100 SHARE')).style?.color,
-      AppColors.tealAccent,
+      ctx.srcTokens.colors.primary,
     );
     expect(
       tester.widget<Text>(find.text(AppStrings.winnerRewardNoConversion)).style?.color,
       AppColors.angelGold,
     );
     expect(
-      tester.widget<Text>(find.text('Donation pool: 200 Value')).style?.color,
+      tester.widget<Text>(find.text('기부 풀: 200 VALUE')).style?.color,
       AppColors.angelGold,
     );
 
     final join = tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Join with Share'));
+        find.widgetWithText(FilledButton, '100 SHARE로 참가'));
     expect(
       join.style?.backgroundColor?.resolve(const <WidgetState>{}),
       AppColors.primaryMint,
@@ -392,11 +391,11 @@ void main() {
       const Scaffold(body: MyTournamentsScreen()),
     );
 
-    expect(find.text('My Tournaments'), findsOneWidget);
+    expect(find.text('내 대회'), findsOneWidget);
     expect(find.text('아직 참가한 대회가 없습니다.'), findsOneWidget);
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
-    final ctx = tester.element(find.text('My Tournaments'));
+    final ctx = tester.element(find.text('내 대회'));
     expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
   });
 

@@ -23,7 +23,7 @@ class SponsorPaymentOptionSelector extends StatelessWidget {
           activeColor: AppColors.neonLime,
           onChanged: _handleChanged,
           title: const Text('옵션 A: 상금 직접 지원'),
-          subtitle: const Text('Fixed-prize tournament support without wagering mechanics.'),
+          subtitle: const Text('고정 상금을 직접 지원해요. 내기 요소는 없어요.'),
         ),
         RadioListTile<SponsorPaymentOption>(
           value: SponsorPaymentOption.winnerNamedUnicefDonation,
@@ -31,7 +31,7 @@ class SponsorPaymentOptionSelector extends StatelessWidget {
           activeColor: AppColors.neonLime,
           onChanged: _handleChanged,
           title: const Text('옵션 B: 우승자 명의 유니세프 전액 기부'),
-          subtitle: const Text('Sponsor funds are donated under the winner impact flow.'),
+          subtitle: const Text('후원금은 우승자 이름으로 유니세프에 기부돼요.'),
         ),
       ],
     );

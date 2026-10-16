@@ -103,9 +103,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('START'), findsOneWidget);
-    expect(find.text('Share'), findsOneWidget);
-    expect(find.text('Diamond'), findsOneWidget);
-    expect(find.text('Value'), findsOneWidget);
+    expect(find.text('SHARE'), findsOneWidget);
+    expect(find.text('DIA'), findsOneWidget);
+    expect(find.text('VALUE'), findsOneWidget);
     expect(find.text('90000'), findsOneWidget);
     expect(find.text('5'), findsWidgets);
     expect(find.text('5200'), findsOneWidget);
@@ -122,7 +122,7 @@ void main() {
 
     final shareBadge = tester.widget<CurrencyBadge>(
       find.ancestor(
-        of: find.text('Share'),
+        of: find.text('SHARE'),
         matching: find.byType(CurrencyBadge),
       ),
     );
@@ -131,7 +131,7 @@ void main() {
 
     final valueBadge = tester.widget<CurrencyBadge>(
       find.ancestor(
-        of: find.text('Value'),
+        of: find.text('VALUE'),
         matching: find.byType(CurrencyBadge),
       ),
     );

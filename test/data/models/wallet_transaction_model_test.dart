@@ -14,8 +14,8 @@ void main() {
         tournamentId: null,
       );
 
-      expect(transaction.displayLabel, 'Share 충전');
-      expect(transaction.amountSummary, '+10000 Share');
+      expect(transaction.displayLabel, 'SHARE 충전');
+      expect(transaction.amountSummary, '+10000 SHARE');
     });
 
     test('builds multi-currency amount summary', () {
@@ -29,7 +29,7 @@ void main() {
         tournamentId: 'tournament-1',
       );
 
-      expect(transaction.amountSummary, '-250 Value');
+      expect(transaction.amountSummary, '-250 VALUE');
     });
     test('maps the signup free ticket', () {
       const ticket = WalletTransactionModel(
@@ -57,7 +57,7 @@ void main() {
         tournamentId: 'race',
       );
       expect(dia.displayLabel, '대회 보너스 DIA');
-      expect(dia.amountSummary, '+1000 Diamond');
+      expect(dia.amountSummary, '+1000 DIA');
 
       const share = WalletTransactionModel(
         id: 'tx-prize-share',
@@ -69,7 +69,7 @@ void main() {
         tournamentId: 'race',
       );
       expect(share.displayLabel, '대회 상위 완주 SHARE');
-      expect(share.amountSummary, '+1000 Share');
+      expect(share.amountSummary, '+1000 SHARE');
     });
 
     test('shows debit amounts for tournament entry', () {
@@ -83,7 +83,7 @@ void main() {
         tournamentId: 'tournament-1',
       );
 
-      expect(transaction.amountSummary, '-100 Share');
+      expect(transaction.amountSummary, '-100 SHARE');
     });
 
     test('maps personal sponsor debits to Korean labels', () {
@@ -97,7 +97,7 @@ void main() {
         tournamentId: null,
       );
       expect(donation.displayLabel, '유니세프 기부 완료');
-      expect(donation.amountSummary, '-50000 Share');
+      expect(donation.amountSummary, '-50000 SHARE');
 
       const prize = WalletTransactionModel(
         id: 'tx-prize',
@@ -109,7 +109,7 @@ void main() {
         tournamentId: null,
       );
       expect(prize.displayLabel, '챌린지 상금 지원 후원');
-      expect(prize.amountSummary, '-50000 Share');
+      expect(prize.amountSummary, '-50000 SHARE');
     });
 
     test('maps pedometer harvest to walking-challenge pickup label', () {
@@ -124,7 +124,7 @@ void main() {
       );
 
       expect(transaction.displayLabel, '워킹챌린지 코인 줍기');
-      expect(transaction.amountSummary, '+20 Share');
+      expect(transaction.amountSummary, '+20 SHARE');
     });
 
     test('maps value item spends without treating them as cash', () {
@@ -149,9 +149,9 @@ void main() {
       );
 
       expect(rest.displayLabel, '휴식일 지정권');
-      expect(rest.amountSummary, '-50 Value');
+      expect(rest.amountSummary, '-50 VALUE');
       expect(match.displayLabel, '기부 매칭권');
-      expect(match.amountSummary, '-100 Value');
+      expect(match.amountSummary, '-100 VALUE');
     });
 
     test('maps incubator hatch to a credit label', () {
@@ -166,7 +166,7 @@ void main() {
       );
 
       expect(transaction.displayLabel, '만보기 부화');
-      expect(transaction.amountSummary, '+500 Share');
+      expect(transaction.amountSummary, '+500 SHARE');
     });
 
     test('maps debug 1M test grant label', () {

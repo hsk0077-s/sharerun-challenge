@@ -352,7 +352,7 @@ class _ChallengeDetailCopy {
       return const _ChallengeDetailCopy(
         title: '1km 초보 챌린지',
         entryFee: AppStrings.dashboardChallenge1Sub,
-        badge: 'Beginner',
+        badge: '입문',
         prize: AppStrings.challengeDetailPrize,
         donation: AppStrings.challengeDetailDonation,
         distance: '거리: 1km',

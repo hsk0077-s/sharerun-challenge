@@ -105,7 +105,7 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
         ? tour.landmarks.first
         : const StampLandmark(
             id: 'fallback',
-            name: 'Seoul',
+            name: '서울',
             latitude: 37.5665,
             longitude: 126.9780,
             isVisited: false,

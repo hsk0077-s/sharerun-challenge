@@ -92,7 +92,7 @@ Map & Crew Firestore seed:
 
 ```json
 diamondBoxes/{boxId}: {
-  "title": "Park Gate Diamond",
+  "title": "공원 입구 다이아",
   "latitude": 37.5665,
   "longitude": 126.9780,
   "rewardDiamond": 3,
@@ -100,7 +100,7 @@ diamondBoxes/{boxId}: {
 }
 
 crewRankings/{crewId}: {
-  "name": "Neon Runners",
+  "name": "네온 러너스",
   "totalValue": 3200,
   "memberCount": 12
 }
@@ -110,7 +110,7 @@ Tournament Firestore seed:
 
 ```json
 tournaments/{tournamentId}: {
-  "title": "Rookie 3K UNICEF Run",
+  "title": "루키 3K 유니세프 런",
   "targetDistanceKm": 3,
   "entryFeeShare": 100,
   "winnerRewardValue": 500,
@@ -120,7 +120,7 @@ tournaments/{tournamentId}: {
   "participantCount": 0,
   "requiredTier": 1,
   "status": "recruiting",
-  "sponsorName": "UNICEF Partner",
+  "sponsorName": "유니세프 파트너",
   "createdAt": "<server timestamp>"
 }
 ```

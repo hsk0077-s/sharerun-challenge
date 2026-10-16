@@ -53,13 +53,13 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
         result.verified && result.valueTokenReward > 0 && !rewardProcessed;
     final color = result.verified ? AppColors.neonLime : AppColors.dangerRed;
     final headline = result.verified
-        ? 'Verified Run'
+        ? '검증된 러닝'
         : result.decision == JenaDecision.pending
-            ? 'Invalid Activity'
+            ? '인정되지 않은 기록'
             : '검증되지 않은 기록';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Jena Result')),
+      appBar: AppBar(title: const Text('러닝 결과')),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
@@ -84,8 +84,8 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                   const SizedBox(height: 16),
                   Text(verificationUserMessage(result)),
                   const SizedBox(height: 16),
-                  Text('Decision: ${result.decision.name}'),
-                  Text('Value Token Reward: ${result.valueTokenReward}'),
+                  Text('판정: ${result.decision.name}'),
+                  Text('VALUE 보상: ${result.valueTokenReward}'),
                 ],
               ),
             ),
@@ -151,14 +151,14 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                       )
                     : const Icon(Icons.workspace_premium_rounded),
                 label: Text(
-                  processingReward ? 'Processing reward...' : '우승 상금 선택하기',
+                  processingReward ? '보상을 처리하는 중...' : '우승 상금 선택하기',
                 ),
               ),
               const SizedBox(height: 12),
             ],
             FilledButton(
               onPressed: () => context.go(RouteNames.home),
-              child: const Text('Back to Home'),
+              child: const Text('홈으로 돌아가기'),
             ),
           ],
         ),

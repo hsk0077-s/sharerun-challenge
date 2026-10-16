@@ -31,7 +31,7 @@ class WalletTransactionModel {
       return '휴식일 지정';
     }
     return switch (type) {
-      'share_top_up' => 'Share 충전',
+      'share_top_up' => 'SHARE 충전',
       'tournament_entry' => '대회 참가',
       'tournament_prize_dia' => '대회 보너스 DIA',
       'tournament_top_percent_share' => '대회 상위 완주 SHARE',
@@ -49,7 +49,7 @@ class WalletTransactionModel {
       'referral_trial_referee' => '체험 런 3회 완료',
       'referral_trial_referrer' => '친구 체험 런 3회',
       'referral_trial_referrer_hold' => '친구 체험 런 3회 대기',
-      'mercy_rule_donation' => '자비로운 실패 기부 (Mercy Rule)',
+      'mercy_rule_donation' => '자비로운 실패 기부',
       'winner_reward_claim_all' => '우승 상금 수령',
       'winner_reward_donate_half' => '우승 상금 50% 기부',
       'winner_reward_donate_all' => '우승 상금 전액 기부',
@@ -87,13 +87,13 @@ class WalletTransactionModel {
     final debit = _isDebitType;
 
     if (shareAmount != 0) {
-      parts.add(_formatAmount(shareAmount, 'Share', debit: debit || shareAmount < 0));
+      parts.add(_formatAmount(shareAmount, 'SHARE', debit: debit || shareAmount < 0));
     }
     if (valueAmount != 0) {
-      parts.add(_formatAmount(valueAmount, 'Value', debit: valueAmount < 0));
+      parts.add(_formatAmount(valueAmount, 'VALUE', debit: valueAmount < 0));
     }
     if (diamondAmount != 0) {
-      parts.add(_formatAmount(diamondAmount, 'Diamond', debit: diamondAmount < 0));
+      parts.add(_formatAmount(diamondAmount, 'DIA', debit: diamondAmount < 0));
     }
     if (ticketAmount != 0) {
       parts.add(_formatAmount(ticketAmount, '참가권', debit: ticketAmount < 0));

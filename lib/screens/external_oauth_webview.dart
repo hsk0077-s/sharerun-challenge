@@ -113,7 +113,7 @@ class _ExternalOauthWebviewState extends ConsumerState<ExternalOauthWebview> {
                                       ),
                                     )
                                   : Text(
-                                      '${AppStrings.garminSignInAuthorize}\n${AppStrings.garminSignInAuthorizeKo}',
+                                      AppStrings.garminSignInAuthorize,
                                       textAlign: TextAlign.center,
                                       style: AppTextStyles.buttonText.copyWith(
                                         color: AppColors.textWhite,

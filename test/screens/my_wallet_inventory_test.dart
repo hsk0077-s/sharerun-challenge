@@ -254,7 +254,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('대회 참가'), findsOneWidget);
-    expect(find.text('-30000 Share'), findsOneWidget);
+    expect(find.text('-30000 SHARE'), findsOneWidget);
     expect(find.text('로컬에만 있는 영수증'), findsNothing);
     expect(find.text(AppStrings.notificationPaymentJustNow), findsOneWidget);
     expect(find.text(AppStrings.notificationPaymentEmpty), findsNothing);

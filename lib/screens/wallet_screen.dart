@@ -52,19 +52,19 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
         Text('지갑 & 기부', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
         CurrencyBadge(
-          label: 'Share - 환불 가능 충전금',
+          label: 'SHARE - 환불 가능 충전금',
           amount: wallet.shareBalance,
           color: AppColors.electricBlue,
         ),
         const SizedBox(height: 12),
         CurrencyBadge(
-          label: 'Diamond - 유료 아이템 재화',
+          label: 'DIA - 유료 아이템 재화',
           amount: wallet.diamondBalance,
           color: Colors.purpleAccent,
         ),
         const SizedBox(height: 12),
         CurrencyBadge(
-          label: 'SRV (Value Token) - 노력 기반 명예 토큰',
+          label: 'VALUE - 노력 기반 명예 토큰',
           amount: wallet.valueTokenBalance,
           color: AppColors.neonLime,
         ),
@@ -98,7 +98,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                '${wallet.totalDonationValue} / ${ImpactConstants.donationMilestoneValue} Value donated',
+                '${wallet.totalDonationValue} / ${ImpactConstants.donationMilestoneValue} VALUE 기부',
               ),
             ],
           ),
@@ -149,7 +149,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
           label: Text(
             refunding
                 ? '환불 요청 중...'
-                : '결제 취소 (현금 환불) - ${wallet.shareBalance} Share',
+                : '결제 취소 (현금 환불) - ${wallet.shareBalance} SHARE',
           ),
         ),
         const SizedBox(height: 28),
@@ -310,7 +310,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('현금 환불 요청'),
-          content: Text('$shareAmount Share를 전액 환불 요청하시겠습니까?'),
+          content: Text('$shareAmount SHARE를 전액 환불 요청하시겠습니까?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),

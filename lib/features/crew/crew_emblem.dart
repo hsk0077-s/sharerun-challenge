@@ -15,19 +15,63 @@ class CrewEmblem {
 
   static const fallback = CrewEmblem('moon', 'lime');
 
-  /// 서버와 같은 규칙(모양 44개, 색 6개). 목록에 없으면 null.
+  /// 서버와 같은 규칙(아이콘 44개 + 그림 문양 30개, 색 6개). 목록에 없으면 null.
   static CrewEmblem? parse(String? code) {
     if (code == null) return null;
     final parts = code.split(':');
     if (parts.length != 2) return null;
-    if (!icons.containsKey(parts[0]) || !colors.containsKey(parts[1])) {
+    if (!(icons.containsKey(parts[0]) || glyphIds.contains(parts[0])) ||
+        !colors.containsKey(parts[1])) {
       return null;
     }
     return CrewEmblem(parts[0], parts[1]);
   }
 
   String get code => '$icon:$color';
-  IconData get iconData => icons[icon]!;
+  bool get isGlyph => icon.startsWith(glyphPrefix);
+  IconData? get iconData => icons[icon];
+
+  /// 그림 문양(`g_wolf` 같은 코드)의 PNG 경로. 흰색 원본에 색을 입혀 쓴다.
+  String get glyphAsset => glyphAssetOf(icon);
+
+  static const glyphPrefix = 'g_';
+
+  static String glyphAssetOf(String id) =>
+      'assets/images/crew_glyphs/glyph-${id.substring(glyphPrefix.length).replaceAll('_', '-')}.png';
+
+  /// 새로 더한 그림 문양 30개. 서버 목록과 같아야 한다.
+  static const glyphIds = <String>{
+    'g_bolt',
+    'g_cheetah',
+    'g_chevrons',
+    'g_city',
+    'g_clock',
+    'g_compass',
+    'g_crown',
+    'g_droplet',
+    'g_ecg',
+    'g_flag',
+    'g_flame',
+    'g_footprints',
+    'g_hands',
+    'g_heart',
+    'g_horse',
+    'g_infinity',
+    'g_laurel',
+    'g_maltese',
+    'g_map_pin',
+    'g_mountain',
+    'g_shoe',
+    'g_sprout',
+    'g_star',
+    'g_sun',
+    'g_tree',
+    'g_trophy',
+    'g_turtle',
+    'g_wave',
+    'g_wings',
+    'g_wolf',
+  };
   Color get colorValue => colors[color]!;
 
   @override
@@ -133,6 +177,38 @@ class CrewEmblem {
       'wing',
     ],
     '동물': ['paw', 'bird', 'bunny', 'bee'],
+    '그림 문양': [
+      'g_bolt',
+      'g_cheetah',
+      'g_chevrons',
+      'g_city',
+      'g_clock',
+      'g_compass',
+      'g_crown',
+      'g_droplet',
+      'g_ecg',
+      'g_flag',
+      'g_flame',
+      'g_footprints',
+      'g_hands',
+      'g_heart',
+      'g_horse',
+      'g_infinity',
+      'g_laurel',
+      'g_maltese',
+      'g_map_pin',
+      'g_mountain',
+      'g_shoe',
+      'g_sprout',
+      'g_star',
+      'g_sun',
+      'g_tree',
+      'g_trophy',
+      'g_turtle',
+      'g_wave',
+      'g_wings',
+      'g_wolf',
+    ],
   };
 
   static const colors = <String, Color>{
@@ -143,6 +219,35 @@ class CrewEmblem {
     'violet': Color(0xFFB28CFF),
     'white': Color(0xFFE8EFE6),
   };
+}
+
+/// 모양 하나. 아이콘이면 글꼴 아이콘, `g_` 문양이면 PNG에 색을 입혀 그린다.
+class CrewEmblemMark extends StatelessWidget {
+  const CrewEmblemMark({
+    required this.id,
+    required this.color,
+    required this.size,
+    super.key,
+  });
+
+  final String id;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    if (id.startsWith(CrewEmblem.glyphPrefix)) {
+      return Image.asset(
+        CrewEmblem.glyphAssetOf(id),
+        width: size,
+        height: size,
+        color: color,
+        colorBlendMode: BlendMode.srcIn,
+        filterQuality: FilterQuality.medium,
+      );
+    }
+    return Icon(CrewEmblem.icons[id], color: color, size: size);
+  }
 }
 
 /// 동그란 엠블럼. 어두운 바탕에 색 테두리와 같은 색 모양.
@@ -164,7 +269,11 @@ class CrewEmblemBadge extends StatelessWidget {
         border: Border.all(color: emblem.colorValue, width: size >= 72 ? 3 : 2),
       ),
       alignment: Alignment.center,
-      child: Icon(emblem.iconData, color: emblem.colorValue, size: size * 0.5),
+      child: CrewEmblemMark(
+        id: emblem.icon,
+        color: emblem.colorValue,
+        size: size * 0.5,
+      ),
     );
   }
 }
@@ -287,9 +396,10 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                             width: id == _icon ? 2.5 : 1,
                           ),
                         ),
-                        child: Icon(
-                          CrewEmblem.icons[id],
+                        child: CrewEmblemMark(
+                          id: id,
                           color: id == _icon ? emblem.colorValue : c.muted,
+                          size: id.startsWith(CrewEmblem.glyphPrefix) ? 28 : 24,
                         ),
                       ),
                     ),

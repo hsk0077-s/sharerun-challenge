@@ -41,11 +41,15 @@ void main() {
       );
     });
 
-    test('returns unknown detail unchanged', () {
+    test('unknown English detail becomes a Korean generic message', () {
       expect(
         ApiErrorMessage.forDetail('Unexpected backend error.'),
-        'Unexpected backend error.',
+        '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.',
       );
+    });
+
+    test('Korean detail passes through unchanged', () {
+      expect(ApiErrorMessage.forDetail('이미 처리했어요.'), '이미 처리했어요.');
     });
 
     test('from returns userMessage for ApiException', () {

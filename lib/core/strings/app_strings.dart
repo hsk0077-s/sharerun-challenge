@@ -75,7 +75,7 @@ abstract final class AppStrings {
   static const garminAuthSubtitle = '안전한 OAuth 2.0 공식 로그인 페이지입니다.';
   static const garminEmailHint = '이메일 아이디';
   static const garminPasswordHint = '비밀번호';
-  static const garminSignInAuthorize = 'Sign In & Authorize';
+  static const garminSignInAuthorize = '로그인하고 권한 허용';
   static const garminSignInAuthorizeKo = '(로그인 및 권한 허용)';
   static const garminCancelAndReturn = '연동을 취소하고 앱으로 돌아가기';
 
@@ -210,7 +210,7 @@ abstract final class AppStrings {
   // ── Challenge Detail (Screen 9) ───────────────────────────────────
   static const challengeDetailTitle = '3km 중급 챌린지 (골드 방)';
   static const challengeDetailEntryFee = '참가비: 1,200 SHARE';
-  static const challengeDetailGoldBadge = 'Gold';
+  static const challengeDetailGoldBadge = '골드';
   static const challengeDetailPrize = noCashPrizePool;
   static const challengeDetailDonation = '기부: 유니세프(결식아동)';
   static const challengeDetailDistance = '거리: 3km';
@@ -410,7 +410,7 @@ abstract final class AppStrings {
       '🎁 심폐소생권/세이프가드 전체 선물 (DIA)';
   static const crewManagerGiftDeposit =
       '🛡️ 크루 대항전 예치금 방장 대납 (DIA/SHARE)';
-  static const crewManagerGiftAngelBadge = 'Angel Badge 획득하세요';
+  static const crewManagerGiftAngelBadge = '천사 배지를 획득하세요';
   static const crewManagerShareWarning = 'SHARE 결제 시 주의하세요';
   static const crewManagerGiftPass =
       '🎉 크루 전용 챌린지 패스 & 스킨 구매 (DIA)';
@@ -464,7 +464,7 @@ abstract final class AppStrings {
   static const refundPolicy2 =
       '- 최소 인원이 모이지 않으면 참가비가 전액 돌아옵니다.';
   static const refundTargetItem = '[ 50,000 SHARE (미사용) ]';
-  static const refundPaymentDate = 'Payment Date: 2026.06.25';
+  static const refundPaymentDate = '결제일: 2026.06.25';
   static const refundTotalAmount = '총 환불 예정 금액: 50,000 KRW';
   static const refundCancelCta = '수수료 없이 결제 취소하기 (현금 환불)';
 

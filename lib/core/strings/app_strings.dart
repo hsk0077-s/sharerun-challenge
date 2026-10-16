@@ -388,19 +388,12 @@ abstract final class AppStrings {
 
   // ── Running Crew (Screen 18) ──────────────────────────────────────
   static const runningCrewTitle = '러닝 크루 (Crew)';
-  static const runningCrewMyCrewName = '서울 나이트 러너스 🌙';
+  static const runningCrewHeadline = '같이 달릴\n크루 찾기';
+  static const runningCrewMyCrewName = '인천 논현 최강 크루';
   static const runningCrewMyCrewStats =
       '소속 크루원: 45/50명 | 누적 달성 거리: 3,240km';
   static const runningCrewCreateButton =
       '[50 DIA 또는 30,000 SHARE로 새 크루 창설하기]';
-  static const runningCrewRankingTitle = '이번 주 전국 크루 랭킹';
-  static const runningCrewRank1Label = '1위';
-  static const runningCrewRank1Name = '강남 스피드 클럽';
-  static const runningCrewRank1Distance = '1,200km';
-  static const runningCrewRank2Label = '2위';
-  static const runningCrewRank2Name = '부산 오션 러너스';
-  static const runningCrewRank2Distance = '980km';
-  static const runningCrewRank5Label = '5위';
   static const runningCrewProgressLabel = '이번 주 크루 대항전 10K 완주율';
   static const runningCrewProgressValue = '80%';
   static const runningCrewEnterRoom = '크루 대항 챌린지 룸 입장하기';

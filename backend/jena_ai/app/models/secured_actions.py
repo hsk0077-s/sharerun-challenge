@@ -106,6 +106,12 @@ class CrewFoundRequest(BaseModel):
     # reads both numbers from config/item_prices.
     pay_with: str = Field(default="share", pattern="^(share|dia)$")
     request_id: str = Field(min_length=8, max_length=64)
+    # ``모양:색`` (예: ``moon:lime``). 비우면 기본 엠블럼. 목록에 없는 값은 거부한다.
+    emblem: str | None = Field(default=None, max_length=24)
+
+
+class CrewEmblemRequest(BaseModel):
+    emblem: str = Field(min_length=3, max_length=24)
 
 
 class NicknameChangeRequest(BaseModel):

@@ -93,6 +93,8 @@ Future<void> _pumpCrewTab(
 }
 
 Future<void> _submitQuery(WidgetTester tester, String query) async {
+  await tester.ensureVisible(find.byIcon(Icons.search_rounded));
+  await tester.pumpAndSettle();
   await tester.tap(find.byIcon(Icons.search_rounded));
   await tester.pumpAndSettle();
   expect(find.text('크루 검색'), findsOneWidget);
@@ -123,10 +125,11 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _submitQuery(tester, '서울');
-    expect(find.text('검색: "서울"'), findsOneWidget);
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsWidgets);
-    expect(find.text('강남 스피드 클럽'), findsNothing);
+    await _submitQuery(tester, '부산');
+    expect(find.text('검색: "부산"'), findsOneWidget);
+    // 내 크루만 있으므로 맞는 크루가 없으면 안내 문구가 나온다.
+    expect(find.byKey(const Key('crew-search-result')), findsNothing);
+    expect(find.text('검색 결과가 없습니다.'), findsOneWidget);
   });
 
   testWidgets('plain MaterialApp: keyboard submit stays up', (tester) async {
@@ -139,24 +142,26 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byIcon(Icons.search_rounded));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.search_rounded));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '서울');
+    await tester.enterText(find.byType(TextField), '부산');
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
     expect(tester.takeException(), isNull);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.text('검색: "서울"'), findsOneWidget);
-    expect(find.text('강남 스피드 클럽'), findsNothing);
+    expect(find.text('검색: "부산"'), findsOneWidget);
+    expect(find.byKey(const Key('crew-search-result')), findsNothing);
   });
 
   testWidgets(
       'nested MaterialApp like AuthenticatedApp: search submit stays up',
       (tester) async {
     await _pumpCrewTab(tester);
-    await _submitQuery(tester, '서울');
-    expect(find.text('검색: "서울"'), findsOneWidget);
+    await _submitQuery(tester, '부산');
+    expect(find.text('검색: "부산"'), findsOneWidget);
   });
 
   testWidgets('dismissing the search dialog clears the crew filter',
@@ -170,8 +175,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _submitQuery(tester, '서울');
+    await _submitQuery(tester, '부산');
 
+    await tester.ensureVisible(find.byIcon(Icons.search_rounded));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.search_rounded));
     await tester.pumpAndSettle();
     expect(find.text('크루 검색'), findsOneWidget);
@@ -180,9 +187,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('크루 검색'), findsNothing);
-    expect(find.text('검색: "서울"'), findsNothing);
-    expect(find.text('강남 스피드 클럽'), findsOneWidget);
-    expect(find.text(AppStrings.runningCrewTitle), findsOneWidget);
+    expect(find.text('검색: "부산"'), findsNothing);
+    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
   });
 
   testWidgets('back chevron clears crew search and restores the full list',
@@ -196,29 +202,28 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await _submitQuery(tester, '서울');
-    expect(find.text('강남 스피드 클럽'), findsNothing);
+    await _submitQuery(tester, '부산');
+    expect(find.byKey(const Key('crew-search-result')), findsNothing);
 
+    await tester.ensureVisible(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
     await tester.pumpAndSettle();
 
-    expect(find.text('검색: "서울"'), findsNothing);
-    expect(find.text('강남 스피드 클럽'), findsOneWidget);
-    expect(find.text('부산 오션 러너스'), findsOneWidget);
-    expect(find.text(AppStrings.runningCrewTitle), findsOneWidget);
+    expect(find.text('검색: "부산"'), findsNothing);
+    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
   });
 
   testWidgets('system back on the crew tab clears search before leaving',
       (tester) async {
     await _pumpCrewTab(tester, home: const Text('HOME_ROOT'));
-    await _submitQuery(tester, '서울');
+    await _submitQuery(tester, '부산');
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
 
-    expect(find.text('검색: "서울"'), findsNothing);
-    expect(find.text('강남 스피드 클럽'), findsOneWidget);
-    expect(find.text(AppStrings.runningCrewTitle), findsOneWidget);
+    expect(find.text('검색: "부산"'), findsNothing);
+    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
     expect(find.text('HOME_ROOT'), findsNothing);
   });
 }

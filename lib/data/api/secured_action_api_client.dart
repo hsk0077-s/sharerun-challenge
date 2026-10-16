@@ -469,7 +469,14 @@ class SecuredActionApiClient {
 
   /// Debits 100 DIA and stores the nickname in one server transaction.
   Future<PedometerHarvestResult> changeNickname(String nickname) async {
-    final json = await _post('/actions/profile/nickname', {'nickname': nickname});
+    final json =
+        await _post('/actions/profile/nickname', {'nickname': nickname});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Changes the emblem of the crew this account owns. Free. 404 without a crew.
+  Future<PedometerHarvestResult> changeCrewEmblem(String emblem) async {
+    final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
   }
 
@@ -477,6 +484,7 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> foundCrew(
     String name, {
     required String payWith,
+    String? emblem,
   }) async {
     const retryKey = 'crew-create';
     final requestId = _requestIds.begin(retryKey);
@@ -485,6 +493,7 @@ class SecuredActionApiClient {
         'name': name,
         'pay_with': payWith,
         'request_id': requestId,
+        if (emblem != null) 'emblem': emblem,
       });
       _requestIds.succeed(retryKey);
       return PedometerHarvestResult.fromJson(json);

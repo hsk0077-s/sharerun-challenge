@@ -125,6 +125,7 @@ from app.services.item_price_config import (
     read_item_prices,
 )
 from app.services.challenge_tickets import purchase_challenge_ticket
+from app.services.crew_emblem import DEFAULT_CREW_EMBLEM, normalize_crew_emblem
 from app.services.ranked_tournaments import (
     consume_challenge_ticket,
     ranked_finish_fields,
@@ -758,9 +759,11 @@ class SecuredActionService:
         name: str,
         pay_with: str,
         request_id: str,
+        emblem: str | None = None,
     ) -> SecuredActionResult:
         if pay_with not in {"share", "dia"}:
             raise HTTPException(status_code=400, detail="Invalid crew payment.")
+        emblem = normalize_crew_emblem(emblem)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         crew_ref = self.firebase_service.db.collection("crews").document()
@@ -773,6 +776,32 @@ class SecuredActionService:
             require_request_id(request_id),
             user_ref,
             crew_ref,
+            emblem,
+        )
+
+    def change_crew_emblem(self, uid: str, emblem: str) -> SecuredActionResult:
+        """Free. Only the crew owner can change it, and only to a listed emblem."""
+        code = normalize_crew_emblem(emblem)
+        db = self.firebase_service.db
+        user_snapshot = db.collection("users").document(uid).get()
+        user = user_snapshot.to_dict() if user_snapshot.exists else None
+        crew_id = (user or {}).get("ownedCrewId")
+        if not isinstance(crew_id, str) or not crew_id:
+            raise HTTPException(status_code=404, detail="You do not own a crew.")
+        crew_ref = db.collection("crews").document(crew_id)
+        crew_snapshot = crew_ref.get()
+        crew = crew_snapshot.to_dict() if crew_snapshot.exists else None
+        if not crew or crew.get("ownerUid") != uid:
+            raise HTTPException(status_code=404, detail="You do not own a crew.")
+        crew_ref.set({"emblem": code, "updatedAt": SERVER_TIMESTAMP}, merge=True)
+        wallet = (user or {}).get("wallet") or {}
+        return SecuredActionResult(
+            accepted=True,
+            status="updated",
+            reason="Crew emblem updated.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=_wallet_int(wallet, "diamondBalance"),
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
     def create_challenge_room(
@@ -2966,6 +2995,7 @@ class SecuredActionService:
         request_id: str,
         user_ref,
         crew_ref,
+        emblem: str = DEFAULT_CREW_EMBLEM,
     ) -> SecuredActionResult:
         trimmed = name.strip()
         if not trimmed or len(trimmed) > 80:
@@ -3023,6 +3053,7 @@ class SecuredActionService:
             crew_ref,
             {
                 "name": trimmed,
+                "emblem": emblem,
                 "ownerUid": uid,
                 "totalValue": 0,
                 "memberCount": 1,
@@ -5147,9 +5178,10 @@ def _commit_crew_found_tx(
     request_id: str,
     user_ref,
     crew_ref,
+    emblem: str = DEFAULT_CREW_EMBLEM,
 ) -> SecuredActionResult:
     return service._found_crew_tx(
-        transaction, uid, name, pay_with, request_id, user_ref, crew_ref
+        transaction, uid, name, pay_with, request_id, user_ref, crew_ref, emblem
     )
 
 

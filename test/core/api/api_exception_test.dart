@@ -37,7 +37,7 @@ void main() {
     test('maps known backend detail to Korean copy', () {
       expect(
         ApiErrorMessage.forDetail('Insufficient Share balance.'),
-        'Share 잔액이 부족합니다.',
+        'SHARE가 부족합니다.',
       );
     });
 

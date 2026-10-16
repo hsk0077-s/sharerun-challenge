@@ -45,7 +45,7 @@ void main() {
     'remount keeps a picked-up floor from showing SHARE 줍기',
     (tester) async {
       final today = KstCalendar.dateKey();
-      PedometerHarvestLedger.commitSession(dateKey: today, claimed: 2900);
+      PedometerHarvestLedger.commitSession(dateKey: today, claimed: 2950);
       SharedPreferences.setMockInitialValues({
         'is_pedometer_reset_v3_done': true,
         'lastSavedDate': today,
@@ -101,7 +101,9 @@ void main() {
       }
       expect(sawSteps, isTrue, reason: 'today steps show the account record');
       expect(find.text('2,950'), findsNothing);
-      expect(find.text('29 SHARE 줍기'), findsNothing);
+      // 10 steps = 1 SHARE, so a floor equal to today's steps leaves nothing
+      // to pick up.
+      expect(find.textContaining('SHARE 줍기'), findsNothing);
       expect(find.text('코인 쌓이는 중...'), findsOneWidget);
       expect(find.textContaining('오늘의 땀방울 : 0 / 60'), findsOneWidget);
 
@@ -111,10 +113,10 @@ void main() {
   );
 
   testWidgets(
-    'home CTA does not offer 줍기 for a sub-100 remainder',
+    'home CTA does not offer 줍기 for a leftover under 10 steps',
     (tester) async {
       final today = KstCalendar.dateKey();
-      PedometerHarvestLedger.commitSession(dateKey: today, claimed: 2900);
+      PedometerHarvestLedger.commitSession(dateKey: today, claimed: 2945);
       SharedPreferences.setMockInitialValues({
         '${today}_steps': 2950,
       });
@@ -136,7 +138,8 @@ void main() {
       await tester.pump();
 
       expect(find.text('워킹챌린지 코인줍기'), findsNothing);
-      expect(find.text('워킹 챌린지 시작'), findsOneWidget);
+      expect(find.textContaining('SHARE 줍기'), findsNothing);
+      expect(find.text('걷기 챌린지 보기'), findsOneWidget);
 
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(milliseconds: 50));

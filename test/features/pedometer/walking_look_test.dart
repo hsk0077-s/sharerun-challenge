@@ -110,15 +110,15 @@ void main() {
     final image = tester.widget<Image>(find.byKey(const Key('walking-mascot')));
     expect(image.color, isNull);
     expect(image.colorBlendMode, isNull);
+    // The PNG is already transparent and faces right like every tier animal,
+    // so there is no plate filter and no mirror flip.
+    expect(find.byType(ColorFiltered), findsNothing);
     expect(
-      find.descendant(
-        of: find.byType(ColorFiltered),
-        matching: find.byKey(const Key('walking-mascot')),
-      ),
-      findsOneWidget,
+      tester.widgetList<Transform>(find.byType(Transform)).where(
+            (t) => t.transform.storage[0] < 0,
+          ),
+      isEmpty,
     );
-    final filter = tester.widget<ColorFiltered>(find.byType(ColorFiltered));
-    expect(filter.colorFilter, WalkingLook.whitePlateKnockout);
   });
 
   testWidgets('WalkingMascot stays the static smiling snail (motion off)',

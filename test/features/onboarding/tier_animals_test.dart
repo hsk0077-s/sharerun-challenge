@@ -61,7 +61,7 @@ void main() {
     expect(AvatarPresets.byId('horse').label, '말');
   });
 
-  testWidgets('only the left-facing snail is mirrored on the walking track',
+  testWidgets('no mascot is mirrored on the walking track: the snail PNG faces right too',
       (tester) async {
     bool mirrored(WidgetTester t) {
       final transforms = t.widgetList<Transform>(
@@ -80,7 +80,7 @@ void main() {
         );
 
     await pump(UserTier.unratedFallback);
-    expect(mirrored(tester), isTrue);
+    expect(mirrored(tester), isFalse);
 
     await pump(const UserTier(animal: TierAnimal.cheetah, medal: TierMedal.gold));
     expect(mirrored(tester), isFalse);

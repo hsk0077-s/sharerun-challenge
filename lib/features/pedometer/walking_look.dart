@@ -68,15 +68,6 @@ abstract final class WalkingLook {
   static const snailWalkingAsset =
       'assets/images/characters/chibi_snail_smiling.png';
 
-  /// Alpha-only knockout for the snail PNG's opaque near-white plate.
-  /// Does **not** tint pixels (no `primaryMint` / `BlendMode.multiply` rect).
-  static const whitePlateKnockout = ColorFilter.matrix(<double>[
-    1, 0, 0, 0, 0,
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    -4, -4, -4, 11.6, 0,
-  ]);
-
   static String mascotAsset(UserTier tier) {
     if (tier.isSnail) return snailWalkingAsset;
     return tier.avatarAssetPath;
@@ -384,11 +375,8 @@ class _WalkingMascotState extends State<WalkingMascot>
                 scaleX: scaleX,
                 scaleY: scaleY,
                 alignment: Alignment.bottomCenter,
-                // 달팽이 그림만 왼쪽을 봐서 뒤집는다. 티어 동물은 오른쪽을 본다.
-                child: Transform.flip(
-                  flipX: widget.tier.isSnail,
-                  child: child,
-                ),
+                // 달팽이 그림도 티어 동물처럼 오른쪽을 본다.
+                child: child,
               ),
             ),
           ),
@@ -446,11 +434,7 @@ class _WalkingMascotState extends State<WalkingMascot>
         color: WalkingLook.onHero,
       ),
     );
-    if (!widget.tier.isSnail) return image;
-    return ColorFiltered(
-      colorFilter: WalkingLook.whitePlateKnockout,
-      child: image,
-    );
+    return image;
   }
 }
 

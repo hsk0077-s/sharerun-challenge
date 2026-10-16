@@ -209,3 +209,79 @@ def test_open_is_idempotent_and_validates() -> None:
     assert caught.value.status_code == 409
     with pytest.raises(HTTPException):
         open_ranked_tournament(db, "t8", kind="tier", title="x", target_distance_km=5)
+
+
+# ---- HTTP level: routes, auth, and request plumbing -------------------------
+from types import SimpleNamespace
+
+from fastapi.testclient import TestClient
+
+from app.main import app
+from app.routers import ops_router, secured_action_router
+from app.services.auth_service import require_uid
+from app.services.ops_service import OpsService
+
+
+def test_ops_routes_create_then_settle_a_ranked_tournament(monkeypatch) -> None:
+    monkeypatch.setenv("OPS_ADMIN_SECRET", "ops-secret")
+    db = _MemoryDb()
+    original = ops_router.service
+    ops_router.service = OpsService(firebase_service=SimpleNamespace(db=db))
+    headers = {"x-ops-admin-secret": "ops-secret"}
+    body = {"kind": "tier", "title": "늑대 5km", "target_distance_km": 5, "tier_animal": 3}
+    try:
+        client = TestClient(app)
+        denied = client.post("/ops/ranked-tournaments/r1", json=body, headers={"x-ops-admin-secret": "x"})
+        made = client.post("/ops/ranked-tournaments/r1", json=body, headers=headers)
+        again = client.post("/ops/ranked-tournaments/r1", json=body, headers=headers)
+        bad = client.post(
+            "/ops/ranked-tournaments/r2",
+            json={**body, "tier_animal": 9},
+            headers=headers,
+        )
+        early = client.post("/ops/tournaments/r1/settle", headers=headers)
+        db.store["tournaments/r1"]["status"] = "active"
+        for i in range(5):
+            uid = f"u{i}"
+            db.store[f"users/{uid}"] = {"gradeRank": 12}
+            db.store[f"tournaments/r1/participants/{uid}"] = {
+                "verifiedFinish": True, "durationSeconds": 1000 + i,
+            }
+        settled = client.post("/ops/tournaments/r1/settle", headers=headers)
+        twice = client.post("/ops/tournaments/r1/settle", headers=headers)
+    finally:
+        ops_router.service = original
+
+    assert denied.status_code == 401
+    assert made.status_code == 200 and made.json()["status"] == "created"
+    assert again.json()["status"] == "already_created"
+    assert bad.status_code == 400
+    assert early.status_code == 400
+    assert settled.status_code == 200 and settled.json()["status"] == "settled"
+    assert settled.json()["finisher_count"] == 5
+    assert twice.json()["status"] == "already_settled"
+    assert db.store["promotionLedger/r1__u0"]["points"] == 24  # 40 x 0.6 x 1.0
+
+
+def test_shop_purchase_route_passes_pay_with(monkeypatch) -> None:
+    seen = {}
+
+    def fake(uid, item_id, request_id=None, pay_with=None):
+        seen.update(uid=uid, item_id=item_id, request_id=request_id, pay_with=pay_with)
+        return {"accepted": True, "status": "purchased", "reason": "ok"}
+
+    original = secured_action_router.service
+    secured_action_router.service = SimpleNamespace(purchase_shop_item=fake)
+    app.dependency_overrides[require_uid] = lambda: "u1"
+    try:
+        response = TestClient(app).post(
+            "/actions/shop/purchase",
+            json={"item_id": "challenge_ticket", "request_id": "r1", "pay_with": "dia"},
+        )
+    finally:
+        secured_action_router.service = original
+        app.dependency_overrides.clear()
+    assert response.status_code == 200, response.text
+    assert seen == {
+        "uid": "u1", "item_id": "challenge_ticket", "request_id": "r1", "pay_with": "dia"
+    }

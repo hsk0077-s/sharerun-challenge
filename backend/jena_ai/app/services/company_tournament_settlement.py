@@ -44,6 +44,7 @@ from app.services.donation_cap import (
     read_monthly_cap_won,
     won_within_cap,
 )
+from app.services.promotion_points import award_tournament_results
 from app.services.streak_protection import kst_month_key
 from app.services.wallet_funding import move_currency
 
@@ -285,7 +286,30 @@ def settle_company_prize_race(
         finished["prizeSeasonId"] = final_season
     batch.update(tournament_ref, finished)
     batch.commit()
+    _award_promotion_points(db, tournament_id, tier_id, payouts, current)
     return _result(tournament_id, "settled", reason, summary)
+
+
+def _award_promotion_points(
+    db, tournament_id: str, tier_id: str, payouts: list[_Payout], now: datetime
+) -> None:
+    """Promotion points for the finish order. Prizes are already paid, so a
+    failure here is logged and a later call to the ledger can finish it."""
+    results = [
+        {"uid": payout.uid, "rank": payout.rank}
+        for payout in payouts
+        if not payout.ineligible_reason
+    ]
+    try:
+        award_tournament_results(
+            db,
+            tournament_id=tournament_id,
+            tournament_class="final" if tier_id == "final" else "company",
+            results=results,
+            now=now,
+        )
+    except Exception:  # noqa: BLE001 - never undo a settled prize race
+        logger.exception("promotion points failed for %s", tournament_id)
 
 
 def ensure_final_season_slot(

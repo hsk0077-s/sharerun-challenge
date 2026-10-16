@@ -300,7 +300,7 @@ def apply_award(
     return outcome
 
 
-def _week_key(now: datetime) -> str:
+def week_key(now: datetime) -> str:
     year, week, _ = datetime.fromisoformat(kst_day_key(now)).isocalendar()
     return f"{year}-W{week:02d}"
 
@@ -375,7 +375,7 @@ def award_tournament_results(
     current = now or datetime.now(timezone.utc)
     rules = config or load_config(db)
     finishers = len(results)
-    week = _week_key(current)
+    week = week_key(current)
     summary = {
         "awarded": 0,
         "skipped": 0,

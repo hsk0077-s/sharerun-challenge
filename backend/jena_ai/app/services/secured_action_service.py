@@ -125,6 +125,12 @@ from app.services.item_price_config import (
     read_item_prices,
 )
 from app.services.challenge_tickets import purchase_challenge_ticket
+from app.services.ranked_tournaments import (
+    consume_challenge_ticket,
+    ranked_finish_fields,
+    ranked_kind,
+    require_entry,
+)
 from app.services.run_access_items import (
     consume_extra_entry_ticket,
     extra_entry_opens_closed,
@@ -1114,13 +1120,19 @@ class SecuredActionService:
             if tournament_snapshot.exists:
                 tournament_doc = tournament_snapshot.to_dict() or {}
                 race_share = positive_share_reward(tournament_doc.get("shareReward"))
-                if result.verified and prize_tier_id(tournament_doc) is not None:
+                is_prize = prize_tier_id(tournament_doc) is not None
+                if result.verified and (
+                    is_prize or ranked_kind(tournament_doc) is not None
+                ):
                     participant_ref = tournament_ref.collection("participants").document(
                         uid
                     )
                     participant_snapshot = participant_ref.get(transaction=transaction)
                     if participant_snapshot.exists:
-                        prize_finish = prize_finish_fields(
+                        finish_fields = (
+                            prize_finish_fields if is_prize else ranked_finish_fields
+                        )
+                        prize_finish = finish_fields(
                             tournament_doc,
                             participant_snapshot.to_dict() or {},
                             distance_km=request.distance_km,
@@ -3378,6 +3390,8 @@ class SecuredActionService:
                 value,
             )
 
+        ranked = ranked_kind(tournament) is not None
+        challenge_ticket = require_entry(user, tournament) if ranked else False
         user_tier = int(user.get("tier") or 1)
         required_tier = int(tournament.get("requiredTier") or 1)
         entry_fee = int(tournament.get("entryFeeShare") or 0)
@@ -3395,7 +3409,11 @@ class SecuredActionService:
                 raise HTTPException(
                     status_code=400, detail="Tournament is not recruiting."
                 )
-        if required_tier < user_tier and tournament_ref.id not in _OPEN_TIER_ROOM_IDS:
+        if (
+            not ranked
+            and required_tier < user_tier
+            and tournament_ref.id not in _OPEN_TIER_ROOM_IDS
+        ):
             raise HTTPException(status_code=403, detail="Lower-tier room is locked.")
         if self._tournament_is_full(tournament):
             if request.use_extra_entry:
@@ -3408,6 +3426,10 @@ class SecuredActionService:
             raise HTTPException(status_code=400, detail="Insufficient Diamond deposit.")
         if needs_ticket:
             consume_extra_entry_ticket(
+                self, transaction, uid, user_ref, tournament_ref.id
+            )
+        if challenge_ticket:
+            consume_challenge_ticket(
                 self, transaction, uid, user_ref, tournament_ref.id
             )
 
@@ -3453,6 +3475,7 @@ class SecuredActionService:
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
                 **({"extraEntryTicket": True} if needs_ticket else {}),
+                **({"challengedUp": True} if challenge_ticket else {}),
             },
         )
         transaction.set(

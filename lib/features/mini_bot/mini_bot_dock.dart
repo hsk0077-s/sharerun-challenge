@@ -272,7 +272,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
                         onPanStart: _onPanStart,
                         onPanUpdate: _onPanUpdate,
                         onPanEnd: _onPanEnd,
-                        child: const DecoratedBox(
+                        child: DecoratedBox(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.nightCard,
@@ -288,7 +288,12 @@ class _MiniBotDockState extends State<MiniBotDock> {
                             ],
                           ),
                           child: ClipOval(
-                            child: SnailBotFace(size: MiniBotDockMath.size),
+                            // 그림 둘레 여백이 있어서 원 안에 꽉 차게 키운다.
+                            child: Transform.scale(
+                              scale: 1.4,
+                              alignment: const Alignment(0, 0.35),
+                              child: SnailBotFace(size: MiniBotDockMath.size),
+                            ),
                           ),
                         ),
                       ),

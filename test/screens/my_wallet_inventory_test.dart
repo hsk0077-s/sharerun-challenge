@@ -124,7 +124,7 @@ void main() {
     expect(find.text(AppStrings.myWalletInventoryCount(2)), findsOneWidget);
     expect(find.text(AppStrings.myWalletInventoryEmpty), findsNothing);
     expect(find.text(AppStrings.dashboardGoldBadge), findsNothing);
-    expect(find.text(AppStrings.myWalletUse), findsOneWidget);
+    expect(find.text('상점에서 쓰기'), findsOneWidget);
     expect(find.text(AppStrings.myWalletItemDuringRun), findsOneWidget);
     expect(find.text(AppStrings.myWalletItemDuringTournament), findsOneWidget);
 
@@ -135,12 +135,12 @@ void main() {
     expect(find.text(AppStrings.myWalletChargeDiaHint), findsOneWidget);
     expect(find.text(AppStrings.myWalletChargeValueHint), findsOneWidget);
 
-    await tester.tap(find.text(AppStrings.myWalletChargeShare));
+    await tester.tap(find.widgetWithText(ListTile, AppStrings.myWalletChargeShare));
     await tester.pumpAndSettle();
     expect(find.text(AppStrings.iapBillingTitle), findsNothing);
     expect(find.text(AppStrings.myWalletChargeDiaHint), findsOneWidget);
 
-    await tester.tap(find.text(AppStrings.myWalletChargeDia));
+    await tester.tap(find.widgetWithText(ListTile, AppStrings.myWalletChargeDia));
     await tester.pumpAndSettle();
     expect(find.text(AppStrings.iapBillingTitle), findsOneWidget);
   });
@@ -194,7 +194,8 @@ void main() {
     expect(find.text(AppStrings.notificationPaymentEmpty), findsOneWidget);
     expect(find.text('+500 SHARE'), findsNothing);
     expect(find.text('-100 VALUE'), findsNothing);
-    expect(find.textContaining('보유 SHARE: 90,000'), findsOneWidget);
+    expect(find.byKey(const Key('wallet-share-total')), findsOneWidget);
+    expect(find.text('90,000'), findsOneWidget);
   });
 
   testWidgets('My Wallet recent history uses the payment ledger',
@@ -256,7 +257,6 @@ void main() {
     expect(find.text('-30000 Share'), findsOneWidget);
     expect(find.text('로컬에만 있는 영수증'), findsNothing);
     expect(find.text(AppStrings.notificationPaymentJustNow), findsOneWidget);
-    expect(find.text(AppStrings.notificationPaymentReceipt), findsOneWidget);
     expect(find.text(AppStrings.notificationPaymentEmpty), findsNothing);
     expect(find.text('+500 SHARE'), findsNothing);
   });

@@ -220,7 +220,6 @@ class _ItemCard extends StatelessWidget {
 }
 
 /// 칸마다 어디를 확대해서 보여 줄지. (cx, cy)는 1024 판에서 0~1로 잰 중심, zoom은 배수.
-@visibleForTesting
 ({double cx, double cy, double zoom}) accessoryFocus(AccessorySlot slot) {
   return switch (slot) {
     AccessorySlot.head => (cx: 0.54, cy: 0.20, zoom: 2.3),

@@ -118,7 +118,7 @@ void main() {
     expect(start.style?.backgroundColor?.resolve(const <WidgetState>{}),
         AppColors.primaryMint);
     expect(start.style?.foregroundColor?.resolve(const <WidgetState>{}),
-        AppColors.textWhite);
+        AppColors.nightOnLime);
 
     final shareBadge = tester.widget<CurrencyBadge>(
       find.ancestor(
@@ -185,7 +185,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.text('나의 지갑'), findsOneWidget);
+    expect(find.text('내 지갑'), findsOneWidget);
     expect(find.textContaining('보유 SHARE: 90,000'), findsOneWidget);
     expect(find.byKey(HomeDiamondCard.totalKey), findsOneWidget);
     expect(find.text('5 DIA'), findsOneWidget);
@@ -269,7 +269,7 @@ void main() {
 
     expect(find.byType(MyWalletScreen), findsOneWidget);
     expect(find.byKey(const Key('wallet-inventory-section')), findsOneWidget);
-    expect(find.text(AppStrings.myWalletRecentTransactions), findsOneWidget);
+    expect(find.byTooltip(AppStrings.myWalletRecentTransactions), findsOneWidget);
   });
 
   testWidgets('My page avatar sheet offers male, female and gallery, not tier animals',

@@ -106,7 +106,7 @@ class KakaoIcon extends StatelessWidget {
 class _KakaoIconPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = AppColors.textBlack;
+    final paint = Paint()..color = AppColors.brandInk;
     final w = size.width;
     final h = size.height;
 

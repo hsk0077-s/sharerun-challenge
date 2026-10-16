@@ -263,7 +263,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
               onPressed: _loading || _busy ? null : _close,
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.tealAccent,
-                foregroundColor: AppColors.textWhite,
+                foregroundColor: AppColors.nightOnLime,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: Text(widget.beforeRun ? '확인하고 달리기' : '확인'),

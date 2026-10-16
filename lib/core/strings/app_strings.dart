@@ -82,7 +82,7 @@ abstract final class AppStrings {
   // ── Main Dashboard (Screen 5) ─────────────────────────────────────
   static const dashboardNickname = '달리기부자45';
   static const dashboardGoldBadge = '골드';
-  static const dashboardMyWallet = '나의 지갑';
+  static const dashboardMyWallet = '내 지갑';
   static const dashboardShareBalance = '보유 SHARE: 90,000';
   static const dashboardDiamondBalance = '💎 보유 다이아몬드: 5개';
   static const dashboardValueBalance = '🌱 보유 밸류(VALUE): 5,200';
@@ -269,7 +269,7 @@ abstract final class AppStrings {
   static const myPageAvgPaceValue = '5:40 /KM';
 
   // ── Store & Funding (Screen 13) ───────────────────────────────────
-  static const storeTitle = '상점 & 기부 펀딩';
+  static const storeTitle = '상점';
   static const storeShareBalance = '90,000';
   static const storeDiamondBalance = '5';
   static const storeValueBalance = '5,200';

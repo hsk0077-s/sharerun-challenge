@@ -9,11 +9,11 @@ import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
+import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
-import '../features/profile/widgets/gender_profile_avatar.dart';
+import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../data/models/wallet_transaction_model.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
@@ -21,6 +21,7 @@ import '../features/wallet/widgets/wallet_inventory_section.dart';
 import 'in_app_billing_screen.dart';
 import 'preliminary_eval_screen.dart';
 import 'settings_screen.dart';
+import 'wallet_history_screen.dart';
 
 /// 나의 지갑 — 마이페이지 헤더 + 홈 지갑 카드 + 거래 카드 DS.
 class MyWalletScreen extends ConsumerWidget {
@@ -46,10 +47,7 @@ class MyWalletScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final nickname = ref.watch(userNicknameProvider);
-    final displayName = SrcOnboardingController.isUnsetNickname(nickname)
-        ? AppStrings.dashboardNickname
-        : nickname;
+    final c = context.srcTokens.colors;
     final onboarding = ref.watch(onboardingProvider);
     final gradeDone = onboarding.preliminaryPaceSeconds.length
         .clamp(0, EconomyConstants.trialRunsRequired);
@@ -57,55 +55,110 @@ class MyWalletScreen extends ConsumerWidget {
     final share = walletState.shareBalance;
     final diamond = walletState.diamondBalance;
     final value = walletState.valueBalance;
+    final inventory = ref.watch(serverShopInventoryProvider).asData?.value ??
+        const ServerShopInventory();
+    final itemCount = inventory.cprCount +
+        inventory.safeGuardCount +
+        inventory.coachOnePointCount +
+        inventory.extraEntryCount +
+        inventory.friendGhostCount +
+        inventory.crewCheerCount +
+        inventory.boostRunCount +
+        inventory.stepIncubatorCount +
+        inventory.restDayCount +
+        inventory.ghostPaceCount +
+        inventory.battlePassCount;
 
     return Scaffold(
-      backgroundColor: AppColors.myWalletBackground,
+      backgroundColor: c.canvas,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppShapes.termsHorizontalPadding,
-                  12,
-                  AppShapes.termsHorizontalPadding,
-                  28,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _WalletScreenHeader(
-                      onSettings: () => _openSettings(context),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  const StoreTag('WALLET'),
+                  const Spacer(),
+                  IconButton(
+                    key: const Key('wallet-history-open'),
+                    onPressed: () => _openHistory(context),
+                    tooltip: AppStrings.myWalletRecentTransactions,
+                    icon: Icon(
+                      Icons.receipt_long_outlined,
+                      size: 22,
+                      color: c.muted,
                     ),
-                    const SizedBox(height: 16),
-                    _WalletProfileRow(nickname: displayName),
-                    const SizedBox(height: 20),
-                    _MainAssetCard(
-                      share: share,
-                      diamond: diamond,
-                      value: value,
-                      gradeCompleted: gradeDone,
-                      gradeTotal: EconomyConstants.trialRunsRequired,
-                      onGradeTap: () => _openGradeEval(context),
-                      onCharge: () => _openChargePicker(context),
-                      onUse: () => _openStore(context, ref),
+                  ),
+                  IconButton(
+                    onPressed: () => _openSettings(context),
+                    tooltip: AppStrings.myPageSettings,
+                    icon: Icon(
+                      Icons.settings_outlined,
+                      size: 22,
+                      color: c.muted,
                     ),
-                    const SizedBox(height: 24),
-                    const WalletInventorySection(),
-                    const SizedBox(height: 24),
-                    const Text(
-                      AppStrings.myWalletRecentTransactions,
-                      style: MyWalletText.title18,
-                    ),
-                    const SizedBox(height: 12),
-                    const _WalletRecentHistory(),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              Text(
+                AppStrings.dashboardMyWallet,
+                style: storeText(36, c.ink, w: FontWeight.w900),
+              ),
+              const SizedBox(height: 16),
+              _ShareCard(
+                share: share,
+                gradeCompleted: gradeDone,
+                gradeTotal: EconomyConstants.trialRunsRequired,
+                onGradeTap: () => _openGradeEval(context),
+                onCharge: () => _openChargePicker(context),
+                onUse: () => _openStore(context, ref),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.diamond_rounded,
+                      iconColor: c.primary,
+                      value: _comma(diamond),
+                      label: 'DIA',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.favorite_rounded,
+                      iconColor: c.donation,
+                      value: _comma(value),
+                      label: 'VALUE',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatTile(
+                      icon: Icons.inventory_2_outlined,
+                      iconColor: Colors.white70,
+                      value: '$itemCount',
+                      label: 'ITEMS',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const WalletInventorySection(),
+              const SizedBox(height: 20),
+              Text(
+                '최근 내역',
+                style: storeText(18, c.ink, w: FontWeight.w900),
+              ),
+              const SizedBox(height: 4),
+              const _WalletRecentHistory(),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: DashboardBottomNav(
@@ -116,6 +169,19 @@ class MyWalletScreen extends ConsumerWidget {
           DashboardTabNavigation.go(context, index);
         },
       ),
+    );
+  }
+
+  void _openHistory(BuildContext context) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      context.push(RouteNames.walletHistory);
+      return;
+    }
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.walletHistory,
+      materialBuilder: (_) => const WalletHistoryScreen(),
     );
   }
 
@@ -177,7 +243,7 @@ class MyWalletScreen extends ConsumerWidget {
   }
 
   void _openStore(BuildContext context, WidgetRef ref) {
-    ref.read(storeFocusProvider.notifier).setFocus(StoreFocus.donate);
+    ref.read(storeFocusProvider.notifier).setFocus(StoreFocus.items);
     DashboardTabNavigation.go(context, DashboardTabNavigation.shop);
   }
 
@@ -200,161 +266,10 @@ class MyWalletScreen extends ConsumerWidget {
   }
 }
 
-/// My Wallet 전용 타이포 — 이미지 분석 수치/웨이트.
-abstract final class MyWalletText {
-  static const title24 = TextStyle(
-    fontFamily: 'Pretendard',
-    fontSize: 24,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.3,
-    color: AppColors.myWalletInk,
-    height: 1.3,
-  );
-
-  static const title18 = TextStyle(
-    fontFamily: 'Pretendard',
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.2,
-    color: AppColors.myWalletInk,
-    height: 1.3,
-  );
-
-  static const shareMint = TextStyle(
-    fontFamily: 'Pretendard',
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.2,
-    color: AppColors.myWalletMint,
-    height: 1.3,
-  );
-
-  static const body16 = TextStyle(
-    fontFamily: 'Pretendard',
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.15,
-    color: AppColors.myWalletInk,
-    height: 1.35,
-  );
-
-  static const muted14 = TextStyle(
-    fontFamily: 'Pretendard',
-    fontSize: 14,
-    fontWeight: FontWeight.w400,
-    letterSpacing: 0,
-    color: AppColors.myWalletMuted,
-    height: 1.4,
-  );
-
-  static const button = TextStyle(
-    fontFamily: 'Pretendard',
-    fontSize: 15,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.1,
-    color: AppColors.textWhite,
-    height: 1.2,
-  );
-}
-
-class _WalletScreenHeader extends StatelessWidget {
-  const _WalletScreenHeader({required this.onSettings});
-
-  final VoidCallback onSettings;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text(AppStrings.dashboardMyWallet, style: MyWalletText.title24),
-        const SizedBox(width: 4),
-        IconButton(
-          onPressed: onSettings,
-          tooltip: AppStrings.myPageSettings,
-          visualDensity: VisualDensity.compact,
-          padding: const EdgeInsets.all(6),
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-          icon: const Icon(
-            Icons.settings_outlined,
-            size: 22,
-            color: AppColors.myWalletInk,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _WalletProfileRow extends StatelessWidget {
-  const _WalletProfileRow({required this.nickname});
-
-  final String nickname;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const GenderProfileAvatar(size: 56),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Row(
-            children: [
-              Flexible(
-                child: Text(
-                  nickname,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: MyWalletText.title18,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class WalletNeoCard extends StatelessWidget {
-  const WalletNeoCard({
-    super.key,
-    required this.child,
-    this.padding = const EdgeInsets.all(18),
-  });
-
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.oauthCardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.myWalletInk.withValues(alpha: 0.07),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: AppColors.textWhite.withValues(alpha: 0.85),
-            blurRadius: 8,
-            offset: const Offset(-2, -2),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class _MainAssetCard extends StatelessWidget {
-  const _MainAssetCard({
+/// SHARE 큰 카드. 라임 빛이 도는 바탕에 큰 숫자와 알약 버튼.
+class _ShareCard extends StatelessWidget {
+  const _ShareCard({
     required this.share,
-    required this.diamond,
-    required this.value,
     required this.gradeCompleted,
     required this.gradeTotal,
     required this.onGradeTap,
@@ -363,8 +278,6 @@ class _MainAssetCard extends StatelessWidget {
   });
 
   final int share;
-  final int diamond;
-  final int value;
   final int gradeCompleted;
   final int gradeTotal;
   final VoidCallback onGradeTap;
@@ -373,59 +286,78 @@ class _MainAssetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
     final progress = (gradeCompleted / gradeTotal).clamp(0.0, 1.0);
-
-    return WalletNeoCard(
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [c.primary.withValues(alpha: 0.22), c.surface],
+        ),
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          StoreTag('SHARE', color: c.primary),
+          const SizedBox(height: 8),
           Text(
-            AppStrings.myWalletShareLabel(_comma(share)),
-            style: MyWalletText.shareMint,
+            _comma(share),
+            key: const Key('wallet-share-total'),
+            style: storeText(36, c.ink, w: FontWeight.w900),
           ),
-          const SizedBox(height: 16),
-          _AssetLine(
-            icon: Icons.diamond_rounded,
-            iconColor: AppColors.myWalletDiamond,
-            label: AppStrings.myWalletDiamondLabel(diamond),
+          const SizedBox(height: 6),
+          Text(
+            '걷고 뛰면 쌓여요. 상점에서 쓸 수 있어요.',
+            style: storeText(14, c.muted),
           ),
-          const SizedBox(height: 10),
-          _AssetLine(
-            icon: Icons.eco_rounded,
-            iconColor: AppColors.myWalletMint,
-            label: AppStrings.myWalletValueLabel(_comma(value)),
-          ),
-          const SizedBox(height: 18),
-          _GradeProgressBar(progress: progress),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           InkWell(
             onTap: onGradeTap,
             borderRadius: BorderRadius.circular(6),
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Text(
-                AppStrings.myWalletGradeProgress(gradeCompleted, gradeTotal),
-                style: MyWalletText.muted14,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 3,
+                    color: c.outline,
+                    child: FractionallySizedBox(
+                      widthFactor: progress,
+                      alignment: Alignment.centerLeft,
+                      child: Container(color: c.primary),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    AppStrings.myWalletGradeProgress(
+                        gradeCompleted, gradeTotal),
+                    style: storeText(12, c.muted, w: FontWeight.w700),
+                  ),
+                ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _MintActionButton(
-                  label: AppStrings.myWalletCharge,
-                  onTap: onCharge,
-                ),
+          StorePillButton(
+            key: const Key('wallet-use-share'),
+            label: '상점에서 쓰기',
+            icon: Icons.shopping_bag_outlined,
+            onPressed: onUse,
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              key: const Key('wallet-charge-info'),
+              onPressed: onCharge,
+              child: Text(
+                AppStrings.myWalletCharge,
+                style: storeText(13, c.muted, w: FontWeight.w800),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MintActionButton(
-                  label: AppStrings.myWalletUse,
-                  onTap: onUse,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -433,91 +365,52 @@ class _MainAssetCard extends StatelessWidget {
   }
 }
 
-class _AssetLine extends StatelessWidget {
-  const _AssetLine({
+class _StatTile extends StatelessWidget {
+  const _StatTile({
     required this.icon,
     required this.iconColor,
+    required this.value,
     required this.label,
   });
 
   final IconData icon;
   final Color iconColor;
+  final String value;
   final String label;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: iconColor),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(label, style: MyWalletText.body16),
-        ),
-      ],
-    );
-  }
-}
-
-class _GradeProgressBar extends StatelessWidget {
-  const _GradeProgressBar({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: SizedBox(
-        height: 10,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const ColoredBox(color: Color(0xFFEDEDED)),
-            FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress,
-              child: const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.myWalletProgressOrange,
-                      AppColors.progressYellow,
-                    ],
+    final c = context.srcTokens.colors;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: c.outline),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: iconColor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    style: storeText(22, c.ink, w: FontWeight.w900, h: 1.05),
                   ),
                 ),
-              ),
+                const SizedBox(height: 4),
+                StoreTag(label),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _MintActionButton extends StatelessWidget {
-  const _MintActionButton({
-    required this.label,
-    required this.onTap,
-  });
-
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 46,
-      child: FilledButton(
-        onPressed: onTap,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.myWalletMint,
-          foregroundColor: AppColors.textWhite,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
           ),
-        ),
-        child: Text(label, style: MyWalletText.button),
+        ],
       ),
     );
   }
@@ -539,8 +432,7 @@ class _WalletRecentHistory extends ConsumerWidget {
         if (rows.isEmpty) return const _WalletHistoryEmpty();
         return Column(
           children: [
-            for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const SizedBox(height: 10),
+            for (var i = 0; i < rows.length; i++)
               WalletTransactionCard(
                 title: rows[i].displayLabel,
                 date: _historyDate(rows[i]),
@@ -548,7 +440,6 @@ class _WalletRecentHistory extends ConsumerWidget {
                 status: AppStrings.notificationPaymentReceipt,
                 leading: Icons.receipt_long_outlined,
               ),
-            ],
           ],
         );
       },
@@ -558,10 +449,7 @@ class _WalletRecentHistory extends ConsumerWidget {
           child: SizedBox(
             width: 22,
             height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.pulseCyan,
-            ),
+            child: CircularProgressIndicator(strokeWidth: 2),
           ),
         ),
       ),
@@ -581,9 +469,13 @@ class _WalletHistoryEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Text(
-      AppStrings.notificationPaymentEmpty,
-      style: MyWalletText.muted14,
+    final c = context.srcTokens.colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Text(
+        AppStrings.notificationPaymentEmpty,
+        style: storeText(14, c.muted),
+      ),
     );
   }
 }
@@ -596,6 +488,7 @@ String _formatWalletHistoryDate(DateTime date) {
   return '${date.year}-$mm-$dd $hh:$min';
 }
 
+/// 내역 한 줄: 왼쪽에 이름과 날짜, 오른쪽에 금액. 들어온 돈(+)은 라임색이다.
 class WalletTransactionCard extends StatelessWidget {
   const WalletTransactionCard({
     super.key,
@@ -614,31 +507,33 @@ class WalletTransactionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WalletNeoCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    final c = context.srcTokens.colors;
+    final income = amount.trim().startsWith('+');
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.outline)),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(leading, size: 22, color: AppColors.myWalletInk),
-          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: MyWalletText.body16),
-                const SizedBox(height: 4),
-                Text(date, style: MyWalletText.muted14),
+                Text(title, style: storeText(16, c.ink, w: FontWeight.w700)),
+                const SizedBox(height: 3),
+                Text(date, style: storeText(14, c.muted)),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(amount, style: MyWalletText.title18),
-              const SizedBox(height: 4),
-              Text(status, style: MyWalletText.muted14),
-            ],
+          Text(
+            amount,
+            style: storeText(
+              18,
+              income ? c.primary : c.ink,
+              w: FontWeight.w900,
+            ),
           ),
         ],
       ),

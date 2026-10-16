@@ -470,7 +470,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         onPressed: () => _onEnterRoom(),
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryMintDark,
-                          foregroundColor: AppColors.textWhite,
+                          foregroundColor: AppColors.nightOnLime,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppShapes.cardRadius,
@@ -480,7 +480,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         child: Text(
                           AppStrings.runningCrewEnterRoom,
                           style: AppTextStyles.buttonText.copyWith(
-                            color: AppColors.textWhite,
+                            color: AppColors.nightOnLime,
                             fontSize: 15,
                           ),
                         ),

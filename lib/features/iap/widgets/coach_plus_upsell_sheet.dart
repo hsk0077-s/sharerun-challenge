@@ -87,7 +87,7 @@ class _CoachPlusUpsellSheetState extends ConsumerState<CoachPlusUpsellSheet> {
                   key: Key('coach-plus-${plan.productId}'),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.tealAccent,
-                    foregroundColor: AppColors.textWhite,
+                    foregroundColor: AppColors.nightOnLime,
                   ),
                   onPressed: _busyProductId == null ? () => _buy(plan) : null,
                   child: _busyProductId == plan.productId

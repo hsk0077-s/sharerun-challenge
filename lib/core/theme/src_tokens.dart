@@ -75,9 +75,9 @@ class SrcColorRoles {
 
   static const light = SrcColorRoles(
     primary: AppColors.primaryMint,
-    onPrimary: AppColors.textWhite,
+    onPrimary: AppColors.nightOnLime,
     accent: AppColors.tealAccent,
-    onAccent: AppColors.textWhite,
+    onAccent: AppColors.nightOnLime,
     donation: AppColors.angelGold,
     canvas: AppColors.bgGradientEnd,
     surface: AppColors.surfaceWhite,

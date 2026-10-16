@@ -27,7 +27,7 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFE0F7FA), Colors.white],
+    colors: [Color(0xFF0B120E), AppColors.nightBg],
   );
 
   static const _cardShadow = [
@@ -143,7 +143,7 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.nightBg,
       body: SRCGradientBackground(
         gradient: _screenGradient,
         child: SafeArea(
@@ -458,7 +458,7 @@ class _MissionCard extends StatelessWidget {
                     child: const Icon(
                       Icons.check_rounded,
                       size: 16,
-                      color: AppColors.textWhite,
+                      color: AppColors.nightOnLime,
                     ),
                   ),
                 ],
@@ -478,7 +478,7 @@ class _MissionCard extends StatelessWidget {
                         fontFamily: 'Pretendard',
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textWhite,
+                        color: AppColors.nightOnLime,
                       ),
                     ),
                   ),

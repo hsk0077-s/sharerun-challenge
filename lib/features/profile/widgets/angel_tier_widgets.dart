@@ -720,7 +720,7 @@ Future<void> showPreAngelGuideSheet(BuildContext context) {
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.tealAccent,
-                    foregroundColor: AppColors.textWhite,
+                    foregroundColor: AppColors.nightOnLime,
                     shape: const StadiumBorder(),
                   ),
                   child: const Text('지금 후원하고 아기 날개 달기'),

@@ -1,78 +1,258 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
-import '../core/theme/app_text_styles.dart';
+import '../core/navigation/dashboard_tab_navigation.dart';
+import '../core/theme/theme.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../features/accessories/accessory_catalog.dart';
 import '../features/accessories/try_on_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
-import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 
 /// 달팽이 → 치타 25단계 티어 도감.
+/// 위에는 다섯 친구를 한눈에(완료·현재·다음), 아래에는 25단계 연대기를 둔다.
 class SnailToCheetahBookPage extends ConsumerWidget {
   const SnailToCheetahBookPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tier = ref.watch(activeUserTierStructProvider) ??
-        UserTier.unratedFallback;
-    final nickname = ref.watch(userNicknameProvider);
-    final displayName = SrcOnboardingController.isUnsetNickname(nickname)
-        ? '러너'
-        : nickname;
-    // 서버가 배정한 등급만 쓴다. 폰에서 페이스를 다시 계산하지 않는다.
-    final paceLabel = _formatPace(null);
+    final tier =
+        ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
+    final c = context.srcTokens.colors;
+    final myRank = tier.animalUnlockRank;
 
     return Scaffold(
-      backgroundColor: AppColors.settingsBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.settingsBackground,
-        elevation: 0,
-        foregroundColor: AppColors.textBlack,
-        title: Text(
-          '티어 도감',
-          style: AppTextStyles.header1.copyWith(fontSize: 20),
+      backgroundColor: c.canvas,
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(16, 4, 16, tier.isSnail ? 200 : 40),
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  key: const Key('tier-book-back'),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  tooltip: '뒤로',
+                  padding: EdgeInsets.zero,
+                  alignment: Alignment.centerLeft,
+                  icon: Icon(Icons.arrow_back_rounded, color: c.ink),
+                ),
+                const Spacer(),
+                const StoreTag('TIER BOOK'),
+              ],
+            ),
+            Text(
+              '티어 도감',
+              style: storeText(36, c.ink, w: FontWeight.w900),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '달릴수록 새로운 친구를 만나요',
+              style: storeText(14, c.muted),
+            ),
+            const SizedBox(height: 16),
+            GridView.count(
+              key: const Key('tier-book-grid'),
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 0.82,
+              padding: EdgeInsets.zero,
+              children: [
+                for (final chapter in _chapters.where((e) => !e.isSnail))
+                  _BookGridCard(
+                    chapter: chapter,
+                    state: chapter.unlockRank < myRank
+                        ? _BookState.done
+                        : (chapter.unlockRank == myRank
+                            ? _BookState.current
+                            : _BookState.next),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 22),
+            Text(
+              '25단계 연대기',
+              style: storeText(18, c.ink, w: FontWeight.w900),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '달팽이부터 치타까지 모든 등급을 열람할 수 있어요. 카드를 누르면 액세서리를 입혀 볼 수 있어요.',
+              style: storeText(13, c.muted, h: 1.5),
+            ),
+            const SizedBox(height: 14),
+            ..._chapters.map(
+              (chapter) => Padding(
+                key: ValueKey(chapter.unlockRank),
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _TierChapterCard(chapter: chapter),
+              ),
+            ),
+          ],
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+      bottomSheet: tier.isSnail ? const _UnratedGuide() : null,
+    );
+  }
+}
+
+enum _BookState { done, current, next }
+
+/// 다섯 친구 중 한 칸. 현재 티어는 라임 테두리다.
+class _BookGridCard extends StatelessWidget {
+  const _BookGridCard({required this.chapter, required this.state});
+
+  final _ChapterSpec chapter;
+  final _BookState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    final current = state == _BookState.current;
+    final label = switch (state) {
+      _BookState.done => '완료',
+      _BookState.current => '현재',
+      _BookState.next => '도전',
+    };
+    final path = UserTier(
+      animal: chapter.animal,
+      medal: TierMedal.gold,
+    ).avatarAssetPath;
+    return InkWell(
+      key: Key('tier-book-card-${chapter.animal.code}'),
+      borderRadius: BorderRadius.circular(22),
+      onTap: () => TryOnSheet.show(
+        context,
+        animal: chapter.animal,
+        title: chapter.title,
+      ),
+      child: Ink(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: current ? c.primary : c.outline,
+            width: current ? 2 : 1,
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: Opacity(
+                  opacity: state == _BookState.next ? 0.55 : 1,
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: current ? c.primary : c.outline,
+                        width: 2,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Transform.scale(
+                      scale: 1.25,
+                      child: Image.asset(path, fit: BoxFit.contain),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              chapter.title,
+              style: storeText(14, c.ink, w: FontWeight.w800),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: storeText(
+                14,
+                current ? c.primary : c.muted,
+                w: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 아직 티어가 없을 때(등급 심사 전) 아래에 붙는 안내.
+class _UnratedGuide extends StatelessWidget {
+  const _UnratedGuide();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return Container(
+      key: const Key('tier-book-unrated-guide'),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 26),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0E1512),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(34)),
+        border: Border.all(color: c.outline),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _MyTierHeroCard(
-            displayName: displayName,
-            tier: tier,
-            paceLabel: paceLabel,
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: c.outline,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              border: Border.all(color: c.primary, width: 3),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Transform.scale(
+              scale: 1.25,
+              child: Image.asset(
+                'assets/images/characters/chibi_snail_disappointed.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
-            '25단계 연대기',
-            style: AppTextStyles.header1.copyWith(fontSize: 16),
+            '아직 티어가 없어요',
+            style: storeText(18, c.ink, w: FontWeight.w900),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
-            '달팽이부터 치타까지 모든 등급을 열람할 수 있습니다. 카드를 누르면 액세서리를 입혀 볼 수 있어요.',
-            style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
+            '첫 달리기가 심사되면 티어가 정해지고\n옷과 소품을 입힐 수 있어요',
+            textAlign: TextAlign.center,
+            style: storeText(14, c.muted, h: 1.5),
           ),
-          const SizedBox(height: 14),
-          ..._chapters.map(
-            (chapter) => Padding(
-              key: ValueKey(chapter.unlockRank),
-              padding: const EdgeInsets.only(bottom: 12),
-              child: _TierChapterCard(chapter: chapter),
+          const SizedBox(height: 16),
+          StorePillButton(
+            key: const Key('tier-book-go-run'),
+            label: '달리러 가기',
+            icon: Icons.directions_run_rounded,
+            onPressed: () => DashboardTabNavigation.go(
+              context,
+              DashboardTabNavigation.home,
             ),
           ),
         ],
       ),
     );
-  }
-
-  static String _formatPace(int? secondsPerKm) {
-    if (secondsPerKm == null || secondsPerKm <= 0) {
-      return '최고 페이스 기록 없음';
-    }
-    final min = secondsPerKm ~/ 60;
-    final sec = secondsPerKm % 60;
-    return '최고 페이스 $min\'${sec.toString().padLeft(2, '0')}" /km';
   }
 }
 
@@ -140,70 +320,6 @@ const _chapters = <_ChapterSpec>[
   ),
 ];
 
-class _MyTierHeroCard extends StatelessWidget {
-  const _MyTierHeroCard({
-    required this.displayName,
-    required this.tier,
-    required this.paceLabel,
-  });
-
-  final String displayName;
-  final UserTier tier;
-  final String paceLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        border: Border.all(
-          color: AppColors.tealAccent.withValues(alpha: 0.35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.pulseCyan.withValues(alpha: 0.12),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          ChibiTierAvatar(
-            tier: tier,
-            size: 128,
-            floating: true,
-            showNeonRing: true,
-          ),
-          const SizedBox(height: 14),
-          Text(
-            displayName,
-            style: AppTextStyles.header1.copyWith(fontSize: 18),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '[${tier.koreanName}]',
-            style: AppTextStyles.agreementLabel.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppColors.tealAccent,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            paceLabel,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textGrey,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _TierChapterCard extends StatelessWidget {
   const _TierChapterCard({required this.chapter});
 
@@ -215,10 +331,8 @@ class _TierChapterCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppColors.tealAccent.withValues(alpha: 0.28),
-        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.nightLine),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

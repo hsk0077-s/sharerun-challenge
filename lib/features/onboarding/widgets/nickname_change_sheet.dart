@@ -286,16 +286,16 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                                 ? AppColors.tealAccent
                                 : AppColors.tossBlue,
                             disabledBackgroundColor: AppColors.buttonDisabled,
-                            foregroundColor: AppColors.textWhite,
+                            foregroundColor: hasEnoughDia ? AppColors.nightOnLime : AppColors.textWhite,
                             shape: const StadiumBorder(),
                           ),
                           child: _submitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 22,
                                   height: 22,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.4,
-                                    color: AppColors.textWhite,
+                                    color: hasEnoughDia ? AppColors.nightOnLime : AppColors.textWhite,
                                   ),
                                 )
                               : Text(
@@ -303,7 +303,7 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                                       ? '100 DIA 소모하여 변경하기'
                                       : '다이아몬드 부족 - 충전소로 이동하기',
                                   style: AppTextStyles.buttonText.copyWith(
-                                    color: AppColors.textWhite,
+                                    color: hasEnoughDia ? AppColors.nightOnLime : AppColors.textWhite,
                                     fontSize: 15,
                                   ),
                                 ),

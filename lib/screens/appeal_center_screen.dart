@@ -116,7 +116,7 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.tealAccent,
                         disabledBackgroundColor: AppColors.buttonDisabled,
-                        foregroundColor: AppColors.textWhite,
+                        foregroundColor: AppColors.nightOnLime,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -127,14 +127,14 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
                               height: 22,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.2,
-                                color: AppColors.textWhite,
+                                color: AppColors.nightOnLime,
                               ),
                             )
                           : Text(
                               AppStrings.appealSubmitCta,
                               textAlign: TextAlign.center,
                               style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
+                                color: AppColors.nightOnLime,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -391,7 +391,7 @@ class _AppealFormCard extends StatelessWidget {
                 color: AppColors.textGreyLight,
               ),
               filled: true,
-              fillColor: const Color(0xFFF5F5F5),
+              fillColor: AppColors.nightCard,
               contentPadding: const EdgeInsets.all(14),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),

@@ -10,10 +10,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../app/router/route_names.dart';
 import '../core/challenge/challenge_entry_fee.dart';
 import '../core/strings/app_strings.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
-import '../core/theme/app_text_styles.dart';
-import '../core/widgets/src_gradient_background.dart';
+import '../core/theme/theme.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../data/models/tournament_model.dart';
 import '../features/challenge/providers/challenge_room_providers.dart';
 import '../features/pedometer/walking_challenge_share.dart';
@@ -51,124 +49,205 @@ class ChallengeDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final copy = _ChallengeDetailCopy.forRoom(roomId);
 
-    return Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
-      body: SRCGradientBackground(
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                      color: AppColors.textBlack,
-                      iconSize: 22,
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    Builder(
-                      builder: (buttonContext) {
-                        return IconButton(
-                          icon: const Icon(Icons.send_rounded),
-                          color: AppColors.textBlack,
-                          iconSize: 24,
-                          onPressed: () => unawaited(
-                            _onShare(buttonContext, copy.title),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    0,
-                    AppShapes.termsHorizontalPadding,
-                    16,
+    final c = context.srcTokens.colors;
+    String after(String text) {
+      final i = text.indexOf(':');
+      return i < 0 ? text : text.substring(i + 1).trim();
+    }
+
+    Widget stat(String value, String label) => Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: c.surface,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: c.outline),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    maxLines: 1,
+                    style: storeText(22, c.ink, w: FontWeight.w900, h: 1.05),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _HeroImageSection(
-                        badge: copy.badge,
-                        radiusMeters: copy.radiusMeters,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        copy.title,
-                        style: AppTextStyles.header1.copyWith(fontSize: 22),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        copy.entryFee,
-                        style: AppTextStyles.agreementLabel.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
+                ),
+                const SizedBox(height: 4),
+                StoreTag(label),
+              ],
+            ),
+          ),
+        );
+
+    return Scaffold(
+      backgroundColor: c.canvas,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                SizedBox(
+                  height: 250,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.vertical(
+                      bottom: Radius.circular(36),
+                    ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.asset(
+                          'assets/images/challenge_track.jpg',
+                          fit: BoxFit.cover,
+                          alignment: const Alignment(0, 0.4),
                         ),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.35),
+                                Colors.black.withValues(alpha: 0.88),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SafeArea(
+                          bottom: false,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                  key: const Key('challenge-detail-back'),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor:
+                                        Colors.white.withValues(alpha: 0.16),
+                                  ),
+                                  icon: const Icon(
+                                    Icons.arrow_back_rounded,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: () => Navigator.pop(context),
+                                ),
+                                const Spacer(),
+                                Builder(
+                                  builder: (buttonContext) => IconButton(
+                                    style: IconButton.styleFrom(
+                                      backgroundColor:
+                                          Colors.white.withValues(alpha: 0.16),
+                                    ),
+                                    icon: const Icon(
+                                      Icons.send_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: () => unawaited(
+                                      _onShare(buttonContext, copy.title),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: 22,
+                          right: 22,
+                          bottom: 24,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              StoreTag(
+                                'ROOM · ${copy.badge.toUpperCase()}',
+                                color: c.primary,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                copy.title,
+                                style: storeText(
+                                  30,
+                                  Colors.white,
+                                  w: FontWeight.w900,
+                                  h: 1.1,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                copy.entryFee,
+                                style: storeText(14, Colors.white70),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          stat(after(copy.distance), 'DISTANCE'),
+                          const SizedBox(width: 10),
+                          stat(after(copy.timeRemaining), 'TIME LEFT'),
+                          const SizedBox(width: 10),
+                          stat(after(copy.recruitment), 'RECRUIT'),
+                        ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
                       _HighlightBox(
                         prize: copy.prize,
                         donation: copy.donation,
                       ),
-                      const SizedBox(height: 20),
-                      _DetailRow(
-                        icon: Icons.flag_outlined,
-                        text: copy.distance,
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: _HeroImageSection(
+                          badge: copy.badge,
+                          radiusMeters: copy.radiusMeters,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      _DetailRow(
-                        icon: Icons.access_time_rounded,
-                        text: copy.timeRemaining,
-                      ),
-                      const SizedBox(height: 12),
-                      _DetailRow(
-                        icon: Icons.people_outline_rounded,
-                        text: copy.recruitment,
-                      ),
-                      const SizedBox(height: 20),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _onDonationTap,
-                          borderRadius: BorderRadius.circular(
-                            AppShapes.inputRadius,
+                      const SizedBox(height: 10),
+                      InkWell(
+                        onTap: _onDonationTap,
+                        borderRadius: BorderRadius.circular(22),
+                        child: Ink(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
                           ),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.borderLight),
-                              borderRadius: BorderRadius.circular(
-                                AppShapes.inputRadius,
-                              ),
-                              color: AppColors.surfaceWhite,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    copy.donationTarget,
-                                    style: AppTextStyles.inputText.copyWith(
-                                      fontSize: 14,
-                                    ),
+                          decoration: BoxDecoration(
+                            color: c.surface,
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: c.outline),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  copy.donationTarget,
+                                  style: storeText(
+                                    14,
+                                    c.ink,
+                                    w: FontWeight.w700,
                                   ),
                                 ),
-                                Icon(
-                                  Icons.keyboard_arrow_down_rounded,
-                                  color: AppColors.textGrey,
-                                  size: 22,
-                                ),
-                              ],
-                            ),
+                              ),
+                              Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: c.muted,
+                                size: 22,
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -181,10 +260,11 @@ class ChallengeDetailScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               copy.valueTip,
-                              style: AppTextStyles.caption.copyWith(
-                                fontSize: 12,
-                                color: AppColors.primaryMint,
-                                fontWeight: FontWeight.w500,
+                              style: storeText(
+                                12,
+                                c.primary,
+                                w: FontWeight.w600,
+                                h: 1.45,
                               ),
                             ),
                           ),
@@ -193,42 +273,37 @@ class ChallengeDetailScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    4,
-                    AppShapes.termsHorizontalPadding,
-                    12,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const ServerItemUseButton(
-                        itemId: ServerShopInventory.cprId,
-                        label: AppStrings.challengeDetailCprUse,
-                        emptyHint: AppStrings.challengeDetailCprBuyHint,
-                        maxUses: AppStrings.challengeDetailCprMaxPerRace,
-                        alignment: Alignment.centerRight,
-                      ),
-                      const SizedBox(height: 8),
-                      _ChallengeJoinPayButton(
-                        key: ValueKey<String>('join-${roomId ?? 'default'}'),
-                        roomId: roomId,
-                        joinLabel: copy.joinLabel,
-                        title: copy.title,
-                        entryFeeShare: copy.entryFeeShare,
-                        targetDistanceKm: copy.radiusMeters / 1000,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const ServerItemUseButton(
+                    itemId: ServerShopInventory.cprId,
+                    label: AppStrings.challengeDetailCprUse,
+                    emptyHint: AppStrings.challengeDetailCprBuyHint,
+                    maxUses: AppStrings.challengeDetailCprMaxPerRace,
+                    alignment: Alignment.centerRight,
+                  ),
+                  const SizedBox(height: 8),
+                  _ChallengeJoinPayButton(
+                    key: ValueKey<String>('join-${roomId ?? 'default'}'),
+                    roomId: roomId,
+                    joinLabel: copy.joinLabel,
+                    title: copy.title,
+                    entryFeeShare: copy.entryFeeShare,
+                    targetDistanceKm: copy.radiusMeters / 1000,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -389,18 +464,18 @@ class _ChallengeJoinPayButtonState
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.primaryMint,
-      borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+      shape: const StadiumBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: _busy ? null : _onJoin,
         child: SizedBox(
           width: double.infinity,
-          height: AppShapes.buttonHeight,
+          height: 58,
           child: Center(
             child: Text(
               widget.joinLabel,
               style: AppTextStyles.buttonText.copyWith(
-                color: AppColors.textWhite,
+                color: AppColors.nightOnLime,
                 fontSize: 16,
               ),
             ),
@@ -549,7 +624,7 @@ class _HeroImageSectionState extends State<_HeroImageSection> {
             child: Text(
               widget.badge,
               style: AppTextStyles.buttonText.copyWith(
-                color: AppColors.textWhite,
+                color: AppColors.nightOnLime,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -572,70 +647,38 @@ class _HighlightBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.agreementBoxFill,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2A2310), Color(0xFF14110A)],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            prize,
-            style: AppTextStyles.agreementLabel.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-            ),
-          ),
+          const StoreTag('PRIZE & DONATION', color: Color(0xFFE8B84B)),
           const SizedBox(height: 8),
+          Text(prize, style: storeText(15, c.ink, w: FontWeight.w800)),
+          const SizedBox(height: 6),
           Row(
             children: [
               Expanded(
                 child: Text(
                   donation,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                  ),
+                  style: storeText(15, c.ink, w: FontWeight.w800),
                 ),
               ),
-              Icon(
-                Icons.info_outline_rounded,
-                size: 16,
-                color: AppColors.textGrey,
-              ),
+              Icon(Icons.info_outline_rounded, size: 16, color: c.muted),
             ],
           ),
         ],
       ),
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.icon,
-    required this.text,
-  });
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: AppColors.textGrey),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            text,
-            style: AppTextStyles.agreementLabel.copyWith(fontSize: 14),
-          ),
-        ),
-      ],
     );
   }
 }

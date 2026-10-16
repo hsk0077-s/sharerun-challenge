@@ -28,6 +28,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // VALUE 안내는 상점 추천 탭 아래쪽 기부 펀딩 구역에 있다.
+    await tester.ensureVisible(find.text(AppStrings.storeValueDetailTitle));
+    await tester.pumpAndSettle();
+
     expect(find.text(AppStrings.storeValueDetailTitle), findsOneWidget);
     expect(find.text(AppStrings.storeValueDetailBody), findsOneWidget);
     expect(find.text(AppStrings.storeValueExternalTransfer), findsOneWidget);

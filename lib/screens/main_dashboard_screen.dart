@@ -163,8 +163,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     final nicknameUnset = ref.watch(needsNicknameSetupProvider);
     final nickname = ref.watch(userNicknameProvider);
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
-    final showStamp =
-        ref.watch(stampTourEnabledProvider).asData?.value == true;
+    final showStamp = ref.watch(stampTourEnabledProvider).asData?.value == true;
 
     return Theme(
       data: SrcTheme.night,
@@ -313,8 +312,8 @@ class _HomeHero extends StatelessWidget {
     final now = DateTime.now();
     final date = 'TODAY · ${now.month.toString().padLeft(2, '0')}.'
         '${now.day.toString().padLeft(2, '0')} ${_weekdays[now.weekday - 1]}';
-    // 사진 비율에 맞춰 폭의 1.18배. 러너와 강아지가 모두 보이는 높이다.
-    final height = MediaQuery.sizeOf(context).width * 1.18;
+    // 사진 비율에 맞춰 폭의 1.5배. 러너·강아지와 앞쪽 길이 모두 보이는 높이다.
+    final height = MediaQuery.sizeOf(context).width * 1.5;
     return SizedBox(
       height: height,
       child: ClipRRect(
@@ -325,7 +324,7 @@ class _HomeHero extends StatelessWidget {
             Image.asset(
               _photo,
               fit: BoxFit.cover,
-              alignment: const Alignment(0, -0.8),
+              alignment: const Alignment(0, -0.2),
               errorBuilder: (_, __, ___) => ColoredBox(
                 color: tokens.colors.surface,
               ),
@@ -339,27 +338,28 @@ class _HomeHero extends StatelessWidget {
                     Color(0xB8000000),
                     Color(0x00000000),
                     Color(0x00000000),
-                    Color(0xB3000000),
+                    Color(0xE6000000),
                   ],
-                  stops: [0, 0.26, 0.55, 1],
+                  stops: [0, 0.2, 0.5, 1],
                 ),
               ),
             ),
-            // 앱 대표 슬로건. 시작 화면과 같은 문장이다.
+            // 앱 대표 슬로건. 시작 화면과 같은 문장이다. 길 위(강아지 아래)에 둔다.
             Positioned(
               left: tokens.spacing.page + 2,
               right: tokens.spacing.page,
-              bottom: 26,
+              bottom: 30,
               child: const Text(
                 AppStrings.slogan,
                 key: Key('home-slogan'),
+                textAlign: TextAlign.left,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 26,
+                  fontSize: 28,
                   height: 1.3,
                   fontWeight: FontWeight.w900,
                   shadows: [
-                    Shadow(blurRadius: 12, color: Color(0x99000000)),
+                    Shadow(blurRadius: 12, color: Color(0xCC000000)),
                   ],
                 ),
               ),

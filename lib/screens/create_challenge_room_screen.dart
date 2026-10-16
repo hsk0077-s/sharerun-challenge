@@ -205,7 +205,8 @@ class _CreateChallengeRoomScreenState
                             const SizedBox(height: 6),
                             Text(
                               AppStrings.createRoomTitleHint,
-                              style: AppTextStyles.caption.copyWith(fontSize: 13),
+                              style:
+                                  AppTextStyles.caption.copyWith(fontSize: 13),
                             ),
                             const SizedBox(height: 12),
                             TextField(
@@ -265,7 +266,8 @@ class _CreateChallengeRoomScreenState
                             const SizedBox(height: 6),
                             Text(
                               AppStrings.createRoomDistanceHint,
-                              style: AppTextStyles.caption.copyWith(fontSize: 13),
+                              style:
+                                  AppTextStyles.caption.copyWith(fontSize: 13),
                             ),
                             const SizedBox(height: 14),
                             Wrap(
@@ -364,13 +366,13 @@ class _CreateChallengeRoomScreenState
                                   height: 22,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.4,
-                                    color: AppColors.textWhite,
+                                    color: AppColors.nightOnLime,
                                   ),
                                 )
                               : Text(
                                   _payButtonLabel,
                                   style: AppTextStyles.buttonText.copyWith(
-                                    color: AppColors.textWhite,
+                                    color: AppColors.nightOnLime,
                                     fontSize: 15,
                                   ),
                                 ),
@@ -483,7 +485,7 @@ class _DistanceChip extends StatelessWidget {
             label,
             style: AppTextStyles.buttonText.copyWith(
               fontSize: 13,
-              color: selected ? AppColors.textWhite : AppColors.textGrey,
+              color: selected ? AppColors.nightOnLime : AppColors.textGrey,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -509,7 +511,7 @@ class _ShareCoinIcon extends StatelessWidget {
       child: Text(
         'S',
         style: AppTextStyles.buttonText.copyWith(
-          color: AppColors.textWhite,
+          color: AppColors.nightOnLime,
           fontSize: 18,
           fontWeight: FontWeight.w800,
         ),

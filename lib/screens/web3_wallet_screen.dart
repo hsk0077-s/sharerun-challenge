@@ -17,7 +17,7 @@ import '../features/wallet/providers/wallet_provider.dart';
 class Web3WalletScreen extends ConsumerStatefulWidget {
   const Web3WalletScreen({super.key});
 
-  static const _saveNavy = Color(0xFF1A2B4A);
+  static const _saveNavy = AppColors.nightLime;
 
   @override
   ConsumerState<Web3WalletScreen> createState() => _Web3WalletScreenState();
@@ -105,13 +105,13 @@ class _Web3WalletScreenState extends ConsumerState<Web3WalletScreen> {
                                     height: 22,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2.4,
-                                      color: AppColors.textWhite,
+                                      color: AppColors.nightOnLime,
                                     ),
                                   )
                                 : Text(
                                     AppStrings.web3WalletTransferCta,
                                     style: AppTextStyles.buttonText.copyWith(
-                                      color: AppColors.textWhite,
+                                      color: AppColors.nightOnLime,
                                       fontSize: 14,
                                     ),
                                     textAlign: TextAlign.center,

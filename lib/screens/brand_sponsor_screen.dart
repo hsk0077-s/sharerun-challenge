@@ -139,7 +139,7 @@ class _BrandSponsorScreenState extends State<BrandSponsorScreen> {
                             child: Text(
                               AppStrings.brandSponsorJoinCta,
                               style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
+                                color: AppColors.nightOnLime,
                                 fontSize: 15,
                               ),
                             ),

@@ -161,7 +161,7 @@ abstract final class MiniBotCopy {
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';
 
-  static String get donate => '유니세프 기부 펀딩으로 이동할까요? $donateAmount예요. '
+  static String get donate => '기부 펀딩으로 이동할까요? $donateAmount예요. '
       '후원하기를 눌러도 여기서는 기부가 끝나지 않아요. '
       '상점의 기부 버튼으로 직접 눌러 주세요.';
 

@@ -339,7 +339,7 @@ abstract final class DebugLocalWalletStore {
 
   static const harvestHistoryTitle = '워킹챌린지 코인 줍기';
   static const hofValueDonationTitle = '명예의 전당 기부 완료 🕊️';
-  static const fundingValueDonationTitle = '유니세프 글로벌 기부 펀딩 참여 🕊️';
+  static const fundingValueDonationTitle = '기부 펀딩 참여 🕊️';
 
   /// Append a client receipt (VALUE donation, etc.) without touching SHARE.
   /// History → payment history merges this with Firestore.

@@ -81,6 +81,8 @@ void main() {
     expect(find.textContaining('% 달성'), findsNothing);
     expect(find.textContaining('기부하기'), findsNothing);
     expect(find.textContaining('서버 원장'), findsNothing);
+    // 기부처는 아직 정해지지 않아서 화면에 이름을 쓰지 않는다.
+    expect(find.textContaining('유니세프'), findsNothing);
   });
 
   testWidgets('diamond tab lists the DIA packs as not yet on sale',

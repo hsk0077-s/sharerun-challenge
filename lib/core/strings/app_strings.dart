@@ -212,12 +212,12 @@ abstract final class AppStrings {
   static const challengeDetailEntryFee = '참가비: 1,200 SHARE';
   static const challengeDetailGoldBadge = '골드';
   static const challengeDetailPrize = noCashPrizePool;
-  static const challengeDetailDonation = '기부: 유니세프(결식아동)';
+  static const challengeDetailDonation = '기부: 회사·스폰서 이름으로';
   static const challengeDetailDistance = '거리: 3km';
   static const challengeDetailTimeRemaining = '남은 시간: 2일 14시간';
   static const challengeDetailRecruitment = '모집 인원: 290 / 400명';
   static const challengeDetailDonationTarget =
-      '타겟 기부처: 유니세프(결식아동)';
+      '기부처: 정해지면 알려 드려요';
   static const challengeDetailValueTip =
       '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
   static const challengeDetailCprMaxPerRace = 3;
@@ -283,7 +283,7 @@ abstract final class AppStrings {
   static const storeDiamondBalance = '5';
   static const storeValueBalance = '5,200';
   static const storeFundingTitle =
-      '🌍 땀방울로 만드는 기적,\n유니세프 결식아동 펀딩';
+      '🌍 땀방울로 만드는 기적,\n기부 펀딩';
   static const storeFundingPreparing = '준비 중';
   static const storeFundingPreparingNote =
       '아직 열리지 않았어요. 열리면 모은 VALUE로 참여할 수 있어요.';
@@ -387,7 +387,7 @@ abstract final class AppStrings {
   // ── Running Crew (Screen 18) ──────────────────────────────────────
   static const runningCrewTitle = '러닝 크루 (Crew)';
   static const runningCrewHeadline = '같이 달릴\n크루 찾기';
-  static const runningCrewMyCrewName = '인천 논현 최강 크루';
+  static const runningCrewMyCrewName = '서울 나이트 러너스 🌙';
   static const runningCrewMyCrewStats =
       '소속 크루원: 45/50명 | 누적 달성 거리: 3,240km';
   static const runningCrewCreateButton =
@@ -526,7 +526,7 @@ abstract final class AppStrings {
   static const hallOfFameRank3Value = '2,800,000 VALUE';
   static const hallOfFameDonateCta = '나도 기부하고 명예의 전당 오르기 💎';
   static const hallOfFameDonateHistoryTitle = '명예의 전당 기부 완료 🕊️';
-  static const storeDonateHistoryTitle = '유니세프 글로벌 기부 펀딩 참여 🕊️';
+  static const storeDonateHistoryTitle = '기부 펀딩 참여 🕊️';
   static const runningCrewHallOfFame = '👑 명예의 전당';
 
   // ── Appeal / Customer Service (Screen 27) ────────────────────────

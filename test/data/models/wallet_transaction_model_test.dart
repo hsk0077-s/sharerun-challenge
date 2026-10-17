@@ -96,7 +96,7 @@ void main() {
         createdAt: null,
         tournamentId: null,
       );
-      expect(donation.displayLabel, '유니세프 기부 완료');
+      expect(donation.displayLabel, '기부 완료');
       expect(donation.amountSummary, '-50000 SHARE');
 
       const prize = WalletTransactionModel(

@@ -74,6 +74,8 @@ flutter:
     - assets/images/crew_glyphs/
     - assets/images/crew_emblem/frames/
     - assets/images/crew_emblem/patterns/
+    - assets/images/crew_emblem/unlock/
+    - assets/images/crew_emblem/paid/
     - assets/images/villages/
     - assets/images/villages/thumbs/
     - assets/images/kakao/

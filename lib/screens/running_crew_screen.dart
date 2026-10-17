@@ -13,6 +13,7 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../data/firebase/share_spend_transaction.dart';
 import '../features/crew/crew_emblem.dart';
+import '../features/crew/crew_emblem_status.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/src_wallet_payment_system.dart';
@@ -237,19 +238,73 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   /// 없으면(지금 보이는 크루는 샘플) 이 폰에만 저장한다고 알려 준다.
   Future<void> _onChangeEmblem() async {
     final current = ref.read(crewEmblemProvider);
-    final picked = await CrewEmblemPicker.show(context, current);
-    if (picked == null || picked == current || !mounted) return;
-    final uid = ref.read(authStateChangesProvider).asData?.value?.uid;
+    // 로그인 정보를 못 읽으면(예: 아직 준비 전) 폰에만 저장하는 쪽으로 간다.
+    String? uid;
+    try {
+      uid = ref.read(authStateChangesProvider).asData?.value?.uid;
+    } catch (_) {
+      uid = null;
+    }
     final useRemote = !AppEnv.useLocalMockData && uid != null && uid.isNotEmpty;
-    var savedOnServer = false;
-    if (useRemote) {
+    final api = useRemote ? ref.read(securedActionApiClientProvider) : null;
+    // 서버에 내 크루가 있으면 해금한 테두리·산 엠블럼을 먼저 받아 온다.
+    CrewEmblemStatus? status;
+    if (api != null) {
       try {
-        await ref
-            .read(securedActionApiClientProvider)
-            .changeCrewEmblem(picked.code);
+        status = await api.crewEmblemStatus();
+      } catch (_) {
+        status = null;
+      }
+    }
+    if (!mounted) return;
+    if (status != null && status.cooldownSeconds > 0) {
+      final days = (status.cooldownSeconds / 86400).ceil();
+      _toast('엠블럼은 자주 바꿀 수 없어요. 약 $days일 뒤에 다시 바꿀 수 있어요.');
+      return;
+    }
+    final picked = await CrewEmblemPicker.show(
+      context,
+      current,
+      status: status,
+      onBuy: status == null || api == null
+          ? null
+          : (id) async {
+              try {
+                final result = await api.purchaseCrewPaidEmblem(id);
+                ref.read(walletProvider.notifier).applyWalletSnapshot(
+                      shareBalance: result.shareBalance,
+                      diamondBalance: result.diamondBalance,
+                      valueBalance: result.valueTokenBalance,
+                    );
+                return await api.crewEmblemStatus();
+              } on ApiException catch (error) {
+                _toast(
+                  error.statusCode == 400
+                      ? 'DIA가 부족해요.'
+                      : '엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.',
+                );
+              } catch (_) {
+                _toast('엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.');
+              }
+              return null;
+            },
+    );
+    if (picked == null || picked == current || !mounted) return;
+    var savedOnServer = false;
+    if (api != null) {
+      try {
+        await api.changeCrewEmblem(picked.code);
         savedOnServer = true;
       } on ApiException catch (error) {
         if (!mounted) return;
+        if (error.statusCode == 429) {
+          _toast('엠블럼은 자주 바꿀 수 없어요. 잠시 뒤에 다시 바꿔 주세요.');
+          return;
+        }
+        if (error.statusCode == 403) {
+          _toast('아직 쓸 수 없는 테두리나 엠블럼이에요.');
+          return;
+        }
         if (error.statusCode != 404) {
           _toast('엠블럼을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
           return;

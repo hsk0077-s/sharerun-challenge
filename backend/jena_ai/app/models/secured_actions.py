@@ -114,6 +114,23 @@ class CrewEmblemRequest(BaseModel):
     emblem: str = Field(min_length=3, max_length=64)
 
 
+class CrewEmblemPurchaseRequest(BaseModel):
+    emblem_id: str = Field(min_length=3, max_length=40)
+    request_id: str = Field(min_length=8, max_length=80)
+
+
+class CrewEmblemStatus(BaseModel):
+    emblem: str
+    earned_borders: list[str]
+    progress: dict[str, float]
+    thresholds: dict[str, list[int]]
+    paid_owned: list[str]
+    paid_prices: dict[str, int]
+    paid_sale_enabled: bool
+    cooldown_seconds: int
+    can_manage: bool
+
+
 class NicknameChangeRequest(BaseModel):
     nickname: str = Field(min_length=2, max_length=12)
 

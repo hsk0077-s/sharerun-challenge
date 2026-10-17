@@ -6,7 +6,10 @@ Two forms are accepted:
 * v2 ``frame:glyph:pattern:frameColor:glyphColor`` from the design pack: 8 frames x
   30 glyphs x 4 patterns (or ``none``) x 12 colors. Only frame/glyph colour pairs with
   contrast >= 3:1 are allowed (``color-pairs.csv``), so a crafted request cannot store
-  anything else on a crew doc.
+  anything else on a crew doc. A sixth part may name an unlock border (``distance-2``).
+* paid ``paid:<id>``: an illustrated emblem the crew bought.
+
+Whether the crew has earned a border or bought a paid emblem is checked by the service.
 """
 
 from fastapi import HTTPException
@@ -112,6 +115,10 @@ CREW_EMBLEM_COLOR_PAIRS = frozenset(
         ("white", "purple"),
     }
 )
+PAID_EMBLEM_IDS = frozenset({"sunrise-cheetah", "moon-wolf", "ocean-turtle", "glow-heart"})
+BORDER_IDS = frozenset(
+    f"{k}-{t}" for k in ("distance", "donation", "members", "ranking") for t in (1, 2, 3)
+)
 DEFAULT_CREW_EMBLEM = "moon:lime"
 
 
@@ -120,13 +127,18 @@ def normalize_crew_emblem(value: str | None) -> str:
     if value is None or not value.strip():
         return DEFAULT_CREW_EMBLEM
     parts = value.strip().split(":")
+    if len(parts) == 2 and parts[0] == "paid":
+        if parts[1] in PAID_EMBLEM_IDS:
+            return value.strip()
+        raise HTTPException(status_code=400, detail="Invalid crew emblem.")
     if len(parts) == 2:
         if parts[0] not in CREW_EMBLEM_SHAPES or parts[1] not in CREW_EMBLEM_COLORS:
             raise HTTPException(status_code=400, detail="Invalid crew emblem.")
         return f"{parts[0]}:{parts[1]}"
-    if len(parts) == 5:
-        frame, glyph, pattern, frame_color, glyph_color = parts
-        if (
+    if len(parts) in (5, 6):
+        frame, glyph, pattern, frame_color, glyph_color = parts[:5]
+        border = parts[5] if len(parts) == 6 else None
+        if (border is None or border in BORDER_IDS) and (
             frame in CREW_EMBLEM_FRAMES
             and glyph.startswith("g_")
             and glyph in CREW_EMBLEM_SHAPES

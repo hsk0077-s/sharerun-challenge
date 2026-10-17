@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/crew/crew_emblem.dart';
+import 'package:share_run_challenge/features/crew/crew_emblem_status.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -101,6 +102,130 @@ void main() {
     for (final id in CrewEmblem.patterns.where((p) => p != 'none')) {
       expect(File(CrewEmblem.patternAsset(id)).existsSync(), isTrue, reason: id);
     }
+  });
+
+  test('border and paid codes parse and round trip', () {
+    const withBorder = 'shield:g_wolf:rays:navy:white:distance-2';
+    expect(CrewEmblem.parse(withBorder)?.code, withBorder);
+    expect(CrewEmblem.parse(withBorder)?.border, 'distance-2');
+    expect(CrewEmblem.parse('shield:g_wolf:rays:navy:white:gold-9'), isNull);
+    expect(CrewEmblem.parse('paid:moon-wolf')?.paid, isTrue);
+    expect(CrewEmblem.parse('paid:moon-wolf')?.code, 'paid:moon-wolf');
+    expect(CrewEmblem.parse('paid:nope'), isNull);
+    for (final id in CrewEmblem.borderIds) {
+      expect(File(CrewEmblem.borderAsset(id)).existsSync(), isTrue, reason: id);
+    }
+    for (final id in CrewEmblem.paidIds) {
+      expect(File(CrewEmblem.paidAsset(id)).existsSync(), isTrue, reason: id);
+    }
+  });
+
+  Future<void> pumpPicker(
+    WidgetTester tester, {
+    CrewEmblemStatus? status,
+    Future<CrewEmblemStatus?> Function(String)? onBuy,
+    required void Function(CrewEmblem?) onResult,
+  }) async {
+    tester.view.physicalSize = const Size(390, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.night,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () async => onResult(await CrewEmblemPicker.show(
+                context,
+                CrewEmblem.layeredDefault,
+                status: status,
+                onBuy: onBuy,
+              )),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('only earned borders can be worn; the rest stay locked',
+      (tester) async {
+    CrewEmblem? result;
+    await pumpPicker(
+      tester,
+      status: const CrewEmblemStatus(
+        earnedBorders: {'members-1'},
+        thresholds: {
+          'members': [10, 30, 50]
+        },
+        progress: {'members': 12},
+      ),
+      onResult: (e) => result = e,
+    );
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.borderKey('distance-1')));
+    await tester.tap(find.byKey(CrewEmblemPicker.borderKey('distance-1')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.borderKey('members-1')));
+    await tester.tap(find.byKey(CrewEmblemPicker.borderKey('members-1')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.tap(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.pumpAndSettle();
+    expect(result?.code, '${CrewEmblem.layeredDefault.code}:members-1');
+  });
+
+  testWidgets('paid emblems: not on sale, owned ones can be picked',
+      (tester) async {
+    CrewEmblem? result;
+    await pumpPicker(
+      tester,
+      status: const CrewEmblemStatus(
+        paidOwned: {'moon-wolf'},
+        paidPrices: {'moon-wolf': 40, 'glow-heart': 50},
+      ),
+      onResult: (e) => result = e,
+    );
+    expect(find.byKey(const Key('crew-emblem-paid-preparing')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.tap(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.paidKey('moon-wolf')));
+    await tester.tap(find.byKey(CrewEmblemPicker.paidKey('moon-wolf')));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.tap(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.pumpAndSettle();
+    expect(result?.code, 'paid:moon-wolf');
+  });
+
+  testWidgets('with the sale on, tapping a paid emblem asks to buy it',
+      (tester) async {
+    final bought = <String>[];
+    await pumpPicker(
+      tester,
+      status: const CrewEmblemStatus(
+        paidSaleEnabled: true,
+        paidPrices: {'glow-heart': 50},
+      ),
+      onBuy: (id) async {
+        bought.add(id);
+        return const CrewEmblemStatus(
+          paidSaleEnabled: true,
+          paidOwned: {'glow-heart'},
+          paidPrices: {'glow-heart': 50},
+        );
+      },
+      onResult: (_) {},
+    );
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.tap(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.pumpAndSettle();
+    expect(bought, ['glow-heart']);
+    expect(find.text('보유'), findsOneWidget);
   });
 
   testWidgets('picker returns the chosen shape and color', (tester) async {

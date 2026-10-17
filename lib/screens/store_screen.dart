@@ -429,8 +429,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
       _UnicefFundingCard(progress: shop.fundingProgress, onDonate: _onDonate),
       const DonationMatchContribution(),
-      const SizedBox(height: 12),
-      const _ValueTokenDetailCard(),
     ];
   }
 
@@ -661,6 +659,31 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   @override
+  /// VALUE 설명. 잔액 옆 "?"를 누르면 작은 창으로 보여 준다.
+  void _showValueInfo() {
+    final c = context.srcTokens.colors;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text(
+          AppStrings.storeValueDetailTitle,
+          style: storeText(18, c.ink, w: FontWeight.w900),
+        ),
+        content: Text(
+          AppStrings.storeValueDetailBody,
+          style: storeText(14, c.muted, h: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     ref.listen<StoreFocus?>(storeFocusProvider, (prev, next) {
       if (next == null || next == prev) return;
@@ -704,11 +727,19 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   value: _format(wallet.shareBalance),
                   iconColor: c.primary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 StoreBalancePill(
                   icon: Icons.diamond_outlined,
                   value: _format(wallet.diamondBalance),
                   iconColor: c.ink,
+                ),
+                const SizedBox(width: 6),
+                StoreBalancePill(
+                  icon: Icons.workspace_premium_outlined,
+                  value: _format(wallet.valueBalance),
+                  iconColor: c.accent,
+                  infoKey: const Key('store-value-info'),
+                  onInfo: _showValueInfo,
                 ),
                 IconButton(
                   icon: const Icon(Icons.inventory_2_outlined),
@@ -839,33 +870,6 @@ class _CosmeticsPreviewRow extends StatelessWidget {
           ),
         ],
       ],
-    );
-  }
-}
-
-class _ValueTokenDetailCard extends StatelessWidget {
-  const _ValueTokenDetailCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.srcTokens.colors;
-    return SrcSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            AppStrings.storeValueDetailTitle,
-            style: storeText(15, c.ink, w: FontWeight.w800),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            AppStrings.storeValueDetailBody,
-            style: storeText(12, c.muted, h: 1.4),
-          ),
-          const SizedBox(height: 6),
-        ],
-      ),
     );
   }
 }

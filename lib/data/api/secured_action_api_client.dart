@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
+import '../../features/crew/crew_emblem_status.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
@@ -478,6 +479,36 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> changeCrewEmblem(String emblem) async {
     final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// 엠블럼 상태(해금한 테두리·진행도·산 유료 엠블럼). 크루가 없으면 404.
+  Future<CrewEmblemStatus> crewEmblemStatus() async {
+    final json = await _get('/actions/crew/emblem/status');
+    return CrewEmblemStatus.fromJson(json);
+  }
+
+  /// 유료 일러스트 엠블럼을 DIA로 산다. 크루장만. 같은 요청은 한 번만 차감된다.
+  Future<PedometerHarvestResult> purchaseCrewPaidEmblem(String emblemId) async {
+    final retryKey = 'crew-emblem-$emblemId';
+    final requestId = _requestIds.begin(retryKey);
+    try {
+      final json = await _post('/actions/crew/emblem/purchase', {
+        'emblem_id': emblemId,
+        'request_id': requestId,
+      });
+      _requestIds.succeed(retryKey);
+      return PedometerHarvestResult.fromJson(json);
+    } on ApiException catch (error) {
+      _requestIds.failed(
+        retryKey,
+        requestId,
+        retryable: error.statusCode >= 500,
+      );
+      rethrow;
+    } catch (_) {
+      _requestIds.failed(retryKey, requestId, retryable: true);
+      rethrow;
+    }
   }
 
   /// Creates a crew. [payWith] is `dia` or `share`. The server debits the price.

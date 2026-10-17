@@ -125,6 +125,7 @@ from app.services.item_price_config import (
     read_item_prices,
 )
 from app.services.challenge_tickets import purchase_challenge_ticket
+from app.services import crew_emblem_perks as crew_perks
 from app.services.crew_emblem import DEFAULT_CREW_EMBLEM, normalize_crew_emblem
 from app.services.ranked_tournaments import (
     consume_challenge_ticket,
@@ -779,28 +780,164 @@ class SecuredActionService:
             emblem,
         )
 
-    def change_crew_emblem(self, uid: str, emblem: str) -> SecuredActionResult:
-        """Free. Only the crew owner can change it, and only to a listed emblem."""
-        code = normalize_crew_emblem(emblem)
+    def _emblem_crew(self, uid: str):
+        """The user, the crew id, the crew ref and the crew doc the user may manage."""
         db = self.firebase_service.db
         user_snapshot = db.collection("users").document(uid).get()
         user = user_snapshot.to_dict() if user_snapshot.exists else None
-        crew_id = (user or {}).get("ownedCrewId")
-        if not isinstance(crew_id, str) or not crew_id:
+        crew_id = member_crew_id(user or {})
+        if not crew_id:
             raise HTTPException(status_code=404, detail="You do not own a crew.")
         crew_ref = db.collection("crews").document(crew_id)
         crew_snapshot = crew_ref.get()
         crew = crew_snapshot.to_dict() if crew_snapshot.exists else None
-        if not crew or crew.get("ownerUid") != uid:
+        if not crew or not crew_perks.can_manage(uid, crew):
             raise HTTPException(status_code=404, detail="You do not own a crew.")
-        crew_ref.set({"emblem": code, "updatedAt": SERVER_TIMESTAMP}, merge=True)
-        wallet = (user or {}).get("wallet") or {}
+        return user or {}, crew_ref, crew
+
+    def change_crew_emblem(self, uid: str, emblem: str) -> SecuredActionResult:
+        """Free. The leader or a sub-leader, a listed emblem, and the cooldown."""
+        code = normalize_crew_emblem(emblem)
+        user, crew_ref, crew = self._emblem_crew(uid)
+        parts = code.split(":")
+        if parts[0] == "paid":
+            if parts[1] not in crew_perks.owned_paid(crew):
+                raise HTTPException(status_code=403, detail="This emblem is not owned by the crew.")
+        earned = crew_perks.earned_borders(crew)
+        if len(parts) == 6 and parts[5] not in earned:
+            raise HTTPException(status_code=403, detail="This border is not unlocked yet.")
+        if code != crew.get("emblem"):
+            left = crew_perks.cooldown_remaining_seconds(crew)
+            if left > 0:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"The emblem can change again in {left} seconds.",
+                )
+        crew_ref.set(
+            {
+                "emblem": code,
+                "emblemChangedAt": SERVER_TIMESTAMP,
+                "unlockedBorders": sorted(earned),
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+        wallet = user.get("wallet") or {}
         return SecuredActionResult(
             accepted=True,
             status="updated",
             reason="Crew emblem updated.",
             share_balance=_wallet_int(wallet, "shareBalance"),
             diamond_balance=_wallet_int(wallet, "diamondBalance"),
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def crew_emblem_status(self, uid: str) -> dict:
+        """What the picker needs: earned borders, progress, owned paid emblems, cooldown."""
+        _user, _ref, crew = self._emblem_crew(uid)
+        return {
+            "emblem": crew.get("emblem") or DEFAULT_CREW_EMBLEM,
+            "earned_borders": sorted(crew_perks.earned_borders(crew)),
+            "progress": crew_perks.stats(crew),
+            "thresholds": {k: list(v) for k, v in crew_perks.BORDER_THRESHOLDS.items()},
+            "paid_owned": sorted(crew_perks.owned_paid(crew)),
+            "paid_prices": crew_perks.PAID_EMBLEM_PRICES_DIA,
+            "paid_sale_enabled": crew_perks.paid_sale_enabled(),
+            "cooldown_seconds": crew_perks.cooldown_remaining_seconds(crew),
+            "can_manage": True,
+        }
+
+    def purchase_crew_paid_emblem(
+        self, uid: str, emblem_id: str, request_id: str
+    ) -> SecuredActionResult:
+        if not crew_perks.paid_sale_enabled():
+            raise HTTPException(status_code=403, detail="Paid emblems are not on sale yet.")
+        price = crew_perks.PAID_EMBLEM_PRICES_DIA.get(emblem_id)
+        if price is None:
+            raise HTTPException(status_code=404, detail="Emblem not found.")
+        db = self.firebase_service.db
+        user_ref = db.collection("users").document(uid)
+        user_snapshot = user_ref.get()
+        crew_id = member_crew_id(user_snapshot.to_dict() or {}) if user_snapshot.exists else ""
+        if not crew_id:
+            raise HTTPException(status_code=404, detail="You do not own a crew.")
+        crew_ref = db.collection("crews").document(crew_id)
+        # Only the leader buys, so the crew owns it for good.
+        crew_doc = crew_ref.get()
+        if not crew_doc.exists or (crew_doc.to_dict() or {}).get("ownerUid") != uid:
+            raise HTTPException(status_code=403, detail="Only the crew leader can buy emblems.")
+        transaction = db.transaction()
+        return _commit_crew_paid_emblem_tx(
+            transaction,
+            self,
+            uid,
+            emblem_id,
+            price,
+            require_request_id(request_id),
+            user_ref,
+            crew_ref,
+        )
+
+    def _crew_paid_emblem_tx(
+        self,
+        transaction,
+        uid: str,
+        emblem_id: str,
+        price: int,
+        request_id: str,
+        user_ref,
+        crew_ref,
+    ) -> SecuredActionResult:
+        ledger_ref = self.firebase_service.db.collection("walletTransactions").document(
+            f"crew_emblem_{uid}_{request_id}"
+        )
+        user_snapshot = user_ref.get(transaction=transaction)
+        crew_snapshot = crew_ref.get(transaction=transaction)
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        if ledger_ref.get(transaction=transaction).exists:
+            return SecuredActionResult(
+                accepted=True,
+                status="already_bought",
+                reason="Emblem purchase already recorded.",
+                share_balance=_wallet_int(wallet, "shareBalance"),
+                diamond_balance=_wallet_int(wallet, "diamondBalance"),
+                value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+            )
+        crew = crew_snapshot.to_dict() or {}
+        if emblem_id in crew_perks.owned_paid(crew):
+            raise HTTPException(status_code=409, detail="The crew already owns this emblem.")
+        diamonds = int(wallet.get("diamondBalance") or 0)
+        if diamonds < price:
+            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        moved = move_currency(wallet, diamond=-price)
+        transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
+        transaction.set(
+            crew_ref,
+            {
+                "paidEmblems": sorted(crew_perks.owned_paid(crew) | {emblem_id}),
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+        transaction.set(
+            ledger_ref,
+            {
+                "uid": uid,
+                "type": "crew_emblem_purchase",
+                "diamondAmount": -price,
+                "emblemId": emblem_id,
+                "crewId": crew_ref.id,
+                "requestId": request_id,
+                "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="bought",
+            reason="Crew emblem bought.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=diamonds - price,
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
@@ -1301,6 +1438,16 @@ class SecuredActionService:
                 merge=True,
             )
             transaction.delete(appeal["proof_ref"])
+        if donation_counted and not donation_exists and crew_id and cheer_crew is not None:
+            # Crew stats for the unlock borders. Counted once per verified run
+            # (the donation ledger doc guards the repeat).
+            transaction.update(
+                self.firebase_service.db.collection("crews").document(crew_id),
+                {
+                    "totalDistanceKm": firestore.Increment(float(request.distance_km)),
+                    "totalDonationWon": firestore.Increment(int(company_won)),
+                },
+            )
         if donation_counted and not donation_exists:
             transaction.set(
                 donation_ref,
@@ -5166,6 +5313,22 @@ def _commit_crew_cheer_use_tx(
     now=None,
 ) -> SecuredActionResult:
     return use_crew_cheer(service, transaction, uid, request_id, user_ref, now=now)
+
+
+@firestore.transactional
+def _commit_crew_paid_emblem_tx(
+    transaction,
+    service,
+    uid: str,
+    emblem_id: str,
+    price: int,
+    request_id: str,
+    user_ref,
+    crew_ref,
+) -> SecuredActionResult:
+    return service._crew_paid_emblem_tx(
+        transaction, uid, emblem_id, price, request_id, user_ref, crew_ref
+    )
 
 
 @firestore.transactional

@@ -44,12 +44,18 @@ class StoreBalancePill extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.iconColor,
+    this.onInfo,
+    this.infoKey,
     super.key,
   });
 
   final IconData icon;
   final String value;
   final Color iconColor;
+
+  /// 있으면 숫자 옆에 "?" 버튼이 붙고, 누르면 이 함수를 부른다.
+  final VoidCallback? onInfo;
+  final Key? infoKey;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +73,15 @@ class StoreBalancePill extends StatelessWidget {
           Icon(icon, size: 14, color: iconColor),
           const SizedBox(width: 5),
           Text(value, style: storeText(13, c.ink, w: FontWeight.w900)),
+          if (onInfo != null) ...[
+            const SizedBox(width: 4),
+            InkResponse(
+              key: infoKey,
+              onTap: onInfo,
+              radius: 16,
+              child: Icon(Icons.help_outline_rounded, size: 16, color: c.muted),
+            ),
+          ],
         ],
       ),
     );

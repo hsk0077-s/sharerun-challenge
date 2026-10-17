@@ -55,14 +55,21 @@ void main() {
     expect(find.textContaining('골드 러닝화'), findsNothing);
   });
 
-  testWidgets('VALUE detail has no external wallet transfer', (tester) async {
+  testWidgets('VALUE is explained by a ? on its balance, not by a card at the bottom',
+      (tester) async {
     await _pump(tester);
-    await tester.ensureVisible(find.text(AppStrings.storeValueDetailTitle));
-    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.storeValueDetailTitle), findsNothing);
 
+    await tester.tap(find.byKey(const Key('store-value-info')));
+    await tester.pumpAndSettle();
     expect(find.text(AppStrings.storeValueDetailTitle), findsOneWidget);
+    expect(find.text(AppStrings.storeValueDetailBody), findsOneWidget);
     expect(find.textContaining('외부 지갑'), findsNothing);
     expect(find.textContaining('MetaMask'), findsNothing);
+
+    await tester.tap(find.text('확인'));
+    await tester.pumpAndSettle();
+    expect(find.text(AppStrings.storeValueDetailTitle), findsNothing);
   });
 
   testWidgets('diamond tab lists the DIA packs as not yet on sale',
@@ -94,7 +101,6 @@ void main() {
     await _pump(tester, focus: StoreFocus.donate);
 
     expect(find.text(AppStrings.storeFundingTitle), findsOneWidget);
-    expect(find.text(AppStrings.storeValueDetailTitle), findsOneWidget);
   });
 
   testWidgets('DIA focus lands on the items tab', (tester) async {

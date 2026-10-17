@@ -22,7 +22,9 @@ from app.models.secured_actions import (
     CoachPlusActivateRequest,
     CreateChallengeRoomRequest,
     CreateChallengeRoomResult,
+    CrewEmblemPurchaseRequest,
     CrewEmblemRequest,
+    CrewEmblemStatus,
     CrewFoundRequest,
     CrewSpendRequest,
     CosmeticCatalogItem,
@@ -220,6 +222,21 @@ def change_crew_emblem(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.change_crew_emblem(uid=uid, emblem=request.emblem)
+
+
+@router.get("/crew/emblem/status", response_model=CrewEmblemStatus)
+def crew_emblem_status(uid: str = Depends(require_uid)) -> CrewEmblemStatus:
+    return CrewEmblemStatus(**service.crew_emblem_status(uid=uid))
+
+
+@router.post("/crew/emblem/purchase", response_model=SecuredActionResult)
+def purchase_crew_paid_emblem(
+    request: CrewEmblemPurchaseRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.purchase_crew_paid_emblem(
+        uid=uid, emblem_id=request.emblem_id, request_id=request.request_id
+    )
 
 
 @router.post("/profile/nickname", response_model=SecuredActionResult)

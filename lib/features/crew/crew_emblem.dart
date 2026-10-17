@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/theme.dart';
 import '../shop/widgets/store_look.dart';
 import 'crew_emblem_layered.dart';
+import 'crew_emblem_status.dart';
 
 /// 크루 엠블럼. 두 가지 모양의 코드를 모두 읽는다.
 /// - 예전: `모양:색` (아이콘 44개 + 그림 문양 30개, 색 6개). 이미 만든 크루가 그대로 쓴다.
@@ -18,7 +19,19 @@ class CrewEmblem {
     this.frame,
     this.pattern = 'none',
     this.glyphColor,
+    this.border,
+    this.paid = false,
   });
+
+  /// 유료 일러스트 엠블럼. 완성된 그림이라 틀·색을 따로 고르지 않는다.
+  const CrewEmblem.paidIllustration(String id)
+      : icon = id,
+        color = '',
+        frame = null,
+        pattern = 'none',
+        glyphColor = null,
+        border = null,
+        paid = true;
 
   /// 새 엠블럼. [glyph]는 `g_wolf` 같은 그림 문양 코드.
   const CrewEmblem.layered({
@@ -27,8 +40,10 @@ class CrewEmblem {
     this.pattern = 'none',
     required String frameColor,
     required String this.glyphColor,
+    this.border,
   })  : icon = glyph,
-        color = frameColor;
+        color = frameColor,
+        paid = false;
 
   /// 문양(새 엠블럼) 또는 모양(예전 엠블럼).
   final String icon;
@@ -38,6 +53,12 @@ class CrewEmblem {
   final String? frame;
   final String pattern;
   final String? glyphColor;
+
+  /// 활동으로 해금한 테두리(`distance-2` 같은 코드). 없으면 null.
+  final String? border;
+
+  /// 크루가 산 유료 일러스트 엠블럼인지.
+  final bool paid;
 
   static const fallback = CrewEmblem('moon', 'lime');
 
@@ -56,13 +77,19 @@ class CrewEmblem {
   static CrewEmblem? parse(String? code) {
     if (code == null) return null;
     final parts = code.split(':');
-    if (parts.length == 5) {
+    if (parts.length == 2 && parts[0] == 'paid') {
+      return paidIds.contains(parts[1])
+          ? CrewEmblem.paidIllustration(parts[1])
+          : null;
+    }
+    if (parts.length == 5 || parts.length == 6) {
       final e = CrewEmblem.layered(
         frame: parts[0],
         glyph: parts[1],
         pattern: parts[2],
         frameColor: parts[3],
         glyphColor: parts[4],
+        border: parts.length == 6 ? parts[5] : null,
       );
       return e.isValidLayered ? e : null;
     }
@@ -78,11 +105,46 @@ class CrewEmblem {
       frames.contains(frame) &&
       glyphIds.contains(icon) &&
       patterns.contains(pattern) &&
-      allowsGlyphColor(color, glyphColor ?? '');
+      allowsGlyphColor(color, glyphColor ?? '') &&
+      (border == null || borderIds.contains(border));
 
-  String get code => isLayered
-      ? '$frame:$icon:$pattern:$color:$glyphColor'
-      : '$icon:$color';
+  String get code => paid
+      ? 'paid:$icon'
+      : isLayered
+          ? '$frame:$icon:$pattern:$color:$glyphColor${border == null ? '' : ':$border'}'
+          : '$icon:$color';
+
+  /// 같은 엠블럼에 테두리만 바꾼다. 없애려면 null.
+  CrewEmblem withBorder(String? value) => CrewEmblem.layered(
+        frame: frame!,
+        glyph: icon,
+        pattern: pattern,
+        frameColor: color,
+        glyphColor: glyphColor!,
+        border: value,
+      );
+
+  static const borderKinds = <String>['distance', 'donation', 'members', 'ranking'];
+  static const borderTierNames = <String>['bronze', 'silver', 'gold'];
+  static final borderIds = <String>{
+    for (final k in borderKinds)
+      for (var t = 1; t <= 3; t++) '$k-$t',
+  };
+
+  /// `distance-2` → 그림 경로.
+  static String borderAsset(String id) {
+    final tier = int.parse(id.split('-').last);
+    return 'assets/images/crew_emblem/unlock/border-$id-${borderTierNames[tier - 1]}.png';
+  }
+
+  static const paidIds = <String>{
+    'sunrise-cheetah',
+    'moon-wolf',
+    'ocean-turtle',
+    'glow-heart',
+  };
+  static String paidAsset(String id) =>
+      'assets/images/crew_emblem/paid/paid-$id.png';
 
   static const frames = <String>[
     'shield',
@@ -179,7 +241,11 @@ class CrewEmblem {
     'g_wings',
     'g_wolf',
   };
-  Color get colorValue => isLayered ? paletteColors[color]! : colors[color]!;
+  Color get colorValue => paid
+      ? paletteColors['white']!
+      : isLayered
+          ? paletteColors[color]!
+          : colors[color]!;
 
   @override
   bool operator ==(Object other) =>
@@ -366,6 +432,14 @@ class CrewEmblemBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (emblem.paid) {
+      return Image.asset(
+        CrewEmblem.paidAsset(emblem.icon),
+        width: size,
+        height: size,
+        filterQuality: FilterQuality.medium,
+      );
+    }
     if (emblem.isLayered) return CrewEmblemLayered(emblem: emblem, size: size);
     final c = context.srcTokens.colors;
     return Container(
@@ -421,18 +495,36 @@ final crewEmblemProvider =
 /// 엠블럼 고르는 시트. 고르면 [CrewEmblem], 닫으면 null.
 /// 틀 8 · 문양 30 · 패턴 4(+없음) · 틀 색 12 · 문양 색(대비 3:1 이상인 것만).
 class CrewEmblemPicker extends StatefulWidget {
-  const CrewEmblemPicker({required this.initial, super.key});
+  const CrewEmblemPicker({
+    required this.initial,
+    this.status,
+    this.onBuy,
+    super.key,
+  });
 
   final CrewEmblem initial;
+
+  /// 서버가 알려 준 해금·구매 상태. 없으면(크루가 서버에 없을 때) 잠금·준비 중으로 보인다.
+  final CrewEmblemStatus? status;
+
+  /// 유료 엠블럼을 살 때 부른다. 성공하면 새 상태를, 못 샀으면 null을 돌려준다.
+  final Future<CrewEmblemStatus?> Function(String emblemId)? onBuy;
 
   static const doneKey = Key('crew-emblem-done');
   static Key frameKey(String id) => Key('crew-emblem-frame-$id');
   static Key iconKey(String id) => Key('crew-emblem-icon-$id');
   static Key patternKey(String id) => Key('crew-emblem-pattern-$id');
   static Key colorKey(String id) => Key('crew-emblem-color-$id');
+  static Key borderKey(String id) => Key('crew-emblem-border-$id');
+  static Key paidKey(String id) => Key('crew-emblem-paid-$id');
   static Key glyphColorKey(String id) => Key('crew-emblem-glyph-color-$id');
 
-  static Future<CrewEmblem?> show(BuildContext context, CrewEmblem initial) {
+  static Future<CrewEmblem?> show(
+    BuildContext context,
+    CrewEmblem initial, {
+    CrewEmblemStatus? status,
+    Future<CrewEmblemStatus?> Function(String emblemId)? onBuy,
+  }) {
     return showModalBottomSheet<CrewEmblem>(
       context: context,
       isScrollControlled: true,
@@ -440,7 +532,8 @@ class CrewEmblemPicker extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      builder: (_) => CrewEmblemPicker(initial: initial),
+      builder: (_) =>
+          CrewEmblemPicker(initial: initial, status: status, onBuy: onBuy),
     );
   }
 
@@ -454,14 +547,20 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
   late String _pattern;
   late String _frameColor;
   late String _glyphColor;
+  String? _border;
+  String? _paid;
+  late CrewEmblemStatus _status = widget.status ?? const CrewEmblemStatus();
 
   @override
   void initState() {
     super.initState();
+    _border = widget.initial.border;
+    _paid = widget.initial.paid ? widget.initial.icon : null;
     // 예전 엠블럼은 새 기본값에서 시작한다(색·모양이 서로 달라 옮길 수 없다).
     final e = widget.initial.isLayered
         ? widget.initial
         : CrewEmblem.layeredDefault;
+    if (!widget.initial.isLayered) _border = null;
     _frame = e.frame!;
     _glyph = e.icon;
     _pattern = e.pattern;
@@ -469,17 +568,64 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
     _glyphColor = e.glyphColor!;
   }
 
-  CrewEmblem get _emblem => CrewEmblem.layered(
-        frame: _frame,
-        glyph: _glyph,
-        pattern: _pattern,
-        frameColor: _frameColor,
-        glyphColor: _glyphColor,
-      );
+  CrewEmblem get _emblem => _paid != null
+      ? CrewEmblem.paidIllustration(_paid!)
+      : CrewEmblem.layered(
+          frame: _frame,
+          glyph: _glyph,
+          pattern: _pattern,
+          frameColor: _frameColor,
+          glyphColor: _glyphColor,
+          border: _border,
+        );
+
+  /// 틀·문양 같은 것을 고르면 유료 엠블럼 선택은 풀린다.
+  void _edit(VoidCallback change) => setState(() {
+        _paid = null;
+        change();
+      });
+
+  Future<void> _buy(String id) async {
+    final buy = widget.onBuy;
+    if (buy == null) return;
+    final next = await buy(id);
+    if (!mounted || next == null) return;
+    setState(() {
+      _status = next;
+      if (next.paidOwned.contains(id)) _paid = id;
+    });
+  }
+
+  static const _borderTitles = <String, String>{
+    'distance': '거리',
+    'donation': '기부',
+    'members': '인원',
+    'ranking': '랭킹',
+  };
+
+  String _borderRule(String kind) {
+    final t = _status.thresholds[kind];
+    if (t == null || t.length != 3) return '';
+    String n(int v) => v.toString().replaceAllMapped(
+          RegExp(r'\B(?=(\d{3})+(?!\d))'),
+          (_) => ',',
+        );
+    final now = _status.progress[kind] ?? 0;
+    switch (kind) {
+      case 'distance':
+        return '${n(t[0])}km · ${n(t[1])}km · ${n(t[2])}km  (지금 ${n(now.round())}km)';
+      case 'donation':
+        return '${n(t[0])}원 · ${n(t[1])}원 · ${n(t[2])}원  (지금 ${n(now.round())}원)';
+      case 'members':
+        return '${t[0]}명 · ${t[1]}명 · ${t[2]}명  (지금 ${now.round()}명)';
+      default:
+        return '월간 ${t[0]}위 · ${t[1]}위 · ${t[2]}위 이내';
+    }
+  }
 
   void _pickFrameColor(String id) {
     final allowed = CrewEmblem.allowedPairs[id] ?? const <String>[];
-    setState(() {
+    _edit(() {
       _frameColor = id;
       if (!allowed.contains(_glyphColor) && allowed.isNotEmpty) {
         _glyphColor = allowed.first;
@@ -547,6 +693,80 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
     );
   }
 
+  Widget _borderTile(String id, SrcColorRoles c) {
+    final unlocked = _status.earnedBorders.contains(id);
+    final selected = _border == id && _paid == null;
+    return InkWell(
+      key: CrewEmblemPicker.borderKey(id),
+      borderRadius: BorderRadius.circular(14),
+      onTap: unlocked
+          ? () => _edit(() => _border = selected ? null : id)
+          : null,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? c.primary : c.outline,
+            width: selected ? 2.5 : 1,
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Opacity(
+              opacity: unlocked ? 1 : 0.28,
+              child: Image.asset(CrewEmblem.borderAsset(id), width: 48, height: 48),
+            ),
+            if (!unlocked)
+              Icon(Icons.lock_rounded, size: 16, color: c.muted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _paidTile(String id, SrcColorRoles c) {
+    final owned = _status.paidOwned.contains(id);
+    final selected = _paid == id;
+    final price = _status.paidPrices[id];
+    final canBuy = !owned && _status.paidSaleEnabled && widget.onBuy != null;
+    return Column(
+      children: [
+        InkWell(
+          key: CrewEmblemPicker.paidKey(id),
+          borderRadius: BorderRadius.circular(14),
+          onTap: owned
+              ? () => setState(() => _paid = selected ? null : id)
+              : canBuy
+                  ? () => _buy(id)
+                  : null,
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: selected ? c.primary : c.outline,
+                width: selected ? 2.5 : 1,
+              ),
+            ),
+            child: Opacity(
+              opacity: owned || canBuy ? 1 : 0.4,
+              child: Image.asset(CrewEmblem.paidAsset(id), width: 56, height: 56),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          owned ? '보유' : (price == null ? '' : '$price DIA'),
+          style: storeText(11, owned ? c.primary : c.muted, w: FontWeight.w700),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
@@ -591,7 +811,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   _tile(
                     key: CrewEmblemPicker.frameKey(id),
                     selected: id == _frame,
-                    onTap: () => setState(() => _frame = id),
+                    onTap: () => _edit(() => _frame = id),
                     child: Image.asset(
                       CrewEmblem.frameAsset(id),
                       width: 40,
@@ -611,7 +831,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   _tile(
                     key: CrewEmblemPicker.iconKey(id),
                     selected: id == _glyph,
-                    onTap: () => setState(() => _glyph = id),
+                    onTap: () => _edit(() => _glyph = id),
                     child: Image.asset(
                       CrewEmblem.glyphAssetOf(id),
                       width: 36,
@@ -631,7 +851,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   _tile(
                     key: CrewEmblemPicker.patternKey(id),
                     selected: id == _pattern,
-                    onTap: () => setState(() => _pattern = id),
+                    onTap: () => _edit(() => _pattern = id),
                     child: id == 'none'
                         ? Text('없음', style: storeText(12, c.muted, w: FontWeight.w700))
                         : Image.asset(
@@ -670,10 +890,52 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                     fill: CrewEmblem.paletteColors[id]!,
                     selected: id == _glyphColor,
                     ring: c.ink,
-                    onTap: () => setState(() => _glyphColor = id),
+                    onTap: () => _edit(() => _glyphColor = id),
                   ),
               ],
             ),
+            _label('해금 테두리 (활동으로 얻어요)', c.muted),
+            for (final kind in CrewEmblem.borderKinds) ...[
+              Row(
+                children: [
+                  SizedBox(
+                    width: 40,
+                    child: Text(
+                      _borderTitles[kind]!,
+                      style: storeText(12, c.ink, w: FontWeight.w800),
+                    ),
+                  ),
+                  for (var tier = 1; tier <= 3; tier++)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _borderTile('$kind-$tier', c),
+                    ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 40, top: 4, bottom: 10),
+                child: Text(
+                  _borderRule(kind),
+                  style: storeText(11, c.muted, h: 1.3),
+                ),
+              ),
+            ],
+            _label('유료 일러스트 (크루가 평생 가져요)', c.muted),
+            Row(
+              children: [
+                for (final id in CrewEmblem.paidIds.toList()..sort())
+                  Expanded(child: _paidTile(id, c)),
+              ],
+            ),
+            if (!_status.paidSaleEnabled)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  '판매는 준비 중이에요.',
+                  key: const Key('crew-emblem-paid-preparing'),
+                  style: storeText(11, c.muted),
+                ),
+              ),
             const SizedBox(height: 22),
             StorePillButton(
               key: CrewEmblemPicker.doneKey,

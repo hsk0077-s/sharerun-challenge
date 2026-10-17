@@ -37,12 +37,14 @@ class _CrewEmblemLayeredState extends State<CrewEmblemLayered> {
       await _load(CrewEmblem.frameAsset(e.frame!));
       await _load(CrewEmblem.glyphAssetOf(e.icon));
       if (e.pattern != 'none') await _load(CrewEmblem.patternAsset(e.pattern));
+      if (e.border != null) await _load(CrewEmblem.borderAsset(e.border!));
     }
   }
 
   ui.Image? _frame;
   ui.Image? _glyph;
   ui.Image? _pattern;
+  ui.Image? _border;
   String? _loadedFor;
 
   @override
@@ -65,8 +67,11 @@ class _CrewEmblemLayeredState extends State<CrewEmblemLayered> {
       final glyph = await _load(CrewEmblem.glyphAssetOf(e.icon));
       final pattern =
           e.pattern == 'none' ? null : await _load(CrewEmblem.patternAsset(e.pattern));
+      final border =
+          e.border == null ? null : await _load(CrewEmblem.borderAsset(e.border!));
       if (!mounted || widget.emblem.code != key) return;
       setState(() {
+        _border = border;
         _frame = frame;
         _glyph = glyph;
         _pattern = pattern;
@@ -89,6 +94,7 @@ class _CrewEmblemLayeredState extends State<CrewEmblemLayered> {
                 frame: _frame!,
                 glyph: _glyph!,
                 pattern: _pattern,
+                border: _border,
                 frameColor: CrewEmblem.paletteColors[e.color]!,
                 glyphColor: CrewEmblem.paletteColors[e.glyphColor!]!,
                 frameId: e.frame!,
@@ -123,6 +129,7 @@ class _EmblemPainter extends CustomPainter {
     required this.frame,
     required this.glyph,
     required this.pattern,
+    required this.border,
     required this.frameColor,
     required this.glyphColor,
     required this.frameId,
@@ -131,6 +138,7 @@ class _EmblemPainter extends CustomPainter {
   final ui.Image frame;
   final ui.Image glyph;
   final ui.Image? pattern;
+  final ui.Image? border;
   final Color frameColor;
   final Color glyphColor;
   final String frameId;
@@ -193,6 +201,14 @@ class _EmblemPainter extends CustomPainter {
     final fit = _fits[frameId] ?? _fits['circle']!;
     canvas.save();
     canvas.scale(size.width / 24);
+    // 해금 테두리가 있으면 완성된 테두리를 깔고, 엠블럼은 0.74배로 줄여 가운데에 놓는다.
+    final ring = border;
+    if (ring != null) {
+      _put(canvas, ring, Paint());
+      canvas.translate(12, 12);
+      canvas.scale(0.74);
+      canvas.translate(-12, -12);
+    }
 
     // 1. 계단 그림자
     _fillShape(canvas, frame, _flat(_ink.withValues(alpha: 0.55)), dy: 1.1);
@@ -296,6 +312,7 @@ class _EmblemPainter extends CustomPainter {
       old.frame != frame ||
       old.glyph != glyph ||
       old.pattern != pattern ||
+      old.border != border ||
       old.frameColor != frameColor ||
       old.glyphColor != glyphColor;
 }

@@ -72,6 +72,17 @@ void main() {
     expect(find.text(AppStrings.storeValueDetailTitle), findsNothing);
   });
 
+  testWidgets('the funding card is honest: preparing, no fake progress, no dead button',
+      (tester) async {
+    await _pump(tester);
+    await tester.ensureVisible(find.text(AppStrings.storeFundingTitle));
+    expect(find.byKey(const Key('store-funding-preparing')), findsOneWidget);
+    expect(find.text('준비 중'), findsWidgets);
+    expect(find.textContaining('% 달성'), findsNothing);
+    expect(find.textContaining('기부하기'), findsNothing);
+    expect(find.textContaining('서버 원장'), findsNothing);
+  });
+
   testWidgets('diamond tab lists the DIA packs as not yet on sale',
       (tester) async {
     await _pump(tester);

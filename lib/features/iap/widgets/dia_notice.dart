@@ -5,7 +5,6 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/theme/theme.dart';
 import '../../crew/crew_membership.dart';
 import '../../shop/widgets/store_look.dart';
-import '../../wallet/providers/wallet_provider.dart';
 import '../dia_refund.dart';
 
 /// DIA 안내: 유료/보너스, 쓰는 순서, 환불. 충전하는 화면 아래에 둔다.

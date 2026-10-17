@@ -284,8 +284,9 @@ abstract final class AppStrings {
   static const storeValueBalance = '5,200';
   static const storeFundingTitle =
       '🌍 땀방울로 만드는 기적,\n유니세프 결식아동 펀딩';
-  static const storeFundingProgress = '85% 달성';
-  static const storeDonateButton = '500 밸류(VALUE) 기부하기';
+  static const storeFundingPreparing = '준비 중';
+  static const storeFundingPreparingNote =
+      '아직 열리지 않았어요. 열리면 모은 VALUE로 참여할 수 있어요.';
   static const storeFunctionalItems = '기능성 아이템';
   static const storeCosmeticsTitle = '코스메틱';
   static const storeCosmeticsNote =

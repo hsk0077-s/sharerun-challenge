@@ -118,13 +118,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  void _onDonate() {
-    _toast(
-      '이 화면에서는 VALUE를 차감하지 않습니다. '
-      '기부는 서버 원장에 기록된 뒤에만 잔액이 줄어듭니다.',
-    );
-  }
-
   ShopItemModel _shopItem(String id) {
     return ShopItemModel.catalog.firstWhere((item) => item.id == id);
   }
@@ -428,7 +421,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         key: _fundingKey,
         child: const StoreSectionLabel('기부 펀딩'),
       ),
-      _UnicefFundingCard(progress: shop.fundingProgress, onDonate: _onDonate),
+      const _UnicefFundingCard(),
       const DonationMatchContribution(),
     ];
   }
@@ -879,18 +872,13 @@ class _CosmeticsPreviewRow extends StatelessWidget {
 
 /// 유니세프 기부 펀딩 카드. 라임 바탕에 어두운 글자.
 class _UnicefFundingCard extends StatelessWidget {
-  const _UnicefFundingCard({
-    required this.progress,
-    required this.onDonate,
-  });
+  const _UnicefFundingCard();
 
-  final double progress;
-  final VoidCallback? onDonate;
+  static const preparingKey = Key('store-funding-preparing');
 
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
-    final pct = (progress.clamp(0.0, 1.0) * 100).round();
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -904,36 +892,27 @@ class _UnicefFundingCard extends StatelessWidget {
             AppStrings.storeFundingTitle,
             style: storeText(17, c.onPrimary, w: FontWeight.w900, h: 1.4),
           ),
-          const SizedBox(height: 18),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 10,
-              backgroundColor: c.onPrimary.withValues(alpha: 0.18),
-              valueColor: AlwaysStoppedAnimation<Color>(c.onPrimary),
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            '$pct% 달성',
-            style: storeText(12, c.onPrimary, w: FontWeight.w800),
+            AppStrings.storeFundingPreparingNote,
+            key: preparingKey,
+            style: storeText(13, c.onPrimary, w: FontWeight.w700, h: 1.4),
           ),
           const SizedBox(height: 16),
           SizedBox(
             height: 48,
             child: FilledButton(
-              onPressed: onDonate,
+              onPressed: null,
               style: FilledButton.styleFrom(
-                backgroundColor: c.onPrimary,
-                foregroundColor: c.primary,
+                disabledBackgroundColor: c.onPrimary.withValues(alpha: 0.18),
+                disabledForegroundColor: c.onPrimary.withValues(alpha: 0.7),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
               ),
               child: Text(
-                '[${AppStrings.storeDonateButton}]',
-                style: storeText(14, c.primary, w: FontWeight.w800),
+                AppStrings.storeFundingPreparing,
+                style: storeText(14, c.onPrimary, w: FontWeight.w800),
               ),
             ),
           ),

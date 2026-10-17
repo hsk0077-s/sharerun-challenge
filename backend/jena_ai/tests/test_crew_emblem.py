@@ -159,3 +159,22 @@ def test_glyph_emblems_are_accepted():
     glyphs = [s for s in CREW_EMBLEM_SHAPES if s.startswith("g_")]
     assert len(glyphs) == 30
     assert normalize_crew_emblem("g_wolf:pink") == "g_wolf:pink"
+
+
+def test_v2_emblem_accepts_allowed_pair_and_refuses_the_rest():
+    import pytest
+    from fastapi import HTTPException
+
+    from app.services.crew_emblem import normalize_crew_emblem
+
+    assert normalize_crew_emblem("shield:g_wolf:rays:navy:white") == "shield:g_wolf:rays:navy:white"
+    assert normalize_crew_emblem("circle:g_heart:none:charcoal:red") == "circle:g_heart:none:charcoal:red"
+    for bad in (
+        "shield:g_wolf:rays:lime:white",  # contrast under 3:1
+        "blob:g_wolf:rays:navy:white",  # unknown frame
+        "shield:wolf:rays:navy:white",  # glyph must be a drawn glyph
+        "shield:g_wolf:swirl:navy:white",  # unknown pattern
+        "shield:g_wolf:rays:navy",  # wrong part count
+    ):
+        with pytest.raises(HTTPException):
+            normalize_crew_emblem(bad)

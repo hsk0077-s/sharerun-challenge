@@ -4,21 +4,68 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/theme.dart';
 import '../shop/widgets/store_look.dart';
+import 'crew_emblem_layered.dart';
 
-/// 크루 엠블럼: 모양(아이콘) 하나와 색 하나. 서버에는 `모양:색` 한 줄로 저장한다.
+/// 크루 엠블럼. 두 가지 모양의 코드를 모두 읽는다.
+/// - 예전: `모양:색` (아이콘 44개 + 그림 문양 30개, 색 6개). 이미 만든 크루가 그대로 쓴다.
+/// - 새 것: `틀:문양:패턴:틀색:문양색` (틀 8 × 문양 30 × 패턴 4+없음 × 색 12).
+///   디자인팀 엠블럼 세트 기준이며, 대비 3:1 이상인 색 조합만 허용한다.
 @immutable
 class CrewEmblem {
-  const CrewEmblem(this.icon, this.color);
+  const CrewEmblem(
+    this.icon,
+    this.color, {
+    this.frame,
+    this.pattern = 'none',
+    this.glyphColor,
+  });
 
+  /// 새 엠블럼. [glyph]는 `g_wolf` 같은 그림 문양 코드.
+  const CrewEmblem.layered({
+    required String this.frame,
+    required String glyph,
+    this.pattern = 'none',
+    required String frameColor,
+    required String this.glyphColor,
+  })  : icon = glyph,
+        color = frameColor;
+
+  /// 문양(새 엠블럼) 또는 모양(예전 엠블럼).
   final String icon;
+
+  /// 틀 색(새 엠블럼) 또는 색(예전 엠블럼).
   final String color;
+  final String? frame;
+  final String pattern;
+  final String? glyphColor;
 
   static const fallback = CrewEmblem('moon', 'lime');
 
-  /// 서버와 같은 규칙(아이콘 44개 + 그림 문양 30개, 색 6개). 목록에 없으면 null.
+  /// 새 엠블럼의 기본값.
+  static const layeredDefault = CrewEmblem.layered(
+    frame: 'shield',
+    glyph: 'g_wolf',
+    pattern: 'rays',
+    frameColor: 'navy',
+    glyphColor: 'white',
+  );
+
+  bool get isLayered => frame != null;
+
+  /// 서버와 같은 규칙. 목록에 없으면 null.
   static CrewEmblem? parse(String? code) {
     if (code == null) return null;
     final parts = code.split(':');
+    if (parts.length == 5) {
+      final e = CrewEmblem.layered(
+        frame: parts[0],
+        glyph: parts[1],
+        pattern: parts[2],
+        frameColor: parts[3],
+        glyphColor: parts[4],
+      );
+      return e.isValidLayered ? e : null;
+    }
     if (parts.length != 2) return null;
     if (!(icons.containsKey(parts[0]) || glyphIds.contains(parts[0])) ||
         !colors.containsKey(parts[1])) {
@@ -27,7 +74,67 @@ class CrewEmblem {
     return CrewEmblem(parts[0], parts[1]);
   }
 
-  String get code => '$icon:$color';
+  bool get isValidLayered =>
+      frames.contains(frame) &&
+      glyphIds.contains(icon) &&
+      patterns.contains(pattern) &&
+      allowsGlyphColor(color, glyphColor ?? '');
+
+  String get code => isLayered
+      ? '$frame:$icon:$pattern:$color:$glyphColor'
+      : '$icon:$color';
+
+  static const frames = <String>[
+    'shield',
+    'circle',
+    'hexagon',
+    'pennant',
+    'diamond',
+    'rounded-square',
+    'octagon',
+    'seal',
+  ];
+  static const patterns = <String>['none', 'rays', 'stripes', 'dots', 'chevrons'];
+
+  static String frameAsset(String id) =>
+      'assets/images/crew_emblem/frames/frame-$id.png';
+  static String patternAsset(String id) =>
+      'assets/images/crew_emblem/patterns/pattern-$id.png';
+
+  /// 새 엠블럼의 12색(디자인팀 colors.csv).
+  static const paletteColors = <String, Color>{
+    'lime': Color(0xFFD4FF4A),
+    'gold': Color(0xFFE8B84B),
+    'red': Color(0xFFFF6B6B),
+    'white': Color(0xFFF7F5EE),
+    'orange': Color(0xFFFF9A3C),
+    'sky': Color(0xFF5EC8F2),
+    'blue': Color(0xFF3D6BFF),
+    'purple': Color(0xFF9B6BFF),
+    'pink': Color(0xFFFF7EB6),
+    'mint': Color(0xFF3DDC97),
+    'navy': Color(0xFF1D2B53),
+    'charcoal': Color(0xFF2A302C),
+  };
+
+  /// 틀 색 × 문양 색 중 대비 3:1 이상인 조합(color-pairs.csv). 서버도 같은 표로 거른다.
+  static const allowedPairs = <String, List<String>>{
+    'blue': ['charcoal', 'lime', 'navy', 'white'],
+    'charcoal': ['blue', 'gold', 'lime', 'mint', 'orange', 'pink', 'purple', 'red', 'sky', 'white'],
+    'gold': ['charcoal', 'navy'],
+    'lime': ['blue', 'charcoal', 'navy', 'purple'],
+    'mint': ['charcoal', 'navy'],
+    'navy': ['blue', 'gold', 'lime', 'mint', 'orange', 'pink', 'purple', 'red', 'sky', 'white'],
+    'orange': ['charcoal', 'navy'],
+    'pink': ['charcoal', 'navy'],
+    'purple': ['charcoal', 'lime', 'navy', 'white'],
+    'red': ['charcoal', 'navy'],
+    'sky': ['charcoal', 'navy'],
+    'white': ['blue', 'charcoal', 'navy', 'purple'],
+  };
+
+  static bool allowsGlyphColor(String frameColor, String glyphColor) =>
+      allowedPairs[frameColor]?.contains(glyphColor) ?? false;
   bool get isGlyph => icon.startsWith(glyphPrefix);
   IconData? get iconData => icons[icon];
 
@@ -72,14 +179,14 @@ class CrewEmblem {
     'g_wings',
     'g_wolf',
   };
-  Color get colorValue => colors[color]!;
+  Color get colorValue => isLayered ? paletteColors[color]! : colors[color]!;
 
   @override
   bool operator ==(Object other) =>
-      other is CrewEmblem && other.icon == icon && other.color == color;
+      other is CrewEmblem && other.code == code;
 
   @override
-  int get hashCode => Object.hash(icon, color);
+  int get hashCode => code.hashCode;
 
   static const icons = <String, IconData>{
     'moon': Icons.nightlight_round,
@@ -250,7 +357,7 @@ class CrewEmblemMark extends StatelessWidget {
   }
 }
 
-/// 동그란 엠블럼. 어두운 바탕에 색 테두리와 같은 색 모양.
+/// 크루 엠블럼. 새 엠블럼은 틀·패턴·문양을 겹쳐 그리고, 예전 엠블럼은 동그란 바탕에 색 테두리로 그린다.
 class CrewEmblemBadge extends StatelessWidget {
   const CrewEmblemBadge({required this.emblem, this.size = 48, super.key});
 
@@ -259,6 +366,7 @@ class CrewEmblemBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (emblem.isLayered) return CrewEmblemLayered(emblem: emblem, size: size);
     final c = context.srcTokens.colors;
     return Container(
       width: size,
@@ -311,14 +419,18 @@ final crewEmblemProvider =
     NotifierProvider<CrewEmblemNotifier, CrewEmblem>(CrewEmblemNotifier.new);
 
 /// 엠블럼 고르는 시트. 고르면 [CrewEmblem], 닫으면 null.
+/// 틀 8 · 문양 30 · 패턴 4(+없음) · 틀 색 12 · 문양 색(대비 3:1 이상인 것만).
 class CrewEmblemPicker extends StatefulWidget {
   const CrewEmblemPicker({required this.initial, super.key});
 
   final CrewEmblem initial;
 
   static const doneKey = Key('crew-emblem-done');
+  static Key frameKey(String id) => Key('crew-emblem-frame-$id');
   static Key iconKey(String id) => Key('crew-emblem-icon-$id');
+  static Key patternKey(String id) => Key('crew-emblem-pattern-$id');
   static Key colorKey(String id) => Key('crew-emblem-color-$id');
+  static Key glyphColorKey(String id) => Key('crew-emblem-glyph-color-$id');
 
   static Future<CrewEmblem?> show(BuildContext context, CrewEmblem initial) {
     return showModalBottomSheet<CrewEmblem>(
@@ -337,13 +449,110 @@ class CrewEmblemPicker extends StatefulWidget {
 }
 
 class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
-  late String _icon = widget.initial.icon;
-  late String _color = widget.initial.color;
+  late String _frame;
+  late String _glyph;
+  late String _pattern;
+  late String _frameColor;
+  late String _glyphColor;
+
+  @override
+  void initState() {
+    super.initState();
+    // 예전 엠블럼은 새 기본값에서 시작한다(색·모양이 서로 달라 옮길 수 없다).
+    final e = widget.initial.isLayered
+        ? widget.initial
+        : CrewEmblem.layeredDefault;
+    _frame = e.frame!;
+    _glyph = e.icon;
+    _pattern = e.pattern;
+    _frameColor = e.color;
+    _glyphColor = e.glyphColor!;
+  }
+
+  CrewEmblem get _emblem => CrewEmblem.layered(
+        frame: _frame,
+        glyph: _glyph,
+        pattern: _pattern,
+        frameColor: _frameColor,
+        glyphColor: _glyphColor,
+      );
+
+  void _pickFrameColor(String id) {
+    final allowed = CrewEmblem.allowedPairs[id] ?? const <String>[];
+    setState(() {
+      _frameColor = id;
+      if (!allowed.contains(_glyphColor) && allowed.isNotEmpty) {
+        _glyphColor = allowed.first;
+      }
+    });
+  }
+
+  Widget _label(String text, Color color) => Padding(
+        padding: const EdgeInsets.only(bottom: 8, top: 14),
+        child: Text(text, style: storeText(13, color, w: FontWeight.w800)),
+      );
+
+  Widget _swatch({
+    required Key key,
+    required Color fill,
+    required bool selected,
+    required VoidCallback onTap,
+    required Color ring,
+  }) {
+    return InkWell(
+      key: key,
+      customBorder: const CircleBorder(),
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: fill,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? ring : Colors.white24,
+            width: selected ? 3 : 1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tile({
+    required Key key,
+    required bool selected,
+    required VoidCallback onTap,
+    required Widget child,
+    double size = 52,
+  }) {
+    final c = context.srcTokens.colors;
+    return InkWell(
+      key: key,
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(14),
+          color: c.surface,
+          border: Border.all(
+            color: selected ? c.primary : c.outline,
+            width: selected ? 2.5 : 1,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: child,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
-    final emblem = CrewEmblem(_icon, _color);
+    final emblem = _emblem;
+    final allowedGlyphColors =
+        CrewEmblem.allowedPairs[_frameColor] ?? const <String>[];
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
@@ -366,71 +575,102 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
             const SizedBox(height: 6),
             Text('크루 엠블럼 고르기', style: storeText(24, c.ink, w: FontWeight.w900)),
             const SizedBox(height: 18),
-            Center(child: CrewEmblemBadge(emblem: emblem, size: 88)),
-            const SizedBox(height: 20),
-            for (final group in CrewEmblem.groups.entries) ...[
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8, top: 4),
-                child: Text(
-                  group.key,
-                  style: storeText(13, c.muted, w: FontWeight.w800),
-                ),
+            Center(
+              child: CrewEmblemBadge(
+                key: const Key('crew-emblem-preview'),
+                emblem: emblem,
+                size: 120,
               ),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: [
-                  for (final id in group.value)
-                    InkWell(
-                      key: CrewEmblemPicker.iconKey(id),
-                      customBorder: const CircleBorder(),
-                      onTap: () => setState(() => _icon = id),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: c.surface,
-                          border: Border.all(
-                            color: id == _icon ? emblem.colorValue : c.outline,
-                            width: id == _icon ? 2.5 : 1,
-                          ),
-                        ),
-                        child: CrewEmblemMark(
-                          id: id,
-                          color: id == _icon ? emblem.colorValue : c.muted,
-                          size: id.startsWith(CrewEmblem.glyphPrefix) ? 28 : 24,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 10),
-            ],
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            ),
+            _label('틀', c.muted),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                for (final id in CrewEmblem.colors.keys)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 7),
-                    child: InkWell(
-                      key: CrewEmblemPicker.colorKey(id),
-                      customBorder: const CircleBorder(),
-                      onTap: () => setState(() => _color = id),
-                      child: Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: CrewEmblem.colors[id],
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: id == _color ? c.ink : Colors.transparent,
-                            width: 3,
-                          ),
-                        ),
-                      ),
+                for (final id in CrewEmblem.frames)
+                  _tile(
+                    key: CrewEmblemPicker.frameKey(id),
+                    selected: id == _frame,
+                    onTap: () => setState(() => _frame = id),
+                    child: Image.asset(
+                      CrewEmblem.frameAsset(id),
+                      width: 40,
+                      height: 40,
+                      color: id == _frame ? c.primary : c.muted,
+                      colorBlendMode: BlendMode.srcIn,
                     ),
+                  ),
+              ],
+            ),
+            _label('문양', c.muted),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final id in CrewEmblem.glyphIds)
+                  _tile(
+                    key: CrewEmblemPicker.iconKey(id),
+                    selected: id == _glyph,
+                    onTap: () => setState(() => _glyph = id),
+                    child: Image.asset(
+                      CrewEmblem.glyphAssetOf(id),
+                      width: 36,
+                      height: 36,
+                      color: id == _glyph ? c.primary : c.muted,
+                      colorBlendMode: BlendMode.srcIn,
+                    ),
+                  ),
+              ],
+            ),
+            _label('배경 무늬', c.muted),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final id in CrewEmblem.patterns)
+                  _tile(
+                    key: CrewEmblemPicker.patternKey(id),
+                    selected: id == _pattern,
+                    onTap: () => setState(() => _pattern = id),
+                    child: id == 'none'
+                        ? Text('없음', style: storeText(12, c.muted, w: FontWeight.w700))
+                        : Image.asset(
+                            CrewEmblem.patternAsset(id),
+                            width: 40,
+                            height: 40,
+                            color: id == _pattern ? c.primary : c.muted,
+                            colorBlendMode: BlendMode.srcIn,
+                          ),
+                  ),
+              ],
+            ),
+            _label('틀 색', c.muted),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final entry in CrewEmblem.paletteColors.entries)
+                  _swatch(
+                    key: CrewEmblemPicker.colorKey(entry.key),
+                    fill: entry.value,
+                    selected: entry.key == _frameColor,
+                    ring: c.ink,
+                    onTap: () => _pickFrameColor(entry.key),
+                  ),
+              ],
+            ),
+            _label('문양 색 (틀 색과 잘 보이는 색만)', c.muted),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final id in allowedGlyphColors)
+                  _swatch(
+                    key: CrewEmblemPicker.glyphColorKey(id),
+                    fill: CrewEmblem.paletteColors[id]!,
+                    selected: id == _glyphColor,
+                    ring: c.ink,
+                    onTap: () => setState(() => _glyphColor = id),
                   ),
               ],
             ),

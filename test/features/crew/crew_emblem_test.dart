@@ -50,6 +50,59 @@ void main() {
     expect(second.read(crewEmblemProvider).code, 'star:gold');
   });
 
+  testWidgets('picking a frame colour drops glyph colours that would not show',
+      (tester) async {
+    tester.view.physicalSize = const Size(390, 1400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: SrcTheme.night,
+        home: const Scaffold(
+          body: CrewEmblemPicker(initial: CrewEmblem.layeredDefault),
+        ),
+      ),
+    );
+    // 금색 틀에는 숯색·남색 문양만 남는다. 흰색은 없다.
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.colorKey('gold')));
+    await tester.tap(find.byKey(CrewEmblemPicker.colorKey('gold')));
+    await tester.pump();
+    expect(find.byKey(CrewEmblemPicker.glyphColorKey('navy')), findsOneWidget);
+    expect(find.byKey(CrewEmblemPicker.glyphColorKey('charcoal')), findsOneWidget);
+    expect(find.byKey(CrewEmblemPicker.glyphColorKey('white')), findsNothing);
+  });
+
+  test('layered codes round trip, and low-contrast or unknown parts are refused', () {
+    const ok = 'shield:g_wolf:rays:navy:white';
+    expect(CrewEmblem.parse(ok)?.code, ok);
+    expect(CrewEmblem.parse(ok)?.isLayered, isTrue);
+    for (final bad in [
+      'shield:g_wolf:rays:lime:white',
+      'blob:g_wolf:rays:navy:white',
+      'shield:wolf:rays:navy:white',
+      'shield:g_wolf:swirl:navy:white',
+      'shield:g_wolf:rays:navy',
+    ]) {
+      expect(CrewEmblem.parse(bad), isNull, reason: bad);
+    }
+    // 서버와 같은 표인지 한 줄이라도 어긋나면 알 수 있게 개수를 고정한다.
+    expect(
+      CrewEmblem.allowedPairs.values.fold<int>(0, (n, l) => n + l.length),
+      48,
+    );
+  });
+
+  test('every frame and pattern has a PNG asset', () {
+    expect(CrewEmblem.frames.length, 8);
+    for (final id in CrewEmblem.frames) {
+      expect(File(CrewEmblem.frameAsset(id)).existsSync(), isTrue, reason: id);
+    }
+    for (final id in CrewEmblem.patterns.where((p) => p != 'none')) {
+      expect(File(CrewEmblem.patternAsset(id)).existsSync(), isTrue, reason: id);
+    }
+  });
+
   testWidgets('picker returns the chosen shape and color', (tester) async {
     tester.view.physicalSize = const Size(390, 1400);
     tester.view.devicePixelRatio = 1;
@@ -72,13 +125,21 @@ void main() {
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CrewEmblemPicker.iconKey('trophy')));
-    await tester.tap(find.byKey(CrewEmblemPicker.colorKey('pink')));
-    await tester.pump();
+    Future<void> tap(Key key) async {
+      await tester.ensureVisible(find.byKey(key));
+      await tester.tap(find.byKey(key));
+      await tester.pump();
+    }
+
+    await tap(CrewEmblemPicker.frameKey('circle'));
+    await tap(CrewEmblemPicker.iconKey('g_trophy'));
+    await tap(CrewEmblemPicker.patternKey('dots'));
+    await tap(CrewEmblemPicker.colorKey('charcoal'));
+    await tap(CrewEmblemPicker.glyphColorKey('red'));
     await tester.ensureVisible(find.byKey(CrewEmblemPicker.doneKey));
     await tester.tap(find.byKey(CrewEmblemPicker.doneKey));
     await tester.pumpAndSettle();
-    expect(result?.code, 'trophy:pink');
+    expect(result?.code, 'circle:g_trophy:dots:charcoal:red');
   });
 }
 

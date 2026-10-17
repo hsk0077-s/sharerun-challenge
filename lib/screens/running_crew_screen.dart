@@ -331,8 +331,9 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         _CrewActionLine(
                           index: '02',
                           title: '엠블럼 바꾸기',
-                          subtitle: '${CrewEmblem.icons.length}가지 모양, '
-                              '${CrewEmblem.colors.length}가지 색',
+                          subtitle: '틀 ${CrewEmblem.frames.length}가지 · '
+                              '문양 ${CrewEmblem.glyphIds.length}가지 · '
+                              '색 ${CrewEmblem.paletteColors.length}가지',
                           onTap: _onChangeEmblem,
                         ),
                         const SizedBox(height: 16),

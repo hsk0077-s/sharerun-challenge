@@ -72,6 +72,8 @@ flutter:
     - assets/images/characters/
     - assets/images/snailbot/
     - assets/images/crew_glyphs/
+    - assets/images/crew_emblem/frames/
+    - assets/images/crew_emblem/patterns/
     - assets/images/villages/
     - assets/images/villages/thumbs/
     - assets/images/kakao/

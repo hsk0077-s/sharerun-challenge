@@ -24,11 +24,12 @@ BORDER_THRESHOLDS: dict[str, tuple[int, int, int]] = {
     "ranking": (100, 10, 1),  # rank must be this or better
 }
 
+# 4종 모두 300 DIA (사용자가 정함).
 PAID_EMBLEM_PRICES_DIA: dict[str, int] = {
-    "sunrise-cheetah": 40,
-    "moon-wolf": 40,
-    "ocean-turtle": 40,
-    "glow-heart": 50,
+    "sunrise-cheetah": 300,
+    "moon-wolf": 300,
+    "ocean-turtle": 300,
+    "glow-heart": 300,
 }
 
 DEFAULT_COOLDOWN_DAYS = 7

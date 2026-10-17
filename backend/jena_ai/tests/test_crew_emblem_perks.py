@@ -136,22 +136,22 @@ def test_paid_sale_is_off_until_switched_on() -> None:
 def test_buying_charges_diamonds_once_and_the_crew_keeps_it(monkeypatch) -> None:
     monkeypatch.setenv("CREW_EMBLEM_PAID_SALE", "on")
     db = _MemoryDb()
-    _seed(db)
+    _seed(db, user={"ownedCrewId": "crew1", "wallet": {"diamondBalance": 400}})
     service = _service(db)
     user_ref = db.collection("users").document("u1")
     crew_ref = db.collection("crews").document("crew1")
 
     def buy():
         return _commit_crew_paid_emblem_tx.to_wrap(
-            _MemoryTxn(), service, "u1", "glow-heart", 50, "req-paid-0001", user_ref, crew_ref
+            _MemoryTxn(), service, "u1", "glow-heart", 300, "req-paid-0001", user_ref, crew_ref
         )
 
     assert buy().status == "bought"
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 50
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 100
     assert db.store["crews/crew1"]["paidEmblems"] == ["glow-heart"]
     again = buy()
     assert again.status == "already_bought"
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 50
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 100
 
 
 def test_not_enough_diamonds_buys_nothing(monkeypatch) -> None:
@@ -161,7 +161,7 @@ def test_not_enough_diamonds_buys_nothing(monkeypatch) -> None:
     service = _service(db)
     with pytest.raises(HTTPException):
         _commit_crew_paid_emblem_tx.to_wrap(
-            _MemoryTxn(), service, "u1", "moon-wolf", 40, "req-paid-0002",
+            _MemoryTxn(), service, "u1", "moon-wolf", 300, "req-paid-0002",
             db.collection("users").document("u1"), db.collection("crews").document("crew1"),
         )
     assert "paidEmblems" not in db.store["crews/crew1"]
@@ -174,4 +174,4 @@ def test_status_lists_progress_and_sale_state() -> None:
     assert status["earned_borders"] == ["members-1"]
     assert status["progress"]["distance"] == 40.5
     assert status["paid_sale_enabled"] is False
-    assert status["paid_prices"]["glow-heart"] == 50
+    assert set(status["paid_prices"].values()) == {300}

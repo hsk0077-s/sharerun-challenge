@@ -42,6 +42,15 @@ def _count(crew: dict) -> int:
     return int(raw) if isinstance(raw, (int, float)) and not isinstance(raw, bool) else 0
 
 
+RENAME_DIA = 300
+NAME_MIN, NAME_MAX = 2, 20
+
+
+def _changes(crew: dict) -> int:
+    raw = crew.get("nameChanges")
+    return int(raw) if isinstance(raw, (int, float)) and not isinstance(raw, bool) else 0
+
+
 def join_mode(crew: dict) -> str:
     return "approval" if crew.get("joinMode") == "approval" else "open"
 
@@ -62,6 +71,9 @@ def summary(crew_id: str, crew: dict) -> dict:
         "is_full": count >= max_members(),
         "total_distance_km": float(crew.get("totalDistanceKm") or 0),
         "join_mode": join_mode(crew),
+        # The first rename is free, every later one costs RENAME_DIA.
+        "name_changes": _changes(crew),
+        "rename_cost_dia": 0 if _changes(crew) < 1 else RENAME_DIA,
     }
 
 
@@ -74,7 +86,12 @@ def list_crews(db, query: str = "", uid: str = "") -> dict:
         name = str(crew.get("name") or "")
         if needle and needle not in name.lower():
             continue
-        out.append(summary(snapshot.id, crew))
+        row = summary(snapshot.id, crew)
+        # A crew that turned me down is closed to me for good.
+        row["rejected"] = bool(
+            uid and db.collection("crews").document(snapshot.id).collection("rejected").document(uid).get().exists
+        )
+        out.append(row)
     out.sort(key=lambda c: (-c["member_count"], c["name"]))
     pending = ""
     if uid:
@@ -161,6 +178,8 @@ def _join_tx(transaction, db, uid, user_ref, crew_ref) -> dict:
     current = member_crew_id(user)
     if current == crew_ref.id:
         return {"status": "already_member", "crew_id": crew_ref.id}
+    if crew_ref.collection("rejected").document(user_ref.id).get(transaction=transaction).exists:
+        raise HTTPException(status_code=403, detail="This crew turned your request down.")
     if current:
         raise HTTPException(status_code=409, detail="Already in a crew.")
     if _count(crew) >= max_members():
@@ -307,6 +326,10 @@ def _decide_tx(transaction, crew_ref, user_ref, target_uid, approve) -> dict:
     if not approve:
         if user_snapshot.exists:
             transaction.update(user_ref, {"pendingCrewId": firestore.DELETE_FIELD})
+        transaction.set(
+            crew_ref.collection("rejected").document(target_uid),
+            {"uid": target_uid, "rejectedAt": SERVER_TIMESTAMP},
+        )
         return {"status": "rejected"}
     if member_crew_id(user or {}):
         if user_snapshot.exists:
@@ -415,5 +438,80 @@ def disband(db, uid: str) -> dict:
         snapshot.reference.delete()
     for member_uid in members:
         crew_ref.collection("members").document(member_uid).delete()
+    for snapshot in crew_ref.collection("rejected").get():
+        snapshot.reference.delete()
     crew_ref.delete()
     return {"status": "disbanded", "members_released": len(members)}
+
+
+# ---- rename --------------------------------------------------------------------------
+def rename(service, uid: str, name: str, request_id: str) -> dict:
+    """Leader only. The first rename is free; each later one costs 300 DIA (bonus first)."""
+    from app.services.streak_protection import require_request_id
+
+    trimmed = (name or "").strip()
+    if not NAME_MIN <= len(trimmed) <= NAME_MAX:
+        raise HTTPException(status_code=400, detail="Invalid crew name.")
+    request_id = require_request_id(request_id)
+    db = service.firebase_service.db
+    crew_id, crew_ref, _crew = _managed_crew(db, uid, leader_only=True)
+    return _run(
+        _rename_tx,
+        db.transaction(),
+        db,
+        uid,
+        trimmed,
+        request_id,
+        db.collection("users").document(uid),
+        crew_ref,
+    )
+
+
+@firestore.transactional
+def _rename_tx(transaction, db, uid, name, request_id, user_ref, crew_ref) -> dict:
+    from app.services.wallet_funding import move_currency
+
+    ledger_ref = db.collection("walletTransactions").document(f"crew_rename_{uid}_{request_id}")
+    user_snapshot = user_ref.get(transaction=transaction)
+    crew = crew_ref.get(transaction=transaction).to_dict() or {}
+    wallet = ((user_snapshot.to_dict() or {}).get("wallet") or {}) if user_snapshot.exists else {}
+    if ledger_ref.get(transaction=transaction).exists:
+        return {"status": "already_renamed", "name": crew.get("name", ""), "charged_dia": 0, "diamond_balance": int(wallet.get("diamondBalance") or 0)}
+    if crew.get("ownerUid") != uid:
+        raise HTTPException(status_code=403, detail="Only the crew leader can do this.")
+    if name == crew.get("name"):
+        raise HTTPException(status_code=400, detail="That is already the crew name.")
+    cost = 0 if _changes(crew) < 1 else RENAME_DIA
+    balance_before = int(wallet.get("diamondBalance") or 0)
+    updates: dict = {}
+    ledger: dict = {}
+    if cost:
+        if int(wallet.get("diamondBalance") or 0) < cost:
+            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        moved = move_currency(wallet, diamond=-cost)
+        updates.update(moved["updates"])
+        ledger.update(moved["ledger"])
+        transaction.update(user_ref, {**updates, "updatedAt": SERVER_TIMESTAMP})
+    transaction.set(
+        crew_ref,
+        {"name": name, "nameChanges": _changes(crew) + 1, "updatedAt": SERVER_TIMESTAMP},
+        merge=True,
+    )
+    transaction.set(
+        ledger_ref,
+        {
+            "uid": uid,
+            "type": "crew_rename",
+            "diamondAmount": -cost,
+            "crewId": crew_ref.id,
+            "requestId": request_id,
+            "createdAt": SERVER_TIMESTAMP,
+            **ledger,
+        },
+    )
+    return {
+        "status": "renamed",
+        "name": name,
+        "charged_dia": cost,
+        "diamond_balance": balance_before - cost,
+    }

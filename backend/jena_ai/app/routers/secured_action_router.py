@@ -25,6 +25,7 @@ from app.models.secured_actions import (
     CrewEmblemPurchaseRequest,
     AccessoryEquipRequest,
     CrewDecideRequest,
+    CrewRenameRequest,
     DiaRefundRequest,
     CrewJoinModeRequest,
     CrewJoinRequest,
@@ -302,6 +303,11 @@ def transfer_crew(request: CrewTargetRequest, uid: str = Depends(require_uid)) -
 @router.post("/crew/disband")
 def disband_crew(uid: str = Depends(require_uid)) -> dict:
     return crew_membership.disband(service.firebase_service.db, uid)
+
+
+@router.post("/crew/rename")
+def rename_crew(request: CrewRenameRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.rename(service, uid, request.name, request.request_id)
 
 
 @router.post("/crew/role")

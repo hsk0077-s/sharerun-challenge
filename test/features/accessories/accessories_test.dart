@@ -70,8 +70,8 @@ void main() {
     expect(byId('P001').priceLabel, '400 SHARE');
     expect(byId('P004').priceLabel, '40 DIA');
     expect(byId('P015').priceLabel, '티어 보상');
-    // 값이 비어 있던 스톱워치는 임시값이라는 표시가 붙는다.
-    expect(byId('STOPWATCH').provisional, isTrue);
+    // 임시였던 가격은 소유자가 그대로 확정했다.
+    expect(accessoryCatalog.where((a) => a.provisional), isEmpty);
     expect(byId('STOPWATCH').priceLabel, '300 SHARE');
   });
 

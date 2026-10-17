@@ -383,9 +383,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(
-        error.statusCode == 409
-            ? '이미 다른 크루에 있거나 신청해 둔 곳이 있거나 인원이 가득 찼어요.'
-            : '가입하지 못했어요. 잠시 뒤 다시 해 주세요.',
+        switch (error.statusCode) {
+          409 => '이미 다른 크루에 있거나 신청해 둔 곳이 있거나 인원이 가득 찼어요.',
+          403 => '이 크루에는 들어갈 수 없어요.',
+          _ => '가입하지 못했어요. 잠시 뒤 다시 해 주세요.',
+        },
       );
     } catch (_) {
       if (mounted) _toast('가입하지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -434,6 +436,47 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       }
     } catch (_) {
       if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onRename(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    final cost = mine.crew.renameCostDia;
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => _CrewNameDialog(
+        title: '크루 이름 바꾸기',
+        initial: mine.crew.name,
+        okLabel: '다음',
+        note: cost == 0 ? '처음 한 번은 무료예요.' : '이름을 바꿀 때마다 $cost DIA가 들어요.',
+      ),
+    );
+    if (name == null || name == mine.crew.name || !mounted) return;
+    if (cost > 0 &&
+        !await _confirm(
+          '이름 바꾸기',
+          '"$name"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
+          '$cost DIA 내고 바꾸기',
+        )) {
+      return;
+    }
+    try {
+      final balance = await api.renameCrew(name);
+      if (balance != null) {
+        ref.read(walletProvider.notifier).applyWalletSnapshot(diamondBalance: balance);
+      }
+      _refreshCrews();
+      if (mounted) _toast('크루 이름을 "$name"(으)로 바꿨어요.');
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(switch (error.statusCode) {
+        400 => 'DIA가 모자라거나 쓸 수 없는 이름이에요.',
+        403 => '크루장만 이름을 바꿀 수 있어요.',
+        _ => '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+      });
+    } catch (_) {
+      if (mounted) _toast('이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
     }
   }
 
@@ -693,6 +736,15 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                                 : '가입 신청',
                             subtitle: '받을지 정해요',
                             onTap: _onShowRequests,
+                          ),
+                        if (mine != null && mine.isLeader)
+                          _CrewActionLine(
+                            index: '··',
+                            title: '크루 이름 바꾸기',
+                            subtitle: mine.crew.renameCostDia == 0
+                                ? '처음 한 번은 무료'
+                                : '${mine.crew.renameCostDia} DIA',
+                            onTap: () => _onRename(mine),
                           ),
                         if (mine != null && mine.isLeader)
                           _CrewActionLine(
@@ -1361,15 +1413,19 @@ class _RemoteCrewList extends ConsumerWidget {
                     else
                       FilledButton(
                         key: joinKey(crew.id),
-                        onPressed: crew.isFull || result.pendingCrewId.isNotEmpty
+                        onPressed: crew.isFull ||
+                                crew.rejected ||
+                                result.pendingCrewId.isNotEmpty
                             ? null
                             : () => onJoin(crew),
                         child: Text(
-                          crew.isFull
-                              ? '가득 참'
-                              : crew.needsApproval
-                                  ? '가입 신청'
-                                  : '가입',
+                          crew.rejected
+                              ? '가입 불가'
+                              : crew.isFull
+                                  ? '가득 참'
+                                  : crew.needsApproval
+                                      ? '가입 신청'
+                                      : '가입',
                         ),
                       ),
                 ],
@@ -1538,7 +1594,17 @@ class _CrewRequestsSheet extends StatelessWidget {
 
 /// 크루 이름을 묻는다. 2~20자.
 class _CrewNameDialog extends StatefulWidget {
-  const _CrewNameDialog();
+  const _CrewNameDialog({
+    this.title = '크루 이름',
+    this.initial = '',
+    this.okLabel = '다음',
+    this.note,
+  });
+
+  final String title;
+  final String initial;
+  final String okLabel;
+  final String? note;
 
   static const fieldKey = Key('crew-name-field');
   static const okKey = Key('crew-name-ok');
@@ -1548,7 +1614,7 @@ class _CrewNameDialog extends StatefulWidget {
 }
 
 class _CrewNameDialogState extends State<_CrewNameDialog> {
-  final _controller = TextEditingController();
+  late final _controller = TextEditingController(text: widget.initial);
   var _closed = false;
 
   @override
@@ -1569,8 +1635,17 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('크루 이름'),
-      content: TextField(
+      title: Text(widget.title),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.note != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(widget.note!, key: const Key('crew-name-note')),
+            ),
+          TextField(
         key: _CrewNameDialog.fieldKey,
         controller: _controller,
         autofocus: true,
@@ -1582,12 +1657,14 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
         onChanged: (_) => setState(() {}),
         onSubmitted: (_) => _valid ? _close(_name) : null,
       ),
+        ],
+      ),
       actions: [
         TextButton(onPressed: () => _close(null), child: const Text('취소')),
         FilledButton(
           key: _CrewNameDialog.okKey,
           onPressed: _valid ? () => _close(_name) : null,
-          child: const Text('다음'),
+          child: Text(widget.okLabel),
         ),
       ],
     );

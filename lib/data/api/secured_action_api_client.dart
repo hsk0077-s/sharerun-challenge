@@ -560,6 +560,16 @@ class SecuredActionApiClient {
     await _post('/actions/crew/join-mode', {'mode': mode});
   }
 
+  /// 크루장: 크루 이름을 바꾼다. 처음 한 번은 무료, 그다음부터 300 DIA. 새 DIA 잔액을 돌려준다.
+  Future<int?> renameCrew(String name) async {
+    final json = await _postWithRequest(
+      '/actions/crew/rename',
+      {'name': name},
+      'crew-rename:$name',
+    );
+    return (json['diamond_balance'] as num?)?.toInt();
+  }
+
   /// 크루장·부크루장: 가입 신청 목록.
   Future<List<CrewJoinRequest>> crewJoinRequests() async {
     final json = await _get('/actions/crew/requests');

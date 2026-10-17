@@ -16,6 +16,9 @@ class CrewSummary {
     required this.maxMembers,
     required this.totalDistanceKm,
     this.joinMode = 'open',
+    this.nameChanges = 0,
+    this.renameCostDia = 0,
+    this.rejected = false,
   });
 
   final String id;
@@ -30,6 +33,13 @@ class CrewSummary {
 
   bool get needsApproval => joinMode == 'approval';
 
+  /// 이름을 바꾼 횟수. 첫 번째 변경은 무료, 그다음부터 [renameCostDia]이다.
+  final int nameChanges;
+  final int renameCostDia;
+
+  /// 이 크루가 내 가입 신청을 거절했다. 다시 들어갈 수 없다.
+  final bool rejected;
+
   bool get isFull => memberCount >= maxMembers;
 
   factory CrewSummary.fromJson(Map<String, dynamic> json) => CrewSummary(
@@ -40,6 +50,9 @@ class CrewSummary {
         maxMembers: (json['max_members'] as num?)?.toInt() ?? 100,
         totalDistanceKm: (json['total_distance_km'] as num?)?.toDouble() ?? 0,
         joinMode: json['join_mode'] as String? ?? 'open',
+        nameChanges: (json['name_changes'] as num?)?.toInt() ?? 0,
+        renameCostDia: (json['rename_cost_dia'] as num?)?.toInt() ?? 0,
+        rejected: json['rejected'] == true,
       );
 }
 

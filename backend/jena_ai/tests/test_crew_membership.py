@@ -41,7 +41,8 @@ def test_list_filters_by_name_and_hides_nothing_private() -> None:
     assert names == ["한강크루", "새벽러너"]  # biggest first
     only = cm.list_crews(db, " 새벽 ")["crews"]
     assert [c["id"] for c in only] == ["c1"]
-    assert set(only[0]) == {"id", "name", "emblem", "member_count", "max_members", "is_full", "total_distance_km", "join_mode"}
+    assert set(only[0]) == {"id", "name", "emblem", "member_count", "max_members", "is_full", "total_distance_km", "join_mode",
+                           "name_changes", "rename_cost_dia", "rejected"}
 
 
 def test_join_adds_the_member_and_counts_once() -> None:
@@ -334,3 +335,111 @@ def test_crew_names_must_be_two_to_twenty_characters(name: str) -> None:
         )
     assert caught.value.status_code == 400
     assert "crews/n1" not in db.store
+
+
+# ---- rename and rejection ---------------------------------------------------------------
+def _rename(db, uid, name, request_id="req-name-0001"):
+    service = SimpleNamespace(firebase_service=SimpleNamespace(db=db))
+    return cm.rename(service, uid, name, request_id)
+
+
+def _seed_rich(db):
+    _seed(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 500, "freeDiamondBalance": 100, "paidDiamondBalance": 400}
+
+
+def test_the_first_rename_is_free_and_the_next_costs_300_dia() -> None:
+    db = _MemoryDb()
+    _seed_rich(db)
+    first = _rename(db, "u1", "한강 새벽러너")
+    assert (first["status"], first["charged_dia"]) == ("renamed", 0)
+    assert db.store["crews/c1"]["name"] == "한강 새벽러너" and db.store["crews/c1"]["nameChanges"] == 1
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 500
+    assert cm.list_crews(db, "", "u1")["crews"][-1]["rename_cost_dia"] in {0, 300}
+
+    second = _rename(db, "u1", "서울 밤 러너", "req-name-0002")
+    assert (second["status"], second["charged_dia"], second["diamond_balance"]) == ("renamed", 300, 200)
+    wallet = db.store["users/u1"]["wallet"]
+    assert (wallet["freeDiamondBalance"], wallet["paidDiamondBalance"]) == (0, 200)  # bonus first
+    assert db.store["crews/c1"]["nameChanges"] == 2
+    ledger = [v for k, v in db.store.items() if k.startswith("walletTransactions/crew_rename_")]
+    assert sorted(l["diamondAmount"] for l in ledger) == [-300, 0]
+
+
+def test_the_same_rename_request_charges_once() -> None:
+    db = _MemoryDb()
+    _seed_rich(db)
+    _rename(db, "u1", "첫 이름")
+    _rename(db, "u1", "둘째 이름", "req-name-0002")
+    again = _rename(db, "u1", "셋째 이름", "req-name-0002")
+    assert again["status"] == "already_renamed"
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 200
+    assert db.store["crews/c1"]["name"] == "둘째 이름"
+
+
+def test_rename_needs_the_diamonds_and_a_valid_new_name() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 100}
+    db.store["crews/c1"]["nameChanges"] = 1
+    with pytest.raises(HTTPException) as caught:
+        _rename(db, "u1", "새 이름")
+    assert caught.value.status_code == 400
+    assert db.store["crews/c1"]["name"] == "새벽러너"
+    for bad in ("", "가", "가" * 21, "새벽러너"):
+        with pytest.raises(HTTPException):
+            _rename(db, "u1", bad, "req-name-0009")
+
+
+def test_only_the_leader_renames() -> None:
+    db = _MemoryDb()
+    _seed_rich(db)
+    _join(db, "u2", "c1")
+    cm.set_role(db, "u1", "u2", "sub")
+    with pytest.raises(HTTPException) as caught:
+        _rename(db, "u2", "부크루장의 이름")
+    assert caught.value.status_code == 403
+    assert db.store["crews/c1"]["name"] == "새벽러너"
+
+
+def test_someone_turned_down_cannot_ask_again_or_join_after_a_mode_change() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    cm.set_join_mode(db, "u1", "approval")
+    _join(db, "u2", "c1")
+    _decide(db, "u1", "u2", False)
+    assert "crews/c1/rejected/u2" in db.store
+    with pytest.raises(HTTPException) as caught:
+        _join(db, "u2", "c1")
+    assert caught.value.status_code == 403
+    cm.set_join_mode(db, "u1", "open")
+    with pytest.raises(HTTPException) as caught:
+        _join(db, "u2", "c1")
+    assert caught.value.status_code == 403
+    assert "crewId" not in db.store["users/u2"]
+    row = next(c for c in cm.list_crews(db, "", "u2")["crews"] if c["id"] == "c1")
+    assert row["rejected"] is True
+    other = next(c for c in cm.list_crews(db, "", "u3")["crews"] if c["id"] == "c1")
+    assert other["rejected"] is False
+
+
+def test_other_crews_and_other_people_are_not_affected_by_a_rejection() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["users/u4"] = {"nickname": "u4"}
+    cm.set_join_mode(db, "u1", "approval")
+    _join(db, "u2", "c1")
+    _decide(db, "u1", "u2", False)
+    assert _join(db, "u2", "c2")["status"] == "joined"  # another crew
+    _join(db, "u4", "c1")
+    assert _decide(db, "u1", "u4", True)["status"] == "approved"  # someone else
+
+
+def test_disbanding_clears_the_rejection_list_too() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    cm.set_join_mode(db, "u1", "approval")
+    _join(db, "u2", "c1")
+    _decide(db, "u1", "u2", False)
+    cm.disband(db, "u1")
+    assert not [p for p in db.store if p.startswith("crews/c1")]

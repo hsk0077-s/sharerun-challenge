@@ -328,3 +328,8 @@ class AccessoryEquipRequest(BaseModel):
     slot: str = Field(min_length=1, max_length=16)
     # Empty takes the slot off.
     item_id: str = Field(default="", max_length=32)
+
+
+class CrewRenameRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    request_id: str = Field(min_length=8, max_length=80)

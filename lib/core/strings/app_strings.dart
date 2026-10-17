@@ -348,9 +348,9 @@ abstract final class AppStrings {
   static const brandSponsorWinReward =
       '우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500';
   static const brandSponsorDonationPledge =
-      '기부 공약: 1등 우승자와 이름으로 유니세프 500만 원 기부';
+      '기부 공약: 회사 이름으로 500만 원 기부';
   static const brandSponsorBenevolentFailure =
-      '자비로운 실패: 미션에 실패하더라도 우승자와 공동 명의로 유니세프에 기부가 진행됩니다.';
+      '자비로운 실패: 미션에 실패하더라도 회사 이름으로 기부가 진행됩니다.';
   static const brandSponsorDisclaimer =
       '* 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.';
   static const brandSponsorStatus =
@@ -369,9 +369,9 @@ abstract final class AppStrings {
   static const personalSponsorPrizeTitle = '[순수 상금 지원]';
   static const personalSponsorPrizeDesc =
       '후원금이 1등 러너에게 순수 상금 보너스로 직접 지급됩니다.';
-  static const personalSponsorDonationTitle = '[우승자 명의 기부]';
+  static const personalSponsorDonationTitle = '[기부 후원]';
   static const personalSponsorDonationDesc =
-      '후원금이 1등 러너의 이름으로 유니세프에 기부됩니다.';
+      '후원은 회사 이름으로 기부돼요. 내 기여는 앱에서 확인할 수 있어요.';
   static const personalSponsorActive = 'ACTIVE';
   static const personalSponsorCta = '50,000 SHARE 후원하고 천사 되기';
   static const personalSponsorCelebrateTitle = '천사 후원 완료!';
@@ -387,7 +387,7 @@ abstract final class AppStrings {
   // ── Running Crew (Screen 18) ──────────────────────────────────────
   static const runningCrewTitle = '러닝 크루 (Crew)';
   static const runningCrewHeadline = '같이 달릴\n크루 찾기';
-  static const runningCrewMyCrewName = '서울 나이트 러너스 🌙';
+  static const runningCrewMyCrewName = '인천 논현 최강 크루';
   static const runningCrewMyCrewStats =
       '소속 크루원: 45/50명 | 누적 달성 거리: 3,240km';
   static const runningCrewCreateButton =
@@ -398,7 +398,7 @@ abstract final class AppStrings {
 
   // ── Crew Manager (Screen 19) ──────────────────────────────────────
   static const crewManagerTitle = '크루 관리 (방장 전용)';
-  static const crewManagerCrewName = '서울 나이트 러너스';
+  static const crewManagerCrewName = '인천 논현 최강 크루';
   static const crewManagerPushNotice = '전체 공지 푸시 발송 (무료)';
   static const crewManagerPremiumSection = '프리미엄 설정';
   static const crewManagerProfileLabel = '크루 프로필';

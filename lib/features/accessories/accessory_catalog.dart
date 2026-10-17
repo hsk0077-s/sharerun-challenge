@@ -3,8 +3,8 @@ import '../onboarding/src_onboarding_controller.dart';
 /// 캐릭터를 꾸미는 소품·스킨 46종. 디자인팀 납품 세트(2026-10-14)를 옮긴 것이다.
 /// 그림은 모두 1024 판 전체 크기라서 위치 계산 없이 순서대로 겹치기만 하면 된다.
 ///
-/// 가격·재화·희귀도는 납품 카탈로그 값이다. 실제 구매 가격의 기준은 서버이고,
-/// [provisional]이 true인 항목은 카탈로그에 값이 없거나 확인이 필요해서 임시로 넣었다.
+/// 가격·재화·희귀도는 납품 카탈로그 값이다. 실제 구매 가격의 기준은 서버이다.
+/// 임시였던 4개(헤드폰·갓·스톱워치·말 마스터)는 소유자가 그대로 확정했다(2026-10-17).
 enum AccessorySlot {
   back('등'),
   bottom('하의'),
@@ -181,7 +181,6 @@ const accessoryCatalog = <Accessory>[
     rarity: AccessoryRarity.common,
     currency: AccessoryCurrency.dia,
     price: 50,
-    provisional: true,
   ),
   Accessory(
     id: 'GAT',
@@ -191,7 +190,6 @@ const accessoryCatalog = <Accessory>[
     rarity: AccessoryRarity.rare,
     currency: AccessoryCurrency.dia,
     price: 40,
-    provisional: true,
   ),
   Accessory(
     id: 'P015',
@@ -335,7 +333,6 @@ const accessoryCatalog = <Accessory>[
     rarity: AccessoryRarity.basic,
     currency: AccessoryCurrency.share,
     price: 300,
-    provisional: true,
   ),
   Accessory(
     id: 'P045',
@@ -532,7 +529,6 @@ const accessoryCatalog = <Accessory>[
     currency: AccessoryCurrency.dia,
     price: 250,
     tierLock: TierAnimal.zebra,
-    provisional: true,
   ),
 ];
 

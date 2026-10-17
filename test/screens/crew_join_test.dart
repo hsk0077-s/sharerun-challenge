@@ -24,10 +24,12 @@ class _SeededWallet extends WalletNotifier {
 
 /// 서버 대신 메모리에서 가입·탈퇴를 흉내 낸다.
 class _FakeApi extends Fake implements SecuredActionApiClient {
-  _FakeApi({this.myRole, this.joinMode = 'open'});
+  _FakeApi({this.myRole, this.joinMode = 'open', this.renameCost = 0, this.rejected = false});
 
   String? myRole;
   String joinMode;
+  int renameCost;
+  bool rejected;
   String pending = '';
   final calls = <String>[];
 
@@ -39,6 +41,9 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
         maxMembers: 100,
         totalDistanceKm: 321,
         joinMode: joinMode,
+        nameChanges: renameCost == 0 ? 0 : 1,
+        renameCostDia: renameCost,
+        rejected: rejected,
       );
 
   @override
@@ -123,6 +128,12 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
       diamondBalance: 0,
       valueTokenBalance: 100,
     );
+  }
+
+  @override
+  Future<int?> renameCrew(String name) async {
+    calls.add('rename:$name');
+    return 200;
   }
 
   @override
@@ -406,5 +417,71 @@ void main() {
     await tester.tap(find.text('취소'));
     await tester.pumpAndSettle();
     expect(api.calls.where((c) => c.startsWith('found')), isEmpty);
+  });
+
+  testWidgets('the first rename is free: no price question, just the new name',
+      (tester) async {
+    final api = _FakeApi(myRole: 'leader');
+    await _pump(tester, api);
+    expect(find.text('처음 한 번은 무료'), findsOneWidget);
+    await tester.ensureVisible(find.text('크루 이름 바꾸기'));
+    await tester.tap(find.text('크루 이름 바꾸기'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('crew-name-note')), findsOneWidget);
+    expect(find.text('처음 한 번은 무료예요.'), findsOneWidget);
+    await tester.enterText(find.byKey(const Key('crew-name-field')), '한강 새벽러너');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('crew-name-ok')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('rename:한강 새벽러너'));
+    expect(find.textContaining('DIA 내고 바꾸기'), findsNothing);
+  });
+
+  testWidgets('a later rename shows 300 DIA and asks before charging',
+      (tester) async {
+    final api = _FakeApi(myRole: 'leader', renameCost: 300);
+    await _pump(tester, api);
+    expect(find.text('300 DIA'), findsOneWidget);
+    await tester.ensureVisible(find.text('크루 이름 바꾸기'));
+    await tester.tap(find.text('크루 이름 바꾸기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('crew-name-field')), '서울 밤 러너');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('crew-name-ok')));
+    await tester.pumpAndSettle();
+    expect(api.calls.where((c) => c.startsWith('rename')), isEmpty);
+    expect(find.textContaining('300 DIA가 들어요. 보너스 DIA를 먼저 써요.'), findsOneWidget);
+    await tester.tap(find.text('300 DIA 내고 바꾸기'));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('rename:서울 밤 러너'));
+  });
+
+  testWidgets('declining the price keeps the old name', (tester) async {
+    final api = _FakeApi(myRole: 'leader', renameCost: 300);
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루 이름 바꾸기'));
+    await tester.tap(find.text('크루 이름 바꾸기'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('crew-name-field')), '서울 밤 러너');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('crew-name-ok')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(api.calls.where((c) => c.startsWith('rename')), isEmpty);
+  });
+
+  testWidgets('only the leader sees the rename line', (tester) async {
+    await _pump(tester, _FakeApi(myRole: 'sub'));
+    expect(find.text('크루 이름 바꾸기'), findsNothing);
+  });
+
+  testWidgets('a crew that turned me down shows a disabled button',
+      (tester) async {
+    final api = _FakeApi(rejected: true);
+    await _pump(tester, api);
+    final button = tester.widget<FilledButton>(find.byKey(const Key('crew-join-c1')));
+    expect(button.onPressed, isNull);
+    expect(find.text('가입 불가'), findsOneWidget);
   });
 }

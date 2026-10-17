@@ -33,6 +33,12 @@ class _MemoryDoc:
     def set(self, data: dict, merge: bool = False) -> None:
         _MemoryTxn().set(self, data, merge=merge)
 
+    def update(self, data: dict) -> None:
+        _MemoryTxn().update(self, data)
+
+    def delete(self) -> None:
+        self._store.pop(self.path, None)
+
     def collection(self, name: str) -> "_MemoryCollection":
         return _MemoryCollection(self._store, f"{self.path}/{name}")
 

@@ -483,25 +483,75 @@ class SecuredActionApiClient {
   }
 
   /// 크루 목록·검색. [query]가 비면 인원이 많은 크루부터.
-  Future<List<CrewSummary>> listCrews(String query) async {
+  Future<CrewListResult> listCrews(String query) async {
     final path = query.trim().isEmpty
         ? '/actions/crew/list'
         : '/actions/crew/list?query=${Uri.encodeQueryComponent(query.trim())}';
     final json = await _get(path);
     final crews = json['crews'];
-    return [
-      if (crews is List)
-        for (final c in crews)
-          if (c is Map<String, dynamic>) CrewSummary.fromJson(c),
-    ];
+    return CrewListResult(
+      crews: [
+        if (crews is List)
+          for (final c in crews)
+            if (c is Map<String, dynamic>) CrewSummary.fromJson(c),
+      ],
+      pendingCrewId: json['pending_crew_id'] as String? ?? '',
+    );
   }
 
   /// 내 크루와 내 역할, 크루원. 크루가 없으면 null.
   Future<MyCrew?> myCrew() async => MyCrew.fromJson(await _get('/actions/crew/mine'));
 
-  /// 크루에 가입한다. 이미 다른 크루에 있거나 가득 차면 409.
-  Future<void> joinCrew(String crewId) async {
-    await _post('/actions/crew/join', {'crew_id': crewId});
+  /// 크루에 가입한다. 자유 가입이면 `joined`, 승인 크루면 `requested`.
+  /// 이미 다른 크루에 있거나 가득 차면 409.
+  Future<String> joinCrew(String crewId) async {
+    final json = await _post('/actions/crew/join', {'crew_id': crewId});
+    return json['status'] as String? ?? 'joined';
+  }
+
+  /// 크루장: 가입 방식을 `open`(자유) 또는 `approval`(승인)으로 바꾼다.
+  Future<void> setCrewJoinMode(String mode) async {
+    await _post('/actions/crew/join-mode', {'mode': mode});
+  }
+
+  /// 크루장·부크루장: 가입 신청 목록.
+  Future<List<CrewJoinRequest>> crewJoinRequests() async {
+    final json = await _get('/actions/crew/requests');
+    final list = json['requests'];
+    return [
+      if (list is List)
+        for (final r in list)
+          if (r is Map<String, dynamic>)
+            CrewJoinRequest(
+              uid: r['uid'] as String? ?? '',
+              nickname: r['nickname'] as String? ?? '러너',
+            ),
+    ];
+  }
+
+  /// 크루장·부크루장: 신청을 받아들이거나 거절한다.
+  Future<void> decideCrewRequest(String uid, {required bool approve}) async {
+    await _post('/actions/crew/requests/decide', {'uid': uid, 'approve': approve});
+  }
+
+  /// 내가 한 가입 신청을 거둔다.
+  Future<void> cancelCrewRequest() async {
+    await _post('/actions/crew/requests/cancel', const {});
+  }
+
+  /// 크루장·부크루장: 크루원을 내보낸다(부크루장은 일반 크루원만).
+  Future<void> kickCrewMember(String uid) async {
+    await _post('/actions/crew/kick', {'uid': uid});
+  }
+
+  /// 크루장: 크루장 자리를 크루원에게 넘긴다. 나는 부크루장이 된다.
+  Future<void> transferCrew(String uid) async {
+    await _post('/actions/crew/transfer', {'uid': uid});
+  }
+
+  /// 크루장: 크루를 없앤다. 모든 크루원과 크루장 자신이 함께 크루에서 나온다.
+  Future<void> disbandCrew() async {
+    await _post('/actions/crew/disband', const {});
   }
 
   /// 크루에서 나간다. 크루장은 나갈 수 없다(400).

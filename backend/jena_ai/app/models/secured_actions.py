@@ -304,3 +304,16 @@ class CrewJoinRequest(BaseModel):
 class CrewRoleRequest(BaseModel):
     uid: str = Field(min_length=1, max_length=128)
     role: str = Field(pattern="^(sub|member)$")
+
+
+class CrewJoinModeRequest(BaseModel):
+    mode: str = Field(pattern="^(open|approval)$")
+
+
+class CrewTargetRequest(BaseModel):
+    uid: str = Field(min_length=1, max_length=128)
+
+
+class CrewDecideRequest(BaseModel):
+    uid: str = Field(min_length=1, max_length=128)
+    approve: bool

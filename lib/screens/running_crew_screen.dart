@@ -356,20 +356,148 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   Future<void> _onJoin(CrewSummary crew) async {
     final api = ref.read(crewApiProvider);
     if (api == null) return;
-    if (!await _confirm('크루 가입', '"${crew.name}" 크루에 가입할까요?', '가입')) return;
+    final ask = crew.needsApproval;
+    if (!await _confirm(
+      ask ? '가입 신청' : '크루 가입',
+      ask
+          ? '"${crew.name}" 크루는 크루장이 승인해야 들어갈 수 있어요. 신청할까요?'
+          : '"${crew.name}" 크루에 가입할까요?',
+      ask ? '신청' : '가입',
+    )) {
+      return;
+    }
     try {
-      await api.joinCrew(crew.id);
+      final status = await api.joinCrew(crew.id);
       _refreshCrews();
-      if (mounted) _toast('"${crew.name}" 크루에 가입했어요.');
+      if (!mounted) return;
+      _toast(
+        status == 'joined'
+            ? '"${crew.name}" 크루에 가입했어요.'
+            : '가입을 신청했어요. 승인되면 크루원이 돼요.',
+      );
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(
         error.statusCode == 409
-            ? '이미 다른 크루에 있거나 인원이 가득 찼어요.'
+            ? '이미 다른 크루에 있거나 신청해 둔 곳이 있거나 인원이 가득 찼어요.'
             : '가입하지 못했어요. 잠시 뒤 다시 해 주세요.',
       );
     } catch (_) {
       if (mounted) _toast('가입하지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onCancelRequest() async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    try {
+      await api.cancelCrewRequest();
+      _refreshCrews();
+      if (mounted) _toast('가입 신청을 거뒀어요.');
+    } catch (_) {
+      if (mounted) _toast('거두지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onChooseJoinMode(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    final mode = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('가입 방식'),
+        children: [
+          SimpleDialogOption(
+            key: const Key('crew-mode-open'),
+            onPressed: () => Navigator.pop(ctx, 'open'),
+            child: const Text('자유 가입\n누구나 바로 들어와요'),
+          ),
+          SimpleDialogOption(
+            key: const Key('crew-mode-approval'),
+            onPressed: () => Navigator.pop(ctx, 'approval'),
+            child: const Text('승인 가입\n신청을 받아 크루장이 정해요'),
+          ),
+        ],
+      ),
+    );
+    if (mode == null || mode == mine.crew.joinMode) return;
+    try {
+      await api.setCrewJoinMode(mode);
+      _refreshCrews();
+      if (mounted) {
+        _toast(mode == 'open' ? '자유 가입으로 바꿨어요.' : '승인 가입으로 바꿨어요.');
+      }
+    } catch (_) {
+      if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onShowRequests() async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    List<CrewJoinRequest> requests;
+    try {
+      requests = await api.crewJoinRequests();
+    } catch (_) {
+      if (mounted) _toast('신청 목록을 불러오지 못했어요.');
+      return;
+    }
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.srcTokens.colors.canvas,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) => _CrewRequestsSheet(
+        requests: requests,
+        onDecide: (request, approve) async {
+          try {
+            await api.decideCrewRequest(request.uid, approve: approve);
+            _refreshCrews();
+            if (ctx.mounted) Navigator.of(ctx).pop();
+            if (mounted) {
+              _toast(approve
+                  ? '${request.nickname}님을 받았어요.'
+                  : '${request.nickname}님의 신청을 거절했어요.');
+            }
+          } on ApiException catch (error) {
+            if (mounted) {
+              _toast(error.statusCode == 409
+                  ? '이미 다른 크루에 있거나 인원이 가득 찼어요.'
+                  : '처리하지 못했어요. 잠시 뒤 다시 해 주세요.');
+            }
+          } catch (_) {
+            if (mounted) _toast('처리하지 못했어요. 잠시 뒤 다시 해 주세요.');
+          }
+        },
+      ),
+    );
+  }
+
+  /// 크루 없애기: 크루원이 모두 나오고, 크루장인 나도 자연스럽게 크루에서 나온다.
+  Future<void> _onDisband(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    final others = mine.members.where((m) => m.role != 'leader').length;
+    if (!await _confirm(
+      '크루 없애기',
+      '"${mine.crew.name}" 크루를 없애요.\n'
+          '${others > 0 ? '크루원 $others명도 모두 크루에서 나오고, ' : ''}'
+          '크루장인 나도 함께 크루에서 나와요.\n'
+          '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
+          '크루는 두고 나만 나가고 싶다면 먼저 "크루원 보기"에서 크루장을 넘겨 주세요.',
+      '크루 없애기',
+    )) {
+      return;
+    }
+    try {
+      await api.disbandCrew();
+      _refreshCrews();
+      if (mounted) _toast('크루를 없앴어요.');
+    } catch (_) {
+      if (mounted) _toast('없애지 못했어요. 잠시 뒤 다시 해 주세요.');
     }
   }
 
@@ -410,6 +538,41 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       ),
       builder: (ctx) => _CrewMembersSheet(
         mine: mine,
+        onKick: api == null || !mine.isManager
+            ? null
+            : (member) async {
+                if (!await _confirm('크루원 내보내기',
+                    '${member.nickname}님을 크루에서 내보낼까요?', '내보내기')) {
+                  return;
+                }
+                try {
+                  await api.kickCrewMember(member.uid);
+                  _refreshCrews();
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  if (mounted) _toast('${member.nickname}님을 내보냈어요.');
+                } catch (_) {
+                  if (mounted) _toast('내보내지 못했어요. 잠시 뒤 다시 해 주세요.');
+                }
+              },
+        onTransfer: api == null || !mine.isLeader
+            ? null
+            : (member) async {
+                if (!await _confirm(
+                  '크루장 넘기기',
+                  '${member.nickname}님에게 크루장을 넘길까요? 나는 부크루장이 되고, 원하면 그 뒤에 크루에서 나갈 수 있어요.',
+                  '넘기기',
+                )) {
+                  return;
+                }
+                try {
+                  await api.transferCrew(member.uid);
+                  _refreshCrews();
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  if (mounted) _toast('${member.nickname}님이 새 크루장이에요.');
+                } catch (_) {
+                  if (mounted) _toast('넘기지 못했어요. 잠시 뒤 다시 해 주세요.');
+                }
+              },
         onRole: api == null || !mine.isLeader
             ? null
             : (member, role) async {
@@ -514,6 +677,31 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             subtitle: '${mine.crew.memberCount}명 · 내 역할 ${_roleLabel(mine.role)}',
                             onTap: () => _onShowMembers(mine),
                           ),
+                        if (mine != null && mine.isManager)
+                          _CrewActionLine(
+                            index: '··',
+                            title: mine.pendingRequests > 0
+                                ? '가입 신청 ${mine.pendingRequests}건'
+                                : '가입 신청',
+                            subtitle: '받을지 정해요',
+                            onTap: _onShowRequests,
+                          ),
+                        if (mine != null && mine.isLeader)
+                          _CrewActionLine(
+                            index: '··',
+                            title: '가입 방식',
+                            subtitle: mine.crew.needsApproval
+                                ? '지금은 승인 가입'
+                                : '지금은 자유 가입',
+                            onTap: () => _onChooseJoinMode(mine),
+                          ),
+                        if (mine != null && mine.isLeader)
+                          _CrewActionLine(
+                            index: '··',
+                            title: '크루 없애기',
+                            subtitle: '크루원과 함께 모두 나와요',
+                            onTap: () => _onDisband(mine),
+                          ),
                         if (mine != null && mine.canLeave)
                           _CrewActionLine(
                             index: '··',
@@ -571,6 +759,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             query: _searchQuery.trim(),
                             canJoin: mine == null,
                             onJoin: _onJoin,
+                            onCancel: _onCancelRequest,
                           ),
                         ] else if (searching) ...[
                           const SizedBox(height: 10),
@@ -1089,18 +1278,22 @@ class _RemoteCrewList extends ConsumerWidget {
     required this.query,
     required this.canJoin,
     required this.onJoin,
+    required this.onCancel,
   });
 
   final String query;
   final bool canJoin;
   final Future<void> Function(CrewSummary crew) onJoin;
+  final Future<void> Function() onCancel;
 
   static Key joinKey(String id) => Key('crew-join-$id');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.srcTokens.colors;
-    final crews = ref.watch(crewListProvider(query)).asData?.value ?? const [];
+    final result =
+        ref.watch(crewListProvider(query)).asData?.value ?? const CrewListResult();
+    final crews = result.crews;
     if (crews.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
@@ -1141,18 +1334,34 @@ class _RemoteCrewList extends ConsumerWidget {
                           style: storeText(15, c.ink, w: FontWeight.w800),
                         ),
                         Text(
-                          '${crew.memberCount}/${crew.maxMembers}명',
+                          '${crew.memberCount}/${crew.maxMembers}명'
+                          '${crew.needsApproval ? ' · 승인 가입' : ' · 자유 가입'}',
                           style: storeText(12, c.muted),
                         ),
                       ],
                     ),
                   ),
                   if (canJoin)
-                    FilledButton(
-                      key: joinKey(crew.id),
-                      onPressed: crew.isFull ? null : () => onJoin(crew),
-                      child: Text(crew.isFull ? '가득 참' : '가입'),
-                    ),
+                    if (result.pendingCrewId == crew.id)
+                      OutlinedButton(
+                        key: joinKey(crew.id),
+                        onPressed: onCancel,
+                        child: const Text('신청 취소'),
+                      )
+                    else
+                      FilledButton(
+                        key: joinKey(crew.id),
+                        onPressed: crew.isFull || result.pendingCrewId.isNotEmpty
+                            ? null
+                            : () => onJoin(crew),
+                        child: Text(
+                          crew.isFull
+                              ? '가득 참'
+                              : crew.needsApproval
+                                  ? '가입 신청'
+                                  : '가입',
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -1164,12 +1373,25 @@ class _RemoteCrewList extends ConsumerWidget {
 
 /// 크루원 목록. 크루장이면 크루원을 부크루장으로 올리거나 되돌릴 수 있다.
 class _CrewMembersSheet extends StatelessWidget {
-  const _CrewMembersSheet({required this.mine, required this.onRole});
+  const _CrewMembersSheet({
+    required this.mine,
+    required this.onRole,
+    required this.onKick,
+    required this.onTransfer,
+  });
 
   final MyCrew mine;
   final Future<void> Function(CrewMember member, String role)? onRole;
+  final Future<void> Function(CrewMember member)? onKick;
+  final Future<void> Function(CrewMember member)? onTransfer;
 
   static Key roleKey(String uid) => Key('crew-role-$uid');
+  static Key kickKey(String uid) => Key('crew-kick-$uid');
+  static Key transferKey(String uid) => Key('crew-transfer-$uid');
+
+  /// 크루장은 누구나, 부크루장은 일반 크루원만 내보낼 수 있다.
+  bool _canKick(CrewMember m) =>
+      onKick != null && (mine.isLeader || m.role == 'member');
 
   @override
   Widget build(BuildContext context) {
@@ -1198,14 +1420,103 @@ class _CrewMembersSheet extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 title: Text(m.nickname, style: storeText(15, c.ink, w: FontWeight.w700)),
                 subtitle: Text(label(m.role), style: storeText(12, c.muted)),
-                trailing: onRole == null || m.role == 'leader'
+                trailing: m.role == 'leader'
                     ? null
-                    : TextButton(
-                        key: roleKey(m.uid),
-                        onPressed: () =>
-                            onRole!(m, m.role == 'sub' ? 'member' : 'sub'),
-                        child: Text(m.role == 'sub' ? '부크루장 해제' : '부크루장으로'),
+                    : PopupMenuButton<String>(
+                        key: Key('crew-member-menu-${m.uid}'),
+                        enabled: onRole != null || _canKick(m) || onTransfer != null,
+                        onSelected: (action) {
+                          switch (action) {
+                            case 'role':
+                              onRole!(m, m.role == 'sub' ? 'member' : 'sub');
+                            case 'kick':
+                              onKick!(m);
+                            case 'transfer':
+                              onTransfer!(m);
+                          }
+                        },
+                        itemBuilder: (_) => [
+                          if (onRole != null)
+                            PopupMenuItem(
+                              key: roleKey(m.uid),
+                              value: 'role',
+                              child: Text(
+                                  m.role == 'sub' ? '부크루장 해제' : '부크루장으로'),
+                            ),
+                          if (onTransfer != null)
+                            PopupMenuItem(
+                              key: transferKey(m.uid),
+                              value: 'transfer',
+                              child: const Text('크루장 넘기기'),
+                            ),
+                          if (_canKick(m))
+                            PopupMenuItem(
+                              key: kickKey(m.uid),
+                              value: 'kick',
+                              child: const Text('내보내기'),
+                            ),
+                        ],
                       ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// 가입 신청 목록. 신청한 사람마다 받기/거절.
+class _CrewRequestsSheet extends StatelessWidget {
+  const _CrewRequestsSheet({required this.requests, required this.onDecide});
+
+  final List<CrewJoinRequest> requests;
+  final Future<void> Function(CrewJoinRequest request, bool approve) onDecide;
+
+  static Key approveKey(String uid) => Key('crew-approve-$uid');
+  static Key rejectKey(String uid) => Key('crew-reject-$uid');
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.75,
+        ),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          children: [
+            Text('가입 신청 ${requests.length}건',
+                style: storeText(20, c.ink, w: FontWeight.w900)),
+            const SizedBox(height: 12),
+            if (requests.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text('기다리는 신청이 없어요.',
+                    textAlign: TextAlign.center, style: storeText(14, c.muted)),
+              ),
+            for (final r in requests)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(r.nickname,
+                    style: storeText(15, c.ink, w: FontWeight.w700)),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      key: rejectKey(r.uid),
+                      onPressed: () => onDecide(r, false),
+                      child: const Text('거절'),
+                    ),
+                    FilledButton(
+                      key: approveKey(r.uid),
+                      onPressed: () => onDecide(r, true),
+                      child: const Text('받기'),
+                    ),
+                  ],
+                ),
               ),
           ],
         ),

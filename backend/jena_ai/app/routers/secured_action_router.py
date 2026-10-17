@@ -23,7 +23,10 @@ from app.models.secured_actions import (
     CreateChallengeRoomRequest,
     CreateChallengeRoomResult,
     CrewEmblemPurchaseRequest,
+    CrewDecideRequest,
+    CrewJoinModeRequest,
     CrewJoinRequest,
+    CrewTargetRequest,
     CrewRoleRequest,
     CrewEmblemRequest,
     CrewEmblemStatus,
@@ -229,7 +232,7 @@ def change_crew_emblem(
 
 @router.get("/crew/list")
 def list_crews(query: str = "", uid: str = Depends(require_uid)) -> dict:
-    return {"crews": crew_membership.list_crews(service.firebase_service.db, query[:40])}
+    return crew_membership.list_crews(service.firebase_service.db, query[:40], uid)
 
 
 @router.get("/crew/mine")
@@ -245,6 +248,43 @@ def join_crew(request: CrewJoinRequest, uid: str = Depends(require_uid)) -> dict
 @router.post("/crew/leave")
 def leave_crew(uid: str = Depends(require_uid)) -> dict:
     return crew_membership.leave(service.firebase_service.db, uid)
+
+
+@router.post("/crew/join-mode")
+def set_crew_join_mode(request: CrewJoinModeRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.set_join_mode(service.firebase_service.db, uid, request.mode)
+
+
+@router.get("/crew/requests")
+def crew_join_requests(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.list_requests(service.firebase_service.db, uid)
+
+
+@router.post("/crew/requests/decide")
+def decide_crew_request(request: CrewDecideRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.decide_request(
+        service.firebase_service.db, uid, request.uid, request.approve
+    )
+
+
+@router.post("/crew/requests/cancel")
+def cancel_crew_request(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.cancel_request(service.firebase_service.db, uid)
+
+
+@router.post("/crew/kick")
+def kick_crew_member(request: CrewTargetRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.kick(service.firebase_service.db, uid, request.uid)
+
+
+@router.post("/crew/transfer")
+def transfer_crew(request: CrewTargetRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.transfer(service.firebase_service.db, uid, request.uid)
+
+
+@router.post("/crew/disband")
+def disband_crew(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.disband(service.firebase_service.db, uid)
 
 
 @router.post("/crew/role")

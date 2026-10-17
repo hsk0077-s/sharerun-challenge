@@ -10,6 +10,11 @@ from app.services import crew_membership as cm
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
 
+@pytest.fixture(autouse=True)
+def _plain_transactions(monkeypatch):
+    monkeypatch.setattr(cm, "_run", lambda fn, tx, *args: fn.to_wrap(tx, *args))
+
+
 def _seed(db: _MemoryDb) -> None:
     db.store["users/u1"] = {"ownedCrewId": "c1", "nickname": "대장"}
     db.store["users/u2"] = {"nickname": "러너2"}
@@ -32,11 +37,11 @@ def _leave(db, uid):
 def test_list_filters_by_name_and_hides_nothing_private() -> None:
     db = _MemoryDb()
     _seed(db)
-    names = [c["name"] for c in cm.list_crews(db, "")]
+    names = [c["name"] for c in cm.list_crews(db, "")["crews"]]
     assert names == ["한강크루", "새벽러너"]  # biggest first
-    only = cm.list_crews(db, " 새벽 ")
+    only = cm.list_crews(db, " 새벽 ")["crews"]
     assert [c["id"] for c in only] == ["c1"]
-    assert set(only[0]) == {"id", "name", "emblem", "member_count", "max_members", "is_full", "total_distance_km"}
+    assert set(only[0]) == {"id", "name", "emblem", "member_count", "max_members", "is_full", "total_distance_km", "join_mode"}
 
 
 def test_join_adds_the_member_and_counts_once() -> None:
@@ -97,7 +102,7 @@ def test_my_crew_shows_role_and_members() -> None:
     assert mine["role"] == "member"
     assert mine["crew"]["id"] == "c1"
     assert [(m["nickname"], m["role"]) for m in mine["members"]] == [("대장", "leader"), ("러너2", "member")]
-    assert cm.my_crew(db, "nobody") == {"crew": None, "role": "none", "members": []}
+    assert cm.my_crew(db, "nobody") == {"crew": None, "role": "none", "members": [], "pending_requests": 0}
 
 
 def test_leader_sets_a_sub_leader_who_can_then_change_the_emblem() -> None:
@@ -155,3 +160,161 @@ def test_someone_already_in_a_crew_cannot_found_another() -> None:
         )
     assert caught.value.status_code == 409
     assert "crews/new1" not in db.store
+
+
+
+# ---- approval crews ----------------------------------------------------------------
+def _decide(db, leader, target, approve):
+    return cm._decide_tx.to_wrap(
+        _MemoryTxn(),
+        db.collection("crews").document("c1"),
+        db.collection("users").document(target),
+        target,
+        approve,
+    )
+
+
+def test_approval_crew_takes_a_request_not_a_member() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    cm.set_join_mode(db, "u1", "approval")
+    assert cm.list_crews(db)["crews"][0]["join_mode"] in {"approval", "open"}
+    assert _join(db, "u2", "c1")["status"] == "requested"
+    assert "crews/c1/members/u2" not in db.store
+    assert db.store["users/u2"]["pendingCrewId"] == "c1"
+    assert _join(db, "u2", "c1")["status"] == "already_requested"
+    assert cm.list_crews(db, "", "u2")["pending_crew_id"] == "c1"
+    assert cm.my_crew(db, "u1")["pending_requests"] == 1
+    assert [r["nickname"] for r in cm.list_requests(db, "u1")["requests"]] == ["러너2"]
+
+
+def test_a_second_request_to_another_crew_is_refused() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["crews/c2"]["joinMode"] = "approval"
+    cm.set_join_mode(db, "u1", "approval")
+    _join(db, "u2", "c1")
+    with pytest.raises(HTTPException) as caught:
+        _join(db, "u2", "c2")
+    assert caught.value.status_code == 409
+
+
+def test_approving_makes_the_member_and_rejecting_does_not() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    cm.set_join_mode(db, "u1", "approval")
+    _join(db, "u2", "c1")
+    assert _decide(db, "u1", "u2", True)["status"] == "approved"
+    assert db.store["users/u2"]["crewId"] == "c1"
+    assert db.store["crews/c1"]["memberCount"] == 2
+    assert "crews/c1/joinRequests/u2" not in db.store
+
+    db.store["users/u4"] = {"nickname": "러너4"}
+    _join(db, "u4", "c1")
+    assert _decide(db, "u1", "u4", False)["status"] == "rejected"
+    assert "crewId" not in db.store["users/u4"]
+    assert db.store["crews/c1"]["memberCount"] == 2
+
+
+def test_a_plain_member_cannot_decide_and_the_user_can_cancel() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    cm.set_join_mode(db, "u1", "approval")
+    _join(db, "u2", "c1")
+    with pytest.raises(HTTPException) as caught:
+        cm.list_requests(db, "u2")
+    assert caught.value.status_code == 403
+    assert cm.cancel_request(db, "u2")["status"] == "cancelled"
+    assert "crews/c1/joinRequests/u2" not in db.store
+    with pytest.raises(HTTPException):
+        cm.cancel_request(db, "u2")
+
+
+def test_only_the_leader_changes_the_join_mode() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    _join(db, "u2", "c1")
+    cm.set_role(db, "u1", "u2", "sub")
+    with pytest.raises(HTTPException) as caught:
+        cm.set_join_mode(db, "u2", "approval")
+    assert caught.value.status_code == 403
+    with pytest.raises(HTTPException):
+        cm.set_join_mode(db, "u1", "closed")
+
+
+# ---- kick, hand over, disband ---------------------------------------------------------
+def test_leader_and_sub_leader_remove_members_with_limits() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    for uid in ("u2", "u4", "u5"):
+        db.store[f"users/{uid}"] = {"nickname": uid}
+        _join(db, uid, "c1")
+    cm.set_role(db, "u1", "u2", "sub")
+    cm.set_role(db, "u1", "u5", "sub")
+    assert cm.kick(db, "u2", "u4")["status"] == "removed"  # sub removes a member
+    assert "crewId" in db.store["users/u4"] and db.store["users/u4"]["crewId"] is firestore.DELETE_FIELD
+    with pytest.raises(HTTPException) as caught:
+        cm.kick(db, "u2", "u5")  # a sub cannot remove a sub
+    assert caught.value.status_code == 403
+    with pytest.raises(HTTPException):
+        cm.kick(db, "u2", "u1")  # nobody removes the leader
+    assert cm.kick(db, "u1", "u5")["status"] == "removed"  # the leader removes a sub
+    assert db.store["crews/c1"]["subLeaderUids"] == ["u2"]
+    assert db.store["crews/c1"]["memberCount"] == 2
+    with pytest.raises(HTTPException) as caught:
+        cm.kick(db, "u4", "u2")  # a removed person manages nothing
+    assert caught.value.status_code == 403
+
+
+def test_handing_the_crew_over_lets_the_old_leader_leave_like_anyone() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    _join(db, "u2", "c1")
+    assert cm.transfer(db, "u1", "u2")["new_leader"] == "u2"
+    assert db.store["crews/c1"]["ownerUid"] == "u2"
+    assert db.store["users/u2"]["ownedCrewId"] == "c1"
+    assert db.store["users/u1"]["crewId"] == "c1"
+    assert cm.my_crew(db, "u1")["role"] == "sub"
+    assert cm.my_crew(db, "u2")["role"] == "leader"
+    with pytest.raises(HTTPException):
+        cm.transfer(db, "u1", "u2")  # no longer the leader
+    cm.set_role(db, "u2", "u1", "member")
+    assert _leave(db, "u1")["status"] == "left"
+
+
+def test_transfer_needs_a_member_target() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    with pytest.raises(HTTPException) as caught:
+        cm.transfer(db, "u1", "stranger")
+    assert caught.value.status_code == 404
+
+
+def test_disbanding_releases_everyone_the_leader_included() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    cm.set_join_mode(db, "u1", "approval")
+    db.store["users/u4"] = {"nickname": "u4"}
+    db.store["crews/c1/members/u2"] = {"uid": "u2"}
+    db.store["users/u2"] = {"nickname": "러너2", "crewId": "c1"}
+    _join(db, "u4", "c1")  # a pending request
+    result = cm.disband(db, "u1")
+    assert result["status"] == "disbanded"
+    assert not [p for p in db.store if p.startswith("crews/c1")]
+    for uid in ("u1", "u2"):
+        user = db.store[f"users/{uid}"]
+        assert user.get("crewId") is firestore.DELETE_FIELD or "crewId" not in user
+        assert user.get("ownedCrewId") is firestore.DELETE_FIELD or "ownedCrewId" not in user
+    assert db.store["users/u4"]["pendingCrewId"] is firestore.DELETE_FIELD
+    assert cm.my_crew(db, "u1")["crew"] is None
+
+
+def test_only_the_leader_can_disband() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    _join(db, "u2", "c1")
+    cm.set_role(db, "u1", "u2", "sub")
+    with pytest.raises(HTTPException) as caught:
+        cm.disband(db, "u2")
+    assert caught.value.status_code == 403
+    assert "crews/c1" in db.store

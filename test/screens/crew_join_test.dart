@@ -22,24 +22,30 @@ class _SeededWallet extends WalletNotifier {
 
 /// 서버 대신 메모리에서 가입·탈퇴를 흉내 낸다.
 class _FakeApi extends Fake implements SecuredActionApiClient {
-  _FakeApi({this.myRole});
+  _FakeApi({this.myRole, this.joinMode = 'open'});
 
   String? myRole;
+  String joinMode;
+  String pending = '';
   final calls = <String>[];
 
-  static const _crew = CrewSummary(
-    id: 'c1',
-    name: '새벽러너',
-    emblem: 'shield:g_wolf:rays:navy:white',
-    memberCount: 12,
-    maxMembers: 100,
-    totalDistanceKm: 321,
-  );
+  CrewSummary get _crew => CrewSummary(
+        id: 'c1',
+        name: '새벽러너',
+        emblem: 'shield:g_wolf:rays:navy:white',
+        memberCount: 12,
+        maxMembers: 100,
+        totalDistanceKm: 321,
+        joinMode: joinMode,
+      );
 
   @override
-  Future<List<CrewSummary>> listCrews(String query) async {
+  Future<CrewListResult> listCrews(String query) async {
     calls.add('list:$query');
-    return query.isNotEmpty && !_crew.name.contains(query) ? const [] : [_crew];
+    return CrewListResult(
+      crews: query.isNotEmpty && !_crew.name.contains(query) ? const [] : [_crew],
+      pendingCrewId: pending,
+    );
   }
 
   @override
@@ -48,16 +54,60 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
       : MyCrew(
           crew: _crew,
           role: myRole!,
+          pendingRequests: myRole == 'member' ? 0 : 1,
           members: const [
             CrewMember(uid: 'u1', nickname: '대장', role: 'leader'),
             CrewMember(uid: 'u2', nickname: '러너2', role: 'member'),
+            CrewMember(uid: 'u3', nickname: '러너3', role: 'sub'),
           ],
         );
 
   @override
-  Future<void> joinCrew(String crewId) async {
+  Future<String> joinCrew(String crewId) async {
     calls.add('join:$crewId');
+    if (joinMode == 'approval') {
+      pending = crewId;
+      return 'requested';
+    }
     myRole = 'member';
+    return 'joined';
+  }
+
+  @override
+  Future<void> cancelCrewRequest() async {
+    calls.add('cancel');
+    pending = '';
+  }
+
+  @override
+  Future<void> setCrewJoinMode(String mode) async {
+    calls.add('mode:$mode');
+    joinMode = mode;
+  }
+
+  @override
+  Future<List<CrewJoinRequest>> crewJoinRequests() async =>
+      const [CrewJoinRequest(uid: 'u9', nickname: '신청자')];
+
+  @override
+  Future<void> decideCrewRequest(String uid, {required bool approve}) async {
+    calls.add('decide:$uid:$approve');
+  }
+
+  @override
+  Future<void> kickCrewMember(String uid) async {
+    calls.add('kick:$uid');
+  }
+
+  @override
+  Future<void> transferCrew(String uid) async {
+    calls.add('transfer:$uid');
+  }
+
+  @override
+  Future<void> disbandCrew() async {
+    calls.add('disband');
+    myRole = null;
   }
 
   @override
@@ -101,7 +151,7 @@ void main() {
     await _pump(tester, api);
 
     expect(find.text('새벽러너'), findsOneWidget);
-    expect(find.text('12/100명'), findsOneWidget);
+    expect(find.text('12/100명 · 자유 가입'), findsOneWidget);
     await tester.ensureVisible(find.byKey(const Key('crew-join-c1')));
     await tester.tap(find.byKey(const Key('crew-join-c1')));
     await tester.pumpAndSettle();
@@ -142,6 +192,8 @@ void main() {
     await tester.tap(find.text('크루원 보기'));
     await tester.pumpAndSettle();
     expect(find.text('러너2'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('crew-member-menu-u2')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('crew-role-u2')));
     await tester.pumpAndSettle();
     expect(api.calls, contains('role:u2:sub'));
@@ -155,6 +207,120 @@ void main() {
     await tester.tap(find.text('크루원 보기'));
     await tester.pumpAndSettle();
     expect(find.text('러너2'), findsOneWidget);
+    // 일반 크루원에게는 메뉴가 잠겨 있다.
+    await tester.tap(find.byKey(const Key('crew-member-menu-u2')));
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('crew-role-u2')), findsNothing);
+    expect(find.byKey(const Key('crew-kick-u2')), findsNothing);
+  });
+
+  testWidgets('approval crew: the button says apply, and can be cancelled',
+      (tester) async {
+    final api = _FakeApi(joinMode: 'approval');
+    await _pump(tester, api);
+    expect(find.text('가입 신청'), findsOneWidget);
+    expect(find.textContaining('승인 가입'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('crew-join-c1')));
+    await tester.tap(find.byKey(const Key('crew-join-c1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('신청').last);
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('join:c1'));
+    expect(find.text('신청 취소'), findsOneWidget);
+
+    await tester.tap(find.text('신청 취소'));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('cancel'));
+    expect(find.text('신청 취소'), findsNothing);
+  });
+
+  testWidgets('the leader picks the join mode and decides requests',
+      (tester) async {
+    final api = _FakeApi(myRole: 'leader');
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('가입 방식'));
+    await tester.tap(find.text('가입 방식'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-mode-approval')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('mode:approval'));
+
+    expect(find.text('가입 신청 1건'), findsOneWidget);
+    await tester.ensureVisible(find.text('가입 신청 1건'));
+    await tester.tap(find.text('가입 신청 1건'));
+    await tester.pumpAndSettle();
+    expect(find.text('신청자'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('crew-approve-u9')));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('decide:u9:true'));
+  });
+
+  testWidgets('a plain member does not see request or disband lines',
+      (tester) async {
+    await _pump(tester, _FakeApi(myRole: 'member'));
+    expect(find.textContaining('가입 신청'), findsNothing);
+    expect(find.text('가입 방식'), findsNothing);
+    expect(find.text('크루 없애기'), findsNothing);
+  });
+
+  testWidgets('disbanding explains that the leader leaves too, then does it',
+      (tester) async {
+    final api = _FakeApi(myRole: 'leader');
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루 없애기'));
+    await tester.tap(find.text('크루 없애기'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('크루장인 나도 함께 크루에서 나와요'), findsOneWidget);
+    expect(find.textContaining('먼저 "크루원 보기"에서 크루장을 넘겨'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, '크루 없애기'));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('disband'));
+    // 크루가 없어지면 크루 관리 줄도 없다.
+    expect(find.text('크루원 보기'), findsNothing);
+  });
+
+  testWidgets('leader removes a member and hands the crew over',
+      (tester) async {
+    final api = _FakeApi(myRole: 'leader');
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루원 보기'));
+    await tester.tap(find.text('크루원 보기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-member-menu-u2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-kick-u2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '내보내기'));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('kick:u2'));
+
+    await tester.tap(find.text('크루원 보기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-member-menu-u2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-transfer-u2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, '넘기기'));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('transfer:u2'));
+  });
+
+  testWidgets('a sub-leader can remove a member but not another sub-leader',
+      (tester) async {
+    final api = _FakeApi(myRole: 'sub');
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루원 보기'));
+    await tester.tap(find.text('크루원 보기'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-member-menu-u2')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('crew-kick-u2')), findsOneWidget);
+    expect(find.byKey(const Key('crew-transfer-u2')), findsNothing);
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+    // 다른 부크루장(u3)의 메뉴는 잠겨 있다.
+    await tester.tap(find.byKey(const Key('crew-member-menu-u3')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('crew-kick-u3')), findsNothing);
   });
 }

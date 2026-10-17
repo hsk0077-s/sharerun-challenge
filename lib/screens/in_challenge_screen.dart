@@ -109,7 +109,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       return widget.roomTitle!;
     }
     if (widget.roomId == RouteNames.beginner1kmRoomId) {
-      return '1km 초보 챌린지방';
+      return '1km 초보 챌린지';
     }
     return AppStrings.liveRunningRoomTitle;
   }

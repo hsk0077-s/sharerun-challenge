@@ -70,7 +70,7 @@ class WalletTransactionModel {
       'crew_create' => '크루 만들기',
       'crew_item_gift' => '크루 선물',
       'crew_cheer_share' => '크루 응원 SHARE',
-      'challenge_room_create' => '챌린지 방 만들기',
+      'challenge_room_create' => '대회 열기',
       'hall_of_fame_donation' => '명예의 전당 기부',
       'free_entry' => '무료 대회 참가',
       'ticket_grant' => '참가권 지급',

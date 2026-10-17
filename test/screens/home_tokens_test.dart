@@ -158,7 +158,7 @@ void main() {
     expect(find.byKey(HomeDonationCard.amountKey), findsOneWidget);
     expect(find.text('300원'), findsOneWidget);
     expect(find.textContaining('현금 상금 없음'), findsOneWidget);
-    expect(find.text('방 상세 보기'), findsNWidgets(2));
+    expect(find.text('대회 상세 보기'), findsNWidgets(2));
     expect(find.text('걷기 챌린지 보기'), findsOneWidget);
     expect(find.textContaining('내 이름으로 달리기 후원하기'), findsOneWidget);
     expect(find.text(AppStrings.dashboardChallenge1Sub), findsOneWidget);

@@ -542,7 +542,7 @@ class _ActiveChallengeCard extends StatelessWidget {
             isJoined
                 ? AppStrings.winnerRewardNoConversion
                 : locked
-                    ? '티어 ${room.requiredTier} 방은 잠겨 있어요'
+                    ? '티어 ${room.requiredTier} 대회는 잠겨 있어요'
                     : full
                         ? '정원이 가득 찼어요'
                         : AppStrings.winnerRewardNoConversion,

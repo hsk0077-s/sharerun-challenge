@@ -18,13 +18,10 @@ import '../features/accessories/dressed_mascot.dart';
 import '../features/iap/models/dia_pack_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
-import '../features/shop/cosmetics_catalog.dart';
-import '../features/shop/providers/cosmetics_catalog_provider.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/shop/widgets/accessory_shop_grid.dart';
-import '../features/shop/widgets/cosmetics_shop_section.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../features/shop/widgets/donation_match_contribution.dart';
 import '../features/shop/streak_item_message.dart';
@@ -33,7 +30,6 @@ import 'battle_pass_screen.dart';
 import 'dia_pack_store_screen.dart';
 import 'share_dia_exchange_screen.dart';
 import 'item_inventory_screen.dart';
-import 'web3_wallet_screen.dart';
 
 /// src-13 앱내 상점 및 글로벌 기부 펀딩.
 class StoreScreen extends ConsumerStatefulWidget {
@@ -51,7 +47,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   var _tab = _StoreTab.recommended;
   final _fundingKey = GlobalKey();
   var _buyBusy = false;
-  var _cosmeticBusyId = '';
 
   @override
   void initState() {
@@ -193,96 +188,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
   }
 
-  Future<void> _onBuyCosmetic(CosmeticItem item) async {
-    if (_cosmeticBusyId.isNotEmpty) return;
-    setState(() => _cosmeticBusyId = item.id);
-    try {
-      final result = await ref
-          .read(securedActionApiClientProvider)
-          .purchaseCosmetic(item.id);
-      if (!mounted) return;
-      ref.read(walletProvider.notifier).applyWalletSnapshot(
-            shareBalance: result.shareBalance,
-            diamondBalance: result.diamondBalance,
-            valueBalance: result.valueTokenBalance,
-          );
-      _toast(
-        result.status == 'already_purchased'
-            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
-            : '${item.name} 구매를 기록했습니다.',
-      );
-    } on ApiException catch (error) {
-      if (!mounted) return;
-      _toast(streakItemMessage(error, fallback: '구매하지 못했습니다.'));
-    } catch (_) {
-      if (!mounted) return;
-      _toast('구매하지 못했습니다.');
-    } finally {
-      if (mounted) setState(() => _cosmeticBusyId = '');
-    }
-  }
-
-  Future<void> _onEquipCosmetic(CosmeticItem item, bool equip) async {
-    if (_cosmeticBusyId.isNotEmpty) return;
-    setState(() => _cosmeticBusyId = item.id);
-    try {
-      final status =
-          await ref.read(securedActionApiClientProvider).equipCosmetic(
-                itemId: item.id,
-                equip: equip,
-              );
-      if (!mounted) return;
-      _toast(
-        status == 'already_equipped'
-            ? '이미 처리된 장착입니다.'
-            : equip
-                ? '${item.name}을 장착했습니다.'
-                : '${item.name} 장착을 해제했습니다.',
-      );
-    } on ApiException catch (error) {
-      if (!mounted) return;
-      _toast(streakItemMessage(error, fallback: '장착하지 못했습니다.'));
-    } catch (_) {
-      if (!mounted) return;
-      _toast('장착하지 못했습니다.');
-    } finally {
-      if (mounted) setState(() => _cosmeticBusyId = '');
-    }
-  }
-
   void _onOpenInventory() {
     AppRouteNav.push<void>(
       context,
       RouteNames.itemInventory,
       materialBuilder: (_) => const ItemInventoryScreen(),
-    );
-  }
-
-  Future<void> _onRequestValueExternalTransfer() async {
-    final approved = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text(AppStrings.storeValueTransferConfirmTitle),
-          content: const Text(AppStrings.web3WalletPendingNote),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text(AppStrings.storeValueTransferCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(AppStrings.storeValueTransferApprove),
-            ),
-          ],
-        );
-      },
-    );
-    if (approved != true || !mounted) return;
-    await AppRouteNav.push<void>(
-      context,
-      RouteNames.web3Wallet,
-      materialBuilder: (_) => const Web3WalletScreen(),
     );
   }
 
@@ -520,9 +430,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _UnicefFundingCard(progress: shop.fundingProgress, onDonate: _onDonate),
       const DonationMatchContribution(),
       const SizedBox(height: 12),
-      _ValueTokenDetailCard(
-        onRequestExternalTransfer: _onRequestValueExternalTransfer,
-      ),
+      const _ValueTokenDetailCard(),
     ];
   }
 
@@ -743,26 +651,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return tier.isSnail ? TierAnimal.wolf : tier.animal;
   }
 
-  /// 꾸미기 탭: 소품 둘러보기 + 러닝화 스킨·결과 카드 프레임(기존 구매).
-  List<Widget> _cosmeticsTab(
-    CosmeticsCatalog cosmetics,
-    ServerShopInventory inventory,
-    WalletState wallet,
-  ) {
+  /// 꾸미기 탭: 캐릭터 소품 둘러보기. 러닝화 스킨과 결과 카드 프레임은 더 팔지 않는다.
+  List<Widget> _cosmeticsTab() {
     final tier =
         ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
     return [
       AccessoryShopGrid(animal: _myAnimal(), tier: tier),
-      const SizedBox(height: 22),
-      CosmeticsShopSection(
-        catalog: cosmetics,
-        diamondBalance: wallet.diamondBalance,
-        ownedIds: inventory.ownedCosmeticIds,
-        loadout: inventory.loadout,
-        busyId: _cosmeticBusyId,
-        onPurchase: _onBuyCosmetic,
-        onEquip: _onEquipCosmetic,
-      ),
     ];
   }
 
@@ -784,8 +678,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final shop = ref.watch(shopTabProvider);
     final inventory = ref.watch(serverShopInventoryProvider).asData?.value ??
         const ServerShopInventory();
-    final cosmetics = ref.watch(cosmeticsCatalogProvider).asData?.value ??
-        CosmeticsCatalog.defaults;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
     final c = context.srcTokens.colors;
 
@@ -793,7 +685,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _StoreTab.recommended => _recommendedTab(inventory, shop),
       _StoreTab.diamond => _diamondTab(),
       _StoreTab.items => _itemsTab(inventory),
-      _StoreTab.cosmetics => _cosmeticsTab(cosmetics, inventory, wallet),
+      _StoreTab.cosmetics => _cosmeticsTab(),
     };
 
     final scaffold = Scaffold(
@@ -952,9 +844,7 @@ class _CosmeticsPreviewRow extends StatelessWidget {
 }
 
 class _ValueTokenDetailCard extends StatelessWidget {
-  const _ValueTokenDetailCard({required this.onRequestExternalTransfer});
-
-  final VoidCallback onRequestExternalTransfer;
+  const _ValueTokenDetailCard();
 
   @override
   Widget build(BuildContext context) {
@@ -973,16 +863,7 @@ class _ValueTokenDetailCard extends StatelessWidget {
             AppStrings.storeValueDetailBody,
             style: storeText(12, c.muted, h: 1.4),
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: onRequestExternalTransfer,
-              child: Text(
-                AppStrings.storeValueExternalTransfer,
-                style: storeText(12, c.primary, w: FontWeight.w700),
-              ),
-            ),
-          ),
+          const SizedBox(height: 6),
         ],
       ),
     );

@@ -422,10 +422,10 @@ extension AngelTierX on AngelTier {
   String get rewardLabel => switch (this) {
         AngelTier.preAngel => '등에 귀여운 날개 반창고를 붙인 마스코트',
         AngelTier.cupid => '등 뒤 아기 날개 배지 장착',
-        AngelTier.guardian => '은빛 날개 · 방 입장 시 닉네임 볼드 테두리 강조',
+        AngelTier.guardian => '은빛 날개 · 대회 입장 시 닉네임 볼드 테두리 강조',
         AngelTier.archangel =>
-          '황금 날개 · 골드 그라데이션 닉네임 · 개설 방 러너 1.2배 토큰 부스트',
-        AngelTier.cherubim => '4익 날개 · 민트 오라 · 방 입장 시 단독 등장 팝업',
+          '황금 날개 · 골드 그라데이션 닉네임 · 개설 대회 러너 1.2배 토큰 부스트',
+        AngelTier.cherubim => '4익 날개 · 민트 오라 · 대회 입장 시 단독 등장 팝업',
         AngelTier.seraphim => '6익 날개 · 골드 광배 회전 · 명예의 전당 VVIP 단독 배너',
       };
 

@@ -12,6 +12,7 @@ import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
 import 'package:share_run_challenge/core/widgets/src_dashboard_bottom_nav.dart';
 import 'package:share_run_challenge/data/models/company_tournament_config.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
+import 'package:share_run_challenge/features/mini_bot/mini_bot_dock.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_intent.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_navigator.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_sheet.dart';
@@ -69,6 +70,7 @@ class _GateSpeech extends MiniBotSpeechToText {
 }
 
 void main() {
+  bubbleTests();
   test('intro is a guide and does not ask to navigate', () {
     final read = MiniBotInterpreter.interpret('쉐어런이 뭐야');
     expect(read.intent, MiniBotIntent.appIntro);
@@ -223,9 +225,10 @@ void main() {
 
     final sponsor = MiniBotInterpreter.interpret('스폰서');
     expect(sponsor.intent, MiniBotIntent.brandSponsor);
-    expect(sponsor.destination, MiniBotDestination.brandSponsor);
-    expect(sponsor.confirmLabel, '참가하기');
-    expect(sponsor.reply, contains('참가하지 않아요'));
+    // 실제 스폰서가 없어서 이동 없이 "준비 중"이라고만 답한다.
+    expect(sponsor.destination, MiniBotDestination.none);
+    expect(sponsor.awaitsConfirm, isFalse);
+    expect(sponsor.reply, contains('준비 중'));
 
     final subscription = MiniBotInterpreter.interpret('정기 후원');
     expect(subscription.destination, MiniBotDestination.subscription);
@@ -263,9 +266,9 @@ void main() {
     expect(pass.reply, contains('구매하지 않아요'));
 
     final brand = MiniBotInterpreter.interpret('브랜드 스폰서');
-    expect(brand.destination, MiniBotDestination.brandSponsor);
-    expect(brand.confirmLabel, '참가하기');
-    expect(brand.reply, contains('참가하지 않아요'));
+    expect(brand.destination, MiniBotDestination.none);
+    expect(brand.awaitsConfirm, isFalse);
+    expect(brand.reply, contains('준비 중'));
   });
 
   test('chip labels use the same interpreter as typed text', () {
@@ -289,12 +292,14 @@ void main() {
     for (final chip in MiniBotPrompts.chips) {
       final read = MiniBotInterpreter.interpret(chip.label);
       if (chip.id == 'brand') {
-        expect(read.destination, MiniBotDestination.brandSponsor);
+        expect(read.destination, MiniBotDestination.none);
+        expect(read.reply, contains('준비 중'));
       }
       if (chip.id == 'runner') {
         expect(read.destination, MiniBotDestination.personalSponsor);
       }
-      if (chip.id == 'intro') {
+      // 소개와 준비 중 안내는 이동하지 않으므로 확인 단계가 없다.
+      if (chip.id == 'intro' || chip.id == 'brand') {
         expect(read.awaitsConfirm, isFalse);
       } else {
         expect(read.awaitsConfirm, isTrue, reason: chip.label);
@@ -925,7 +930,8 @@ void main() {
     }
   });
 
-  testWidgets('coach chip confirm waits, then routes to Coach+ without charging',
+  testWidgets(
+      'coach chip confirm waits, then routes to Coach+ without charging',
       (tester) async {
     final voice = _RecordingVoice();
     MiniBotRead? executed;
@@ -964,5 +970,83 @@ void main() {
     expect(executed?.destination, MiniBotDestination.coachPlus);
     expect(executed?.intent, MiniBotIntent.coachPlus);
     expect(MiniBotCopy.executed(executed!.destination), contains('결제되지 않아요'));
+  });
+}
+
+void bubbleTests() {
+  group('달팽이봇 말풍선', () {
+    setUp(() {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        MiniBotDockSettings.hintSeenKey: true,
+      });
+      MiniBotDock.resetMessagesForTest();
+      MiniBotDockSettings.resetForTest();
+    });
+
+    testWidgets('shows once per screen after launch, then disappears',
+        (tester) async {
+      Widget app() => MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: MiniBotDock(
+                  onOpen: () {},
+                  message: '궁금한 게 있으면 저를 눌러 물어보세요',
+                  messageId: 'home',
+                ),
+              ),
+            ),
+          );
+      await tester.pumpWidget(app());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(MiniBotDock.messageKey), findsOneWidget);
+      expect(find.text('궁금한 게 있으면 저를 눌러 물어보세요'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 6));
+      expect(find.byKey(MiniBotDock.messageKey), findsNothing);
+
+      // 같은 화면을 다시 열어도 이번 실행에서는 다시 뜨지 않는다.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(app());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(MiniBotDock.messageKey), findsNothing);
+    });
+
+    testWidgets('the first-run drag hint comes first, no bubble over it',
+        (tester) async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: MiniBotDock(
+                onOpen: () {},
+                message: '말풍선',
+                messageId: 'lobby',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(MiniBotDock.hintKey), findsOneWidget);
+      expect(find.byKey(MiniBotDock.messageKey), findsNothing);
+      await tester.pump(const Duration(seconds: 7));
+    });
+
+    test('text rotates by day and only says what the bot can answer', () {
+      final a =
+          MiniBotBubble.forScreen(MiniBotScreen.home, DateTime(2026, 10, 1));
+      final b =
+          MiniBotBubble.forScreen(MiniBotScreen.home, DateTime(2026, 10, 2));
+      expect(a, isNot(b));
+      expect(MiniBotBubble.lobby, hasLength(3));
+      expect(
+        MiniBotBubble.forScreen(MiniBotScreen.lobby, DateTime(2026, 10, 1)),
+        isIn(MiniBotBubble.lobby),
+      );
+    });
   });
 }

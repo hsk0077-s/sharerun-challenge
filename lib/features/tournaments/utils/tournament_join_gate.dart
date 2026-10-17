@@ -28,7 +28,7 @@ abstract final class TournamentJoinGate {
       return '현재 모집 중인 대회가 아닙니다.';
     }
     if (tournament.lockedForTier(userTier)) {
-      return '내 등급보다 낮은 방은 참가할 수 없습니다.';
+      return '내 등급보다 낮은 대회는 참가할 수 없습니다.';
     }
     if (tournament.isFull && !ticketOpens) {
       return '대회 정원이 가득 찼습니다.';

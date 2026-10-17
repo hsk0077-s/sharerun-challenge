@@ -13,7 +13,6 @@ import '../features/challenge/providers/challenge_room_providers.dart';
 import '../features/challenge/widgets/challenge_look.dart';
 import '../features/mini_bot/mini_bot_sheet.dart';
 import 'battle_pass_screen.dart';
-import 'brand_sponsor_screen.dart';
 import 'challenge_detail_screen.dart';
 import 'create_challenge_room_screen.dart';
 import 'my_tournaments_screen.dart';
@@ -153,21 +152,15 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
           style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
         ),
         SizedBox(height: tokens.spacing.md),
-        _HeroRoomCard(
+        // 실제 스폰서가 없을 때는 눌러도 가지 않는 "준비 중" 카드로 둔다.
+        const _HeroRoomCard(
           title: AppStrings.lobbySponsorRoomTitle,
           subtitle: AppStrings.lobbySponsorRoomSub,
-          onEnter: () {
-            AppRouteNav.push<void>(
-              context,
-              RouteNames.brandSponsor,
-              materialBuilder: (_) => const BrandSponsorScreen(),
-            );
-          },
         ),
         SizedBox(height: tokens.spacing.xs),
         for (final row in fixed) numbered(row),
         if (live.isNotEmpty) ...[
-          const ChallengeSectionLabel('실시간 개설 · 참가 가능 방'),
+          const ChallengeSectionLabel('실시간 개설 · 참가 가능 대회'),
           for (final row in live) numbered(row),
         ],
         SizedBox(height: tokens.spacing.sm),
@@ -314,12 +307,10 @@ class _HeroRoomCard extends StatelessWidget {
   const _HeroRoomCard({
     required this.title,
     required this.subtitle,
-    required this.onEnter,
   });
 
   final String title;
   final String subtitle;
-  final VoidCallback onEnter;
 
   @override
   Widget build(BuildContext context) {
@@ -382,11 +373,25 @@ class _HeroRoomCard extends StatelessWidget {
                     ),
                   ),
                   SizedBox(width: tokens.spacing.sm),
-                  _LobbyEnterChip(
-                    buttonKey: const Key('lobby-sponsor-enter'),
-                    onEnter: onEnter,
-                    background: tokens.colors.primary,
-                    foreground: tokens.colors.onPrimary,
+                  // 눌러도 아무 데도 가지 않는 안내 표시. 글자만 "준비 중".
+                  Container(
+                    key: const Key('lobby-sponsor-preparing'),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: tokens.spacing.sm - 2,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: tokens.radii.capsule,
+                      border: Border.all(color: Colors.white54, width: 1.5),
+                    ),
+                    child: Text(
+                      AppStrings.lobbySponsorPreparing,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ],
               ),

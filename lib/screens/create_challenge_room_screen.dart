@@ -118,7 +118,7 @@ class _CreateChallengeRoomScreenState
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"$title" 방이 개설되었습니다.')),
+        SnackBar(content: Text('"$title" 대회가 열렸어요.')),
       );
       AppRouteNav.pop(context);
     } on InsufficientShareException {
@@ -132,7 +132,7 @@ class _CreateChallengeRoomScreenState
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('방 개설 실패: $error')),
+        SnackBar(content: Text('대회 열기에 실패했어요: $error')),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
+import 'package:share_run_challenge/core/navigation/open_popup_tracker.dart';
 import 'package:share_run_challenge/core/theme/src_theme.dart';
+import 'package:share_run_challenge/features/crew/crew_emblem.dart';
 import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
@@ -40,6 +42,7 @@ Future<void> _pumpCrewTab(
   Widget home = const SizedBox.shrink(),
 }) async {
   final router = GoRouter(
+    observers: [OpenPopupTracker()],
     initialLocation: RouteNames.crew,
     routes: [
       StatefulShellRoute.indexedStack(
@@ -55,6 +58,7 @@ Future<void> _pumpCrewTab(
             (RouteNames.myPage, const SizedBox.shrink()),
           ])
             StatefulShellBranch(
+              observers: [OpenPopupTracker()],
               routes: [
                 GoRoute(path: path, builder: (context, state) => child),
               ],
@@ -113,6 +117,43 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
+    OpenPopupTracker.resetForTest();
+  });
+
+  testWidgets('switching tabs with the picker open closes it', (tester) async {
+    await _pumpCrewTab(tester, home: const Text('HOME_ROOT'));
+    await tester.tap(find.byKey(const Key('crew-header-emblem')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(CrewEmblemPicker.doneKey), findsOneWidget);
+
+    await tester.tap(find.text('홈').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('크루').last);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CrewEmblemPicker.doneKey), findsNothing);
+    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+  });
+
+  testWidgets('back closes the emblem picker first; the crew tab stays',
+      (tester) async {
+    await _pumpCrewTab(tester, home: const Text('HOME_ROOT'));
+    await tester.tap(find.byKey(const Key('crew-header-emblem')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(CrewEmblemPicker.doneKey), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CrewEmblemPicker.doneKey), findsNothing);
+    expect(find.text('HOME_ROOT').hitTestable(), findsNothing,
+        reason: 'must not jump to home while a sheet was open');
+    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+
+    // 창이 닫힌 뒤의 뒤로가기는 홈으로 간다.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('HOME_ROOT'), findsOneWidget);
   });
 
   testWidgets('plain MaterialApp: crew search submit stays up', (tester) async {

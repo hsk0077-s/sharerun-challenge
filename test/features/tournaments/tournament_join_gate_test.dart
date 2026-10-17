@@ -72,7 +72,7 @@ void main() {
         userTier: 3,
         shareBalance: 1000000,
       ),
-      '내 등급보다 낮은 방은 참가할 수 없습니다.',
+      '내 등급보다 낮은 대회는 참가할 수 없습니다.',
     );
     expect(
       TournamentJoinGate.blockReason(

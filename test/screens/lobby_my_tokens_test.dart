@@ -149,11 +149,16 @@ void main() {
     expect(find.textContaining('실버'), findsNothing);
     expect(find.text('하위 등급 차단'), findsNothing);
     expect(find.byIcon(Icons.lock_outline_rounded), findsNothing);
-    expect(find.text('실시간 개설 · 참가 가능 방'), findsOneWidget);
+    expect(find.text('실시간 개설 · 참가 가능 대회'), findsOneWidget);
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
     expect(find.byKey(const Key('lobby-create-room')), findsOneWidget);
     expect(find.byKey(const Key('lobby-battle-pass')), findsOneWidget);
     expect(find.byKey(const Key('lobby-sponsor-card')), findsOneWidget);
+    // 실제 스폰서가 없으면 나이키 같은 이름 없이 "준비 중"으로만 보인다.
+    expect(find.byKey(const Key('lobby-sponsor-preparing')), findsOneWidget);
+    expect(find.byKey(const Key('lobby-sponsor-enter')), findsNothing);
+    expect(find.textContaining('나이키'), findsNothing);
+    expect(find.text('브랜드 스폰서 챌린지'), findsOneWidget);
     // 맨 위 큰 카드가 1번, 목록은 2번부터 번호가 붙는다.
     expect(find.text('02'), findsOneWidget);
     expect(find.text('05'), findsOneWidget);
@@ -203,7 +208,7 @@ void main() {
       const Scaffold(body: TournamentScreen()),
     );
 
-    expect(find.text('대회 방'), findsOneWidget);
+    expect(find.text('대회'), findsOneWidget);
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
     expect(find.text('후원  UNICEF Partner'), findsOneWidget);
     expect(find.text('100 SHARE'), findsOneWidget);
@@ -213,7 +218,7 @@ void main() {
     expect(find.text('기부 풀: 200 VALUE'), findsOneWidget);
     expect(find.textContaining('내 대회'), findsOneWidget);
 
-    final ctx = tester.element(find.text('대회 방'));
+    final ctx = tester.element(find.text('대회'));
     expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
     expect(ctx.srcTokens.colors.accent, AppColors.tealAccent);
     expect(ctx.srcTokens.colors.donation, AppColors.angelGold);

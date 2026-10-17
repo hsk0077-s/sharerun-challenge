@@ -102,9 +102,28 @@ abstract final class MiniBotDockMath {
 /// 버튼은 화면 위 겹침층에 그린다. 자리는 [anchor]가 잡고, 얼굴은 그 자리를 기준으로 움직인다.
 /// 누르면 [onOpen]이 불린다.
 class MiniBotDock extends StatefulWidget {
-  const MiniBotDock({super.key, required this.onOpen});
+  const MiniBotDock({
+    super.key,
+    required this.onOpen,
+    this.message,
+    this.messageId,
+  });
 
   final VoidCallback onOpen;
+
+  /// 버튼 위에 잠깐 띄우는 말풍선 글. 없으면 말풍선을 띄우지 않는다.
+  final String? message;
+
+  /// 앱을 켠 뒤 같은 화면에서는 말풍선을 한 번만 띄우기 위한 이름(예: 'home').
+  final String? messageId;
+
+  static const messageKey = Key('mini-bot-dock-message');
+
+  /// 이번에 앱을 켠 뒤 말풍선을 이미 보여 준 화면들.
+  static final Set<String> _shownMessageIds = <String>{};
+
+  @visibleForTesting
+  static void resetMessagesForTest() => _shownMessageIds.clear();
 
   static const faceKey = Key('mini-bot-dock-face');
   static const hintKey = Key('mini-bot-dock-hint');
@@ -121,6 +140,8 @@ class _MiniBotDockState extends State<MiniBotDock> {
   var _state = const MiniBotDockState();
   var _showHint = false;
   Timer? _hintTimer;
+  var _showMessage = false;
+  Timer? _messageTimer;
 
   @override
   void initState() {
@@ -134,6 +155,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
   @override
   void dispose() {
     _hintTimer?.cancel();
+    _messageTimer?.cancel();
     super.dispose();
   }
 
@@ -152,8 +174,27 @@ class _MiniBotDockState extends State<MiniBotDock> {
       });
       if (_showHint) {
         _hintTimer = Timer(const Duration(seconds: 6), _dismissHint);
+      } else {
+        _maybeShowMessage();
       }
     } catch (_) {}
+  }
+
+  /// 첫 사용 안내를 이미 본 사람에게는 화면을 열 때 한마디를 띄운다. 앱을 켠 뒤 화면마다 한 번만.
+  void _maybeShowMessage() {
+    final text = widget.message;
+    final id = widget.messageId;
+    if (text == null || id == null || !MiniBotDockSettings.visible.value)
+      return;
+    if (!MiniBotDock._shownMessageIds.add(id)) return;
+    if (!mounted) return;
+    setState(() => _showMessage = true);
+    _messageTimer = Timer(const Duration(seconds: 5), _dismissMessage);
+  }
+
+  void _dismissMessage() {
+    _messageTimer?.cancel();
+    if (_showMessage && mounted) setState(() => _showMessage = false);
   }
 
   Future<void> _save() async {
@@ -195,7 +236,10 @@ class _MiniBotDockState extends State<MiniBotDock> {
     return Offset(dx, dy);
   }
 
-  void _onPanStart(DragStartDetails _) => _dismissHint();
+  void _onPanStart(DragStartDetails _) {
+    _dismissHint();
+    _dismissMessage();
+  }
 
   void _onPanUpdate(DragUpdateDetails details) {
     final anchor = _anchorRect();
@@ -305,6 +349,15 @@ class _MiniBotDockState extends State<MiniBotDock> {
                       bottom: MiniBotDockMath.size + 8,
                       child: _DockHint(key: MiniBotDock.hintKey),
                     ),
+                  if (_showMessage && widget.message != null)
+                    Positioned(
+                      right: 0,
+                      bottom: MiniBotDockMath.size + 8,
+                      child: _DockMessage(
+                        key: MiniBotDock.messageKey,
+                        text: widget.message!,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -313,6 +366,72 @@ class _MiniBotDockState extends State<MiniBotDock> {
       },
     );
   }
+}
+
+/// 달팽이봇이 건네는 한마디. 꼬리가 버튼을 가리킨다.
+class _DockMessage extends StatelessWidget {
+  const _DockMessage({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 230),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Material(
+              color: AppColors.nightLime,
+              borderRadius: BorderRadius.circular(16),
+              elevation: 3,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    color: AppColors.nightOnLime,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    height: 1.35,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: CustomPaint(
+                size: const Size(14, 8),
+                painter: _TailPainter(AppColors.nightLime),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TailPainter extends CustomPainter {
+  const _TailPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_TailPainter old) => old.color != color;
 }
 
 class _DockHint extends StatelessWidget {

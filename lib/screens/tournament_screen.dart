@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
+import '../features/onboarding/src_onboarding_controller.dart';
 import '../core/theme/theme.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../data/models/company_tournament_config.dart';
@@ -88,6 +89,8 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         ref.watch(activeWalletProvider).asData?.value.freeTicketBalance ?? 0;
     ref.watch(signupFreeTicketGrantProvider);
     final c = context.srcTokens.colors;
+    final myTier = ref.watch(activeUserTierStructProvider);
+    final myAnimal = myTier == null || myTier.isSnail ? null : myTier.animal;
 
     return ListView(
       controller: _scrollController,
@@ -120,9 +123,10 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             }
           },
         ),
-        const StoreSectionLabel('대회 방'),
-        for (final room in rooms)
-          _roomCard(
+        ..._sections(
+          rooms: rooms,
+          myAnimal: myAnimal,
+          card: (room) => _roomCard(
             room: room,
             userTier: userTier,
             joined: joinedIds.contains(room.id),
@@ -132,6 +136,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             config: configAsync.asData?.value,
             freeTickets: freeTickets,
           ),
+        ),
         if (rooms.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 28),
@@ -151,6 +156,40 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
           ),
       ],
     );
+  }
+
+  /// 대회를 "티어 대회 / 자유 대회 / 그 밖의 대회" 세 구역으로 나눠 보여 준다.
+  /// 내 등급과 같은 티어 대회가 맨 위에 온다. 비어 있는 구역은 보이지 않는다.
+  List<Widget> _sections({
+    required List<TournamentModel> rooms,
+    required TierAnimal? myAnimal,
+    required Widget Function(TournamentModel room) card,
+  }) {
+    final groups = TournamentSections.group(rooms, myAnimal);
+    final shown = [
+      groups.tier.isNotEmpty,
+      groups.free.isNotEmpty,
+      groups.other.isNotEmpty,
+    ].where((v) => v).length;
+    return [
+      if (groups.tier.isNotEmpty) ...[
+        _SectionHeader(
+          title: '티어 대회',
+          note: myAnimal == null
+              ? '등급을 받으면 참가할 수 있어요'
+              : '내 등급 ${myAnimal.labelKo}',
+        ),
+        for (final room in groups.tier) card(room),
+      ],
+      if (groups.free.isNotEmpty) ...[
+        const _SectionHeader(title: '자유 대회', note: '누구나 참가 · 승급 점수 절반'),
+        for (final room in groups.free) card(room),
+      ],
+      if (groups.other.isNotEmpty) ...[
+        _SectionHeader(title: shown > 1 ? '그 밖의 대회' : '대회'),
+        for (final room in groups.other) card(room),
+      ],
+    ];
   }
 
   Widget _roomCard({
@@ -277,7 +316,7 @@ class _TournamentRoomCard extends StatelessWidget {
     final feeText =
         quote?.costLabel(freeTickets) ?? '${room.entryFeeShare} SHARE';
     final joinLabel = locked
-        ? '낮은 등급 방은 참가할 수 없어요'
+        ? '낮은 등급 대회는 참가할 수 없어요'
         : isJoined
             ? '이미 참가했어요'
             : canJoin && (room.isFull || !room.isRecruiting)
@@ -487,6 +526,64 @@ class _MyTournamentsLine extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 구역 제목. 오른쪽에 짧은 설명이 붙을 수 있다.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.note});
+
+  final String title;
+  final String? note;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(title, style: storeText(15, c.ink, w: FontWeight.w900)),
+          if (note != null) ...[
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                note!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: storeText(12, c.muted, w: FontWeight.w700),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// 대회 목록을 구역으로 나누는 순수 함수. 시험하기 쉽게 따로 뒀다.
+abstract final class TournamentSections {
+  static ({
+    List<TournamentModel> tier,
+    List<TournamentModel> free,
+    List<TournamentModel> other,
+  }) group(List<TournamentModel> rooms, TierAnimal? myAnimal) {
+    final mine = myAnimal == null ? 0 : myAnimal.index + 1;
+    final tier = rooms.where((r) => r.isTierTournament).toList()
+      ..sort((a, b) {
+        // 내 등급 대회가 먼저, 그다음 낮은 등급 순.
+        int rank(TournamentModel r) => r.tierAnimal == mine ? 0 : r.tierAnimal;
+        return rank(a).compareTo(rank(b));
+      });
+    return (
+      tier: tier,
+      free: rooms.where((r) => r.isFreeTournament).toList(),
+      other: rooms
+          .where((r) => !r.isTierTournament && !r.isFreeTournament)
+          .toList(),
     );
   }
 }

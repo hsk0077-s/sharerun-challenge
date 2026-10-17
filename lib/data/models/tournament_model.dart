@@ -22,6 +22,8 @@ class TournamentModel {
     required this.sponsorName,
     this.sponsorBillboardMessages = const [],
     this.prizeTier = '',
+    this.kind = '',
+    this.tierAnimal = 0,
   });
 
   final String id;
@@ -40,6 +42,16 @@ class TournamentModel {
 
   /// Company prize race tier. Empty on a normal room.
   final String prizeTier;
+
+  /// 승급 점수가 걸린 대회의 종류: `tier`(티어 대회), `free`(자유 대회). 그 밖에는 빈 값.
+  final String kind;
+
+  /// 티어 대회가 받는 동물 등급(1 거북이 … 5 치타). 티어 대회가 아니면 0.
+  final int tierAnimal;
+
+  bool get isTierTournament => kind == 'tier';
+
+  bool get isFreeTournament => kind == 'free';
 
   bool get isRecruiting => status == TournamentStatus.recruiting;
 
@@ -102,10 +114,13 @@ class TournamentModel {
       prizeTier: json['prizeTier'] is String
           ? (json['prizeTier'] as String).trim()
           : '',
-      sponsorBillboardMessages: (json['sponsorBillboardMessages'] as List<dynamic>?)
-              ?.map((item) => item.toString())
-              .toList() ??
-          const [],
+      kind: json['kind'] is String ? (json['kind'] as String).trim() : '',
+      tierAnimal: (json['tierAnimal'] as num?)?.toInt() ?? 0,
+      sponsorBillboardMessages:
+          (json['sponsorBillboardMessages'] as List<dynamic>?)
+                  ?.map((item) => item.toString())
+                  .toList() ??
+              const [],
     );
   }
 

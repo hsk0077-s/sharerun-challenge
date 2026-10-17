@@ -1,3 +1,4 @@
+import '../navigation/open_popup_tracker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,10 +58,14 @@ class SrcBottomNav extends ConsumerWidget {
                 : Theme.of(context).scaffoldBackgroundColor,
             child: DashboardBottomNav(
               currentIndex: shell.currentIndex,
-              onTap: (index) => shell.goBranch(
-                index,
-                initialLocation: index == shell.currentIndex,
-              ),
+              onTap: (index) {
+                // 열려 있던 창은 탭을 옮기기 전에 닫는다.
+                OpenPopupTracker.closeAll();
+                shell.goBranch(
+                  index,
+                  initialLocation: index == shell.currentIndex,
+                );
+              },
             ),
           ),
         ),

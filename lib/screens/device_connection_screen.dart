@@ -209,6 +209,12 @@ class _DeviceConnectionScreenState
                       enabled: !_busy && authUser != null,
                       onConnect: _showComingSoonDialog,
                     ),
+                    const SizedBox(height: 16),
+                    OutlinedButton(
+                      key: const Key('watch-app-preview-entry'),
+                      onPressed: () => context.push(RouteNames.watchAppPreview),
+                      child: const Text('워치 전용 앱 (예정) 미리 보기'),
+                    ),
                     const SizedBox(height: 28),
                     Text(
                       AppStrings.deviceConnectionSingleActiveNote,

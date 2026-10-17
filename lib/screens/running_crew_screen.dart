@@ -512,7 +512,7 @@ class _CrewPhotoHeader extends StatelessWidget {
   final VoidCallback onHallOfFame;
   final VoidCallback? onBack;
 
-  static const photoAsset = 'assets/images/challenge_track.jpg';
+  static const photoAsset = 'assets/images/crew_crowd.jpg';
   static const emblemKey = Key('crew-header-emblem');
 
   @override

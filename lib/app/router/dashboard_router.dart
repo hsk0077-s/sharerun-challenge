@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'main_shell_routes.dart';
+import '../../core/navigation/open_popup_tracker.dart';
 import 'route_names.dart';
 
 /// In-app navigation after login — no Firebase Auth redirects.
@@ -11,6 +12,7 @@ final dashboardRouterProvider = Provider<GoRouter>((ref) {
   ref.keepAlive();
 
   final router = GoRouter(
+    observers: [OpenPopupTracker()],
     initialLocation: RouteNames.mainDashboard,
     routes: buildMainShellAndDetailRoutes(),
   );

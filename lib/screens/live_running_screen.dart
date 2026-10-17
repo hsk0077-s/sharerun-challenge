@@ -77,7 +77,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   String get _roomTitle {
     if (widget.roomId != null && _beginnerRoomIds.contains(widget.roomId)) {
-      return '1km 초보 챌린지방';
+      return '1km 초보 챌린지';
     }
     return AppStrings.liveRunningRoomTitle;
   }

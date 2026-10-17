@@ -43,6 +43,28 @@ void main() {
     expect(find.byKey(const Key('coach-plus-store')), findsOneWidget);
   });
 
+  testWidgets('cosmetics tab no longer sells shoe skins or result-card frames',
+      (tester) async {
+    await _pump(tester);
+    await tester.tap(find.byKey(const Key('store-tab-cosmetics')));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('러닝화 스킨'), findsNothing);
+    expect(find.textContaining('결과 카드 프레임'), findsNothing);
+    expect(find.textContaining('결과 프레임'), findsNothing);
+    expect(find.textContaining('골드 러닝화'), findsNothing);
+  });
+
+  testWidgets('VALUE detail has no external wallet transfer', (tester) async {
+    await _pump(tester);
+    await tester.ensureVisible(find.text(AppStrings.storeValueDetailTitle));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.storeValueDetailTitle), findsOneWidget);
+    expect(find.textContaining('외부 지갑'), findsNothing);
+    expect(find.textContaining('MetaMask'), findsNothing);
+  });
+
   testWidgets('diamond tab lists the DIA packs as not yet on sale',
       (tester) async {
     await _pump(tester);
@@ -67,7 +89,8 @@ void main() {
     expect(find.text(AppStrings.storeItemStepIncubator), findsOneWidget);
   });
 
-  testWidgets('VALUE focus scrolls to the funding block on the recommended tab', (tester) async {
+  testWidgets('VALUE focus scrolls to the funding block on the recommended tab',
+      (tester) async {
     await _pump(tester, focus: StoreFocus.donate);
 
     expect(find.text(AppStrings.storeFundingTitle), findsOneWidget);

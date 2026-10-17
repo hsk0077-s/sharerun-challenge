@@ -98,9 +98,9 @@ abstract final class AppStrings {
   static const dashboardOngoingChallenges = '진행 중인 챌린지';
   static const dashboardChallenge1Title = '초보 1km 챌린지 🏆';
   static const dashboardChallenge1Sub = '참가비: 600 SHARE';
-  static const dashboardChallenge2Title = '중급 3km 챌린지 (골드 방)';
+  static const dashboardChallenge2Title = '중급 3km 챌린지 (골드 대회)';
   static const dashboardChallenge2Sub = '참가비: 1,200 SHARE';
-  static const dashboardViewRoom = '방 상세 보기';
+  static const dashboardViewRoom = '대회 상세 보기';
   static const dashboardNavHome = '홈';
   static const dashboardNavStore = '상점';
   static const dashboardNavWallet = '지갑';
@@ -154,7 +154,7 @@ abstract final class AppStrings {
   static const levelTestStartRun = '3회차 달리기 시작하기';
 
   // ── Challenge Lobby (Screen 7) ────────────────────────────────────
-  static const lobbyCreateRoom = '+ 방 개설하기';
+  static const lobbyCreateRoom = '+ 대회 열기';
   /// 앱 대표 슬로건. 시작 화면·홈이 같이 쓴다.
   static const slogan = '심장이 뛰는 한,\n나눔도 달린다';
   static const lobbyTitle = '챌린지 로비';
@@ -169,13 +169,13 @@ abstract final class AppStrings {
   static const lobbyEnterRoom = '입장하기';
 
   // ── Create Challenge Room (Screen 8) ──────────────────────────────
-  static const createRoomScreenTitle = '챌린지 방 개설하기';
+  static const createRoomScreenTitle = '대회 열기';
   static const createRoomScreenSubtitle =
       '전 세계 러너들과 경쟁할 룰을 직접 설정하세요.';
-  static const createRoomTitleSection = '방 제목 설정';
+  static const createRoomTitleSection = '대회 제목 설정';
   static const createRoomTitleHint = '어떤 목표로 달리시나요?';
   static const createRoomTitlePlaceholder = '예) 주말 10K 크루 대항전 🔥';
-  static const createRoomTitleRequired = '방 제목을 입력해 주세요.';
+  static const createRoomTitleRequired = '대회 제목을 입력해 주세요.';
   static const createRoomDistanceSection = '목표 거리 선택';
   static const createRoomDistanceHint = '목표 거리를 선택해 주세요.';
   static const createRoomEntryFeeSection = '대회 참가비 (SHARE)';
@@ -183,7 +183,7 @@ abstract final class AppStrings {
       '* 결제하신 참가비는 플랫폼 대회 참여권 및 운영비로 귀속되며, ';
   static const createRoomFeeWarningGrey =
       '유저 간 상금 재원(N빵)으로 사용되지 않습니다.';
-  static const createRoomPayAndCreateSuffix = 'SHARE 결제하고 방 개설하기';
+  static const createRoomPayAndCreateSuffix = 'SHARE 결제하고 대회 열기';
   static const createRoomInsufficientShare =
       '가용 SHARE 잔액이 부족합니다. 충전 후 다시 시도해 주세요.';
   static const shareInsufficientTitle = 'SHARE 잔액 부족';
@@ -208,7 +208,7 @@ abstract final class AppStrings {
   static const externalPaymentSecurePaySuffix = '원 안전 결제하기';
 
   // ── Challenge Detail (Screen 9) ───────────────────────────────────
-  static const challengeDetailTitle = '3km 중급 챌린지 (골드 방)';
+  static const challengeDetailTitle = '3km 중급 챌린지 (골드 대회)';
   static const challengeDetailEntryFee = '참가비: 1,200 SHARE';
   static const challengeDetailGoldBadge = '골드';
   static const challengeDetailPrize = noCashPrizePool;
@@ -226,7 +226,7 @@ abstract final class AppStrings {
   static const challengeDetailJoin = '대회 참가';
 
   // ── Live Running (Screen 10) ────────────────────────────────────────
-  static const liveRunningRoomTitle = '3km 중급 챌린지방';
+  static const liveRunningRoomTitle = '3km 중급 챌린지';
   static const liveRunningGps = 'GPS';
   static const liveRunningStatDistance = '현재 거리';
   static const liveRunningStatDistanceValue = '1.8 km';
@@ -317,11 +317,7 @@ abstract final class AppStrings {
   static const storeChargeCta = '다이아 충전';
   static const storeValueDetailTitle = 'VALUE 상세';
   static const storeValueDetailBody =
-      'VALUE는 현금으로 바꿀 수 없는 명예 재화예요. 기부처 투표, 명예의 전당, 칭호·배지 등에 쓰이고, 외부 지갑 전송은 준비 중이에요.';
-  static const storeValueExternalTransfer = '외부 지갑 전송 (준비 중)';
-  static const storeValueTransferConfirmTitle = '외부 지갑 전송 (준비 중)';
-  static const storeValueTransferCancel = '취소';
-  static const storeValueTransferApprove = '확인';
+      'VALUE는 현금으로 바꿀 수 없는 명예 재화예요. 기부처 투표, 명예의 전당, 칭호·배지 등에 쓰여요.';
   static const walletHistoryShortcutTooltip = '재화 히스토리';
   static const iapBillingTitle = '다이아 충전소';
   static const iapBillingSubtitle = '구글 플레이 공식 보안 결제를 적용합니다.';
@@ -340,9 +336,10 @@ abstract final class AppStrings {
 
   // ── Brand Sponsor (Screen 16) ─────────────────────────────────────
   static const brandSponsorScreenTitle = '브랜드 스폰서 챌린지';
-  static const lobbySponsorRoomTitle = '나이키 브랜드 스폰서 방';
+  static const lobbySponsorRoomTitle = '브랜드 스폰서 챌린지';
   static const lobbySponsorRoomSub =
-      '무료 참가 · 스폰서 100% 대납 · 8,500명 참여 중';
+      '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.';
+  static const lobbySponsorPreparing = '준비 중';
   static const brandSponsorTicker =
       '✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨';
   static const brandSponsorChallengeTitle = 'Nike 주말 5km 특별 챌린지';
@@ -468,11 +465,6 @@ abstract final class AppStrings {
   static const refundTotalAmount = '총 환불 예정 금액: 50,000 KRW';
   static const refundCancelCta = '수수료 없이 결제 취소하기 (현금 환불)';
 
-  // ── Web3 Wallet (Screen 22) ─────────────────────────────────────────
-  static const web3WalletTitle = '외부 지갑 전송 (준비 중)';
-  static const web3WalletPendingNote =
-      '법률 검토가 끝난 뒤 열릴 예정이에요. 지금은 VALUE가 차감되지 않아요.';
-  static const web3WalletTransferCta = '준비 중';
   static const winnerRewardNoConversion =
       '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.';
   static const noCashPrizePool = '현금 상금 없음';

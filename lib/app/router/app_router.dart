@@ -9,9 +9,11 @@ import '../providers/app_providers.dart';
 import '../app_config.dart';
 import 'auth_refresh_listenable.dart';
 import 'main_shell_routes.dart';
+import '../../core/navigation/open_popup_tracker.dart';
 import 'route_names.dart';
 
-final sessionRefreshListenableProvider = Provider<SessionRefreshListenable>((ref) {
+final sessionRefreshListenableProvider =
+    Provider<SessionRefreshListenable>((ref) {
   final listenable = SessionRefreshListenable();
   ref.listen(authStateChangesProvider, (_, __) => listenable.refresh());
   ref.listen(activeUserProfileProvider, (_, __) => listenable.refresh());
@@ -36,6 +38,7 @@ String? _authRedirect(Ref ref, GoRouterState state) {
   // 온보딩·헬스 동의·워치 연동 중에는 로그인으로 튕기지 않음.
   final onWatchConnectFlow = path == RouteNames.watchSettings ||
       path == RouteNames.healthDataConsent ||
+      path == RouteNames.watchAppPreview ||
       path == RouteNames.smartWatchSync;
 
   final auth = ref.read(authStateChangesProvider);
@@ -90,6 +93,7 @@ String? _authRedirect(Ref ref, GoRouterState state) {
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    observers: [OpenPopupTracker()],
     initialLocation: AppConfig.initialRoute,
     refreshListenable: ref.watch(sessionRefreshListenableProvider),
     redirect: (context, state) => _authRedirect(ref, state),

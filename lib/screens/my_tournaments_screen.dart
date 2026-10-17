@@ -36,7 +36,7 @@ class MyTournamentsScreen extends ConsumerWidget {
           SizedBox(height: tokens.spacing.xs),
         ],
         Text(
-          '참가한 대회 방과 참가 상태를 확인하세요.',
+          '참가한 대회와 참가 상태를 확인하세요.',
           style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
         ),
         AsyncValueSection<List<TournamentParticipationModel>>(

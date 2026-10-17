@@ -811,9 +811,43 @@ abstract final class PedometerKstClock {
     }
   }
 
+  /// Health Connect 호출 한도(quota) 초과는 네이티브 코루틴에서 예외가 터져
+  /// 앱이 종료되므로 Dart에서 잡을 수 없다. 호출 자체를 줄인다.
+  static Duration minTodayReadGap = const Duration(seconds: 60);
+  static DateTime? _todayReadAt;
+  static int? _todayCache;
+  static Future<int?>? _todayInflight;
+
+  @visibleForTesting
+  static void resetStepReadThrottle() {
+    _todayReadAt = null;
+    _todayCache = null;
+    _todayInflight = null;
+    _dayCache.clear();
+  }
+
+  static final Map<String, int> _dayCache = <String, int>{};
+
   static Future<int?> queryTodaySteps(
     Health health, {
     bool requestIfMissing = true,
+  }) {
+    final inflight = _todayInflight;
+    if (inflight != null) return inflight;
+    final at = _todayReadAt;
+    if (!requestIfMissing &&
+        at != null &&
+        DateTime.now().difference(at) < minTodayReadGap) {
+      return Future<int?>.value(_todayCache);
+    }
+    final run = _readTodaySteps(health, requestIfMissing: requestIfMissing);
+    _todayInflight = run;
+    return run.whenComplete(() => _todayInflight = null);
+  }
+
+  static Future<int?> _readTodaySteps(
+    Health health, {
+    required bool requestIfMissing,
   }) async {
     try {
       if (requestIfMissing) {
@@ -823,12 +857,13 @@ abstract final class PedometerKstClock {
         await health.configure();
       }
       final range = todayRange();
+      _todayReadAt = DateTime.now();
       final total = await health.getTotalStepsInInterval(
         range.startDate,
         range.endDate,
       );
-      if (total == null) return null;
-      return total < 0 ? 0 : total;
+      if (total == null) return _todayCache = null;
+      return _todayCache = total < 0 ? 0 : total;
     } on PlatformException catch (e, st) {
       debugPrint('PedometerKstClock getTotalStepsInInterval: $e\n$st');
       return null;
@@ -844,6 +879,8 @@ abstract final class PedometerKstClock {
     String dayKey, {
     bool requestIfMissing = false,
   }) async {
+    final cached = _dayCache[dayKey];
+    if (cached != null && dayKey != KstCalendar.dateKey()) return cached;
     try {
       if (requestIfMissing) {
         await requestAuthorization(health);
@@ -857,6 +894,7 @@ abstract final class PedometerKstClock {
         range.endDate,
       );
       if (total == null || total <= 0) return null;
+      _dayCache[dayKey] = total;
       return total;
     } on PlatformException catch (e, st) {
       debugPrint('PedometerKstClock queryDaySteps: $e\n$st');

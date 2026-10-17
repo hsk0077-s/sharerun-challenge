@@ -11,6 +11,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/donation/sponsorship_records.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
@@ -216,7 +217,9 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
                     child: Column(
                       children: [
                         const _AngelProfileSection(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        const SponsorshipStatusCard(),
+                        const SizedBox(height: 16),
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 18),
@@ -570,6 +573,139 @@ class _RadioDot extends StatelessWidget {
               ),
             )
           : null,
+    );
+  }
+}
+
+
+/// 모두에게 보이는 후원 현황과 "내 후원 내역" 버튼.
+/// 회사 이름으로 기부하고 회사는 전달만 한다. 개인별 내역은 후원한 본인만 누르면 본다.
+class SponsorshipStatusCard extends ConsumerWidget {
+  const SponsorshipStatusCard({super.key});
+
+  static const cardKey = Key('sponsorship-status');
+  static const mineButtonKey = Key('sponsorship-mine-open');
+  static const principleLine = '후원은 회사 이름으로 기부돼요. 회사는 전달만 해요.';
+
+  static String won(int v) => v.toString().replaceAllMapped(
+        RegExp(r'\B(?=(\d{3})+(?!\d))'),
+        (_) => ',',
+      );
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summary = ref.watch(sponsorshipSummaryProvider).asData?.value;
+    String status;
+    if (summary == null) {
+      status = '';
+    } else if (summary.sponsorCount == 0) {
+      status = '아직 후원한 분이 없어요.';
+    } else if (summary.showAmounts) {
+      status = '이번 달 ${won(summary.monthWon ?? 0)}원 · 누적 ${won(summary.totalWon ?? 0)}원 · 참여 ${summary.sponsorCount}명';
+    } else {
+      status = '참여 ${summary.sponsorCount}명 · 금액은 ${summary.minSponsors}명 이상 모이면 보여 드려요.';
+    }
+    return Container(
+      key: cardKey,
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('후원 현황',
+              style: AppTextStyles.agreementLabel.copyWith(fontWeight: FontWeight.w700, fontSize: 15)),
+          const SizedBox(height: 6),
+          Text(principleLine, style: AppTextStyles.caption),
+          if (status.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(status,
+                key: const Key('sponsorship-status-line'),
+                style: AppTextStyles.agreementLabel.copyWith(fontSize: 13)),
+          ],
+          const SizedBox(height: 10),
+          OutlinedButton(
+            key: mineButtonKey,
+            onPressed: () => MySponsorshipSheet.show(context),
+            child: const Text('내 후원 내역'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 내 후원 내역. 후원한 사람 본인에게만 보인다.
+class MySponsorshipSheet extends ConsumerWidget {
+  const MySponsorshipSheet({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (_) => const MySponsorshipSheet(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final data = ref.watch(mySponsorshipProvider);
+    final mine = data.asData?.value;
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.8),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          children: [
+            Text('내 후원 내역', style: AppTextStyles.header1.copyWith(fontSize: 20)),
+            const SizedBox(height: 4),
+            Text('이 내역은 나만 볼 수 있어요.', style: AppTextStyles.caption),
+            const SizedBox(height: 12),
+            if (mine == null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  data.isLoading ? '불러오는 중이에요…' : '서버에 연결되면 볼 수 있어요.',
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else if (mine.entries.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Text('아직 후원한 내역이 없어요.', textAlign: TextAlign.center),
+              )
+            else ...[
+              Text(
+                '기부 후원 ${mine.donationCount}번 · ${SponsorshipStatusCard.won(mine.donationWon)}원',
+                key: const Key('sponsorship-mine-total'),
+                style: AppTextStyles.agreementLabel.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              for (final e in mine.entries)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(e.isDonation ? '기부 후원' : '상금 후원'),
+                  subtitle: Text(
+                    e.createdAt == null
+                        ? ''
+                        : '${e.createdAt!.toLocal().year}.${e.createdAt!.toLocal().month}.${e.createdAt!.toLocal().day}',
+                  ),
+                  trailing: Text(
+                    '${SponsorshipStatusCard.won(e.share)} SHARE\n${SponsorshipStatusCard.won(e.won)}원',
+                    textAlign: TextAlign.right,
+                  ),
+                ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

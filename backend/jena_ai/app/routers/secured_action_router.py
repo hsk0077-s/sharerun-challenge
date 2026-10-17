@@ -56,7 +56,7 @@ from app.services.auth_service import require_uid
 from app.services import appeals, integrity, login_devices, privacy_settings
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
-from app.services import crew_membership, dia_refund
+from app.services import crew_membership, dia_refund, sponsorship_records
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -112,6 +112,18 @@ def request_refund(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.request_refund(uid=uid, request=request)
+
+
+@router.get("/sponsorship/summary")
+def sponsorship_summary(uid: str = Depends(require_uid)) -> dict:
+    """Public totals of donation sponsorship (amounts held back until enough sponsors)."""
+    return sponsorship_records.summary(service.firebase_service.db, uid)
+
+
+@router.get("/sponsorship/mine")
+def sponsorship_mine(uid: str = Depends(require_uid)) -> dict:
+    """The caller's own sponsorship entries. Nobody else's."""
+    return sponsorship_records.mine(service.firebase_service.db, uid)
 
 
 @router.get("/wallet/dia-purchases")

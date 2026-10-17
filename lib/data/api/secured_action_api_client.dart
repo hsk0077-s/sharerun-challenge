@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_exception.dart';
 import '../../features/crew/crew_emblem_status.dart';
 import '../../features/crew/crew_membership.dart';
+import '../../features/donation/sponsorship_records.dart';
 import '../../features/iap/dia_refund.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
@@ -503,6 +504,14 @@ class SecuredActionApiClient {
     final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
   }
+
+  /// 모두에게 보이는 후원 현황(참여 인원이 모자라면 금액은 비어 있다).
+  Future<SponsorshipSummary> sponsorshipSummary() async =>
+      SponsorshipSummary.fromJson(await _get('/actions/sponsorship/summary'));
+
+  /// 내 후원 내역. 다른 사람의 것은 오지 않는다.
+  Future<MySponsorship> mySponsorship() async =>
+      MySponsorship.fromJson(await _get('/actions/sponsorship/mine'));
 
   /// 환불 기간 안에 산 DIA 팩과, 지금 환불하면 얼마인지.
   Future<DiaPurchases> diaPurchases() async {

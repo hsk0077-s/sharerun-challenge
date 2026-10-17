@@ -318,3 +318,19 @@ def test_only_the_leader_can_disband() -> None:
         cm.disband(db, "u2")
     assert caught.value.status_code == 403
     assert "crews/c1" in db.store
+
+
+@pytest.mark.parametrize("name", ["", " ", "가", "가" * 21])
+def test_crew_names_must_be_two_to_twenty_characters(name: str) -> None:
+    from app.services.secured_action_service import SecuredActionService, _commit_crew_found_tx
+
+    db = _MemoryDb()
+    db.store["users/u9"] = {"wallet": {"shareBalance": 100_000}}
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    with pytest.raises(HTTPException) as caught:
+        _commit_crew_found_tx.to_wrap(
+            _MemoryTxn(), service, "u9", name, "share", "req-name-0001",
+            db.collection("users").document("u9"), db.collection("crews").document("n1"),
+        )
+    assert caught.value.status_code == 400
+    assert "crews/n1" not in db.store

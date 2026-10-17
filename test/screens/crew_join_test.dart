@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/core/theme/src_theme.dart';
 import 'package:share_run_challenge/data/api/secured_action_api_client.dart';
+import 'package:share_run_challenge/data/models/pedometer_harvest_result.dart';
+import 'package:share_run_challenge/features/crew/crew_emblem.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/crew/crew_membership.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
@@ -102,6 +104,25 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
   @override
   Future<void> transferCrew(String uid) async {
     calls.add('transfer:$uid');
+  }
+
+  String? foundName;
+
+  @override
+  Future<PedometerHarvestResult> foundCrew(
+    String name, {
+    required String payWith,
+    String? emblem,
+  }) async {
+    calls.add('found:$name:$payWith');
+    foundName = name;
+    myRole = 'leader';
+    return const PedometerHarvestResult(
+      status: 'created',
+      shareBalance: 90000,
+      diamondBalance: 0,
+      valueTokenBalance: 100,
+    );
   }
 
   @override
@@ -322,5 +343,68 @@ void main() {
     await tester.tap(find.byKey(const Key('crew-member-menu-u3')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('crew-kick-u3')), findsNothing);
+  });
+
+  testWidgets('a real crew shows its own name and no sample progress',
+      (tester) async {
+    await _pump(tester, _FakeApi(myRole: 'leader'));
+    expect(find.text('새벽러너'), findsWidgets);
+    expect(find.text('이번 주 대항전'), findsNothing);
+    expect(find.text('45/50'), findsNothing);
+    expect(find.text('12/100'), findsOneWidget);
+    expect(find.text('321km'), findsOneWidget);
+  });
+
+  testWidgets('entering the room names the real crew in the notice',
+      (tester) async {
+    await _pump(tester, _FakeApi(myRole: 'leader'));
+    await tester.tap(find.text('크루 대항 챌린지 룸 입장하기'));
+    await tester.pump();
+    expect(find.textContaining('새벽러너 챌린지 룸으로 이동합니다'), findsOneWidget);
+    expect(find.textContaining('인천 논현'), findsNothing);
+  });
+
+  testWidgets('creating a crew asks for its name and sends exactly that',
+      (tester) async {
+    final api = _FakeApi();
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루 만들기').first);
+    await tester.tap(find.text('크루 만들기').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.tap(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.pumpAndSettle();
+
+    // 이름 창: 두 글자가 되기 전에는 다음으로 갈 수 없다.
+    FilledButton ok() =>
+        tester.widget<FilledButton>(find.byKey(const Key('crew-name-ok')));
+    expect(ok().onPressed, isNull);
+    await tester.enterText(find.byKey(const Key('crew-name-field')), '가');
+    await tester.pump();
+    expect(ok().onPressed, isNull);
+    await tester.enterText(find.byKey(const Key('crew-name-field')), '  한강 새벽러너  ');
+    await tester.pump();
+    expect(ok().onPressed, isNotNull);
+    await tester.tap(find.byKey(const Key('crew-name-ok')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('50 DIA'));
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('found:한강 새벽러너:dia'));
+    expect(api.foundName, isNot(contains('인천 논현')));
+  });
+
+  testWidgets('cancelling the name creates nothing', (tester) async {
+    final api = _FakeApi();
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루 만들기').first);
+    await tester.tap(find.text('크루 만들기').first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.tap(find.byKey(CrewEmblemPicker.doneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(api.calls.where((c) => c.startsWith('found')), isEmpty);
   });
 }

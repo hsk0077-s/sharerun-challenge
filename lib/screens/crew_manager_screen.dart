@@ -292,14 +292,16 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                       _ManagerWhiteCard(
                         child: Row(
                           children: [
-                            Text(
-                              AppStrings.crewManagerProfileLabel,
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                            Expanded(
+                              child: Text(
+                                AppStrings.crewManagerProfileLabel,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.agreementLabel.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                            const Spacer(),
                             const Text('💎', style: TextStyle(fontSize: 16)),
                             const SizedBox(width: 8),
                             _RoyalBlueChip(

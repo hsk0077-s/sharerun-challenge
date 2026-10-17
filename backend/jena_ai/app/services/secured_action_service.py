@@ -3167,7 +3167,7 @@ class SecuredActionService:
         emblem: str = DEFAULT_CREW_EMBLEM,
     ) -> SecuredActionResult:
         trimmed = name.strip()
-        if not trimmed or len(trimmed) > 80:
+        if len(trimmed) < 2 or len(trimmed) > 20:
             raise HTTPException(status_code=400, detail="Invalid crew name.")
         prices = read_item_prices(self.firebase_service.db, transaction)
         dia_cost = int(prices[CREW_CREATE_DIA_ID])

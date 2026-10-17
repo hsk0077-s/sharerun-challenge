@@ -109,15 +109,19 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       ref.read(crewEmblemProvider),
     );
     if (emblem == null || !mounted) return;
+    final crewName = await showDialog<String>(
+      context: context,
+      builder: (_) => const _CrewNameDialog(),
+    );
+    if (crewName == null || !mounted) return;
     final payWith = await _chooseCrewPayment();
     if (payWith != 'dia' && payWith != 'share') return;
     if (!mounted) return;
     setState(() => _isSubmitting = true);
 
     try {
-      final uid = ref.read(authStateChangesProvider).asData?.value?.uid;
-      final useRemote =
-          !AppEnv.useLocalMockData && uid != null && uid.isNotEmpty;
+      final api = ref.read(crewApiProvider);
+      final useRemote = api != null;
       final paidWithDia = payWith == 'dia';
 
       if (!useRemote) {
@@ -137,8 +141,8 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
           ref.read(walletProvider.notifier).subtractShare(_createCrewShareCost);
         }
       } else {
-        final result = await ref.read(securedActionApiClientProvider).foundCrew(
-              AppStrings.runningCrewMyCrewName,
+        final result = await api!.foundCrew(
+              crewName,
               payWith: payWith!,
               emblem: emblem.code,
             );
@@ -656,12 +660,15 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                                   : '${_format(mine.crew.totalDistanceKm.round())}km',
                               label: '누적 거리',
                             ),
-                            const SizedBox(width: 10),
-                            const _CrewStat(
-                              value: AppStrings.runningCrewProgressValue,
-                              label: '이번 주 대항전',
-                              highlight: true,
-                            ),
+                            // 대항전 진행률은 아직 서버 값이 없어서 샘플 크루에만 보인다.
+                            if (mine == null) ...[
+                              const SizedBox(width: 10),
+                              const _CrewStat(
+                                value: AppStrings.runningCrewProgressValue,
+                                label: '이번 주 대항전',
+                                highlight: true,
+                              ),
+                            ],
                           ],
                         ),
                         const SizedBox(height: 6),
@@ -718,32 +725,34 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                               '색 ${CrewEmblem.paletteColors.length}가지',
                           onTap: _onChangeEmblem,
                         ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                AppStrings.runningCrewProgressLabel,
-                                style: storeText(14, c.ink, w: FontWeight.w700),
+                        if (mine == null) ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  AppStrings.runningCrewProgressLabel,
+                                  style: storeText(14, c.ink, w: FontWeight.w700),
+                                ),
                               ),
-                            ),
-                            Text(
-                              AppStrings.runningCrewProgressValue,
-                              style:
-                                  storeText(14, c.primary, w: FontWeight.w900),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: LinearProgressIndicator(
-                            value: _completionRate,
-                            minHeight: 8,
-                            backgroundColor: c.outline,
-                            color: c.primary,
+                              Text(
+                                AppStrings.runningCrewProgressValue,
+                                style:
+                                    storeText(14, c.primary, w: FontWeight.w900),
+                              ),
+                            ],
                           ),
-                        ),
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: _completionRate,
+                              minHeight: 8,
+                              backgroundColor: c.outline,
+                              color: c.primary,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 24),
                         const StoreSectionLabel('다른 크루 찾기'),
                         _CrewSearchPill(onTap: _onSearch),
@@ -808,7 +817,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
               child: StorePillButton(
                 label: AppStrings.runningCrewEnterRoom,
-                onPressed: () => _onEnterRoom(),
+                onPressed: () => _onEnterRoom(crewName: mine?.crew.name),
               ),
             ),
           ),
@@ -1522,6 +1531,65 @@ class _CrewRequestsSheet extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+/// 크루 이름을 묻는다. 2~20자.
+class _CrewNameDialog extends StatefulWidget {
+  const _CrewNameDialog();
+
+  static const fieldKey = Key('crew-name-field');
+  static const okKey = Key('crew-name-ok');
+
+  @override
+  State<_CrewNameDialog> createState() => _CrewNameDialogState();
+}
+
+class _CrewNameDialogState extends State<_CrewNameDialog> {
+  final _controller = TextEditingController();
+  var _closed = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String get _name => _controller.text.trim();
+  bool get _valid => _name.length >= 2 && _name.length <= 20;
+
+  void _close(String? value) {
+    if (_closed) return;
+    _closed = true;
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('크루 이름'),
+      content: TextField(
+        key: _CrewNameDialog.fieldKey,
+        controller: _controller,
+        autofocus: true,
+        maxLength: 20,
+        decoration: const InputDecoration(
+          hintText: '2~20자로 지어 주세요',
+          border: OutlineInputBorder(),
+        ),
+        onChanged: (_) => setState(() {}),
+        onSubmitted: (_) => _valid ? _close(_name) : null,
+      ),
+      actions: [
+        TextButton(onPressed: () => _close(null), child: const Text('취소')),
+        FilledButton(
+          key: _CrewNameDialog.okKey,
+          onPressed: _valid ? () => _close(_name) : null,
+          child: const Text('다음'),
+        ),
+      ],
     );
   }
 }

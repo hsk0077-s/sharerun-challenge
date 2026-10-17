@@ -6,48 +6,107 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/theme.dart';
 import '../shop/widgets/store_look.dart';
 
-/// 마이 탭 맨 위 마을 배경. 기본은 코드로 그린 풍경이고,
-/// `assets/images/villages/` 에 그림 파일을 넣으면 자동으로 고를 수 있는 목록에 올라온다.
+/// 마이 탭 맨 위 마을 배경. 그림은 `assets/images/villages/` 에 `village-<이름>.jpg` 로 넣고,
+/// 고르는 창에 쓰는 작은 그림은 `thumbs/village-<이름>-thumb.jpg` 로 넣는다.
+/// 새 그림을 넣으면 코드를 고치지 않아도 목록에 올라온다(이름만 아래 표에 없으면 "마을 N").
+/// 마지막에는 항상 코드로 그린 기본 풍경이 있다.
 @immutable
 class VillageScene {
-  const VillageScene({required this.id, required this.nameKo, this.asset});
+  const VillageScene({
+    required this.id,
+    required this.nameKo,
+    this.asset,
+    this.thumb,
+  });
 
   final String id;
   final String nameKo;
 
   /// null 이면 코드로 그린 기본 풍경.
   final String? asset;
+
+  /// 고르는 창에서 쓰는 작은 그림. 없으면 [asset]을 줄여서 쓴다.
+  final String? thumb;
 }
 
+/// 코드로 그린 풍경. 그림 파일이 하나도 없을 때의 바탕이기도 하다.
 const defaultVillageScene = VillageScene(id: 'default', nameKo: '기본 마을');
 
+/// 처음 보이는 마을(디자인 문서의 "무료 기본"). 그림이 없으면 코드로 그린 풍경.
+const startVillageId = 'spring-park';
+
 const villageAssetDir = 'assets/images/villages/';
+const villageThumbDir = 'assets/images/villages/thumbs/';
 
 const _imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
 
-/// 에셋 목록에서 마을 그림만 골라 이름순으로 장면 목록을 만든다. 맨 앞은 항상 기본 마을.
-List<VillageScene> villageScenesFromAssets(Iterable<String> assetKeys) {
-  final files = [
-    for (final key in assetKeys)
-      if (key.startsWith(villageAssetDir) &&
-          _imageExtensions.any(key.toLowerCase().endsWith))
-        key,
-  ]..sort();
-  return [
-    defaultVillageScene,
-    for (var i = 0; i < files.length; i++)
-      VillageScene(
-        id: _idOf(files[i]),
-        nameKo: '마을 ${i + 1}',
-        asset: files[i],
-      ),
-  ];
+/// 디자인 문서 순서와 한글 이름.
+const _knownVillages = <String, String>{
+  'spring-park': '봄 공원',
+  'seaside': '바닷가',
+  'night-city': '밤 도시',
+  'snow-village': '눈 마을',
+  'autumn-forest': '가을 숲',
+  'festival': '축제의 밤',
+  'aurora-lake': '오로라 호수',
+  'sky-island': '하늘섬',
+};
+
+bool _isImage(String key) => _imageExtensions.any(key.toLowerCase().endsWith);
+
+String _stem(String key, String dir) {
+  final name = key.substring(dir.length);
+  final dot = name.lastIndexOf('.');
+  var stem = dot < 0 ? name : name.substring(0, dot);
+  if (stem.startsWith('village-')) stem = stem.substring('village-'.length);
+  return stem;
 }
 
-String _idOf(String key) {
-  final name = key.substring(villageAssetDir.length);
-  final dot = name.lastIndexOf('.');
-  return dot < 0 ? name : name.substring(0, dot);
+/// 에셋 목록에서 마을 그림만 골라 장면 목록을 만든다.
+/// 아는 마을은 문서 순서대로, 모르는 마을은 이름순으로 뒤에 붙고, 맨 끝은 기본 풍경이다.
+List<VillageScene> villageScenesFromAssets(Iterable<String> assetKeys) {
+  final keys = assetKeys.toList();
+  final full = <String, String>{}; // id -> 큰 그림
+  for (final key in keys) {
+    if (!key.startsWith(villageAssetDir) || !_isImage(key)) continue;
+    final rest = key.substring(villageAssetDir.length);
+    if (rest.contains('/')) continue; // thumbs/ 같은 아래 폴더는 건너뛴다
+    full[_stem(key, villageAssetDir)] = key;
+  }
+  final thumbs = <String, String>{};
+  for (final key in keys) {
+    if (!key.startsWith(villageThumbDir) || !_isImage(key)) continue;
+    var id = _stem(key, villageThumbDir);
+    if (id.endsWith('-thumb'))
+      id = id.substring(0, id.length - '-thumb'.length);
+    thumbs[id] = key;
+  }
+  final known = [
+    for (final id in _knownVillages.keys)
+      if (full.containsKey(id)) id,
+  ];
+  final others = [
+    for (final id in full.keys)
+      if (!_knownVillages.containsKey(id)) id,
+  ]..sort();
+  var extra = 0;
+  return [
+    for (final id in known)
+      VillageScene(
+        id: id,
+        nameKo: _knownVillages[id]!,
+        asset: full[id],
+        thumb: thumbs[id],
+      ),
+    for (final id in others)
+      VillageScene(
+        id: id,
+        nameKo: '마을 ${++extra}',
+        asset: full[id],
+        thumb: thumbs[id],
+      ),
+    defaultVillageScene,
+  ];
 }
 
 final villageScenesProvider = FutureProvider<List<VillageScene>>((ref) async {
@@ -61,12 +120,12 @@ final villageScenesProvider = FutureProvider<List<VillageScene>>((ref) async {
 
 const _prefsKey = 'village_scene_v1';
 
-/// 고른 마을의 id. 이 폰에만 저장한다.
+/// 사용자가 고른 마을 id. 아직 안 골랐으면 빈 문자열. 이 폰에만 저장한다.
 class VillageSceneIdNotifier extends Notifier<String> {
   @override
   String build() {
     _load();
-    return defaultVillageScene.id;
+    return '';
   }
 
   Future<void> _load() async {
@@ -75,7 +134,7 @@ class VillageSceneIdNotifier extends Notifier<String> {
       final saved = prefs.getString(_prefsKey);
       if (saved != null && ref.mounted) state = saved;
     } catch (_) {
-      // 저장소를 못 읽으면 기본 마을을 쓴다.
+      // 저장소를 못 읽으면 처음 마을을 쓴다.
     }
   }
 
@@ -91,13 +150,16 @@ class VillageSceneIdNotifier extends Notifier<String> {
 final villageSceneIdProvider = NotifierProvider<VillageSceneIdNotifier, String>(
     VillageSceneIdNotifier.new);
 
-/// 지금 보여 줄 마을. 고른 그림이 없어졌으면 기본 마을로 돌아간다.
+/// 지금 보여 줄 마을. 고른 적이 없거나 고른 그림이 없어졌으면 처음 마을(봄 공원),
+/// 그것도 없으면 코드로 그린 기본 풍경.
 final villageSceneProvider = Provider<VillageScene>((ref) {
   final id = ref.watch(villageSceneIdProvider);
   final scenes = ref.watch(villageScenesProvider).asData?.value ??
       const [defaultVillageScene];
-  for (final scene in scenes) {
-    if (scene.id == id) return scene;
+  for (final wanted in [id, startVillageId]) {
+    for (final scene in scenes) {
+      if (scene.id == wanted) return scene;
+    }
   }
   return defaultVillageScene;
 });
@@ -221,8 +283,10 @@ class _SceneTile extends StatelessWidget {
               child: scene.asset == null
                   ? const _DefaultThumb()
                   : Image.asset(
-                      scene.asset!,
+                      scene.thumb ?? scene.asset!,
                       fit: BoxFit.cover,
+                      // 마이 화면 위 풍경과 같은 부분(아래쪽 마을)이 보이게 한다.
+                      alignment: Alignment.bottomCenter,
                       cacheWidth: 400,
                     ),
             ),

@@ -43,6 +43,7 @@ class MyVillageHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final fg = scene.asset == null ? AppColors.nightOnLime : Colors.white;
     final friends = friendsOf(tier.animal);
     final left = friends.take(2).toList();
     final right = friends.skip(2).take(2).toList();
@@ -64,11 +65,28 @@ class MyVillageHero extends StatelessWidget {
                   const BorderRadius.vertical(bottom: Radius.circular(40)),
               child: scene.asset == null
                   ? const CustomPaint(painter: VillagePainter())
-                  : Image.asset(
-                      scene.asset!,
-                      key: Key('my-village-bg-${scene.id}'),
-                      fit: BoxFit.cover,
-                      alignment: Alignment.bottomCenter,
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // 세로로 긴 그림이라 길과 건물이 있는 아래쪽을 보여 준다.
+                        Image.asset(
+                          scene.asset!,
+                          key: Key('my-village-bg-${scene.id}'),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.bottomCenter,
+                          cacheWidth: 1080,
+                        ),
+                        // 위쪽 글자와 버튼이 어떤 그림에서도 읽히게 살짝 어둡게 한다.
+                        const DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.center,
+                              colors: [Color(0x99000000), Color(0x00000000)],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),
@@ -106,7 +124,7 @@ class MyVillageHero extends StatelessWidget {
                     Text(
                       'MY VILLAGE',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: AppColors.nightOnLime,
+                            color: fg,
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 2.2,
@@ -118,9 +136,9 @@ class MyVillageHero extends StatelessWidget {
                         key: const Key('my-village-change'),
                         onPressed: onChangeVillage,
                         tooltip: '마을 바꾸기',
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.landscape_outlined,
-                          color: AppColors.nightOnLime,
+                          color: fg,
                           size: 22,
                         ),
                       ),
@@ -128,9 +146,9 @@ class MyVillageHero extends StatelessWidget {
                       key: const Key('my-page-settings'),
                       onPressed: onSettings,
                       tooltip: AppStrings.myPageSettings,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.settings_outlined,
-                        color: AppColors.nightOnLime,
+                        color: fg,
                         size: 22,
                       ),
                     ),

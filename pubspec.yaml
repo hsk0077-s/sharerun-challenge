@@ -73,6 +73,7 @@ flutter:
     - assets/images/snailbot/
     - assets/images/crew_glyphs/
     - assets/images/villages/
+    - assets/images/villages/thumbs/
     - assets/images/kakao/
     - assets/images/naver/
     - assets/images/accessories/back/

@@ -16,6 +16,7 @@ import 'package:share_run_challenge/features/pedometer/kst_calendar.dart';
 import 'package:share_run_challenge/features/profile/my_page_activity_stats.dart';
 import 'package:share_run_challenge/features/tournaments/providers/local_joined_ids_provider.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:share_run_challenge/features/profile/village_scene.dart';
 import 'package:share_run_challenge/screens/challenge_lobby_screen.dart';
 import 'package:share_run_challenge/screens/my_tournaments_screen.dart';
 import 'package:share_run_challenge/screens/onboarding_my_page_screen.dart';
@@ -75,6 +76,10 @@ Widget _scopedApp({
           for (final entry in stepsByDate.entries)
             AccountDayMetric(dayKey: entry.key, steps: entry.value),
         ]),
+      ),
+      // 마을 그림을 읽는 시점에 따라 화면이 달라지지 않게 코드로 그린 풍경으로 고정한다.
+      villageScenesProvider.overrideWith(
+        (ref) async => const [defaultVillageScene],
       ),
       tournamentRoomsProvider.overrideWith(
         (ref) => Stream<List<TournamentModel>>.value(const [_room]),

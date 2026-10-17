@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
 import '../../features/crew/crew_emblem_status.dart';
+import '../../features/crew/crew_membership.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
@@ -479,6 +480,38 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> changeCrewEmblem(String emblem) async {
     final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// 크루 목록·검색. [query]가 비면 인원이 많은 크루부터.
+  Future<List<CrewSummary>> listCrews(String query) async {
+    final path = query.trim().isEmpty
+        ? '/actions/crew/list'
+        : '/actions/crew/list?query=${Uri.encodeQueryComponent(query.trim())}';
+    final json = await _get(path);
+    final crews = json['crews'];
+    return [
+      if (crews is List)
+        for (final c in crews)
+          if (c is Map<String, dynamic>) CrewSummary.fromJson(c),
+    ];
+  }
+
+  /// 내 크루와 내 역할, 크루원. 크루가 없으면 null.
+  Future<MyCrew?> myCrew() async => MyCrew.fromJson(await _get('/actions/crew/mine'));
+
+  /// 크루에 가입한다. 이미 다른 크루에 있거나 가득 차면 409.
+  Future<void> joinCrew(String crewId) async {
+    await _post('/actions/crew/join', {'crew_id': crewId});
+  }
+
+  /// 크루에서 나간다. 크루장은 나갈 수 없다(400).
+  Future<void> leaveCrew() async {
+    await _post('/actions/crew/leave', const {});
+  }
+
+  /// 크루장만: 크루원을 부크루장(`sub`)으로 올리거나 일반(`member`)으로 돌린다.
+  Future<void> setCrewRole(String uid, String role) async {
+    await _post('/actions/crew/role', {'uid': uid, 'role': role});
   }
 
   /// 엠블럼 상태(해금한 테두리·진행도·산 유료 엠블럼). 크루가 없으면 404.

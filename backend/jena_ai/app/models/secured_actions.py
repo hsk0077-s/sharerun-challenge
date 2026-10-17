@@ -295,3 +295,12 @@ class AppealRequest(BaseModel):
 
 class IntegrityReportRequest(BaseModel):
     token: str = Field(min_length=1, max_length=20_000)
+
+
+class CrewJoinRequest(BaseModel):
+    crew_id: str = Field(min_length=1, max_length=64)
+
+
+class CrewRoleRequest(BaseModel):
+    uid: str = Field(min_length=1, max_length=128)
+    role: str = Field(pattern="^(sub|member)$")

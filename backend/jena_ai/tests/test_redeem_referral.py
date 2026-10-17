@@ -50,6 +50,9 @@ class _MemoryCollection:
     def where(self, field: str, op: str, value):
         return _MemoryQuery(self._store, self._name, [(field, op, value)])
 
+    def limit(self, count: int):
+        return _MemoryQuery(self._store, self._name).limit(count)
+
     def get(self, transaction=None):
         return _child_snapshots(self._store, self._name)
 

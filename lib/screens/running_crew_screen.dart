@@ -14,6 +14,7 @@ import '../core/widgets/src_exit_guard.dart';
 import '../data/firebase/share_spend_transaction.dart';
 import '../features/crew/crew_emblem.dart';
 import '../features/crew/crew_emblem_status.dart';
+import '../features/crew/crew_membership.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/src_wallet_payment_system.dart';
@@ -150,6 +151,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
 
       if (!mounted) return;
       await ref.read(crewEmblemProvider.notifier).choose(emblem);
+      _refreshCrews();
       if (!mounted) return;
       _toast(
         paidWithDia
@@ -316,11 +318,117 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       }
     }
     await ref.read(crewEmblemProvider.notifier).choose(picked);
+    _refreshCrews();
     if (!mounted) return;
     _toast(
       useRemote && !savedOnServer
           ? '이 폰에만 저장했어요. 서버에 크루가 생기면 함께 저장돼요.'
           : '크루 엠블럼을 바꿨어요.',
+    );
+  }
+
+  void _refreshCrews() {
+    ref.invalidate(myCrewProvider);
+    ref.invalidate(crewListProvider);
+  }
+
+  Future<bool> _confirm(String title, String body, String yes) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(yes),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  Future<void> _onJoin(CrewSummary crew) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    if (!await _confirm('크루 가입', '"${crew.name}" 크루에 가입할까요?', '가입')) return;
+    try {
+      await api.joinCrew(crew.id);
+      _refreshCrews();
+      if (mounted) _toast('"${crew.name}" 크루에 가입했어요.');
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(
+        error.statusCode == 409
+            ? '이미 다른 크루에 있거나 인원이 가득 찼어요.'
+            : '가입하지 못했어요. 잠시 뒤 다시 해 주세요.',
+      );
+    } catch (_) {
+      if (mounted) _toast('가입하지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onLeave(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    if (!await _confirm(
+      '크루 나가기',
+      '"${mine.crew.name}" 크루에서 나갈까요? 다시 가입할 수 있어요.',
+      '나가기',
+    )) {
+      return;
+    }
+    try {
+      await api.leaveCrew();
+      _refreshCrews();
+      if (mounted) _toast('크루에서 나왔어요.');
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(
+        error.statusCode == 400
+            ? '크루장은 나갈 수 없어요.'
+            : '나가지 못했어요. 잠시 뒤 다시 해 주세요.',
+      );
+    } catch (_) {
+      if (mounted) _toast('나가지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onShowMembers(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.srcTokens.colors.canvas,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) => _CrewMembersSheet(
+        mine: mine,
+        onRole: api == null || !mine.isLeader
+            ? null
+            : (member, role) async {
+                try {
+                  await api.setCrewRole(member.uid, role);
+                  _refreshCrews();
+                  if (ctx.mounted) Navigator.of(ctx).pop();
+                  if (mounted) {
+                    _toast(
+                      role == 'sub'
+                          ? '${member.nickname}님을 부크루장으로 했어요.'
+                          : '${member.nickname}님을 크루원으로 돌렸어요.',
+                    );
+                  }
+                } catch (_) {
+                  if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+                }
+              },
+      ),
     );
   }
 
@@ -336,7 +444,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   Widget build(BuildContext context) {
     final wallet = ref.watch(walletProvider);
     final c = context.srcTokens.colors;
-    final emblem = ref.watch(crewEmblemProvider);
+    final localEmblem = ref.watch(crewEmblemProvider);
+    final api = ref.watch(crewApiProvider);
+    final mine = ref.watch(myCrewProvider).asData?.value;
+    // 서버에 내 크루가 있으면 서버 값을, 없으면 이 폰에 저장한 값을 쓴다.
+    final emblem = (mine == null ? null : CrewEmblem.parse(mine.crew.emblem)) ??
+        localEmblem;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
     final searching = _searchQuery.isNotEmpty;
     final scaffold = Scaffold(
@@ -352,6 +465,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                 children: [
                   _CrewPhotoHeader(
                     emblem: emblem,
+                    crewName: mine?.crew.name ?? AppStrings.runningCrewMyCrewName,
                     onEmblem: _onChangeEmblem,
                     onHallOfFame: _onOpenHallOfFame,
                     onBack: searching || Navigator.of(context).canPop()
@@ -363,13 +477,23 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            _CrewStat(value: '45/50', label: '크루원'),
-                            SizedBox(width: 10),
-                            _CrewStat(value: '3,240km', label: '누적 거리'),
-                            SizedBox(width: 10),
                             _CrewStat(
+                              value: mine == null
+                                  ? '45/50'
+                                  : '${mine.crew.memberCount}/${mine.crew.maxMembers}',
+                              label: '크루원',
+                            ),
+                            const SizedBox(width: 10),
+                            _CrewStat(
+                              value: mine == null
+                                  ? '3,240km'
+                                  : '${_format(mine.crew.totalDistanceKm.round())}km',
+                              label: '누적 거리',
+                            ),
+                            const SizedBox(width: 10),
+                            const _CrewStat(
                               value: AppStrings.runningCrewProgressValue,
                               label: '이번 주 대항전',
                               highlight: true,
@@ -383,6 +507,20 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                           subtitle: '공지 · 크루원 · 혜택 선물',
                           onTap: _onOpenCrewManager,
                         ),
+                        if (mine != null)
+                          _CrewActionLine(
+                            index: '··',
+                            title: '크루원 보기',
+                            subtitle: '${mine.crew.memberCount}명 · 내 역할 ${_roleLabel(mine.role)}',
+                            onTap: () => _onShowMembers(mine),
+                          ),
+                        if (mine != null && mine.canLeave)
+                          _CrewActionLine(
+                            index: '··',
+                            title: '크루 나가기',
+                            subtitle: '다시 가입할 수 있어요',
+                            onTap: () => _onLeave(mine),
+                          ),
                         _CrewActionLine(
                           index: '02',
                           title: '엠블럼 바꾸기',
@@ -420,7 +558,21 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         const SizedBox(height: 24),
                         const StoreSectionLabel('다른 크루 찾기'),
                         _CrewSearchPill(onTap: _onSearch),
-                        if (searching) ...[
+                        if (api != null) ...[
+                          if (searching)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Text(
+                                '검색: "$_searchQuery"',
+                                style: storeText(12, c.muted),
+                              ),
+                            ),
+                          _RemoteCrewList(
+                            query: _searchQuery.trim(),
+                            canJoin: mine == null,
+                            onJoin: _onJoin,
+                          ),
+                        ] else if (searching) ...[
                           const SizedBox(height: 10),
                           Text(
                             '검색: "$_searchQuery"',
@@ -442,10 +594,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             ),
                         ],
                         const SizedBox(height: 16),
-                        _CreateCrewTile(
-                          busy: _isSubmitting,
-                          onTap: _isSubmitting ? null : _onCreateCrew,
-                        ),
+                        if (mine == null)
+                          _CreateCrewTile(
+                            busy: _isSubmitting,
+                            onTap: _isSubmitting ? null : _onCreateCrew,
+                          ),
                         const SizedBox(height: 6),
                         Text(
                           '보유 SHARE ${_format(wallet.shareBalance)}',
@@ -485,6 +638,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
           )
         : scaffold;
   }
+
+  String _roleLabel(String role) => switch (role) {
+        'leader' => '크루장',
+        'sub' => '부크루장',
+        _ => '크루원',
+      };
 
   String _format(int amount) {
     return amount.toString().replaceAllMapped(
@@ -558,12 +717,14 @@ class _CrewSearchDialogState extends State<_CrewSearchDialog> {
 class _CrewPhotoHeader extends StatelessWidget {
   const _CrewPhotoHeader({
     required this.emblem,
+    required this.crewName,
     required this.onEmblem,
     required this.onHallOfFame,
     this.onBack,
   });
 
   final CrewEmblem emblem;
+  final String crewName;
   final VoidCallback onEmblem;
   final VoidCallback onHallOfFame;
   final VoidCallback? onBack;
@@ -681,7 +842,7 @@ class _CrewPhotoHeader extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        AppStrings.runningCrewMyCrewName,
+                        crewName,
                         style: storeText(24, Colors.white, w: FontWeight.w900),
                       ),
                     ],
@@ -914,6 +1075,138 @@ class _CreateCrewTile extends StatelessWidget {
                     )
                   : Icon(Icons.add_rounded, color: c.onPrimary, size: 28),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// 서버에서 받은 크루 목록. 내가 크루가 없으면 가입 버튼이 붙는다.
+class _RemoteCrewList extends ConsumerWidget {
+  const _RemoteCrewList({
+    required this.query,
+    required this.canJoin,
+    required this.onJoin,
+  });
+
+  final String query;
+  final bool canJoin;
+  final Future<void> Function(CrewSummary crew) onJoin;
+
+  static Key joinKey(String id) => Key('crew-join-$id');
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = context.srcTokens.colors;
+    final crews = ref.watch(crewListProvider(query)).asData?.value ?? const [];
+    if (crews.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Text(
+          query.isEmpty ? '아직 만들어진 크루가 없어요.' : '검색 결과가 없습니다.',
+          textAlign: TextAlign.center,
+          style: storeText(14, c.muted),
+        ),
+      );
+    }
+    return Column(
+      children: [
+        for (final crew in crews)
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: c.surface,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: c.outline),
+              ),
+              child: Row(
+                children: [
+                  CrewEmblemBadge(
+                    emblem: CrewEmblem.parse(crew.emblem) ?? CrewEmblem.fallback,
+                    size: 48,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          crew.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: storeText(15, c.ink, w: FontWeight.w800),
+                        ),
+                        Text(
+                          '${crew.memberCount}/${crew.maxMembers}명',
+                          style: storeText(12, c.muted),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (canJoin)
+                    FilledButton(
+                      key: joinKey(crew.id),
+                      onPressed: crew.isFull ? null : () => onJoin(crew),
+                      child: Text(crew.isFull ? '가득 참' : '가입'),
+                    ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// 크루원 목록. 크루장이면 크루원을 부크루장으로 올리거나 되돌릴 수 있다.
+class _CrewMembersSheet extends StatelessWidget {
+  const _CrewMembersSheet({required this.mine, required this.onRole});
+
+  final MyCrew mine;
+  final Future<void> Function(CrewMember member, String role)? onRole;
+
+  static Key roleKey(String uid) => Key('crew-role-$uid');
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    String label(String role) => switch (role) {
+          'leader' => '크루장',
+          'sub' => '부크루장',
+          _ => '크루원',
+        };
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.75,
+        ),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          children: [
+            Text(
+              '${mine.crew.name} · ${mine.members.length}명',
+              style: storeText(20, c.ink, w: FontWeight.w900),
+            ),
+            const SizedBox(height: 12),
+            for (final m in mine.members)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(m.nickname, style: storeText(15, c.ink, w: FontWeight.w700)),
+                subtitle: Text(label(m.role), style: storeText(12, c.muted)),
+                trailing: onRole == null || m.role == 'leader'
+                    ? null
+                    : TextButton(
+                        key: roleKey(m.uid),
+                        onPressed: () =>
+                            onRole!(m, m.role == 'sub' ? 'member' : 'sub'),
+                        child: Text(m.role == 'sub' ? '부크루장 해제' : '부크루장으로'),
+                      ),
+              ),
           ],
         ),
       ),

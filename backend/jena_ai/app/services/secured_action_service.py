@@ -3167,6 +3167,8 @@ class SecuredActionService:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
+        if member_crew_id(user_snapshot.to_dict() or {}):
+            raise HTTPException(status_code=409, detail="Already in a crew.")
         wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
         share = int(wallet.get("shareBalance") or 0)
         diamonds = int(wallet.get("diamondBalance") or 0)
@@ -3209,6 +3211,10 @@ class SecuredActionService:
                 "diaCost": dia_charged,
                 "createdAt": SERVER_TIMESTAMP,
             },
+        )
+        transaction.set(
+            crew_ref.collection("members").document(uid),
+            {"uid": uid, "joinedAt": SERVER_TIMESTAMP},
         )
         transaction.set(
             ledger_ref,

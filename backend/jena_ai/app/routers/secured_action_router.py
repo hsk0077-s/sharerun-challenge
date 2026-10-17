@@ -23,6 +23,8 @@ from app.models.secured_actions import (
     CreateChallengeRoomRequest,
     CreateChallengeRoomResult,
     CrewEmblemPurchaseRequest,
+    CrewJoinRequest,
+    CrewRoleRequest,
     CrewEmblemRequest,
     CrewEmblemStatus,
     CrewFoundRequest,
@@ -48,6 +50,7 @@ from app.services.auth_service import require_uid
 from app.services import appeals, integrity, login_devices, privacy_settings
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
+from app.services import crew_membership
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -222,6 +225,31 @@ def change_crew_emblem(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.change_crew_emblem(uid=uid, emblem=request.emblem)
+
+
+@router.get("/crew/list")
+def list_crews(query: str = "", uid: str = Depends(require_uid)) -> dict:
+    return {"crews": crew_membership.list_crews(service.firebase_service.db, query[:40])}
+
+
+@router.get("/crew/mine")
+def my_crew(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.my_crew(service.firebase_service.db, uid)
+
+
+@router.post("/crew/join")
+def join_crew(request: CrewJoinRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.join(service.firebase_service.db, uid, request.crew_id)
+
+
+@router.post("/crew/leave")
+def leave_crew(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.leave(service.firebase_service.db, uid)
+
+
+@router.post("/crew/role")
+def set_crew_role(request: CrewRoleRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.set_role(service.firebase_service.db, uid, request.uid, request.role)
 
 
 @router.get("/crew/emblem/status", response_model=CrewEmblemStatus)

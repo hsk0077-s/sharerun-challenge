@@ -1,0 +1,30 @@
+import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
+import { readFileSync } from 'fs';
+import { collectionGroup, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
+const env = await initializeTestEnvironment({ projectId: 'demo-sr', firestore: { rules: readFileSync(new URL('../../firestore.rules', import.meta.url),'utf8'), host:'127.0.0.1', port: 8085 }});
+await env.withSecurityRulesDisabled(async (ctx) => {
+  const db = ctx.firestore();
+  await setDoc(doc(db,'promotionLedger/t1__a'), {uid:'a', points:10});
+  await setDoc(doc(db,'promotionLedger/t1__b'), {uid:'b', points:5});
+  await setDoc(doc(db,'tournaments/t1/participants/a'), {uid:'a'});
+  await setDoc(doc(db,'tournaments/t1/participants/b'), {uid:'b'});
+  await setDoc(doc(db,'users/a'), {nickname:'a', gradeRank:2, wallet:{shareBalance:1}});
+});
+const a = env.authenticatedContext('a').firestore();
+const anon = env.unauthenticatedContext().firestore();
+const res = [];
+async function t(name, p){ try{ await p; res.push('PASS '+name);}catch(e){res.push('FAIL '+name+' '+String(e.message).slice(0,80));} }
+await t('owner reads own ledger', assertSucceeds(getDoc(doc(a,'promotionLedger/t1__a'))));
+await t('owner cannot read others ledger', assertFails(getDoc(doc(a,'promotionLedger/t1__b'))));
+await t('anon cannot read ledger', assertFails(getDoc(doc(anon,'promotionLedger/t1__a'))));
+await t('owner cannot write ledger', assertFails(setDoc(doc(a,'promotionLedger/t1__a'), {uid:'a', points:999})));
+await t('owner cannot create ledger', assertFails(setDoc(doc(a,'promotionLedger/new'), {uid:'a', points:1})));
+await t('user cannot raise own gradeRank', assertFails(updateDoc(doc(a,'users/a'), {gradeRank: 25})));
+await t('user cannot write promotion points', assertFails(updateDoc(doc(a,'users/a'), {promotion:{points:999}})));
+await t('user cannot edit ticket inventory', assertFails(setDoc(doc(a,'users/a/shopInventory/challenge_ticket'), {quantity:99})));
+await t('user cannot write participant challengedUp', assertFails(setDoc(doc(a,'tournaments/t1/participants/a'), {challengedUp:true, verifiedFinish:true})));
+await t('owner lists own participations by collection group', assertSucceeds(getDocs(query(collectionGroup(a,'participants'), where('uid','==','a')))));
+await t('owner cannot list others participations by collection group', assertFails(getDocs(query(collectionGroup(a,'participants'), where('uid','==','b')))));
+await t('anon cannot list participations by collection group', assertFails(getDocs(query(collectionGroup(anon,'participants'), where('uid','==','a')))));
+console.log(res.join('\n'));
+await env.cleanup();

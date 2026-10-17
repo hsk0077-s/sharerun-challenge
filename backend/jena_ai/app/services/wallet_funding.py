@@ -18,6 +18,7 @@ def move_currency(
     paid_credit: bool = False,
     paid_first: bool = False,
     paid_only: bool = False,
+    free_only: bool = False,
     for_exchange: bool = False,
     lock_until: datetime | None = None,
     now: datetime | None = None,
@@ -42,6 +43,7 @@ def move_currency(
             paid_credit=paid_credit,
             paid_first=paid_first,
             paid_only=paid_only,
+            free_only=free_only,
             label="Share",
         )
         if hidden:
@@ -76,6 +78,7 @@ def move_currency(
             paid_credit=paid_credit,
             paid_first=paid_first,
             paid_only=paid_only,
+            free_only=free_only,
             label="Diamond",
         )
         state["diamond"] += diamond
@@ -167,6 +170,7 @@ def _apply(
     paid_first: bool,
     paid_only: bool,
     label: str,
+    free_only: bool = False,
 ) -> tuple[int, int]:
     if delta > 0:
         if paid_credit:
@@ -183,6 +187,14 @@ def _apply(
             )
         state[paid_key] -= need
         return 0, -need
+    if free_only:
+        if state[free_key] < need:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient free {label} balance.",
+            )
+        state[free_key] -= need
+        return -need, 0
     if paid_first:
         take_paid = min(need, state[paid_key])
         take_free = need - take_paid

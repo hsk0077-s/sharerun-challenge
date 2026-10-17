@@ -23,14 +23,14 @@ def test_pace_table_matches_the_app_ladder() -> None:
         199: ("cheetah_master", 25),
         200: ("cheetah_diamond", 24),
         239: ("cheetah_bronze", 21),
-        240: ("horse_master", 20),
-        299: ("horse_bronze", 16),
+        240: ("zebra_master", 20),
+        299: ("zebra_bronze", 16),
         300: ("wolf_master", 15),
         323: ("wolf_diamond", 14),
         324: ("wolf_gold", 13),
         359: ("wolf_bronze", 11),
-        360: ("maltese_master", 10),
-        449: ("maltese_bronze", 6),
+        360: ("beagle_master", 10),
+        449: ("beagle_bronze", 6),
         450: ("turtle_master", 5),
         540: ("turtle_silver", 2),
         900: ("turtle_bronze", 1),
@@ -151,7 +151,7 @@ def test_short_or_unverified_runs_do_not_count() -> None:
 
 def test_a_user_who_already_has_a_grade_keeps_it() -> None:
     db = _MemoryDb()
-    _seed(db, gradeCode="maltese_gold", gradeRank=8)
+    _seed(db, gradeCode="beagle_gold", gradeRank=8)
 
     for index in range(4):
         _persist(db, f"a{index}", index, seconds=200)
@@ -202,8 +202,8 @@ def test_backfill_dry_run_writes_nothing_then_real_run_is_repeatable() -> None:
     assert again["written"] == 0 and again["planned"] == 0
 
 
-def test_tier_animals_are_maltese_and_horse_not_rabbit_and_gazelle() -> None:
+def test_tier_animals_are_beagle_and_zebra() -> None:
     from app.services.grade_assignment import grade_for_pace
 
     codes = {grade_for_pace(pace)[0].split("_")[0] for pace in range(150, 700, 5)}
-    assert codes == {"turtle", "maltese", "wolf", "horse", "cheetah"}
+    assert codes == {"turtle", "beagle", "wolf", "zebra", "cheetah"}

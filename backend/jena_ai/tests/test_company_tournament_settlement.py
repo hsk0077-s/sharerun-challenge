@@ -954,3 +954,36 @@ def test_settlement_only_donation_respects_the_monthly_cap() -> None:
     assert db.store["donationLedger/tournament_km_race_u1"]["companyWon"] == 300
     assert db.store["donationLedger/tournament_km_race_u2"]["companyWon"] == 100
     assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 400
+
+
+def test_settlement_gives_promotion_points_to_graded_finishers_once() -> None:
+    db = _MemoryDb()
+    rows = [(f"u{i:02d}", _finisher(f"u{i:02d}", i * 100)) for i in range(1, 11)]
+    _seed_finishers(db, "race", rows)
+    for uid, _ in rows:
+        db.store[f"users/{uid}"]["gradeRank"] = 2
+    db.store["users/u01"]["authCreatedAt"] = (NOW - timedelta(days=90)).isoformat()
+
+    _settle(db)
+
+    ledger = db.store["promotionLedger/race__u01"]
+    assert ledger["rank"] == 1 and ledger["points"] == 60  # 40 x 1.0 x 1.5
+    # 10 finishers in an official race: a turtle winner goes straight to beagle.
+    assert db.store["users/u01"]["gradeRank"] == 6
+    assert db.store["users/u01"]["gradeCode"] == "beagle_bronze"
+    # 25 x 1.5 = 37 points: one 20-point medal step, 17 stay banked.
+    assert db.store["users/u02"]["gradeRank"] == 3
+    assert db.store["users/u02"]["promotion"]["points"] == 17
+    snapshot = deepcopy(db.store["users/u01"])
+    _settle(db)
+    assert db.store["users/u01"] == snapshot
+
+
+def test_ungraded_finisher_gets_no_promotion_doc() -> None:
+    db = _MemoryDb()
+    rows = [(f"u{i:02d}", _finisher(f"u{i:02d}", i * 100)) for i in range(1, 6)]
+    _seed_finishers(db, "race", rows)
+
+    _settle(db)
+
+    assert not [path for path in db.store if path.startswith("promotionLedger/")]

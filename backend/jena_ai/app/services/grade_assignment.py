@@ -23,9 +23,9 @@ _MEDALS = ("master", "diamond", "gold", "silver", "bronze")
 # gold and silver. Anything slower in the group is bronze.
 _GROUPS = (
     ("turtle", 0, 450, (479, 509, 539, 569)),
-    ("maltese", 5, 360, (377, 395, 413, 431)),
+    ("beagle", 5, 360, (377, 395, 413, 431)),
     ("wolf", 10, 300, (311, 323, 335, 347)),
-    ("horse", 15, 240, (251, 263, 275, 287)),
+    ("zebra", 15, 240, (251, 263, 275, 287)),
     ("cheetah", 20, 0, (199, 209, 219, 229)),
 )
 

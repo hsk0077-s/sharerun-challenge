@@ -5,6 +5,7 @@ from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
     CreatePrizeRaceResult,
+    CreateRankedTournamentResult,
     GradeBackfillResult,
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
@@ -20,6 +21,15 @@ service = OpsService()
 class CreatePrizeRaceRequest(BaseModel):
     tier: str
     edition: int
+
+
+class CreateRankedTournamentRequest(BaseModel):
+    kind: str
+    title: str
+    target_distance_km: float
+    tier_animal: int | None = None
+    entry_fee_share: int = 0
+    max_participants: int = 1000
 
 
 @router.post(
@@ -57,6 +67,31 @@ def create_company_prize_race(
         tournament_id=tournament_id,
         tier=request.tier,
         edition=request.edition,
+    )
+
+
+@router.post(
+    "/ranked-tournaments/{tournament_id}",
+    response_model=CreateRankedTournamentResult,
+)
+def create_ranked_tournament(
+    tournament_id: str,
+    request: CreateRankedTournamentRequest,
+    _: None = Depends(require_ops_admin),
+) -> CreateRankedTournamentResult:
+    made = service.create_ranked_tournament(
+        tournament_id,
+        kind=request.kind,
+        title=request.title,
+        target_distance_km=request.target_distance_km,
+        tier_animal=request.tier_animal,
+        entry_fee_share=request.entry_fee_share,
+        max_participants=request.max_participants,
+    )
+    return CreateRankedTournamentResult(
+        accepted=True,
+        tournament_id=made["tournamentId"],
+        status=made["status"],
     )
 
 

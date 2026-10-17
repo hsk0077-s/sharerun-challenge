@@ -36,9 +36,9 @@ class LiveRunningScreen extends ConsumerStatefulWidget {
   /// Active room from Room Detail — selects 1km vs 3km competition context.
   final String? roomId;
 
-  static const _background = Color(0xFF1E1E1E);
-  static const _mapBackground = Color(0xFF2A2A2A);
-  static const _neonPath = Color(0xFF00E5FF);
+  static const _background = AppColors.nightBg;
+  static const _mapBackground = AppColors.nightCard;
+  static const _neonPath = AppColors.nightLime;
 
   @override
   ConsumerState<LiveRunningScreen> createState() => _LiveRunningScreenState();
@@ -77,7 +77,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   String get _roomTitle {
     if (widget.roomId != null && _beginnerRoomIds.contains(widget.roomId)) {
-      return '1km 초보 챌린지방';
+      return '1km 초보 챌린지';
     }
     return AppStrings.liveRunningRoomTitle;
   }
@@ -238,7 +238,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     try {
       _meIcon ??= await _createCustomMarkerBitmap(
         '나',
-        AppColors.primaryMint,
+        AppColors.nightLime,
       );
       _ghostIcon ??= await _createCustomMarkerBitmap(
         '고스트',
@@ -612,7 +612,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
                 AppStrings.liveRunningSubmissionsLeft,
                 style: AppTextStyles.caption.copyWith(
                   fontSize: 11,
-                  color: AppColors.textGreyLight,
+                  color: AppColors.nightMuted,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -662,11 +662,11 @@ class _LiveRunningHeader extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const VoiceCoachingHeaderToggle(color: AppColors.primaryMint),
+                const VoiceCoachingHeaderToggle(color: AppColors.nightLime),
                 Text(
                   AppStrings.liveRunningGps,
                   style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.primaryMint,
+                    color: AppColors.nightLime,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -674,7 +674,7 @@ class _LiveRunningHeader extends StatelessWidget {
                 const SizedBox(width: 4),
                 Icon(
                   Icons.sensors_rounded,
-                  color: AppColors.primaryMint,
+                  color: AppColors.nightLime,
                   size: 18,
                 ),
               ],
@@ -704,15 +704,15 @@ class _StatsDashboard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        border: Border.all(color: AppColors.primaryMint, width: 1.5),
+        border: Border.all(color: AppColors.nightLime, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryMint.withValues(alpha: 0.35),
+            color: AppColors.nightLime.withValues(alpha: 0.35),
             blurRadius: 16,
             spreadRadius: 1,
           ),
           BoxShadow(
-            color: AppColors.primaryMint.withValues(alpha: 0.15),
+            color: AppColors.nightLime.withValues(alpha: 0.15),
             blurRadius: 28,
             spreadRadius: 2,
           ),
@@ -731,14 +731,14 @@ class _StatsDashboard extends StatelessWidget {
             child: _StatCell(
               label: AppStrings.liveRunningStatTime,
               value: time,
-              valueColor: AppColors.primaryMint,
+              valueColor: AppColors.nightLime,
             ),
           ),
           Expanded(
             child: _StatCell(
               label: AppStrings.liveRunningStatPace,
               value: pace,
-              valueColor: AppColors.primaryMint,
+              valueColor: AppColors.nightLime,
             ),
           ),
         ],
@@ -766,7 +766,7 @@ class _StatCell extends StatelessWidget {
           label,
           style: AppTextStyles.caption.copyWith(
             fontSize: 11,
-            color: AppColors.textGreyLight,
+            color: AppColors.nightMuted,
           ),
           textAlign: TextAlign.center,
         ),
@@ -855,10 +855,10 @@ class _EffortTipBox extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF252525),
+        color: AppColors.nightCard,
         borderRadius: BorderRadius.circular(AppShapes.cardRadius),
         border: Border.all(
-          color: AppColors.primaryMintLight.withValues(alpha: 0.5),
+          color: AppColors.nightLime.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -894,10 +894,10 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primaryMint,
+      color: AppColors.nightLime,
       borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
       elevation: 0,
-      shadowColor: AppColors.primaryMint,
+      shadowColor: AppColors.nightLime,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
@@ -907,7 +907,7 @@ class _ActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryMint.withValues(alpha: 0.55),
+                color: AppColors.nightLime.withValues(alpha: 0.55),
                 blurRadius: 20,
                 spreadRadius: 1,
                 offset: const Offset(0, 4),
@@ -921,7 +921,7 @@ class _ActionButton extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.buttonText.copyWith(
-                  color: AppColors.textBlack,
+                  color: AppColors.nightOnLime,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -931,7 +931,7 @@ class _ActionButton extends StatelessWidget {
                 width: 28,
                 height: 28,
                 decoration: const BoxDecoration(
-                  color: AppColors.textBlack,
+                  color: AppColors.nightOnLime,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

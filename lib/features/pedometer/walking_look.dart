@@ -10,15 +10,16 @@ import '../onboarding/src_onboarding_controller.dart';
 /// Does not change [SrcTokens] / Home / Lobby. Gold stays reserved for
 /// harvest and donation moments.
 abstract final class WalkingLook {
-  static const heroDeep = Color(0xFF0C2F2C);
-  static const heroMid = Color(0xFF146057);
-  static const heroLift = Color(0xFF1E8F7C);
-  static const pageMist = Color(0xFFF3F7F5);
-  static const onHero = Color(0xFFF7FFFC);
-  static const onHeroMuted = Color(0xB8F7FFFC);
-  static const harvestHi = Color(0xFFF6D56B);
-  static const harvestLo = AppColors.angelGold;
-  static const harvestInk = Color(0xFF3A2A08);
+  // 새 디자인: 검정 바탕 + 라임. 줍기 버튼도 홈의 줍기 버튼과 같은 라임이다.
+  static const heroDeep = Color(0xFF0A1410);
+  static const heroMid = Color(0xFF10201A);
+  static const heroLift = Color(0xFF1B3A2A);
+  static const pageMist = AppColors.nightBg;
+  static const onHero = AppColors.nightInk;
+  static const onHeroMuted = Color(0xB8E8EFE6);
+  static const harvestHi = AppColors.nightLime;
+  static const harvestLo = Color(0xFFB4E03A);
+  static const harvestInk = AppColors.nightOnLime;
 
   static const heroGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -36,7 +37,7 @@ abstract final class WalkingLook {
     end: Alignment.bottomCenter,
     colors: [
       pageMist,
-      AppColors.bgGradientEnd,
+      pageMist,
     ],
   );
 
@@ -56,7 +57,7 @@ abstract final class WalkingLook {
 
   static const glassLift = [
     BoxShadow(
-      color: Color(0x140C2F2C),
+      color: Color(0x59000000),
       blurRadius: 20,
       offset: Offset(0, 8),
     ),
@@ -66,15 +67,6 @@ abstract final class WalkingLook {
   /// derived to a smile with the sigh puff removed. Not the gold-medal mascot.
   static const snailWalkingAsset =
       'assets/images/characters/chibi_snail_smiling.png';
-
-  /// Alpha-only knockout for the snail PNG's opaque near-white plate.
-  /// Does **not** tint pixels (no `primaryMint` / `BlendMode.multiply` rect).
-  static const whitePlateKnockout = ColorFilter.matrix(<double>[
-    1, 0, 0, 0, 0,
-    0, 1, 0, 0, 0,
-    0, 0, 1, 0, 0,
-    -4, -4, -4, 11.6, 0,
-  ]);
 
   static String mascotAsset(UserTier tier) {
     if (tier.isSnail) return snailWalkingAsset;
@@ -383,11 +375,8 @@ class _WalkingMascotState extends State<WalkingMascot>
                 scaleX: scaleX,
                 scaleY: scaleY,
                 alignment: Alignment.bottomCenter,
-                // 달팽이 그림만 왼쪽을 봐서 뒤집는다. 티어 동물은 오른쪽을 본다.
-                child: Transform.flip(
-                  flipX: widget.tier.isSnail,
-                  child: child,
-                ),
+                // 달팽이 그림도 티어 동물처럼 오른쪽을 본다.
+                child: child,
               ),
             ),
           ),
@@ -445,11 +434,7 @@ class _WalkingMascotState extends State<WalkingMascot>
         color: WalkingLook.onHero,
       ),
     );
-    if (!widget.tier.isSnail) return image;
-    return ColorFiltered(
-      colorFilter: WalkingLook.whitePlateKnockout,
-      child: image,
-    );
+    return image;
   }
 }
 

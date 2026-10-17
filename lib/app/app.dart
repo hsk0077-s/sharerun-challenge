@@ -41,7 +41,6 @@ import 'router/route_names.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../data/models/activity_model.dart';
 import '../core/theme/src_theme.dart';
-import 'theme/app_theme.dart';
 
 class ShareRunChallengeApp extends StatelessWidget {
   const ShareRunChallengeApp({super.key});
@@ -51,8 +50,9 @@ class ShareRunChallengeApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '쉐어런',
-      theme: SrcTheme.light,
-      darkTheme: AppTheme.dark,
+      theme: SrcTheme.night,
+      darkTheme: SrcTheme.night,
+      themeMode: ThemeMode.dark,
       supportedLocales: const [Locale('ko'), Locale('en')],
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,

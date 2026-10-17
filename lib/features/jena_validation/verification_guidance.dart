@@ -44,7 +44,7 @@ VerificationGuidanceCopy verificationGuidanceCopy({
 }) {
   final distance = formatVerifiedDistanceKm(roomDistanceKm);
   final lines = <String>[
-    '이번 방의 검증 최소 거리는 $distance예요. 방 거리가 더 짧아도 1km는 넘어야 해요.',
+    '이번 대회의 검증 최소 거리는 $distance예요. 대회 거리가 더 짧아도 1km는 넘어야 해요.',
     '분당 걸음 수는 120~210이어야 해요.',
     '워치가 없으면 보폭과 GPS 속도로 확인해요.',
     '워치 심박은 회사 대회 상급·하프·파이널에서만 필요해요.',

@@ -90,6 +90,7 @@ abstract final class RouteNames {
   /// 대회 스폰서 결제. [SponsorPaymentArgs] extra 필수. src-17과 혼동 금지.
   static const sponsorPayment = '/sponsor-payment';
   static const watchSettings = '/watch-settings';
+  static const watchAppPreview = '/watch-app-preview';
   static const healthDataConsent = '/health-data-consent';
   static const winnerDemo = '/winner-demo';
   /// Named GoRouter name: `preliminaryEval` / path: `/preliminary-eval`.
@@ -135,7 +136,6 @@ abstract final class RouteNames {
   static const personalSponsor = '/personal-sponsor';
   static const crewManager = '/crew-manager';
   static const refund = '/refund';
-  static const web3Wallet = '/web3-wallet';
   static const shareToDia = '/share-to-dia';
   static const diaPackStore = '/dia-pack-store';
   static const stampTour = '/stamp-tour';

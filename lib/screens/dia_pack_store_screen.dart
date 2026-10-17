@@ -1,3 +1,4 @@
+import '../features/iap/widgets/dia_notice.dart';
 import 'package:flutter/material.dart';
 
 import '../core/navigation/app_route_nav.dart';
@@ -27,6 +28,7 @@ class DiaPackStoreScreen extends StatelessWidget {
             _DiaPackCard(pack: pack),
             const SizedBox(height: 12),
           ],
+          const DiaNoticeCard(),
         ],
       ),
     );
@@ -40,10 +42,11 @@ class _DiaPackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final price = pack.priceKrw.toString().replaceAllMapped(
+    String grouped(int value) => value.toString().replaceAllMapped(
           RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
           (match) => '${match[1]},',
         );
+    final price = grouped(pack.priceKrw);
     return Material(
       color: AppColors.surfaceWhite,
       borderRadius: BorderRadius.circular(16),
@@ -53,7 +56,7 @@ class _DiaPackCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${pack.totalDia} DIA',
+              '${grouped(pack.totalDia)} DIA',
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
             const SizedBox(height: 4),

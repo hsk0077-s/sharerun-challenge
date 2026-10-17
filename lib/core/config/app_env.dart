@@ -228,6 +228,32 @@ abstract final class AppEnv {
         host.contains('10.0.2.2');
   }
 
+  /// 이 폰 밖에서는 닿지 않는 개발용 주소인지. 자기 자신(127.0.0.1)뿐 아니라
+  /// 집·사무실 안 주소(192.168.x.x, 10.x.x.x, 172.16~31.x.x, 169.254.x.x, *.local)도 포함한다.
+  /// 개발 PC 주소가 `.env`에 남은 채로 릴리스 빌드가 나가면 줍기 같은 서버 요청이 전부 실패한다.
+  static bool isLocalNetworkJenaUrl(String url) {
+    if (isLoopbackJenaUrl(url)) return true;
+    final parsed = Uri.tryParse(url.trim());
+    final host = (parsed != null && parsed.host.isNotEmpty)
+        ? parsed.host.toLowerCase()
+        : url.trim().toLowerCase();
+    if (host.endsWith('.local') || host == 'local') return true;
+    final parts = host.split('.');
+    if (parts.length != 4) return false;
+    final nums = <int>[];
+    for (final part in parts) {
+      final n = int.tryParse(part);
+      if (n == null || n < 0 || n > 255) return false;
+      nums.add(n);
+    }
+    final a = nums[0];
+    final b = nums[1];
+    return a == 10 ||
+        (a == 172 && b >= 16 && b <= 31) ||
+        (a == 192 && b == 168) ||
+        (a == 169 && b == 254);
+  }
+
   /// Debug: `JENA_BASE_URL` or loopback. Release: never loopback — Cloud Run
   /// via `JENA_BASE_URL` / `JENA_CLOUD_RUN_BASE_URL` / [shippedJenaCloudRunUrl].
   static String resolveJenaBaseUrl({
@@ -248,11 +274,11 @@ abstract final class AppEnv {
       );
     }
 
-    if (trimmed.isNotEmpty && !isLoopbackJenaUrl(trimmed)) {
+    if (trimmed.isNotEmpty && !isLocalNetworkJenaUrl(trimmed)) {
       return trimmed;
     }
     final production = productionUrl.trim();
-    if (production.isNotEmpty && !isLoopbackJenaUrl(production)) {
+    if (production.isNotEmpty && !isLocalNetworkJenaUrl(production)) {
       return production;
     }
     throw StateError(

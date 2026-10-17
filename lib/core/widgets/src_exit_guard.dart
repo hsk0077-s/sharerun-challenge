@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 import '../navigation/dashboard_tab_navigation.dart';
+import '../navigation/open_popup_tracker.dart';
 import '../strings/app_strings.dart';
 
 /// 메인 탭 루트 전용 뒤로가기 가드.
@@ -86,6 +87,9 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+
+        // 열린 하단 창·대화상자가 있으면 그것부터 닫는다(탭을 떠나지 않는다).
+        if (OpenPopupTracker.closeTop()) return;
 
         // 검색 필터가 있으면 크루 목록으로만 돌아간다.
         if (_currentTabIndex == DashboardTabNavigation.crew &&

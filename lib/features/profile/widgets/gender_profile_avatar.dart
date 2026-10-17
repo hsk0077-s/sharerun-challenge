@@ -49,7 +49,7 @@ class GenderProfileAvatar extends ConsumerWidget {
             shape: BoxShape.circle,
             color: tokens.colors.primary.withValues(alpha: 0.16),
             // 옆의 티어·천사 원과 같은 두께와 진하기로 맞춰 또렷하게 보이게 한다.
-            border: Border.all(color: AppColors.tealAccent, width: 2),
+            border: Border.all(color: tokens.colors.accent, width: 2),
             boxShadow: AppShadows.rest,
           ),
           child: ClipOval(

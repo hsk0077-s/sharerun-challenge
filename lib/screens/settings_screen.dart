@@ -17,11 +17,10 @@ import '../core/constants/economy_constants.dart';
 import '../core/constants/legal_constants.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
-import '../data/repositories/auth_repository.dart'
-    show authRepositoryProvider;
+import '../data/repositories/auth_repository.dart' show authRepositoryProvider;
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/onboarding/widgets/nickname_change_sheet.dart';
@@ -317,416 +316,378 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final authUser = ref.watch(authStateChangesProvider).value;
     final nickname = ref.watch(userNicknameProvider);
     final tier = ref.watch(activeUserTierStructProvider);
-    final displayNick = SrcOnboardingController.isUnsetNickname(nickname)
-        ? '미설정'
-        : nickname;
+    final displayNick =
+        SrcOnboardingController.isUnsetNickname(nickname) ? '미설정' : nickname;
+
+    void goBack() {
+      if (context.canPop()) {
+        context.pop();
+        return;
+      }
+      if (Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+        return;
+      }
+      context.go(RouteNames.myPage);
+    }
 
     return Scaffold(
-      backgroundColor: AppColors.settingsBackground,
-      appBar: AppBar(
-        backgroundColor: AppColors.settingsBackground,
-        elevation: 0,
-        foregroundColor: AppColors.textBlack,
-        title: Text(
-          AppStrings.myPageSettings,
-          style: AppTextStyles.header1.copyWith(fontSize: 20),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-              return;
-            }
-            if (Navigator.of(context).canPop()) {
-              Navigator.of(context).pop();
-              return;
-            }
-            context.go(RouteNames.myPage);
-          },
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppShapes.termsHorizontalPadding,
-          8,
-          AppShapes.termsHorizontalPadding,
-          32,
-        ),
-        children: [
-          _SettingsCategoryCard(
-            title: '계정 프로필 관리',
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.edit_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '닉네임 변경 (수수료 ${EconomyConstants.nicknameChangeFeeDia} DIA)',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Text(
-                  '현재 · $displayNick',
-                  style: AppTextStyles.caption,
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
-                ),
-                onTap: () => NicknameChangeSheet.show(context),
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                key: const Key('login-connections-settings'),
-                leading: const Icon(
-                  Icons.link_rounded,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '로그인 연결',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: const Text(
-                  '구글·카카오를 한 계정으로',
-                  style: AppTextStyles.caption,
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
-                ),
-                onTap: _openLoginConnections,
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                leading: ChibiTierAvatar(
-                  tier: tier ?? UserTier.unratedFallback,
-                  size: 40,
-                ),
-                title: Text(
-                  '현재 내 동물 티어 확인',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                subtitle: Align(
+      backgroundColor: AppColors.nightBg,
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 40),
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  key: const Key('settings-back'),
+                  onPressed: goBack,
+                  tooltip: '뒤로',
+                  padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: _TierBadge(
-                      tier: tier ?? UserTier.unratedFallback,
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: AppColors.nightInk,
+                  ),
+                ),
+                const Spacer(),
+                const StoreTag('SETTINGS'),
+              ],
+            ),
+            Text(
+              AppStrings.myPageSettings,
+              style: storeText(36, AppColors.nightInk, w: FontWeight.w900),
+            ),
+            const SizedBox(height: 4),
+            _SettingsCategoryCard(
+              title: '계정 프로필 관리',
+              children: [
+                ListTile(
+                  title: Text(
+                    '닉네임 변경 (수수료 ${EconomyConstants.nicknameChangeFeeDia} DIA)',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          _SettingsCategoryCard(
-            title: '알림 및 서비스 제어',
-            children: [
-              SwitchListTile.adaptive(
-                secondary: const Icon(
-                  Icons.notifications_active_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '푸시 알림 수신 설정',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                  subtitle: Text(
+                    '현재 · $displayNick',
+                    style: AppTextStyles.caption,
                   ),
-                ),
-                subtitle: Text(
-                  '재화 실시간 획득 · 크루 긴급 공지',
-                  style: AppTextStyles.caption,
-                ),
-                value: _pushEnabled,
-                activeThumbColor: AppColors.tealAccent,
-                activeTrackColor: AppColors.tealAccent.withValues(alpha: 0.4),
-                onChanged: (value) {
-                  setState(() => _pushEnabled = value);
-                  _savePushPreference(value);
-                  final uid = authUser?.uid;
-                  if (uid != null) {
-                    _updatePushNotifications(uid: uid, enabled: value);
-                  }
-                },
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              SwitchListTile.adaptive(
-                secondary: const Icon(
-                  Icons.record_voice_over_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  AppStrings.voiceCoachingTitle,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
                   ),
+                  onTap: () => NicknameChangeSheet.show(context),
                 ),
-                subtitle: Text(
-                  AppStrings.voiceCoachingSubtitle,
-                  style: AppTextStyles.caption,
-                ),
-                value: ref.watch(voiceCoachingEnabledProvider),
-                activeThumbColor: AppColors.tealAccent,
-                activeTrackColor: AppColors.tealAccent.withValues(alpha: 0.4),
-                onChanged: (value) {
-                  unawaited(
-                    ref
-                        .read(voiceCoachingEnabledProvider.notifier)
-                        .setEnabled(value),
-                  );
-                },
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ValueListenableBuilder<bool>(
-                valueListenable: MiniBotDockSettings.visible,
-                builder: (context, visible, _) => SwitchListTile.adaptive(
-                  key: const Key('mini-bot-visible-switch'),
-                  secondary: const Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    color: AppColors.tealAccent,
-                  ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  key: const Key('login-connections-settings'),
                   title: Text(
-                    '달팽이봇 버튼 보이기',
+                    '로그인 연결',
                     style: AppTextStyles.agreementLabel.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: const Text(
-                    '홈과 대회 화면에 달팽이 버튼을 보여요. 끌어서 옮길 수 있어요.',
+                    '구글·카카오를 한 계정으로',
                     style: AppTextStyles.caption,
                   ),
-                  value: visible,
-                  activeThumbColor: AppColors.tealAccent,
-                  activeTrackColor: AppColors.tealAccent.withValues(alpha: 0.4),
-                  onChanged: (value) =>
-                      unawaited(MiniBotDockSettings.setVisible(value)),
-                ),
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                key: const Key('coach-plus-settings'),
-                leading: const Icon(
-                  Icons.favorite_outline,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  'Coach+',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
                   ),
+                  onTap: _openLoginConnections,
                 ),
-                subtitle: Text(
-                  '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
-                  style: AppTextStyles.caption,
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => CoachPlusUpsellSheet.show(context),
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                leading: const Icon(
-                  Icons.health_and_safety_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '위치 및 건강 데이터 권한 재인증',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  leading: ChibiTierAvatar(
+                    tier: tier ?? UserTier.unratedFallback,
+                    size: 40,
                   ),
-                ),
-                subtitle: Text(
-                  'LBS 동의 · 스마트워치 연동 권한',
-                  style: AppTextStyles.caption,
-                ),
-                trailing: _permissionBusy
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2.2),
-                      )
-                    : const Icon(
-                        Icons.chevron_right_rounded,
-                        color: AppColors.textGreyLight,
+                  title: Text(
+                    '현재 내 동물 티어 확인',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: _TierBadge(
+                        tier: tier ?? UserTier.unratedFallback,
                       ),
-                onTap: _permissionBusy ? null : _reauthLocationAndHealth,
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                key: const Key('run-recording-checklist-menu'),
-                leading: const Icon(
-                  Icons.directions_run,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  runRecordingChecklistMenuLabel,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-                subtitle: Text(
-                  '위치 · 알림 · 배터리 최적화',
-                  style: AppTextStyles.caption,
+              ],
+            ),
+            const SizedBox(height: 18),
+            _SettingsCategoryCard(
+              title: '알림 및 서비스 제어',
+              children: [
+                SwitchListTile.adaptive(
+                  title: Text(
+                    '푸시 알림 수신 설정',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '재화 실시간 획득 · 크루 긴급 공지',
+                    style: AppTextStyles.caption,
+                  ),
+                  value: _pushEnabled,
+                  onChanged: (value) {
+                    setState(() => _pushEnabled = value);
+                    _savePushPreference(value);
+                    final uid = authUser?.uid;
+                    if (uid != null) {
+                      _updatePushNotifications(uid: uid, enabled: value);
+                    }
+                  },
                 ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
+                const Divider(height: 1, color: AppColors.nightLine),
+                SwitchListTile.adaptive(
+                  title: Text(
+                    AppStrings.voiceCoachingTitle,
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    AppStrings.voiceCoachingSubtitle,
+                    style: AppTextStyles.caption,
+                  ),
+                  value: ref.watch(voiceCoachingEnabledProvider),
+                  onChanged: (value) {
+                    unawaited(
+                      ref
+                          .read(voiceCoachingEnabledProvider.notifier)
+                          .setEnabled(value),
+                    );
+                  },
                 ),
-                onTap: () => openRunRecordingChecklist(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          _SettingsCategoryCard(
-            title: '러너 전문 기능',
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.sports_score_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  AppStrings.proToolsTitle,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                const Divider(height: 1, color: AppColors.nightLine),
+                ValueListenableBuilder<bool>(
+                  valueListenable: MiniBotDockSettings.visible,
+                  builder: (context, visible, _) => SwitchListTile.adaptive(
+                    key: const Key('mini-bot-visible-switch'),
+                    title: Text(
+                      '달팽이봇 버튼 보이기',
+                      style: AppTextStyles.agreementLabel.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: const Text(
+                      '홈과 대회 화면에 달팽이 버튼을 보여요. 끌어서 옮길 수 있어요.',
+                      style: AppTextStyles.caption,
+                    ),
+                    value: visible,
+                    onChanged: (value) =>
+                        unawaited(MiniBotDockSettings.setVisible(value)),
                   ),
                 ),
-                subtitle: Text(
-                  AppStrings.proToolsSubtitle,
-                  style: AppTextStyles.caption,
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
-                ),
-                onTap: _openProTools,
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          _SettingsCategoryCard(
-            title: '보안·프라이버시',
-            children: [
-              ListTile(
-                key: const Key('security-center-settings'),
-                leading: const Icon(
-                  Icons.shield_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '보안·프라이버시 센터',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  key: const Key('coach-plus-settings'),
+                  title: Text(
+                    'Coach+',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                subtitle: Text(
-                  '공정한 적립 정책 · 기록 소명',
-                  style: AppTextStyles.caption,
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
-                ),
-                onTap: _openSecurityCenter,
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          _SettingsCategoryCard(
-            title: '약관 및 계정 지원',
-            children: [
-              ListTile(
-                key: const Key('intro-replay-settings'),
-                leading: const Icon(
-                  Icons.slideshow_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '소개 다시 보기',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                  subtitle: Text(
+                    '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
+                    style: AppTextStyles.caption,
                   ),
+                  trailing: const Icon(Icons.arrow_forward_rounded),
+                  onTap: () => CoachPlusUpsellSheet.show(context),
                 ),
-                subtitle: Text('쉐어런 첫 소개 3장', style: AppTextStyles.caption),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
-                ),
-                onTap: _replayIntro,
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                leading: const Icon(
-                  Icons.description_outlined,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '서비스 이용약관 및 개인정보 처리방침',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  title: Text(
+                    '위치 및 건강 데이터 권한 재인증',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                subtitle: Text(
-                  'LBS · 민감정보 핀셋 처리방침',
-                  style: AppTextStyles.caption,
-                ),
-                trailing: const Icon(
-                  Icons.chevron_right_rounded,
-                  color: AppColors.textGreyLight,
-                ),
-                onTap: _openLegalDocuments,
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout_rounded,
-                  color: AppColors.tealAccent,
-                ),
-                title: Text(
-                  '로그아웃',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
+                  subtitle: Text(
+                    'LBS 동의 · 스마트워치 연동 권한',
+                    style: AppTextStyles.caption,
                   ),
+                  trailing: _permissionBusy
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.2),
+                        )
+                      : const Icon(
+                          Icons.arrow_forward_rounded,
+                          color: AppColors.textGreyLight,
+                        ),
+                  onTap: _permissionBusy ? null : _reauthLocationAndHealth,
                 ),
-                subtitle: Text(
-                  'Google / Apple Auth 세션 종료',
-                  style: AppTextStyles.caption,
-                ),
-                onTap: authUser == null ? null : _signOut,
-              ),
-              const Divider(height: 1, color: AppColors.borderLight),
-              ListTile(
-                leading: const Icon(
-                  Icons.person_off_outlined,
-                  color: AppColors.error,
-                ),
-                title: Text(
-                  '회원 탈퇴 (Account Withdrawal)',
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.error,
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  key: const Key('run-recording-checklist-menu'),
+                  title: Text(
+                    runRecordingChecklistMenuLabel,
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
+                  subtitle: Text(
+                    '위치 · 알림 · 배터리 최적화',
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: () => openRunRecordingChecklist(context),
                 ),
-                subtitle: Text(
-                  '계정·캐시 비활성화 (되돌릴 수 없음)',
-                  style: AppTextStyles.caption,
+              ],
+            ),
+            const SizedBox(height: 18),
+            _SettingsCategoryCard(
+              title: '러너 전문 기능',
+              children: [
+                ListTile(
+                  title: Text(
+                    AppStrings.proToolsTitle,
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    AppStrings.proToolsSubtitle,
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: _openProTools,
                 ),
-                onTap: authUser == null ? null : _withdrawAccount,
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 18),
+            _SettingsCategoryCard(
+              title: '보안·프라이버시',
+              children: [
+                ListTile(
+                  key: const Key('security-center-settings'),
+                  title: Text(
+                    '보안·프라이버시 센터',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '공정한 적립 정책 · 기록 소명',
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: _openSecurityCenter,
+                ),
+              ],
+            ),
+            const SizedBox(height: 18),
+            _SettingsCategoryCard(
+              title: '약관 및 계정 지원',
+              children: [
+                ListTile(
+                  key: const Key('intro-replay-settings'),
+                  title: Text(
+                    '소개 다시 보기',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text('쉐어런 첫 소개 3장', style: AppTextStyles.caption),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: _replayIntro,
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  title: Text(
+                    '서비스 이용약관 및 개인정보 처리방침',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'LBS · 민감정보 핀셋 처리방침',
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: _openLegalDocuments,
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  title: Text(
+                    '로그아웃',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Google / Apple Auth 세션 종료',
+                    style: AppTextStyles.caption,
+                  ),
+                  onTap: authUser == null ? null : _signOut,
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  title: Text(
+                    '회원 탈퇴 (Account Withdrawal)',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.error,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '계정·캐시 비활성화 (되돌릴 수 없음)',
+                    style: AppTextStyles.caption,
+                  ),
+                  onTap: authUser == null ? null : _withdrawAccount,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+/// 설정 묶음: 작은 글머리 + 줄마다 가는 선. 카드 바탕은 없다.
 class _SettingsCategoryCard extends StatelessWidget {
   const _SettingsCategoryCard({
     required this.title,
@@ -738,50 +699,31 @@ class _SettingsCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppColors.tealAccent.withValues(alpha: 0.12),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        listTileTheme: const ListTileThemeData(
+          contentPadding: EdgeInsets.zero,
+          minVerticalPadding: 10,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: AppColors.tealAccent,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.tealAccent,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ],
+            padding: const EdgeInsets.only(top: 6, bottom: 2),
+            child: Text(
+              title,
+              style: storeText(
+                12,
+                AppColors.nightMuted,
+                w: FontWeight.w800,
+                ls: 0.4,
+              ),
             ),
           ),
+          const Divider(height: 1, color: AppColors.nightLine),
           ...children,
-          const SizedBox(height: 4),
+          const Divider(height: 1, color: AppColors.nightLine),
         ],
       ),
     );
@@ -838,12 +780,12 @@ class _SettingsLegalWebViewScreenState
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
-         margin: 20px; color: #171717; line-height: 1.55; }
+         margin: 20px; color: #E8EFE6; background: #070B09; line-height: 1.55; }
   h1 { font-size: 20px; margin: 0 0 12px; }
-  h2 { font-size: 16px; margin: 22px 0 8px; color: #11B79C; }
-  p { font-size: 14px; margin: 0 0 10px; color: #3f3f46; }
-  .note { background: #E8F7F2; padding: 12px 14px; border-radius: 12px;
-          font-size: 13px; color: #0f766e; }
+  h2 { font-size: 16px; margin: 22px 0 8px; color: #D4FF4A; }
+  p { font-size: 14px; margin: 0 0 10px; color: #93A299; }
+  .note { background: #101813; padding: 12px 14px; border-radius: 12px;
+          font-size: 13px; color: #D4FF4A; }
 </style>
 </head>
 <body>

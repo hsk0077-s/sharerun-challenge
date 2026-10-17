@@ -111,7 +111,7 @@ String prizeRaceHomeFeeLine({
     config: config,
   );
   if (quote == null) {
-    return '$distance · ${tournament.entryFeeShare} Share';
+    return '$distance · ${tournament.entryFeeShare} SHARE';
   }
   if (!quote.ready) return '$distance · ${quote.costLabel(0)}';
   final fee = quote.freeEntryLabel == null

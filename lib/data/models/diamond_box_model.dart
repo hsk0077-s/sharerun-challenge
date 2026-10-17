@@ -21,7 +21,7 @@ class DiamondBoxModel {
   }) {
     return DiamondBoxModel(
       id: id,
-      title: json['title'] as String? ?? 'Diamond Box',
+      title: json['title'] as String? ?? '다이아 상자',
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
       rewardDiamond: (json['rewardDiamond'] as num?)?.toInt() ?? 1,

@@ -23,7 +23,7 @@ abstract final class LegalConstants {
   static const healthDataConsentSummary =
       '스마트워치·HealthKit·Health Connect를 통해 심박수·케이던스를 읽어 '
       'Jena AI 러닝 검증에만 사용합니다. 동의하지 않아도 앱 이용은 가능하나, '
-      '워치 연동 및 검증된 러닝 채굴은 제한됩니다. '
+      '워치 연동 및 검증된 러닝 땀방울 적립은 제한됩니다. '
       '원시 심박 배열은 서버 DB에 저장되지 않으며 검증 직후 메모리에서 즉시 파기됩니다.';
 
   static const pushNotificationsSummary =
@@ -31,6 +31,6 @@ abstract final class LegalConstants {
       '언제든 MyPage에서 변경할 수 있습니다.';
 
   static const ephemeralSensorPolicy =
-      'Heart-rate and cadence arrays are ephemeral: validated in memory, then destroyed. '
-      'Only jenaVerified summary fields are persisted.';
+      '심박수·케이던스 원본 데이터는 기기 메모리에서 검증한 뒤 바로 폐기하며, '
+      '검증 결과 요약만 저장합니다.';
 }

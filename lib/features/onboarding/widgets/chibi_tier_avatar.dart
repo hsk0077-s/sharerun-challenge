@@ -212,9 +212,9 @@ class _ChibiPainter extends CustomPainter {
     if (tier == null) return AppColors.primaryMint;
     return switch (tier!.animal) {
       TierAnimal.turtle => const Color(0xFF66BB6A),
-      TierAnimal.maltese => const Color(0xFFF5F5F5),
+      TierAnimal.beagle => const Color(0xFFF5F5F5),
       TierAnimal.wolf => const Color(0xFF90A4AE),
-      TierAnimal.horse => const Color(0xFFA1887F),
+      TierAnimal.zebra => const Color(0xFFA1887F),
       TierAnimal.cheetah => const Color(0xFFFFB74D),
       TierAnimal.snail => const Color(0xFFA8B5A0),
     };
@@ -315,7 +315,7 @@ class _ChibiPainter extends CustomPainter {
     );
 
     // Animal emoji hint (ear / shell cue).
-    if (tier?.animal == TierAnimal.maltese ||
+    if (tier?.animal == TierAnimal.beagle ||
         tier?.animal == TierAnimal.cheetah) {
       final ear = Paint()..color = _bodyColor;
       canvas.drawOval(

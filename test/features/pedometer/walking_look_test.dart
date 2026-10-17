@@ -64,11 +64,11 @@ void main() {
     );
   });
 
-  test('harvest gold stays on the donation token', () {
-    expect(WalkingLook.harvestLo, AppColors.angelGold);
+  test('harvest button uses the lime of the new design', () {
+    expect(WalkingLook.harvestHi, AppColors.nightLime);
     expect(
       WalkingLook.harvestGradient.colors,
-      contains(AppColors.angelGold),
+      contains(AppColors.nightLime),
     );
   });
 
@@ -110,15 +110,15 @@ void main() {
     final image = tester.widget<Image>(find.byKey(const Key('walking-mascot')));
     expect(image.color, isNull);
     expect(image.colorBlendMode, isNull);
+    // The PNG is already transparent and faces right like every tier animal,
+    // so there is no plate filter and no mirror flip.
+    expect(find.byType(ColorFiltered), findsNothing);
     expect(
-      find.descendant(
-        of: find.byType(ColorFiltered),
-        matching: find.byKey(const Key('walking-mascot')),
-      ),
-      findsOneWidget,
+      tester.widgetList<Transform>(find.byType(Transform)).where(
+            (t) => t.transform.storage[0] < 0,
+          ),
+      isEmpty,
     );
-    final filter = tester.widget<ColorFiltered>(find.byType(ColorFiltered));
-    expect(filter.colorFilter, WalkingLook.whitePlateKnockout);
   });
 
   testWidgets('WalkingMascot stays the static smiling snail (motion off)',

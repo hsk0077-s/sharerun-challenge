@@ -46,12 +46,12 @@ abstract final class ShareInsufficientDialog {
               onPressed: () => Navigator.of(ctx).pop(true),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.tealAccent,
-                foregroundColor: AppColors.textWhite,
+                foregroundColor: AppColors.nightOnLime,
               ),
               child: Text(
                 AppStrings.shareInsufficientYes,
                 style: AppTextStyles.buttonText.copyWith(
-                  color: AppColors.textWhite,
+                  color: AppColors.nightOnLime,
                   fontSize: 14,
                 ),
               ),

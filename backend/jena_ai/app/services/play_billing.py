@@ -26,8 +26,8 @@ def dia_pack_by_id(product_id: str) -> dict | None:
     return None
 
 
-def verify_play_product_purchase(product_id: str, purchase_token: str) -> None:
-    """Reject unless Android Publisher reports purchaseState purchased (0)."""
+def verify_play_product_purchase(product_id: str, purchase_token: str) -> dict:
+    """Reject unless Android Publisher reports purchaseState purchased (0). Returns the body."""
     session, package = _authorized_session()
     url = (
         "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
@@ -40,6 +40,7 @@ def verify_play_product_purchase(product_id: str, purchase_token: str) -> None:
     body = response.json()
     if int(body.get("purchaseState", -1)) != 0:
         raise HTTPException(status_code=400, detail="Purchase is not completed.")
+    return body
 
 
 def consume_play_product_purchase(product_id: str, purchase_token: str) -> None:
@@ -54,6 +55,20 @@ def consume_play_product_purchase(product_id: str, purchase_token: str) -> None:
         f"{quote(product_id, safe='')}/tokens/{quote(purchase_token, safe='')}:consume"
     )
     session.post(url, timeout=15)
+
+
+def refund_play_order(order_id: str) -> bool:
+    """Refund an order through Google Play. False when no service account is configured."""
+    opened = _play_session()
+    if opened is None:
+        return False
+    session, package = opened
+    url = (
+        "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
+        f"{quote(package, safe='')}/orders/{quote(order_id, safe='')}:refund"
+    )
+    response = session.post(url, timeout=15)
+    return 200 <= response.status_code < 300
 
 
 def _authorized_session():

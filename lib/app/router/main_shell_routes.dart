@@ -13,6 +13,7 @@ import '../../screens/challenge_lobby_screen.dart';
 import '../../screens/create_challenge_room_screen.dart';
 import '../../screens/crew_manager_screen.dart';
 import '../../screens/device_connection_screen.dart';
+import '../../screens/watch_app_preview_screen.dart';
 import '../../screens/external_oauth_webview.dart';
 import '../../screens/watch_connection_screen.dart';
 import '../../screens/hall_of_fame_screen.dart';
@@ -51,8 +52,8 @@ import '../../screens/stamp_tour_screen.dart';
 import '../../screens/subscription_management_screen.dart';
 import '../../screens/tournament_detail_screen.dart';
 import '../../screens/tournament_screen.dart';
-import '../../screens/web3_wallet_screen.dart';
 import '../../screens/winner_demo_screen.dart';
+import '../../core/navigation/open_popup_tracker.dart';
 import 'route_names.dart';
 
 /// [2단계] 5대 탭 실물 루트 + 17장 시나리오 하위 경로.
@@ -65,6 +66,7 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
       branches: [
         // Tab 1 — 홈/대시보드 (src-5)
         StatefulShellBranch(
+          observers: [OpenPopupTracker()],
           routes: [
             GoRoute(
               path: RouteNames.mainDashboard,
@@ -74,6 +76,7 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
         ),
         // Tab 2 — 상점/기부 (src-13)
         StatefulShellBranch(
+          observers: [OpenPopupTracker()],
           routes: [
             GoRoute(
               path: RouteNames.shop,
@@ -93,12 +96,12 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
         ),
         // Tab 3 — 챌린지/대회 (src-7 로비, tournamentId 시 토너먼트 보드)
         StatefulShellBranch(
+          observers: [OpenPopupTracker()],
           routes: [
             GoRoute(
               path: RouteNames.tournament,
               pageBuilder: (context, state) {
-                final tournamentId =
-                    state.uri.queryParameters['tournamentId'];
+                final tournamentId = state.uri.queryParameters['tournamentId'];
                 if (tournamentId != null && tournamentId.isNotEmpty) {
                   return _fadePage(
                     TournamentScreen(initialTournamentId: tournamentId),
@@ -114,6 +117,7 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
         ),
         // Tab 4 — 러닝크루 (src-18)
         StatefulShellBranch(
+          observers: [OpenPopupTracker()],
           routes: [
             GoRoute(
               path: RouteNames.crew,
@@ -123,6 +127,7 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
         ),
         // Tab 5 — 마이페이지/일지 (src-12)
         StatefulShellBranch(
+          observers: [OpenPopupTracker()],
           routes: [
             GoRoute(
               path: RouteNames.myPage,
@@ -274,9 +279,8 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
       path: RouteNames.challengeDetail,
       pageBuilder: (context, state) {
         final extra = state.extra;
-        final roomId = extra is String
-            ? extra
-            : state.uri.queryParameters['roomId'];
+        final roomId =
+            extra is String ? extra : state.uri.queryParameters['roomId'];
         return NoTransitionPage<void>(
           key: state.pageKey,
           child: ChallengeDetailScreen(roomId: roomId),
@@ -403,10 +407,6 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
       pageBuilder: _fadePage(const DiaPackStoreScreen()),
     ),
     GoRoute(
-      path: RouteNames.web3Wallet,
-      pageBuilder: _fadePage(const Web3WalletScreen()),
-    ),
-    GoRoute(
       path: RouteNames.stampTour,
       pageBuilder: _fadePage(const StampTourScreen()),
     ),
@@ -439,6 +439,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.watchSettings,
       pageBuilder: _fadePage(const DeviceConnectionScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.watchAppPreview,
+      pageBuilder: _fadePage(const WatchAppPreviewScreen()),
     ),
     GoRoute(
       path: RouteNames.smartWatchSync,

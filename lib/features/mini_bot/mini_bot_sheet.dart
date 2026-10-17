@@ -23,6 +23,26 @@ const double miniBotFabBottomClearance = 24;
 /// 달팽이봇을 연 화면. 화면마다 추천 질문 칩이 다르다.
 enum MiniBotScreen { home, lobby }
 
+/// 달팽이봇 버튼 위에 잠깐 뜨는 한마디. 하루에 하나씩 돌아가며, 봇이 실제로 답할 수 있는 내용만 쓴다.
+abstract final class MiniBotBubble {
+  static const home = [
+    '궁금한 게 있으면 저를 눌러 물어보세요',
+    '오늘 목표나 SHARE가 궁금하면 물어보세요',
+    '기록 지키기가 헷갈리면 제가 알려 드려요',
+  ];
+  static const lobby = [
+    '어떤 챌린지가 맞는지 모르겠으면 물어보세요',
+    '참가비와 순위별 상금이 궁금하면 눌러 보세요',
+    '초급은 무료인지도 알려 드려요',
+  ];
+
+  static String forScreen(MiniBotScreen screen, DateTime now) {
+    final list = screen == MiniBotScreen.home ? home : lobby;
+    final dayOfYear = now.difference(DateTime(now.year)).inDays;
+    return list[dayOfYear % list.length];
+  }
+}
+
 /// 화면별 추천 질문. FAQ id로 가리키고 글자는 FAQ에서 가져온다.
 abstract final class MiniBotFaqChips {
   static const home = ['DO-03', 'SH-05', 'GR-07', 'SH-03'];
@@ -85,6 +105,8 @@ class MiniBotEntryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MiniBotDock(
       onOpen: () => MiniBotSheet.show(context, screen: screen),
+      message: MiniBotBubble.forScreen(screen, DateTime.now()),
+      messageId: screen.name,
     );
   }
 }

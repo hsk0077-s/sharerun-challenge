@@ -109,7 +109,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       return widget.roomTitle!;
     }
     if (widget.roomId == RouteNames.beginner1kmRoomId) {
-      return '1km 초보 챌린지방';
+      return '1km 초보 챌린지';
     }
     return AppStrings.liveRunningRoomTitle;
   }
@@ -122,7 +122,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
 
   Future<void> _loadIcons() async {
     try {
-      _runnerIcon = await _bubble(AppStrings.liveRunningYouLabel, AppColors.tealAccent);
+      _runnerIcon = await _bubble(AppStrings.liveRunningYouLabel, AppColors.nightLime);
       _ghostIcon = await _bubble(
         AppStrings.liveRunningGhostPace,
         AppColors.ghostPacePurple.withValues(alpha: 0.82),
@@ -189,7 +189,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: AppColors.liveRunningBackground,
+          backgroundColor: AppColors.nightBg,
           body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -303,7 +303,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 11,
-                      color: AppColors.textGreyLight,
+                      color: AppColors.nightMuted,
                     ),
                   ),
                 ),
@@ -544,13 +544,13 @@ class _Header extends StatelessWidget {
               ),
             ),
           ),
-          const VoiceCoachingHeaderToggle(color: AppColors.tealAccent),
-          const Icon(Icons.sensors_rounded, color: AppColors.tealAccent, size: 18),
+          const VoiceCoachingHeaderToggle(color: AppColors.nightLime),
+          const Icon(Icons.sensors_rounded, color: AppColors.nightLime, size: 18),
           const SizedBox(width: 4),
           Text(
             AppStrings.liveRunningGps,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.tealAccent,
+              color: AppColors.nightLime,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -588,16 +588,16 @@ class _BlurStats extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(AppShapes.cardRadius),
             border: Border.all(
-              color: AppColors.tealAccent.withValues(alpha: 0.5),
+              color: AppColors.nightLime.withValues(alpha: 0.5),
               width: 1.4,
             ),
           ),
           child: Row(
             children: [
               _Stat(AppStrings.liveRunningStatDistance, '${distanceKm.toStringAsFixed(1)} km'),
-              _Stat(AppStrings.liveRunningStatTime, '$mm:$ss', color: AppColors.primaryMint),
-              _Stat(AppStrings.liveRunningStatPace, paceLabel, color: AppColors.tealAccent),
-              _Stat('심박수', heartRate != null ? '$heartRate BPM' : '-- BPM', color: AppColors.error),
+              _Stat(AppStrings.liveRunningStatTime, '$mm:$ss', color: AppColors.nightLime),
+              _Stat(AppStrings.liveRunningStatPace, paceLabel, color: AppColors.nightLime),
+              _Stat('심박수', heartRate != null ? '$heartRate BPM' : '-- BPM', color: AppColors.nightDanger),
             ],
           ),
         ),
@@ -622,7 +622,7 @@ class _Stat extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.caption.copyWith(fontSize: 10, color: AppColors.textGreyLight),
+            style: AppTextStyles.caption.copyWith(fontSize: 10, color: AppColors.nightMuted),
           ),
           const SizedBox(height: 4),
           Text(
@@ -668,7 +668,7 @@ class _LiveMap extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppShapes.cardRadius),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.tealAccent.withValues(alpha: 0.4)),
+          border: Border.all(color: AppColors.nightLime.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(AppShapes.cardRadius),
         ),
         child: _body(context),
@@ -680,14 +680,14 @@ class _LiveMap extends StatelessWidget {
     if (permissionIssue != null &&
         permissionIssue != GpsPermissionResult.granted) {
       return ColoredBox(
-        color: AppColors.liveMapBackground,
+        color: AppColors.nightCard,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.location_off_rounded, color: AppColors.error, size: 40),
+                const Icon(Icons.location_off_rounded, color: AppColors.nightDanger, size: 40),
                 const SizedBox(height: 12),
                 Text(
                   startError ?? '위치 권한이 필요합니다.',
@@ -696,7 +696,7 @@ class _LiveMap extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 FilledButton(
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.tealAccent),
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.nightLime),
                   onPressed: onOpenSettings,
                   child: const Text('시스템 설정 열기'),
                 ),
@@ -708,17 +708,17 @@ class _LiveMap extends StatelessWidget {
     }
     if (!AppEnv.isGoogleMapsConfigured) {
       return const ColoredBox(
-        color: AppColors.liveMapBackground,
+        color: AppColors.nightCard,
         child: Center(
-          child: Text('Google Maps API 키가 설정되지 않았습니다.', style: TextStyle(color: AppColors.textGreyLight)),
+          child: Text('Google Maps API 키가 설정되지 않았습니다.', style: TextStyle(color: AppColors.nightMuted)),
         ),
       );
     }
     if (lastLatitude == null || lastLongitude == null) {
       return const ColoredBox(
-        color: AppColors.liveMapBackground,
+        color: AppColors.nightCard,
         child: Center(
-          child: CircularProgressIndicator(color: AppColors.tealAccent, strokeWidth: 2.4),
+          child: CircularProgressIndicator(color: AppColors.nightLime, strokeWidth: 2.4),
         ),
       );
     }
@@ -737,7 +737,7 @@ class _LiveMap extends StatelessWidget {
           ? {
               Polyline(
                 polylineId: const PolylineId('live-route'),
-                color: AppColors.tealAccent,
+                color: AppColors.nightLime,
                 width: 5,
                 points: pts,
               ),
@@ -777,7 +777,7 @@ class _EffortCapsule extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(99),
-        border: Border.all(color: AppColors.primaryMint.withValues(alpha: 0.35)),
+        border: Border.all(color: AppColors.nightLime.withValues(alpha: 0.35)),
       ),
       child: Text(
         '💡 $tip',
@@ -835,7 +835,7 @@ class _SlideToFinishState extends State<_SlideToFinish> {
           child: Container(
             height: AppShapes.buttonHeight,
             decoration: BoxDecoration(
-              color: AppColors.primaryMint,
+              color: AppColors.nightLime,
               borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
             ),
             child: Stack(
@@ -844,7 +844,7 @@ class _SlideToFinishState extends State<_SlideToFinish> {
                 Text(
                   widget.label,
                   style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.textBlack,
+                    color: AppColors.nightOnLime,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -854,7 +854,7 @@ class _SlideToFinishState extends State<_SlideToFinish> {
                     width: knob,
                     height: knob,
                     decoration: const BoxDecoration(
-                      color: AppColors.textBlack,
+                      color: AppColors.nightOnLime,
                       shape: BoxShape.circle,
                     ),
                     child: widget.loading
@@ -888,7 +888,7 @@ class _JenaOverlay extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: AppColors.primaryMint),
+            CircularProgressIndicator(color: AppColors.nightLime),
             SizedBox(height: 16),
             Text(
               'Jena AI가 러닝 데이터를 검증 중입니다...',

@@ -36,7 +36,7 @@ class SRCCheckbox extends StatelessWidget {
             ? Icon(
                 Icons.check_rounded,
                 size: size * 0.72,
-                color: AppColors.textWhite,
+                color: AppColors.nightOnLime,
               )
             : null,
       ),

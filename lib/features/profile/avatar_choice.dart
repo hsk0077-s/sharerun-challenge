@@ -100,20 +100,20 @@ abstract final class AvatarPresets {
     label: '거북이',
     asset: 'assets/images/characters/tier_turtle.png',
   );
-  static const maltese = AvatarPreset(
-    id: 'maltese',
-    label: '몰티즈',
-    asset: 'assets/images/characters/tier_maltese.png',
+  static const beagle = AvatarPreset(
+    id: 'beagle',
+    label: '비글',
+    asset: 'assets/images/characters/tier_beagle.png',
   );
   static const wolf = AvatarPreset(
     id: 'wolf',
     label: '늑대',
     asset: 'assets/images/characters/tier_wolf.png',
   );
-  static const horse = AvatarPreset(
-    id: 'horse',
-    label: '말',
-    asset: 'assets/images/characters/tier_horse.png',
+  static const zebra = AvatarPreset(
+    id: 'zebra',
+    label: '얼룩말',
+    asset: 'assets/images/characters/tier_zebra.png',
   );
   static const cheetah = AvatarPreset(
     id: 'cheetah',
@@ -128,17 +128,17 @@ abstract final class AvatarPresets {
   static const _legacy = <AvatarPreset>[
     snail,
     turtle,
-    maltese,
+    beagle,
     wolf,
-    horse,
+    zebra,
     cheetah,
   ];
 
   static AvatarPreset byId(String id) {
     // 예전에 저장된 이름을 새 이름으로 이어 준다.
     final current = switch (id) {
-      'rabbit' => 'maltese',
-      'gazelle' => 'horse',
+      'rabbit' || 'maltese' => 'beagle',
+      'gazelle' || 'horse' => 'zebra',
       _ => id,
     };
     for (final preset in [...all, ..._legacy]) {

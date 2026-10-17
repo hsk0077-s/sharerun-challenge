@@ -67,6 +67,9 @@ class UserModel {
     required this.pushNotificationsEnabled,
     required this.economy,
     this.gradeRank = 0,
+    this.promotionPoints = 0,
+    this.promotionStep = 0,
+    this.promotionBlocked = '',
     this.nickname = '',
     this.preliminaryRunsCount = 0,
     this.gender = 'male',
@@ -96,6 +99,14 @@ class UserModel {
 
   /// Server-set grade 1-25 from three verified runs. 0 until assigned.
   final int gradeRank;
+
+  /// 승급 점수(서버 `promotion`). 다음 메달까지 `promotionStep`점이 필요하다.
+  /// 대회 결과가 한 번도 없으면 0이고, step이 0이면 서버가 아직 안 보낸 것.
+  final int promotionPoints;
+  final int promotionStep;
+
+  /// 점수가 찼는데 승급이 막힌 이유(`cooldown`·`tournaments`·`pace`·`season`). 없으면 ''.
+  final String promotionBlocked;
   final bool healthDataConsent;
   final bool sensitiveDataConsent;
   final bool termsAccepted;
@@ -258,6 +269,9 @@ class UserModel {
     WalletModel? wallet,
     int? tier,
     int? gradeRank,
+    int? promotionPoints,
+    int? promotionStep,
+    String? promotionBlocked,
     bool? healthDataConsent,
     bool? sensitiveDataConsent,
     bool? termsAccepted,
@@ -290,6 +304,9 @@ class UserModel {
       wallet: wallet ?? this.wallet,
       tier: tier ?? this.tier,
       gradeRank: gradeRank ?? this.gradeRank,
+      promotionPoints: promotionPoints ?? this.promotionPoints,
+      promotionStep: promotionStep ?? this.promotionStep,
+      promotionBlocked: promotionBlocked ?? this.promotionBlocked,
       healthDataConsent: healthDataConsent ?? this.healthDataConsent,
       sensitiveDataConsent: sensitiveDataConsent ?? this.sensitiveDataConsent,
       termsAccepted: termsAccepted ?? this.termsAccepted,
@@ -394,6 +411,9 @@ class UserModel {
         }),
         tier: (json['tier'] as num?)?.toInt() ?? 0,
         gradeRank: (json['gradeRank'] as num?)?.toInt() ?? 0,
+        promotionPoints: _promotionInt(json, 'points'),
+        promotionStep: _promotionInt(json, 'step'),
+        promotionBlocked: _promotionBlocked(json),
         healthDataConsent: json['healthDataConsent'] as bool? ??
             json['sensitiveDataConsent'] as bool? ??
             false,
@@ -451,3 +471,18 @@ class UserModel {
 /// 스펙 alias — canonical persisted profile is [UserModel].
 typedef UserProfile = UserModel;
 
+
+
+int _promotionInt(Map<String, dynamic> json, String key) {
+  final raw = json['promotion'];
+  if (raw is! Map) return 0;
+  final value = raw[key];
+  return value is num && value >= 0 ? value.toInt() : 0;
+}
+
+String _promotionBlocked(Map<String, dynamic> json) {
+  final raw = json['promotion'];
+  if (raw is! Map) return '';
+  final value = raw['blocked'];
+  return value is String ? value : '';
+}

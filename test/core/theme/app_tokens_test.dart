@@ -51,16 +51,18 @@ void main() {
     expect(AppShadows.cardElevation, 0);
   });
 
-  test('SrcTheme.light wires ColorScheme and ThemeExtension', () {
+  test('SrcTheme is one night theme and wires ColorScheme and ThemeExtension',
+      () {
     final theme = SrcTheme.light;
-    expect(theme.brightness, Brightness.light);
+    expect(identical(SrcTheme.light.extension<SrcTokens>(), null), isFalse);
+    expect(theme.brightness, Brightness.dark);
     expect(theme.colorScheme.primary, AppColors.primaryMint);
     expect(theme.colorScheme.secondary, AppColors.tealAccent);
     expect(theme.colorScheme.tertiary, AppColors.angelGold);
     expect(theme.colorScheme.error, AppColors.error);
-    expect(theme.extension<SrcTokens>(), SrcTokens.light);
-    expect(AppTheme.dark.brightness, Brightness.light);
-    expect(AppTheme.dark.extension<SrcTokens>(), SrcTokens.light);
+    expect(theme.extension<SrcTokens>(), SrcTokens.night);
+    expect(AppTheme.dark.brightness, Brightness.dark);
+    expect(AppTheme.dark.extension<SrcTokens>(), SrcTokens.night);
     expect(
       theme.textTheme.headlineLarge?.fontSize,
       AppTextStyles.header1.fontSize,

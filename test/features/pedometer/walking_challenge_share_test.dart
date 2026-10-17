@@ -361,7 +361,7 @@ void main() {
     expect(sent, isNotNull);
     expect(
       sent!.text,
-      '쉐어런 $roomTitle 방에 같이 도전해요!\n#쉐어런 #ShareRun',
+      '쉐어런 $roomTitle 대회에 같이 도전해요!\n#쉐어런 #ShareRun',
     );
     expect(sent!.subject, '쉐어런 챌린지 초대');
     expect(sent!.title, '쉐어런 챌린지 초대');

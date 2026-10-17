@@ -365,7 +365,8 @@ def test_cheer_does_not_pay_share_without_the_flag() -> None:
 
 def test_crew_create_dia_spends_free_first_and_replay_creates_nothing_else() -> None:
     db = _MemoryDb()
-    db.store["users/u1"] = _wallet(diamond=80, free=20, paid=60, share=40_000)
+    db.store["users/u1"] = {**_wallet(diamond=80, free=20, paid=60, share=40_000)}
+    db.store["users/u1"].pop("ownedCrewId")
     service = _service(db)
     user_ref = db.collection("users").document("u1")
 
@@ -412,7 +413,10 @@ def test_crew_create_dia_spends_free_first_and_replay_creates_nothing_else() -> 
     assert again.status == "already_created"
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 30
     assert db.store["users/u1"]["wallet"]["shareBalance"] == 40_000
-    assert len([path for path in db.store if path.startswith("crews/")]) == 1
+    assert [path for path in db.store if path.startswith("crews/")] == [
+        "crews/crew-dia",
+        "crews/crew-dia/members/u1",
+    ]
     assert len(_ledger(db)) == 1
 
 
@@ -420,6 +424,7 @@ def test_crew_create_uses_the_config_share_price() -> None:
     db = _MemoryDb()
     db.store["config/item_prices"] = {"crew_create_share": 1000}
     db.store["users/u1"] = _wallet(share=5000)
+    db.store["users/u1"].pop("ownedCrewId")
     service = _service(db)
     result = _commit_crew_found_tx.to_wrap(
         _MemoryTxn(),

@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
+import '../features/onboarding/src_onboarding_controller.dart';
 import '../core/theme/theme.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../data/models/company_tournament_config.dart';
 import '../data/models/tournament_model.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
@@ -86,66 +88,45 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
     final freeTickets =
         ref.watch(activeWalletProvider).asData?.value.freeTicketBalance ?? 0;
     ref.watch(signupFreeTicketGrantProvider);
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    final onDonation = Theme.of(context).colorScheme.onTertiary;
+    final c = context.srcTokens.colors;
+    final myTier = ref.watch(activeUserTierStructProvider);
+    final myAnimal = myTier == null || myTier.isSnail ? null : myTier.animal;
 
     return ListView(
       controller: _scrollController,
-      padding: EdgeInsets.all(tokens.spacing.page),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
       children: [
-        SrcSurfaceCard(
-          color: tokens.colors.donation.withValues(alpha: 0.16),
-          borderColor: tokens.colors.donation.withValues(alpha: 0.45),
-          padding: EdgeInsets.all(tokens.spacing.md + 2),
-          child: Text(
-            'Sponsor Boost: Every verified sweat drop funds real impact.',
-            style: textTheme.titleSmall?.copyWith(
-              color: onDonation,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ),
-        SizedBox(height: tokens.spacing.xl),
         Row(
           children: [
-            Expanded(
-              child: Text(
-                'Tournament Rooms',
-                style: textTheme.headlineSmall?.copyWith(
-                  color: tokens.colors.ink,
-                ),
-              ),
-            ),
-            Chip(
-              label: Text('My Tier $userTier'),
-              backgroundColor: tokens.colors.primary.withValues(alpha: 0.16),
-              side: BorderSide(color: tokens.colors.primary.withValues(alpha: 0.4)),
-              labelStyle: textTheme.labelMedium?.copyWith(
-                color: tokens.colors.ink,
-                fontWeight: FontWeight.w700,
-              ),
+            const StoreTag('TOURNAMENT'),
+            const Spacer(),
+            Text(
+              '내 티어 $userTier',
+              style: storeText(13, c.primary, w: FontWeight.w900),
             ),
           ],
         ),
-        SizedBox(height: tokens.spacing.sm),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton.icon(
-            onPressed: () => context.push(RouteNames.myTournaments),
-            icon: Icon(Icons.list_alt_rounded, color: tokens.colors.accent),
-            label: Text(
-              'My Tournaments (${joinedIds.length})',
-              style: textTheme.labelLarge?.copyWith(
-                color: tokens.colors.accent,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
+        const SizedBox(height: 10),
+        Text(
+          '검증된 땀 한 방울이 실제 기부로 이어져요.',
+          style: storeText(14, c.donation, w: FontWeight.w700, h: 1.4),
         ),
-        SizedBox(height: tokens.spacing.md),
-        for (final room in rooms)
-          _roomCard(
+        const SizedBox(height: 6),
+        _MyTournamentsLine(
+          count: joinedIds.length,
+          onTap: () {
+            final tabs = DefaultTabController.maybeOf(context);
+            if (tabs != null) {
+              tabs.animateTo(2);
+            } else {
+              context.push(RouteNames.myTournaments);
+            }
+          },
+        ),
+        ..._sections(
+          rooms: rooms,
+          myAnimal: myAnimal,
+          card: (room) => _roomCard(
             room: room,
             userTier: userTier,
             joined: joinedIds.contains(room.id),
@@ -155,22 +136,60 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             config: configAsync.asData?.value,
             freeTickets: freeTickets,
           ),
+        ),
         if (rooms.isEmpty)
-          SrcSurfaceCard(
-            child: ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'No tournament rooms yet',
-                style: textTheme.titleSmall?.copyWith(color: tokens.colors.ink),
-              ),
-              subtitle: Text(
-                'Seed Firestore tournaments to populate this list.',
-                style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 28),
+            child: Column(
+              children: [
+                Text(
+                  '아직 열린 대회가 없어요',
+                  style: storeText(16, c.ink, w: FontWeight.w800),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '새 대회가 열리면 여기에 나타나요.',
+                  style: storeText(13, c.muted),
+                ),
+              ],
             ),
           ),
       ],
     );
+  }
+
+  /// 대회를 "티어 대회 / 자유 대회 / 그 밖의 대회" 세 구역으로 나눠 보여 준다.
+  /// 내 등급과 같은 티어 대회가 맨 위에 온다. 비어 있는 구역은 보이지 않는다.
+  List<Widget> _sections({
+    required List<TournamentModel> rooms,
+    required TierAnimal? myAnimal,
+    required Widget Function(TournamentModel room) card,
+  }) {
+    final groups = TournamentSections.group(rooms, myAnimal);
+    final shown = [
+      groups.tier.isNotEmpty,
+      groups.free.isNotEmpty,
+      groups.other.isNotEmpty,
+    ].where((v) => v).length;
+    return [
+      if (groups.tier.isNotEmpty) ...[
+        _SectionHeader(
+          title: '티어 대회',
+          note: myAnimal == null
+              ? '등급을 받으면 참가할 수 있어요'
+              : '내 등급 ${myAnimal.labelKo}',
+        ),
+        for (final room in groups.tier) card(room),
+      ],
+      if (groups.free.isNotEmpty) ...[
+        const _SectionHeader(title: '자유 대회', note: '누구나 참가 · 승급 점수 절반'),
+        for (final room in groups.free) card(room),
+      ],
+      if (groups.other.isNotEmpty) ...[
+        _SectionHeader(title: shown > 1 ? '그 밖의 대회' : '대회'),
+        for (final room in groups.other) card(room),
+      ],
+    ];
   }
 
   Widget _roomCard({
@@ -218,7 +237,8 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
                 context: context,
                 ref: ref,
                 tournament: room,
-                prizeEntryShare: quote != null && quote.ready ? quote.entryShare : null,
+                prizeEntryShare:
+                    quote != null && quote.ready ? quote.entryShare : null,
                 prizeTicketCost: quote?.ticketCost ?? 0,
                 freeTicketBalance: freeTickets,
               ),
@@ -292,181 +312,278 @@ class _TournamentRoomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locked = room.lockedForTier(userTier);
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
+    final c = context.srcTokens.colors;
+    final feeText =
+        quote?.costLabel(freeTickets) ?? '${room.entryFeeShare} SHARE';
+    final joinLabel = locked
+        ? '낮은 등급 대회는 참가할 수 없어요'
+        : isJoined
+            ? '이미 참가했어요'
+            : canJoin && (room.isFull || !room.isRecruiting)
+                ? '추가 참가권으로 참가'
+                : room.isFull
+                    ? '정원이 가득 찼어요'
+                    : !room.isRecruiting
+                        ? '모집이 끝났어요'
+                        : quote != null
+                            ? quote!.shareJoinLabel
+                            : '${room.entryFeeShare} SHARE로 참가';
 
-    return SrcSurfaceCard(
-      margin: EdgeInsets.only(bottom: tokens.spacing.sm),
-      padding: EdgeInsets.all(tokens.spacing.md),
-      borderColor: highlighted
-          ? tokens.colors.primary
-          : tokens.colors.outline,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: highlighted ? c.primary : c.outline,
+          width: highlighted ? 1.6 : 1,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(
-                locked ? Icons.lock_rounded : Icons.lock_open_rounded,
-                color: locked ? tokens.colors.muted : tokens.colors.primary,
+              StoreTag(
+                'TIER ${room.requiredTier}',
+                color: locked ? c.muted : c.primary,
               ),
-              SizedBox(width: tokens.spacing.sm),
-              Expanded(
-                child: Text(
-                  room.title,
-                  style: textTheme.titleLarge?.copyWith(
-                    color: tokens.colors.ink,
-                  ),
-                ),
-              ),
-              Text(
-                'Tier ${room.requiredTier}',
-                style: textTheme.labelMedium?.copyWith(
-                  color: tokens.colors.muted,
-                ),
-              ),
-              if (isJoined) ...[
-                SizedBox(width: tokens.spacing.xs),
-                Chip(
-                  label: const Text('Joined'),
-                  visualDensity: VisualDensity.compact,
-                  backgroundColor: tokens.colors.accent.withValues(alpha: 0.14),
-                  side: BorderSide(
-                    color: tokens.colors.accent.withValues(alpha: 0.4),
-                  ),
-                  labelStyle: textTheme.labelSmall?.copyWith(
-                    color: tokens.colors.accent,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+              const Spacer(),
+              if (isJoined)
+                Text('참가 중',
+                    style: storeText(13, c.primary, w: FontWeight.w900)),
+              if (locked)
+                Icon(Icons.lock_outline_rounded, size: 16, color: c.muted),
             ],
           ),
-          SizedBox(height: tokens.spacing.sm),
+          const SizedBox(height: 8),
           Text(
-            'Sponsor: ${room.sponsorName}',
-            style: textTheme.bodyMedium?.copyWith(
-              color: tokens.colors.donation,
-              fontWeight: FontWeight.w700,
+            room.title,
+            style: storeText(
+              24,
+              locked ? c.muted : c.ink,
+              w: FontWeight.w900,
+              h: 1.25,
             ),
           ),
-          SizedBox(height: tokens.spacing.xxs + 2),
+          const SizedBox(height: 4),
           Text(
-            quote == null
-                ? '${room.targetDistanceKm.toStringAsFixed(1)}km / '
-                    '${room.entryFeeShare} Share entry / '
-                    '${room.recruitmentSummary}'
-                : '${room.targetDistanceKm.toStringAsFixed(1)}km / '
-                    '${quote!.costLabel(freeTickets)} / '
-                    '${room.recruitmentSummary}',
-            style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
-          ),
-          SizedBox(height: tokens.spacing.xs),
-          Text(
-            quote?.costLabel(freeTickets) ?? '${room.entryFeeShare} SHARE',
-            style: textTheme.labelMedium?.copyWith(
-              color: tokens.colors.accent,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          if (quote?.rulesLabel != null) ...[
-            SizedBox(height: tokens.spacing.xxs),
-            Text(
-              quote!.rulesLabel!,
-              style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
-            ),
-          ],
-          SizedBox(height: tokens.spacing.xxs),
-          Text(
-            AppStrings.winnerRewardNoConversion,
-            style: textTheme.bodyMedium?.copyWith(
-              color: tokens.colors.donation,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          Text(
-            prizeLine,
-            style: textTheme.bodySmall?.copyWith(
-              color: tokens.colors.donation,
-              fontWeight: FontWeight.w600,
-            ),
+            '후원  ${room.sponsorName}',
+            style: storeText(13, c.donation, w: FontWeight.w700),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: canJoin && prizeReady ? onJoin : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: tokens.colors.primary,
-                    foregroundColor: tokens.colors.onPrimary,
-                    disabledBackgroundColor: tokens.colors.outline,
-                    disabledForegroundColor: tokens.colors.muted,
-                  ),
-                  icon: Icon(locked ? Icons.lock_rounded : Icons.login_rounded),
-                  label: Text(
-                    locked
-                        ? 'Lower-tier room locked'
-                        : isJoined
-                            ? 'Already joined'
-                            : canJoin && (room.isFull || !room.isRecruiting)
-                                ? '추가 참가권으로 참가'
-                                : room.isFull
-                                    ? 'Room full'
-                                    : !room.isRecruiting
-                                        ? 'Not recruiting'
-                                        : quote != null
-                                            ? quote!.shareJoinLabel
-                                            : 'Join with Share',
-                  ),
-                ),
+              _RoomStat(
+                value: '${room.targetDistanceKm.toStringAsFixed(1)}km',
+                label: '목표 거리',
               ),
-              SizedBox(width: tokens.spacing.sm),
-              IconButton.filledTonal(
-                onPressed: onSponsor,
-                icon: Icon(
-                  Icons.campaign_rounded,
-                  color: tokens.colors.donation,
-                ),
-                tooltip: 'Sponsor this tournament',
-                style: IconButton.styleFrom(
-                  backgroundColor: tokens.colors.donation.withValues(alpha: 0.16),
-                ),
-              ),
+              const SizedBox(width: 8),
+              _RoomStat(value: feeText, label: '참가비', highlight: true),
+              const SizedBox(width: 8),
+              _RoomStat(value: room.recruitmentSummary, label: '모집'),
             ],
           ),
-          if (showTicketJoin && !isJoined && !locked) ...[
-            SizedBox(height: tokens.spacing.xs),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onTicketJoin,
-                icon: const Icon(Icons.confirmation_number_outlined),
-                label: Text(quote?.ticketJoinLabel ?? '무료 참가권으로 참가'),
-              ),
-            ),
+          if (quote?.rulesLabel != null) ...[
+            const SizedBox(height: 10),
+            Text(quote!.rulesLabel!, style: storeText(12, c.muted, h: 1.4)),
           ],
-          if (tierTicketJoinLabel != null && !isJoined && !locked) ...[
-            SizedBox(height: tokens.spacing.xs),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onTierTicketJoin,
-                icon: const Icon(Icons.confirmation_number_outlined),
-                label: Text(tierTicketJoinLabel!),
-              ),
-            ),
-          ],
-          SizedBox(height: tokens.spacing.xs),
+          const SizedBox(height: 12),
           Text(
-            'Sponsor options: direct fixed prize support or UNICEF donation.',
-            style: textTheme.bodySmall?.copyWith(
-              color: tokens.colors.muted,
-              fontSize: 12,
+            AppStrings.winnerRewardNoConversion,
+            style: storeText(13, c.donation, w: FontWeight.w800, h: 1.4),
+          ),
+          const SizedBox(height: 2),
+          Text(prizeLine, style: storeText(12, c.donation, h: 1.4)),
+          const SizedBox(height: 16),
+          StorePillButton(
+            label: joinLabel,
+            icon: locked ? Icons.lock_rounded : null,
+            onPressed: canJoin && prizeReady ? onJoin : null,
+          ),
+          if (showTicketJoin && !isJoined && !locked)
+            _RoomLinkLine(
+              label: quote?.ticketJoinLabel ?? '무료 참가권으로 참가',
+              onTap: onTicketJoin,
             ),
+          if (tierTicketJoinLabel != null && !isJoined && !locked)
+            _RoomLinkLine(label: tierTicketJoinLabel!, onTap: onTierTicketJoin),
+          _RoomLinkLine(
+            label: '이 대회 후원하기',
+            icon: Icons.campaign_rounded,
+            onTap: onSponsor,
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RoomStat extends StatelessWidget {
+  const _RoomStat({
+    required this.value,
+    required this.label,
+    this.highlight = false,
+  });
+
+  final String value;
+  final String label;
+  final bool highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 12, 10, 10),
+        decoration: BoxDecoration(
+          color: c.canvas,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: c.outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: storeText(
+                14,
+                highlight ? c.primary : c.ink,
+                w: FontWeight.w900,
+                h: 1.25,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(label, style: storeText(11, c.muted)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 카드 아래의 한 줄 링크. 아래 선 없이 글자와 화살표만.
+class _RoomLinkLine extends StatelessWidget {
+  const _RoomLinkLine({required this.label, required this.onTap, this.icon});
+
+  final String label;
+  final VoidCallback? onTap;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Row(
+          children: [
+            Icon(icon ?? Icons.confirmation_number_outlined,
+                size: 18, color: c.muted),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(label, style: storeText(13, c.muted, h: 1.35)),
+            ),
+            Icon(Icons.chevron_right_rounded, size: 20, color: c.muted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MyTournamentsLine extends StatelessWidget {
+  const _MyTournamentsLine({required this.count, required this.onTap});
+
+  final int count;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: c.outline)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.list_alt_rounded, size: 20, color: c.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '내 대회 ($count)',
+                style: storeText(16, c.ink, w: FontWeight.w700),
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: c.muted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 구역 제목. 오른쪽에 짧은 설명이 붙을 수 있다.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.title, this.note});
+
+  final String title;
+  final String? note;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.baseline,
+        textBaseline: TextBaseline.alphabetic,
+        children: [
+          Text(title, style: storeText(15, c.ink, w: FontWeight.w900)),
+          if (note != null) ...[
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                note!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: storeText(12, c.muted, w: FontWeight.w700),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// 대회 목록을 구역으로 나누는 순수 함수. 시험하기 쉽게 따로 뒀다.
+abstract final class TournamentSections {
+  static ({
+    List<TournamentModel> tier,
+    List<TournamentModel> free,
+    List<TournamentModel> other,
+  }) group(List<TournamentModel> rooms, TierAnimal? myAnimal) {
+    final mine = myAnimal == null ? 0 : myAnimal.index + 1;
+    final tier = rooms.where((r) => r.isTierTournament).toList()
+      ..sort((a, b) {
+        // 내 등급 대회가 먼저, 그다음 낮은 등급 순.
+        int rank(TournamentModel r) => r.tierAnimal == mine ? 0 : r.tierAnimal;
+        return rank(a).compareTo(rank(b));
+      });
+    return (
+      tier: tier,
+      free: rooms.where((r) => r.isFreeTournament).toList(),
+      other: rooms
+          .where((r) => !r.isTierTournament && !r.isFreeTournament)
+          .toList(),
     );
   }
 }

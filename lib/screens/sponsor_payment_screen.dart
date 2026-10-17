@@ -40,7 +40,7 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sponsor Payment')),
+      appBar: AppBar(title: const Text('대회 후원')),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -57,14 +57,14 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
           DropdownButtonFormField<int>(
             value: amountShare,
             decoration: const InputDecoration(
-              labelText: 'Sponsor amount',
+              labelText: '후원 금액',
               border: OutlineInputBorder(),
             ),
             items: PaymentConstants.sponsorAmountOptionsShare
                 .map(
                   (amount) => DropdownMenuItem(
                     value: amount,
-                    child: Text('$amount Share'),
+                    child: Text('$amount SHARE'),
                   ),
                 )
                 .toList(),
@@ -83,7 +83,7 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.campaign_rounded),
-            label: Text(creating ? 'Creating payment...' : 'Proceed to PG Payment'),
+            label: Text(creating ? '결제 준비 중...' : '결제 진행하기'),
           ),
         ],
       ),
@@ -126,7 +126,7 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
       final credited = await context.push<bool>(
         RouteNames.paymentWebView,
         extra: PaymentWebViewArgs(
-          title: 'Sponsor PG Payment',
+          title: '후원 결제',
           paymentUrl: intent.pgUrl,
           paymentIntentId: intent.id,
         ),
@@ -142,7 +142,7 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sponsor payment failed: $error')),
+        SnackBar(content: Text('후원 결제에 실패했어요: $error')),
       );
     } finally {
       if (mounted) {

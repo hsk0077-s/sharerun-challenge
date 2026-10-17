@@ -27,7 +27,8 @@ class DeviceConnectionScreen extends ConsumerStatefulWidget {
       _DeviceConnectionScreenState();
 }
 
-class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen> {
+class _DeviceConnectionScreenState
+    extends ConsumerState<DeviceConnectionScreen> {
   var _busy = false;
 
   @override
@@ -130,12 +131,15 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
                             HealthDataType.ACTIVE_ENERGY_BURNED,
                           ];
                           // 1단계: 이미 권한이 부여되어 있는지 사전 체크
-                          bool? hasPermissions = await Health().hasPermissions(types);
+                          bool? hasPermissions =
+                              await Health().hasPermissions(types);
                           if (hasPermissions == true) {
                             // 이미 연동된 경우 팝업 후 등급 배정 안내로 진행
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('이미 구글 헬스 커넥트와 연동되어 있습니다.'), backgroundColor: Color(0xFF00CBA9)),
+                                const SnackBar(
+                                    content: Text('이미 구글 헬스 커넥트와 연동되어 있습니다.'),
+                                    backgroundColor: Color(0xFF00CBA9)),
                               );
                             }
                             await _finishWatchAndContinue(
@@ -145,11 +149,14 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
                             return;
                           }
                           // 2단계: 권한이 없을 경우에만 권한 창 띄우기
-                          final bool isAuthorized = await Health().requestAuthorization(types);
+                          final bool isAuthorized =
+                              await Health().requestAuthorization(types);
                           if (isAuthorized) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('구글 헬스 커넥트 연동 완료'), backgroundColor: Color(0xFF00CBA9)),
+                                const SnackBar(
+                                    content: Text('구글 헬스 커넥트 연동 완료'),
+                                    backgroundColor: Color(0xFF00CBA9)),
                               );
                             }
                             await _finishWatchAndContinue(
@@ -167,7 +174,9 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
                           debugPrint('Health Connect Error: $e');
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('기기가 호환되지 않거나 연동 중 오류가 발생했습니다.')),
+                              const SnackBar(
+                                  content:
+                                      Text('기기가 호환되지 않거나 연동 중 오류가 발생했습니다.')),
                             );
                           }
                         }
@@ -199,6 +208,12 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
                       selected: watchType == WatchType.coros,
                       enabled: !_busy && authUser != null,
                       onConnect: _showComingSoonDialog,
+                    ),
+                    const SizedBox(height: 16),
+                    OutlinedButton(
+                      key: const Key('watch-app-preview-entry'),
+                      onPressed: () => context.push(RouteNames.watchAppPreview),
+                      child: const Text('워치 전용 앱 (예정) 미리 보기'),
                     ),
                     const SizedBox(height: 28),
                     Text(
@@ -577,8 +592,7 @@ class _DeviceConnectionScreenState extends ConsumerState<DeviceConnectionScreen>
     if (uid == null || !mounted || !context.mounted) return;
 
     final hasHealthConsent =
-        ref.read(activeUserProfileProvider).value?.healthDataConsent ??
-            false;
+        ref.read(activeUserProfileProvider).value?.healthDataConsent ?? false;
 
     if (watchType != WatchType.none && !hasHealthConsent) {
       final consented = await _openHealthConsent();
@@ -813,7 +827,7 @@ class _ExternalDeviceTile extends StatelessWidget {
           child: FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primaryMint,
-              foregroundColor: AppColors.textWhite,
+              foregroundColor: AppColors.nightOnLime,
               disabledBackgroundColor: AppColors.buttonDisabled,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               shape: RoundedRectangleBorder(

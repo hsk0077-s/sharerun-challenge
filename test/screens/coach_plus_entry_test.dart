@@ -68,18 +68,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.storeTitle), findsOneWidget);
-    expect(find.text(AppStrings.storeChargeCta), findsOneWidget);
+    expect(find.text(AppStrings.storeTitle), findsWidgets);
     expect(find.byKey(const Key('coach-plus-store')), findsOneWidget);
 
     final coach = tester.widget<InkWell>(
       find.byKey(const Key('coach-plus-store')),
     );
     expect(coach.onTap, isNotNull);
-    expect(find.text(AppStrings.storeChargeCta), findsOneWidget);
 
-    await tester.tap(find.text(AppStrings.storeChargeCta));
+    await tester.tap(find.byKey(const Key('store-tab-diamond')));
     await tester.pumpAndSettle();
-    expect(find.text(AppStrings.iapBillingTitle), findsOneWidget);
+    await tester.tap(find.byKey(const Key('store-pack-dia_pack_130')));
+    await tester.pumpAndSettle();
+    expect(find.text('DIA 팩'), findsOneWidget);
   });
 }

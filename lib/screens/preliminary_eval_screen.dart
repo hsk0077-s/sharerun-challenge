@@ -41,11 +41,11 @@ class PreliminaryEvalScreen extends ConsumerWidget {
         : (profile?.economy.gradeRunCount ?? 0).clamp(0, _total);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.nightBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.nightBg,
         elevation: 0,
-        foregroundColor: AppColors.textBlack,
+        foregroundColor: AppColors.nightInk,
         centerTitle: true,
         title: const Text(
           '등급 배정',
@@ -63,7 +63,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                 '서버가 세 기록의 중간 페이스로 등급을 정해 드려요.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.textGrey,
+                  color: AppColors.nightMuted,
                   fontSize: 14,
                   height: 1.45,
                 ),
@@ -76,7 +76,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
-                  color: AppColors.textBlack,
+                  color: AppColors.nightInk,
                 ),
               ),
               const SizedBox(height: 16),
@@ -93,8 +93,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                             height: 10,
                             decoration: BoxDecoration(
                               color: reached
-                                  ? AppColors.primaryMint
-                                  : AppColors.borderLight,
+                                  ? AppColors.nightLime
+                                  : AppColors.nightLine,
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
@@ -105,8 +105,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: reached
-                                  ? AppColors.primaryMintDark
-                                  : AppColors.textGreyLight,
+                                  ? AppColors.nightLime
+                                  : AppColors.nightMuted,
                             ),
                           ),
                         ],
@@ -121,7 +121,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                 '기록이 서버에서 확인된 뒤에 횟수가 올라가요.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: AppColors.textGrey,
+                  color: AppColors.nightMuted,
                   fontSize: 12,
                   height: 1.45,
                 ),
@@ -132,7 +132,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                   '등급은 홈에서 달리면서 정해져요. 지금 건너뛰어도 괜찮아요.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textGrey,
+                    color: AppColors.nightMuted,
                     fontSize: 13,
                     height: 1.45,
                   ),
@@ -152,8 +152,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                             )
                         : () => _goHome(context),
                     style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primaryMint,
-                      foregroundColor: AppColors.textWhite,
+                      backgroundColor: AppColors.nightLime,
+                      foregroundColor: AppColors.nightOnLime,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

@@ -22,6 +22,17 @@ from app.models.secured_actions import (
     CoachPlusActivateRequest,
     CreateChallengeRoomRequest,
     CreateChallengeRoomResult,
+    CrewEmblemPurchaseRequest,
+    AccessoryEquipRequest,
+    CrewDecideRequest,
+    CrewRenameRequest,
+    DiaRefundRequest,
+    CrewJoinModeRequest,
+    CrewJoinRequest,
+    CrewTargetRequest,
+    CrewRoleRequest,
+    CrewEmblemRequest,
+    CrewEmblemStatus,
     CrewFoundRequest,
     CrewSpendRequest,
     CosmeticCatalogItem,
@@ -45,6 +56,7 @@ from app.services.auth_service import require_uid
 from app.services import appeals, integrity, login_devices, privacy_settings
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
+from app.services import crew_membership, dia_refund, sponsorship_records
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -100,6 +112,33 @@ def request_refund(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.request_refund(uid=uid, request=request)
+
+
+@router.get("/sponsorship/summary")
+def sponsorship_summary(uid: str = Depends(require_uid)) -> dict:
+    """Public totals of donation sponsorship (amounts held back until enough sponsors)."""
+    return sponsorship_records.summary(service.firebase_service.db, uid)
+
+
+@router.get("/sponsorship/mine")
+def sponsorship_mine(uid: str = Depends(require_uid)) -> dict:
+    """The caller's own sponsorship entries. Nobody else's."""
+    return sponsorship_records.mine(service.firebase_service.db, uid)
+
+
+@router.get("/wallet/dia-purchases")
+def dia_purchases(uid: str = Depends(require_uid)) -> dict:
+    """DIA pack purchases inside the refund period, each with what a refund would pay."""
+    return {
+        "refund_days": dia_refund.refund_days(),
+        "purchases": dia_refund.list_refundable(service.firebase_service.db, uid),
+    }
+
+
+@router.post("/wallet/dia-refund")
+def dia_refund_request(request: DiaRefundRequest, uid: str = Depends(require_uid)) -> dict:
+    """Cash refund of the unused paid DIA of one pack bought in the last 7 days."""
+    return dia_refund.request_refund(service, uid, request.purchase_id)
 
 
 @router.post("/pedometer/harvest", response_model=SecuredActionResult)
@@ -196,6 +235,7 @@ def purchase_shop_item(
         uid=uid,
         item_id=request.item_id,
         request_id=request.request_id,
+        pay_with=request.pay_with,
     )
 
 
@@ -210,6 +250,96 @@ def spend_crew_action(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.spend_crew_action(uid=uid, action=request.action)
+
+
+@router.post("/crew/emblem", response_model=SecuredActionResult)
+def change_crew_emblem(
+    request: CrewEmblemRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.change_crew_emblem(uid=uid, emblem=request.emblem)
+
+
+@router.get("/crew/list")
+def list_crews(query: str = "", uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.list_crews(service.firebase_service.db, query[:40], uid)
+
+
+@router.get("/crew/mine")
+def my_crew(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.my_crew(service.firebase_service.db, uid)
+
+
+@router.post("/crew/join")
+def join_crew(request: CrewJoinRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.join(service.firebase_service.db, uid, request.crew_id)
+
+
+@router.post("/crew/leave")
+def leave_crew(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.leave(service.firebase_service.db, uid)
+
+
+@router.post("/crew/join-mode")
+def set_crew_join_mode(request: CrewJoinModeRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.set_join_mode(service.firebase_service.db, uid, request.mode)
+
+
+@router.get("/crew/requests")
+def crew_join_requests(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.list_requests(service.firebase_service.db, uid)
+
+
+@router.post("/crew/requests/decide")
+def decide_crew_request(request: CrewDecideRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.decide_request(
+        service.firebase_service.db, uid, request.uid, request.approve
+    )
+
+
+@router.post("/crew/requests/cancel")
+def cancel_crew_request(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.cancel_request(service.firebase_service.db, uid)
+
+
+@router.post("/crew/kick")
+def kick_crew_member(request: CrewTargetRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.kick(service.firebase_service.db, uid, request.uid)
+
+
+@router.post("/crew/transfer")
+def transfer_crew(request: CrewTargetRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.transfer(service.firebase_service.db, uid, request.uid)
+
+
+@router.post("/crew/disband")
+def disband_crew(uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.disband(service.firebase_service.db, uid)
+
+
+@router.post("/crew/rename")
+def rename_crew(request: CrewRenameRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.rename(service, uid, request.name, request.request_id)
+
+
+@router.post("/crew/role")
+def set_crew_role(request: CrewRoleRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.set_role(service.firebase_service.db, uid, request.uid, request.role)
+
+
+@router.get("/crew/emblem/status", response_model=CrewEmblemStatus)
+def crew_emblem_status(uid: str = Depends(require_uid)) -> CrewEmblemStatus:
+    return CrewEmblemStatus(**service.crew_emblem_status(uid=uid))
+
+
+@router.post("/crew/emblem/purchase", response_model=SecuredActionResult)
+def purchase_crew_paid_emblem(
+    request: CrewEmblemPurchaseRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.purchase_crew_paid_emblem(
+        uid=uid, emblem_id=request.emblem_id, request_id=request.request_id
+    )
 
 
 @router.post("/profile/nickname", response_model=SecuredActionResult)
@@ -230,6 +360,7 @@ def found_crew(
         name=request.name,
         pay_with=request.pay_with,
         request_id=request.request_id,
+        emblem=request.emblem,
     )
 
 
@@ -275,6 +406,14 @@ def equip_cosmetic_item(
         request_id=request.request_id,
         equip=request.equip,
     )
+
+
+@router.post("/shop/accessories/equip", response_model=SecuredActionResult)
+def equip_accessory(
+    request: AccessoryEquipRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.equip_accessory(uid=uid, slot=request.slot, item_id=request.item_id)
 
 
 @router.post("/shop/catalog", response_model=ShopCatalogView)

@@ -22,8 +22,8 @@ class CrewManagerScreen extends ConsumerStatefulWidget {
 }
 
 class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
-  static const _royalBlue = Color(0xFF3182F6);
-  static const _saveNavy = Color(0xFF1A2B4A);
+  static const _royalBlue = AppColors.nightLime;
+  static const _saveNavy = AppColors.nightLime;
 
   static const _profileChangeDia = 100;
   static const _expandMembersDia = 300;
@@ -54,8 +54,9 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
 
   Future<bool> _spendOnServer(String action, String actionLabel) async {
     try {
-      final result =
-          await ref.read(securedActionApiClientProvider).spendCrewAction(action);
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .spendCrewAction(action);
       if (!mounted) return false;
       ref.read(walletProvider.notifier).applyWalletSnapshot(
             shareBalance: result.shareBalance,
@@ -255,7 +256,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                                 onPressed: _onPushNotice,
                                 style: FilledButton.styleFrom(
                                   backgroundColor: AppColors.primaryMintDark,
-                                  foregroundColor: AppColors.textWhite,
+                                  foregroundColor: AppColors.nightOnLime,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(
                                       AppShapes.cardRadius,
@@ -271,7 +272,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                                     Text(
                                       AppStrings.crewManagerPushNotice,
                                       style: AppTextStyles.buttonText.copyWith(
-                                        color: AppColors.textWhite,
+                                        color: AppColors.nightOnLime,
                                         fontSize: 14,
                                       ),
                                     ),
@@ -291,14 +292,16 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                       _ManagerWhiteCard(
                         child: Row(
                           children: [
-                            Text(
-                              AppStrings.crewManagerProfileLabel,
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
+                            Expanded(
+                              child: Text(
+                                AppStrings.crewManagerProfileLabel,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.agreementLabel.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                            const Spacer(),
                             const Text('💎', style: TextStyle(fontSize: 16)),
                             const SizedBox(width: 8),
                             _RoyalBlueChip(
@@ -461,7 +464,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         onPressed: _onSave,
                         style: FilledButton.styleFrom(
                           backgroundColor: _saveNavy,
-                          foregroundColor: AppColors.textWhite,
+                          foregroundColor: AppColors.nightOnLime,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                               AppShapes.cardRadius,
@@ -471,7 +474,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         child: Text(
                           AppStrings.crewManagerSave,
                           style: AppTextStyles.buttonText.copyWith(
-                            color: AppColors.textWhite,
+                            color: AppColors.nightOnLime,
                             fontSize: 15,
                           ),
                         ),
@@ -570,7 +573,7 @@ class _RoyalBlueChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFF3182F6),
+      color: AppColors.nightLime,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: onTap,
@@ -580,7 +583,7 @@ class _RoyalBlueChip extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.caption.copyWith(
-              color: Colors.white,
+              color: AppColors.nightOnLime,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),
@@ -605,7 +608,7 @@ class _RoyalBlueButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFF3182F6),
+      color: AppColors.nightLime,
       borderRadius: BorderRadius.circular(AppShapes.cardRadius),
       child: InkWell(
         onTap: onTap,
@@ -618,7 +621,7 @@ class _RoyalBlueButton extends StatelessWidget {
               Text(
                 label,
                 style: AppTextStyles.buttonText.copyWith(
-                  color: Colors.white,
+                  color: AppColors.nightOnLime,
                   fontSize: 13,
                 ),
               ),
@@ -627,7 +630,7 @@ class _RoyalBlueButton extends StatelessWidget {
                 Text(
                   subtitle!,
                   style: AppTextStyles.caption.copyWith(
-                    color: Colors.white70,
+                    color: AppColors.nightOnLime,
                     fontSize: 11,
                   ),
                 ),
@@ -677,7 +680,7 @@ class _MemberRow extends StatelessWidget {
           child: Text(
             AppStrings.crewManagerAppointVice,
             style: AppTextStyles.caption.copyWith(
-              color: const Color(0xFF3182F6),
+              color: AppColors.nightLime,
               fontWeight: FontWeight.w700,
               fontSize: 11,
             ),

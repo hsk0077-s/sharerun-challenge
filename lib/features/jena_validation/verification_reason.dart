@@ -5,7 +5,7 @@ import 'models/jena_validation_result.dart';
 /// Plain Korean for a server [reason_code]. Null when the code is unknown.
 String? verificationReasonKo(String reasonCode) {
   return switch (reasonCode.trim()) {
-    'distance_too_short' => '거리가 이번 방의 최소 거리보다 짧아요. 방 거리만큼, 적어도 1km는 달려야 해요. '
+    'distance_too_short' => '거리가 이번 대회의 최소 거리보다 짧아요. 대회 거리만큼, 적어도 1km는 달려야 해요. '
         '기록은 남고 보상은 지급되지 않아요.',
     'cadence_out_of_range' =>
       '분당 걸음 수가 120~210 범위를 벗어났어요. 기록은 남고 보상은 지급되지 않아요.',

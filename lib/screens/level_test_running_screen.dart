@@ -77,7 +77,8 @@ class _LevelTestRunningScreenState extends State<LevelTestRunningScreen> {
                       const SizedBox(height: 20),
                       Material(
                         color: AppColors.primaryMint,
-                        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+                        borderRadius:
+                            BorderRadius.circular(AppShapes.cardRadius),
                         clipBehavior: Clip.antiAlias,
                         child: InkWell(
                           onTap: _onStartRun,
@@ -88,7 +89,7 @@ class _LevelTestRunningScreenState extends State<LevelTestRunningScreen> {
                               child: Text(
                                 AppStrings.levelTestStartRun,
                                 style: AppTextStyles.buttonText.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: AppColors.nightOnLime,
                                   fontSize: 16,
                                 ),
                               ),
@@ -135,15 +136,18 @@ class _StatsProgressCard extends StatelessWidget {
         children: [
           Row(
             children: const [
-              Expanded(child: _StatColumn(
+              Expanded(
+                  child: _StatColumn(
                 label: AppStrings.levelTestStatDistance,
                 value: AppStrings.levelTestStatDistanceValue,
               )),
-              Expanded(child: _StatColumn(
+              Expanded(
+                  child: _StatColumn(
                 label: AppStrings.levelTestStatTime,
                 value: AppStrings.levelTestStatTimeValue,
               )),
-              Expanded(child: _StatColumn(
+              Expanded(
+                  child: _StatColumn(
                 label: AppStrings.levelTestStatPace,
                 value: AppStrings.levelTestStatPaceValue,
               )),

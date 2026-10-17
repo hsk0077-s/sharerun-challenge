@@ -19,6 +19,7 @@ from app.services.item_price_config import (
     PERSONAL_SPONSOR_WON_PER_SHARE_ID,
     read_item_prices,
 )
+from app.services import sponsorship_records
 from app.services.streak_protection import require_request_id
 from app.services.wallet_funding import move_currency
 
@@ -70,6 +71,10 @@ def donate_personal_sponsor(
             share_spent=abs(int(row.get("shareAmount") or 0)),
         )
 
+    all_ref = month_ref = None
+    if purpose == "donation":
+        all_ref, month_ref = sponsorship_records.refs(service.firebase_service.db)
+        sponsorship_records.read_totals(transaction, all_ref, month_ref)
     moved = move_currency(wallet, share=-share_cost)
     count = max(0, int(user.get("donationCount") or 0)) + 1
     amount = max(0, int(user.get("cumulativeDonationAmount") or 0)) + (
@@ -84,9 +89,18 @@ def donate_personal_sponsor(
             "cumulativeDonationAmount": amount,
             "isSponsored": True,
             "angelTierCode": tier,
+            **({"personalDonationSponsored": True} if purpose == "donation" else {}),
             "updatedAt": SERVER_TIMESTAMP,
         },
     )
+    if all_ref is not None:
+        sponsorship_records.record_donation(
+            transaction,
+            all_ref,
+            month_ref,
+            won=share_cost * won_per_share,
+            first_time=user.get("personalDonationSponsored") is not True,
+        )
     transaction.set(
         ledger_ref,
         {

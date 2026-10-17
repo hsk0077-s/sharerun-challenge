@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers/app_providers.dart';
 import '../strings/app_strings.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_shadows.dart';
 import '../theme/app_text_styles.dart';
 
 /// 메인 대시보드 하단 네비게이션 바 (5대 탭).
@@ -26,15 +25,25 @@ class DashboardBottomNav extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final myPageDot = ref.watch(hasPendingJenaAppealProvider);
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceWhite,
-        boxShadow: AppShadows.nav,
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+    // 새 디자인: 화면 아래에 떠 있는 검정 알약 바. 탭 5개와 동작은 그대로다.
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.nightCard,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: AppColors.nightLine),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x99000000),
+                blurRadius: 24,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -98,32 +107,38 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primaryMint : AppColors.textGrey;
+    final color = selected ? AppColors.nightLime : AppColors.nightMuted;
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Badge(
-              isLabelVisible: showDot,
-              smallSize: 7,
-              backgroundColor: AppColors.error,
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                fontSize: 10,
-                color: color,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Badge(
+                isLabelVisible: showDot,
+                smallSize: 7,
+                backgroundColor: AppColors.nightDanger,
+                child: Icon(icon, color: color, size: 24),
               ),
-            ),
-          ],
+              const SizedBox(height: 2),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 10,
+                    color: color,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

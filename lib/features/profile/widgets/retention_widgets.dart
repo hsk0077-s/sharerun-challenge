@@ -13,7 +13,7 @@ import '../../pedometer/pedometer_health_cap.dart';
 import '../../home/home_cards.dart';
 import '../my_page_activity_stats.dart';
 
-/// 지갑 카드 내부 일일 5km 채굴 게이지.
+/// 지갑 카드 내부 일일 5km 땀방울 게이지.
 class DailyCapGauge extends StatelessWidget {
   const DailyCapGauge({super.key, required this.dailyKm});
 
@@ -31,7 +31,7 @@ class DailyCapGauge extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          '${km.toStringAsFixed(1)}km / ${cap.toStringAsFixed(1)}km 채굴 완료 ($percent%)',
+          '오늘 모은 땀방울 ${km.toStringAsFixed(1)}km / ${cap.toStringAsFixed(1)}km ($percent%)',
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: tokens.colors.accent,
@@ -128,10 +128,6 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
   var _storedSteps = 0;
   var _claimedSteps = 0;
 
-  static const _green = Color(0xFF0E3B2E);
-  static const _greenLight = Color(0xFF1B6B54);
-  static const _gold = Color(0xFFE8B84B);
-
   @override
   void initState() {
     super.initState();
@@ -197,7 +193,8 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
     );
     // 같은 계정의 다른 폰이 이미 올린 걸음은 서버 기준선에 들어 있다.
     final profile = ref.watch(activeUserProfileProvider).asData?.value;
-    final serverToday = profile != null && profile.pedometerHarvestDateKey == today;
+    final serverToday =
+        profile != null && profile.pedometerHarvestDateKey == today;
     final serverClaimed = serverToday ? profile.pedometerClaimedSteps : 0;
     final effectiveClaimed = claimed > serverClaimed ? claimed : serverClaimed;
     final numbers = HomeHeroNumbers.from(
@@ -214,138 +211,101 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
       steps: steps,
       claimedSteps: effectiveClaimed,
     );
-    final tier = ref.watch(activeUserTierStructProvider) ??
-        UserTier.unratedFallback;
     final km = ref.watch(pedometerStateProvider).km;
     final tokens = context.srcTokens;
+    final textTheme = Theme.of(context).textTheme;
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [_green, _greenLight],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  // 캐릭터 그림은 배경이 흰색이라 둥근 흰 판 안에 넣는다.
-                  ClipOval(
-                    child: ColoredBox(
-                      color: Colors.white,
-                      child: Image.asset(
-                        tier.avatarAssetPath,
-                        width: 72,
-                        height: 72,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) =>
-                            const SizedBox(width: 72, height: 72),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '오늘 걸음 (이 폰)',
-                          style: TextStyle(color: Colors.white70, fontSize: 13),
-                        ),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            '${groupedNumber(numbers.steps)} 걸음',
-                            key: SoloQuickStartBanner.stepsKey,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 34,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                        Text(
-                          otherPhoneAhead
-                              ? '다른 폰에서 이미 SHARE가 반영됐어요'
-                              : '100걸음 → 10 SHARE · 하루 최대 600',
-                          key: SoloQuickStartBanner.otherPhoneKey,
-                          style: const TextStyle(
-                              color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: numbers.progress,
-                  minHeight: 6,
-                  color: const Color(0xFF7FE3C0),
-                  backgroundColor: Colors.white24,
+      child: SrcSurfaceCard(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              '오늘 걸음 (이 폰)',
+              style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
+            ),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '${groupedNumber(numbers.steps)} 걸음',
+                key: SoloQuickStartBanner.stepsKey,
+                style: textTheme.displaySmall?.copyWith(
+                  color: tokens.colors.ink,
+                  fontSize: 44,
+                  fontWeight: FontWeight.w900,
+                  height: 1.05,
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _HeroChip(
-                      label: '오늘 거리 ${km.toStringAsFixed(1)} km',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _HeroChip(
-                      key: SoloQuickStartBanner.receivedKey,
-                      label: '받은 SHARE ${numbers.receivedShare}',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _HeroChip(
-                      key: SoloQuickStartBanner.pendingKey,
-                      label: '줍기 대기 ${numbers.pendingShare}',
-                      highlight: canCollect,
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              otherPhoneAhead
+                  ? '다른 폰에서 이미 SHARE가 반영됐어요'
+                  : '100걸음 → 10 SHARE · 하루 최대 600',
+              key: SoloQuickStartBanner.otherPhoneKey,
+              style: textTheme.bodySmall?.copyWith(
+                color: tokens.colors.accent,
+                fontWeight: FontWeight.w700,
               ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 48,
-                child: FilledButton(
-                  key: SoloQuickStartBanner.buttonKey,
-                  onPressed: widget.onTap,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _gold,
-                    foregroundColor: const Color(0xFF1E1E1E),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: tokens.radii.card,
-                    ),
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: numbers.progress,
+                minHeight: 6,
+                color: tokens.colors.accent,
+                backgroundColor: tokens.colors.outline,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _HeroChip(
+                    label: '오늘 거리 ${km.toStringAsFixed(1)} km',
                   ),
-                  child: Text(
-                    canCollect
-                        ? '${numbers.pendingShare} SHARE 줍기'
-                        : '걷기 챌린지 보기',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 16,
-                    ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _HeroChip(
+                    key: SoloQuickStartBanner.receivedKey,
+                    label: '받은 SHARE ${numbers.receivedShare}',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _HeroChip(
+                    key: SoloQuickStartBanner.pendingKey,
+                    label: '줍기 대기 ${numbers.pendingShare}',
+                    highlight: canCollect,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 52,
+              child: FilledButton(
+                key: SoloQuickStartBanner.buttonKey,
+                onPressed: widget.onTap,
+                style: FilledButton.styleFrom(
+                  backgroundColor: tokens.colors.primary,
+                  foregroundColor: tokens.colors.onPrimary,
+                  shape: const StadiumBorder(),
+                ),
+                child: Text(
+                  canCollect ? '${numbers.pendingShare} SHARE 줍기' : '걷기 챌린지 보기',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

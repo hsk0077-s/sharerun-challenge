@@ -21,13 +21,13 @@ class HallOfFameScreen extends ConsumerStatefulWidget {
 }
 
 class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
-  static const _saveNavy = Color(0xFF1A2B4A);
+  static const _saveNavy = AppColors.nightLime;
   static const _donateValue = 500;
 
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFE0F7FA), Colors.white],
+    colors: [Color(0xFF0B120E), AppColors.nightBg],
   );
 
   /// Latch so a second tap cannot donate again while the server write is in flight.
@@ -85,7 +85,7 @@ class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
         AppRouteNav.popOrHome(context);
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.nightBg,
         body: SRCGradientBackground(
           gradient: _screenGradient,
           child: LayoutBuilder(
@@ -136,7 +136,7 @@ class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
                               onPressed: _donating ? null : _onDonate,
                               style: FilledButton.styleFrom(
                                 backgroundColor: _saveNavy,
-                                foregroundColor: AppColors.textWhite,
+                                foregroundColor: AppColors.nightOnLime,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(
                                     AppShapes.cardRadius,
@@ -146,7 +146,7 @@ class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
                               child: Text(
                                 AppStrings.hallOfFameDonateCta,
                                 style: AppTextStyles.buttonText.copyWith(
-                                  color: AppColors.textWhite,
+                                  color: AppColors.nightOnLime,
                                   fontSize: 14,
                                 ),
                                 textAlign: TextAlign.center,

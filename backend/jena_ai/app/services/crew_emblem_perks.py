@@ -2,8 +2,9 @@
 
 * Unlock borders (4 kinds x bronze/silver/gold) are earned from crew stats the server
   keeps on the crew doc. They cannot be bought.
-* Paid illustrations (4) are bought with DIA by the crew leader and then owned by the crew.
-  Sale stays off until ``CREW_EMBLEM_PAID_SALE`` is ``on`` (the art is still a sample).
+* Paid illustrations (4) are bought with DIA by the crew leader and then owned by the crew,
+  keyed by id, so final art can replace the sample files without touching what crews own.
+  Sale is on; ``CREW_EMBLEM_PAID_SALE=off`` switches it off again.
 * The leader or a sub-leader may change the emblem; the server enforces a cooldown.
 """
 
@@ -44,7 +45,7 @@ def cooldown_days() -> int:
 
 
 def paid_sale_enabled() -> bool:
-    return os.environ.get("CREW_EMBLEM_PAID_SALE", "").strip().lower() == "on"
+    return os.environ.get("CREW_EMBLEM_PAID_SALE", "").strip().lower() not in {"off", "0", "false"}
 
 
 def _num(value: object) -> float:

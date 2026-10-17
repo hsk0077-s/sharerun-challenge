@@ -29,6 +29,15 @@ def _seed(db, crew: dict | None = None, uid: str = "u1", user: dict | None = Non
     db.store["crews/crew1"] = {"name": "c", "ownerUid": "u1", "emblem": "moon:lime", **(crew or {})}
 
 
+@pytest.fixture
+def plain_buy(monkeypatch):
+    """Run the purchase transaction without a real Firestore transaction."""
+    from app.services import secured_action_service as svc
+
+    original = svc._commit_crew_paid_emblem_tx
+    monkeypatch.setattr(svc, "_commit_crew_paid_emblem_tx", lambda tx, *args: original.to_wrap(tx, *args))
+
+
 @pytest.fixture(autouse=True)
 def _env(monkeypatch):
     monkeypatch.delenv("CREW_EMBLEM_COOLDOWN_DAYS", raising=False)
@@ -124,7 +133,8 @@ def test_paid_emblem_needs_ownership() -> None:
     assert _service(db).change_crew_emblem("u1", "paid:moon-wolf").status == "updated"
 
 
-def test_paid_sale_is_off_until_switched_on() -> None:
+def test_paid_sale_can_be_switched_off(monkeypatch) -> None:
+    monkeypatch.setenv("CREW_EMBLEM_PAID_SALE", "off")
     db = _MemoryDb()
     _seed(db)
     with pytest.raises(HTTPException) as caught:
@@ -134,7 +144,6 @@ def test_paid_sale_is_off_until_switched_on() -> None:
 
 
 def test_buying_charges_diamonds_once_and_the_crew_keeps_it(monkeypatch) -> None:
-    monkeypatch.setenv("CREW_EMBLEM_PAID_SALE", "on")
     db = _MemoryDb()
     _seed(db, user={"ownedCrewId": "crew1", "wallet": {"diamondBalance": 400}})
     service = _service(db)
@@ -155,7 +164,6 @@ def test_buying_charges_diamonds_once_and_the_crew_keeps_it(monkeypatch) -> None
 
 
 def test_not_enough_diamonds_buys_nothing(monkeypatch) -> None:
-    monkeypatch.setenv("CREW_EMBLEM_PAID_SALE", "on")
     db = _MemoryDb()
     _seed(db, user={"ownedCrewId": "crew1", "wallet": {"diamondBalance": 10}})
     service = _service(db)
@@ -173,5 +181,41 @@ def test_status_lists_progress_and_sale_state() -> None:
     status = _service(db).crew_emblem_status("u1")
     assert status["earned_borders"] == ["members-1"]
     assert status["progress"]["distance"] == 40.5
-    assert status["paid_sale_enabled"] is False
+    assert status["paid_sale_enabled"] is True
+    assert status["is_leader"] is True
     assert set(status["paid_prices"].values()) == {300}
+
+
+def test_sale_is_on_by_default_and_the_leader_buys_through_the_service(plain_buy) -> None:
+    db = _MemoryDb()
+    _seed(db, user={"ownedCrewId": "crew1", "wallet": {"diamondBalance": 1000}})
+    service = _service(db)
+    service.purchase_crew_paid_emblem("u1", "moon-wolf", "req-paid-1000")
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 700
+    assert db.store["crews/crew1"]["paidEmblems"] == ["moon-wolf"]
+    # 산 엠블럼은 바로 쓸 수 있다.
+    assert service.change_crew_emblem("u1", "paid:moon-wolf").status == "updated"
+
+
+def test_a_sub_leader_cannot_buy_and_a_second_buy_of_the_same_emblem_is_refused(plain_buy) -> None:
+    db = _MemoryDb()
+    _seed(db, {"subLeaderUids": ["u2"], "paidEmblems": ["moon-wolf"]})
+    db.store["users/u2"] = {"crewId": "crew1", "wallet": {"diamondBalance": 1000}}
+    service = _service(db)
+    with pytest.raises(HTTPException) as caught:
+        service.purchase_crew_paid_emblem("u2", "glow-heart", "req-paid-2000")
+    assert caught.value.status_code == 403
+    assert db.store["users/u2"]["wallet"]["diamondBalance"] == 1000
+    with pytest.raises(HTTPException) as caught:
+        service.purchase_crew_paid_emblem("u1", "moon-wolf", "req-paid-2001")
+    assert caught.value.status_code == 409
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 100
+    assert service.crew_emblem_status("u2")["is_leader"] is False
+
+
+def test_unknown_emblem_id_is_not_for_sale() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    with pytest.raises(HTTPException) as caught:
+        _service(db).purchase_crew_paid_emblem("u1", "free-gold", "req-paid-3000")
+    assert caught.value.status_code == 404

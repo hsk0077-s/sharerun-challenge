@@ -209,14 +209,16 @@ void main() {
       tester,
       status: const CrewEmblemStatus(
         paidSaleEnabled: true,
-        paidPrices: {'glow-heart': 50},
+        isLeader: true,
+        paidPrices: {'glow-heart': 300},
       ),
       onBuy: (id) async {
         bought.add(id);
         return const CrewEmblemStatus(
           paidSaleEnabled: true,
+          isLeader: true,
           paidOwned: {'glow-heart'},
-          paidPrices: {'glow-heart': 50},
+          paidPrices: {'glow-heart': 300},
         );
       },
       onResult: (_) {},
@@ -224,8 +226,58 @@ void main() {
     await tester.ensureVisible(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
     await tester.tap(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
     await tester.pumpAndSettle();
+    // 바로 사지 않고 값과 함께 먼저 묻는다.
+    expect(bought, isEmpty);
+    expect(find.textContaining('300 DIA'), findsWidgets);
+    await tester.tap(find.byKey(const Key('crew-emblem-buy-confirm')));
+    await tester.pumpAndSettle();
     expect(bought, ['glow-heart']);
     expect(find.text('보유'), findsOneWidget);
+  });
+
+  testWidgets('cancelling the question buys nothing; a sub-leader cannot buy',
+      (tester) async {
+    final bought = <String>[];
+    Future<CrewEmblemStatus?> buy(String id) async {
+      bought.add(id);
+      return null;
+    }
+
+    await pumpPicker(
+      tester,
+      status: const CrewEmblemStatus(
+        paidSaleEnabled: true,
+        isLeader: true,
+        paidPrices: {'glow-heart': 300},
+      ),
+      onBuy: buy,
+      onResult: (_) {},
+    );
+    await tester.ensureVisible(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.tap(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(bought, isEmpty);
+  });
+
+  testWidgets('a sub-leader sees the emblems but the leader-only note',
+      (tester) async {
+    await pumpPicker(
+      tester,
+      status: const CrewEmblemStatus(
+        paidSaleEnabled: true,
+        isLeader: false,
+        paidPrices: {'glow-heart': 300},
+      ),
+      onBuy: (id) async => null,
+      onResult: (_) {},
+    );
+    await tester.ensureVisible(find.byKey(const Key('crew-emblem-paid-leader-only')));
+    expect(find.byKey(const Key('crew-emblem-paid-leader-only')), findsOneWidget);
+    await tester.tap(find.byKey(CrewEmblemPicker.paidKey('glow-heart')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('crew-emblem-buy-confirm')), findsNothing);
   });
 
   testWidgets('picker returns the chosen shape and color', (tester) async {

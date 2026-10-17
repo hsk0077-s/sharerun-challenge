@@ -129,6 +129,7 @@ class CrewEmblemStatus(BaseModel):
     paid_sale_enabled: bool
     cooldown_seconds: int
     can_manage: bool
+    is_leader: bool = False
 
 
 class NicknameChangeRequest(BaseModel):

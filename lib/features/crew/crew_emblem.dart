@@ -585,10 +585,37 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
         change();
       });
 
+  var _buying = false;
+
   Future<void> _buy(String id) async {
     final buy = widget.onBuy;
-    if (buy == null) return;
+    if (buy == null || _buying) return;
+    final price = _status.paidPrices[id];
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('유료 엠블럼 사기'),
+        content: Text(
+          '${price == null ? '' : '$price DIA를 내고 '}이 엠블럼을 살까요?\n'
+          '크루가 평생 가지며 크루원 누구에게나 보여요. 크루를 없애면 함께 사라져요.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            key: const Key('crew-emblem-buy-confirm'),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('사기'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() => _buying = true);
     final next = await buy(id);
+    if (mounted) setState(() => _buying = false);
     if (!mounted || next == null) return;
     setState(() {
       _status = next;
@@ -731,7 +758,10 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
     final owned = _status.paidOwned.contains(id);
     final selected = _paid == id;
     final price = _status.paidPrices[id];
-    final canBuy = !owned && _status.paidSaleEnabled && widget.onBuy != null;
+    final canBuy = !owned &&
+        _status.paidSaleEnabled &&
+        _status.isLeader &&
+        widget.onBuy != null;
     return Column(
       children: [
         InkWell(
@@ -933,6 +963,15 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                 child: Text(
                   '판매는 준비 중이에요.',
                   key: const Key('crew-emblem-paid-preparing'),
+                  style: storeText(11, c.muted),
+                ),
+              )
+            else if (!_status.isLeader)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  '유료 엠블럼은 크루장만 살 수 있어요.',
+                  key: const Key('crew-emblem-paid-leader-only'),
                   style: storeText(11, c.muted),
                 ),
               ),

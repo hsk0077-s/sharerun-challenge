@@ -845,6 +845,7 @@ class SecuredActionService:
             "paid_sale_enabled": crew_perks.paid_sale_enabled(),
             "cooldown_seconds": crew_perks.cooldown_remaining_seconds(crew),
             "can_manage": True,
+            "is_leader": crew.get("ownerUid") == uid,
         }
 
     def purchase_crew_paid_emblem(

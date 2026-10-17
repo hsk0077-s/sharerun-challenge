@@ -280,11 +280,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                     );
                 return await api.crewEmblemStatus();
               } on ApiException catch (error) {
-                _toast(
-                  error.statusCode == 400
-                      ? 'DIA가 부족해요.'
-                      : '엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.',
-                );
+                _toast(switch (error.statusCode) {
+                  400 => 'DIA가 부족해요.',
+                  403 => '유료 엠블럼은 크루장만 살 수 있어요.',
+                  409 => '이미 크루가 가진 엠블럼이에요.',
+                  _ => '엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.',
+                });
               } catch (_) {
                 _toast('엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.');
               }

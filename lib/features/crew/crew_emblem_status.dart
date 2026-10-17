@@ -11,6 +11,7 @@ class CrewEmblemStatus {
     this.paidPrices = const {},
     this.paidSaleEnabled = false,
     this.cooldownSeconds = 0,
+    this.isLeader = false,
   });
 
   final Set<String> earnedBorders;
@@ -24,6 +25,9 @@ class CrewEmblemStatus {
   final Map<String, int> paidPrices;
   final bool paidSaleEnabled;
   final int cooldownSeconds;
+
+  /// 유료 엠블럼은 크루장만 살 수 있다.
+  final bool isLeader;
 
   factory CrewEmblemStatus.fromJson(Map<String, dynamic> json) {
     List<String> strings(Object? v) =>
@@ -50,6 +54,7 @@ class CrewEmblemStatus {
       },
       paidSaleEnabled: json['paid_sale_enabled'] == true,
       cooldownSeconds: (json['cooldown_seconds'] as num?)?.toInt() ?? 0,
+      isLeader: json['is_leader'] == true,
     );
   }
 }

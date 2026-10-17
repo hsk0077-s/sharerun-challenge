@@ -318,3 +318,13 @@ class CrewTargetRequest(BaseModel):
 class CrewDecideRequest(BaseModel):
     uid: str = Field(min_length=1, max_length=128)
     approve: bool
+
+
+class DiaRefundRequest(BaseModel):
+    purchase_id: str = Field(min_length=1, max_length=128)
+
+
+class AccessoryEquipRequest(BaseModel):
+    slot: str = Field(min_length=1, max_length=16)
+    # Empty takes the slot off.
+    item_id: str = Field(default="", max_length=32)

@@ -1,3 +1,4 @@
+import '../features/iap/widgets/dia_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -553,6 +554,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           ),
         ),
       ),
+      const SizedBox(height: 16),
+      const DiaNoticeCard(),
     ];
   }
 

@@ -125,6 +125,7 @@ from app.services.item_price_config import (
     read_item_prices,
 )
 from app.services.challenge_tickets import purchase_challenge_ticket
+from app.services import accessories as accessories_service
 from app.services import crew_emblem_perks as crew_perks
 from app.services.crew_emblem import DEFAULT_CREW_EMBLEM, normalize_crew_emblem
 from app.services.ranked_tournaments import (
@@ -695,6 +696,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id not in self.SHOP_CATALOG and accessories_service.is_accessory(item_id):
+            return _commit_accessory_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         if item_id not in self.SHOP_CATALOG and is_cosmetic_item(
             self.firebase_service.db, item_id
         ):
@@ -710,6 +720,11 @@ class SecuredActionService:
 
     def cosmetics_catalog(self) -> dict:
         return read_cosmetics_catalog(self.firebase_service.db)
+
+    def equip_accessory(self, uid: str, slot: str, item_id: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_accessory_equip_tx(transaction, self, uid, slot, item_id, user_ref)
 
     def equip_cosmetic_item(
         self,
@@ -1069,7 +1084,7 @@ class SecuredActionService:
         pack = dia_pack_by_id(product_id)
         if pack is None:
             raise HTTPException(status_code=400, detail="Unknown DIA pack.")
-        verify_play_product_purchase(product_id, purchase_token)
+        play_body = verify_play_product_purchase(product_id, purchase_token) or {}
         token_hash = purchase_token_hash(purchase_token)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
@@ -1083,6 +1098,7 @@ class SecuredActionService:
             pack,
             user_ref,
             purchase_ref,
+            play_body.get("orderId") if isinstance(play_body, dict) else None,
         )
         if result.status in {"granted", "already_granted"}:
             consume_play_product_purchase(product_id, purchase_token)
@@ -2036,6 +2052,7 @@ class SecuredActionService:
         pack: dict,
         user_ref,
         purchase_ref,
+        order_id: str | None = None,
     ) -> SecuredActionResult:
         existing = purchase_ref.get(transaction=transaction)
         if existing.exists:
@@ -2093,6 +2110,10 @@ class SecuredActionService:
                 "uid": uid,
                 "productId": pack["productId"],
                 "diamondAmount": total,
+                "baseDia": base,
+                "bonusDia": bonus,
+                "priceKrw": pack["priceKrw"],
+                **({"orderId": order_id} if order_id else {}),
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
@@ -4979,9 +5000,10 @@ def _commit_dia_pack_tx(
     pack: dict,
     user_ref,
     purchase_ref,
+    order_id: str | None = None,
 ) -> SecuredActionResult:
     return service._grant_dia_pack_tx(
-        transaction, uid, pack, user_ref, purchase_ref
+        transaction, uid, pack, user_ref, purchase_ref, order_id
     )
 
 
@@ -5187,6 +5209,20 @@ def _commit_nickname_tx(
     user_ref,
 ) -> SecuredActionResult:
     return service._change_nickname_tx(transaction, uid, nickname, user_ref)
+
+
+@firestore.transactional
+def _commit_accessory_purchase_tx(
+    transaction, service, uid: str, item_id: str, request_id: str, user_ref
+) -> SecuredActionResult:
+    return accessories_service.purchase(service, transaction, uid, item_id, request_id, user_ref)
+
+
+@firestore.transactional
+def _commit_accessory_equip_tx(
+    transaction, service, uid: str, slot: str, item_id: str, user_ref
+) -> SecuredActionResult:
+    return accessories_service.equip(service, transaction, uid, slot, item_id, user_ref)
 
 
 @firestore.transactional

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_exception.dart';
 import '../../features/crew/crew_emblem_status.dart';
 import '../../features/crew/crew_membership.dart';
+import '../../features/iap/dia_refund.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
@@ -350,6 +351,27 @@ class SecuredActionApiClient {
     return PedometerHarvestResult.fromJson(json);
   }
 
+  /// Buys one accessory or skin with DIA or SHARE. A retry charges once.
+  Future<PedometerHarvestResult> purchaseAccessory(String itemId) async {
+    final json = await _postWithRequest(
+      '/actions/shop/purchase',
+      {'item_id': itemId},
+      'buy:$itemId',
+    );
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Wears an owned accessory in [slot], or takes the slot off when [itemId] is empty.
+  Future<void> equipAccessory({
+    required String slot,
+    required String itemId,
+  }) async {
+    await _post('/actions/shop/accessories/equip', {
+      'slot': slot,
+      'item_id': itemId,
+    });
+  }
+
   /// Equips or clears one owned cosmetic. DIA is not charged.
   Future<String> equipCosmetic({
     required String itemId,
@@ -480,6 +502,30 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> changeCrewEmblem(String emblem) async {
     final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// 환불 기간 안에 산 DIA 팩과, 지금 환불하면 얼마인지.
+  Future<DiaPurchases> diaPurchases() async {
+    final json = await _get('/actions/wallet/dia-purchases');
+    final list = json['purchases'];
+    return DiaPurchases(
+      refundDays: (json['refund_days'] as num?)?.toInt() ?? 7,
+      purchases: [
+        if (list is List)
+          for (final p in list)
+            if (p is Map<String, dynamic>) DiaPurchase.fromJson(p),
+      ],
+    );
+  }
+
+  /// 산 지 7일 안의 DIA 팩 하나를 환불한다. 쓰지 않은 유료 DIA만, 덤은 함께 빠진다.
+  Future<DiaRefundResult> requestDiaRefund(String purchaseId) async {
+    final json = await _post('/actions/wallet/dia-refund', {'purchase_id': purchaseId});
+    return DiaRefundResult(
+      status: json['status'] as String? ?? '',
+      refundKrw: (json['refund_krw'] as num?)?.toInt() ?? 0,
+      playRefunded: json['play_refunded'] == true,
+    );
   }
 
   /// 크루 목록·검색. [query]가 비면 인원이 많은 크루부터.

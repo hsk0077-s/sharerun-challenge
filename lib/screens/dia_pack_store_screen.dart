@@ -1,3 +1,4 @@
+import '../features/iap/widgets/dia_notice.dart';
 import 'package:flutter/material.dart';
 
 import '../core/navigation/app_route_nav.dart';
@@ -27,6 +28,7 @@ class DiaPackStoreScreen extends StatelessWidget {
             _DiaPackCard(pack: pack),
             const SizedBox(height: 12),
           ],
+          const DiaNoticeCard(),
         ],
       ),
     );

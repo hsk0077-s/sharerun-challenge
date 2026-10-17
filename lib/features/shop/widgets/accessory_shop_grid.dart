@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/theme.dart';
+import '../../../core/api/api_exception.dart';
 import '../../accessories/accessory_catalog.dart';
+import '../../accessories/accessory_inventory.dart';
 import '../../accessories/dressed_mascot.dart';
 import '../../accessories/try_on_sheet.dart';
+import '../../crew/crew_membership.dart';
 import '../../onboarding/src_onboarding_controller.dart';
+import '../../wallet/providers/wallet_provider.dart';
 import 'store_look.dart';
 
 /// 상점 '꾸미기' 탭의 소품 목록. 칸(머리·눈·…)을 고르면 두 줄 카드가 보인다.
-/// 카드를 누르면 입혀 보기 창이 열린다. 구매는 서버 연결 뒤에 열린다.
-class AccessoryShopGrid extends StatefulWidget {
+/// 카드를 누르면 자세히 보기 창이 열리고, 거기서 입혀 보기·사기·입기를 한다.
+class AccessoryShopGrid extends ConsumerStatefulWidget {
   const AccessoryShopGrid(
       {required this.animal, required this.tier, super.key});
 
@@ -18,10 +23,10 @@ class AccessoryShopGrid extends StatefulWidget {
   final UserTier tier;
 
   @override
-  State<AccessoryShopGrid> createState() => _AccessoryShopGridState();
+  ConsumerState<AccessoryShopGrid> createState() => _AccessoryShopGridState();
 }
 
-class _AccessoryShopGridState extends State<AccessoryShopGrid> {
+class _AccessoryShopGridState extends ConsumerState<AccessoryShopGrid> {
   var _slot = AccessorySlot.head;
 
   bool _locked(Accessory a) {
@@ -35,6 +40,8 @@ class _AccessoryShopGridState extends State<AccessoryShopGrid> {
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
     final items = accessoriesIn(_slot).where((a) => a.ready).toList();
+    final inventory =
+        ref.watch(accessoryInventoryProvider).asData?.value ?? const AccessoryInventory();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -95,10 +102,12 @@ class _AccessoryShopGridState extends State<AccessoryShopGrid> {
                   accessory: a,
                   animal: widget.animal,
                   locked: _locked(a),
-                  onTap: () => TryOnSheet.show(
+                  owned: inventory.owns(a.id),
+                  onTap: () => AccessoryDetailSheet.show(
                     context,
+                    accessory: a,
                     animal: widget.animal,
-                    title: widget.animal.labelKo,
+                    tier: widget.tier,
                   ),
                 ),
             ],
@@ -113,12 +122,14 @@ class _AccessoryCard extends StatelessWidget {
     required this.accessory,
     required this.animal,
     required this.locked,
+    required this.owned,
     required this.onTap,
   });
 
   final Accessory accessory;
   final TierAnimal animal;
   final bool locked;
+  final bool owned;
   final VoidCallback onTap;
 
   Widget _rarity(BuildContext context) {
@@ -143,6 +154,9 @@ class _AccessoryCard extends StatelessWidget {
   Widget _price(BuildContext context) {
     final c = context.srcTokens.colors;
     final a = accessory;
+    if (owned) {
+      return Text('보유', style: storeText(14, c.primary, w: FontWeight.w900));
+    }
     if (a.rarity == AccessoryRarity.tierReward) {
       return Text('티어 보상', style: storeText(14, c.muted, w: FontWeight.w800));
     }
@@ -271,6 +285,219 @@ class _AccessoryCard extends StatelessWidget {
             ),
             const SizedBox(height: 3),
             _price(context),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+/// 소품 하나의 자세히 보기. 입혀 보기 · 사기 · 입기/벗기.
+class AccessoryDetailSheet extends ConsumerStatefulWidget {
+  const AccessoryDetailSheet({
+    required this.accessory,
+    required this.animal,
+    required this.tier,
+    super.key,
+  });
+
+  final Accessory accessory;
+  final TierAnimal animal;
+  final UserTier tier;
+
+  static const buyKey = Key('accessory-buy');
+  static const buyConfirmKey = Key('accessory-buy-confirm');
+  static const wearKey = Key('accessory-wear');
+  static const tryOnKey = Key('accessory-try-on');
+
+  static Future<void> show(
+    BuildContext context, {
+    required Accessory accessory,
+    required TierAnimal animal,
+    required UserTier tier,
+  }) {
+    return showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: context.srcTokens.colors.canvas,
+      showDragHandle: true,
+      builder: (_) => AccessoryDetailSheet(
+        accessory: accessory,
+        animal: animal,
+        tier: tier,
+      ),
+    );
+  }
+
+  @override
+  ConsumerState<AccessoryDetailSheet> createState() =>
+      _AccessoryDetailSheetState();
+}
+
+class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
+  var _busy = false;
+
+  bool get _locked {
+    final need = widget.accessory.tierLock;
+    if (need == null) return false;
+    return widget.tier.animalUnlockRank < UserTier(animal: need).animalUnlockRank;
+  }
+
+  bool get _forSale =>
+      widget.accessory.rarity != AccessoryRarity.tierReward &&
+      widget.accessory.price != null &&
+      widget.accessory.currency != AccessoryCurrency.none;
+
+  void _toast(String message) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    messenger?.hideCurrentSnackBar();
+    messenger?.showSnackBar(SnackBar(
+      content: Text(message),
+      behavior: SnackBarBehavior.floating,
+      duration: const Duration(seconds: 2),
+    ));
+  }
+
+  Future<void> _buy() async {
+    final a = widget.accessory;
+    final api = ref.read(crewApiProvider);
+    if (api == null) {
+      _toast('서버에 연결되면 살 수 있어요.');
+      return;
+    }
+    final dia = a.currency == AccessoryCurrency.dia;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('소품 사기'),
+        content: Text(
+          '${a.nameKo}을(를) ${a.priceLabel}로 살까요?'
+          '${dia ? '\n보너스 DIA가 있으면 먼저 써요.' : ''}',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            key: AccessoryDetailSheet.buyConfirmKey,
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('사기'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted || _busy) return;
+    setState(() => _busy = true);
+    try {
+      final result = await api.purchaseAccessory(a.id);
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      _toast('${a.nameKo}을(를) 샀어요.');
+    } on ApiException catch (error) {
+      _toast(switch (error.statusCode) {
+        400 => '${dia ? 'DIA' : 'SHARE'}가 모자라거나 이미 가진 소품이에요.',
+        403 => '아직 티어가 모자라요.',
+        _ => '사지 못했어요. 잠시 뒤 다시 해 주세요.',
+      });
+    } catch (_) {
+      _toast('사지 못했어요. 잠시 뒤 다시 해 주세요.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _wear(bool wearing) async {
+    final a = widget.accessory;
+    final api = ref.read(crewApiProvider);
+    if (api == null || _busy) return;
+    setState(() => _busy = true);
+    try {
+      await api.equipAccessory(slot: a.slot.name, itemId: wearing ? a.id : '');
+      _toast(wearing ? '${a.nameKo}을(를) 입었어요.' : '${a.nameKo}을(를) 벗었어요.');
+    } catch (_) {
+      _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    final a = widget.accessory;
+    final inventory =
+        ref.watch(accessoryInventoryProvider).asData?.value ?? const AccessoryInventory();
+    final owned = inventory.owns(a.id);
+    final worn = inventory.isWorn(a.id);
+    final rewardReady =
+        a.rarity == AccessoryRarity.tierReward && widget.tier.animalUnlockRank >= 1;
+    final stage = (MediaQuery.sizeOf(context).width - 80).clamp(180.0, 300.0);
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: SizedBox(
+                width: stage,
+                height: stage,
+                child: DressedMascot(
+                  animal: widget.animal,
+                  worn: {a},
+                  size: stage,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(a.nameKo, style: storeText(22, c.ink, w: FontWeight.w900)),
+            const SizedBox(height: 4),
+            Text(
+              '${a.rarity.labelKo} · ${a.slot.labelKo}'
+              '${a.priceLabel.isEmpty ? '' : ' · ${a.priceLabel}'}',
+              style: storeText(13, c.muted),
+            ),
+            if (a.provisional)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('가격은 바뀔 수 있어요.', style: storeText(12, c.muted)),
+              ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              key: AccessoryDetailSheet.tryOnKey,
+              onPressed: () => TryOnSheet.show(
+                context,
+                animal: widget.animal,
+                title: widget.animal.labelKo,
+              ),
+              child: const Text('입혀 보기'),
+            ),
+            const SizedBox(height: 8),
+            if (owned || rewardReady)
+              FilledButton(
+                key: AccessoryDetailSheet.wearKey,
+                onPressed: _busy ? null : () => _wear(!worn),
+                child: Text(worn ? '벗기' : '입기'),
+              )
+            else if (_forSale && _locked)
+              FilledButton(
+                onPressed: null,
+                child: Text('${a.tierLock!.labelKo} 티어가 되면 살 수 있어요'),
+              )
+            else if (_forSale)
+              FilledButton(
+                key: AccessoryDetailSheet.buyKey,
+                onPressed: _busy ? null : _buy,
+                child: Text('사기 · ${a.priceLabel}'),
+              )
+            else
+              const FilledButton(onPressed: null, child: Text('티어 보상이에요')),
           ],
         ),
       ),

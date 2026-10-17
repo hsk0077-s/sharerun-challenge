@@ -23,7 +23,9 @@ from app.models.secured_actions import (
     CreateChallengeRoomRequest,
     CreateChallengeRoomResult,
     CrewEmblemPurchaseRequest,
+    AccessoryEquipRequest,
     CrewDecideRequest,
+    DiaRefundRequest,
     CrewJoinModeRequest,
     CrewJoinRequest,
     CrewTargetRequest,
@@ -53,7 +55,7 @@ from app.services.auth_service import require_uid
 from app.services import appeals, integrity, login_devices, privacy_settings
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
-from app.services import crew_membership
+from app.services import crew_membership, dia_refund
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -109,6 +111,21 @@ def request_refund(
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
     return service.request_refund(uid=uid, request=request)
+
+
+@router.get("/wallet/dia-purchases")
+def dia_purchases(uid: str = Depends(require_uid)) -> dict:
+    """DIA pack purchases inside the refund period, each with what a refund would pay."""
+    return {
+        "refund_days": dia_refund.refund_days(),
+        "purchases": dia_refund.list_refundable(service.firebase_service.db, uid),
+    }
+
+
+@router.post("/wallet/dia-refund")
+def dia_refund_request(request: DiaRefundRequest, uid: str = Depends(require_uid)) -> dict:
+    """Cash refund of the unused paid DIA of one pack bought in the last 7 days."""
+    return dia_refund.request_refund(service, uid, request.purchase_id)
 
 
 @router.post("/pedometer/harvest", response_model=SecuredActionResult)
@@ -371,6 +388,14 @@ def equip_cosmetic_item(
         request_id=request.request_id,
         equip=request.equip,
     )
+
+
+@router.post("/shop/accessories/equip", response_model=SecuredActionResult)
+def equip_accessory(
+    request: AccessoryEquipRequest,
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.equip_accessory(uid=uid, slot=request.slot, item_id=request.item_id)
 
 
 @router.post("/shop/catalog", response_model=ShopCatalogView)

@@ -19,6 +19,7 @@ class CrewSummary {
     this.nameChanges = 0,
     this.renameCostDia = 0,
     this.rejected = false,
+    this.expansion,
   });
 
   final String id;
@@ -40,6 +41,9 @@ class CrewSummary {
   /// 이 크루가 내 가입 신청을 거절했다. 다시 들어갈 수 없다.
   final bool rejected;
 
+  /// 내 크루에서만 채워진다.
+  final CrewExpansion? expansion;
+
   bool get isFull => memberCount >= maxMembers;
 
   factory CrewSummary.fromJson(Map<String, dynamic> json) => CrewSummary(
@@ -47,13 +51,37 @@ class CrewSummary {
         name: json['name'] as String? ?? '',
         emblem: json['emblem'] as String? ?? '',
         memberCount: (json['member_count'] as num?)?.toInt() ?? 0,
-        maxMembers: (json['max_members'] as num?)?.toInt() ?? 100,
+        maxMembers: (json['max_members'] as num?)?.toInt() ?? 50,
         totalDistanceKm: (json['total_distance_km'] as num?)?.toDouble() ?? 0,
         joinMode: json['join_mode'] as String? ?? 'open',
         nameChanges: (json['name_changes'] as num?)?.toInt() ?? 0,
         renameCostDia: (json['rename_cost_dia'] as num?)?.toInt() ?? 0,
         rejected: json['rejected'] == true,
+        expansion: json['expand'] == null ? null : CrewExpansion.fromJson(json['expand']),
       );
+}
+
+/// 다음 인원 확장: [add]명을 [costDia] DIA에 늘린다. [state]가 `ok`면 지금 살 수 있고,
+/// `needs_full`이면 자리를 다 채워야 하며, `max`면 더 늘릴 수 없다.
+@immutable
+class CrewExpansion {
+  const CrewExpansion({this.add = 0, this.costDia = 0, this.state = 'ok'});
+
+  final int add;
+  final int costDia;
+  final String state;
+
+  bool get canBuy => state == 'ok' && add > 0;
+  bool get atMax => state == 'max';
+
+  factory CrewExpansion.fromJson(Object? json) {
+    if (json is! Map<String, dynamic>) return const CrewExpansion(state: 'max');
+    return CrewExpansion(
+      add: (json['add'] as num?)?.toInt() ?? 0,
+      costDia: (json['cost_dia'] as num?)?.toInt() ?? 0,
+      state: json['state'] as String? ?? 'max',
+    );
+  }
 }
 
 /// 크루 목록과, 내가 가입을 신청해 둔 크루(없으면 빈 문자열).

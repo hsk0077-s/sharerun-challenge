@@ -24,7 +24,7 @@ def _run(tx_func, transaction, *args):
     return tx_func(transaction, *args)
 
 
-DEFAULT_MAX_MEMBERS = 100
+DEFAULT_MAX_MEMBERS = 50
 LIST_LIMIT = 200
 RESULT_LIMIT = 30
 
@@ -44,14 +44,32 @@ def crew_max(crew: dict) -> int:
     return max_members() + max(0, bonus)
 
 
+def next_expansion(crew: dict) -> dict:
+    """What the next seat purchase is: ``add`` seats for ``cost_dia``, and its ``state``.
+
+    ``ok`` can be bought now, ``needs_full`` waits until every seat is taken, ``max`` is the end.
+    """
+    cap = crew_max(crew)
+    if cap >= EXPAND_MAX:
+        return {"add": 0, "cost_dia": 0, "state": "max"}
+    if cap < 300:
+        return {"add": min(50, 300 - cap), "cost_dia": 300, "state": "ok"}
+    state = "ok" if _count(crew) >= cap else "needs_full"
+    if cap < 500:
+        return {"add": 100, "cost_dia": 500, "state": state}
+    return {"add": EXPAND_MAX - cap, "cost_dia": 1000, "state": state}
+
+
 def _count(crew: dict) -> int:
     raw = crew.get("memberCount")
     return int(raw) if isinstance(raw, (int, float)) and not isinstance(raw, bool) else 0
 
 
 RENAME_DIA = 300
-EXPAND_DIA = 300
-EXPAND_STEP = 10
+# Seat steps. The base limit is 50. Up to 300 anyone can buy +50 for 300 DIA. From 300 up
+# to 500 the crew must be full first: +100 for 500 DIA. From 500 to 1,000 it must be full
+# again: +500 for 1,000 DIA, and 1,000 is the end.
+EXPAND_MAX = 1000
 # One CPR ticket plus one Safeguard for one member. The leader pays per member.
 GIFT_DIA_PER_MEMBER = 30
 GIFT_ITEMS = (
@@ -159,7 +177,11 @@ def my_crew(db, uid: str) -> dict:
     if role in {"leader", "sub"}:
         requests = len(db.collection("crews").document(crew_id).collection("joinRequests").get())
     return {
-        "crew": {**summary(crew_id, crew), "owner_uid": crew.get("ownerUid")},
+        "crew": {
+            **summary(crew_id, crew),
+            "owner_uid": crew.get("ownerUid"),
+            "expand": next_expansion(crew),
+        },
         "role": role,
         "members": members,
         "pending_requests": requests,
@@ -534,7 +556,7 @@ def _rename_tx(transaction, db, uid, name, request_id, user_ref, crew_ref) -> di
 
 # ---- expand --------------------------------------------------------------------------
 def expand(service, uid: str, request_id: str) -> dict:
-    """Leader only. Adds EXPAND_STEP seats to this crew for EXPAND_DIA (bonus DIA first)."""
+    """Leader only. Buys the crew's next seat step (see ``next_expansion``), bonus DIA first."""
     from app.services.streak_protection import require_request_id
 
     request_id = require_request_id(request_id)
@@ -564,11 +586,17 @@ def _expand_tx(transaction, db, uid, request_id, user_ref, crew_ref) -> dict:
         return {"status": "already_expanded", "max_members": crew_max(crew), "charged_dia": 0, "diamond_balance": balance_before}
     if crew.get("ownerUid") != uid:
         raise HTTPException(status_code=403, detail="Only the crew leader can do this.")
-    if balance_before < EXPAND_DIA:
+    step = next_expansion(crew)
+    if step["state"] == "max":
+        raise HTTPException(status_code=409, detail="The crew is at the largest size.")
+    if step["state"] == "needs_full":
+        raise HTTPException(status_code=409, detail="Fill every seat before growing again.")
+    cost = step["cost_dia"]
+    if balance_before < cost:
         raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
-    moved = move_currency(wallet, diamond=-EXPAND_DIA)
+    moved = move_currency(wallet, diamond=-cost)
     transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
-    bonus = crew_max(crew) - max_members() + EXPAND_STEP
+    bonus = crew_max(crew) - max_members() + step["add"]
     transaction.set(
         crew_ref,
         {"memberCapBonus": bonus, "updatedAt": SERVER_TIMESTAMP},
@@ -579,7 +607,8 @@ def _expand_tx(transaction, db, uid, request_id, user_ref, crew_ref) -> dict:
         {
             "uid": uid,
             "type": "crew_member_expand",
-            "diamondAmount": -EXPAND_DIA,
+            "diamondAmount": -cost,
+            "addedSeats": step["add"],
             "crewId": crew_ref.id,
             "requestId": request_id,
             "createdAt": SERVER_TIMESTAMP,
@@ -589,8 +618,9 @@ def _expand_tx(transaction, db, uid, request_id, user_ref, crew_ref) -> dict:
     return {
         "status": "expanded",
         "max_members": max_members() + bonus,
-        "charged_dia": EXPAND_DIA,
-        "diamond_balance": balance_before - EXPAND_DIA,
+        "added": step["add"],
+        "charged_dia": cost,
+        "diamond_balance": balance_before - cost,
     }
 
 

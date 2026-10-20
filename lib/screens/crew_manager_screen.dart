@@ -25,7 +25,6 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   static const _royalBlue = AppColors.nightLime;
   static const _saveNavy = AppColors.nightLime;
 
-  static const _expandMembersDia = 300;
   static const _giftDiaPerMember = 30;
 
   void _toast(String message) {
@@ -139,11 +138,20 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
 
   Future<void> _onExpandMembers(MyCrew mine) async {
     final api = ref.read(crewApiProvider);
-    if (api == null) return;
+    final step = mine.crew.expansion;
+    if (api == null || step == null) return;
+    if (step.atMax) {
+      _toast('인원 한도가 최대(${mine.crew.maxMembers}명)예요.');
+      return;
+    }
+    if (!step.canBuy) {
+      _toast('자리를 모두 채우면 더 늘릴 수 있어요. (${mine.crew.maxMembers}명)');
+      return;
+    }
     if (!await _confirm(
       '인원 한도 확장',
-      '크루 인원 한도를 10명 늘려요. $_expandMembersDia DIA가 들고, 보너스 DIA를 먼저 써요.',
-      '$_expandMembersDia DIA 내고 늘리기',
+      '크루 인원 한도를 ${step.add}명 늘려요. ${step.costDia} DIA가 들고, 보너스 DIA를 먼저 써요.',
+      '${step.costDia} DIA 내고 늘리기',
     )) {
       return;
     }
@@ -162,6 +170,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
       _toast(switch (error.statusCode) {
         400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
         403 => '크루장만 늘릴 수 있어요.',
+        409 => '자리를 모두 채워야 하거나 이미 최대예요.',
         _ => '인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.',
       });
     } catch (_) {
@@ -262,6 +271,14 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     } catch (_) {
       if (mounted) _toast('내보내지 못했어요. 잠시 뒤 다시 해 주세요.');
     }
+  }
+
+  static String _expandLabel(CrewSummary crew) {
+    final step = crew.expansion;
+    if (step == null) return '인원 한도 확장';
+    if (step.atMax) return '인원 한도 최대 (${crew.maxMembers}명)';
+    final base = '+${step.add}명 인원 한도 확장하기 (${step.costDia} DIA)';
+    return step.canBuy ? base : '$base · ${crew.maxMembers}명을 모두 채우면 열려요';
   }
 
   Widget _scaffold(Widget body) {
@@ -495,7 +512,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    AppStrings.crewManagerExpandMembers,
+                                    _expandLabel(mine.crew),
                                     style: AppTextStyles.buttonText.copyWith(
                                       color: _royalBlue,
                                       fontSize: 13,

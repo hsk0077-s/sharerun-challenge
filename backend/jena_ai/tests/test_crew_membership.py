@@ -451,35 +451,82 @@ def _expand(db, uid, request_id="req-expand-01"):
     return cm.expand(service, uid, request_id)
 
 
-def test_expand_adds_ten_seats_for_300_dia_and_the_crew_limit_follows(monkeypatch) -> None:
-    monkeypatch.setenv("CREW_MAX_MEMBERS", "2")
-    db = _MemoryDb()
+def _rich(db, dia=10_000):
     _seed_rich(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": dia, "freeDiamondBalance": 0, "paidDiamondBalance": dia}
+
+
+def test_the_base_limit_is_50_and_the_first_step_adds_50_for_300_dia() -> None:
+    db = _MemoryDb()
+    _rich(db, 500)
     row = lambda: next(c for c in cm.list_crews(db, "", "u1")["crews"] if c["id"] == "c1")
-    assert row()["max_members"] == 2
+    assert row()["max_members"] == 50
+    assert cm.my_crew(db, "u1")["crew"]["expand"] == {"add": 50, "cost_dia": 300, "state": "ok"}
 
     done = _expand(db, "u1")
-    assert (done["status"], done["charged_dia"], done["max_members"], done["diamond_balance"]) == ("expanded", 300, 12, 200)
-    assert row()["max_members"] == 12
+    assert (done["status"], done["added"], done["charged_dia"], done["max_members"], done["diamond_balance"]) == ("expanded", 50, 300, 100, 200)
+    assert row()["max_members"] == 100
     ledger = [v for k, v in db.store.items() if k.startswith("walletTransactions/crew_expand_")]
-    assert len(ledger) == 1 and ledger[0]["diamondAmount"] == -300
-
-    # Another crew keeps the base limit; the expanded crew takes more people.
-    _join(db, "u2", "c1")
-    assert db.store["crews/c1"]["memberCount"] == 2
+    assert len(ledger) == 1 and ledger[0]["diamondAmount"] == -300 and ledger[0]["addedSeats"] == 50
 
 
-def test_the_same_expand_request_charges_once_and_a_new_one_adds_more(monkeypatch) -> None:
-    monkeypatch.setenv("CREW_MAX_MEMBERS", "2")
+def test_up_to_300_seats_the_step_is_always_50_for_300_dia() -> None:
     db = _MemoryDb()
-    _seed_rich(db)
-    db.store["users/u1"]["wallet"] = {"diamondBalance": 1000, "freeDiamondBalance": 0, "paidDiamondBalance": 1000}
+    _rich(db)
+    caps = []
+    for n in range(5):
+        caps.append(_expand(db, "u1", f"req-expand-{n:02d}")["max_members"])
+    assert caps == [100, 150, 200, 250, 300]
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 10_000 - 5 * 300
+
+
+def test_past_300_the_crew_must_be_full_then_100_seats_cost_500_dia_up_to_500() -> None:
+    db = _MemoryDb()
+    _rich(db)
+    db.store["crews/c1"]["memberCapBonus"] = 250  # 300 seats
+    db.store["crews/c1"]["memberCount"] = 299
+    assert cm.my_crew(db, "u1")["crew"]["expand"] == {"add": 100, "cost_dia": 500, "state": "needs_full"}
+    with pytest.raises(HTTPException) as caught:
+        _expand(db, "u1")
+    assert caught.value.status_code == 409
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 10_000
+
+    db.store["crews/c1"]["memberCount"] = 300
+    first = _expand(db, "u1", "req-expand-10")
+    assert (first["added"], first["charged_dia"], first["max_members"]) == (100, 500, 400)
+    db.store["crews/c1"]["memberCount"] = 400
+    second = _expand(db, "u1", "req-expand-11")
+    assert (second["added"], second["charged_dia"], second["max_members"]) == (100, 500, 500)
+
+
+def test_past_500_the_crew_must_be_full_then_one_step_of_500_costs_1000_and_1000_is_the_end() -> None:
+    db = _MemoryDb()
+    _rich(db)
+    db.store["crews/c1"]["memberCapBonus"] = 450  # 500 seats
+    db.store["crews/c1"]["memberCount"] = 499
+    with pytest.raises(HTTPException) as caught:
+        _expand(db, "u1")
+    assert caught.value.status_code == 409
+
+    db.store["crews/c1"]["memberCount"] = 500
+    last = _expand(db, "u1", "req-expand-20")
+    assert (last["added"], last["charged_dia"], last["max_members"]) == (500, 1000, 1000)
+    assert cm.my_crew(db, "u1")["crew"]["expand"]["state"] == "max"
+    db.store["crews/c1"]["memberCount"] = 1000
+    with pytest.raises(HTTPException) as caught:
+        _expand(db, "u1", "req-expand-21")
+    assert caught.value.status_code == 409
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 10_000 - 1000
+
+
+def test_the_same_expand_request_charges_once() -> None:
+    db = _MemoryDb()
+    _rich(db)
     _expand(db, "u1")
     again = _expand(db, "u1")
     assert again["status"] == "already_expanded"
-    assert db.store["crews/c1"]["memberCapBonus"] == 10
-    more = _expand(db, "u1", "req-expand-02")
-    assert more["max_members"] == 22
+    assert db.store["crews/c1"]["memberCapBonus"] == 50
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 9_700
 
 
 def test_expand_needs_the_diamonds_and_the_leader() -> None:

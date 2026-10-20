@@ -15,6 +15,7 @@ import '../data/firebase/share_spend_transaction.dart';
 import '../features/crew/crew_emblem.dart';
 import '../features/crew/crew_emblem_status.dart';
 import '../features/crew/crew_membership.dart';
+import '../features/crew/crew_ranking.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/src_wallet_payment_system.dart';
@@ -714,6 +715,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             ],
                           ],
                         ),
+                        if (mine != null) _CrewRankLine(ref: ref),
                         const SizedBox(height: 6),
                         _CrewActionLine(
                           index: '01',
@@ -1103,6 +1105,52 @@ class _CrewPhotoHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 이번 달 크루 순위 한 줄. 서버 값이 없으면 아무것도 그리지 않는다.
+class _CrewRankLine extends StatelessWidget {
+  const _CrewRankLine({required this.ref});
+
+  final WidgetRef ref;
+
+  static const rankKey = Key('crew-rank-line');
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    final ranking = ref.watch(crewRankingProvider).asData?.value;
+    if (ranking == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Container(
+        key: rankKey,
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: c.outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(ranking.myLine, style: storeText(14, c.ink, w: FontWeight.w800)),
+            if (ranking.bestRank > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                '역대 최고 ${ranking.bestRank}위',
+                style: storeText(12, c.muted, w: FontWeight.w700),
+              ),
+            ],
+            const SizedBox(height: 4),
+            Text(
+              '순위는 이번 달 크루 거리 ÷ 크루원 수예요. 달이 끝나면 확정돼요.',
+              style: storeText(11, c.muted),
+            ),
+          ],
+        ),
       ),
     );
   }

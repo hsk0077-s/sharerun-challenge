@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
 import '../../features/crew/crew_emblem_status.dart';
+import '../../features/crew/crew_ranking.dart';
 import '../../features/crew/crew_membership.dart';
 import '../../features/donation/funding_summary.dart';
 import '../../features/donation/sponsorship_records.dart';
@@ -540,6 +541,10 @@ class SecuredActionApiClient {
     final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
   }
+
+  /// 이번 달 크루 순위와 내 크루의 자리.
+  Future<CrewRanking> crewRanking() async =>
+      CrewRanking.fromJson(await _get('/actions/crew/ranking'));
 
   /// 이번 달 회사 기부금과 지금 목표. 모두에게 같은 값이다.
   Future<FundingSummary> fundingSummary() async =>

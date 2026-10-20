@@ -31,6 +31,16 @@
           "destination": "/index.html"
         }
       ]
+    },
+    {
+      "target": "web",
+      "public": "site",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "cleanUrls": false
     }
   ]
 }

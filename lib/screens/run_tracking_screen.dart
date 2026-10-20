@@ -10,6 +10,7 @@ import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../core/theme/src_theme.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
+import '../features/run_tracking/music_controls.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../data/models/user_model.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
@@ -101,6 +102,8 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
               ),
             ),
             const Spacer(),
+            const MusicControls(),
+            const SizedBox(height: 8),
             FilledButton.icon(
               onPressed: starting || validating || !sessionStarted
                   ? null

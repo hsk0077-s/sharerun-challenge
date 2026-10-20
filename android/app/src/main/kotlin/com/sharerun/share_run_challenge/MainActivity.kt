@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
+import android.view.KeyEvent
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import com.google.android.play.core.integrity.IntegrityManagerFactory
@@ -28,6 +29,48 @@ class MainActivity : FlutterFragmentActivity() {
             }
             val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
             result.success(audio.getStreamVolume(AudioManager.STREAM_MUSIC))
+        }
+        // 달리기 중 음악: 다른 음악 앱을 조절(미디어 키)하거나 기본 음악 앱을 연다.
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "share_run/music",
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "key" -> {
+                    val code = when (call.argument<String>("action")) {
+                        "playPause" -> KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE
+                        "next" -> KeyEvent.KEYCODE_MEDIA_NEXT
+                        "previous" -> KeyEvent.KEYCODE_MEDIA_PREVIOUS
+                        else -> null
+                    }
+                    if (code == null) {
+                        result.success(false)
+                        return@setMethodCallHandler
+                    }
+                    try {
+                        val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+                        audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
+                        result.success(true)
+                    } catch (error: Exception) {
+                        result.success(false)
+                    }
+                }
+                "openApp" -> {
+                    try {
+                        val intent = Intent.makeMainSelectorActivity(
+                            Intent.ACTION_MAIN,
+                            Intent.CATEGORY_APP_MUSIC,
+                        )
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (error: Exception) {
+                        result.success(false)
+                    }
+                }
+                else -> result.notImplemented()
+            }
         }
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

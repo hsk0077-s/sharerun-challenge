@@ -19,8 +19,8 @@ import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/src_wallet_payment_system.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
-import 'challenge_detail_screen.dart';
 import 'crew_manager_screen.dart';
+import 'crew_room_screen.dart';
 import 'hall_of_fame_screen.dart';
 
 /// 러닝 크루 · 랭킹 및 창설 화면 (Screen 18).
@@ -220,15 +220,15 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     );
   }
 
-  void _onEnterRoom({String? crewName}) {
-    final name = crewName ?? AppStrings.runningCrewMyCrewName;
-    _toast('$name 챌린지 룸으로 이동합니다.');
+  void _onEnterRoom({required bool hasCrew}) {
+    if (!hasCrew) {
+      _toast('크루에 들어가면 크루 룸을 볼 수 있어요.');
+      return;
+    }
     AppRouteNav.push<void>(
       context,
-      RouteNames.challengeDetailForRoom('crew-challenge-room'),
-      extra: 'crew-challenge-room',
-      materialBuilder: (_) =>
-          const ChallengeDetailScreen(roomId: 'crew-challenge-room'),
+      RouteNames.crewRoom,
+      materialBuilder: (_) => const CrewRoomScreen(),
     );
   }
 
@@ -869,7 +869,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
               child: StorePillButton(
                 label: AppStrings.runningCrewEnterRoom,
-                onPressed: () => _onEnterRoom(crewName: mine?.crew.name),
+                onPressed: () => _onEnterRoom(hasCrew: mine != null),
               ),
             ),
           ),

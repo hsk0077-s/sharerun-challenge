@@ -135,6 +135,7 @@ abstract final class RouteNames {
   /// src-17 개인스폰서 목적형 후원결제. 천사 연대기 CTA는 이 경로로 직행한다.
   static const personalSponsor = '/personal-sponsor';
   static const crewManager = '/crew-manager';
+  static const crewRoom = '/crew-room';
   static const refund = '/refund';
   static const shareToDia = '/share-to-dia';
   static const diaPackStore = '/dia-pack-store';

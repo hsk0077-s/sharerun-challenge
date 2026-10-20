@@ -12,6 +12,7 @@ import '../../screens/challenge_detail_screen.dart';
 import '../../screens/challenge_lobby_screen.dart';
 import '../../screens/create_challenge_room_screen.dart';
 import '../../screens/crew_manager_screen.dart';
+import '../../screens/crew_room_screen.dart';
 import '../../screens/device_connection_screen.dart';
 import '../../screens/watch_app_preview_screen.dart';
 import '../../screens/external_oauth_webview.dart';
@@ -359,6 +360,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.crewManager,
       pageBuilder: _fadePage(const CrewManagerScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.crewRoom,
+      pageBuilder: _fadePage(const CrewRoomScreen()),
     ),
 
     // 마이페이지 하위

@@ -9,6 +9,7 @@ import 'package:share_run_challenge/features/crew/crew_emblem.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/crew/crew_membership.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
+import 'package:share_run_challenge/screens/crew_room_screen.dart';
 import 'package:share_run_challenge/screens/running_crew_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -366,13 +367,17 @@ void main() {
     expect(find.text('321km'), findsOneWidget);
   });
 
-  testWidgets('entering the room names the real crew in the notice',
+  testWidgets('the crew room shows the real crew, its members and no sample',
       (tester) async {
     await _pump(tester, _FakeApi(myRole: 'leader'));
-    await tester.tap(find.text('크루 대항 챌린지 룸 입장하기'));
-    await tester.pump();
-    expect(find.textContaining('새벽러너 챌린지 룸으로 이동합니다'), findsOneWidget);
+    await tester.tap(find.text('크루 룸 입장하기'));
+    await tester.pumpAndSettle();
+    expect(find.text('크루 룸'), findsOneWidget);
+    expect(find.text('새벽러너'), findsWidgets);
+    expect(find.text('12/100'), findsWidgets);
+    expect(find.byKey(CrewRoomScreen.preparingKey), findsOneWidget);
     expect(find.textContaining('인천 논현'), findsNothing);
+    expect(find.textContaining('120 / 200'), findsNothing);
   });
 
   testWidgets('creating a crew asks for its name and sends exactly that',

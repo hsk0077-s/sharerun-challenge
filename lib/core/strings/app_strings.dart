@@ -394,7 +394,7 @@ abstract final class AppStrings {
       '[50 DIA 또는 30,000 SHARE로 새 크루 창설하기]';
   static const runningCrewProgressLabel = '이번 주 크루 대항전 10K 완주율';
   static const runningCrewProgressValue = '80%';
-  static const runningCrewEnterRoom = '크루 대항 챌린지 룸 입장하기';
+  static const runningCrewEnterRoom = '크루 룸 입장하기';
 
   // ── Crew Manager (Screen 19) ──────────────────────────────────────
   static const crewManagerTitle = '크루 관리 (방장 전용)';

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../core/constants/legal_constants.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -13,6 +14,7 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_agreement_tile.dart';
 import '../core/widgets/src_button.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/legal/legal_links.dart';
 
 /// 약관 동의 화면 (Screen 2) — src-2 온보딩 약관 목업.
 class TermsAgreementScreen extends ConsumerStatefulWidget {
@@ -166,6 +168,28 @@ class _TermsAgreementScreenState extends ConsumerState<TermsAgreementScreen> {
                             onChanged: (v) => _onItemChanged(
                               write: (val) => _privacyTerms = val,
                               value: v,
+                            ),
+                          ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 36),
+                              child: TextButton(
+                                key: const Key('privacy-policy-link'),
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(0, 32),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  foregroundColor: AppColors.primaryMint,
+                                ),
+                                onPressed: () =>
+                                    unawaited(LegalLinks.openPrivacyPolicy()),
+                                child: const Text(
+                                  '${LegalConstants.privacyPolicyLinkLabel} >',
+                                  style: AppTextStyles.link,
+                                ),
+                              ),
                             ),
                           ),
                           SRCAgreementRow(

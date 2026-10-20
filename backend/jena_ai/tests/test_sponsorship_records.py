@@ -37,10 +37,10 @@ def test_a_donation_sponsorship_adds_to_the_public_totals() -> None:
     totals = _totals(db)
     assert len(totals) == 2
     all_doc = totals["sponsorTotals/donation"]
-    assert all_doc["totalWon"].value == 50_000 and all_doc["count"].value == 1
-    assert all_doc["sponsorCount"].value == 1
+    assert all_doc["totalWon"] == 50_000 and all_doc["count"] == 1
+    assert all_doc["sponsorCount"] == 1
     month_doc = next(d for p, d in totals.items() if p != "sponsorTotals/donation")
-    assert month_doc["totalWon"].value == 50_000 and "sponsorCount" not in month_doc
+    assert month_doc["totalWon"] == 50_000 and "sponsorCount" not in month_doc
     assert db.store["users/u1"]["personalDonationSponsored"] is True
 
 
@@ -48,7 +48,7 @@ def test_a_returning_sponsor_is_counted_as_one_person() -> None:
     db = _db(personalDonationSponsored=True)
     _donate(db)
     assert "sponsorCount" not in _totals(db)["sponsorTotals/donation"]
-    assert _totals(db)["sponsorTotals/donation"]["count"].value == 1
+    assert _totals(db)["sponsorTotals/donation"]["count"] == 1
 
 
 def test_a_prize_sponsorship_is_not_a_donation_total() -> None:

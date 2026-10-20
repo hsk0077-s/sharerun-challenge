@@ -126,6 +126,7 @@ from app.services.item_price_config import (
 )
 from app.services.challenge_tickets import purchase_challenge_ticket
 from app.services import accessories as accessories_service
+from app.services import crew_ranking
 from app.services import crew_emblem_perks as crew_perks
 from app.services.crew_emblem import DEFAULT_CREW_EMBLEM, normalize_crew_emblem
 from app.services.ranked_tournaments import (
@@ -1281,6 +1282,13 @@ class SecuredActionService:
             )
             if crew_snapshot.exists:
                 cheer_crew = crew_snapshot.to_dict() or {}
+        crew_run_counted = (
+            crew_ranking.read_run_guard(
+                transaction, self.firebase_service.db, crew_id, activity_ref.id
+            )
+            if crew_id and cheer_crew is not None
+            else False
+        )
         tournament_id = (request.tournament_id or "").strip()
         race_share = 0
         prize_finish = None
@@ -1445,15 +1453,25 @@ class SecuredActionService:
                 merge=True,
             )
             transaction.delete(appeal["proof_ref"])
+        if result.verified and crew_id and cheer_crew is not None:
+            # Crew distance (all-time and this month) counts every verified run once, whether or
+            # not the company donation cap is full. The guard doc stops a repeat submission.
+            if not crew_run_counted:
+                crew_ranking.record_run(
+                    transaction,
+                    self.firebase_service.db,
+                    crew_id=crew_id,
+                    activity_id=activity_ref.id,
+                    uid=uid,
+                    distance_km=request.distance_km,
+                    now=current,
+                )
         if donation_counted and not donation_exists and crew_id and cheer_crew is not None:
-            # Crew stats for the unlock borders. Counted once per verified run
-            # (the donation ledger doc guards the repeat).
+            # Donation total for the unlock borders. Counted once per donation (the ledger doc
+            # guards the repeat).
             transaction.update(
                 self.firebase_service.db.collection("crews").document(crew_id),
-                {
-                    "totalDistanceKm": firestore.Increment(float(request.distance_km)),
-                    "totalDonationWon": firestore.Increment(int(company_won)),
-                },
+                {"totalDonationWon": firestore.Increment(int(company_won))},
             )
         if donation_counted and not donation_exists:
             transaction.set(

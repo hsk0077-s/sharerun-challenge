@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.models.ops_result import (
@@ -11,6 +11,7 @@ from app.models.ops_result import (
     PurgeDeletedAccountsResult,
     PurgeUserResult,
 )
+from app.services import crew_ranking
 from app.services.ops_auth_service import require_ops_admin
 from app.services.ops_service import OpsService
 
@@ -104,6 +105,14 @@ def settle_company_tournament(
     _: None = Depends(require_ops_admin),
 ) -> PrizeSettlementResult:
     return service.settle_company_tournament(tournament_id=tournament_id)
+
+
+@router.post("/crews/ranking/{month}/finalize")
+def finalize_crew_ranking(month: str, _: None = Depends(require_ops_admin)) -> dict:
+    """Close a finished month (YYYY-MM) now instead of waiting for the next ranking read."""
+    if len(month) != 7 or month[4] != "-" or not (month[:4] + month[5:]).isdigit():
+        raise HTTPException(status_code=400, detail="Month must look like 2026-09.")
+    return crew_ranking.finalize_month(service.firebase_service.db, month)
 
 
 @router.post("/users/{uid}/purge-data", response_model=PurgeUserResult)

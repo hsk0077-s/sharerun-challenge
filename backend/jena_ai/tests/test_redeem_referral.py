@@ -155,11 +155,17 @@ def _child_snapshots(store: dict, name: str) -> list:
 
 class _MemoryTxn:
     def set(self, ref: _MemoryDoc, data: dict, merge: bool = False) -> None:
+        # Like Firestore, an Increment in a set adds to what is there (or starts from zero).
+        plain = {k: v for k, v in data.items() if not isinstance(v, Increment)}
+        increments = {k: v for k, v in data.items() if isinstance(v, Increment)}
         if merge and ref.path in ref._store:
             current = ref._store[ref.path]
-            current.update(deepcopy(data))
-            return
-        ref._store[ref.path] = deepcopy(data)
+            current.update(deepcopy(plain))
+        else:
+            ref._store[ref.path] = deepcopy(plain)
+            current = ref._store[ref.path]
+        for key, value in increments.items():
+            _assign_increment(current, key, value.value)
 
     def update(self, ref: _MemoryDoc, data: dict) -> None:
         current = ref._store[ref.path]

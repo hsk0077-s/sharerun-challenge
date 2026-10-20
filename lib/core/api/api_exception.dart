@@ -115,7 +115,7 @@ abstract final class ApiErrorMessage {
       'Rest day must be today or yesterday.' => '휴식일은 오늘 또는 어제로만 지정할 수 있습니다.',
       'Donation match monthly cap reached.' => '이번 달 기부 매칭 횟수를 모두 사용했습니다.',
       'Donation match company cap reached.' =>
-        '이번 달 회사 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.',
+        '이번 달 운영자 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.',
       'Activity belongs to another user.' => '다른 사용자의 활동입니다.',
       'User or tournament not found.' => '사용자 또는 대회 정보를 찾을 수 없습니다.',
       'User or activity not found.' => '사용자 또는 활동 정보를 찾을 수 없습니다.',

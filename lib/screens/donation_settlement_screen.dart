@@ -7,7 +7,7 @@ import '../features/profile/my_page_activity_stats.dart';
 import '../features/shop/providers/donation_match_provider.dart';
 import '../features/shop/widgets/store_look.dart';
 
-/// 기부 정산. 기부는 회사·스폰서가 하고, 앱은 내 기여를 보여 준다.
+/// 기부 정산. 기부는 운영자·스폰서가 하고, 앱은 내 기여를 보여 준다.
 /// 기부처(수혜 단체)는 정해지기 전이라 쓰지 않는다.
 class DonationSettlementScreen extends ConsumerStatefulWidget {
   const DonationSettlementScreen({super.key});
@@ -17,7 +17,7 @@ class DonationSettlementScreen extends ConsumerStatefulWidget {
   static const monthKey = Key('donation-settlement-month');
   static const capKey = Key('donation-settlement-cap');
 
-  static const intro = '달리기 1km마다 100원을 회사·스폰서 이름으로 기부해요.';
+  static const intro = '달리기 1km마다 100원을 운영자·스폰서 이름으로 기부해요.';
   static const capReachedLine = '이번 달 기부 목표 달성!';
 
   @override
@@ -166,7 +166,7 @@ class _DonationSettlementScreenState
               ),
               const SizedBox(height: 18),
               Text(
-                '기부는 회사·스폰서가 해요. 앱에서는 내가 기여한 금액을 확인할 수 있어요.',
+                '기부는 운영자·스폰서가 해요. 앱에서는 내가 기여한 금액을 확인할 수 있어요.',
                 style: storeText(13, c.muted, h: 1.5),
               ),
             ],
@@ -211,7 +211,7 @@ class _GoldTile extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '회사가 대신 내요 · 내 돈은 0원',
+            '운영자가 대신 내요 · 내 돈은 0원',
             style: storeText(14, const Color(0xFFC9B27A)),
           ),
         ],

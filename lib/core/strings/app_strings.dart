@@ -52,7 +52,7 @@ abstract final class AppStrings {
   static const watchSyncTitle =
       '정확한 기록 측정을 위해\n스마트워치를 연결해 주세요.';
   static const watchSyncSubtitle =
-      'Jena AI 검증을 위해 심박수와 걸음 수 데이터가 필요합니다.';
+      '러닝 검증을 위해 심박수와 걸음 수 데이터가 필요합니다.';
   static const watchSyncApple = 'Apple 건강 연동하기';
   static const watchSyncGoogle = 'Google Health Connect 연동하기';
   static const watchSyncExternalDevices =
@@ -213,7 +213,7 @@ abstract final class AppStrings {
   static const challengeDetailEntryFee = '참가비: 1,200 SHARE';
   static const challengeDetailGoldBadge = '골드';
   static const challengeDetailPrize = noCashPrizePool;
-  static const challengeDetailDonation = '기부: 회사·스폰서 이름으로';
+  static const challengeDetailDonation = '기부: 운영자·스폰서 이름으로';
   static const challengeDetailDistance = '거리: 3km';
   static const challengeDetailTimeRemaining = '남은 시간: 2일 14시간';
   static const challengeDetailRecruitment = '모집 인원: 290 / 400명';
@@ -290,9 +290,9 @@ abstract final class AppStrings {
       '아직 열리지 않았어요. 열리면 이번 달 모인 기부금이 여기에 보여요.';
   static const storeFundingMonthLabel = '이번 달 모인 기부금';
   static const storeFundingNote =
-      '검증된 달리기와 기부 매칭으로 회사가 모읍니다. 내 VALUE가 줄지 않아요.';
+      '검증된 달리기와 기부 매칭으로 운영자가 모읍니다. 내 VALUE가 줄지 않아요.';
   static const storeFundingAllReached = '이번 달 목표를 모두 채웠어요';
-  static const storeFundingCapReached = '이번 달 회사 기부 한도에 도달했어요. 다음 달에 다시 모여요.';
+  static const storeFundingCapReached = '이번 달 운영자 기부 한도에 도달했어요. 다음 달에 다시 모여요.';
   static const storeFunctionalItems = '기능성 아이템';
   static const storeCosmeticsTitle = '코스메틱';
   static const storeCosmeticsNote =
@@ -317,7 +317,7 @@ abstract final class AppStrings {
   static const storeItemRestDay = '휴식일 지정권';
   static const storeItemRestDayNote = '매주 1장 무료 · 추가는 VALUE';
   static const storeItemDonationMatch = '기부 매칭권';
-  static const storeItemDonationMatchNote = '한 달에 1회 · 회사 1,000원';
+  static const storeItemDonationMatchNote = '한 달에 1회 · 운영자 1,000원';
   static const storeItemStarBoost = '스타 부스트';
   static const storeItemSharePack = 'SHARE 팩';
   static const storeBuyDia = '30 DIA 구매';
@@ -354,9 +354,9 @@ abstract final class AppStrings {
   static const brandSponsorWinReward =
       '우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500';
   static const brandSponsorDonationPledge =
-      '기부 공약: 회사 이름으로 500만 원 기부';
+      '기부 공약: 운영자 이름으로 500만 원 기부';
   static const brandSponsorBenevolentFailure =
-      '자비로운 실패: 미션에 실패하더라도 회사 이름으로 기부가 진행됩니다.';
+      '자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.';
   static const brandSponsorDisclaimer =
       '* 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.';
   static const brandSponsorStatus =
@@ -377,7 +377,7 @@ abstract final class AppStrings {
       '후원금이 1등 러너에게 순수 상금 보너스로 직접 지급됩니다.';
   static const personalSponsorDonationTitle = '[기부 후원]';
   static const personalSponsorDonationDesc =
-      '후원은 회사 이름으로 기부돼요. 내 기여는 앱에서 확인할 수 있어요.';
+      '후원은 운영자 이름으로 기부돼요. 내 기여는 앱에서 확인할 수 있어요.';
   static const personalSponsorActive = 'ACTIVE';
   static const personalSponsorCta = '50,000 SHARE 후원하고 천사 되기';
   static const personalSponsorCelebrateTitle = '천사 후원 완료!';
@@ -453,7 +453,7 @@ abstract final class AppStrings {
   static const itemInventoryRestDayYesterday = '어제 휴식';
   static const itemInventoryDonationMatchTitle = '기부 매칭권';
   static const itemInventoryDonationMatchNote =
-      '100 VALUE. 회사 명의 1,000원이 러닝 기부 풀에 더해지고 내 이름이 함께 표시됩니다. 영수증은 없습니다.';
+      '100 VALUE. 운영자 명의 1,000원이 러닝 기부 풀에 더해지고 내 이름이 함께 표시됩니다. 영수증은 없습니다.';
   static const itemInventoryDonationMatchUse = '매칭하기';
   static const itemInventoryCprQuantity = '보유량: 3/3';
   static const itemInventorySafeGuardTitle = '세이프 가드';
@@ -537,7 +537,7 @@ abstract final class AppStrings {
 
   // ── Appeal / Customer Service (Screen 27) ────────────────────────
   static const appealTitle = '기록 소명 및 고객센터';
-  static const appealWarningTitle = 'Jena AI 기록 검증 보류 안내';
+  static const appealWarningTitle = '기록 검증 보류 안내';
   static const appealWarningBody =
       '최근 제출하신 [중급 3km 챌린지] 기록이 비정상적인 GPS/심박수 패턴으로 인해 보류 처리되었습니다. 억울한 경우 아래 폼을 통해 소명 자료를 제출해 주세요.';
   static const appealFormTitle = '소명 자료 첨부 폼';
@@ -565,7 +565,7 @@ abstract final class AppStrings {
   static const notificationCenterTitle = '알림 및 내역 (History)';
   static const notificationTabSystem = '시스템 알림';
   static const notificationTabPayment = '결제/히스토리';
-  static const notification1Title = 'Jena AI 검증 완료!';
+  static const notification1Title = '러닝 검증 완료!';
   static const notification1BodyPrefix =
       '중급 3km 챌린지 기록이 승인되어 ';
   static const notification1Highlight = '100 밸류 토큰(VALUE)';

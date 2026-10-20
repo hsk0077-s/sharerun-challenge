@@ -164,7 +164,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     ? '이미 처리된 구매입니다. SHARE는 한 번만 차감됩니다.'
                     : '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
             : item.id == 'donation_match'
-                ? '기부 매칭을 기록했습니다. 회사 명의 기부에 내 이름이 함께 표시됩니다.'
+                ? '기부 매칭을 기록했습니다. 운영자 명의 기부에 내 이름이 함께 표시됩니다.'
                 : '${item.title}을 구매했습니다.',
       );
     } on ApiException catch (error) {

@@ -76,7 +76,7 @@ String runFinishDateLabel(DateTime date) {
 /// Company donation the server recorded. Null when nothing was counted.
 String? runFinishDonationLine(int? won) {
   if (won == null || won <= 0) return null;
-  return '이번 달리기로 회사가 ${_grouped(won)}원을 기부해요';
+  return '이번 달리기로 운영자가 ${_grouped(won)}원을 기부해요';
 }
 
 /// Shown when this month's company donation limit is used up.

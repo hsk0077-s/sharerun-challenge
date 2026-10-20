@@ -22,7 +22,8 @@ abstract final class LegalConstants {
   static const pushNotificationsTitle = '마케팅·활동 알림 (선택)';
 
   static const termsOfServiceSummary =
-      '쉐어런은 검증된 러닝 활동, 대회 참가, 기부형 리워드를 제공합니다. '
+      '쉐어런은 검증된 러닝 활동과 대회 참가를 제공하며, 달린 거리에 따라 '
+      '운영자 이름으로 기부가 이뤄집니다. '
       '부정 러닝·결제 어뷰징은 계정 제한 대상이 될 수 있습니다.';
 
   static const privacyPolicySummary =
@@ -32,7 +33,7 @@ abstract final class LegalConstants {
 
   static const healthDataConsentSummary =
       '스마트워치·HealthKit·Health Connect를 통해 심박수·케이던스를 읽어 '
-      'Jena AI 러닝 검증에만 사용합니다. 동의하지 않아도 앱 이용은 가능하나, '
+      '러닝 검증에만 사용합니다. 동의하지 않아도 앱 이용은 가능하나, '
       '워치 연동 및 검증된 러닝 땀방울 적립은 제한됩니다. '
       '원시 심박 배열은 서버 DB에 저장되지 않으며 검증 직후 메모리에서 즉시 파기됩니다.';
 

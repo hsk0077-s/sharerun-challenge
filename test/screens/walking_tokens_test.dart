@@ -12,6 +12,7 @@ import 'package:share_run_challenge/features/pedometer/walking_challenge_share.d
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/golden_helper.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -206,7 +207,7 @@ void main() {
     );
   });
 
-  testWidgets('Walking challenge golden', (tester) async {
+  goldenTest('Walking challenge golden', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

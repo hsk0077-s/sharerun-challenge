@@ -22,6 +22,7 @@ import 'package:share_run_challenge/screens/my_tournaments_screen.dart';
 import 'package:share_run_challenge/screens/onboarding_my_page_screen.dart';
 import 'package:share_run_challenge/screens/tournament_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/golden_helper.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -409,7 +410,7 @@ void main() {
     expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
   });
 
-  testWidgets('Lobby golden', (tester) async {
+  goldenTest('Lobby golden', (tester) async {
     await pumpSized(
       tester,
       const ChallengeLobbyScreen(),
@@ -430,7 +431,7 @@ void main() {
     );
   });
 
-  testWidgets('Tournament list golden', (tester) async {
+  goldenTest('Tournament list golden', (tester) async {
     await pumpSized(
       tester,
       const Scaffold(body: TournamentScreen()),
@@ -443,7 +444,7 @@ void main() {
     );
   });
 
-  testWidgets('My page golden', (tester) async {
+  goldenTest('My page golden', (tester) async {
     await pumpSized(
       tester,
       const OnboardingMyPageScreen(),

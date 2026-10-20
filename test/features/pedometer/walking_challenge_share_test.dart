@@ -15,6 +15,7 @@ import 'package:share_run_challenge/screens/challenge_detail_screen.dart';
 import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../support/golden_helper.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -203,7 +204,7 @@ void main() {
     expect(sent!.files, isNull);
   });
 
-  testWidgets('daily-goal brag card golden', (tester) async {
+  goldenTest('daily-goal brag card golden', (tester) async {
     tester.view.physicalSize = const Size(390, 320);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

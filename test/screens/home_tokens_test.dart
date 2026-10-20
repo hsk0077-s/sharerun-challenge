@@ -20,6 +20,7 @@ import 'package:share_run_challenge/screens/main_dashboard_screen.dart';
 import 'package:share_run_challenge/screens/my_page_screen.dart';
 import 'package:share_run_challenge/screens/my_wallet_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/golden_helper.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -304,7 +305,7 @@ void main() {
     expect(find.text(AppStrings.avatarCustomizeTitle), findsNothing);
   });
 
-  testWidgets('Home START golden', (tester) async {
+  goldenTest('Home START golden', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -334,7 +335,7 @@ void main() {
     );
   });
 
-  testWidgets('live Home tab golden', (tester) async {
+  goldenTest('live Home tab golden', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

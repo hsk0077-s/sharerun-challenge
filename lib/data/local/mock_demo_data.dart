@@ -105,7 +105,7 @@ abstract final class MockDemoData {
       TournamentModel.fromJson(
         id: 'mock-tournament-rookie',
         json: {
-          'title': 'Rookie 3K UNICEF Run',
+          'title': '루키 3K 유니세프 런',
           'targetDistanceKm': 3,
           'entryFeeShare': 100,
           'winnerRewardValue': 500,
@@ -115,9 +115,9 @@ abstract final class MockDemoData {
           'participantCount': 4,
           'requiredTier': 1,
           'status': 'recruiting',
-          'sponsorName': 'UNICEF Partner',
+          'sponsorName': '유니세프 파트너',
           'sponsorBillboardMessages': [
-            '🏃 UNICEF Partner: 오늘도 3K 완주에 도전하세요!',
+            '🏃 유니세프 파트너: 오늘도 3K 완주에 도전하세요!',
             '💚 러너 여러분의 발걸음이 아이들에게 전달됩니다',
             '🎯 참가비의 일부가 기부 풀로 적립됩니다',
           ],
@@ -126,7 +126,7 @@ abstract final class MockDemoData {
       TournamentModel.fromJson(
         id: 'mock-tournament-sprint',
         json: {
-          'title': 'Neon 5K Sprint',
+          'title': '네온 5K 스프린트',
           'targetDistanceKm': 5,
           'entryFeeShare': 200,
           'winnerRewardValue': 800,
@@ -138,8 +138,8 @@ abstract final class MockDemoData {
           'status': 'active',
           'sponsorName': '쉐어런 스폰서',
           'sponsorBillboardMessages': [
-            '⚡ Neon 5K Sprint — 쉐어런 스폰서가 응원합니다!',
-            '🔥 완주 시 밸류 토큰 채굴 보너스 이벤트 진행 중',
+            '⚡ 네온 5K 스프린트 — 쉐어런 스폰서가 응원합니다!',
+            '🔥 완주 시 밸류 토큰 적립 보너스 이벤트 진행 중',
             '🏆 크루원과 함께 페이스를 맞춰 보세요',
           ],
         },
@@ -152,7 +152,7 @@ abstract final class MockDemoData {
       DiamondBoxModel.fromJson(
         id: 'mock-box-park',
         json: {
-          'title': 'Park Gate Diamond',
+          'title': '공원 입구 다이아',
           'latitude': 37.5665,
           'longitude': 126.9780,
           'rewardDiamond': 3,
@@ -304,7 +304,7 @@ abstract final class MockDemoData {
       CrewRankingModel.fromJson(
         id: 'mock-crew-neon',
         json: {
-          'name': 'Neon Runners',
+          'name': '네온 러너스',
           'totalValue': 3200,
           'memberCount': 12,
         },

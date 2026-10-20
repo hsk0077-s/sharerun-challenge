@@ -79,7 +79,8 @@ class _ExternalOauthWebviewState extends ConsumerState<ExternalOauthWebview> {
                         textInputAction: TextInputAction.next,
                         autocorrect: false,
                         validator: _validateEmail,
-                        decoration: _fieldDecoration(AppStrings.garminEmailHint),
+                        decoration:
+                            _fieldDecoration(AppStrings.garminEmailHint),
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
@@ -112,7 +113,7 @@ class _ExternalOauthWebviewState extends ConsumerState<ExternalOauthWebview> {
                                       ),
                                     )
                                   : Text(
-                                      '${AppStrings.garminSignInAuthorize}\n${AppStrings.garminSignInAuthorizeKo}',
+                                      AppStrings.garminSignInAuthorize,
                                       textAlign: TextAlign.center,
                                       style: AppTextStyles.buttonText.copyWith(
                                         color: AppColors.textWhite,
@@ -188,7 +189,9 @@ class _ExternalOauthWebviewState extends ConsumerState<ExternalOauthWebview> {
             email: _emailController.text,
             password: _passwordController.text,
           );
-      await ref.read(srcOnboardingControllerProvider.notifier).markGarminConnected(
+      await ref
+          .read(srcOnboardingControllerProvider.notifier)
+          .markGarminConnected(
             watchApiToken: session.accessToken,
           );
       if (!mounted) return;
@@ -233,7 +236,7 @@ class _OAuthSecurityPill extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 28),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
+        color: AppColors.nightCard,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: AppColors.borderLight),
       ),

@@ -23,7 +23,7 @@ class _SubscriptionManagementScreenState
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFE0F7FA), Colors.white],
+    colors: [Color(0xFF0B120E), AppColors.nightBg],
   );
 
   var _donationEnabled = true;
@@ -31,7 +31,7 @@ class _SubscriptionManagementScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.nightBg,
       body: SRCGradientBackground(
         gradient: _screenGradient,
         child: SafeArea(

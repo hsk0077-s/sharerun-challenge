@@ -1,7 +1,8 @@
-import 'dart:ui';
-
+import '../features/donation/funding_summary.dart';
+import '../features/iap/widgets/dia_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
@@ -10,25 +11,27 @@ import '../data/models/shop_item_model.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
-import '../core/theme/app_text_styles.dart';
+import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../features/iap/models/coach_plus_product.dart';
+import '../features/accessories/accessory_catalog.dart';
+import '../features/accessories/dressed_mascot.dart';
+import '../features/iap/models/dia_pack_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
-import '../features/shop/cosmetics_catalog.dart';
-import '../features/shop/providers/cosmetics_catalog_provider.dart';
+import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
-import '../features/shop/widgets/cosmetics_shop_section.dart';
+import '../features/shop/widgets/accessory_shop_grid.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../features/shop/widgets/donation_match_contribution.dart';
 import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
-import 'in_app_billing_screen.dart';
+import 'battle_pass_screen.dart';
+import 'dia_pack_store_screen.dart';
+import 'share_dia_exchange_screen.dart';
 import 'item_inventory_screen.dart';
-import 'web3_wallet_screen.dart';
 
 /// src-13 앱내 상점 및 글로벌 기부 펀딩.
 class StoreScreen extends ConsumerStatefulWidget {
@@ -43,15 +46,18 @@ class StoreScreen extends ConsumerStatefulWidget {
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   static const _currentNavIndex = DashboardTabNavigation.shop;
+  var _tab = _StoreTab.recommended;
   final _fundingKey = GlobalKey();
-  final _itemsKey = GlobalKey();
   var _buyBusy = false;
-  var _cosmeticBusyId = '';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _consumeIncomingFocus());
+    final first = widget.initialFocus ?? ref.read(storeFocusProvider);
+    if (first == StoreFocus.items) _tab = _StoreTab.items;
+    if (first == StoreFocus.donate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToFunding());
+    }
   }
 
   @override
@@ -65,26 +71,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
   }
 
-  void _consumeIncomingFocus() {
-    if (!mounted) return;
-    final requested =
-        widget.initialFocus ?? ref.read(storeFocusProvider);
-    if (requested == null) return;
-    _applyFocus(requested);
+  /// 홈·마이에서 DIA / VALUE를 눌러 들어오면 해당 탭을 바로 보여 준다.
+  void _applyFocus(StoreFocus focus) {
+    switch (focus) {
+      case StoreFocus.items:
+        if (_tab != _StoreTab.items) setState(() => _tab = _StoreTab.items);
+      case StoreFocus.donate:
+        if (_tab != _StoreTab.recommended) {
+          setState(() => _tab = _StoreTab.recommended);
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToFunding());
+    }
   }
 
-  void _applyFocus(StoreFocus focus) {
-    final key = switch (focus) {
-      StoreFocus.donate => _fundingKey,
-      StoreFocus.items => _itemsKey,
-    };
-    final ctx = key.currentContext;
-    if (ctx == null) return;
+  void _scrollToFunding() {
+    final ctx = _fundingKey.currentContext;
+    if (!mounted || ctx == null) return;
     Scrollable.ensureVisible(
       ctx,
       duration: const Duration(milliseconds: 420),
       curve: Curves.easeOutCubic,
-      alignment: 0.12,
+      alignment: 0.08,
     );
   }
 
@@ -109,13 +116,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
-    );
-  }
-
-  void _onDonate() {
-    _toast(
-      '이 화면에서는 VALUE를 차감하지 않습니다. '
-      '기부는 서버 원장에 기록된 뒤에만 잔액이 줄어듭니다.',
     );
   }
 
@@ -156,7 +156,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             valueBalance: result.valueTokenBalance,
           );
       _toast(
-        result.status == 'already_purchased' || result.status == 'already_matched'
+        result.status == 'already_purchased' ||
+                result.status == 'already_matched'
             ? item.valueCost > 0
                 ? '이미 처리된 구매입니다. VALUE는 한 번만 차감됩니다.'
                 : item.shareCost > 0
@@ -182,62 +183,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     }
   }
 
-  Future<void> _onBuyCosmetic(CosmeticItem item) async {
-    if (_cosmeticBusyId.isNotEmpty) return;
-    setState(() => _cosmeticBusyId = item.id);
-    try {
-      final result = await ref
-          .read(securedActionApiClientProvider)
-          .purchaseCosmetic(item.id);
-      if (!mounted) return;
-      ref.read(walletProvider.notifier).applyWalletSnapshot(
-            shareBalance: result.shareBalance,
-            diamondBalance: result.diamondBalance,
-            valueBalance: result.valueTokenBalance,
-          );
-      _toast(
-        result.status == 'already_purchased'
-            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
-            : '${item.name} 구매를 기록했습니다.',
-      );
-    } on ApiException catch (error) {
-      if (!mounted) return;
-      _toast(streakItemMessage(error, fallback: '구매하지 못했습니다.'));
-    } catch (_) {
-      if (!mounted) return;
-      _toast('구매하지 못했습니다.');
-    } finally {
-      if (mounted) setState(() => _cosmeticBusyId = '');
-    }
-  }
-
-  Future<void> _onEquipCosmetic(CosmeticItem item, bool equip) async {
-    if (_cosmeticBusyId.isNotEmpty) return;
-    setState(() => _cosmeticBusyId = item.id);
-    try {
-      final status = await ref.read(securedActionApiClientProvider).equipCosmetic(
-            itemId: item.id,
-            equip: equip,
-          );
-      if (!mounted) return;
-      _toast(
-        status == 'already_equipped'
-            ? '이미 처리된 장착입니다.'
-            : equip
-                ? '${item.name}을 장착했습니다.'
-                : '${item.name} 장착을 해제했습니다.',
-      );
-    } on ApiException catch (error) {
-      if (!mounted) return;
-      _toast(streakItemMessage(error, fallback: '장착하지 못했습니다.'));
-    } catch (_) {
-      if (!mounted) return;
-      _toast('장착하지 못했습니다.');
-    } finally {
-      if (mounted) setState(() => _cosmeticBusyId = '');
-    }
-  }
-
   void _onOpenInventory() {
     AppRouteNav.push<void>(
       context,
@@ -246,43 +191,496 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  void _onOpenBilling() {
-    AppRouteNav.push<bool>(
-      context,
-      RouteNames.inAppBilling,
-      materialBuilder: (_) => const InAppBillingScreen(),
+  void _openDiaExchange() {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      context.push(RouteNames.shareToDia);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const ShareDiaExchangeScreen()),
     );
   }
 
-  Future<void> _onRequestValueExternalTransfer() async {
-    final approved = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text(AppStrings.storeValueTransferConfirmTitle),
-          content: const Text(AppStrings.web3WalletPendingNote),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text(AppStrings.storeValueTransferCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text(AppStrings.storeValueTransferApprove),
+  void _openDiaPacks() {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      context.push(RouteNames.diaPackStore);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const DiaPackStoreScreen()),
+    );
+  }
+
+  void _openBattlePass() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.battlePass,
+      materialBuilder: (_) => const BattlePassScreen(),
+    );
+  }
+
+  static String _won(int value) => '${_groupDigits(value)}원';
+
+  static String _groupDigits(int value) => value.toString().replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
+        (m) => '${m[1]},',
+      );
+
+  /// '6,900원' 같은 문구에서 숫자만 뽑는다. 못 뽑으면 0.
+  static int _digits(String label) =>
+      int.tryParse(label.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+
+  /// 연간 요금이 월간 12개월 값보다 몇 % 싼지. 계산할 수 없으면 null.
+  static int? _yearlyDiscountPct() {
+    final monthly = _digits(CoachPlusPlan.monthly.fallbackPriceLabel);
+    final yearly = _digits(CoachPlusPlan.yearly.fallbackPriceLabel);
+    if (monthly <= 0 || yearly <= 0) return null;
+    final pct = ((1 - yearly / (monthly * 12)) * 100).round();
+    return pct > 0 ? pct : null;
+  }
+
+  Widget _tile({
+    required String id,
+    required IconData icon,
+    required String name,
+  }) {
+    return StoreItemTile(
+      icon: icon,
+      name: name,
+      cost: '${_diaCost(id)}',
+      onTap: () => _onBuyItem(_shopItem(id)),
+    );
+  }
+
+  Widget _row({
+    required String id,
+    required IconData icon,
+    required String name,
+    required int owned,
+    String sub = '',
+    String? plainLabel,
+  }) {
+    return StoreItemRow(
+      icon: icon,
+      name: name,
+      sub: sub,
+      owned: owned,
+      cost: plainLabel == null ? '${_diaCost(id)}' : null,
+      plainLabel: plainLabel,
+      onTap: () => _onBuyItem(_shopItem(id)),
+    );
+  }
+
+  /// 추천 탭: Coach+, 다이아 충전, 러닝 아이템, 배틀런 패스, 꾸미기, 기부 펀딩.
+  List<Widget> _recommendedTab(
+      ServerShopInventory inventory, ShopTabState shop) {
+    final tokens = context.srcTokens;
+    final packs = DiaPackProduct.catalog.where((p) => p.totalDia > 12).toList();
+    final featured = packs.length >= 3 ? packs.sublist(0, 3) : packs;
+    return [
+      StoreCoachCard(
+        monthlyLabel: CoachPlusPlan.monthly.fallbackPriceLabel,
+        yearlyLabel: CoachPlusPlan.yearly.fallbackPriceLabel,
+        yearlyDiscountPct: _yearlyDiscountPct(),
+        onTap: () => CoachPlusUpsellSheet.show(context),
+      ),
+      StoreSectionLabel(
+        '다이아 충전',
+        more: '전체 보기',
+        onMore: () => setState(() => _tab = _StoreTab.diamond),
+      ),
+      Row(
+        children: [
+          for (final (i, pack) in featured.indexed) ...[
+            if (i > 0) const SizedBox(width: 8),
+            StorePackCard(
+              dia: '${pack.totalDia}',
+              bonus: pack.bonusDia > 0 ? '+${pack.bonusDia} 보너스' : '',
+              price: _won(pack.priceKrw),
+              hot: pack.productId == 'dia_pack_130',
+              onTap: _openDiaPacks,
             ),
           ],
-        );
-      },
-    );
-    if (approved != true || !mounted) return;
-    await AppRouteNav.push<void>(
-      context,
-      RouteNames.web3Wallet,
-      materialBuilder: (_) => const Web3WalletScreen(),
-    );
+        ],
+      ),
+      StoreSectionLabel(
+        '러닝 아이템',
+        more: '전체 보기',
+        onMore: () => setState(() => _tab = _StoreTab.items),
+      ),
+      Row(
+        children: [
+          _tile(
+            id: 'record_cpr_ticket',
+            icon: Icons.healing_rounded,
+            name: AppStrings.storeItemCpr,
+          ),
+          const SizedBox(width: 8),
+          _tile(
+            id: 'record_safe_guard',
+            icon: Icons.shield_outlined,
+            name: AppStrings.storeItemSafeGuard,
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          _tile(
+            id: 'coach_one_point_ticket',
+            icon: Icons.record_voice_over_rounded,
+            name: AppStrings.storeItemCoachOnePoint,
+          ),
+          const SizedBox(width: 8),
+          _tile(
+            id: 'friend_ghost_pace',
+            icon: Icons.directions_run_rounded,
+            name: AppStrings.storeItemFriendGhost,
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          _tile(
+            id: 'extra_entry_ticket',
+            icon: Icons.confirmation_number_outlined,
+            name: AppStrings.storeItemExtraEntry,
+          ),
+          const SizedBox(width: 8),
+          _tile(
+            id: 'crew_cheer_flag',
+            icon: Icons.flag_rounded,
+            name: AppStrings.storeItemCrewCheer,
+          ),
+        ],
+      ),
+      const StoreSectionLabel('배틀런 패스'),
+      InkWell(
+        key: const Key('store-battle-pass'),
+        onTap: _openBattlePass,
+        borderRadius: BorderRadius.circular(22),
+        child: Ink(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: tokens.colors.surface,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: tokens.colors.outline),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: tokens.colors.primary.withValues(alpha: 0.16),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.bolt_rounded, color: tokens.colors.primary),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '배틀런 챌린지 패스',
+                      style: storeText(
+                        16,
+                        tokens.colors.ink,
+                        w: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      '시즌 보상 · 패스+',
+                      style: storeText(12, tokens.colors.muted),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_rounded,
+                size: 18,
+                color: tokens.colors.muted,
+              ),
+            ],
+          ),
+        ),
+      ),
+      StoreSectionLabel(
+        '꾸미기',
+        more: '전체 보기',
+        onMore: () => setState(() => _tab = _StoreTab.cosmetics),
+      ),
+      _CosmeticsPreviewRow(
+        animal: _myAnimal(),
+        onTap: () => setState(() => _tab = _StoreTab.cosmetics),
+      ),
+      KeyedSubtree(
+        key: _fundingKey,
+        child: const StoreSectionLabel('기부 펀딩'),
+      ),
+      const _UnicefFundingCard(),
+      const DonationMatchContribution(),
+    ];
+  }
+
+  /// 다이아 탭: 팩 목록(준비 중)과 SHARE로 교환.
+  List<Widget> _diamondTab() {
+    final tokens = context.srcTokens;
+    final c = tokens.colors;
+    return [
+      const StoreSectionLabel('다이아 충전'),
+      for (final pack in DiaPackProduct.catalog)
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: InkWell(
+            key: Key('store-pack-${pack.productId}'),
+            onTap: _openDiaPacks,
+            borderRadius: BorderRadius.circular(20),
+            child: Ink(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: c.surface,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color:
+                      pack.productId == 'dia_pack_130' ? c.primary : c.outline,
+                  width: pack.productId == 'dia_pack_130' ? 1.6 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.diamond_outlined, size: 22, color: c.ink),
+                          const SizedBox(width: 10),
+                          Text(
+                            _groupDigits(pack.totalDia),
+                            style: storeText(22, c.ink, w: FontWeight.w900),
+                          ),
+                          const SizedBox(width: 8),
+                          if (pack.bonusDia > 0)
+                            Text(
+                              '+${pack.bonusDia} 보너스',
+                              style:
+                                  storeText(12, c.primary, w: FontWeight.w800),
+                            ),
+                          if (pack.productId == 'dia_pack_130') ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              '인기',
+                              style: storeText(
+                                11,
+                                c.primary,
+                                w: FontWeight.w900,
+                                ls: 1,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        _won(pack.priceKrw),
+                        style: storeText(15, c.ink, w: FontWeight.w900),
+                      ),
+                      Text(
+                        '준비 중',
+                        style: storeText(11, c.muted, w: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      Text(
+        'Play 상품이 열리면 구매할 수 있어요. 지금은 결제해도 DIA가 지급되지 않아요.',
+        style: storeText(12, c.muted, h: 1.5),
+      ),
+      const StoreSectionLabel('SHARE로 교환'),
+      InkWell(
+        key: const Key('store-dia-exchange'),
+        onTap: _openDiaExchange,
+        borderRadius: BorderRadius.circular(20),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: c.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: c.outline),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.directions_walk_rounded, size: 22, color: c.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SHARE를 DIA로',
+                      style: storeText(16, c.ink, w: FontWeight.w900),
+                    ),
+                    Text(
+                      '1,200 SHARE = 1 DIA · 주간 한도 안에서 교환',
+                      style: storeText(12, c.muted),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_rounded, size: 18, color: c.muted),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      const DiaNoticeCard(),
+    ];
+  }
+
+  /// 아이템 탭: 시안의 글머리별 한 줄 목록.
+  List<Widget> _itemsTab(ServerShopInventory inventory) {
+    return [
+      const StoreSectionLabel('기록 지키기'),
+      _row(
+        id: 'record_cpr_ticket',
+        icon: Icons.healing_rounded,
+        name: AppStrings.storeItemCpr,
+        owned: inventory.cprCount,
+      ),
+      _row(
+        id: 'record_safe_guard',
+        icon: Icons.shield_outlined,
+        name: AppStrings.storeItemSafeGuard,
+        owned: inventory.safeGuardCount,
+      ),
+      _row(
+        id: 'rest_day_ticket',
+        icon: Icons.bedtime_outlined,
+        name: AppStrings.storeItemRestDay,
+        sub: AppStrings.storeItemRestDayNote,
+        owned: inventory.restDayCount,
+        plainLabel: '${_format(_valueCost('rest_day_ticket'))} VALUE',
+      ),
+      const StoreSectionLabel('같이 달리기'),
+      _row(
+        id: 'coach_one_point_ticket',
+        icon: Icons.record_voice_over_rounded,
+        name: AppStrings.storeItemCoachOnePoint,
+        owned: inventory.coachOnePointCount,
+      ),
+      _row(
+        id: 'friend_ghost_pace',
+        icon: Icons.directions_run_rounded,
+        name: AppStrings.storeItemFriendGhost,
+        sub: '10회 묶음 ${_diaCost('friend_ghost_pace_10pack')}',
+        owned: inventory.friendGhostCount,
+      ),
+      _row(
+        id: 'crew_cheer_flag',
+        icon: Icons.flag_rounded,
+        name: AppStrings.storeItemCrewCheer,
+        owned: inventory.crewCheerCount,
+      ),
+      const StoreSectionLabel('대회'),
+      _row(
+        id: 'extra_entry_ticket',
+        icon: Icons.confirmation_number_outlined,
+        name: AppStrings.storeItemExtraEntry,
+        sub: '3장 묶음 ${_diaCost('extra_entry_ticket_3pack')}',
+        owned: inventory.extraEntryCount,
+      ),
+      StoreItemRow(
+        icon: Icons.bolt_rounded,
+        name: '배틀런 패스',
+        sub: '시즌 보상 · 패스+',
+        plainLabel: '보기',
+        onTap: _openBattlePass,
+      ),
+      const StoreSectionLabel('걸음으로 얻기'),
+      _row(
+        id: 'boost_run',
+        icon: Icons.rocket_launch_outlined,
+        name: AppStrings.storeItemBoostRun,
+        sub: AppStrings.storeItemBoostRunNote,
+        owned: inventory.boostRunCount,
+        plainLabel: '${_format(_shareCost('boost_run'))} SHARE',
+      ),
+      _row(
+        id: 'step_incubator',
+        icon: Icons.egg_outlined,
+        name: AppStrings.storeItemStepIncubator,
+        sub: AppStrings.storeItemStepIncubatorNote,
+        owned: inventory.stepIncubatorCount,
+        plainLabel: '${_format(_shareCost('step_incubator'))} SHARE',
+      ),
+      _row(
+        id: 'donation_match',
+        icon: Icons.favorite_border_rounded,
+        name: AppStrings.storeItemDonationMatch,
+        sub: AppStrings.storeItemDonationMatchNote,
+        owned: 0,
+        plainLabel: '${_format(_valueCost('donation_match'))} VALUE',
+      ),
+    ];
+  }
+
+  TierAnimal _myAnimal() {
+    final tier =
+        ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
+    return tier.isSnail ? TierAnimal.wolf : tier.animal;
+  }
+
+  /// 꾸미기 탭: 캐릭터 소품 둘러보기. 러닝화 스킨과 결과 카드 프레임은 더 팔지 않는다.
+  List<Widget> _cosmeticsTab() {
+    final tier =
+        ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
+    return [
+      AccessoryShopGrid(animal: _myAnimal(), tier: tier),
+    ];
   }
 
   @override
+  /// VALUE 설명. 잔액 옆 "?"를 누르면 작은 창으로 보여 준다.
+  void _showValueInfo() {
+    final c = context.srcTokens.colors;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text(
+          AppStrings.storeValueDetailTitle,
+          style: storeText(18, c.ink, w: FontWeight.w900),
+        ),
+        content: Text(
+          AppStrings.storeValueDetailBody,
+          style: storeText(14, c.muted, h: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget build(BuildContext context) {
     ref.listen<StoreFocus?>(storeFocusProvider, (prev, next) {
       if (next == null || next == prev) return;
@@ -290,310 +688,83 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         if (mounted) _applyFocus(next);
       });
     });
+    // 가격 목록은 탭과 상관없이 처음 그릴 때 한꺼번에 불러온다.
+    // (탭을 바꿀 때 처음 구독하면 그리는 도중에 상태가 바뀌어 오류가 난다.)
+    ref
+      ..watch(shopCatalogProvider)
+      ..watch(shopSharePriceProvider)
+      ..watch(shopValuePriceProvider);
     final wallet = ref.watch(walletProvider);
     final shop = ref.watch(shopTabProvider);
     final inventory = ref.watch(serverShopInventoryProvider).asData?.value ??
         const ServerShopInventory();
-    final cosmetics = ref.watch(cosmeticsCatalogProvider).asData?.value ??
-        CosmeticsCatalog.defaults;
-    final focus = widget.initialFocus ?? ref.watch(storeFocusProvider);
-    final highlightDonate = focus == StoreFocus.donate;
-    final highlightItems = focus == StoreFocus.items;
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
+    final c = context.srcTokens.colors;
+
+    final body = switch (_tab) {
+      _StoreTab.recommended => _recommendedTab(inventory, shop),
+      _StoreTab.diamond => _diamondTab(),
+      _StoreTab.items => _itemsTab(inventory),
+      _StoreTab.cosmetics => _cosmeticsTab(),
+    };
+
     final scaffold = Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
-      body: Stack(
-        children: [
-          const _StoreGlowBackdrop(),
-          SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+      backgroundColor: c.canvas,
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          children: [
+            Row(
               children: [
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppShapes.termsHorizontalPadding,
-                      12,
-                      AppShapes.termsHorizontalPadding,
-                      20,
-                    ),
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              AppStrings.storeTitle,
-                              style: AppTextStyles.header1.copyWith(fontSize: 24),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _onOpenBilling,
-                            child: Text(
-                              AppStrings.storeChargeCta,
-                              style: AppTextStyles.link.copyWith(
-                                color: AppColors.tealAccent,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.inventory_2_outlined),
-                            color: AppColors.textBlack,
-                            tooltip: AppStrings.itemInventoryTitle,
-                            onPressed: _onOpenInventory,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _CurrencyCapsuleBar(
-                        shareLabel: _format(wallet.shareBalance),
-                        diamondLabel: _format(wallet.diamondBalance),
-                        valueLabel: _format(wallet.valueBalance),
-                        onCharge: _onOpenBilling,
-                      ),
-                      const SizedBox(height: 14),
-                      const _CoachPlusStoreEntry(),
-                      const SizedBox(height: 18),
-                      KeyedSubtree(
-                        key: _fundingKey,
-                        child: _FocusGlow(
-                          highlighted: highlightDonate,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _UnicefFundingCard(
-                                progress: shop.fundingProgress,
-                                onDonate: _onDonate,
-                              ),
-                              const DonationMatchContribution(),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _ValueTokenDetailCard(
-                        highlighted: highlightDonate,
-                        onRequestExternalTransfer:
-                            _onRequestValueExternalTransfer,
-                      ),
-                      const SizedBox(height: 22),
-                      KeyedSubtree(
-                        key: _itemsKey,
-                        child: _FocusGlow(
-                          highlighted: highlightItems,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(
-                                AppStrings.storeFunctionalItems,
-                                style: AppTextStyles.header1.copyWith(fontSize: 18),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.monitor_heart_outlined,
-                                      iconColor: AppColors.error,
-                                      title: AppStrings.storeItemCpr,
-                                      diamondCost: _diaCost('record_cpr_ticket'),
-                                      ownedCount: inventory.cprCount,
-                                      onBuy: () => _onBuyItem(_shopItem('record_cpr_ticket')),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.shield_outlined,
-                                      iconColor: AppColors.success,
-                                      title: AppStrings.storeItemSafeGuard,
-                                      diamondCost: _diaCost('record_safe_guard'),
-                                      ownedCount: inventory.safeGuardCount,
-                                      onBuy: () => _onBuyItem(_shopItem('record_safe_guard')),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.record_voice_over_outlined,
-                                      iconColor: AppColors.tealAccent,
-                                      title: AppStrings.storeItemCoachOnePoint,
-                                      diamondCost:
-                                          _diaCost('coach_one_point_ticket'),
-                                      ownedCount: inventory.coachOnePointCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('coach_one_point_ticket'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.confirmation_number_outlined,
-                                      iconColor: AppColors.progressYellow,
-                                      title: AppStrings.storeItemExtraEntry,
-                                      diamondCost:
-                                          _diaCost('extra_entry_ticket'),
-                                      ownedCount: inventory.extraEntryCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('extra_entry_ticket'),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              _ItemBuyCard(
-                                icon: Icons.confirmation_number_outlined,
-                                iconColor: AppColors.progressYellow,
-                                title: AppStrings.storeItemExtraEntryPack,
-                                diamondCost:
-                                    _diaCost('extra_entry_ticket_3pack'),
-                                ownedCount: inventory.extraEntryCount,
-                                onBuy: () => _onBuyItem(
-                                  _shopItem('extra_entry_ticket_3pack'),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.speed,
-                                      iconColor: AppColors.ghostPacePurple,
-                                      title: AppStrings.storeItemFriendGhost,
-                                      diamondCost: _diaCost('friend_ghost_pace'),
-                                      ownedCount: inventory.friendGhostCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('friend_ghost_pace'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.flag_outlined,
-                                      iconColor: AppColors.progressYellow,
-                                      title: AppStrings.storeItemCrewCheer,
-                                      diamondCost: _diaCost('crew_cheer_flag'),
-                                      ownedCount: inventory.crewCheerCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('crew_cheer_flag'),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              _ItemBuyCard(
-                                icon: Icons.speed,
-                                iconColor: AppColors.ghostPacePurple,
-                                title: AppStrings.storeItemFriendGhostPack,
-                                diamondCost:
-                                    _diaCost('friend_ghost_pace_10pack'),
-                                ownedCount: inventory.friendGhostCount,
-                                onBuy: () => _onBuyItem(
-                                  _shopItem('friend_ghost_pace_10pack'),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.hotel_outlined,
-                                      iconColor: AppColors.tealAccent,
-                                      title: AppStrings.storeItemRestDay,
-                                      note: AppStrings.storeItemRestDayNote,
-                                      diamondCost: 0,
-                                      priceLabel:
-                                          '${_format(_valueCost('rest_day_ticket'))} VALUE 구매',
-                                      ownedCount: inventory.restDayCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('rest_day_ticket'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.volunteer_activism_outlined,
-                                      iconColor: AppColors.success,
-                                      title: AppStrings.storeItemDonationMatch,
-                                      note: AppStrings.storeItemDonationMatchNote,
-                                      diamondCost: 0,
-                                      priceLabel:
-                                          '${_format(_valueCost('donation_match'))} VALUE',
-                                      ownedCount: 0,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('donation_match'),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.bolt,
-                                      iconColor: AppColors.tealAccent,
-                                      title: AppStrings.storeItemBoostRun,
-                                      note: AppStrings.storeItemBoostRunNote,
-                                      diamondCost: 0,
-                                      priceLabel:
-                                          '${_format(_shareCost('boost_run'))} SHARE 구매',
-                                      ownedCount: inventory.boostRunCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('boost_run'),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _ItemBuyCard(
-                                      icon: Icons.egg_alt_outlined,
-                                      iconColor: AppColors.progressYellow,
-                                      title: AppStrings.storeItemStepIncubator,
-                                      note: AppStrings.storeItemStepIncubatorNote,
-                                      diamondCost: 0,
-                                      priceLabel:
-                                          '${_format(_shareCost('step_incubator'))} SHARE 구매',
-                                      ownedCount: inventory.stepIncubatorCount,
-                                      onBuy: () => _onBuyItem(
-                                        _shopItem('step_incubator'),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      CosmeticsShopSection(
-                        catalog: cosmetics,
-                        diamondBalance: wallet.diamondBalance,
-                        ownedIds: inventory.ownedCosmeticIds,
-                        loadout: inventory.loadout,
-                        busyId: _cosmeticBusyId,
-                        onPurchase: _onBuyCosmetic,
-                        onEquip: _onEquipCosmetic,
-                      ),
-                    ],
-                  ),
+                const StoreTag('SHOP'),
+                const Spacer(),
+                StoreBalancePill(
+                  icon: Icons.directions_walk_rounded,
+                  value: _format(wallet.shareBalance),
+                  iconColor: c.primary,
+                ),
+                const SizedBox(width: 6),
+                StoreBalancePill(
+                  icon: Icons.diamond_outlined,
+                  value: _format(wallet.diamondBalance),
+                  iconColor: c.ink,
+                ),
+                const SizedBox(width: 6),
+                StoreBalancePill(
+                  icon: Icons.workspace_premium_outlined,
+                  value: _format(wallet.valueBalance),
+                  iconColor: c.accent,
+                  infoKey: const Key('store-value-info'),
+                  onInfo: _showValueInfo,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.inventory_2_outlined),
+                  color: c.muted,
+                  iconSize: 22,
+                  tooltip: AppStrings.itemInventoryTitle,
+                  onPressed: _onOpenInventory,
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              AppStrings.storeTitle,
+              style: storeText(30, c.ink, w: FontWeight.w900, h: 1.1),
+            ),
+            const SizedBox(height: 10),
+            StoreUnderlineTabs(
+              labels: [for (final t in _StoreTab.values) t.label],
+              selected: _tab.index,
+              onSelected: (i) => setState(() => _tab = _StoreTab.values[i]),
+              keys: [
+                for (final t in _StoreTab.values) Key('store-tab-${t.name}'),
+              ],
+            ),
+            const SizedBox(height: 14),
+            ...body,
+          ],
+        ),
       ),
       bottomNavigationBar: embedNav
           ? DashboardBottomNav(
@@ -611,458 +782,213 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 }
 
-class _FocusGlow extends StatelessWidget {
-  const _FocusGlow({
-    required this.highlighted,
-    required this.child,
-  });
+enum _StoreTab {
+  recommended('추천'),
+  diamond('다이아'),
+  items('아이템'),
+  cosmetics('꾸미기');
 
-  final bool highlighted;
-  final Widget child;
+  const _StoreTab(this.label);
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeOutCubic,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: highlighted
-              ? AppColors.tealAccent.withValues(alpha: 0.72)
-              : Colors.transparent,
-          width: 2,
-        ),
-        boxShadow: highlighted
-            ? [
-                BoxShadow(
-                  color: AppColors.tealAccent.withValues(alpha: 0.22),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : const [],
-      ),
-      padding: highlighted ? const EdgeInsets.all(4) : EdgeInsets.zero,
-      child: child,
-    );
-  }
+  final String label;
 }
 
-class _ValueTokenDetailCard extends StatelessWidget {
-  const _ValueTokenDetailCard({
-    required this.highlighted,
-    required this.onRequestExternalTransfer,
-  });
+/// 추천 화면의 꾸미기 미리보기: 소품 세 개를 입힌 모습 세 장.
+class _CosmeticsPreviewRow extends StatelessWidget {
+  const _CosmeticsPreviewRow({required this.animal, required this.onTap});
 
-  final bool highlighted;
-  final VoidCallback onRequestExternalTransfer;
+  final TierAnimal animal;
+  final VoidCallback onTap;
+
+  /// 시안과 같은 대표 세 점. 카탈로그에 있는 것만 보인다.
+  static const _ids = ['P052', 'P067', 'P058'];
 
   @override
   Widget build(BuildContext context) {
-    return _FocusGlow(
-      highlighted: highlighted,
-      child: Material(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                AppStrings.storeValueDetailTitle,
-                style: AppTextStyles.agreementLabel.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
+    final c = context.srcTokens.colors;
+    final picks = <Accessory>[
+      for (final id in _ids)
+        for (final a in accessoryCatalog)
+          if (a.id == id && a.ready) a,
+    ];
+    final items = picks.length == 3
+        ? picks
+        : [
+            for (final a in accessoryCatalog)
+              if (a.ready && a.rarity != AccessoryRarity.tierReward) a,
+          ].take(3).toList();
+    return Row(
+      children: [
+        for (final (i, a) in items.indexed) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(22),
+              child: Ink(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  borderRadius: BorderRadius.circular(22),
+                  border: Border.all(color: c.outline),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                AppStrings.storeValueDetailBody,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 11,
-                  height: 1.4,
-                  color: AppColors.textGrey,
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: onRequestExternalTransfer,
-                  child: Text(
-                    AppStrings.storeValueExternalTransfer,
-                    style: AppTextStyles.caption.copyWith(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.tealAccent,
+                child: Column(
+                  children: [
+                    Container(
+                      height: 84,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: c.ink.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: DressedMascot(
+                          animal: animal,
+                          worn: {a},
+                          size: 84,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 6),
+                    Text(
+                      a.nameKo,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: storeText(13, c.ink, w: FontWeight.w800),
+                    ),
+                    Text(
+                      a.priceLabel,
+                      style: storeText(12, c.muted, w: FontWeight.w800),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CurrencyCapsuleBar extends StatelessWidget {
-  const _CurrencyCapsuleBar({
-    required this.shareLabel,
-    required this.diamondLabel,
-    required this.valueLabel,
-    required this.onCharge,
-  });
-
-  final String shareLabel;
-  final String diamondLabel;
-  final String valueLabel;
-  final VoidCallback onCharge;
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(999),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Material(
-          color: AppColors.surfaceWhite.withValues(alpha: 0.72),
-          child: InkWell(
-            onTap: onCharge,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: AppColors.tealAccent.withValues(alpha: 0.35),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _CapsuleChip(label: 'SHARE', value: shareLabel),
-                  _slash(),
-                  _CapsuleChip(label: 'DIA', value: diamondLabel),
-                  _slash(),
-                  _CapsuleChip(label: 'VALUE', value: valueLabel),
-                ],
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _slash() {
-    return Text(
-      '/',
-      style: AppTextStyles.caption.copyWith(
-        fontSize: 16,
-        color: AppColors.borderGrey,
-      ),
-    );
-  }
-}
-
-class _CapsuleChip extends StatelessWidget {
-  const _CapsuleChip({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            fontSize: 10,
-            color: AppColors.tealAccent,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        Text(
-          value,
-          style: AppTextStyles.agreementLabel.copyWith(
-            fontWeight: FontWeight.w800,
-            fontSize: 14,
-          ),
-        ),
+        ],
       ],
     );
   }
 }
 
-class _UnicefFundingCard extends StatelessWidget {
-  const _UnicefFundingCard({
-    required this.progress,
-    required this.onDonate,
-  });
+/// 기부 펀딩 카드. 라임 바탕에 어두운 글자. 서버 값이 있으면 이번 달 모인 기부금과 목표를 보여 준다.
+class _UnicefFundingCard extends ConsumerWidget {
+  const _UnicefFundingCard();
 
-  final double progress;
-  final VoidCallback? onDonate;
+  static const progressKey = Key('store-funding-progress');
+
+  static const preparingKey = Key('store-funding-preparing');
+
+  static String _won(int value) {
+    final s = value.toString();
+    final out = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) out.write(',');
+      out.write(s[i]);
+    }
+    return '$out원';
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final pct = (progress.clamp(0.0, 1.0) * 100).round();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final c = context.srcTokens.colors;
+    final summary = ref.watch(fundingSummaryProvider).asData?.value;
+    if (summary != null) {
+      return Container(
+        key: progressKey,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(26),
+          color: c.primary,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              AppStrings.storeFundingTitle,
+              style: storeText(17, c.onPrimary, w: FontWeight.w900, h: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              AppStrings.storeFundingMonthLabel,
+              style: storeText(12, c.onPrimary, w: FontWeight.w700),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              _won(summary.totalWon),
+              style: storeText(26, c.onPrimary, w: FontWeight.w900),
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: summary.ratio,
+                minHeight: 10,
+                backgroundColor: c.onPrimary.withValues(alpha: 0.18),
+                color: c.onPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              summary.allReached
+                  ? AppStrings.storeFundingAllReached
+                  : '목표 ${summary.stage}단계 · ${_won(summary.goalWon)}',
+              style: storeText(12, c.onPrimary, w: FontWeight.w800),
+            ),
+            if (summary.capReached) ...[
+              const SizedBox(height: 8),
+              Text(
+                AppStrings.storeFundingCapReached,
+                style: storeText(12, c.onPrimary, w: FontWeight.w700, h: 1.4),
+              ),
+            ],
+            const SizedBox(height: 10),
+            Text(
+              AppStrings.storeFundingNote,
+              style: storeText(11, c.onPrimary, w: FontWeight.w600, h: 1.4),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.tealAccent.withValues(alpha: 0.92),
-            AppColors.primaryMintDark,
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.tealAccent.withValues(alpha: 0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(26),
+        color: c.primary,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
             AppStrings.storeFundingTitle,
-            style: AppTextStyles.header1.copyWith(
-              fontSize: 17,
-              color: AppColors.textWhite,
-              height: 1.4,
-            ),
+            style: storeText(17, c.onPrimary, w: FontWeight.w900, h: 1.4),
           ),
-          const SizedBox(height: 18),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 10,
-              backgroundColor: AppColors.textWhite.withValues(alpha: 0.35),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFE8FF6B)),
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            '$pct% 달성',
-            style: AppTextStyles.caption.copyWith(
-              fontSize: 12,
-              color: AppColors.textWhite.withValues(alpha: 0.95),
-              fontWeight: FontWeight.w700,
-            ),
+            AppStrings.storeFundingPreparingNote,
+            key: preparingKey,
+            style: storeText(13, c.onPrimary, w: FontWeight.w700, h: 1.4),
           ),
           const SizedBox(height: 16),
           SizedBox(
             height: 48,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFE8FF6B).withValues(alpha: 0.55),
-                    blurRadius: 16,
-                    spreadRadius: 1,
-                  ),
-                ],
+            child: FilledButton(
+              onPressed: null,
+              style: FilledButton.styleFrom(
+                disabledBackgroundColor: c.onPrimary.withValues(alpha: 0.18),
+                disabledForegroundColor: c.onPrimary.withValues(alpha: 0.7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
               ),
-              child: FilledButton(
-                onPressed: onDonate,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFE8FF6B),
-                  foregroundColor: AppColors.textBlack,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                child: Text(
-                  '[${AppStrings.storeDonateButton}]',
-                  style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.textBlack,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+              child: Text(
+                AppStrings.storeFundingPreparing,
+                style: storeText(14, c.onPrimary, w: FontWeight.w800),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ItemBuyCard extends StatelessWidget {
-  const _ItemBuyCard({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.diamondCost,
-    required this.ownedCount,
-    required this.onBuy,
-    this.priceLabel,
-    this.note,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final int diamondCost;
-  final int ownedCount;
-  final VoidCallback? onBuy;
-  final String? priceLabel;
-  final String? note;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(16),
-      elevation: 1,
-      shadowColor: AppColors.tealAccent.withValues(alpha: 0.12),
-      child: InkWell(
-        onTap: onBuy,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 18, 14, 16),
-          child: Column(
-            children: [
-              Icon(icon, size: 36, color: iconColor),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.agreementLabel.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-              if (note != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  note!,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(fontSize: 11),
-                ),
-              ],
-              if (ownedCount > 0) ...[
-                const SizedBox(height: 4),
-                Text(
-                  '보관함 $ownedCount',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.tealAccent,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.tealAccent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  priceLabel ?? '${diamondCost} DIA 구매',
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.tealAccent,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CoachPlusStoreEntry extends StatelessWidget {
-  const _CoachPlusStoreEntry();
-
-  @override
-  Widget build(BuildContext context) {
-    final monthly = CoachPlusPlan.monthly;
-    final yearly = CoachPlusPlan.yearly;
-    return Material(
-      color: AppColors.surfaceWhite,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        key: const Key('coach-plus-store'),
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => CoachPlusUpsellSheet.show(context),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Coach+',
-                      style: AppTextStyles.agreementLabel.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '심박·상황에 맞춘 심층 코칭',
-                      style: AppTextStyles.caption.copyWith(fontSize: 12),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
-                      '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
-                      style: AppTextStyles.agreementLabel.copyWith(
-                        color: AppColors.tealAccent,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.tealAccent,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StoreGlowBackdrop extends StatelessWidget {
-  const _StoreGlowBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFE7F8F4),
-            AppColors.bgGradientMid,
-            AppColors.bgGradientEnd,
-          ],
-        ),
       ),
     );
   }

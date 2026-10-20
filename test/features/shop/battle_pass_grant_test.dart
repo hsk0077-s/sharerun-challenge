@@ -72,6 +72,11 @@ void main() {
 
   testWidgets('unowned pass shows both prices and locked cosmetics',
       (tester) async {
+    // 아래 탭 바가 떠 있어 화면이 조금 줄었으니, 다섯 줄이 다 그려지게 화면을 키운다.
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(_screen(const ServerShopInventory()));
     await tester.pumpAndSettle();
 

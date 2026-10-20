@@ -574,6 +574,12 @@ service cloud.firestore {
       }
     }
 
+    // 앱의 "내 기록"은 participants 컬렉션 그룹을 uid로 조회한다.
+    // 위의 경로 규칙만으로는 그룹 조회가 막히므로, 내 문서만 읽도록 따로 연다.
+    match /{path=**}/participants/{pid} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
     match /diamondBoxes/{boxId} {
       allow read: if true;
       allow create, update, delete: if false;
@@ -630,6 +636,14 @@ service cloud.firestore {
 
     // Company donation matches. Admin SDK appends. The owner reads their row.
     match /donationLedger/{entryId} {
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create, update, delete: if false;
+    }
+
+    // Promotion points per tournament result. Admin SDK appends once. The
+    // owner reads their row.
+    match /promotionLedger/{entryId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.uid == request.auth.uid);
       allow create, update, delete: if false;

@@ -63,8 +63,7 @@ class MyPageActivityStats {
 
 final myPageActivityStatsProvider = Provider<MyPageActivityStats>((ref) {
   final activities = ref.watch(recentActivitiesProvider).value ?? const [];
-  final days =
-      ref.watch(accountDailyMetricsProvider).asData?.value ?? const [];
+  final days = ref.watch(accountDailyMetricsProvider).asData?.value ?? const [];
   final stepsByDate = <String, int>{};
   final kmByDate = <String, double>{};
   final coveredDays = <String>{};

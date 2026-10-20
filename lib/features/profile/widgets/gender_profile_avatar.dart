@@ -9,6 +9,9 @@ import '../../../core/theme/theme.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../../onboarding/widgets/nickname_change_sheet.dart';
 import '../../onboarding/widgets/nickname_setup_sheet.dart';
+import '../../accessories/accessory_catalog.dart';
+import '../../accessories/accessory_inventory.dart';
+import '../../accessories/dressed_mascot.dart';
 import '../avatar_choice.dart';
 import '../avatar_choice_provider.dart';
 import '../user_profile_notifier.dart';
@@ -49,7 +52,7 @@ class GenderProfileAvatar extends ConsumerWidget {
             shape: BoxShape.circle,
             color: tokens.colors.primary.withValues(alpha: 0.16),
             // 옆의 티어·천사 원과 같은 두께와 진하기로 맞춰 또렷하게 보이게 한다.
-            border: Border.all(color: AppColors.tealAccent, width: 2),
+            border: Border.all(color: tokens.colors.accent, width: 2),
             boxShadow: AppShadows.rest,
           ),
           child: ClipOval(
@@ -145,6 +148,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
     final tier =
         ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
     final angel = ref.watch(userAngelTierProvider);
+    final worn = ref.watch(wornAccessoriesProvider);
     final displayName = SrcOnboardingController.isUnsetNickname(nickname)
         ? '닉네임을 설정해 주세요'
         : nickname;
@@ -169,6 +173,9 @@ class HomeUserIdentityHeader extends ConsumerWidget {
                 borderColor: AppColors.tealAccent,
                 showLabel: false,
                 size: size,
+                dressed: worn.isNotEmpty && canDress(tier.animal)
+                    ? DressedMascot(animal: tier.animal, worn: worn, size: size)
+                    : null,
                 onTap: () => openBook(context, RouteNames.tierBook),
               ),
               const SizedBox(width: 12),

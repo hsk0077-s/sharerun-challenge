@@ -17,6 +17,11 @@ from app.services.company_tournament_settlement import (
     settle_company_prize_race,
 )
 from app.services.firebase_service import FirebaseService
+from app.services.ranked_tournaments import (
+    open_ranked_tournament,
+    ranked_kind,
+    settle_ranked_tournament,
+)
 from app.services.grade_assignment import backfill_grades
 from app.services.notification_service import send_tournament_topic_notification
 from app.services.wallet_funding import move_currency
@@ -121,8 +126,17 @@ class OpsService:
             self.firebase_service.db, tournament_id, tier, edition
         )
 
+    def create_ranked_tournament(self, tournament_id: str, **fields) -> dict:
+        return open_ranked_tournament(
+            self.firebase_service.db, tournament_id, **fields
+        )
+
     def settle_company_tournament(self, tournament_id: str) -> PrizeSettlementResult:
-        return settle_company_prize_race(self.firebase_service.db, tournament_id)
+        db = self.firebase_service.db
+        snapshot = db.collection("tournaments").document(tournament_id).get()
+        if snapshot.exists and ranked_kind(snapshot.to_dict() or {}) is not None:
+            return settle_ranked_tournament(db, tournament_id)
+        return settle_company_prize_race(db, tournament_id)
 
     def purge_user_data(self, uid: str) -> PurgeUserResult:
         db = self.firebase_service.db

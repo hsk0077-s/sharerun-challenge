@@ -72,3 +72,9 @@ class GradeBackfillResult(BaseModel):
     planned: int
     written: int
     grades: list[GradeBackfillItem]
+
+
+class CreateRankedTournamentResult(BaseModel):
+    accepted: bool
+    tournament_id: str
+    status: str

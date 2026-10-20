@@ -141,15 +141,15 @@ class SRCButton extends StatelessWidget {
     return switch (variant) {
       SRCButtonVariant.google => const _ButtonStyle(
           backgroundColor: AppColors.googleWhite,
-          foregroundColor: AppColors.textBlack,
+          foregroundColor: AppColors.brandInk,
           borderSide: BorderSide(
-            color: AppColors.borderLight,
+            color: AppColors.borderGrey,
             width: AppShapes.googleButtonBorderWidth,
           ),
         ),
       SRCButtonVariant.apple => const _ButtonStyle(
-          backgroundColor: AppColors.textBlack,
-          foregroundColor: AppColors.textWhite,
+          backgroundColor: AppColors.googleWhite,
+          foregroundColor: AppColors.brandInk,
         ),
       SRCButtonVariant.naver => const _ButtonStyle(
           backgroundColor: AppColors.naverGreen,
@@ -157,7 +157,7 @@ class SRCButton extends StatelessWidget {
         ),
       SRCButtonVariant.kakao => const _ButtonStyle(
           backgroundColor: AppColors.kakaoYellow,
-          foregroundColor: AppColors.textBlack,
+          foregroundColor: AppColors.brandInk,
         ),
       SRCButtonVariant.primary => _ButtonStyle(
           backgroundColor: tokens.colors.primary,

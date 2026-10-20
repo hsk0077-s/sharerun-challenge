@@ -92,10 +92,18 @@ class ShopPurchaseRequest(BaseModel):
     activity_id: str | None = Field(default=None, max_length=128)
     # Rest-day ticket only. Empty means today (KST). Yesterday is allowed.
     rest_day: str | None = Field(default=None, max_length=10)
+    # Challenge ticket only: "share" or "dia". Paid DIA is never accepted.
+    pay_with: str | None = Field(default=None, max_length=8)
 
 
-class CrewSpendRequest(BaseModel):
-    action: str = Field(min_length=3, max_length=16)
+class CrewGiftRequest(BaseModel):
+    # Empty means every other member of the crew.
+    target_uid: str = Field(default="", max_length=128)
+    request_id: str = Field(min_length=8, max_length=80)
+
+
+class CrewExpandRequest(BaseModel):
+    request_id: str = Field(min_length=8, max_length=80)
 
 
 class CrewFoundRequest(BaseModel):
@@ -104,6 +112,30 @@ class CrewFoundRequest(BaseModel):
     # reads both numbers from config/item_prices.
     pay_with: str = Field(default="share", pattern="^(share|dia)$")
     request_id: str = Field(min_length=8, max_length=64)
+    # ``모양:색`` (예: ``moon:lime``). 비우면 기본 엠블럼. 목록에 없는 값은 거부한다.
+    emblem: str | None = Field(default=None, max_length=64)
+
+
+class CrewEmblemRequest(BaseModel):
+    emblem: str = Field(min_length=3, max_length=64)
+
+
+class CrewEmblemPurchaseRequest(BaseModel):
+    emblem_id: str = Field(min_length=3, max_length=40)
+    request_id: str = Field(min_length=8, max_length=80)
+
+
+class CrewEmblemStatus(BaseModel):
+    emblem: str
+    earned_borders: list[str]
+    progress: dict[str, float]
+    thresholds: dict[str, list[int]]
+    paid_owned: list[str]
+    paid_prices: dict[str, int]
+    paid_sale_enabled: bool
+    cooldown_seconds: int
+    can_manage: bool
+    is_leader: bool = False
 
 
 class NicknameChangeRequest(BaseModel):
@@ -270,3 +302,40 @@ class AppealRequest(BaseModel):
 
 class IntegrityReportRequest(BaseModel):
     token: str = Field(min_length=1, max_length=20_000)
+
+
+class CrewJoinRequest(BaseModel):
+    crew_id: str = Field(min_length=1, max_length=64)
+
+
+class CrewRoleRequest(BaseModel):
+    uid: str = Field(min_length=1, max_length=128)
+    role: str = Field(pattern="^(sub|member)$")
+
+
+class CrewJoinModeRequest(BaseModel):
+    mode: str = Field(pattern="^(open|approval)$")
+
+
+class CrewTargetRequest(BaseModel):
+    uid: str = Field(min_length=1, max_length=128)
+
+
+class CrewDecideRequest(BaseModel):
+    uid: str = Field(min_length=1, max_length=128)
+    approve: bool
+
+
+class DiaRefundRequest(BaseModel):
+    purchase_id: str = Field(min_length=1, max_length=128)
+
+
+class AccessoryEquipRequest(BaseModel):
+    slot: str = Field(min_length=1, max_length=16)
+    # Empty takes the slot off.
+    item_id: str = Field(default="", max_length=32)
+
+
+class CrewRenameRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    request_id: str = Field(min_length=8, max_length=80)

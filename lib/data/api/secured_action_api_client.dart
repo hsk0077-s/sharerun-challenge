@@ -1,10 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show SocketException;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
+import '../../features/crew/crew_emblem_status.dart';
+import '../../features/crew/crew_membership.dart';
+import '../../features/donation/funding_summary.dart';
+import '../../features/donation/sponsorship_records.dart';
+import '../../features/iap/dia_refund.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
@@ -75,11 +82,30 @@ class SecuredActionApiClient {
     required this.baseUri,
     required this.firebaseAuth,
     http.Client? httpClient,
-  }) : _httpClient = httpClient ?? http.Client();
+    this.tokenTimeout = const Duration(seconds: 10),
+    this.requestTimeout = const Duration(seconds: 15),
+  })  : _httpClient = httpClient ?? http.Client(),
+        _ownsHttpClient = httpClient == null;
+
+  /// 서버가 응답하지 않을 때 화면이 영원히 "진행 중"에 묶이지 않게 하는 상한.
+  final Duration tokenTimeout;
+  final Duration requestTimeout;
 
   final Uri baseUri;
   final FirebaseAuth firebaseAuth;
-  final http.Client _httpClient;
+  http.Client _httpClient;
+  final bool _ownsHttpClient;
+
+  /// 오래 백그라운드에 있다 오면 keep-alive 연결이 죽어 있어 요청이 멈출 수 있다.
+  /// 직접 만든 클라이언트만 새로 갈아 끼운다(테스트에서 주입한 것은 그대로 둔다).
+  void _renewHttpClient() {
+    if (!_ownsHttpClient) return;
+    final old = _httpClient;
+    _httpClient = http.Client();
+    try {
+      old.close();
+    } catch (_) {}
+  }
   final ShopRequestIds _requestIds = ShopRequestIds();
 
   Future<TournamentJoinResult> joinTournament({
@@ -228,10 +254,24 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> harvestPedometerShare({
     required int claimedSteps,
   }) async {
-    final json = await _post(
-      '/actions/pedometer/harvest',
-      {'claimed_steps': claimedSteps},
-    );
+    // claimed_steps 는 절대값이라 같은 요청을 다시 보내도 중복 지급되지 않는다.
+    Future<Map<String, dynamic>> send() => _post(
+          '/actions/pedometer/harvest',
+          {'claimed_steps': claimedSteps},
+        );
+    Map<String, dynamic> json;
+    try {
+      json = await send();
+    } on TimeoutException {
+      _renewHttpClient();
+      json = await send();
+    } on SocketException {
+      _renewHttpClient();
+      json = await send();
+    } on http.ClientException {
+      _renewHttpClient();
+      json = await send();
+    }
     return PedometerHarvestResult.fromJson(json);
   }
 
@@ -346,6 +386,27 @@ class SecuredActionApiClient {
       'buy:$itemId',
     );
     return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Buys one accessory or skin with DIA or SHARE. A retry charges once.
+  Future<PedometerHarvestResult> purchaseAccessory(String itemId) async {
+    final json = await _postWithRequest(
+      '/actions/shop/purchase',
+      {'item_id': itemId},
+      'buy:$itemId',
+    );
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Wears an owned accessory in [slot], or takes the slot off when [itemId] is empty.
+  Future<void> equipAccessory({
+    required String slot,
+    required String itemId,
+  }) async {
+    await _post('/actions/shop/accessories/equip', {
+      'slot': slot,
+      'item_id': itemId,
+    });
   }
 
   /// Equips or clears one owned cosmetic. DIA is not charged.
@@ -469,14 +530,189 @@ class SecuredActionApiClient {
 
   /// Debits 100 DIA and stores the nickname in one server transaction.
   Future<PedometerHarvestResult> changeNickname(String nickname) async {
-    final json = await _post('/actions/profile/nickname', {'nickname': nickname});
+    final json =
+        await _post('/actions/profile/nickname', {'nickname': nickname});
     return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// Changes the emblem of the crew this account owns. Free. 404 without a crew.
+  Future<PedometerHarvestResult> changeCrewEmblem(String emblem) async {
+    final json = await _post('/actions/crew/emblem', {'emblem': emblem});
+    return PedometerHarvestResult.fromJson(json);
+  }
+
+  /// 이번 달 회사 기부금과 지금 목표. 모두에게 같은 값이다.
+  Future<FundingSummary> fundingSummary() async =>
+      FundingSummary.fromJson(await _get('/actions/funding/summary'));
+
+  /// 모두에게 보이는 후원 현황(참여 인원이 모자라면 금액은 비어 있다).
+  Future<SponsorshipSummary> sponsorshipSummary() async =>
+      SponsorshipSummary.fromJson(await _get('/actions/sponsorship/summary'));
+
+  /// 내 후원 내역. 다른 사람의 것은 오지 않는다.
+  Future<MySponsorship> mySponsorship() async =>
+      MySponsorship.fromJson(await _get('/actions/sponsorship/mine'));
+
+  /// 환불 기간 안에 산 DIA 팩과, 지금 환불하면 얼마인지.
+  Future<DiaPurchases> diaPurchases() async {
+    final json = await _get('/actions/wallet/dia-purchases');
+    final list = json['purchases'];
+    return DiaPurchases(
+      refundDays: (json['refund_days'] as num?)?.toInt() ?? 7,
+      purchases: [
+        if (list is List)
+          for (final p in list)
+            if (p is Map<String, dynamic>) DiaPurchase.fromJson(p),
+      ],
+    );
+  }
+
+  /// 산 지 7일 안의 DIA 팩 하나를 환불한다. 쓰지 않은 유료 DIA만, 덤은 함께 빠진다.
+  Future<DiaRefundResult> requestDiaRefund(String purchaseId) async {
+    final json = await _post('/actions/wallet/dia-refund', {'purchase_id': purchaseId});
+    return DiaRefundResult(
+      status: json['status'] as String? ?? '',
+      refundKrw: (json['refund_krw'] as num?)?.toInt() ?? 0,
+      playRefunded: json['play_refunded'] == true,
+    );
+  }
+
+  /// 크루 목록·검색. [query]가 비면 인원이 많은 크루부터.
+  Future<CrewListResult> listCrews(String query) async {
+    final path = query.trim().isEmpty
+        ? '/actions/crew/list'
+        : '/actions/crew/list?query=${Uri.encodeQueryComponent(query.trim())}';
+    final json = await _get(path);
+    final crews = json['crews'];
+    return CrewListResult(
+      crews: [
+        if (crews is List)
+          for (final c in crews)
+            if (c is Map<String, dynamic>) CrewSummary.fromJson(c),
+      ],
+      pendingCrewId: json['pending_crew_id'] as String? ?? '',
+    );
+  }
+
+  /// 내 크루와 내 역할, 크루원. 크루가 없으면 null.
+  Future<MyCrew?> myCrew() async => MyCrew.fromJson(await _get('/actions/crew/mine'));
+
+  /// 크루에 가입한다. 자유 가입이면 `joined`, 승인 크루면 `requested`.
+  /// 이미 다른 크루에 있거나 가득 차면 409.
+  Future<String> joinCrew(String crewId) async {
+    final json = await _post('/actions/crew/join', {'crew_id': crewId});
+    return json['status'] as String? ?? 'joined';
+  }
+
+  /// 크루장: 가입 방식을 `open`(자유) 또는 `approval`(승인)으로 바꾼다.
+  Future<void> setCrewJoinMode(String mode) async {
+    await _post('/actions/crew/join-mode', {'mode': mode});
+  }
+
+  /// 크루장: 인원 한도를 10명 늘린다(300 DIA). 새 한도와 DIA 잔액을 돌려준다.
+  Future<({int maxMembers, int? diamondBalance})> expandCrew() async {
+    final json = await _postWithRequest('/actions/crew/expand', const {}, 'crew-expand');
+    return (
+      maxMembers: (json['max_members'] as num?)?.toInt() ?? 0,
+      diamondBalance: (json['diamond_balance'] as num?)?.toInt(),
+    );
+  }
+
+  /// 크루장: 크루 이름을 바꾼다. 처음 한 번은 무료, 그다음부터 300 DIA. 새 DIA 잔액을 돌려준다.
+  Future<int?> renameCrew(String name) async {
+    final json = await _postWithRequest(
+      '/actions/crew/rename',
+      {'name': name},
+      'crew-rename:$name',
+    );
+    return (json['diamond_balance'] as num?)?.toInt();
+  }
+
+  /// 크루장·부크루장: 가입 신청 목록.
+  Future<List<CrewJoinRequest>> crewJoinRequests() async {
+    final json = await _get('/actions/crew/requests');
+    final list = json['requests'];
+    return [
+      if (list is List)
+        for (final r in list)
+          if (r is Map<String, dynamic>)
+            CrewJoinRequest(
+              uid: r['uid'] as String? ?? '',
+              nickname: r['nickname'] as String? ?? '러너',
+            ),
+    ];
+  }
+
+  /// 크루장·부크루장: 신청을 받아들이거나 거절한다.
+  Future<void> decideCrewRequest(String uid, {required bool approve}) async {
+    await _post('/actions/crew/requests/decide', {'uid': uid, 'approve': approve});
+  }
+
+  /// 내가 한 가입 신청을 거둔다.
+  Future<void> cancelCrewRequest() async {
+    await _post('/actions/crew/requests/cancel', const {});
+  }
+
+  /// 크루장·부크루장: 크루원을 내보낸다(부크루장은 일반 크루원만).
+  Future<void> kickCrewMember(String uid) async {
+    await _post('/actions/crew/kick', {'uid': uid});
+  }
+
+  /// 크루장: 크루장 자리를 크루원에게 넘긴다. 나는 부크루장이 된다.
+  Future<void> transferCrew(String uid) async {
+    await _post('/actions/crew/transfer', {'uid': uid});
+  }
+
+  /// 크루장: 크루를 없앤다. 모든 크루원과 크루장 자신이 함께 크루에서 나온다.
+  Future<void> disbandCrew() async {
+    await _post('/actions/crew/disband', const {});
+  }
+
+  /// 크루에서 나간다. 크루장은 나갈 수 없다(400).
+  Future<void> leaveCrew() async {
+    await _post('/actions/crew/leave', const {});
+  }
+
+  /// 크루장만: 크루원을 부크루장(`sub`)으로 올리거나 일반(`member`)으로 돌린다.
+  Future<void> setCrewRole(String uid, String role) async {
+    await _post('/actions/crew/role', {'uid': uid, 'role': role});
+  }
+
+  /// 엠블럼 상태(해금한 테두리·진행도·산 유료 엠블럼). 크루가 없으면 404.
+  Future<CrewEmblemStatus> crewEmblemStatus() async {
+    final json = await _get('/actions/crew/emblem/status');
+    return CrewEmblemStatus.fromJson(json);
+  }
+
+  /// 유료 일러스트 엠블럼을 DIA로 산다. 크루장만. 같은 요청은 한 번만 차감된다.
+  Future<PedometerHarvestResult> purchaseCrewPaidEmblem(String emblemId) async {
+    final retryKey = 'crew-emblem-$emblemId';
+    final requestId = _requestIds.begin(retryKey);
+    try {
+      final json = await _post('/actions/crew/emblem/purchase', {
+        'emblem_id': emblemId,
+        'request_id': requestId,
+      });
+      _requestIds.succeed(retryKey);
+      return PedometerHarvestResult.fromJson(json);
+    } on ApiException catch (error) {
+      _requestIds.failed(
+        retryKey,
+        requestId,
+        retryable: error.statusCode >= 500,
+      );
+      rethrow;
+    } catch (_) {
+      _requestIds.failed(retryKey, requestId, retryable: true);
+      rethrow;
+    }
   }
 
   /// Creates a crew. [payWith] is `dia` or `share`. The server debits the price.
   Future<PedometerHarvestResult> foundCrew(
     String name, {
     required String payWith,
+    String? emblem,
   }) async {
     const retryKey = 'crew-create';
     final requestId = _requestIds.begin(retryKey);
@@ -485,6 +721,7 @@ class SecuredActionApiClient {
         'name': name,
         'pay_with': payWith,
         'request_id': requestId,
+        if (emblem != null) 'emblem': emblem,
       });
       _requestIds.succeed(retryKey);
       return PedometerHarvestResult.fromJson(json);
@@ -551,16 +788,20 @@ class SecuredActionApiClient {
     );
   }
 
-  /// Debits a server-owned crew price. The client does not send the amount.
-  Future<PedometerHarvestResult> spendCrewAction(String action) async {
-    final json = await _post('/actions/crew/spend', {'action': action});
-    return PedometerHarvestResult.fromJson(json);
-  }
-
-  /// Debits the server crew-gift price and grants CPR plus Safeguard.
-  Future<PedometerHarvestResult> grantCrewItems() async {
-    final json = await _post('/actions/shop/crew-gift', const {});
-    return PedometerHarvestResult.fromJson(json);
+  /// 크루장: 크루원 한 명(또는 [targetUid]가 비면 나를 뺀 전체)에게 심폐소생권·세이프가드를
+  /// 하나씩 준다. 한 명당 30 DIA. 받은 사람 수와 새 DIA 잔액을 돌려준다.
+  Future<({int recipients, int? diamondBalance})> giftCrewItems({
+    String targetUid = '',
+  }) async {
+    final json = await _postWithRequest(
+      '/actions/crew/gift',
+      {'target_uid': targetUid},
+      'crew-gift:$targetUid',
+    );
+    return (
+      recipients: (json['recipients'] as num?)?.toInt() ?? 0,
+      diamondBalance: (json['diamond_balance'] as num?)?.toInt(),
+    );
   }
 
   /// Once per KST week. Credits [EconomyConstants.streakBonusDia] on the server.
@@ -613,7 +854,7 @@ class SecuredActionApiClient {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body),
-    );
+    ).timeout(requestTimeout);
     return _decode(response);
   }
 
@@ -622,7 +863,7 @@ class SecuredActionApiClient {
     final response = await _httpClient.get(
       baseUri.resolve(path),
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(requestTimeout);
     return _decode(response);
   }
 
@@ -646,7 +887,7 @@ class SecuredActionApiClient {
     if (user == null) {
       throw StateError('Firebase ID token is required.');
     }
-    final token = await user.getIdToken(true);
+    final token = await user.getIdToken(true).timeout(tokenTimeout);
     if (token == null || token.isEmpty) {
       throw StateError('Firebase ID token is required.');
     }

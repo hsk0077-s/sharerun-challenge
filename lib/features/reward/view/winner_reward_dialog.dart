@@ -20,7 +20,7 @@ class WinnerRewardDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.cardBlack,
-      title: const Text('Victory Impact'),
+      title: const Text('우승 임팩트'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

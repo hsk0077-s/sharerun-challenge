@@ -44,6 +44,7 @@ int _initialValue = 0;
 int _creditCalls = 0;
 int _debited = 0;
 int _donateCalls = 0;
+bool _donateFails = false;
 late Completer<PedometerHarvestResult> _donateGate;
 
 Widget _screen() {
@@ -53,8 +54,14 @@ Widget _screen() {
       userProfileNotifierProvider.overrideWith(_QuietProfile.new),
       userNicknameProvider.overrideWith((ref) => ''),
       hallOfFameDonateProvider.overrideWith((ref) {
-        return () {
+        return () async {
           _donateCalls++;
+          if (_donateFails) {
+            throw const ApiException(
+              statusCode: 400,
+              detail: 'Insufficient SRV (Value Token) balance.',
+            );
+          }
           return _donateGate.future;
         };
       }),
@@ -66,6 +73,19 @@ Widget _screen() {
   );
 }
 
+/// The gate is created in setUp, outside the test's fake-async zone, so its
+/// completion has to run in the real zone. Then the screen's await continues
+/// and the SnackBar can be pumped.
+Future<void> _finish(WidgetTester tester, void Function() complete) async {
+  await tester.runAsync(() async {
+    complete();
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+  });
+  for (var i = 0; i < 3; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -75,14 +95,13 @@ void main() {
     _creditCalls = 0;
     _debited = 0;
     _donateCalls = 0;
+    _donateFails = false;
     _donateGate = Completer<PedometerHarvestResult>();
   });
 
   testWidgets('empty leaderboard and insufficient VALUE does not mint',
       (tester) async {
-    _donateGate.completeError(
-      const ApiException(statusCode: 400, detail: 'Insufficient SRV (Value Token) balance.'),
-    );
+    _donateFails = true;
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -128,14 +147,15 @@ void main() {
     expect(_debited, 0);
     expect(_donateCalls, 1);
 
-    _donateGate.complete(
-      const PedometerHarvestResult(
-        status: 'donated',
-        valueTokenBalance: 500,
+    await _finish(
+      tester,
+      () => _donateGate.complete(
+        const PedometerHarvestResult(
+          status: 'donated',
+          valueTokenBalance: 500,
+        ),
       ),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
     expect(find.textContaining('서버 원장에서 500 VALUE를 기부했습니다'), findsOneWidget);
     expect(find.textContaining('잔액 500'), findsOneWidget);
     expect(find.textContaining('이 기기에서'), findsNothing);

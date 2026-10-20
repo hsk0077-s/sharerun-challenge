@@ -84,7 +84,7 @@ void main() {
     });
 
     test('keeps a prize that is not a cut of the entry fee', () {
-      expect(_room().cashPrizePoolLabel, 'Donation pool: 200 Value');
+      expect(_room().cashPrizePoolLabel, '기부 풀: 200 VALUE');
     });
   });
 

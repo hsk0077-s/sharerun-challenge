@@ -10,7 +10,7 @@ import '../core/widgets/src_gradient_background.dart';
 class RefundScreen extends StatelessWidget {
   const RefundScreen({super.key});
 
-  static const _saveNavy = Color(0xFF1A2B4A);
+  static const _saveNavy = AppColors.nightLime;
 
   void _onCancelRefund() {
     debugPrint('버튼 클릭됨');
@@ -71,7 +71,7 @@ class RefundScreen extends StatelessWidget {
                             child: Text(
                               AppStrings.refundCancelCta,
                               style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
+                                color: AppColors.nightOnLime,
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -223,7 +223,7 @@ class _RefundTargetCard extends StatelessWidget {
                 child: Text(
                   'S',
                   style: AppTextStyles.buttonText.copyWith(
-                    color: AppColors.textWhite,
+                    color: AppColors.nightOnLime,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),

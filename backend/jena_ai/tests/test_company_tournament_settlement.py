@@ -49,7 +49,14 @@ def _settle(db: _MemoryDb, tournament_id: str = "race"):
     return settle_company_prize_race(db, tournament_id, now=NOW)
 
 
-def _seed_finishers(db: _MemoryDb, tournament_id: str, rows: list[tuple[str, dict]], **race):
+def _seed_finishers(
+    db: _MemoryDb,
+    tournament_id: str,
+    rows: list[tuple[str, dict]],
+    *,
+    now: datetime = NOW,
+    **race,
+):
     tournament = {
         "status": "active",
         "prizeTier": "beginner",
@@ -66,7 +73,7 @@ def _seed_finishers(db: _MemoryDb, tournament_id: str, rows: list[tuple[str, dic
                 {
                     "userId": uid,
                     "jenaVerified": True,
-                    "completedAt": (NOW - timedelta(days=1)).isoformat(),
+                    "completedAt": (now - timedelta(days=1)).isoformat(),
                 },
             )
 
@@ -355,7 +362,15 @@ def test_finished_race_with_no_verified_finishers_settles_empty() -> None:
 def test_settle_route_uses_the_ops_secret(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("OPS_ADMIN_SECRET", "ops-secret")
     db = _MemoryDb()
-    _seed_finishers(db, "race", [("u1", _finisher("u1", 10))], status="finished")
+    # 이 경로는 진짜 현재 시각으로 정산하므로, 인정 기록 날짜도 지금 기준으로 심는다.
+    # (고정된 NOW로 심으면 날짜가 지나 인정 기간 밖이 되어 테스트가 저절로 깨진다.)
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 10))],
+        now=datetime.now(timezone.utc),
+        status="finished",
+    )
     original = ops_router.service
     ops_router.service = OpsService(firebase_service=SimpleNamespace(db=db))
     try:
@@ -954,3 +969,36 @@ def test_settlement_only_donation_respects_the_monthly_cap() -> None:
     assert db.store["donationLedger/tournament_km_race_u1"]["companyWon"] == 300
     assert db.store["donationLedger/tournament_km_race_u2"]["companyWon"] == 100
     assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 400
+
+
+def test_settlement_gives_promotion_points_to_graded_finishers_once() -> None:
+    db = _MemoryDb()
+    rows = [(f"u{i:02d}", _finisher(f"u{i:02d}", i * 100)) for i in range(1, 11)]
+    _seed_finishers(db, "race", rows)
+    for uid, _ in rows:
+        db.store[f"users/{uid}"]["gradeRank"] = 2
+    db.store["users/u01"]["authCreatedAt"] = (NOW - timedelta(days=90)).isoformat()
+
+    _settle(db)
+
+    ledger = db.store["promotionLedger/race__u01"]
+    assert ledger["rank"] == 1 and ledger["points"] == 60  # 40 x 1.0 x 1.5
+    # 10 finishers in an official race: a turtle winner goes straight to beagle.
+    assert db.store["users/u01"]["gradeRank"] == 6
+    assert db.store["users/u01"]["gradeCode"] == "beagle_bronze"
+    # 25 x 1.5 = 37 points: one 20-point medal step, 17 stay banked.
+    assert db.store["users/u02"]["gradeRank"] == 3
+    assert db.store["users/u02"]["promotion"]["points"] == 17
+    snapshot = deepcopy(db.store["users/u01"])
+    _settle(db)
+    assert db.store["users/u01"] == snapshot
+
+
+def test_ungraded_finisher_gets_no_promotion_doc() -> None:
+    db = _MemoryDb()
+    rows = [(f"u{i:02d}", _finisher(f"u{i:02d}", i * 100)) for i in range(1, 6)]
+    _seed_finishers(db, "race", rows)
+
+    _settle(db)
+
+    assert not [path for path in db.store if path.startswith("promotionLedger/")]

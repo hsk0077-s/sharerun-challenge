@@ -93,9 +93,8 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
-      final done = result.status == 'already_used'
-          ? '이미 처리된 휴식일 지정입니다.'
-          : '$label 완료';
+      final done =
+          result.status == 'already_used' ? '이미 처리된 휴식일 지정입니다.' : '$label 완료';
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -118,8 +117,8 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
 
   String _kstDay(int offset) {
     final kst = KstCalendar.toKst(DateTime.now());
-    final day = DateTime.utc(kst.year, kst.month, kst.day)
-        .add(Duration(days: offset));
+    final day =
+        DateTime.utc(kst.year, kst.month, kst.day).add(Duration(days: offset));
     return KstCalendar.dateKeyFromYmd(day.year, day.month, day.day);
   }
 
@@ -211,7 +210,7 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           ),
                           child: const Icon(
                             Icons.monitor_heart_outlined,
-                            color: AppColors.textWhite,
+                            color: AppColors.nightOnLime,
                             size: 24,
                           ),
                         ),
@@ -335,7 +334,8 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           _kstDay(0),
                           AppStrings.itemInventoryRestDayToday,
                         ),
-                        secondaryLabel: AppStrings.itemInventoryRestDayYesterday,
+                        secondaryLabel:
+                            AppStrings.itemInventoryRestDayYesterday,
                         onSecondary: () => _onUseRestDay(
                           _kstDay(-1),
                           AppStrings.itemInventoryRestDayYesterday,
@@ -565,7 +565,7 @@ class _CoinIcon extends StatelessWidget {
       child: Text(
         label,
         style: AppTextStyles.buttonText.copyWith(
-          color: AppColors.textWhite,
+          color: AppColors.nightOnLime,
           fontSize: 10,
           fontWeight: FontWeight.w800,
         ),

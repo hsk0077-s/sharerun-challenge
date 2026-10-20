@@ -30,7 +30,7 @@ class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
   static const _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFE0F7FA), Colors.white],
+    colors: [Color(0xFF0B120E), AppColors.nightBg],
   );
 
   var _busy = false;
@@ -106,7 +106,7 @@ class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.nightBg,
         body: SRCGradientBackground(
           gradient: _screenGradient,
           child: SafeArea(
@@ -230,7 +230,7 @@ class _StatusCard extends StatelessWidget {
 
   final String status;
 
-  static const _navy = Color(0xFF1A2B4A);
+  static const _navy = AppColors.nightCard;
   static const _gold = Color(0xFFFFD54F);
 
   @override

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
-import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -11,28 +10,21 @@ import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
-import '../core/widgets/src_gradient_background.dart';
+import '../features/home/home_cards.dart';
+import '../features/home/home_wallet_card.dart';
 import '../features/mini_bot/mini_bot_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/nickname_setup_sheet.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
-import '../features/profile/widgets/gender_profile_avatar.dart';
 import '../features/profile/widgets/retention_widgets.dart';
-import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/stamp/providers/stamp_tour_enabled_provider.dart';
-import '../features/wallet/providers/wallet_provider.dart';
-import '../features/home/home_cards.dart';
-import '../data/models/wallet_model.dart';
 import 'donation_settlement_screen.dart';
-import 'in_app_billing_screen.dart';
-import 'my_wallet_screen.dart';
 import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
 import 'preliminary_eval_screen.dart';
 import 'stamp_tour_screen.dart';
-import 'store_screen.dart';
 
-/// 메인 대시보드 화면 (Screen 5).
+/// 메인 대시보드 화면 (Screen 5). 검정 바탕 + 라임 포인트 새 디자인.
 class MainDashboardScreen extends ConsumerStatefulWidget {
   const MainDashboardScreen({super.key});
 
@@ -137,24 +129,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     );
   }
 
-  void _onOpenInAppBilling() {
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      try {
-        context.pushNamed(RouteNames.inAppBilling);
-        return;
-      } catch (_) {
-        context.push(RouteNames.inAppBilling);
-        return;
-      }
-    }
-    AppRouteNav.push<void>(
-      context,
-      RouteNames.inAppBilling,
-      materialBuilder: (_) => const InAppBillingScreen(),
-    );
-  }
-
   void _onOpenPersonalSponsor() {
     final router = GoRouter.maybeOf(context);
     if (router != null) {
@@ -173,21 +147,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     );
   }
 
-  void _onOpenStore({required StoreFocus focus}) {
-    ref.read(storeFocusProvider.notifier).setFocus(focus);
-    // 상점은 탭이다. 탭으로 옮겨야 뒤로가기가 홈으로 돌아온다.
-    if (GoRouter.maybeOf(context) != null) {
-      DashboardTabNavigation.go(context, DashboardTabNavigation.shop);
-      return;
-    }
-    AppRouteNav.push<void>(
-      context,
-      RouteNames.storeWithFocus(focus.name),
-      extra: focus,
-      materialBuilder: (_) => StoreScreen(initialFocus: focus),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<bool>(needsNicknameSetupProvider, (prev, next) {
@@ -202,137 +161,139 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     final trialDone = onboarding.preliminaryPaceSeconds.length
         .clamp(0, EconomyConstants.trialRunsRequired);
     final nicknameUnset = ref.watch(needsNicknameSetupProvider);
-    final dailyKm = ref.watch(retentionDailyKmProvider);
-    final wallet = ref.watch(walletProvider);
+    final nickname = ref.watch(userNicknameProvider);
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    final scaffold = Scaffold(
-      backgroundColor: tokens.colors.canvas,
-      body: SRCGradientBackground(
-        child: SafeArea(
-          bottom: false,
-          child: AbsorbPointer(
-            absorbing: nicknameUnset,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                tokens.spacing.page,
-                tokens.spacing.sm,
-                tokens.spacing.page,
-                tokens.spacing.xl,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _DashboardHeader(
-                    onNotificationTap: _onOpenNotificationCenter,
-                    onStampTour: _onOpenStampTour,
-                    showStampTour:
-                        ref.watch(stampTourEnabledProvider).asData?.value == true,
-                  ),
-                  SizedBox(height: tokens.spacing.md),
-                  SoloQuickStartBanner(onTap: _onOpenSoloQuickStart),
-                  SizedBox(height: tokens.spacing.sm),
-                  HomeDiamondCard(
-                    wallet: (ref.watch(activeWalletProvider).asData?.value ??
-                            WalletModel.empty())
-                        .copyWith(diamondBalance: wallet.diamondBalance),
-                    onOpenStore: () => _onOpenStore(focus: StoreFocus.items),
-                  ),
-                  SizedBox(height: tokens.spacing.sm),
-                  _WalletCard(
-                    share: wallet.shareBalance,
-                    value: wallet.valueBalance,
-                    onWalletTap: () => MyWalletScreen.open(context),
-                    onShareTap: _onOpenInAppBilling,
-                    onValueTap: () => _onOpenStore(focus: StoreFocus.donate),
-                    showGradeEval: !onboardingDone,
-                    gradeCompletedCount: trialDone,
-                    onGradeEval: _onOpenPreliminaryEval,
-                    dailyKm: dailyKm,
-                  ),
-                  SizedBox(height: tokens.spacing.sm),
-                  HomeDonationCard(onOpenSettlement: _onOpenDonationSettlement),
-                  SizedBox(height: tokens.spacing.sm),
-                  AngelSponsorBanner(onTap: _onOpenPersonalSponsor),
-                  SizedBox(height: tokens.spacing.lg),
-                  Text(
-                    AppStrings.dashboardOngoingChallenges,
-                    style: textTheme.titleLarge,
-                  ),
-                  SizedBox(height: tokens.spacing.xxs),
-                  Text(
-                    '상품은 다이아예요 · ${AppStrings.noCashPrizePool}',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: tokens.colors.muted,
+    final showStamp = ref.watch(stampTourEnabledProvider).asData?.value == true;
+
+    return Theme(
+      data: SrcTheme.night,
+      child: Builder(
+        builder: (context) {
+          final tokens = context.srcTokens;
+          final textTheme = Theme.of(context).textTheme;
+          final scaffold = Scaffold(
+            backgroundColor: tokens.colors.canvas,
+            body: AbsorbPointer(
+              absorbing: nicknameUnset,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.only(bottom: tokens.spacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _HomeHero(
+                      onNotificationTap: _onOpenNotificationCenter,
+                      onStampTour: _onOpenStampTour,
+                      showStampTour: showStamp,
                     ),
-                  ),
-                  SizedBox(height: tokens.spacing.sm),
-                  _ChallengeCard(
-                    title: AppStrings.dashboardChallenge1Title,
-                    subtitle: AppStrings.dashboardChallenge1Sub,
-                    onViewRoom: () {
-                      final router = GoRouter.maybeOf(context);
-                      if (router != null) {
-                        context.push(
-                          RouteNames.challengeDetailForRoom(
-                            RouteNames.beginner1kmRoomId,
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        tokens.spacing.page,
+                        tokens.spacing.md,
+                        tokens.spacing.page,
+                        0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _Greeting(
+                            nickname: SrcOnboardingController.isUnsetNickname(
+                              nickname,
+                            )
+                                ? null
+                                : nickname,
                           ),
-                        );
-                        return;
-                      }
-                      Navigator.of(context).pushNamed(
-                        RouteNames.challengeDetail,
-                        arguments: RouteNames.beginner1kmRoomId,
-                      );
-                    },
-                  ),
-                  SizedBox(height: tokens.spacing.sm),
-                  _ChallengeCard(
-                    title: AppStrings.dashboardChallenge2Title,
-                    subtitle: AppStrings.dashboardChallenge2Sub,
-                    onViewRoom: () {
-                      final router = GoRouter.maybeOf(context);
-                      if (router != null) {
-                        context.push(
-                          RouteNames.challengeDetailForRoom(
-                            RouteNames.intermediate3kmRoomId,
+                          SizedBox(height: tokens.spacing.sm),
+                          SoloQuickStartBanner(
+                            onTap: _onOpenSoloQuickStart,
                           ),
-                        );
-                        return;
-                      }
-                      Navigator.of(context).pushNamed(
-                        RouteNames.challengeDetail,
-                        arguments: RouteNames.intermediate3kmRoomId,
-                      );
-                    },
-                  ),
-                ],
+                          if (!onboardingDone) ...[
+                            SizedBox(height: tokens.spacing.sm),
+                            HomeGradeEvalBanner(
+                              completedCount: trialDone,
+                              onTap: _onOpenPreliminaryEval,
+                            ),
+                          ],
+                          SizedBox(height: tokens.spacing.sm),
+                          HomeDonationCard(
+                            onOpenSettlement: _onOpenDonationSettlement,
+                          ),
+                          SizedBox(height: tokens.spacing.sm),
+                          AngelSponsorBanner(onTap: _onOpenPersonalSponsor),
+                          SizedBox(height: tokens.spacing.lg),
+                          Text(
+                            AppStrings.dashboardOngoingChallenges,
+                            style: textTheme.titleLarge,
+                          ),
+                          SizedBox(height: tokens.spacing.xxs),
+                          Text(
+                            '상품은 다이아예요 · ${AppStrings.noCashPrizePool}',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: tokens.colors.muted,
+                            ),
+                          ),
+                          SizedBox(height: tokens.spacing.sm),
+                          _ChallengeCard(
+                            title: AppStrings.dashboardChallenge1Title,
+                            subtitle: AppStrings.dashboardChallenge1Sub,
+                            onViewRoom: () => _openRoom(
+                              context,
+                              RouteNames.beginner1kmRoomId,
+                            ),
+                          ),
+                          SizedBox(height: tokens.spacing.sm),
+                          _ChallengeCard(
+                            title: AppStrings.dashboardChallenge2Title,
+                            subtitle: AppStrings.dashboardChallenge2Sub,
+                            onViewRoom: () => _openRoom(
+                              context,
+                              RouteNames.intermediate3kmRoomId,
+                            ),
+                          ),
+                          // 달팽이봇 버튼과 하단 탭 바에 가리지 않도록 아래를 비운다.
+                          const SizedBox(height: 96),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+            floatingActionButton:
+                embedNav ? miniBotEntryForTab(_currentNavIndex) : null,
+            bottomNavigationBar: embedNav
+                ? DashboardBottomNav(
+                    currentIndex: _currentNavIndex,
+                    onTap: _onNavTap,
+                  )
+                : null,
+          );
+          return embedNav
+              ? SrcExitGuard(
+                  tabIndex: DashboardTabNavigation.home,
+                  child: scaffold,
+                )
+              : scaffold;
+        },
       ),
-      floatingActionButton:
-          embedNav ? miniBotEntryForTab(_currentNavIndex) : null,
-      bottomNavigationBar: embedNav
-          ? DashboardBottomNav(
-              currentIndex: _currentNavIndex,
-              onTap: _onNavTap,
-            )
-          : null,
     );
-    return embedNav
-        ? SrcExitGuard(
-            tabIndex: DashboardTabNavigation.home,
-            child: scaffold,
-          )
-        : scaffold;
+  }
+
+  void _openRoom(BuildContext context, String roomId) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      context.push(RouteNames.challengeDetailForRoom(roomId));
+      return;
+    }
+    Navigator.of(context).pushNamed(
+      RouteNames.challengeDetail,
+      arguments: roomId,
+    );
   }
 }
 
-class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader({
+/// 위쪽 큰 사진. 날짜와 알림, 스탬프 투어(켜져 있을 때)가 사진 위에 얹힌다.
+class _HomeHero extends StatelessWidget {
+  const _HomeHero({
     required this.onNotificationTap,
     required this.onStampTour,
     required this.showStampTour,
@@ -342,283 +303,140 @@ class _DashboardHeader extends StatelessWidget {
   final VoidCallback onStampTour;
   final bool showStampTour;
 
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Expanded(child: HomeUserIdentityHeader()),
-        Row(
-          children: [
-            if (showStampTour)
-              IconButton(
-                icon: const Icon(Icons.map_outlined),
-                color: tokens.colors.accent,
-                tooltip: AppStrings.dashboardStampMapTooltip,
-                onPressed: onStampTour,
-              ),
-            IconButton(
-              icon: const Icon(Icons.notifications_none_rounded),
-              color: tokens.colors.ink,
-              onPressed: onNotificationTap,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _WalletCard extends StatelessWidget {
-  const _WalletCard({
-    required this.share,
-    required this.value,
-    required this.onWalletTap,
-    required this.onShareTap,
-    required this.onValueTap,
-    required this.showGradeEval,
-    required this.gradeCompletedCount,
-    required this.onGradeEval,
-    required this.dailyKm,
-  });
-
-  final int share;
-  final int value;
-  final VoidCallback onWalletTap;
-  final VoidCallback onShareTap;
-  final VoidCallback onValueTap;
-  final bool showGradeEval;
-  final int gradeCompletedCount;
-  final VoidCallback onGradeEval;
-  final double dailyKm;
+  static const _photo = 'assets/images/splash_morning_run.jpg';
+  static const _weekdays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    const total = EconomyConstants.trialRunsRequired;
-    final progress = (gradeCompletedCount / total).clamp(0.0, 1.0);
-    return SrcSurfaceCard(
-      padding: EdgeInsets.all(tokens.spacing.lg),
-      borderColor: tokens.colors.accent.withValues(alpha: 0.18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          GestureDetector(
-            key: const Key('home-my-wallet-icon'),
-            behavior: HitTestBehavior.opaque,
-            onTap: onWalletTap,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: tokens.colors.accent,
-                  size: 22,
-                ),
-                SizedBox(width: tokens.spacing.xs),
-                Text(
-                  AppStrings.dashboardMyWallet,
-                  style: textTheme.titleMedium?.copyWith(
-                    color: tokens.colors.ink,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: tokens.spacing.md),
-          _WalletTapSegment(
-            onTap: onShareTap,
-            child: Text(
-              AppStrings.dashboardShareBalanceOf(_comma(share)),
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: tokens.colors.accent,
-              ),
-            ),
-          ),
-          SizedBox(height: tokens.spacing.xs),
-          _WalletTapSegment(
-            onTap: onValueTap,
-            child: Text(
-              AppStrings.dashboardValueBalanceOf(_comma(value)),
-              style: textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: tokens.colors.donation,
-              ),
-            ),
-          ),
-          SizedBox(height: tokens.spacing.sm),
-          DailyCapGauge(dailyKm: dailyKm),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 280),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: SizeTransition(
-                  sizeFactor: animation,
-                  alignment: Alignment.topCenter,
-                  child: child,
-                ),
-              );
-            },
-            child: showGradeEval
-                ? Padding(
-                    key: const ValueKey('grade-eval-banner'),
-                    padding: EdgeInsets.only(top: tokens.spacing.md),
-                    child: _GradeEvalBanner(
-                      completedCount: gradeCompletedCount,
-                      totalCount: total,
-                      progress: progress,
-                      onTap: onGradeEval,
-                    ),
-                  )
-                : const SizedBox.shrink(key: ValueKey('grade-eval-gone')),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GradeEvalBanner extends StatelessWidget {
-  const _GradeEvalBanner({
-    required this.completedCount,
-    required this.totalCount,
-    required this.progress,
-    required this.onTap,
-  });
-
-  final int completedCount;
-  final int totalCount;
-  final double progress;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    final textTheme = Theme.of(context).textTheme;
-    return Material(
-      color: tokens.colors.accent.withValues(alpha: 0.10),
-      borderRadius: tokens.radii.card,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: tokens.radii.card,
-        splashColor: tokens.colors.accent.withValues(alpha: 0.15),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(
-            tokens.spacing.sm,
-            tokens.spacing.sm,
-            tokens.spacing.sm,
-            tokens.spacing.sm - 2,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: tokens.radii.card,
-            border: Border.all(
-              color: tokens.colors.accent.withValues(alpha: 0.45),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _GradeProgressBar(progress: progress),
-              SizedBox(height: tokens.spacing.sm),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      AppStrings.dashboardGradeRunLabel,
-                      style: textTheme.labelMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: tokens.colors.accent,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '$completedCount/$totalCount회 완료 >',
-                    style: textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: tokens.colors.ink,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _WalletTapSegment extends StatelessWidget {
-  const _WalletTapSegment({
-    required this.onTap,
-    required this.child,
-  });
-
-  final VoidCallback onTap;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(tokens.radii.sm),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(tokens.radii.sm),
-        splashColor: tokens.colors.accent.withValues(alpha: 0.15),
-        highlightColor: tokens.colors.accent.withValues(alpha: 0.06),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: tokens.spacing.xs - 2,
-            horizontal: tokens.spacing.xxs,
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-class _GradeProgressBar extends StatelessWidget {
-  const _GradeProgressBar({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    final tokens = context.srcTokens;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(tokens.radii.xs),
-      child: SizedBox(
-        height: 10,
+    final now = DateTime.now();
+    final date = 'TODAY · ${now.month.toString().padLeft(2, '0')}.'
+        '${now.day.toString().padLeft(2, '0')} ${_weekdays[now.weekday - 1]}';
+    // 사진 비율에 맞춰 폭의 1.5배. 러너·강아지와 앞쪽 길이 모두 보이는 높이다.
+    final height = MediaQuery.sizeOf(context).width * 1.5;
+    return SizedBox(
+      height: height,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(36)),
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ColoredBox(color: tokens.colors.outline),
-            FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress.clamp(0.0, 1.0),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      tokens.colors.donation,
-                      tokens.colors.primary,
-                    ],
-                  ),
+            Image.asset(
+              _photo,
+              fit: BoxFit.cover,
+              alignment: const Alignment(0, -0.2),
+              errorBuilder: (_, __, ___) => ColoredBox(
+                color: tokens.colors.surface,
+              ),
+            ),
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xB8000000),
+                    Color(0x00000000),
+                    Color(0x00000000),
+                    Color(0xE6000000),
+                  ],
+                  stops: [0, 0.2, 0.5, 1],
+                ),
+              ),
+            ),
+            // 앱 대표 슬로건. 시작 화면과 같은 문장이다. 길 위(강아지 아래)에 둔다.
+            Positioned(
+              left: tokens.spacing.page + 2,
+              right: tokens.spacing.page,
+              bottom: 30,
+              child: const Text(
+                AppStrings.slogan,
+                key: Key('home-slogan'),
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  height: 1.3,
+                  fontWeight: FontWeight.w900,
+                  shadows: [
+                    Shadow(blurRadius: 12, color: Color(0xCC000000)),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  tokens.spacing.page,
+                  tokens.spacing.xs,
+                  tokens.spacing.xs,
+                  0,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          date,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (showStampTour)
+                      IconButton(
+                        icon: const Icon(Icons.map_outlined),
+                        color: Colors.white,
+                        tooltip: AppStrings.dashboardStampMapTooltip,
+                        onPressed: onStampTour,
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.notifications_none_rounded),
+                      color: Colors.white,
+                      onPressed: onNotificationTap,
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 시간대별 인사말. 닉네임을 아직 안 정했으면 이름 없이 인사만 한다.
+class _Greeting extends StatelessWidget {
+  const _Greeting({required this.nickname});
+
+  final String? nickname;
+
+  static String _hello(int hour) {
+    if (hour < 11) return '좋은 아침이에요';
+    if (hour < 18) return '좋은 오후예요';
+    return '좋은 저녁이에요';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.srcTokens;
+    final text = nickname == null
+        ? _hello(DateTime.now().hour)
+        : '${_hello(DateTime.now().hour)}, $nickname님';
+    return Text(
+      text,
+      key: const Key('home-greeting'),
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: tokens.colors.muted,
+          ),
     );
   }
 }
@@ -693,17 +511,4 @@ class _ChallengeCard extends StatelessWidget {
       ),
     );
   }
-}
-
-String _comma(int value) {
-  final digits = value.abs().toString();
-  final buffer = StringBuffer();
-  for (var i = 0; i < digits.length; i++) {
-    if (i > 0 && (digits.length - i) % 3 == 0) {
-      buffer.write(',');
-    }
-    buffer.write(digits[i]);
-  }
-  final formatted = buffer.toString();
-  return value < 0 ? '-$formatted' : formatted;
 }

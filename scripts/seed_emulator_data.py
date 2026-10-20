@@ -26,7 +26,7 @@ now = datetime.now(timezone.utc)
 def seed() -> None:
     tournaments = {
         "rookie-3k-unicef": {
-            "title": "Rookie 3K UNICEF Run",
+            "title": "루키 3K 유니세프 런",
             "targetDistanceKm": 3,
             "entryFeeShare": 100,
             "winnerRewardValue": 500,
@@ -36,11 +36,11 @@ def seed() -> None:
             "participantCount": 0,
             "requiredTier": 1,
             "status": "recruiting",
-            "sponsorName": "UNICEF Partner",
+            "sponsorName": "유니세프 파트너",
             "createdAt": now,
         },
         "neon-5k-sprint": {
-            "title": "Neon 5K Sprint",
+            "title": "네온 5K 스프린트",
             "targetDistanceKm": 5,
             "entryFeeShare": 200,
             "winnerRewardValue": 800,
@@ -50,7 +50,7 @@ def seed() -> None:
             "participantCount": 0,
             "requiredTier": 1,
             "status": "recruiting",
-            "sponsorName": "SRC Sponsor",
+            "sponsorName": "쉐어런 스폰서",
             "createdAt": now,
         },
     }
@@ -61,7 +61,7 @@ def seed() -> None:
 
     db.collection("diamondBoxes").document("park-gate").set(
         {
-            "title": "Park Gate Diamond",
+            "title": "공원 입구 다이아",
             "latitude": 37.5665,
             "longitude": 126.9780,
             "rewardDiamond": 3,
@@ -73,7 +73,7 @@ def seed() -> None:
 
     db.collection("crewRankings").document("neon-runners").set(
         {
-            "name": "Neon Runners",
+            "name": "네온 러너스",
             "totalValue": 3200,
             "memberCount": 12,
         },

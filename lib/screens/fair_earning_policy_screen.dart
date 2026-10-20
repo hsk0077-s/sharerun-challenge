@@ -21,7 +21,7 @@ class FairEarningPolicyScreen extends StatelessWidget {
     (
       title: '검증 기준',
       lines: [
-        '달리기 거리는 방 거리 이상이어야 하고, 최소 1km예요.',
+        '달리기 거리는 대회 거리 이상이어야 하고, 최소 1km예요.',
         '러닝 케이던스는 분당 120~210보 범위여야 해요.',
         '워치가 없으면 보폭과 GPS 속도로 확인해요.',
         '심박은 상급·하프·파이널 대회에서만 필수예요.',

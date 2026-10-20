@@ -110,6 +110,7 @@ from app.services.cosmetics import (
 from app.services.item_price_config import (
     BATTLE_PASS_ITEM_IDS,
     COACH_ONE_POINT_ITEM_ID,
+    CHALLENGE_TICKET_ITEM_ID,
     CREW_CHEER_FLAG_ITEM_ID,
     CREW_CREATE_DIA_ID,
     CREW_CREATE_SHARE_ID,
@@ -122,6 +123,16 @@ from app.services.item_price_config import (
     STREAK_ITEM_IDS,
     VALUE_ITEM_IDS,
     read_item_prices,
+)
+from app.services.challenge_tickets import purchase_challenge_ticket
+from app.services import accessories as accessories_service
+from app.services import crew_emblem_perks as crew_perks
+from app.services.crew_emblem import DEFAULT_CREW_EMBLEM, normalize_crew_emblem
+from app.services.ranked_tournaments import (
+    consume_challenge_ticket,
+    ranked_finish_fields,
+    ranked_kind,
+    require_entry,
 )
 from app.services.run_access_items import (
     consume_extra_entry_ticket,
@@ -618,9 +629,19 @@ class SecuredActionService:
         uid: str,
         item_id: str,
         request_id: str | None = None,
+        pay_with: str | None = None,
     ) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
+        if item_id == CHALLENGE_TICKET_ITEM_ID:
+            return _commit_challenge_ticket_tx(
+                transaction,
+                self,
+                uid,
+                pay_with,
+                require_request_id(request_id),
+                user_ref,
+            )
         if item_id in STREAK_ITEM_IDS:
             return _commit_streak_purchase_tx(
                 transaction,
@@ -675,6 +696,15 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
+        if item_id not in self.SHOP_CATALOG and accessories_service.is_accessory(item_id):
+            return _commit_accessory_purchase_tx(
+                transaction,
+                self,
+                uid,
+                item_id,
+                require_request_id(request_id),
+                user_ref,
+            )
         if item_id not in self.SHOP_CATALOG and is_cosmetic_item(
             self.firebase_service.db, item_id
         ):
@@ -690,6 +720,11 @@ class SecuredActionService:
 
     def cosmetics_catalog(self) -> dict:
         return read_cosmetics_catalog(self.firebase_service.db)
+
+    def equip_accessory(self, uid: str, slot: str, item_id: str) -> SecuredActionResult:
+        transaction = self.firebase_service.db.transaction()
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        return _commit_accessory_equip_tx(transaction, self, uid, slot, item_id, user_ref)
 
     def equip_cosmetic_item(
         self,
@@ -716,16 +751,6 @@ class SecuredActionService:
     def commit_cpr_grant(self, transaction, uid: str, user_ref) -> None:
         _commit_cpr_grant_tx(transaction, self, uid, user_ref)
 
-    def grant_crew_items(self, uid: str) -> SecuredActionResult:
-        transaction = self.firebase_service.db.transaction()
-        user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_crew_gift_tx(transaction, self, uid, user_ref)
-
-    def spend_crew_action(self, uid: str, action: str) -> SecuredActionResult:
-        transaction = self.firebase_service.db.transaction()
-        user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_crew_spend_tx(transaction, self, uid, action, user_ref)
-
     def change_nickname(self, uid: str, nickname: str) -> SecuredActionResult:
         compact = re.sub(r"\s+", "", nickname.strip())
         if _NICKNAME_PATTERN.fullmatch(compact) is None:
@@ -740,9 +765,11 @@ class SecuredActionService:
         name: str,
         pay_with: str,
         request_id: str,
+        emblem: str | None = None,
     ) -> SecuredActionResult:
         if pay_with not in {"share", "dia"}:
             raise HTTPException(status_code=400, detail="Invalid crew payment.")
+        emblem = normalize_crew_emblem(emblem)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         crew_ref = self.firebase_service.db.collection("crews").document()
@@ -755,6 +782,169 @@ class SecuredActionService:
             require_request_id(request_id),
             user_ref,
             crew_ref,
+            emblem,
+        )
+
+    def _emblem_crew(self, uid: str):
+        """The user, the crew id, the crew ref and the crew doc the user may manage."""
+        db = self.firebase_service.db
+        user_snapshot = db.collection("users").document(uid).get()
+        user = user_snapshot.to_dict() if user_snapshot.exists else None
+        crew_id = member_crew_id(user or {})
+        if not crew_id:
+            raise HTTPException(status_code=404, detail="You do not own a crew.")
+        crew_ref = db.collection("crews").document(crew_id)
+        crew_snapshot = crew_ref.get()
+        crew = crew_snapshot.to_dict() if crew_snapshot.exists else None
+        if not crew or not crew_perks.can_manage(uid, crew):
+            raise HTTPException(status_code=404, detail="You do not own a crew.")
+        return user or {}, crew_ref, crew
+
+    def change_crew_emblem(self, uid: str, emblem: str) -> SecuredActionResult:
+        """Free. The leader or a sub-leader, a listed emblem, and the cooldown."""
+        code = normalize_crew_emblem(emblem)
+        user, crew_ref, crew = self._emblem_crew(uid)
+        parts = code.split(":")
+        if parts[0] == "paid":
+            if parts[1] not in crew_perks.owned_paid(crew):
+                raise HTTPException(status_code=403, detail="This emblem is not owned by the crew.")
+        earned = crew_perks.earned_borders(crew)
+        if len(parts) == 6 and parts[5] not in earned:
+            raise HTTPException(status_code=403, detail="This border is not unlocked yet.")
+        if code != crew.get("emblem"):
+            left = crew_perks.cooldown_remaining_seconds(crew)
+            if left > 0:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"The emblem can change again in {left} seconds.",
+                )
+        crew_ref.set(
+            {
+                "emblem": code,
+                "emblemChangedAt": SERVER_TIMESTAMP,
+                "unlockedBorders": sorted(earned),
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+        wallet = user.get("wallet") or {}
+        return SecuredActionResult(
+            accepted=True,
+            status="updated",
+            reason="Crew emblem updated.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=_wallet_int(wallet, "diamondBalance"),
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+        )
+
+    def crew_emblem_status(self, uid: str) -> dict:
+        """What the picker needs: earned borders, progress, owned paid emblems, cooldown."""
+        _user, _ref, crew = self._emblem_crew(uid)
+        return {
+            "emblem": crew.get("emblem") or DEFAULT_CREW_EMBLEM,
+            "earned_borders": sorted(crew_perks.earned_borders(crew)),
+            "progress": crew_perks.stats(crew),
+            "thresholds": {k: list(v) for k, v in crew_perks.BORDER_THRESHOLDS.items()},
+            "paid_owned": sorted(crew_perks.owned_paid(crew)),
+            "paid_prices": crew_perks.PAID_EMBLEM_PRICES_DIA,
+            "paid_sale_enabled": crew_perks.paid_sale_enabled(),
+            "cooldown_seconds": crew_perks.cooldown_remaining_seconds(crew),
+            "can_manage": True,
+            "is_leader": crew.get("ownerUid") == uid,
+        }
+
+    def purchase_crew_paid_emblem(
+        self, uid: str, emblem_id: str, request_id: str
+    ) -> SecuredActionResult:
+        if not crew_perks.paid_sale_enabled():
+            raise HTTPException(status_code=403, detail="Paid emblems are not on sale yet.")
+        price = crew_perks.PAID_EMBLEM_PRICES_DIA.get(emblem_id)
+        if price is None:
+            raise HTTPException(status_code=404, detail="Emblem not found.")
+        db = self.firebase_service.db
+        user_ref = db.collection("users").document(uid)
+        user_snapshot = user_ref.get()
+        crew_id = member_crew_id(user_snapshot.to_dict() or {}) if user_snapshot.exists else ""
+        if not crew_id:
+            raise HTTPException(status_code=404, detail="You do not own a crew.")
+        crew_ref = db.collection("crews").document(crew_id)
+        # Only the leader buys, so the crew owns it for good.
+        crew_doc = crew_ref.get()
+        if not crew_doc.exists or (crew_doc.to_dict() or {}).get("ownerUid") != uid:
+            raise HTTPException(status_code=403, detail="Only the crew leader can buy emblems.")
+        transaction = db.transaction()
+        return _commit_crew_paid_emblem_tx(
+            transaction,
+            self,
+            uid,
+            emblem_id,
+            price,
+            require_request_id(request_id),
+            user_ref,
+            crew_ref,
+        )
+
+    def _crew_paid_emblem_tx(
+        self,
+        transaction,
+        uid: str,
+        emblem_id: str,
+        price: int,
+        request_id: str,
+        user_ref,
+        crew_ref,
+    ) -> SecuredActionResult:
+        ledger_ref = self.firebase_service.db.collection("walletTransactions").document(
+            f"crew_emblem_{uid}_{request_id}"
+        )
+        user_snapshot = user_ref.get(transaction=transaction)
+        crew_snapshot = crew_ref.get(transaction=transaction)
+        wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
+        if ledger_ref.get(transaction=transaction).exists:
+            return SecuredActionResult(
+                accepted=True,
+                status="already_bought",
+                reason="Emblem purchase already recorded.",
+                share_balance=_wallet_int(wallet, "shareBalance"),
+                diamond_balance=_wallet_int(wallet, "diamondBalance"),
+                value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
+            )
+        crew = crew_snapshot.to_dict() or {}
+        if emblem_id in crew_perks.owned_paid(crew):
+            raise HTTPException(status_code=409, detail="The crew already owns this emblem.")
+        diamonds = int(wallet.get("diamondBalance") or 0)
+        if diamonds < price:
+            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+        moved = move_currency(wallet, diamond=-price)
+        transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
+        transaction.set(
+            crew_ref,
+            {
+                "paidEmblems": sorted(crew_perks.owned_paid(crew) | {emblem_id}),
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+        transaction.set(
+            ledger_ref,
+            {
+                "uid": uid,
+                "type": "crew_emblem_purchase",
+                "diamondAmount": -price,
+                "emblemId": emblem_id,
+                "crewId": crew_ref.id,
+                "requestId": request_id,
+                "createdAt": SERVER_TIMESTAMP,
+                **moved["ledger"],
+            },
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="bought",
+            reason="Crew emblem bought.",
+            share_balance=_wallet_int(wallet, "shareBalance"),
+            diamond_balance=diamonds - price,
+            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
     def create_challenge_room(
@@ -884,7 +1074,7 @@ class SecuredActionService:
         pack = dia_pack_by_id(product_id)
         if pack is None:
             raise HTTPException(status_code=400, detail="Unknown DIA pack.")
-        verify_play_product_purchase(product_id, purchase_token)
+        play_body = verify_play_product_purchase(product_id, purchase_token) or {}
         token_hash = purchase_token_hash(purchase_token)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
@@ -898,6 +1088,7 @@ class SecuredActionService:
             pack,
             user_ref,
             purchase_ref,
+            play_body.get("orderId") if isinstance(play_body, dict) else None,
         )
         if result.status in {"granted", "already_granted"}:
             consume_play_product_purchase(product_id, purchase_token)
@@ -1102,13 +1293,19 @@ class SecuredActionService:
             if tournament_snapshot.exists:
                 tournament_doc = tournament_snapshot.to_dict() or {}
                 race_share = positive_share_reward(tournament_doc.get("shareReward"))
-                if result.verified and prize_tier_id(tournament_doc) is not None:
+                is_prize = prize_tier_id(tournament_doc) is not None
+                if result.verified and (
+                    is_prize or ranked_kind(tournament_doc) is not None
+                ):
                     participant_ref = tournament_ref.collection("participants").document(
                         uid
                     )
                     participant_snapshot = participant_ref.get(transaction=transaction)
                     if participant_snapshot.exists:
-                        prize_finish = prize_finish_fields(
+                        finish_fields = (
+                            prize_finish_fields if is_prize else ranked_finish_fields
+                        )
+                        prize_finish = finish_fields(
                             tournament_doc,
                             participant_snapshot.to_dict() or {},
                             distance_km=request.distance_km,
@@ -1248,6 +1445,16 @@ class SecuredActionService:
                 merge=True,
             )
             transaction.delete(appeal["proof_ref"])
+        if donation_counted and not donation_exists and crew_id and cheer_crew is not None:
+            # Crew stats for the unlock borders. Counted once per verified run
+            # (the donation ledger doc guards the repeat).
+            transaction.update(
+                self.firebase_service.db.collection("crews").document(crew_id),
+                {
+                    "totalDistanceKm": firestore.Increment(float(request.distance_km)),
+                    "totalDonationWon": firestore.Increment(int(company_won)),
+                },
+            )
         if donation_counted and not donation_exists:
             transaction.set(
                 donation_ref,
@@ -1524,14 +1731,6 @@ class SecuredActionService:
             )
         return rows
 
-    # Crew prices live here. The client does not send an amount.
-    CREW_GIFT_DIA = 30
-    CREW_SPENDS = {
-        "profile": ("diamond", 100, "crew_profile_change"),
-        "pass": ("diamond", 50, "crew_challenge_pass"),
-        "expand": ("diamond", 300, "crew_member_expand"),
-        "deposit": ("share", 3_000, "crew_deposit"),
-    }
     NICKNAME_CHANGE_DIA = 100
     CREW_GIFT_ITEMS = (
         ("record_cpr_ticket", "기록 심폐소생권"),
@@ -1835,6 +2034,7 @@ class SecuredActionService:
         pack: dict,
         user_ref,
         purchase_ref,
+        order_id: str | None = None,
     ) -> SecuredActionResult:
         existing = purchase_ref.get(transaction=transaction)
         if existing.exists:
@@ -1892,6 +2092,10 @@ class SecuredActionService:
                 "uid": uid,
                 "productId": pack["productId"],
                 "diamondAmount": total,
+                "baseDia": base,
+                "bonusDia": bonus,
+                "priceKrw": pack["priceKrw"],
+                **({"orderId": order_id} if order_id else {}),
                 "createdAt": SERVER_TIMESTAMP,
             },
         )
@@ -2762,132 +2966,6 @@ class SecuredActionService:
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
         )
 
-    def _grant_crew_items_tx(
-        self,
-        transaction,
-        uid: str,
-        user_ref,
-    ) -> SecuredActionResult:
-        user_snapshot = user_ref.get(transaction=transaction)
-        if not user_snapshot.exists:
-            raise HTTPException(status_code=404, detail="User not found.")
-        user = user_snapshot.to_dict() or {}
-        wallet = user.get("wallet") or {}
-        diamond_balance = int(wallet.get("diamondBalance") or 0)
-        cost = self.CREW_GIFT_DIA
-        if diamond_balance < cost:
-            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
-        moved = move_currency(wallet, diamond=-cost)
-        transaction.update(
-            user_ref,
-            {
-                **moved["updates"],
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-        )
-        granted = []
-        for item_id, title in self.CREW_GIFT_ITEMS:
-            inventory_ref = user_ref.collection("shopInventory").document(item_id)
-            inventory_snapshot = inventory_ref.get(transaction=transaction)
-            current_qty = 0
-            if inventory_snapshot.exists:
-                current_qty = int(
-                    (inventory_snapshot.to_dict() or {}).get("quantity") or 0
-                )
-            transaction.set(
-                inventory_ref,
-                {
-                    "itemId": item_id,
-                    "title": title,
-                    "quantity": current_qty + 1,
-                    "purchasedAt": SERVER_TIMESTAMP,
-                },
-                merge=True,
-            )
-            granted.append(item_id)
-        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
-        transaction.set(
-            tx_ref,
-            {
-                "uid": uid,
-                "type": "crew_item_gift",
-                "diamondAmount": -cost,
-                "itemIds": granted,
-                "createdAt": SERVER_TIMESTAMP,
-                **moved["ledger"],
-            },
-        )
-        return SecuredActionResult(
-            accepted=True,
-            status="granted",
-            reason="Crew items granted.",
-            share_balance=_wallet_int(wallet, "shareBalance"),
-            diamond_balance=diamond_balance - cost,
-            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
-        )
-
-    def _spend_crew_action_tx(
-        self,
-        transaction,
-        uid: str,
-        action: str,
-        user_ref,
-    ) -> SecuredActionResult:
-        spec = self.CREW_SPENDS.get(action)
-        if spec is None:
-            raise HTTPException(status_code=404, detail="Unknown crew action.")
-        asset, cost, tx_type = spec
-        user_snapshot = user_ref.get(transaction=transaction)
-        if not user_snapshot.exists:
-            raise HTTPException(status_code=404, detail="User not found.")
-        user = user_snapshot.to_dict() or {}
-        wallet = user.get("wallet") or {}
-        if asset == "diamond":
-            balance = int(wallet.get("diamondBalance") or 0)
-            amount_key = "diamondAmount"
-            if balance < cost:
-                raise HTTPException(
-                    status_code=400, detail="Insufficient Diamond balance."
-                )
-            moved = move_currency(wallet, diamond=-cost)
-        else:
-            balance = int(wallet.get("shareBalance") or 0)
-            amount_key = "shareAmount"
-            if balance < cost:
-                raise HTTPException(
-                    status_code=400, detail="Insufficient Share balance."
-                )
-            moved = move_currency(wallet, share=-cost)
-        transaction.update(
-            user_ref,
-            {**moved["updates"], "updatedAt": SERVER_TIMESTAMP},
-        )
-        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
-        transaction.set(
-            tx_ref,
-            {
-                "uid": uid,
-                "type": tx_type,
-                amount_key: -cost,
-                "createdAt": SERVER_TIMESTAMP,
-                **moved["ledger"],
-            },
-        )
-        return SecuredActionResult(
-            accepted=True,
-            status="spent",
-            reason=f"Crew {action} spent.",
-            share_balance=(
-                balance - cost if asset == "share" else _wallet_int(wallet, "shareBalance")
-            ),
-            diamond_balance=(
-                balance - cost
-                if asset == "diamond"
-                else _wallet_int(wallet, "diamondBalance")
-            ),
-            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
-        )
-
     def _change_nickname_tx(
         self,
         transaction,
@@ -2942,9 +3020,10 @@ class SecuredActionService:
         request_id: str,
         user_ref,
         crew_ref,
+        emblem: str = DEFAULT_CREW_EMBLEM,
     ) -> SecuredActionResult:
         trimmed = name.strip()
-        if not trimmed or len(trimmed) > 80:
+        if len(trimmed) < 2 or len(trimmed) > 20:
             raise HTTPException(status_code=400, detail="Invalid crew name.")
         prices = read_item_prices(self.firebase_service.db, transaction)
         dia_cost = int(prices[CREW_CREATE_DIA_ID])
@@ -2966,6 +3045,8 @@ class SecuredActionService:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
+        if member_crew_id(user_snapshot.to_dict() or {}):
+            raise HTTPException(status_code=409, detail="Already in a crew.")
         wallet = (user_snapshot.to_dict() or {}).get("wallet") or {}
         share = int(wallet.get("shareBalance") or 0)
         diamonds = int(wallet.get("diamondBalance") or 0)
@@ -2999,6 +3080,7 @@ class SecuredActionService:
             crew_ref,
             {
                 "name": trimmed,
+                "emblem": emblem,
                 "ownerUid": uid,
                 "totalValue": 0,
                 "memberCount": 1,
@@ -3007,6 +3089,10 @@ class SecuredActionService:
                 "diaCost": dia_charged,
                 "createdAt": SERVER_TIMESTAMP,
             },
+        )
+        transaction.set(
+            crew_ref.collection("members").document(uid),
+            {"uid": uid, "joinedAt": SERVER_TIMESTAMP},
         )
         transaction.set(
             ledger_ref,
@@ -3366,6 +3452,8 @@ class SecuredActionService:
                 value,
             )
 
+        ranked = ranked_kind(tournament) is not None
+        challenge_ticket = require_entry(user, tournament) if ranked else False
         user_tier = int(user.get("tier") or 1)
         required_tier = int(tournament.get("requiredTier") or 1)
         entry_fee = int(tournament.get("entryFeeShare") or 0)
@@ -3383,7 +3471,11 @@ class SecuredActionService:
                 raise HTTPException(
                     status_code=400, detail="Tournament is not recruiting."
                 )
-        if required_tier < user_tier and tournament_ref.id not in _OPEN_TIER_ROOM_IDS:
+        if (
+            not ranked
+            and required_tier < user_tier
+            and tournament_ref.id not in _OPEN_TIER_ROOM_IDS
+        ):
             raise HTTPException(status_code=403, detail="Lower-tier room is locked.")
         if self._tournament_is_full(tournament):
             if request.use_extra_entry:
@@ -3396,6 +3488,10 @@ class SecuredActionService:
             raise HTTPException(status_code=400, detail="Insufficient Diamond deposit.")
         if needs_ticket:
             consume_extra_entry_ticket(
+                self, transaction, uid, user_ref, tournament_ref.id
+            )
+        if challenge_ticket:
+            consume_challenge_ticket(
                 self, transaction, uid, user_ref, tournament_ref.id
             )
 
@@ -3441,6 +3537,7 @@ class SecuredActionService:
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
                 **({"extraEntryTicket": True} if needs_ticket else {}),
+                **({"challengedUp": True} if challenge_ticket else {}),
             },
         )
         transaction.set(
@@ -4759,9 +4856,10 @@ def _commit_dia_pack_tx(
     pack: dict,
     user_ref,
     purchase_ref,
+    order_id: str | None = None,
 ) -> SecuredActionResult:
     return service._grant_dia_pack_tx(
-        transaction, uid, pack, user_ref, purchase_ref
+        transaction, uid, pack, user_ref, purchase_ref, order_id
     )
 
 
@@ -4970,6 +5068,20 @@ def _commit_nickname_tx(
 
 
 @firestore.transactional
+def _commit_accessory_purchase_tx(
+    transaction, service, uid: str, item_id: str, request_id: str, user_ref
+) -> SecuredActionResult:
+    return accessories_service.purchase(service, transaction, uid, item_id, request_id, user_ref)
+
+
+@firestore.transactional
+def _commit_accessory_equip_tx(
+    transaction, service, uid: str, slot: str, item_id: str, user_ref
+) -> SecuredActionResult:
+    return accessories_service.equip(service, transaction, uid, slot, item_id, user_ref)
+
+
+@firestore.transactional
 def _commit_cosmetic_purchase_tx(
     transaction,
     service,
@@ -4995,6 +5107,20 @@ def _commit_cosmetic_equip_tx(
 ) -> SecuredActionResult:
     return equip_cosmetic(
         service, transaction, uid, item_id, request_id, user_ref, equip
+    )
+
+
+@firestore.transactional
+def _commit_challenge_ticket_tx(
+    transaction,
+    service,
+    uid: str,
+    pay_with: str | None,
+    request_id: str,
+    user_ref,
+) -> SecuredActionResult:
+    return purchase_challenge_ticket(
+        service, transaction, uid, pay_with, request_id, user_ref
     )
 
 
@@ -5089,6 +5215,22 @@ def _commit_crew_cheer_use_tx(
 
 
 @firestore.transactional
+def _commit_crew_paid_emblem_tx(
+    transaction,
+    service,
+    uid: str,
+    emblem_id: str,
+    price: int,
+    request_id: str,
+    user_ref,
+    crew_ref,
+) -> SecuredActionResult:
+    return service._crew_paid_emblem_tx(
+        transaction, uid, emblem_id, price, request_id, user_ref, crew_ref
+    )
+
+
+@firestore.transactional
 def _commit_crew_found_tx(
     transaction,
     service,
@@ -5098,9 +5240,10 @@ def _commit_crew_found_tx(
     request_id: str,
     user_ref,
     crew_ref,
+    emblem: str = DEFAULT_CREW_EMBLEM,
 ) -> SecuredActionResult:
     return service._found_crew_tx(
-        transaction, uid, name, pay_with, request_id, user_ref, crew_ref
+        transaction, uid, name, pay_with, request_id, user_ref, crew_ref, emblem
     )
 
 
@@ -5117,27 +5260,6 @@ def _commit_create_room_tx(
     return service._create_challenge_room_tx(
         transaction, uid, title, distance_km, user_ref, room_ref
     )
-
-
-@firestore.transactional
-def _commit_crew_spend_tx(
-    transaction,
-    service,
-    uid: str,
-    action: str,
-    user_ref,
-) -> SecuredActionResult:
-    return service._spend_crew_action_tx(transaction, uid, action, user_ref)
-
-
-@firestore.transactional
-def _commit_crew_gift_tx(
-    transaction,
-    service,
-    uid: str,
-    user_ref,
-) -> SecuredActionResult:
-    return service._grant_crew_items_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

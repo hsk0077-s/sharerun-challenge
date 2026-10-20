@@ -30,9 +30,9 @@ import '../wallet/providers/wallet_provider.dart';
 /// 끼어들지 않도록 **항상 마지막**에 둔다.
 enum TierAnimal {
   turtle,
-  maltese,
+  beagle,
   wolf,
-  horse,
+  zebra,
   cheetah,
   snail,
 }
@@ -43,27 +43,27 @@ typedef AnimalGroup = TierAnimal;
 extension TierAnimalX on TierAnimal {
   String get code => switch (this) {
         TierAnimal.turtle => 'turtle',
-        TierAnimal.maltese => 'maltese',
+        TierAnimal.beagle => 'beagle',
         TierAnimal.wolf => 'wolf',
-        TierAnimal.horse => 'horse',
+        TierAnimal.zebra => 'zebra',
         TierAnimal.cheetah => 'cheetah',
         TierAnimal.snail => 'snail',
       };
 
   String get labelKo => switch (this) {
         TierAnimal.turtle => '거북이',
-        TierAnimal.maltese => '몰티즈',
+        TierAnimal.beagle => '비글',
         TierAnimal.wolf => '늑대',
-        TierAnimal.horse => '말',
+        TierAnimal.zebra => '얼룩말',
         TierAnimal.cheetah => '치타',
         TierAnimal.snail => '달팽이',
       };
 
   String get emoji => switch (this) {
         TierAnimal.turtle => '🐢',
-        TierAnimal.maltese => '🐶',
+        TierAnimal.beagle => '🐶',
         TierAnimal.wolf => '🐺',
-        TierAnimal.horse => '🐴',
+        TierAnimal.zebra => '🦓',
         TierAnimal.cheetah => '🐆',
         TierAnimal.snail => '🐌',
       };
@@ -156,38 +156,38 @@ class UserTier {
 
   /// 티어 마스코트 그림. 모두 오른쪽을 본다. 메달은 그림에 없고
   /// 화면에서 [TierMedalBadge]로 따로 보여 준다.
-  /// 달팽이(등급 미배정): 실망하고 한숨 쉬는 깜찍한 비주얼.
+  /// 달팽이(등급 미배정): 워킹 챌린지에서 쓰는 웃는 달팽이. 바탕은 투명하다.
   String get avatarAssetPath => isSnail
-      ? 'assets/images/characters/chibi_snail_disappointed.png'
+      ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 전용 — 메달 없는 순수 티어 마스코트. 모두 오른쪽을 본다.
   String get pureAvatarAssetPath => isSnail
-      ? 'assets/images/characters/chibi_snail_running.png'
+      ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 일일 목표 거리.
   double get targetKm => switch (group) {
         AnimalGroup.snail => 3.0,
         AnimalGroup.turtle => 5.0,
-        AnimalGroup.maltese || AnimalGroup.wolf => 7.0,
-        AnimalGroup.horse || AnimalGroup.cheetah => 10.0,
+        AnimalGroup.beagle || AnimalGroup.wolf => 7.0,
+        AnimalGroup.zebra || AnimalGroup.cheetah => 10.0,
       };
 
   /// 만보기 일일 목표 걸음 수 (1 SHARE = 1km 환산과 별개, 3.0km ≈ 4,500보).
   int get targetSteps => switch (group) {
         AnimalGroup.snail => 4500,
         AnimalGroup.turtle => 7500,
-        AnimalGroup.maltese || AnimalGroup.wolf => 10500,
-        AnimalGroup.horse || AnimalGroup.cheetah => 15000,
+        AnimalGroup.beagle || AnimalGroup.wolf => 10500,
+        AnimalGroup.zebra || AnimalGroup.cheetah => 15000,
       };
 
   /// 만보기 SHARE 드랍 주기(km).
   double get dropIntervalKm => switch (group) {
         AnimalGroup.snail => 0.05,
         AnimalGroup.turtle => 0.1,
-        AnimalGroup.maltese || AnimalGroup.wolf => 0.14,
-        AnimalGroup.horse || AnimalGroup.cheetah => 0.2,
+        AnimalGroup.beagle || AnimalGroup.wolf => 0.14,
+        AnimalGroup.zebra || AnimalGroup.cheetah => 0.2,
       };
 
   /// 만보기 일일 최대 채굴 SHARE.
@@ -211,18 +211,18 @@ class UserTier {
   Color get walkCanvasStart => switch (group) {
         AnimalGroup.snail => const Color(0xFFE8EDE4),
         AnimalGroup.turtle => const Color(0xFFDFF5EA),
-        AnimalGroup.maltese => const Color(0xFFFFF0E3),
+        AnimalGroup.beagle => const Color(0xFFFFF0E3),
         AnimalGroup.wolf => const Color(0xFFE8EEF3),
-        AnimalGroup.horse => const Color(0xFFF7ECDD),
+        AnimalGroup.zebra => const Color(0xFFF7ECDD),
         AnimalGroup.cheetah => const Color(0xFFFFF1D6),
       };
 
   Color get walkCanvasEnd => switch (group) {
         AnimalGroup.snail => const Color(0xFFD5DDD0),
         AnimalGroup.turtle => const Color(0xFFBFE8D4),
-        AnimalGroup.maltese => const Color(0xFFFFD9C2),
+        AnimalGroup.beagle => const Color(0xFFFFD9C2),
         AnimalGroup.wolf => const Color(0xFFD2DCE6),
-        AnimalGroup.horse => const Color(0xFFE8D4B8),
+        AnimalGroup.zebra => const Color(0xFFE8D4B8),
         AnimalGroup.cheetah => const Color(0xFFFFE0A3),
       };
 
@@ -231,9 +231,9 @@ class UserTier {
     if (isSnail) return 0;
     final animalBase = switch (animal) {
       TierAnimal.turtle => 0,
-      TierAnimal.maltese => 5,
+      TierAnimal.beagle => 5,
       TierAnimal.wolf => 10,
-      TierAnimal.horse => 15,
+      TierAnimal.zebra => 15,
       TierAnimal.cheetah => 20,
       TierAnimal.snail => 0,
     };
@@ -252,9 +252,9 @@ class UserTier {
 
   static const List<TierAnimal> rankedAnimals = <TierAnimal>[
     TierAnimal.turtle,
-    TierAnimal.maltese,
+    TierAnimal.beagle,
     TierAnimal.wolf,
-    TierAnimal.horse,
+    TierAnimal.zebra,
     TierAnimal.cheetah,
   ];
 
@@ -422,10 +422,10 @@ extension AngelTierX on AngelTier {
   String get rewardLabel => switch (this) {
         AngelTier.preAngel => '등에 귀여운 날개 반창고를 붙인 마스코트',
         AngelTier.cupid => '등 뒤 아기 날개 배지 장착',
-        AngelTier.guardian => '은빛 날개 · 방 입장 시 닉네임 볼드 테두리 강조',
+        AngelTier.guardian => '은빛 날개 · 대회 입장 시 닉네임 볼드 테두리 강조',
         AngelTier.archangel =>
-          '황금 날개 · 골드 그라데이션 닉네임 · 개설 방 러너 1.2배 토큰 부스트',
-        AngelTier.cherubim => '4익 날개 · 민트 오라 · 방 입장 시 단독 등장 팝업',
+          '황금 날개 · 골드 그라데이션 닉네임 · 개설 대회 러너 1.2배 토큰 부스트',
+        AngelTier.cherubim => '4익 날개 · 민트 오라 · 대회 입장 시 단독 등장 팝업',
         AngelTier.seraphim => '6익 날개 · 골드 광배 회전 · 명예의 전당 VVIP 단독 배너',
       };
 
@@ -811,9 +811,43 @@ abstract final class PedometerKstClock {
     }
   }
 
+  /// Health Connect 호출 한도(quota) 초과는 네이티브 코루틴에서 예외가 터져
+  /// 앱이 종료되므로 Dart에서 잡을 수 없다. 호출 자체를 줄인다.
+  static Duration minTodayReadGap = const Duration(seconds: 60);
+  static DateTime? _todayReadAt;
+  static int? _todayCache;
+  static Future<int?>? _todayInflight;
+
+  @visibleForTesting
+  static void resetStepReadThrottle() {
+    _todayReadAt = null;
+    _todayCache = null;
+    _todayInflight = null;
+    _dayCache.clear();
+  }
+
+  static final Map<String, int> _dayCache = <String, int>{};
+
   static Future<int?> queryTodaySteps(
     Health health, {
     bool requestIfMissing = true,
+  }) {
+    final inflight = _todayInflight;
+    if (inflight != null) return inflight;
+    final at = _todayReadAt;
+    if (!requestIfMissing &&
+        at != null &&
+        DateTime.now().difference(at) < minTodayReadGap) {
+      return Future<int?>.value(_todayCache);
+    }
+    final run = _readTodaySteps(health, requestIfMissing: requestIfMissing);
+    _todayInflight = run;
+    return run.whenComplete(() => _todayInflight = null);
+  }
+
+  static Future<int?> _readTodaySteps(
+    Health health, {
+    required bool requestIfMissing,
   }) async {
     try {
       if (requestIfMissing) {
@@ -823,12 +857,13 @@ abstract final class PedometerKstClock {
         await health.configure();
       }
       final range = todayRange();
+      _todayReadAt = DateTime.now();
       final total = await health.getTotalStepsInInterval(
         range.startDate,
         range.endDate,
       );
-      if (total == null) return null;
-      return total < 0 ? 0 : total;
+      if (total == null) return _todayCache = null;
+      return _todayCache = total < 0 ? 0 : total;
     } on PlatformException catch (e, st) {
       debugPrint('PedometerKstClock getTotalStepsInInterval: $e\n$st');
       return null;
@@ -844,6 +879,8 @@ abstract final class PedometerKstClock {
     String dayKey, {
     bool requestIfMissing = false,
   }) async {
+    final cached = _dayCache[dayKey];
+    if (cached != null && dayKey != KstCalendar.dateKey()) return cached;
     try {
       if (requestIfMissing) {
         await requestAuthorization(health);
@@ -857,6 +894,7 @@ abstract final class PedometerKstClock {
         range.endDate,
       );
       if (total == null || total <= 0) return null;
+      _dayCache[dayKey] = total;
       return total;
     } on PlatformException catch (e, st) {
       debugPrint('PedometerKstClock queryDaySteps: $e\n$st');
@@ -1734,10 +1772,10 @@ abstract final class RetentionAlertEngine {
       payloads.add(
         const RetentionPushPayload(
           code: 'golden_hour',
-          title: '골든 아워 채굴',
+          title: '골든 아워 땀방울',
           body:
               '오늘의 영웅이 될 준비가 되셨나요? 러너님만을 위한 골든 아워입니다. '
-              '가볍게 걷고 일일 5km / 50 SRV 채굴 캡을 달성해 보세요! 👼',
+              '가볍게 걷고 일일 5km / 50 SRV 땀방울 한도를 채워 보세요! 👼',
           routeName: RouteNames.soloPedometer,
         ),
       );

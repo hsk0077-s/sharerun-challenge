@@ -159,7 +159,7 @@ class _NicknameSetupSheetState extends ConsumerState<NicknameSetupSheet> {
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primaryMint,
                   disabledBackgroundColor: AppColors.buttonDisabled,
-                  foregroundColor: AppColors.textWhite,
+                  foregroundColor: AppColors.nightOnLime,
                   shape: const StadiumBorder(),
                 ),
                 child: _submitting
@@ -168,13 +168,13 @@ class _NicknameSetupSheetState extends ConsumerState<NicknameSetupSheet> {
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.4,
-                          color: AppColors.textWhite,
+                          color: AppColors.nightOnLime,
                         ),
                       )
                     : Text(
                         '설정 완료',
                         style: AppTextStyles.buttonText.copyWith(
-                          color: AppColors.textWhite,
+                          color: AppColors.nightOnLime,
                         ),
                       ),
               ),

@@ -826,7 +826,7 @@ abstract final class SoloPedometerForeground {
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: _channelId,
         channelName: _channelName,
-        channelDescription: '워킹챌린지 걸음 수와 채굴 진행도를 잠금화면과 상단바에 표시합니다.',
+        channelDescription: '워킹챌린지 걸음 수와 땀방울 진행도를 잠금화면과 상단바에 표시합니다.',
         channelImportance: NotificationChannelImportance.DEFAULT,
         priority: NotificationPriority.DEFAULT,
         visibility: NotificationVisibility.VISIBILITY_PUBLIC,

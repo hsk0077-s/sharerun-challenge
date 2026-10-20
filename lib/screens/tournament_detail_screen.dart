@@ -67,7 +67,7 @@ class TournamentDetailScreen extends ConsumerWidget {
     ref.watch(signupFreeTicketGrantProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Tournament Detail')),
+      appBar: AppBar(title: const Text('대회 상세')),
       body: AsyncValueSection<TournamentModel?>(
         asyncValue: tournamentAsync,
         dataBuilder: (context, room) {
@@ -132,7 +132,7 @@ class TournamentDetailScreen extends ConsumerWidget {
                         ? '추가 참가권으로 참가'
                         : quote != null
                             ? quote.shareJoinLabel
-                            : 'Join with ${room.entryFeeShare} Share',
+                            : '${room.entryFeeShare} SHARE로 참가',
                   ),
                 ),
               if (canJoin && ticketChoice) ...[
@@ -290,15 +290,15 @@ class _TournamentInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sponsor: ${room.sponsorName}'),
+          Text('후원: ${room.sponsorName}'),
           const SizedBox(height: 8),
-          Text('Status: ${room.status.name}'),
+          Text('상태: ${_statusKo(room.status)}'),
           const SizedBox(height: 8),
-          Text('Target: ${room.targetDistanceKm.toStringAsFixed(1)} km'),
+          Text('목표 거리: ${room.targetDistanceKm.toStringAsFixed(1)} km'),
           const SizedBox(height: 8),
           Text(feeText == null
-              ? 'Entry: $entryFeeShare Share'
-              : 'Entry: $feeText'),
+              ? '참가비: $entryFeeShare SHARE'
+              : '참가비: $feeText'),
           if (rulesText != null) ...[
             const SizedBox(height: 8),
             Text(rulesText!),
@@ -308,12 +308,12 @@ class _TournamentInfoCard extends StatelessWidget {
             Text(
               participantStatus == 'refunded'
                   ? '모집 인원이 차지 않아 참가비를 돌려드렸어요.'
-                  : 'Participant status: $participantStatus',
+                  : '참가 상태: ${participantStatus == 'joined' ? '참가 중' : participantStatus}',
             ),
           ],
           if (joinedAt != null) ...[
             const SizedBox(height: 8),
-            Text('Joined: ${_formatDate(joinedAt!)}'),
+            Text('참가일: ${_formatDate(joinedAt!)}'),
           ],
           if (ticketRewardLabel != null) ...[
             const SizedBox(height: 8),
@@ -334,3 +334,11 @@ class _TournamentInfoCard extends StatelessWidget {
         '${value.day.toString().padLeft(2, '0')}';
   }
 }
+
+String _statusKo(TournamentStatus status) => switch (status) {
+      TournamentStatus.recruiting => '모집 중',
+      TournamentStatus.active => '진행 중',
+      TournamentStatus.cancelled => '취소됨',
+      TournamentStatus.cancelledBepNotMet => '인원 미달로 취소됨',
+      TournamentStatus.completed => '종료',
+    };

@@ -91,7 +91,7 @@ def test_grant_verifies_token_before_the_ledger(monkeypatch) -> None:
     def verify(product_id, purchase_token):
         seen["verified"] = (product_id, purchase_token)
 
-    def commit(transaction, service_arg, uid, pack, user_ref, purchase_ref):
+    def commit(transaction, service_arg, uid, pack, user_ref, purchase_ref, order_id=None):
         seen["product"] = pack["productId"]
         seen["purchase"] = purchase_ref.id
         return SimpleNamespace(status="granted")

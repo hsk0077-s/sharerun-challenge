@@ -12,6 +12,7 @@ import 'package:share_run_challenge/features/pedometer/walking_challenge_share.d
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/golden_helper.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -90,7 +91,7 @@ void main() {
     expect(find.textContaining('줍기 대기'), findsOneWidget);
     expect(find.text('90000 SHARE'), findsOneWidget);
     expect(find.text('내 누적 SHARE 통장 🏦'), findsOneWidget);
-    expect(find.textContaining('오늘의 채굴 : 0 / 600 SHARE'), findsOneWidget);
+    expect(find.textContaining('오늘의 땀방울 : 0 / 600 SHARE'), findsOneWidget);
     expect(find.textContaining('3km만 걸어도 특별히 60 SHARE'), findsNothing);
     expect(find.textContaining('획득 완료'), findsNothing);
     expect(find.textContaining('+20'), findsNothing);
@@ -107,12 +108,13 @@ void main() {
     expect(find.byType(SrcSurfaceCard), findsWidgets);
 
     final ctx = tester.element(find.text('워킹챌린지'));
-    expect(ctx.srcTokens.colors.primary, AppColors.primaryMint);
-    expect(ctx.srcTokens.colors.accent, AppColors.tealAccent);
-    expect(ctx.srcTokens.colors.donation, AppColors.angelGold);
-    expect(Theme.of(ctx).colorScheme.primary, AppColors.primaryMint);
-    expect(Theme.of(ctx).colorScheme.secondary, AppColors.tealAccent);
-    expect(Theme.of(ctx).colorScheme.tertiary, AppColors.angelGold);
+    // 새 디자인: 검정 바탕 + 라임 테마 안에서 그려진다.
+    expect(ctx.srcTokens.colors.primary, AppColors.nightLime);
+    expect(ctx.srcTokens.colors.accent, AppColors.nightLime);
+    expect(ctx.srcTokens.colors.donation, AppColors.nightGold);
+    expect(Theme.of(ctx).colorScheme.primary, AppColors.nightLime);
+    expect(Theme.of(ctx).colorScheme.secondary, AppColors.nightLime);
+    expect(Theme.of(ctx).colorScheme.tertiary, AppColors.nightGold);
 
     final harvest = tester.widget<FilledButton>(
       find.byKey(const Key('walking-harvest-cta')),
@@ -130,9 +132,9 @@ void main() {
     expect(
       harvestColors.any(
         (color) =>
-            (color.r - AppColors.angelGold.r).abs() < 0.01 &&
-            (color.g - AppColors.angelGold.g).abs() < 0.01 &&
-            (color.b - AppColors.angelGold.b).abs() < 0.01,
+            (color.r - AppColors.nightLime.r).abs() < 0.2 &&
+            (color.g - AppColors.nightLime.g).abs() < 0.2 &&
+            (color.b - AppColors.nightLime.b).abs() < 0.2,
       ),
       isTrue,
     );
@@ -140,7 +142,7 @@ void main() {
     final shareStyle = tester
         .widget<Text>(find.byKey(const Key('walking-share-balance')))
         .style;
-    expect(shareStyle?.color, AppColors.tealAccent);
+    expect(shareStyle?.color, AppColors.nightLime);
     expect(shareStyle?.fontSize, greaterThanOrEqualTo(32));
 
     final stepStyle =
@@ -205,7 +207,7 @@ void main() {
     );
   });
 
-  testWidgets('Walking challenge golden', (tester) async {
+  goldenTest('Walking challenge golden', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);

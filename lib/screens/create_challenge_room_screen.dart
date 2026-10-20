@@ -7,14 +7,12 @@ import '../core/challenge/challenge_entry_fee.dart';
 import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
-import '../core/theme/app_colors.dart';
-import '../core/theme/app_shapes.dart';
-import '../core/theme/app_text_styles.dart';
-import '../core/widgets/src_gradient_background.dart';
+import '../core/theme/theme.dart';
 import '../data/firebase/share_spend_transaction.dart';
 import '../data/models/tournament_model.dart';
 import '../data/repositories/tournament_repository.dart';
 import '../features/challenge/providers/challenge_room_providers.dart';
+import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
 
@@ -120,7 +118,7 @@ class _CreateChallengeRoomScreenState
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"$title" 방이 개설되었습니다.')),
+        SnackBar(content: Text('"$title" 대회가 열렸어요.')),
       );
       AppRouteNav.pop(context);
     } on InsufficientShareException {
@@ -134,7 +132,7 @@ class _CreateChallengeRoomScreenState
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('방 개설 실패: $error')),
+        SnackBar(content: Text('대회 열기에 실패했어요: $error')),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -172,290 +170,166 @@ class _CreateChallengeRoomScreenState
 
   @override
   Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
     return Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
-      body: SRCGradientBackground(
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _CreateRoomHeader(onBack: () => AppRouteNav.pop(context)),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    8,
-                    AppShapes.termsHorizontalPadding,
-                    16,
+      backgroundColor: c.canvas,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 20, 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    color: c.ink,
+                    iconSize: 20,
+                    onPressed: () => AppRouteNav.pop(context),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _WhiteCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppStrings.createRoomTitleSection,
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              AppStrings.createRoomTitleHint,
-                              style: AppTextStyles.caption.copyWith(fontSize: 13),
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: _titleController,
-                              style: AppTextStyles.inputText,
-                              decoration: InputDecoration(
-                                hintText: AppStrings.createRoomTitlePlaceholder,
-                                hintStyle: AppTextStyles.inputHint,
-                                filled: true,
-                                fillColor: AppColors.surfaceWhite,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppShapes.inputRadius,
-                                  ),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.borderLight,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppShapes.inputRadius,
-                                  ),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.borderLight,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppShapes.inputRadius,
-                                  ),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.primaryMint,
-                                    width: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _WhiteCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppStrings.createRoomDistanceSection,
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              AppStrings.createRoomDistanceHint,
-                              style: AppTextStyles.caption.copyWith(fontSize: 13),
-                            ),
-                            const SizedBox(height: 14),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: _distances.map((km) {
-                                final selected = _selectedDistanceKm == km;
-                                return _DistanceChip(
-                                  label: '${km}km',
-                                  selected: selected,
-                                  onTap: () => _selectDistance(km),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      _WhiteCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              AppStrings.createRoomEntryFeeSection,
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  '$_formattedFee SHARE',
-                                  style: AppTextStyles.header1.copyWith(
-                                    fontSize: 32,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const _ShareCoinIcon(),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            Text.rich(
-                              TextSpan(
-                                style: AppTextStyles.caption.copyWith(
-                                  fontSize: 11,
-                                  height: 1.5,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: AppStrings.createRoomFeeWarningRed,
-                                    style: const TextStyle(
-                                      color: AppColors.error,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: AppStrings.createRoomFeeWarningGrey,
-                                    style: const TextStyle(
-                                      color: AppColors.textGrey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                  const StoreTag('CHALLENGE'),
+                ],
               ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    8,
-                    AppShapes.termsHorizontalPadding,
-                    12,
-                  ),
-                  child: Material(
-                    color: AppColors.primaryMint,
-                    borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: _isSubmitting ? null : _onCreateRoom,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: AppShapes.buttonHeight,
-                        child: Center(
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.4,
-                                    color: AppColors.textWhite,
-                                  ),
-                                )
-                              : Text(
-                                  _payButtonLabel,
-                                  style: AppTextStyles.buttonText.copyWith(
-                                    color: AppColors.textWhite,
-                                    fontSize: 15,
-                                  ),
-                                ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      AppStrings.createRoomScreenTitle,
+                      style: storeText(28, c.ink, w: FontWeight.w900, h: 1.25),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      AppStrings.createRoomScreenSubtitle,
+                      style: storeText(14, c.muted),
+                    ),
+                    const SizedBox(height: 12),
+                    const StoreSectionLabel(AppStrings.createRoomTitleSection),
+                    Text(
+                      AppStrings.createRoomTitleHint,
+                      style: storeText(13, c.muted),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _titleController,
+                      style: storeText(16, c.ink, w: FontWeight.w700),
+                      cursorColor: c.primary,
+                      decoration: InputDecoration(
+                        hintText: AppStrings.createRoomTitlePlaceholder,
+                        hintStyle: storeText(15, c.muted),
+                        filled: true,
+                        fillColor: c.surface,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 16,
                         ),
+                        border: _fieldBorder(c.outline),
+                        enabledBorder: _fieldBorder(c.outline),
+                        focusedBorder: _fieldBorder(c.primary, width: 1.6),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    const StoreSectionLabel(
+                        AppStrings.createRoomDistanceSection),
+                    Text(
+                      AppStrings.createRoomDistanceHint,
+                      style: storeText(13, c.muted),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _distances.map((km) {
+                        return _DistanceChip(
+                          label: '${km}km',
+                          selected: _selectedDistanceKm == km,
+                          onTap: () => _selectDistance(km),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 8),
+                    const StoreSectionLabel(
+                        AppStrings.createRoomEntryFeeSection),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+                      decoration: BoxDecoration(
+                        color: c.surface,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: c.outline),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$_formattedFee SHARE',
+                                style: storeText(32, c.ink, w: FontWeight.w900),
+                              ),
+                              const SizedBox(width: 10),
+                              const _ShareCoinIcon(),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text.rich(
+                            TextSpan(
+                              style: storeText(12, c.muted, h: 1.5),
+                              children: [
+                                TextSpan(
+                                  text: AppStrings.createRoomFeeWarningRed,
+                                  style: storeText(12, c.warning, h: 1.5),
+                                ),
+                                const TextSpan(
+                                  text: AppStrings.createRoomFeeWarningGrey,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: _isSubmitting
+                  ? Container(
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: c.primary,
+                        borderRadius: BorderRadius.circular(29),
+                      ),
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: c.onPrimary,
+                        ),
+                      ),
+                    )
+                  : StorePillButton(
+                      label: _payButtonLabel,
+                      onPressed: _onCreateRoom,
+                    ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class _CreateRoomHeader extends StatelessWidget {
-  const _CreateRoomHeader({required this.onBack});
-
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Align(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded),
-              color: AppColors.textBlack,
-              iconSize: 22,
-              onPressed: onBack,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 48),
-            child: Column(
-              children: [
-                Text(
-                  AppStrings.createRoomScreenTitle,
-                  style: AppTextStyles.header1.copyWith(fontSize: 20),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  AppStrings.createRoomScreenSubtitle,
-                  style: AppTextStyles.termsSubtitle.copyWith(fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _WhiteCard extends StatelessWidget {
-  const _WhiteCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
+  OutlineInputBorder _fieldBorder(Color color, {double width = 1}) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(26),
+        borderSide: BorderSide(color: color, width: width),
+      );
 }
 
 class _DistanceChip extends StatelessWidget {
@@ -471,20 +345,23 @@ class _DistanceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
     return Material(
-      color: selected ? AppColors.primaryMint : AppColors.borderLight,
-      borderRadius: BorderRadius.circular(20),
+      color: selected ? c.primary : c.surface,
+      shape: StadiumBorder(
+        side: BorderSide(color: selected ? c.primary : c.outline),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           child: Text(
             label,
-            style: AppTextStyles.buttonText.copyWith(
-              fontSize: 13,
-              color: selected ? AppColors.textWhite : AppColors.textGrey,
-              fontWeight: FontWeight.w600,
+            style: storeText(
+              15,
+              selected ? c.onPrimary : c.muted,
+              w: FontWeight.w800,
             ),
           ),
         ),
@@ -498,22 +375,13 @@ class _ShareCoinIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
     return Container(
       width: 36,
       height: 36,
-      decoration: const BoxDecoration(
-        color: AppColors.progressYellow,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: c.warning, shape: BoxShape.circle),
       alignment: Alignment.center,
-      child: Text(
-        'S',
-        style: AppTextStyles.buttonText.copyWith(
-          color: AppColors.textWhite,
-          fontSize: 18,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
+      child: Text('S', style: storeText(18, c.onPrimary, w: FontWeight.w900)),
     );
   }
 }

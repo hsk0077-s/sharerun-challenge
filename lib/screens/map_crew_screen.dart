@@ -36,14 +36,14 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('Map & Crew', style: Theme.of(context).textTheme.headlineSmall),
+        Text('지도 & 크루', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: () => _mapPanelKey.currentState?.retry(),
             icon: const Icon(Icons.my_location_rounded),
-            label: const Text('Refresh Location'),
+            label: const Text('내 위치 새로고침'),
           ),
         ),
         const SizedBox(height: 16),
@@ -85,15 +85,15 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
                 child: Text('${index + 1}'),
               ),
               title: Text(crews[index].name),
-              subtitle: Text('${crews[index].memberCount} members'),
-              trailing: Text('${crews[index].totalValue} Value'),
+              subtitle: Text('${crews[index].memberCount}명'),
+              trailing: Text('${crews[index].totalValue} VALUE'),
             ),
           ),
         if (crews.isEmpty)
           const Card(
             child: ListTile(
-              title: Text('No crew rankings yet'),
-              subtitle: Text('Firestore crewRankings data will appear here.'),
+              title: Text('아직 크루 순위가 없어요'),
+              subtitle: Text('크루 순위가 쌓이면 여기에 나타나요.'),
             ),
           ),
       ],
@@ -112,7 +112,7 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
               ),
               infoWindow: InfoWindow(
                 title: box.title,
-                snippet: '+${box.rewardDiamond} Diamond',
+                snippet: '+${box.rewardDiamond} DIA',
               ),
               onTap: () => setState(() => selectedBox = box),
             ),
@@ -146,7 +146,7 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
     final position = currentPosition;
     final distance = _selectedDistanceMeters();
     if (position == null || distance == null || distance > collectRadiusMeters) {
-      _showSnack('Move within ${collectRadiusMeters.round()}m to collect this box.');
+      _showSnack('${collectRadiusMeters.round()}m 안으로 가까이 가야 받을 수 있어요.');
       return;
     }
 
@@ -160,7 +160,7 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
         return;
       }
       setState(() => selectedBox = null);
-      _showSnack('+${box.rewardDiamond} Diamond collected.');
+      _showSnack('+${box.rewardDiamond} DIA를 받았어요.');
     } catch (error) {
       _showSnack(ApiErrorMessage.from(error));
     }
@@ -193,7 +193,7 @@ class _DiamondCollectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final distanceLabel = distanceMeters == null
         ? '--'
-        : '${distanceMeters!.toStringAsFixed(0)}m away';
+        : '${distanceMeters!.toStringAsFixed(0)}m 떨어져 있어요';
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -207,12 +207,12 @@ class _DiamondCollectCard extends StatelessWidget {
         children: [
           Text(box.title, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8),
-          Text('+${box.rewardDiamond} Diamond / $distanceLabel'),
+          Text('+${box.rewardDiamond} DIA / $distanceLabel'),
           const SizedBox(height: 14),
           FilledButton.icon(
             onPressed: canCollect ? onCollect : null,
             icon: const Icon(Icons.diamond_rounded),
-            label: Text(canCollect ? 'Collect Diamond Box' : 'Move closer to collect'),
+            label: Text(canCollect ? '다이아 상자 받기' : '더 가까이 가 주세요'),
           ),
         ],
       ),

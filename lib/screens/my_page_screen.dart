@@ -13,7 +13,16 @@ import '../core/config/app_env.dart';
 import '../data/models/activity_model.dart';
 import '../data/models/user_model.dart';
 import '../core/constants/legal_constants.dart';
+import '../data/models/wallet_model.dart';
+import '../features/home/home_cards.dart';
+import '../features/home/home_navigation.dart';
+import '../features/home/home_wallet_card.dart';
 import '../features/my_page/widgets/pace_calculator_card.dart';
+import '../features/onboarding/src_onboarding_controller.dart';
+import '../features/profile/widgets/gender_profile_avatar.dart';
+import '../features/shop/providers/shop_tab_provider.dart';
+import '../features/wallet/providers/wallet_provider.dart';
+import 'my_wallet_screen.dart';
 import '../features/my_page/widgets/shoe_mileage_tracker.dart';
 import '../features/shop/cosmetics_catalog.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
@@ -219,6 +228,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
 
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
+    final wallet = ref.watch(walletProvider);
 
     return ListView(
       padding: EdgeInsets.all(tokens.spacing.page),
@@ -228,6 +238,33 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           style: textTheme.headlineSmall?.copyWith(color: tokens.colors.ink),
         ),
         SizedBox(height: tokens.spacing.md + 2),
+        // 홈에서 옮겨 온 내 정보: 프로필·티어·천사 원, 다이아, 지갑.
+        const HomeUserIdentityHeader(),
+        SizedBox(height: tokens.spacing.md),
+        HomeDiamondCard(
+          wallet: (ref.watch(activeWalletProvider).asData?.value ??
+                  WalletModel.empty())
+              .copyWith(diamondBalance: wallet.diamondBalance),
+          onOpenStore: () => HomeNavigation.openStore(
+            context,
+            ref,
+            focus: StoreFocus.items,
+          ),
+        ),
+        SizedBox(height: tokens.spacing.sm),
+        HomeWalletCard(
+          share: wallet.shareBalance,
+          value: wallet.valueBalance,
+          onWalletTap: () => MyWalletScreen.open(context),
+          onShareTap: () => HomeNavigation.openInAppBilling(context),
+          onValueTap: () => HomeNavigation.openStore(
+            context,
+            ref,
+            focus: StoreFocus.donate,
+          ),
+          dailyKm: ref.watch(retentionDailyKmProvider),
+        ),
+        SizedBox(height: tokens.spacing.md),
         _SectionCard(
           title: '러닝 캘린더',
           child: Wrap(

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/theme/src_token_showcase.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_button.dart';
+import '../../support/golden_helper.dart';
 
 void main() {
   testWidgets('SrcTheme builds a token showcase with primary CTA', (tester) async {
@@ -32,7 +33,7 @@ void main() {
     expect(Theme.of(context).colorScheme.secondary, AppColors.tealAccent);
   });
 
-  testWidgets('token showcase golden', (tester) async {
+  goldenTest('token showcase golden', (tester) async {
     final view = tester.view;
     view.physicalSize = const Size(390, 540);
     view.devicePixelRatio = 1.0;

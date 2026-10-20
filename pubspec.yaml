@@ -71,12 +71,21 @@ flutter:
     - assets/images/tiers/
     - assets/images/characters/
     - assets/images/snailbot/
+    - assets/images/crew_glyphs/
+    - assets/images/crew_emblem/frames/
+    - assets/images/crew_emblem/patterns/
+    - assets/images/crew_emblem/unlock/
+    - assets/images/crew_emblem/paid/
+    - assets/images/villages/
+    - assets/images/villages/thumbs/
     - assets/images/kakao/
     - assets/images/naver/
-    - assets/images/accessories/items/
-    - assets/images/accessories/feet/
-    - assets/images/accessories/fist/
-    - assets/images/accessories/wrist/
+    - assets/images/accessories/back/
+    - assets/images/accessories/body/
+    - assets/images/accessories/eyes/
+    - assets/images/accessories/hand/
+    - assets/images/accessories/head/
+    - assets/images/accessories/skin/
     - assets/faq/
     - assets/voice/
     - assets/images/wings/

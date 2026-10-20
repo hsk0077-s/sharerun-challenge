@@ -40,7 +40,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
   static final _screenGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFFE0F7FA), Colors.white],
+    colors: [Color(0xFF0B120E), AppColors.nightBg],
   );
 
   late TabController _tabController;
@@ -71,7 +71,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.nightBg,
       body: SRCGradientBackground(
         gradient: _screenGradient,
         child: LayoutBuilder(
@@ -312,59 +312,59 @@ class _NotificationCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Container(
-        padding: EdgeInsets.fromLTRB(14, 12, 14, 10),
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(icon, style: TextStyle(fontSize: 18)),
-                    SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        title,
-                        textScaler: TextScaler.noScaling,
-                        style: AppTextStyles.agreementLabel.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
+            padding: EdgeInsets.fromLTRB(14, 12, 14, 10),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(AppShapes.cardRadius),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
                 ),
-                SizedBox(height: 6),
-                Expanded(child: body),
               ],
             ),
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Text(
-                time,
-                textScaler: TextScaler.noScaling,
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textGreyLight,
+            child: Stack(
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(icon, style: TextStyle(fontSize: 18)),
+                        SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            title,
+                            textScaler: TextScaler.noScaling,
+                            style: AppTextStyles.agreementLabel.copyWith(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6),
+                    Expanded(child: body),
+                  ],
                 ),
-              ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Text(
+                    time,
+                    textScaler: TextScaler.noScaling,
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      color: AppColors.textGreyLight,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
           ),
         ),
       ),

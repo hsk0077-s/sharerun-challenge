@@ -72,7 +72,7 @@ void main() {
         userTier: 3,
         shareBalance: 1000000,
       ),
-      '내 등급보다 낮은 방은 참가할 수 없습니다.',
+      '내 등급보다 낮은 대회는 참가할 수 없습니다.',
     );
     expect(
       TournamentJoinGate.blockReason(
@@ -92,7 +92,7 @@ void main() {
         userTier: 1,
         shareBalance: 100,
       ),
-      'Share 잔액이 부족합니다.',
+      'SHARE 잔액이 부족합니다.',
     );
   });
 
@@ -170,7 +170,7 @@ void main() {
         shareBalance: 10,
         extraEntryTickets: 1,
       ),
-      'Share 잔액이 부족합니다.',
+      'SHARE 잔액이 부족합니다.',
     );
     expect(
       TournamentJoinGate.extraEntryCanOpen(
@@ -202,7 +202,7 @@ void main() {
         shareBalance: 599,
         prizeEntryShare: 600,
       ),
-      'Share 잔액이 부족합니다.',
+      'SHARE 잔액이 부족합니다.',
     );
     expect(
       TournamentJoinGate.blockReason(

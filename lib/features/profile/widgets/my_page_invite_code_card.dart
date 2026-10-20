@@ -207,11 +207,11 @@ class _MyPageInviteCodeCardState extends ConsumerState<MyPageInviteCodeCard> {
                 label: const Text(MyPageInviteCodeCard.kakaoButtonLabel),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.kakaoYellow,
-                  foregroundColor: AppColors.textBlack,
+                  foregroundColor: AppColors.brandInk,
                   disabledBackgroundColor:
                       AppColors.kakaoYellow.withValues(alpha: 0.45),
                   disabledForegroundColor:
-                      AppColors.textBlack.withValues(alpha: 0.45),
+                      AppColors.brandInk.withValues(alpha: 0.45),
                   minimumSize: const Size.fromHeight(44),
                   shape: RoundedRectangleBorder(
                     borderRadius: tokens.radii.capsule,

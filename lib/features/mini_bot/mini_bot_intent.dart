@@ -135,7 +135,7 @@ abstract final class MiniBotCopy {
       '이동하거나 결제하기 전에는 꼭 확인받아요.';
 
   static const intro = '쉐어런은 함께 걷고 달리는 챌린지 앱이에요. '
-      '홈에서 오늘 상태를 보고, 챌린지 로비나 초보 1km 방에서 레이스에 참가할 수 있어요. '
+      '홈에서 오늘 상태를 보고, 챌린지 로비나 초보 1km 챌린지에서 레이스에 참가할 수 있어요. '
       '기록 심폐소생권은 상점 아이템에서 볼 수 있어요. '
       '저는 화면 이동만 돕고, 결제나 참가 확정은 하지 않아요.';
 
@@ -161,14 +161,14 @@ abstract final class MiniBotCopy {
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';
 
-  static String get donate => '유니세프 기부 펀딩으로 이동할까요? $donateAmount예요. '
+  static String get donate => '기부 펀딩으로 이동할까요? $donateAmount예요. '
       '후원하기를 눌러도 여기서는 기부가 끝나지 않아요. '
       '상점의 기부 버튼으로 직접 눌러 주세요.';
 
-  static String get joinBeginner => '초보 1km 챌린지 방으로 이동할까요? 참가비는 $joinAmount예요. '
+  static String get joinBeginner => '초보 1km 챌린지로 이동할까요? 참가비는 $joinAmount예요. '
       '참가하기를 눌러도 참가는 확정되지 않아요. 그 화면에서 직접 확인해 주세요.';
 
-  static const joinLobby = '챌린지 로비로 이동할까요? 로비에서 참가할 방을 고를 수 있어요.';
+  static const joinLobby = '챌린지 로비로 이동할까요? 로비에서 참가할 대회를 고를 수 있어요.';
 
   static String prizeRace(CompanyTournamentConfig? config) {
     if (config == null || config.tiers.isEmpty) {
@@ -187,9 +187,10 @@ abstract final class MiniBotCopy {
       fee('advanced', '상급'),
       fee('half', '하프'),
     ].where((line) => line.isNotEmpty).join(', ');
-    final free = config.beginnerFreeEntryEligible && config.freeEntryLabelKo != null
-        ? ' ${config.freeEntryLabelKo}.'
-        : '';
+    final free =
+        config.beginnerFreeEntryEligible && config.freeEntryLabelKo != null
+            ? ' ${config.freeEntryLabelKo}.'
+            : '';
     final week = config.weeklyLimitLabelKo ?? '';
     final claim = config.prizeIneligibleReasonKo ?? '';
     return '회사 상금 대회로 이동할까요? 참가비는 $costs예요.$free $week $claim '
@@ -210,8 +211,8 @@ abstract final class MiniBotCopy {
       '후원하기를 눌러도 여기서는 후원이 끝나지 않아요. '
       '그 화면의 후원 버튼으로 직접 확정해 주세요.';
 
-  static String get brand => '브랜드 스폰서 챌린지로 이동할까요? $brandAmount. '
-      '참가하기를 눌러도 여기서는 참가하지 않아요. 그 화면에서 직접 확인해 주세요.';
+  static String get brand => '브랜드 스폰서 챌린지는 아직 준비 중이에요. '
+      '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 챌린지 탭에서 알려 드릴게요.';
 
   static String get subscription => '구독 관리 화면으로 이동할까요? $subscriptionAmount. '
       '이동만 하고, 구독이나 결제는 바꾸지 않아요.';
@@ -248,7 +249,7 @@ abstract final class MiniBotCopy {
   static String executed(MiniBotDestination destination) {
     return switch (destination) {
       MiniBotDestination.beginnerRoom =>
-        '초보 1km 챌린지 방으로 이동할게요. 참가 확정은 그 화면에서 해 주세요. '
+        '초보 1km 챌린지로 이동할게요. 참가 확정은 그 화면에서 해 주세요. '
             '여기서는 참가되지 않아요.',
       MiniBotDestination.challengeLobby => '챌린지 로비로 이동할게요.',
       MiniBotDestination.cprStore => '상점 아이템 화면으로 이동할게요. '
@@ -344,9 +345,9 @@ abstract final class MiniBotInterpreter {
     if (_hasBrandSponsor(text)) {
       return MiniBotRead(
         intent: MiniBotIntent.brandSponsor,
-        destination: MiniBotDestination.brandSponsor,
+        destination: MiniBotDestination.none,
         reply: MiniBotCopy.brand,
-        needsConfirm: true,
+        needsConfirm: false,
       );
     }
 
@@ -452,8 +453,7 @@ abstract final class MiniBotInterpreter {
   }
 
   static bool _hasRunnerSponsor(String text) {
-    return text.contains('천사') ||
-        (text.contains('러너') && text.contains('후원'));
+    return text.contains('천사') || (text.contains('러너') && text.contains('후원'));
   }
 
   /// `스폰서` alone is the brand screen. Runner phrases are matched first.

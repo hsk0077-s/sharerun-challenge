@@ -53,8 +53,22 @@ flutter build appbundle --release --dart-define-from-file=.env
 - **foreground service**(건강·위치): 걸음과 달리기 기록이 꺼지지 않게 하는 지속 알림.
 - 알림, 진동, 부팅 완료(알림 다시 예약), 생체 인증(결제 확인), 인터넷.
 
-## 4. 스토어에 필요한 것 (아직 안 됨)
+## 4. 공개 주소 만들기 (개인정보처리방침, 계정 삭제 안내)
 
-- 공개 개인정보처리방침 주소(앱 안 문구는 있지만 구글은 공개 URL을 요구한다).
+구글은 누구나 열 수 있는 웹 주소를 요구한다. `site/` 폴더에 두 페이지 초안이 있다.
+
+1. `site/privacy.html`, `site/account-deletion.html`의 `[대괄호]` 항목(회사명, 대표자, 주소, 문의 이메일, 처리 기한 등)을 채우고
+   노란 "초안입니다" 상자를 지운다. `[확인]`이 붙은 문장은 실제와 맞는지 확인한다. 법무 검토를 받는다.
+2. 올리기(한 번에 한 줄씩):
+   ```
+   firebase deploy --only hosting:web --project share-run-challenge
+   ```
+   주소는 `https://share-run-challenge.web.app/privacy.html` 과 `.../account-deletion.html` 이다.
+   (기본 사이트 이름이 다르면 `firebase hosting:sites:list`로 확인해 `.firebaserc`의 `web` 값을 바꾼다.)
+3. Play Console의 "앱 콘텐츠 → 개인정보처리방침"에 `privacy.html` 주소를, "데이터 보안 → 계정 삭제 URL"에 `account-deletion.html` 주소를 넣는다.
+4. 앱 안의 개인정보 처리방침 화면과 내용이 같아야 한다.
+
+## 5. 스토어에 필요한 것 (아직 안 됨)
+
 - 앱 설명, 스크린샷, 아이콘, 콘텐츠 등급, 데이터 보안 양식, 앱 안 결제 상품 등록.
-- 계정 삭제: 앱 안(마이 → 계정 삭제)은 이미 있다. 구글은 웹에서 삭제 요청을 받을 주소도 요구한다.
+- 계정 삭제: 앱 안(마이 → 계정 삭제)은 이미 있고, 웹 안내는 위 4번에서 만든다.

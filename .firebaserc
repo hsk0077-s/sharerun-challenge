@@ -7,6 +7,9 @@
       "hosting": {
         "admin": [
           "src-admin"
+        ],
+        "web": [
+          "share-run-challenge"
         ]
       }
     }

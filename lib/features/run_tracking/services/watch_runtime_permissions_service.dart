@@ -66,9 +66,6 @@ class WatchRuntimePermissionsService {
       final locationServicesEnabled = await Geolocator.isLocationServiceEnabled();
       if (locationServicesEnabled) {
         await Permission.locationWhenInUse.request();
-        if (Platform.isAndroid) {
-          await Permission.locationAlways.request();
-        }
       }
     } catch (_) {
       // Location is helpful for runs but must not block watch linking.

@@ -1434,8 +1434,18 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     return ref.read(userProfileProvider).uid;
   }
 
+  void _harvestNotice(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _onHarvestCoins() async {
-    if (_harvestInFlight) return;
+    if (_harvestInFlight) {
+      _harvestNotice('SHARE를 줍는 중이에요. 잠시만 기다려 주세요.');
+      return;
+    }
     final pedometerState = ref.read(pedometerStateProvider);
     final liveSteps = PedometerStepTruth.dailyFromSources(
       liveDaily: pedometerState.steps,
@@ -1447,7 +1457,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       steps: liveSteps,
       claimedSteps: claimedNow,
     );
-    if (toClaim <= 0) return;
+    if (toClaim <= 0) {
+      _harvestNotice('아직 주울 SHARE가 없어요. 조금 더 걸어보세요.');
+      return;
+    }
     _harvestInFlight = true;
     final nextClaimed = PedometerHarvestLedger.claimedAfterHarvest(
       steps: liveSteps,

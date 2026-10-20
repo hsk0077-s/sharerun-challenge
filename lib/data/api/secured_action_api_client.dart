@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show SocketException;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -79,11 +81,30 @@ class SecuredActionApiClient {
     required this.baseUri,
     required this.firebaseAuth,
     http.Client? httpClient,
-  }) : _httpClient = httpClient ?? http.Client();
+    this.tokenTimeout = const Duration(seconds: 10),
+    this.requestTimeout = const Duration(seconds: 15),
+  })  : _httpClient = httpClient ?? http.Client(),
+        _ownsHttpClient = httpClient == null;
+
+  /// 서버가 응답하지 않을 때 화면이 영원히 "진행 중"에 묶이지 않게 하는 상한.
+  final Duration tokenTimeout;
+  final Duration requestTimeout;
 
   final Uri baseUri;
   final FirebaseAuth firebaseAuth;
-  final http.Client _httpClient;
+  http.Client _httpClient;
+  final bool _ownsHttpClient;
+
+  /// 오래 백그라운드에 있다 오면 keep-alive 연결이 죽어 있어 요청이 멈출 수 있다.
+  /// 직접 만든 클라이언트만 새로 갈아 끼운다(테스트에서 주입한 것은 그대로 둔다).
+  void _renewHttpClient() {
+    if (!_ownsHttpClient) return;
+    final old = _httpClient;
+    _httpClient = http.Client();
+    try {
+      old.close();
+    } catch (_) {}
+  }
   final ShopRequestIds _requestIds = ShopRequestIds();
 
   Future<TournamentJoinResult> joinTournament({
@@ -232,10 +253,24 @@ class SecuredActionApiClient {
   Future<PedometerHarvestResult> harvestPedometerShare({
     required int claimedSteps,
   }) async {
-    final json = await _post(
-      '/actions/pedometer/harvest',
-      {'claimed_steps': claimedSteps},
-    );
+    // claimed_steps 는 절대값이라 같은 요청을 다시 보내도 중복 지급되지 않는다.
+    Future<Map<String, dynamic>> send() => _post(
+          '/actions/pedometer/harvest',
+          {'claimed_steps': claimedSteps},
+        );
+    Map<String, dynamic> json;
+    try {
+      json = await send();
+    } on TimeoutException {
+      _renewHttpClient();
+      json = await send();
+    } on SocketException {
+      _renewHttpClient();
+      json = await send();
+    } on http.ClientException {
+      _renewHttpClient();
+      json = await send();
+    }
     return PedometerHarvestResult.fromJson(json);
   }
 
@@ -801,7 +836,7 @@ class SecuredActionApiClient {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(body),
-    );
+    ).timeout(requestTimeout);
     return _decode(response);
   }
 
@@ -810,7 +845,7 @@ class SecuredActionApiClient {
     final response = await _httpClient.get(
       baseUri.resolve(path),
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).timeout(requestTimeout);
     return _decode(response);
   }
 
@@ -834,7 +869,7 @@ class SecuredActionApiClient {
     if (user == null) {
       throw StateError('Firebase ID token is required.');
     }
-    final token = await user.getIdToken(true);
+    final token = await user.getIdToken(true).timeout(tokenTimeout);
     if (token == null || token.isEmpty) {
       throw StateError('Firebase ID token is required.');
     }

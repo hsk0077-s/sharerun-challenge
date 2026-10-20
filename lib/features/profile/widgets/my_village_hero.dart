@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
 import '../../accessories/accessory_catalog.dart';
-import '../../accessories/accessory_inventory.dart';
 import '../../accessories/dressed_mascot.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../village_scene.dart';
@@ -16,6 +14,7 @@ class MyVillageHero extends StatelessWidget {
     required this.tier,
     required this.onSettings,
     this.onChangeVillage,
+    this.worn = const {},
     this.scene = defaultVillageScene,
     this.height = 250,
     super.key,
@@ -26,6 +25,9 @@ class MyVillageHero extends StatelessWidget {
 
   /// null 이면 마을 바꾸기 버튼을 숨긴다.
   final VoidCallback? onChangeVillage;
+
+  /// 입고 있는 소품. 비어 있거나 달팽이면 소품 없이 동물만 그린다.
+  final Set<Accessory> worn;
   final VillageScene scene;
   final double height;
 
@@ -107,24 +109,14 @@ class MyVillageHero extends StatelessWidget {
             right: 0,
             bottom: 8,
             child: Center(
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final worn = ref.watch(wornAccessoriesProvider);
-                  if (worn.isNotEmpty && !tier.isSnail && canDress(tier.animal)) {
-                    return DressedMascot(
-                      animal: tier.animal,
-                      worn: worn,
-                      size: 150,
-                    );
-                  }
-                  return Image.asset(
-                    tier.avatarAssetPath,
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.contain,
-                  );
-                },
-              ),
+              child: worn.isNotEmpty && !tier.isSnail && canDress(tier.animal)
+                  ? DressedMascot(animal: tier.animal, worn: worn, size: 150)
+                  : Image.asset(
+                      tier.avatarAssetPath,
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                    ),
             ),
           ),
           Positioned(

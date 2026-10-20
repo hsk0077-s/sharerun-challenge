@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/accessories/accessory_inventory.dart';
 import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
@@ -85,6 +86,7 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                     tier: ref.watch(activeUserTierStructProvider) ??
                         UserTier.unratedFallback,
                     onSettings: _onSettings,
+                    worn: ref.watch(wornAccessoriesProvider),
                     scene: ref.watch(villageSceneProvider),
                     onChangeVillage: () => VillagePicker.show(context),
                   ),

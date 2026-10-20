@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -11,25 +15,26 @@ import '../core/widgets/src_button.dart';
 import '../core/widgets/src_gradient_background.dart';
 
 /// 약관 동의 화면 (Screen 2) — src-2 온보딩 약관 목업.
-class TermsAgreementScreen extends StatefulWidget {
+class TermsAgreementScreen extends ConsumerStatefulWidget {
   const TermsAgreementScreen({super.key});
 
   @override
-  State<TermsAgreementScreen> createState() => _TermsAgreementScreenState();
+  ConsumerState<TermsAgreementScreen> createState() =>
+      _TermsAgreementScreenState();
 }
 
-class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
+class _TermsAgreementScreenState extends ConsumerState<TermsAgreementScreen> {
   var _allAgree = false;
   var _serviceTerms = false;
   var _privacyTerms = false;
   var _locationTerms = false;
+  var _ageOver14 = false;
   var _healthTerms = false;
 
   bool get _requiredAllChecked =>
-      _serviceTerms && _privacyTerms && _locationTerms;
+      _serviceTerms && _privacyTerms && _locationTerms && _ageOver14;
 
-  bool get _everyItemChecked =>
-      _requiredAllChecked && _healthTerms;
+  bool get _everyItemChecked => _requiredAllChecked && _healthTerms;
 
   void _syncAllAgreeFlag() {
     _allAgree = _everyItemChecked;
@@ -41,6 +46,7 @@ class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
       _serviceTerms = value;
       _privacyTerms = value;
       _locationTerms = value;
+      _ageOver14 = value;
       _healthTerms = value;
     });
   }
@@ -59,7 +65,24 @@ class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
     if (!_requiredAllChecked) {
       return;
     }
+    unawaited(_recordAgeConfirmation());
     Navigator.pushNamed(context, RouteNames.smartWatchSync);
+  }
+
+  /// Best effort: sign-up must not stall on a slow network, so a failure is
+  /// only logged and the server keeps the first successful record.
+  Future<void> _recordAgeConfirmation() async {
+    try {
+      final uid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
+      if (uid.isEmpty) return;
+      await ref.read(userRepositoryProvider).ensureUserDocument(uid: uid);
+      await ref
+          .read(securedActionApiClientProvider)
+          .confirmAgeOver14()
+          .timeout(const Duration(seconds: 12));
+    } catch (e, st) {
+      debugPrint('confirmAgeOver14: $e\n$st');
+    }
   }
 
   /// Direct entry (e.g. pushReplacement after login) has no prior route.
@@ -150,6 +173,14 @@ class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
                             value: _locationTerms,
                             onChanged: (v) => _onItemChanged(
                               write: (val) => _locationTerms = val,
+                              value: v,
+                            ),
+                          ),
+                          SRCAgreementRow(
+                            label: AppStrings.termsRequiredAge14,
+                            value: _ageOver14,
+                            onChanged: (v) => _onItemChanged(
+                              write: (val) => _ageOver14 = val,
                               value: v,
                             ),
                           ),

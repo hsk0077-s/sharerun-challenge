@@ -360,6 +360,11 @@ class SecuredActionApiClient {
     );
   }
 
+  /// Records when the user ticked "I am 14 or older" (server keeps the first).
+  Future<void> confirmAgeOver14() async {
+    await _post('/actions/onboarding/confirm-age14', const {});
+  }
+
   Future<void> claimSignupReward() async {
     await _post('/actions/onboarding/claim-signup', const {});
   }

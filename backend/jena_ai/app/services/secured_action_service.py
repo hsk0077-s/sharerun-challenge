@@ -4433,6 +4433,34 @@ class SecuredActionService:
             reason="Account deleted and profile anonymized.",
         )
 
+    def confirm_age_over_14(self, uid: str) -> SecuredActionResult:
+        """Record when the user ticked "I am 14 or older". Written once."""
+        user_ref = self.firebase_service.db.collection("users").document(uid)
+        user_snapshot = user_ref.get()
+        if not user_snapshot.exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found.",
+            )
+        if (user_snapshot.to_dict() or {}).get("ageOver14ConfirmedAt") is not None:
+            return SecuredActionResult(
+                accepted=True,
+                status="already_confirmed",
+                reason="Age confirmation was already recorded.",
+            )
+
+        user_ref.update(
+            {
+                "ageOver14ConfirmedAt": SERVER_TIMESTAMP,
+                "updatedAt": SERVER_TIMESTAMP,
+            }
+        )
+        return SecuredActionResult(
+            accepted=True,
+            status="confirmed",
+            reason="Age confirmation recorded.",
+        )
+
     def apply_winner_reward(
         self,
         uid: str,

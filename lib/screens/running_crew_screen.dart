@@ -658,7 +658,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     final c = context.srcTokens.colors;
     final localEmblem = ref.watch(crewEmblemProvider);
     final api = ref.watch(crewApiProvider);
-    final mine = ref.watch(myCrewProvider).asData?.value;
+    final myCrewAsync = ref.watch(myCrewProvider);
+    final mine = myCrewAsync.asData?.value;
+    // 서버 답이 오기 전(탭을 처음 열 때 잠깐)에는 샘플 크루를 보여 주지 않는다.
+    // 샘플은 답을 받은 뒤 내 크루가 없을 때만 보인다.
+    final loadingMine = myCrewAsync.isLoading && !myCrewAsync.hasValue;
     // 서버에 내 크루가 있으면 서버 값을, 없으면 이 폰에 저장한 값을 쓴다.
     final emblem = (mine == null ? null : CrewEmblem.parse(mine.crew.emblem)) ??
         localEmblem;
@@ -677,7 +681,9 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                 children: [
                   _CrewPhotoHeader(
                     emblem: emblem,
-                    crewName: mine?.crew.name ?? AppStrings.runningCrewMyCrewName,
+                    crewName: loadingMine
+                        ? ''
+                        : mine?.crew.name ?? AppStrings.runningCrewMyCrewName,
                     onEmblem: _onChangeEmblem,
                     onHallOfFame: _onOpenHallOfFame,
                     onBack: searching || Navigator.of(context).canPop()
@@ -692,20 +698,24 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         Row(
                           children: [
                             _CrewStat(
-                              value: mine == null
-                                  ? '45/50'
-                                  : '${mine.crew.memberCount}/${mine.crew.maxMembers}',
+                              value: loadingMine
+                                  ? '-'
+                                  : mine == null
+                                      ? '45/50'
+                                      : '${mine.crew.memberCount}/${mine.crew.maxMembers}',
                               label: '크루원',
                             ),
                             const SizedBox(width: 10),
                             _CrewStat(
-                              value: mine == null
-                                  ? '3,240km'
-                                  : '${_format(mine.crew.totalDistanceKm.round())}km',
+                              value: loadingMine
+                                  ? '-'
+                                  : mine == null
+                                      ? '3,240km'
+                                      : '${_format(mine.crew.totalDistanceKm.round())}km',
                               label: '누적 거리',
                             ),
                             // 대항전 진행률은 아직 서버 값이 없어서 샘플 크루에만 보인다.
-                            if (mine == null) ...[
+                            if (mine == null && !loadingMine) ...[
                               const SizedBox(width: 10),
                               const _CrewStat(
                                 value: AppStrings.runningCrewProgressValue,
@@ -779,7 +789,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                               '색 ${CrewEmblem.paletteColors.length}가지',
                           onTap: _onChangeEmblem,
                         ),
-                        if (mine == null) ...[
+                        if (mine == null && !loadingMine) ...[
                           const SizedBox(height: 16),
                           Row(
                             children: [
@@ -847,7 +857,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             ),
                         ],
                         const SizedBox(height: 16),
-                        if (mine == null)
+                        if (mine == null && !loadingMine)
                           _CreateCrewTile(
                             busy: _isSubmitting,
                             onTap: _isSubmitting ? null : _onCreateCrew,

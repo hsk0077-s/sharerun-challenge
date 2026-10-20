@@ -358,8 +358,15 @@ class _HomeHero extends StatelessWidget {
                   fontSize: 28,
                   height: 1.3,
                   fontWeight: FontWeight.w900,
+                  // 흐린(블러) 그림자는 일부 폰에서 글자 한 자가 엉뚱한 자리에
+                  // 흐릿한 얼룩으로 그려져서, 번지지 않는 그림자만 쓴다.
+                  // 글자 대비는 아래쪽 어두운 그라데이션이 맡는다.
                   shadows: [
-                    Shadow(blurRadius: 12, color: Color(0xCC000000)),
+                    Shadow(
+                      offset: Offset(0, 1.5),
+                      blurRadius: 0,
+                      color: Color(0x99000000),
+                    ),
                   ],
                 ),
               ),

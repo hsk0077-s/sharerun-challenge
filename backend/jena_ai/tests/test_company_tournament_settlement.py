@@ -49,7 +49,14 @@ def _settle(db: _MemoryDb, tournament_id: str = "race"):
     return settle_company_prize_race(db, tournament_id, now=NOW)
 
 
-def _seed_finishers(db: _MemoryDb, tournament_id: str, rows: list[tuple[str, dict]], **race):
+def _seed_finishers(
+    db: _MemoryDb,
+    tournament_id: str,
+    rows: list[tuple[str, dict]],
+    *,
+    now: datetime = NOW,
+    **race,
+):
     tournament = {
         "status": "active",
         "prizeTier": "beginner",
@@ -66,7 +73,7 @@ def _seed_finishers(db: _MemoryDb, tournament_id: str, rows: list[tuple[str, dic
                 {
                     "userId": uid,
                     "jenaVerified": True,
-                    "completedAt": (NOW - timedelta(days=1)).isoformat(),
+                    "completedAt": (now - timedelta(days=1)).isoformat(),
                 },
             )
 
@@ -355,7 +362,15 @@ def test_finished_race_with_no_verified_finishers_settles_empty() -> None:
 def test_settle_route_uses_the_ops_secret(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("OPS_ADMIN_SECRET", "ops-secret")
     db = _MemoryDb()
-    _seed_finishers(db, "race", [("u1", _finisher("u1", 10))], status="finished")
+    # 이 경로는 진짜 현재 시각으로 정산하므로, 인정 기록 날짜도 지금 기준으로 심는다.
+    # (고정된 NOW로 심으면 날짜가 지나 인정 기간 밖이 되어 테스트가 저절로 깨진다.)
+    _seed_finishers(
+        db,
+        "race",
+        [("u1", _finisher("u1", 10))],
+        now=datetime.now(timezone.utc),
+        status="finished",
+    )
     original = ops_router.service
     ops_router.service = OpsService(firebase_service=SimpleNamespace(db=db))
     try:

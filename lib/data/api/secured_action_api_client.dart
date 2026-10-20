@@ -604,6 +604,15 @@ class SecuredActionApiClient {
     await _post('/actions/crew/join-mode', {'mode': mode});
   }
 
+  /// 크루장: 인원 한도를 10명 늘린다(300 DIA). 새 한도와 DIA 잔액을 돌려준다.
+  Future<({int maxMembers, int? diamondBalance})> expandCrew() async {
+    final json = await _postWithRequest('/actions/crew/expand', const {}, 'crew-expand');
+    return (
+      maxMembers: (json['max_members'] as num?)?.toInt() ?? 0,
+      diamondBalance: (json['diamond_balance'] as num?)?.toInt(),
+    );
+  }
+
   /// 크루장: 크루 이름을 바꾼다. 처음 한 번은 무료, 그다음부터 300 DIA. 새 DIA 잔액을 돌려준다.
   Future<int?> renameCrew(String name) async {
     final json = await _postWithRequest(
@@ -772,12 +781,6 @@ class SecuredActionApiClient {
       tournamentId: id,
       entryFeeShare: fee.toInt(),
     );
-  }
-
-  /// Debits a server-owned crew price. The client does not send the amount.
-  Future<PedometerHarvestResult> spendCrewAction(String action) async {
-    final json = await _post('/actions/crew/spend', {'action': action});
-    return PedometerHarvestResult.fromJson(json);
   }
 
   /// Debits the server crew-gift price and grants CPR plus Safeguard.

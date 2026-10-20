@@ -37,12 +37,21 @@ def max_members() -> int:
         return DEFAULT_MAX_MEMBERS
 
 
+def crew_max(crew: dict) -> int:
+    """This crew's member limit: the base limit plus every expansion it bought."""
+    raw = crew.get("memberCapBonus")
+    bonus = int(raw) if isinstance(raw, (int, float)) and not isinstance(raw, bool) else 0
+    return max_members() + max(0, bonus)
+
+
 def _count(crew: dict) -> int:
     raw = crew.get("memberCount")
     return int(raw) if isinstance(raw, (int, float)) and not isinstance(raw, bool) else 0
 
 
 RENAME_DIA = 300
+EXPAND_DIA = 300
+EXPAND_STEP = 10
 NAME_MIN, NAME_MAX = 2, 20
 
 
@@ -67,8 +76,8 @@ def summary(crew_id: str, crew: dict) -> dict:
         "name": str(crew.get("name") or ""),
         "emblem": str(crew.get("emblem") or ""),
         "member_count": count,
-        "max_members": max_members(),
-        "is_full": count >= max_members(),
+        "max_members": crew_max(crew),
+        "is_full": count >= crew_max(crew),
         "total_distance_km": float(crew.get("totalDistanceKm") or 0),
         "join_mode": join_mode(crew),
         # The first rename is free, every later one costs RENAME_DIA.
@@ -182,7 +191,7 @@ def _join_tx(transaction, db, uid, user_ref, crew_ref) -> dict:
         raise HTTPException(status_code=403, detail="This crew turned your request down.")
     if current:
         raise HTTPException(status_code=409, detail="Already in a crew.")
-    if _count(crew) >= max_members():
+    if _count(crew) >= crew_max(crew):
         raise HTTPException(status_code=409, detail="The crew is full.")
     if join_mode(crew) == "approval":
         pending = user.get("pendingCrewId")
@@ -335,7 +344,7 @@ def _decide_tx(transaction, crew_ref, user_ref, target_uid, approve) -> dict:
         if user_snapshot.exists:
             transaction.update(user_ref, {"pendingCrewId": firestore.DELETE_FIELD})
         raise HTTPException(status_code=409, detail="Already in a crew.")
-    if _count(crew) >= max_members():
+    if _count(crew) >= crew_max(crew):
         raise HTTPException(status_code=409, detail="The crew is full.")
     _add_member(transaction, crew_ref, user_ref, target_uid)
     return {"status": "approved"}
@@ -514,4 +523,66 @@ def _rename_tx(transaction, db, uid, name, request_id, user_ref, crew_ref) -> di
         "name": name,
         "charged_dia": cost,
         "diamond_balance": balance_before - cost,
+    }
+
+
+# ---- expand --------------------------------------------------------------------------
+def expand(service, uid: str, request_id: str) -> dict:
+    """Leader only. Adds EXPAND_STEP seats to this crew for EXPAND_DIA (bonus DIA first)."""
+    from app.services.streak_protection import require_request_id
+
+    request_id = require_request_id(request_id)
+    db = service.firebase_service.db
+    _crew_id, crew_ref, _crew = _managed_crew(db, uid, leader_only=True)
+    return _run(
+        _expand_tx,
+        db.transaction(),
+        db,
+        uid,
+        request_id,
+        db.collection("users").document(uid),
+        crew_ref,
+    )
+
+
+@firestore.transactional
+def _expand_tx(transaction, db, uid, request_id, user_ref, crew_ref) -> dict:
+    from app.services.wallet_funding import move_currency
+
+    ledger_ref = db.collection("walletTransactions").document(f"crew_expand_{uid}_{request_id}")
+    user_snapshot = user_ref.get(transaction=transaction)
+    crew = crew_ref.get(transaction=transaction).to_dict() or {}
+    wallet = ((user_snapshot.to_dict() or {}).get("wallet") or {}) if user_snapshot.exists else {}
+    balance_before = int(wallet.get("diamondBalance") or 0)
+    if ledger_ref.get(transaction=transaction).exists:
+        return {"status": "already_expanded", "max_members": crew_max(crew), "charged_dia": 0, "diamond_balance": balance_before}
+    if crew.get("ownerUid") != uid:
+        raise HTTPException(status_code=403, detail="Only the crew leader can do this.")
+    if balance_before < EXPAND_DIA:
+        raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+    moved = move_currency(wallet, diamond=-EXPAND_DIA)
+    transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
+    bonus = crew_max(crew) - max_members() + EXPAND_STEP
+    transaction.set(
+        crew_ref,
+        {"memberCapBonus": bonus, "updatedAt": SERVER_TIMESTAMP},
+        merge=True,
+    )
+    transaction.set(
+        ledger_ref,
+        {
+            "uid": uid,
+            "type": "crew_member_expand",
+            "diamondAmount": -EXPAND_DIA,
+            "crewId": crew_ref.id,
+            "requestId": request_id,
+            "createdAt": SERVER_TIMESTAMP,
+            **moved["ledger"],
+        },
+    )
+    return {
+        "status": "expanded",
+        "max_members": max_members() + bonus,
+        "charged_dia": EXPAND_DIA,
+        "diamond_balance": balance_before - EXPAND_DIA,
     }

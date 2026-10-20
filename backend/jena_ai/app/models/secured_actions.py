@@ -96,8 +96,8 @@ class ShopPurchaseRequest(BaseModel):
     pay_with: str | None = Field(default=None, max_length=8)
 
 
-class CrewSpendRequest(BaseModel):
-    action: str = Field(min_length=3, max_length=16)
+class CrewExpandRequest(BaseModel):
+    request_id: str = Field(min_length=8, max_length=80)
 
 
 class CrewFoundRequest(BaseModel):

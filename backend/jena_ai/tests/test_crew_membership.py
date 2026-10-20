@@ -443,3 +443,57 @@ def test_disbanding_clears_the_rejection_list_too() -> None:
     _decide(db, "u1", "u2", False)
     cm.disband(db, "u1")
     assert not [p for p in db.store if p.startswith("crews/c1")]
+
+
+# ---- expand ------------------------------------------------------------------------------
+def _expand(db, uid, request_id="req-expand-01"):
+    service = SimpleNamespace(firebase_service=SimpleNamespace(db=db))
+    return cm.expand(service, uid, request_id)
+
+
+def test_expand_adds_ten_seats_for_300_dia_and_the_crew_limit_follows(monkeypatch) -> None:
+    monkeypatch.setenv("CREW_MAX_MEMBERS", "2")
+    db = _MemoryDb()
+    _seed_rich(db)
+    row = lambda: next(c for c in cm.list_crews(db, "", "u1")["crews"] if c["id"] == "c1")
+    assert row()["max_members"] == 2
+
+    done = _expand(db, "u1")
+    assert (done["status"], done["charged_dia"], done["max_members"], done["diamond_balance"]) == ("expanded", 300, 12, 200)
+    assert row()["max_members"] == 12
+    ledger = [v for k, v in db.store.items() if k.startswith("walletTransactions/crew_expand_")]
+    assert len(ledger) == 1 and ledger[0]["diamondAmount"] == -300
+
+    # Another crew keeps the base limit; the expanded crew takes more people.
+    _join(db, "u2", "c1")
+    assert db.store["crews/c1"]["memberCount"] == 2
+
+
+def test_the_same_expand_request_charges_once_and_a_new_one_adds_more(monkeypatch) -> None:
+    monkeypatch.setenv("CREW_MAX_MEMBERS", "2")
+    db = _MemoryDb()
+    _seed_rich(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 1000, "freeDiamondBalance": 0, "paidDiamondBalance": 1000}
+    _expand(db, "u1")
+    again = _expand(db, "u1")
+    assert again["status"] == "already_expanded"
+    assert db.store["crews/c1"]["memberCapBonus"] == 10
+    more = _expand(db, "u1", "req-expand-02")
+    assert more["max_members"] == 22
+
+
+def test_expand_needs_the_diamonds_and_the_leader() -> None:
+    db = _MemoryDb()
+    _seed(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 299, "freeDiamondBalance": 0, "paidDiamondBalance": 299}
+    with pytest.raises(HTTPException) as caught:
+        _expand(db, "u1")
+    assert caught.value.status_code == 400
+    assert "memberCapBonus" not in db.store["crews/c1"]
+
+    _seed_rich(db)
+    _join(db, "u2", "c1")
+    cm.set_role(db, "u1", "u2", "sub")
+    with pytest.raises(HTTPException) as caught:
+        _expand(db, "u2", "req-expand-03")
+    assert caught.value.status_code == 403

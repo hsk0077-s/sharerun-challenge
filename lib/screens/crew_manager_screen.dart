@@ -9,11 +9,11 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
+import '../features/crew/crew_membership.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
-import '../features/wallet/widgets/share_insufficient_dialog.dart';
 
-/// 크루 방장 관리 대시보드 (Screen 19).
+/// 크루 방장 관리 대시보드 (Screen 19). 크루 정보와 크루원은 서버 값이다.
 class CrewManagerScreen extends ConsumerStatefulWidget {
   const CrewManagerScreen({super.key});
 
@@ -25,20 +25,8 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   static const _royalBlue = AppColors.nightLime;
   static const _saveNavy = AppColors.nightLime;
 
-  static const _profileChangeDia = 100;
   static const _expandMembersDia = 300;
   static const _giftCprDia = 30;
-  static const _giftDepositShare = 3000;
-  static const _giftPassDia = 50;
-
-  var _crewName = AppStrings.crewManagerCrewName;
-  var _memberLimit = 50;
-  var _viceLeader = '';
-  final _members = <String>[
-    AppStrings.crewManagerMember1,
-    AppStrings.crewManagerMember2,
-    AppStrings.crewManagerMember3,
-  ];
 
   void _toast(String message) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -52,46 +40,56 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     );
   }
 
-  Future<bool> _spendOnServer(String action, String actionLabel) async {
-    try {
-      final result = await ref
-          .read(securedActionApiClientProvider)
-          .spendCrewAction(action);
-      if (!mounted) return false;
-      ref.read(walletProvider.notifier).applyWalletSnapshot(
-            shareBalance: result.shareBalance,
-            diamondBalance: result.diamondBalance,
-            valueBalance: result.valueTokenBalance,
-          );
-      return true;
-    } on ApiException {
-      if (!mounted) return false;
-      if (action == 'deposit') {
-        ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
-      } else {
-        _toast('DIA가 부족합니다. 상점에서 구매해 주세요. ($actionLabel)');
-      }
-      return false;
-    } catch (_) {
-      if (!mounted) return false;
-      _toast('$actionLabel을 처리하지 못했습니다.');
-      return false;
-    }
+  void _refresh() => ref.invalidate(myCrewProvider);
+
+  Future<bool> _confirm(String title, String body, String okLabel) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(okLabel),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
   }
 
-  Future<void> _onPushNotice() async {
-    _toast('전체 공지 푸시를 발송했습니다. (무료)');
+  Future<void> _onPreparing() async {
+    _toast('아직 열리지 않았어요. 준비되면 알려드릴게요.');
   }
 
-  Future<void> _onProfileChange() async {
-    final controller = TextEditingController(text: _crewName);
+  Future<void> _onRename(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    final cost = mine.crew.renameCostDia;
+    final controller = TextEditingController(text: mine.crew.name);
     final next = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('크루 이름 변경'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: controller,
+              maxLength: 20,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+            ),
+            Text(
+              cost == 0 ? '처음 한 번은 무료예요.' : '이름을 바꿀 때마다 $cost DIA가 들어요.',
+              style: AppTextStyles.caption,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -106,11 +104,69 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
       ),
     );
     controller.dispose();
-    if (!mounted || next == null || next.isEmpty) return;
-    if (!await _spendOnServer('profile', '프로필 변경')) return;
-    if (!mounted) return;
-    setState(() => _crewName = next);
-    _toast('크루 프로필이 변경되었습니다. (−$_profileChangeDia DIA)');
+    if (!mounted || next == null || next.isEmpty || next == mine.crew.name) {
+      return;
+    }
+    if (cost > 0 &&
+        !await _confirm(
+          '이름 바꾸기',
+          '"$next"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
+          '$cost DIA 내고 바꾸기',
+        )) {
+      return;
+    }
+    try {
+      final balance = await api.renameCrew(next);
+      if (!mounted) return;
+      if (balance != null) {
+        ref.read(walletProvider.notifier).applyWalletSnapshot(
+              diamondBalance: balance,
+            );
+      }
+      _refresh();
+      _toast('크루 이름을 "$next"(으)로 바꿨어요.');
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(switch (error.statusCode) {
+        400 => 'DIA가 모자라거나 쓸 수 없는 이름이에요.',
+        403 => '크루장만 이름을 바꿀 수 있어요.',
+        _ => '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+      });
+    } catch (_) {
+      if (mounted) _toast('이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
+  Future<void> _onExpandMembers(MyCrew mine) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    if (!await _confirm(
+      '인원 한도 확장',
+      '크루 인원 한도를 10명 늘려요. $_expandMembersDia DIA가 들고, 보너스 DIA를 먼저 써요.',
+      '$_expandMembersDia DIA 내고 늘리기',
+    )) {
+      return;
+    }
+    try {
+      final result = await api.expandCrew();
+      if (!mounted) return;
+      if (result.diamondBalance != null) {
+        ref.read(walletProvider.notifier).applyWalletSnapshot(
+              diamondBalance: result.diamondBalance,
+            );
+      }
+      _refresh();
+      _toast('인원 한도가 ${result.maxMembers}명이 됐어요.');
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      _toast(switch (error.statusCode) {
+        400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+        403 => '크루장만 늘릴 수 있어요.',
+        _ => '인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.',
+      });
+    } catch (_) {
+      if (mounted) _toast('인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
   }
 
   Future<void> _onCheerFlag() async {
@@ -139,7 +195,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
-      _toast('크루원에게 심폐소생권·세이프가드 선물을 지급했습니다. (−$_giftCprDia DIA)');
+      _toast('심폐소생권·세이프가드가 내 보관함에 들어왔어요. (−$_giftCprDia DIA)');
     } on ApiException {
       if (!mounted) return;
       _toast('DIA가 부족합니다. 상점에서 구매해 주세요. (심폐소생권 선물)');
@@ -149,343 +205,349 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     }
   }
 
-  Future<void> _onGiftDeposit() async {
-    if (!await _spendOnServer('deposit', '예치금 대납')) return;
-    _toast('크루 대항전 예치금을 대납했습니다. (−$_giftDepositShare SHARE)');
+  Future<void> _onSetRole(CrewMember member, String role) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    try {
+      await api.setCrewRole(member.uid, role);
+      if (!mounted) return;
+      _refresh();
+      _toast(
+        role == 'sub'
+            ? '${member.nickname}님을 부방장으로 임명했어요.'
+            : '${member.nickname}님을 크루원으로 돌렸어요.',
+      );
+    } catch (_) {
+      if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
   }
 
-  Future<void> _onGiftPass() async {
-    if (!await _spendOnServer('pass', '챌린지 패스')) return;
-    _toast('크루 전용 챌린지 패스·스킨을 구매했습니다. (−$_giftPassDia DIA)');
+  Future<void> _onKick(CrewMember member) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    if (!await _confirm(
+      '크루원 내보내기',
+      '${member.nickname}님을 크루에서 내보낼까요?',
+      '내보내기',
+    )) {
+      return;
+    }
+    try {
+      await api.kickCrewMember(member.uid);
+      if (!mounted) return;
+      _refresh();
+      _toast('${member.nickname}님을 내보냈어요.');
+    } catch (_) {
+      if (mounted) _toast('내보내지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
   }
 
-  Future<void> _onExpandMembers() async {
-    if (!await _spendOnServer('expand', '인원 확장')) return;
-    if (!mounted) return;
-    setState(() => _memberLimit += 10);
-    _toast('인원 한도가 $_memberLimit명으로 확장되었습니다. (−$_expandMembersDia DIA)');
+  Widget _scaffold(Widget body) {
+    return Scaffold(
+      backgroundColor: AppColors.bgGradientEnd,
+      body: SRCGradientBackground(
+        child: SafeArea(bottom: false, child: body),
+      ),
+    );
   }
 
-  void _onAppointVice(String name) {
-    setState(() => _viceLeader = name);
-    _toast('$name 님을 부방장으로 임명했습니다.');
-  }
-
-  void _onKick(String name) {
-    setState(() {
-      _members.remove(name);
-      if (_viceLeader == name) _viceLeader = '';
-    });
-    _toast('$name 님을 강제 퇴출했습니다.');
-  }
-
-  void _onSave() {
-    _toast('관리 설정을 저장했습니다. ($_crewName · 한도 $_memberLimit명)');
-    AppRouteNav.pop(context);
+  Widget _message(String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppShapes.termsHorizontalPadding,
+        8,
+        AppShapes.termsHorizontalPadding,
+        8,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _CrewManagerHeader(onBack: () => AppRouteNav.pop(context)),
+          const SizedBox(height: 24),
+          _ManagerWhiteCard(child: Text(text, style: AppTextStyles.caption)),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final wallet = ref.watch(walletProvider);
-    return Scaffold(
-      backgroundColor: AppColors.bgGradientEnd,
-      body: SRCGradientBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    8,
-                    AppShapes.termsHorizontalPadding,
-                    8,
+    final async = ref.watch(myCrewProvider);
+    if (async.isLoading && async.asData == null) {
+      return _scaffold(const Center(child: CircularProgressIndicator()));
+    }
+    final mine = async.asData?.value;
+    if (mine == null) {
+      return _scaffold(_message('크루 정보를 불러오지 못했어요. 크루에 들어 있는지, 네트워크가 연결됐는지 확인해 주세요.'));
+    }
+    if (!mine.isManager) {
+      return _scaffold(_message('크루장과 부크루장만 관리할 수 있어요.'));
+    }
+    final subs = [
+      for (final m in mine.members)
+        if (m.role == 'sub') m.nickname,
+    ];
+    final limit = mine.crew.maxMembers;
+    final count = mine.members.length;
+    return _scaffold(
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(
+                AppShapes.termsHorizontalPadding,
+                8,
+                AppShapes.termsHorizontalPadding,
+                8,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _CrewManagerHeader(
+                    onBack: () => AppRouteNav.pop(context),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _CrewManagerHeader(
-                        onBack: () => AppRouteNav.pop(context),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '보유 DIA ${wallet.diamondBalance} · SHARE ${wallet.shareBalance}',
-                        style: AppTextStyles.caption.copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _ManagerWhiteCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                  const SizedBox(height: 8),
+                  Text(
+                    '보유 DIA ${wallet.diamondBalance} · SHARE ${wallet.shareBalance}',
+                    style: AppTextStyles.caption.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _ManagerWhiteCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                const _CrewLogoMark(),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _crewName,
-                                    style: const TextStyle(
-                                      fontFamily: 'Pretendard',
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textBlack,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (_viceLeader.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Text(
-                                '부방장: $_viceLeader',
-                                style: AppTextStyles.caption.copyWith(
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 14),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 48,
-                              child: FilledButton(
-                                onPressed: _onPushNotice,
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.primaryMintDark,
-                                  foregroundColor: AppColors.nightOnLime,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppShapes.cardRadius,
-                                    ),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text('📢',
-                                        style: TextStyle(fontSize: 16)),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      AppStrings.crewManagerPushNotice,
-                                      style: AppTextStyles.buttonText.copyWith(
-                                        color: AppColors.nightOnLime,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        AppStrings.crewManagerPremiumSection,
-                        style: AppTextStyles.header1.copyWith(fontSize: 16),
-                      ),
-                      const SizedBox(height: 10),
-                      _ManagerWhiteCard(
-                        child: Row(
-                          children: [
+                            const _CrewLogoMark(),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                AppStrings.crewManagerProfileLabel,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.agreementLabel.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                mine.crew.name,
+                                style: const TextStyle(
+                                  fontFamily: 'Pretendard',
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textBlack,
                                 ),
                               ),
-                            ),
-                            const Text('💎', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 8),
-                            _RoyalBlueChip(
-                              label: AppStrings.crewManagerProfileChange,
-                              onTap: _onProfileChange,
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      _ManagerWhiteCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              AppStrings.crewManagerGiftSection,
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            _RoyalBlueButton(
-                              label: AppStrings.crewManagerGiftCpr,
-                              onTap: _onGiftCpr,
-                            ),
-                            const SizedBox(height: 10),
-                            _RoyalBlueButton(
-                              label: '🚩 크루 응원 깃발 (15 DIA, 하루 1회)',
-                              onTap: _onCheerFlag,
-                            ),
-                            const SizedBox(height: 10),
-                            _RoyalBlueButton(
-                              label: AppStrings.crewManagerGiftDeposit,
-                              subtitle: AppStrings.crewManagerGiftAngelBadge,
-                              onTap: _onGiftDeposit,
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Text('⚠️',
-                                    style: TextStyle(fontSize: 12)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  AppStrings.crewManagerShareWarning,
-                                  style: AppTextStyles.caption.copyWith(
-                                    fontSize: 11,
-                                    color: AppColors.warningOrange,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            _RoyalBlueButton(
-                              label: AppStrings.crewManagerGiftPass,
-                              onTap: _onGiftPass,
-                            ),
-                          ],
+                        if (subs.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            '부방장: ${subs.join(', ')}',
+                            style: AppTextStyles.caption.copyWith(fontSize: 12),
+                          ),
+                        ],
+                        const SizedBox(height: 14),
+                        _RoyalBlueButton(
+                          label: '📢 전체 공지 푸시 (준비 중)',
+                          onTap: _onPreparing,
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      _ManagerWhiteCard(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text(
-                              '소속 팀원 관리 (${_members.length} / $_memberLimit명)',
-                              style: AppTextStyles.agreementLabel.copyWith(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(6),
-                              child: LinearProgressIndicator(
-                                value: (_members.length / _memberLimit)
-                                    .clamp(0.0, 1.0),
-                                minHeight: 8,
-                                backgroundColor: AppColors.borderLight,
-                                color: AppColors.primaryMintDark,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            OutlinedButton(
-                              onPressed: _onExpandMembers,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: _royalBlue,
-                                side: const BorderSide(
-                                  color: _royalBlue,
-                                  width: 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppShapes.cardRadius,
-                                  ),
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text('💎',
-                                      style: TextStyle(fontSize: 14)),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      AppStrings.crewManagerExpandMembers,
-                                      style: AppTextStyles.buttonText.copyWith(
-                                        color: _royalBlue,
-                                        fontSize: 13,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (_members.isEmpty)
-                              Text(
-                                '소속 팀원이 없습니다.',
-                                style: AppTextStyles.caption,
-                              )
-                            else
-                              ..._members.map(
-                                (name) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: _MemberRow(
-                                    name: name,
-                                    isVice: _viceLeader == name,
-                                    onAppoint: () => _onAppointVice(name),
-                                    onKick: () => _onKick(name),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
-              SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppShapes.termsHorizontalPadding,
-                    4,
-                    AppShapes.termsHorizontalPadding,
-                    12,
+                  const SizedBox(height: 20),
+                  Text(
+                    AppStrings.crewManagerPremiumSection,
+                    style: AppTextStyles.header1.copyWith(fontSize: 16),
                   ),
-                  child: Center(
-                    child: SizedBox(
-                      width: MediaQuery.sizeOf(context).width * 0.9,
-                      height: AppShapes.buttonHeight,
-                      child: FilledButton(
-                        onPressed: _onSave,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _saveNavy,
-                          foregroundColor: AppColors.nightOnLime,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppShapes.cardRadius,
+                  const SizedBox(height: 10),
+                  if (mine.isLeader) ...[
+                    _ManagerWhiteCard(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              '크루 이름',
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.agreementLabel.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Text(
-                          AppStrings.crewManagerSave,
-                          style: AppTextStyles.buttonText.copyWith(
-                            color: AppColors.nightOnLime,
+                          const Text('💎', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          _RoyalBlueChip(
+                            label: mine.crew.renameCostDia == 0
+                                ? '이름 변경 (첫 1회 무료)'
+                                : '이름 변경 (${mine.crew.renameCostDia} DIA)',
+                            onTap: () => _onRename(mine),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                  ],
+                  _ManagerWhiteCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '보관함 아이템',
+                          style: AppTextStyles.agreementLabel.copyWith(
+                            fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
                         ),
+                        const SizedBox(height: 14),
+                        _RoyalBlueButton(
+                          label: '🎁 심폐소생권·세이프가드 받기 ($_giftCprDia DIA)',
+                          subtitle: '내 보관함에 들어와요. 크루원에게 나눠주는 기능은 아직 없어요.',
+                          onTap: _onGiftCpr,
+                        ),
+                        const SizedBox(height: 10),
+                        _RoyalBlueButton(
+                          label: '🚩 크루 응원 깃발 (15 DIA, 하루 1회)',
+                          onTap: _onCheerFlag,
+                        ),
+                        const SizedBox(height: 10),
+                        _RoyalBlueButton(
+                          label: '🛡️ 크루 대항전 예치금 대납 (준비 중)',
+                          onTap: _onPreparing,
+                        ),
+                        const SizedBox(height: 10),
+                        _RoyalBlueButton(
+                          label: '🎉 크루 전용 챌린지 패스 & 스킨 (준비 중)',
+                          onTap: _onPreparing,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _ManagerWhiteCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '소속 팀원 관리 ($count / $limit명)',
+                          style: AppTextStyles.agreementLabel.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: LinearProgressIndicator(
+                            value: limit <= 0
+                                ? 0.0
+                                : (count / limit).clamp(0.0, 1.0),
+                            minHeight: 8,
+                            backgroundColor: AppColors.borderLight,
+                            color: AppColors.primaryMintDark,
+                          ),
+                        ),
+                        if (mine.isLeader) ...[
+                          const SizedBox(height: 14),
+                          OutlinedButton(
+                            onPressed: () => _onExpandMembers(mine),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: _royalBlue,
+                              side: const BorderSide(
+                                color: _royalBlue,
+                                width: 1.5,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  AppShapes.cardRadius,
+                                ),
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('💎',
+                                    style: TextStyle(fontSize: 14)),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    AppStrings.crewManagerExpandMembers,
+                                    style: AppTextStyles.buttonText.copyWith(
+                                      color: _royalBlue,
+                                      fontSize: 13,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 16),
+                        if (mine.members.isEmpty)
+                          const Text('소속 팀원이 없습니다.', style: AppTextStyles.caption)
+                        else
+                          ...mine.members.map(
+                            (member) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _MemberRow(
+                                name: member.nickname,
+                                role: member.role,
+                                canAppoint: mine.isLeader &&
+                                    member.role != 'leader',
+                                canKick: member.role != 'leader' &&
+                                    (mine.isLeader || member.role == 'member'),
+                                onAppoint: () => _onSetRole(
+                                  member,
+                                  member.role == 'sub' ? 'member' : 'sub',
+                                ),
+                                onKick: () => _onKick(member),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppShapes.termsHorizontalPadding,
+                4,
+                AppShapes.termsHorizontalPadding,
+                12,
+              ),
+              child: Center(
+                child: SizedBox(
+                  width: MediaQuery.sizeOf(context).width * 0.9,
+                  height: AppShapes.buttonHeight,
+                  child: FilledButton(
+                    onPressed: () => AppRouteNav.pop(context),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _saveNavy,
+                      foregroundColor: AppColors.nightOnLime,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppShapes.cardRadius,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      '닫기',
+                      style: AppTextStyles.buttonText.copyWith(
+                        color: AppColors.nightOnLime,
+                        fontSize: 15,
                       ),
                     ),
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -646,18 +708,27 @@ class _RoyalBlueButton extends StatelessWidget {
 class _MemberRow extends StatelessWidget {
   const _MemberRow({
     required this.name,
+    required this.role,
+    required this.canAppoint,
+    required this.canKick,
     required this.onAppoint,
     required this.onKick,
-    this.isVice = false,
   });
 
   final String name;
-  final bool isVice;
+  final String role;
+  final bool canAppoint;
+  final bool canKick;
   final VoidCallback onAppoint;
   final VoidCallback onKick;
 
   @override
   Widget build(BuildContext context) {
+    final label = switch (role) {
+      'leader' => '$name (방장)',
+      'sub' => '$name (부방장)',
+      _ => name,
+    };
     return Row(
       children: [
         CircleAvatar(
@@ -668,35 +739,37 @@ class _MemberRow extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            isVice ? '$name (부방장)' : name,
+            label,
             style: AppTextStyles.agreementLabel.copyWith(
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
           ),
         ),
-        TextButton(
-          onPressed: onAppoint,
-          child: Text(
-            AppStrings.crewManagerAppointVice,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.nightLime,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
+        if (canAppoint)
+          TextButton(
+            onPressed: onAppoint,
+            child: Text(
+              role == 'sub' ? '부방장 해제' : AppStrings.crewManagerAppointVice,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.nightLime,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
             ),
           ),
-        ),
-        TextButton(
-          onPressed: onKick,
-          child: Text(
-            AppStrings.crewManagerForceKick,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.error,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
+        if (canKick)
+          TextButton(
+            onPressed: onKick,
+            child: Text(
+              AppStrings.crewManagerForceKick,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.error,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
             ),
           ),
-        ),
       ],
     );
   }

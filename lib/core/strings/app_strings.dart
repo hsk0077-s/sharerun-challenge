@@ -402,7 +402,7 @@ abstract final class AppStrings {
   static const crewManagerPushNotice = '전체 공지 푸시 발송 (무료)';
   static const crewManagerPremiumSection = '프리미엄 설정';
   static const crewManagerProfileLabel = '크루 프로필';
-  static const crewManagerProfileChange = '이름/엠블럼 변경 (100 DIA)';
+  static const crewManagerProfileChange = '이름 변경';
   static const crewManagerGiftSection = '크루원 혜택 하사(선물)';
   static const crewManagerGiftCpr =
       '🎁 심폐소생권/세이프가드 전체 선물 (DIA)';

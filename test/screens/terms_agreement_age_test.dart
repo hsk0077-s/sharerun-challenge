@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_button.dart';
@@ -15,9 +16,11 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      MaterialApp(
-        theme: SrcTheme.light,
-        home: const TermsAgreementScreen(),
+      ProviderScope(
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const TermsAgreementScreen(),
+        ),
       ),
     );
     await tester.pump();

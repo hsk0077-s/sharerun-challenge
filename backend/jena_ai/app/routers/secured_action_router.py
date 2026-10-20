@@ -198,6 +198,11 @@ def apply_winner_reward(
     return service.apply_winner_reward(uid=uid, request=request)
 
 
+@router.post("/onboarding/confirm-age14", response_model=SecuredActionResult)
+def confirm_age_over_14(uid: str = Depends(require_uid)) -> SecuredActionResult:
+    return service.confirm_age_over_14(uid=uid)
+
+
 @router.post("/onboarding/claim-signup", response_model=SecuredActionResult)
 def claim_signup_reward(uid: str = Depends(require_uid)) -> SecuredActionResult:
     return service.claim_signup_reward(uid=uid)

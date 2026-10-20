@@ -41,6 +41,7 @@ abstract final class AppStrings {
   static const termsRequiredService = '[필수] 쉐어런챌린지 서비스 이용약관';
   static const termsRequiredPrivacy = '[필수] 개인정보 수집 및 이용 동의';
   static const termsRequiredLocation = '[필수] 위치기반서비스 이용약관 동의';
+  static const termsRequiredAge14 = '[필수] 만 14세 이상입니다';
   static const termsOptionalHealth =
       '[선택] 건강정보(심박수) 수집 및\n이용 동의';
 

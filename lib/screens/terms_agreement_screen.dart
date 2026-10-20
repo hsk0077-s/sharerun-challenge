@@ -23,13 +23,13 @@ class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
   var _serviceTerms = false;
   var _privacyTerms = false;
   var _locationTerms = false;
+  var _ageOver14 = false;
   var _healthTerms = false;
 
   bool get _requiredAllChecked =>
-      _serviceTerms && _privacyTerms && _locationTerms;
+      _serviceTerms && _privacyTerms && _locationTerms && _ageOver14;
 
-  bool get _everyItemChecked =>
-      _requiredAllChecked && _healthTerms;
+  bool get _everyItemChecked => _requiredAllChecked && _healthTerms;
 
   void _syncAllAgreeFlag() {
     _allAgree = _everyItemChecked;
@@ -41,6 +41,7 @@ class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
       _serviceTerms = value;
       _privacyTerms = value;
       _locationTerms = value;
+      _ageOver14 = value;
       _healthTerms = value;
     });
   }
@@ -150,6 +151,14 @@ class _TermsAgreementScreenState extends State<TermsAgreementScreen> {
                             value: _locationTerms,
                             onChanged: (v) => _onItemChanged(
                               write: (val) => _locationTerms = val,
+                              value: v,
+                            ),
+                          ),
+                          SRCAgreementRow(
+                            label: AppStrings.termsRequiredAge14,
+                            value: _ageOver14,
+                            onChanged: (v) => _onItemChanged(
+                              write: (val) => _ageOver14 = val,
                               value: v,
                             ),
                           ),

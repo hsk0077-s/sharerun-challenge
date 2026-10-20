@@ -8,6 +8,15 @@ abstract final class LegalConstants {
   @Deprecated('Use healthDataConsentLabel')
   static const sensitiveDataConsentLabel = healthDataConsentLabel;
 
+  /// Public pages (Firebase Hosting `web` target). Google Play lists the same
+  /// addresses, so the in-app text and the store listing never differ.
+  static const privacyPolicyUrl =
+      'https://share-run-challenge.web.app/privacy.html';
+  static const accountDeletionUrl =
+      'https://share-run-challenge.web.app/account-deletion.html';
+
+  static const privacyPolicyLinkLabel = '개인정보 처리방침 전문 보기';
+
   static const termsOfServiceTitle = '서비스 이용약관 (필수)';
   static const privacyPolicyTitle = '개인정보 처리방침 (필수)';
   static const pushNotificationsTitle = '마케팅·활동 알림 (선택)';
@@ -18,7 +27,8 @@ abstract final class LegalConstants {
 
   static const privacyPolicySummary =
       '계정 식별 정보, 러닝 검증 결과, 결제 의도 기록을 서비스 제공 목적으로 처리합니다. '
-      '심박·케이던스 원시 데이터는 Jena 검증 직후 즉시 폐기됩니다.';
+      '심박·케이던스 원시 데이터는 Jena 검증 직후 즉시 폐기됩니다. '
+      '전체 내용은 개인정보 처리방침 전문에서 확인할 수 있습니다.';
 
   static const healthDataConsentSummary =
       '스마트워치·HealthKit·Health Connect를 통해 심박수·케이던스를 읽어 '

@@ -176,12 +176,18 @@ class OpsService:
             box_snapshot.reference.delete()
             deleted_collections += 1
 
+        for device_snapshot in user_ref.collection("loginDevices").stream():
+            device_snapshot.reference.delete()
+
         user_ref.set(
             {
                 "uid": uid,
                 "accountStatus": "purged",
                 "pushNotificationsEnabled": False,
                 "fcmToken": firestore.DELETE_FIELD,
+                "nickname": firestore.DELETE_FIELD,
+                "displayName": firestore.DELETE_FIELD,
+                "email": firestore.DELETE_FIELD,
                 "sensitiveDataConsent": False,
                 "watchType": "none",
                 "accountPurgedAt": SERVER_TIMESTAMP,

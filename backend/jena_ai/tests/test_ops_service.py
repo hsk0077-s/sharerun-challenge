@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from google.cloud import firestore
 from fastapi import HTTPException
 
 from app.services.ops_service import OpsService
@@ -38,7 +39,13 @@ def test_purge_user_data_deletes_activities_and_marks_purged() -> None:
     diamond_snapshot = MagicMock()
     diamond_collection = MagicMock()
     diamond_collection.stream.return_value = [diamond_snapshot]
-    user_ref.collection.return_value = diamond_collection
+    device_snapshot = MagicMock()
+    device_collection = MagicMock()
+    device_collection.stream.return_value = [device_snapshot]
+    user_ref.collection.side_effect = lambda name: {
+        "collectedDiamondBoxes": diamond_collection,
+        "loginDevices": device_collection,
+    }[name]
 
     def collection_side_effect(name: str):
         if name == "users":
@@ -64,7 +71,11 @@ def test_purge_user_data_deletes_activities_and_marks_purged() -> None:
     assert result.deleted_diamond_collections == 1
     activity_snapshot.reference.delete.assert_called_once()
     diamond_snapshot.reference.delete.assert_called_once()
+    device_snapshot.reference.delete.assert_called_once()
     user_ref.set.assert_called_once()
+    written = user_ref.set.call_args.args[0]
+    for field in ("nickname", "displayName", "email", "fcmToken"):
+        assert written[field] is firestore.DELETE_FIELD
 
 
 def _tournament_service(

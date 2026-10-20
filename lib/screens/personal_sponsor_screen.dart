@@ -579,13 +579,13 @@ class _RadioDot extends StatelessWidget {
 
 
 /// 모두에게 보이는 후원 현황과 "내 후원 내역" 버튼.
-/// 회사 이름으로 기부하고 회사는 전달만 한다. 개인별 내역은 후원한 본인만 누르면 본다.
+/// 운영자 이름으로 기부하고 운영자는 전달만 한다. 개인별 내역은 후원한 본인만 누르면 본다.
 class SponsorshipStatusCard extends ConsumerWidget {
   const SponsorshipStatusCard({super.key});
 
   static const cardKey = Key('sponsorship-status');
   static const mineButtonKey = Key('sponsorship-mine-open');
-  static const principleLine = '후원은 회사 이름으로 기부돼요. 회사는 전달만 해요.';
+  static const principleLine = '후원은 운영자 이름으로 기부돼요. 운영자는 전달만 해요.';
 
   static String won(int v) => v.toString().replaceAllMapped(
         RegExp(r'\B(?=(\d{3})+(?!\d))'),

@@ -96,7 +96,7 @@ void main() {
     for (final banned in ['UNICEF', '유니세프', '영수증', '세금', '공제', '완벽', '내 이름으로']) {
       expect(text.contains(banned), isFalse, reason: banned);
     }
-    expect(text, contains('회사·스폰서'));
+    expect(text, contains('운영자·스폰서'));
   });
 
   testWidgets('a failed load can be retried', (tester) async {

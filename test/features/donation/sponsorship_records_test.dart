@@ -53,7 +53,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('후원은 회사 이름으로 기부돼요. 회사는 전달만 해요.'), findsOneWidget);
+    expect(find.text('후원은 운영자 이름으로 기부돼요. 운영자는 전달만 해요.'), findsOneWidget);
     expect(_status(tester), '이번 달 100,000원 · 누적 350,000원 · 참여 7명');
   });
 
@@ -75,7 +75,7 @@ void main() {
   testWidgets('offline the card keeps the principle and hides the status line',
       (tester) async {
     await _pump(tester, null);
-    expect(find.text('후원은 회사 이름으로 기부돼요. 회사는 전달만 해요.'), findsOneWidget);
+    expect(find.text('후원은 운영자 이름으로 기부돼요. 운영자는 전달만 해요.'), findsOneWidget);
     expect(find.byKey(const Key('sponsorship-status-line')), findsNothing);
   });
 

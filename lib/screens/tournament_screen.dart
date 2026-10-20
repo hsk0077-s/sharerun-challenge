@@ -108,8 +108,13 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         ),
         const SizedBox(height: 10),
         Text(
-          '검증된 땀 한 방울이 실제 기부로 이어져요.',
+          '검증된 달리기 1km마다 100원이 기부돼요.',
           style: storeText(14, c.donation, w: FontWeight.w700, h: 1.4),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '운영자 이름으로 기부하며 월 한도가 있어요. 기부처는 정해지면 알려 드려요.',
+          style: storeText(12, c.muted, h: 1.4),
         ),
         const SizedBox(height: 6),
         _MyTournamentsLine(

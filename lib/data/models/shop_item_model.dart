@@ -122,7 +122,7 @@ class ShopItemModel {
     ShopItemModel(
       id: 'donation_match',
       title: '기부 매칭권',
-      description: '100 VALUE. 회사가 러닝 기부 풀에 1,000원을 더합니다. 한 달에 1회.',
+      description: '100 VALUE. 운영자가 러닝 기부 풀에 1,000원을 더합니다. 한 달에 1회.',
       diamondCost: 0,
       valueCost: 100,
       iconName: 'volunteer_activism',

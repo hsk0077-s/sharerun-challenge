@@ -103,8 +103,8 @@ class _IntroScreenState extends State<IntroScreen> {
                     ),
                     _IntroPage(
                       title: '한 걸음이 나눔이 된다',
-                      body: '검증된 모든 달리기, 1km마다 회사가 100원을 기부해요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
-                      note: '회사의 월 기부 예산 안에서 진행돼요. 예산을 다 쓴 달은 "기부 목표 달성"으로 알려 드려요.',
+                      body: '검증된 모든 달리기, 1km마다 운영자가 100원을 기부해요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
+                      note: '운영자의 월 기부 예산 안에서 진행돼요. 예산을 다 쓴 달은 "기부 목표 달성"으로 알려 드려요.',
                       graphic: _DonationGraphic(),
                     ),
                     _IntroPage(
@@ -395,7 +395,7 @@ class _DonationGraphic extends StatelessWidget {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '회사 이름으로 기부돼요 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인',
+                  '운영자 이름으로 기부돼요 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인',
                   style: TextStyle(fontWeight: FontWeight.w700, height: 1.4),
                 ),
               ),

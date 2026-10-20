@@ -12,7 +12,7 @@ class TodayDonation {
 
   final int todayWon;
 
-  /// 이번 달 회사 기부 한도를 다 쓴 상태(서버 `donationMonthTotals`).
+  /// 이번 달 운영자 기부 한도를 다 쓴 상태(서버 `donationMonthTotals`).
   final bool capReached;
 }
 

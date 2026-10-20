@@ -638,7 +638,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    'LBS · 민감정보 핀셋 처리방침',
+                    '개인정보 처리방침 전문 · 위치·건강정보 안내',
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -814,9 +814,16 @@ class _SettingsLegalWebViewScreenState
           onPageFinished: (_) {
             if (mounted) setState(() => _loading = false);
           },
+          // Offline or the page is unreachable: show the built-in summary
+          // instead of an empty error page.
+          onWebResourceError: (error) {
+            if (error.isForMainFrame ?? true) {
+              _controller.loadHtmlString(_html);
+            }
+          },
         ),
       )
-      ..loadHtmlString(_html);
+      ..loadRequest(Uri.parse(LegalConstants.privacyPolicyUrl));
   }
 
   @override

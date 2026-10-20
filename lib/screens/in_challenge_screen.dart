@@ -462,7 +462,7 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: const Text('Jena AI 기록 검증 보류'),
+              title: const Text('기록 검증 보류'),
               content: const Text(
                 '강제 정지 대신 소명 기회가 부여되었습니다. 증빙 자료를 제출해 주세요.',
               ),
@@ -891,7 +891,7 @@ class _JenaOverlay extends StatelessWidget {
             CircularProgressIndicator(color: AppColors.nightLime),
             SizedBox(height: 16),
             Text(
-              'Jena AI가 러닝 데이터를 검증 중입니다...',
+              '러닝 데이터를 검증 중입니다...',
               style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.w700),
             ),
           ],

@@ -160,7 +160,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('1,200원'), findsOneWidget);
       expect(find.byKey(HomeDonationCard.capKey), findsNothing);
-      expect(find.textContaining('회사·스폰서 이름으로 100원'), findsOneWidget);
+      expect(find.textContaining('운영자·스폰서 이름으로 100원'), findsOneWidget);
     });
 
     testWidgets('says the goal is reached and handles no donation yet',

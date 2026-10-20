@@ -172,7 +172,7 @@ abstract final class MiniBotCopy {
 
   static String prizeRace(CompanyTournamentConfig? config) {
     if (config == null || config.tiers.isEmpty) {
-      return '회사 상금 대회 참가비를 확인 중이에요. '
+      return '운영자 상금 대회 참가비를 확인 중이에요. '
           '대회 목록에서 서버 참가비를 확인해 주세요. 여기서는 참가하지 않아요.';
     }
     String fee(String id, String label) {
@@ -193,7 +193,7 @@ abstract final class MiniBotCopy {
             : '';
     final week = config.weeklyLimitLabelKo ?? '';
     final claim = config.prizeIneligibleReasonKo ?? '';
-    return '회사 상금 대회로 이동할까요? 참가비는 $costs예요.$free $week $claim '
+    return '운영자 상금 대회로 이동할까요? 참가비는 $costs예요.$free $week $claim '
         '이동만 하고, 참가는 확정하지 않아요.';
   }
 

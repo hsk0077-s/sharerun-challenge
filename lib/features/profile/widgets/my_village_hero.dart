@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
+import '../../accessories/accessory_catalog.dart';
+import '../../accessories/accessory_inventory.dart';
+import '../../accessories/dressed_mascot.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../village_scene.dart';
 
@@ -103,11 +107,23 @@ class MyVillageHero extends StatelessWidget {
             right: 0,
             bottom: 8,
             child: Center(
-              child: Image.asset(
-                tier.avatarAssetPath,
-                width: 150,
-                height: 150,
-                fit: BoxFit.contain,
+              child: Consumer(
+                builder: (context, ref, _) {
+                  final worn = ref.watch(wornAccessoriesProvider);
+                  if (worn.isNotEmpty && !tier.isSnail && canDress(tier.animal)) {
+                    return DressedMascot(
+                      animal: tier.animal,
+                      worn: worn,
+                      size: 150,
+                    );
+                  }
+                  return Image.asset(
+                    tier.avatarAssetPath,
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                  );
+                },
               ),
             ),
           ),

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers/app_providers.dart';
+import 'accessory_catalog.dart';
 
 /// 내가 산 소품(서버 `shopInventory`의 `category: accessory`)과 입고 있는 것.
 @immutable
@@ -64,3 +65,22 @@ final accessoryInventoryProvider = StreamProvider<AccessoryInventory>((ref) {
             for (final doc in snap.docs) doc.id: doc.data(),
           }));
 });
+
+/// 지금 입고 있는 소품(산 것, 그림이 준비된 것만). 홈·만보기·마을의 마스코트가 같이 쓴다.
+/// 입은 게 없거나 읽지 못하면 빈 집합이라 마스코트는 그냥 동물로 보인다.
+final wornAccessoriesProvider = Provider<Set<Accessory>>((ref) {
+  final inventory = ref.watch(accessoryInventoryProvider).asData?.value;
+  if (inventory == null) return const {};
+  return wornFrom(inventory);
+});
+
+/// [inventory]에서 실제로 입고 있는 소품.
+Set<Accessory> wornFrom(AccessoryInventory inventory) {
+  final out = <Accessory>{};
+  for (final id in inventory.worn.values) {
+    for (final a in accessoryCatalog) {
+      if (a.id == id && a.ready && inventory.owns(id)) out.add(a);
+    }
+  }
+  return out;
+}

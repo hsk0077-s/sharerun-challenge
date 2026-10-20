@@ -17,6 +17,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app/providers/app_providers.dart';
 import '../core/constants/economy_constants.dart';
+import '../features/accessories/accessory_inventory.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/pedometer/solo_pedometer_engine.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
@@ -1978,6 +1979,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     required bool moving,
     required int pickupNonce,
   }) {
+    final worn = ref.watch(wornAccessoriesProvider);
     final tokens = SrcTokens.night;
     final textTheme = SrcTheme.night.textTheme;
     final finalProgress = _hybridProgress(
@@ -2093,6 +2095,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                     height: charSize,
                     child: WalkingMascot(
                       tier: tier,
+                      worn: worn,
                       size: charSize,
                       moving: moving,
                       pickupNonce: pickupNonce,

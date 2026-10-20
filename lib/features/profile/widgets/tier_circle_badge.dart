@@ -16,6 +16,7 @@ class TierCircleBadge extends StatelessWidget {
     this.subLabel,
     this.fallbackEmoji,
     this.showLabel = true,
+    this.dressed,
   });
 
   final String imagePath;
@@ -30,6 +31,9 @@ class TierCircleBadge extends StatelessWidget {
 
   /// false면 원 아래 이름(과 둘째 줄)을 그리지 않는다. 화면 읽기용 설명은 그대로 남는다.
   final bool showLabel;
+
+  /// 소품을 입힌 마스코트. 있으면 [imagePath] 그림 대신 이것을 그린다.
+  final Widget? dressed;
 
   /// 원 안에서 캐릭터를 키우는 배율. 그림 가장자리의 빈 곳을 채워 원이 꽉 차 보이게 한다.
   static const imageScale = 1.25;
@@ -59,21 +63,23 @@ class TierCircleBadge extends StatelessWidget {
                     border: Border.all(color: borderColor, width: 2),
                   ),
                   child: ClipOval(
-                    child: Transform.scale(
-                      scale: imageScale,
-                      child: Image.asset(
-                        imagePath,
-                        width: size,
-                        height: size,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Center(
-                          child: Text(
-                            fallbackEmoji ?? '',
-                            style: TextStyle(fontSize: size * 0.45),
+                    child: dressed != null
+                        ? Center(child: dressed)
+                        : Transform.scale(
+                            scale: imageScale,
+                            child: Image.asset(
+                              imagePath,
+                              width: size,
+                              height: size,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Center(
+                                child: Text(
+                                  fallbackEmoji ?? '',
+                                  style: TextStyle(fontSize: size * 0.45),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
                 if (showLabel) const SizedBox(height: 3),

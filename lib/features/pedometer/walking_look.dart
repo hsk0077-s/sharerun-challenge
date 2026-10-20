@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
+import '../accessories/accessory_catalog.dart';
+import '../accessories/dressed_mascot.dart';
 import '../onboarding/src_onboarding_controller.dart';
 
 /// Walking Challenge look — Runday-leaning polish, **this screen only**.
@@ -111,10 +113,14 @@ class WalkingMascot extends StatefulWidget {
     required this.size,
     this.moving = false,
     this.pickupNonce = 0,
+    this.worn = const {},
     super.key,
   });
 
   final UserTier tier;
+
+  /// 입고 있는 소품. 비어 있거나 달팽이면 소품 없이 그린다.
+  final Set<Accessory> worn;
   final double size;
 
   /// Pedometer is counting (sensor / pedestrian walking).
@@ -421,6 +427,16 @@ class _WalkingMascotState extends State<WalkingMascot>
   }
 
   Widget _untintedMascot() {
+    if (widget.worn.isNotEmpty &&
+        !widget.tier.isSnail &&
+        canDress(widget.tier.animal)) {
+      return DressedMascot(
+        key: const Key('walking-mascot'),
+        animal: widget.tier.animal,
+        worn: widget.worn,
+        size: widget.size,
+      );
+    }
     final image = Image.asset(
       WalkingLook.mascotAsset(widget.tier),
       key: const Key('walking-mascot'),

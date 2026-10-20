@@ -8,6 +8,7 @@ import 'package:share_run_challenge/data/models/pedometer_harvest_result.dart';
 import 'package:share_run_challenge/features/crew/crew_emblem.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/crew/crew_membership.dart';
+import 'package:share_run_challenge/features/crew/crew_ranking.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/crew_room_screen.dart';
 import 'package:share_run_challenge/screens/running_crew_screen.dart';
@@ -69,6 +70,25 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
             CrewMember(uid: 'u3', nickname: '러너3', role: 'sub'),
           ],
         );
+
+  @override
+  Future<CrewRanking> crewRanking() async => const CrewRanking(
+        month: '2026-10',
+        minMembers: 5,
+        rankedCrews: 3,
+        top: [],
+        mine: CrewRankRow(
+          rank: 2,
+          name: '새벽러너',
+          averageKm: 8.44,
+          distanceKm: 101.3,
+          memberCount: 12,
+        ),
+        myDistanceKm: 101.3,
+        myMemberCount: 12,
+        myEligible: true,
+        bestRank: 4,
+      );
 
   @override
   Future<String> joinCrew(String crewId) async {
@@ -365,6 +385,13 @@ void main() {
     expect(find.text('45/50'), findsNothing);
     expect(find.text('12/100'), findsOneWidget);
     expect(find.text('321km'), findsOneWidget);
+  });
+
+  testWidgets('a real crew shows this month rank and its best ever', (tester) async {
+    await _pump(tester, _FakeApi(myRole: 'leader'));
+    expect(find.byKey(const Key('crew-rank-line')), findsOneWidget);
+    expect(find.text('이번 달 2위 · 1인 평균 8.4km'), findsOneWidget);
+    expect(find.text('역대 최고 4위'), findsOneWidget);
   });
 
   testWidgets('the crew room shows the real crew, its members and no sample',

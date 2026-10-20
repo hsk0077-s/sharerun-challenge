@@ -94,12 +94,7 @@ class AvatarChoiceNotifier extends Notifier<AvatarChoice> {
         final status = await Permission.photos.request();
         return status.isGranted || status.isLimited;
       }
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        final photos = await Permission.photos.request();
-        if (photos.isGranted || photos.isLimited) return true;
-        final storage = await Permission.storage.request();
-        return storage.isGranted || storage.isLimited;
-      }
+      // 안드로이드는 시스템 사진 선택기를 쓰므로 사진 권한을 따로 받지 않는다.
       return true;
     } catch (e) {
       debugPrint('AvatarChoice gallery permission: $e');

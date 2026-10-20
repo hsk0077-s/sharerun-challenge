@@ -30,8 +30,8 @@ class SponsorPaymentOptionSelector extends StatelessWidget {
           groupValue: value,
           activeColor: AppColors.neonLime,
           onChanged: _handleChanged,
-          title: const Text('옵션 B: 회사 이름으로 기부'),
-          subtitle: const Text('후원은 회사 이름으로 기부돼요. 내 기여는 앱에서 확인해요.'),
+          title: const Text('옵션 B: 운영자 이름으로 기부'),
+          subtitle: const Text('후원은 운영자 이름으로 기부돼요. 내 기여는 앱에서 확인해요.'),
         ),
       ],
     );

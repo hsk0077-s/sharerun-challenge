@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../crew/crew_membership.dart';
 
-/// 이번 달 회사 기부금과 지금 향하는 목표(서버 값). 모두에게 같은 숫자이고 한 사람의 기록은 없다.
+/// 이번 달 운영자 기부금과 지금 향하는 목표(서버 값). 모두에게 같은 숫자이고 한 사람의 기록은 없다.
 /// VALUE는 원화로 바꾸지 않으므로 여기에 VALUE는 나오지 않는다.
 @immutable
 class FundingSummary {
@@ -23,7 +23,7 @@ class FundingSummary {
   final int stage;
   final int stageCount;
 
-  /// 이번 달 회사 기부 한도. 모르면 0.
+  /// 이번 달 운영자 기부 한도. 모르면 0.
   final int capWon;
   final bool capReached;
 

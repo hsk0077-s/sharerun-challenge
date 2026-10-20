@@ -551,7 +551,7 @@ class SecuredActionApiClient {
   Future<CrewRanking> crewRanking() async =>
       CrewRanking.fromJson(await _get('/actions/crew/ranking'));
 
-  /// 이번 달 회사 기부금과 지금 목표. 모두에게 같은 값이다.
+  /// 이번 달 운영자 기부금과 지금 목표. 모두에게 같은 값이다.
   Future<FundingSummary> fundingSummary() async =>
       FundingSummary.fromJson(await _get('/actions/funding/summary'));
 

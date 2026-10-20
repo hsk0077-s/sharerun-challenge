@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_exception.dart';
 import '../../features/crew/crew_emblem_status.dart';
 import '../../features/crew/crew_membership.dart';
+import '../../features/donation/funding_summary.dart';
 import '../../features/donation/sponsorship_records.dart';
 import '../../features/iap/dia_refund.dart';
 import '../../features/jena_validation/models/jena_validation_request.dart';
@@ -539,6 +540,10 @@ class SecuredActionApiClient {
     final json = await _post('/actions/crew/emblem', {'emblem': emblem});
     return PedometerHarvestResult.fromJson(json);
   }
+
+  /// 이번 달 회사 기부금과 지금 목표. 모두에게 같은 값이다.
+  Future<FundingSummary> fundingSummary() async =>
+      FundingSummary.fromJson(await _get('/actions/funding/summary'));
 
   /// 모두에게 보이는 후원 현황(참여 인원이 모자라면 금액은 비어 있다).
   Future<SponsorshipSummary> sponsorshipSummary() async =>

@@ -286,7 +286,12 @@ abstract final class AppStrings {
       '🌍 땀방울로 만드는 기적,\n기부 펀딩';
   static const storeFundingPreparing = '준비 중';
   static const storeFundingPreparingNote =
-      '아직 열리지 않았어요. 열리면 모은 VALUE로 참여할 수 있어요.';
+      '아직 열리지 않았어요. 열리면 이번 달 모인 기부금이 여기에 보여요.';
+  static const storeFundingMonthLabel = '이번 달 모인 기부금';
+  static const storeFundingNote =
+      '검증된 달리기와 기부 매칭으로 회사가 모읍니다. 내 VALUE가 줄지 않아요.';
+  static const storeFundingAllReached = '이번 달 목표를 모두 채웠어요';
+  static const storeFundingCapReached = '이번 달 회사 기부 한도에 도달했어요. 다음 달에 다시 모여요.';
   static const storeFunctionalItems = '기능성 아이템';
   static const storeCosmeticsTitle = '코스메틱';
   static const storeCosmeticsNote =

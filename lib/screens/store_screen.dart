@@ -1,3 +1,4 @@
+import '../features/donation/funding_summary.dart';
 import '../features/iap/widgets/dia_notice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -870,15 +871,86 @@ class _CosmeticsPreviewRow extends StatelessWidget {
   }
 }
 
-/// 유니세프 기부 펀딩 카드. 라임 바탕에 어두운 글자.
-class _UnicefFundingCard extends StatelessWidget {
+/// 기부 펀딩 카드. 라임 바탕에 어두운 글자. 서버 값이 있으면 이번 달 모인 기부금과 목표를 보여 준다.
+class _UnicefFundingCard extends ConsumerWidget {
   const _UnicefFundingCard();
+
+  static const progressKey = Key('store-funding-progress');
 
   static const preparingKey = Key('store-funding-preparing');
 
+  static String _won(int value) {
+    final s = value.toString();
+    final out = StringBuffer();
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) out.write(',');
+      out.write(s[i]);
+    }
+    return '$out원';
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = context.srcTokens.colors;
+    final summary = ref.watch(fundingSummaryProvider).asData?.value;
+    if (summary != null) {
+      return Container(
+        key: progressKey,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(26),
+          color: c.primary,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              AppStrings.storeFundingTitle,
+              style: storeText(17, c.onPrimary, w: FontWeight.w900, h: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              AppStrings.storeFundingMonthLabel,
+              style: storeText(12, c.onPrimary, w: FontWeight.w700),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              _won(summary.totalWon),
+              style: storeText(26, c.onPrimary, w: FontWeight.w900),
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: summary.ratio,
+                minHeight: 10,
+                backgroundColor: c.onPrimary.withValues(alpha: 0.18),
+                color: c.onPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              summary.allReached
+                  ? AppStrings.storeFundingAllReached
+                  : '목표 ${summary.stage}단계 · ${_won(summary.goalWon)}',
+              style: storeText(12, c.onPrimary, w: FontWeight.w800),
+            ),
+            if (summary.capReached) ...[
+              const SizedBox(height: 8),
+              Text(
+                AppStrings.storeFundingCapReached,
+                style: storeText(12, c.onPrimary, w: FontWeight.w700, h: 1.4),
+              ),
+            ],
+            const SizedBox(height: 10),
+            Text(
+              AppStrings.storeFundingNote,
+              style: storeText(11, c.onPrimary, w: FontWeight.w600, h: 1.4),
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(

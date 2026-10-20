@@ -52,6 +52,12 @@ def _count(crew: dict) -> int:
 RENAME_DIA = 300
 EXPAND_DIA = 300
 EXPAND_STEP = 10
+# One CPR ticket plus one Safeguard for one member. The leader pays per member.
+GIFT_DIA_PER_MEMBER = 30
+GIFT_ITEMS = (
+    ("record_cpr_ticket", "기록 심폐소생권"),
+    ("record_safe_guard", "기록 마감 세이프 가드"),
+)
 NAME_MIN, NAME_MAX = 2, 20
 
 
@@ -585,4 +591,104 @@ def _expand_tx(transaction, db, uid, request_id, user_ref, crew_ref) -> dict:
         "max_members": max_members() + bonus,
         "charged_dia": EXPAND_DIA,
         "diamond_balance": balance_before - EXPAND_DIA,
+    }
+
+
+# ---- gift ----------------------------------------------------------------------------
+def gift(service, uid: str, target_uid: str, request_id: str) -> dict:
+    """Leader only. Puts one CPR ticket and one Safeguard in a member's inventory.
+
+    ``target_uid`` empty means every other member. The leader pays GIFT_DIA_PER_MEMBER per
+    member (bonus DIA first). The same request id never pays twice.
+    """
+    from app.services.streak_protection import require_request_id
+
+    request_id = require_request_id(request_id)
+    db = service.firebase_service.db
+    crew_id, crew_ref, _crew = _managed_crew(db, uid, leader_only=True)
+    member_uids = [
+        snapshot.id
+        for snapshot in crew_ref.collection("members").get()
+        if snapshot.id != uid
+    ]
+    if target_uid:
+        if target_uid == uid or target_uid not in member_uids:
+            raise HTTPException(status_code=404, detail="That member is not in your crew.")
+        recipients = [target_uid]
+    else:
+        recipients = member_uids
+    if not recipients:
+        raise HTTPException(status_code=400, detail="There is nobody to give gifts to.")
+    return _run(
+        _gift_tx,
+        db.transaction(),
+        db,
+        uid,
+        recipients,
+        request_id,
+        db.collection("users").document(uid),
+        crew_ref,
+    )
+
+
+@firestore.transactional
+def _gift_tx(transaction, db, uid, recipients, request_id, user_ref, crew_ref) -> dict:
+    from app.services.wallet_funding import move_currency
+
+    ledger_ref = db.collection("walletTransactions").document(f"crew_gift_{uid}_{request_id}")
+    user_snapshot = user_ref.get(transaction=transaction)
+    wallet = ((user_snapshot.to_dict() or {}).get("wallet") or {}) if user_snapshot.exists else {}
+    balance_before = int(wallet.get("diamondBalance") or 0)
+    if ledger_ref.get(transaction=transaction).exists:
+        return {"status": "already_gifted", "recipients": len(recipients), "charged_dia": 0, "diamond_balance": balance_before}
+    cost = GIFT_DIA_PER_MEMBER * len(recipients)
+    if balance_before < cost:
+        raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
+    # Every read comes before the first write.
+    current: dict[tuple[str, str], int] = {}
+    for member_uid in recipients:
+        for item_id, _title in GIFT_ITEMS:
+            snap = (
+                db.collection("users").document(member_uid)
+                .collection("shopInventory").document(item_id)
+                .get(transaction=transaction)
+            )
+            current[(member_uid, item_id)] = (
+                int((snap.to_dict() or {}).get("quantity") or 0) if snap.exists else 0
+            )
+    moved = move_currency(wallet, diamond=-cost)
+    transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
+    for member_uid in recipients:
+        for item_id, title in GIFT_ITEMS:
+            transaction.set(
+                db.collection("users").document(member_uid)
+                .collection("shopInventory").document(item_id),
+                {
+                    "itemId": item_id,
+                    "title": title,
+                    "quantity": current[(member_uid, item_id)] + 1,
+                    "purchasedAt": SERVER_TIMESTAMP,
+                },
+                merge=True,
+            )
+    transaction.set(
+        ledger_ref,
+        {
+            "uid": uid,
+            "type": "crew_item_gift",
+            "diamondAmount": -cost,
+            "itemIds": [item_id for item_id, _title in GIFT_ITEMS],
+            "recipientCount": len(recipients),
+            "recipients": recipients[:50],
+            "crewId": crew_ref.id,
+            "requestId": request_id,
+            "createdAt": SERVER_TIMESTAMP,
+            **moved["ledger"],
+        },
+    )
+    return {
+        "status": "gifted",
+        "recipients": len(recipients),
+        "charged_dia": cost,
+        "diamond_balance": balance_before - cost,
     }

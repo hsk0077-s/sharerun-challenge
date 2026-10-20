@@ -783,10 +783,20 @@ class SecuredActionApiClient {
     );
   }
 
-  /// Debits the server crew-gift price and grants CPR plus Safeguard.
-  Future<PedometerHarvestResult> grantCrewItems() async {
-    final json = await _post('/actions/shop/crew-gift', const {});
-    return PedometerHarvestResult.fromJson(json);
+  /// 크루장: 크루원 한 명(또는 [targetUid]가 비면 나를 뺀 전체)에게 심폐소생권·세이프가드를
+  /// 하나씩 준다. 한 명당 30 DIA. 받은 사람 수와 새 DIA 잔액을 돌려준다.
+  Future<({int recipients, int? diamondBalance})> giftCrewItems({
+    String targetUid = '',
+  }) async {
+    final json = await _postWithRequest(
+      '/actions/crew/gift',
+      {'target_uid': targetUid},
+      'crew-gift:$targetUid',
+    );
+    return (
+      recipients: (json['recipients'] as num?)?.toInt() ?? 0,
+      diamondBalance: (json['diamond_balance'] as num?)?.toInt(),
+    );
   }
 
   /// Once per KST week. Credits [EconomyConstants.streakBonusDia] on the server.

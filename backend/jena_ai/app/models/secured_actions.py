@@ -96,6 +96,12 @@ class ShopPurchaseRequest(BaseModel):
     pay_with: str | None = Field(default=None, max_length=8)
 
 
+class CrewGiftRequest(BaseModel):
+    # Empty means every other member of the crew.
+    target_uid: str = Field(default="", max_length=128)
+    request_id: str = Field(min_length=8, max_length=80)
+
+
 class CrewExpandRequest(BaseModel):
     request_id: str = Field(min_length=8, max_length=80)
 

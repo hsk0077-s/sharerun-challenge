@@ -751,11 +751,6 @@ class SecuredActionService:
     def commit_cpr_grant(self, transaction, uid: str, user_ref) -> None:
         _commit_cpr_grant_tx(transaction, self, uid, user_ref)
 
-    def grant_crew_items(self, uid: str) -> SecuredActionResult:
-        transaction = self.firebase_service.db.transaction()
-        user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_crew_gift_tx(transaction, self, uid, user_ref)
-
     def change_nickname(self, uid: str, nickname: str) -> SecuredActionResult:
         compact = re.sub(r"\s+", "", nickname.strip())
         if _NICKNAME_PATTERN.fullmatch(compact) is None:
@@ -1736,8 +1731,6 @@ class SecuredActionService:
             )
         return rows
 
-    # Crew gift price lives here. The client does not send an amount.
-    CREW_GIFT_DIA = 30
     NICKNAME_CHANGE_DIA = 100
     CREW_GIFT_ITEMS = (
         ("record_cpr_ticket", "기록 심폐소생권"),
@@ -2968,70 +2961,6 @@ class SecuredActionService:
             accepted=True,
             status="purchased",
             reason=f"Purchased {catalog_item['title']}.",
-            share_balance=_wallet_int(wallet, "shareBalance"),
-            diamond_balance=diamond_balance - cost,
-            value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
-        )
-
-    def _grant_crew_items_tx(
-        self,
-        transaction,
-        uid: str,
-        user_ref,
-    ) -> SecuredActionResult:
-        user_snapshot = user_ref.get(transaction=transaction)
-        if not user_snapshot.exists:
-            raise HTTPException(status_code=404, detail="User not found.")
-        user = user_snapshot.to_dict() or {}
-        wallet = user.get("wallet") or {}
-        diamond_balance = int(wallet.get("diamondBalance") or 0)
-        cost = self.CREW_GIFT_DIA
-        if diamond_balance < cost:
-            raise HTTPException(status_code=400, detail="Insufficient Diamond balance.")
-        moved = move_currency(wallet, diamond=-cost)
-        transaction.update(
-            user_ref,
-            {
-                **moved["updates"],
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-        )
-        granted = []
-        for item_id, title in self.CREW_GIFT_ITEMS:
-            inventory_ref = user_ref.collection("shopInventory").document(item_id)
-            inventory_snapshot = inventory_ref.get(transaction=transaction)
-            current_qty = 0
-            if inventory_snapshot.exists:
-                current_qty = int(
-                    (inventory_snapshot.to_dict() or {}).get("quantity") or 0
-                )
-            transaction.set(
-                inventory_ref,
-                {
-                    "itemId": item_id,
-                    "title": title,
-                    "quantity": current_qty + 1,
-                    "purchasedAt": SERVER_TIMESTAMP,
-                },
-                merge=True,
-            )
-            granted.append(item_id)
-        tx_ref = self.firebase_service.db.collection("walletTransactions").document()
-        transaction.set(
-            tx_ref,
-            {
-                "uid": uid,
-                "type": "crew_item_gift",
-                "diamondAmount": -cost,
-                "itemIds": granted,
-                "createdAt": SERVER_TIMESTAMP,
-                **moved["ledger"],
-            },
-        )
-        return SecuredActionResult(
-            accepted=True,
-            status="granted",
-            reason="Crew items granted.",
             share_balance=_wallet_int(wallet, "shareBalance"),
             diamond_balance=diamond_balance - cost,
             value_token_balance=_wallet_int(wallet, "valueTokenBalance"),
@@ -5331,16 +5260,6 @@ def _commit_create_room_tx(
     return service._create_challenge_room_tx(
         transaction, uid, title, distance_km, user_ref, room_ref
     )
-
-
-@firestore.transactional
-def _commit_crew_gift_tx(
-    transaction,
-    service,
-    uid: str,
-    user_ref,
-) -> SecuredActionResult:
-    return service._grant_crew_items_tx(transaction, uid, user_ref)
 
 
 @firestore.transactional

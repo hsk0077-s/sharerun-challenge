@@ -26,7 +26,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   static const _saveNavy = AppColors.nightLime;
 
   static const _expandMembersDia = 300;
-  static const _giftCprDia = 30;
+  static const _giftDiaPerMember = 30;
 
   void _toast(String message) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -185,23 +185,45 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     }
   }
 
-  Future<void> _onGiftCpr() async {
+  /// [member]가 null이면 나를 뺀 크루원 전체에게 준다.
+  Future<void> _onGift(MyCrew mine, {CrewMember? member}) async {
+    final api = ref.read(crewApiProvider);
+    if (api == null) return;
+    final count = member == null
+        ? mine.members.where((m) => m.role != 'leader').length
+        : 1;
+    if (count == 0) {
+      _toast('선물을 받을 크루원이 없어요.');
+      return;
+    }
+    final cost = count * _giftDiaPerMember;
+    final who = member == null ? '크루원 $count명 모두' : '${member.nickname}님';
+    if (!await _confirm(
+      '심폐소생권·세이프가드 선물',
+      '$who에게 심폐소생권과 세이프가드를 하나씩 보내요. 한 명당 $_giftDiaPerMember DIA, 모두 $cost DIA가 들고 보너스 DIA를 먼저 써요.',
+      '$cost DIA 내고 보내기',
+    )) {
+      return;
+    }
     try {
-      final result =
-          await ref.read(securedActionApiClientProvider).grantCrewItems();
+      final result = await api.giftCrewItems(targetUid: member?.uid ?? '');
       if (!mounted) return;
-      ref.read(walletProvider.notifier).applyWalletSnapshot(
-            shareBalance: result.shareBalance,
-            diamondBalance: result.diamondBalance,
-            valueBalance: result.valueTokenBalance,
-          );
-      _toast('심폐소생권·세이프가드가 내 보관함에 들어왔어요. (−$_giftCprDia DIA)');
-    } on ApiException {
+      if (result.diamondBalance != null) {
+        ref.read(walletProvider.notifier).applyWalletSnapshot(
+              diamondBalance: result.diamondBalance,
+            );
+      }
+      _toast('${result.recipients}명의 보관함에 선물을 넣었어요. (−$cost DIA)');
+    } on ApiException catch (error) {
       if (!mounted) return;
-      _toast('DIA가 부족합니다. 상점에서 구매해 주세요. (심폐소생권 선물)');
-    } catch (error) {
-      if (!mounted) return;
-      _toast('선물을 지급하지 못했습니다.');
+      _toast(switch (error.statusCode) {
+        400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+        403 => '크루장만 선물할 수 있어요.',
+        404 => '그 크루원을 찾지 못했어요.',
+        _ => '선물을 보내지 못했어요. 잠시 뒤 다시 해 주세요.',
+      });
+    } catch (_) {
+      if (mounted) _toast('선물을 보내지 못했어요. 잠시 뒤 다시 해 주세요.');
     }
   }
 
@@ -398,11 +420,14 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        _RoyalBlueButton(
-                          label: '🎁 심폐소생권·세이프가드 받기 ($_giftCprDia DIA)',
-                          subtitle: '내 보관함에 들어와요. 크루원에게 나눠주는 기능은 아직 없어요.',
-                          onTap: _onGiftCpr,
-                        ),
+                        if (mine.isLeader) ...[
+                          _RoyalBlueButton(
+                            label:
+                                '🎁 크루원 전체에게 심폐소생권·세이프가드 선물 (1인당 $_giftDiaPerMember DIA)',
+                            subtitle: '내가 아닌 크루원의 보관함에 하나씩 들어가요. 한 명에게만 줄 때는 아래 팀원 목록에서 골라요.',
+                            onTap: () => _onGift(mine),
+                          ),
+                        ],
                         const SizedBox(height: 10),
                         _RoyalBlueButton(
                           label: '🚩 크루 응원 깃발 (15 DIA, 하루 1회)',
@@ -501,6 +526,8 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                                   member.role == 'sub' ? 'member' : 'sub',
                                 ),
                                 onKick: () => _onKick(member),
+                                canGift: mine.isLeader && member.role != 'leader',
+                                onGift: () => _onGift(mine, member: member),
                               ),
                             ),
                           ),
@@ -713,6 +740,8 @@ class _MemberRow extends StatelessWidget {
     required this.canKick,
     required this.onAppoint,
     required this.onKick,
+    required this.canGift,
+    required this.onGift,
   });
 
   final String name;
@@ -721,6 +750,8 @@ class _MemberRow extends StatelessWidget {
   final bool canKick;
   final VoidCallback onAppoint;
   final VoidCallback onKick;
+  final bool canGift;
+  final VoidCallback onGift;
 
   @override
   Widget build(BuildContext context) {
@@ -746,6 +777,18 @@ class _MemberRow extends StatelessWidget {
             ),
           ),
         ),
+        if (canGift)
+          TextButton(
+            onPressed: onGift,
+            child: Text(
+              '선물',
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.nightLime,
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+            ),
+          ),
         if (canAppoint)
           TextButton(
             onPressed: onAppoint,

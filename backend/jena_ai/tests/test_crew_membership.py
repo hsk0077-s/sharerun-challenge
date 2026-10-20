@@ -497,3 +497,76 @@ def test_expand_needs_the_diamonds_and_the_leader() -> None:
     with pytest.raises(HTTPException) as caught:
         _expand(db, "u2", "req-expand-03")
     assert caught.value.status_code == 403
+
+
+# ---- gift ---------------------------------------------------------------------------------
+def _gift(db, uid, target="", request_id="req-gift-0001"):
+    service = SimpleNamespace(firebase_service=SimpleNamespace(db=db))
+    return cm.gift(service, uid, target, request_id)
+
+
+def _seed_gift(db):
+    _seed_rich(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 500, "freeDiamondBalance": 0, "paidDiamondBalance": 500}
+    _join(db, "u2", "c1")
+
+
+def _qty(db, uid, item):
+    return db.store.get(f"users/{uid}/shopInventory/{item}", {}).get("quantity", 0)
+
+
+def test_gift_to_one_member_puts_both_items_in_their_inventory_and_charges_30() -> None:
+    db = _MemoryDb()
+    _seed_gift(db)
+    done = _gift(db, "u1", "u2")
+    assert (done["status"], done["recipients"], done["charged_dia"], done["diamond_balance"]) == ("gifted", 1, 30, 470)
+    assert _qty(db, "u2", "record_cpr_ticket") == 1
+    assert _qty(db, "u2", "record_safe_guard") == 1
+    assert _qty(db, "u1", "record_cpr_ticket") == 0
+    ledger = [v for k, v in db.store.items() if k.startswith("walletTransactions/crew_gift_")]
+    assert len(ledger) == 1 and ledger[0]["diamondAmount"] == -30 and ledger[0]["recipientCount"] == 1
+
+
+def test_gift_to_everyone_charges_per_member_and_skips_the_leader() -> None:
+    db = _MemoryDb()
+    _seed_gift(db)
+    db.store["users/u4"] = {"nickname": "러너4"}
+    _join(db, "u4", "c1")
+    done = _gift(db, "u1")
+    assert (done["recipients"], done["charged_dia"], done["diamond_balance"]) == (2, 60, 440)
+    for uid in ("u2", "u4"):
+        assert _qty(db, uid, "record_cpr_ticket") == 1
+    assert _qty(db, "u1", "record_safe_guard") == 0
+
+
+def test_gift_adds_to_what_the_member_already_has_and_repeats_charge_once() -> None:
+    db = _MemoryDb()
+    _seed_gift(db)
+    db.store["users/u2/shopInventory/record_cpr_ticket"] = {"quantity": 2}
+    _gift(db, "u1", "u2")
+    assert _qty(db, "u2", "record_cpr_ticket") == 3
+    again = _gift(db, "u1", "u2")
+    assert again["status"] == "already_gifted"
+    assert _qty(db, "u2", "record_cpr_ticket") == 3
+    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 470
+
+
+def test_gift_needs_diamonds_a_real_member_and_the_leader() -> None:
+    db = _MemoryDb()
+    _seed_gift(db)
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 29, "freeDiamondBalance": 0, "paidDiamondBalance": 29}
+    with pytest.raises(HTTPException) as caught:
+        _gift(db, "u1", "u2")
+    assert caught.value.status_code == 400
+    assert _qty(db, "u2", "record_cpr_ticket") == 0
+
+    db.store["users/u1"]["wallet"] = {"diamondBalance": 500, "freeDiamondBalance": 0, "paidDiamondBalance": 500}
+    for target in ("u3", "u1"):
+        with pytest.raises(HTTPException) as caught:
+            _gift(db, "u1", target, "req-gift-0002")
+        assert caught.value.status_code == 404
+
+    cm.set_role(db, "u1", "u2", "sub")
+    with pytest.raises(HTTPException) as caught:
+        _gift(db, "u2", "", "req-gift-0003")
+    assert caught.value.status_code == 403

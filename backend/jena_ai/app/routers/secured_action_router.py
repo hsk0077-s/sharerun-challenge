@@ -35,6 +35,7 @@ from app.models.secured_actions import (
     CrewEmblemStatus,
     CrewFoundRequest,
     CrewExpandRequest,
+    CrewGiftRequest,
     CosmeticCatalogItem,
     CosmeticCatalogView,
     CosmeticEquipRequest,
@@ -239,11 +240,6 @@ def purchase_shop_item(
     )
 
 
-@router.post("/shop/crew-gift", response_model=SecuredActionResult)
-def grant_crew_items(uid: str = Depends(require_uid)) -> SecuredActionResult:
-    return service.grant_crew_items(uid=uid)
-
-
 @router.post("/crew/emblem", response_model=SecuredActionResult)
 def change_crew_emblem(
     request: CrewEmblemRequest,
@@ -317,6 +313,11 @@ def rename_crew(request: CrewRenameRequest, uid: str = Depends(require_uid)) -> 
 @router.post("/crew/expand")
 def expand_crew(request: CrewExpandRequest, uid: str = Depends(require_uid)) -> dict:
     return crew_membership.expand(service, uid, request.request_id)
+
+
+@router.post("/crew/gift")
+def gift_crew_items(request: CrewGiftRequest, uid: str = Depends(require_uid)) -> dict:
+    return crew_membership.gift(service, uid, request.target_uid, request.request_id)
 
 
 @router.post("/crew/role")

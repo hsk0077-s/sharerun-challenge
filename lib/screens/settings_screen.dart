@@ -649,6 +649,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
+                  key: const Key('ai-credit-settings'),
+                  title: Text(
+                    LegalConstants.aiGeneratedTitle,
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    LegalConstants.aiGeneratedCredit,
+                    style: AppTextStyles.caption,
+                  ),
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
                   title: Text(
                     '로그아웃',
                     style: AppTextStyles.agreementLabel.copyWith(

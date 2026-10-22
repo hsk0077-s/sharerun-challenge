@@ -40,7 +40,7 @@ void main() {
       overrides: [
         voiceCoachingSpeakerProvider.overrideWithValue(speaker),
         coachPlusFromProfileProvider.overrideWithValue(false),
-        coachPlusServerGrantProvider.overrideWithValue((_) async {}),
+        coachPlusServerGrantProvider.overrideWithValue((_, __) async {}),
       ],
     );
   });
@@ -726,7 +726,7 @@ void main() {
 
     await container
         .read(coachPlusActiveProvider.notifier)
-        .grant('coach_plus_monthly');
+        .grant('coach_plus_monthly', 'test-purchase-token');
     await coach.onRunProgress(
       previousKm: 0.2,
       currentKm: 0.3,
@@ -739,7 +739,7 @@ void main() {
       overrides: [
         voiceCoachingSpeakerProvider.overrideWithValue(confirmedSpeaker),
         coachPlusFromProfileProvider.overrideWithValue(true),
-        coachPlusServerGrantProvider.overrideWithValue((_) async {}),
+        coachPlusServerGrantProvider.overrideWithValue((_, __) async {}),
       ],
     );
     addTearDown(confirmed.dispose);

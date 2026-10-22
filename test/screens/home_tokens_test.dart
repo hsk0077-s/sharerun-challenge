@@ -161,7 +161,8 @@ void main() {
     expect(find.textContaining('현금 상금 없음'), findsOneWidget);
     expect(find.text('대회 상세 보기'), findsNWidgets(2));
     expect(find.text('걷기 챌린지 보기'), findsOneWidget);
-    expect(find.textContaining('내 이름으로 달리기 후원하기'), findsOneWidget);
+    // 후원은 보류라 기본값에서는 후원 배너가 보이지 않는다.
+    expect(find.textContaining('내 이름으로 달리기 후원하기'), findsNothing);
     expect(find.text(AppStrings.dashboardChallenge1Sub), findsOneWidget);
     expect(find.text(AppStrings.dashboardChallenge2Sub), findsOneWidget);
     expect(find.byIcon(Icons.mail_outline_rounded), findsNothing);

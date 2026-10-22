@@ -63,11 +63,9 @@ class NotificationService {
     } catch (e, st) {
       debugPrint('NotificationService POST_NOTIFICATIONS: $e\n$st');
     }
-    try {
-      await android?.requestExactAlarmsPermission();
-    } catch (e, st) {
-      debugPrint('NotificationService exact alarm: $e\n$st');
-    }
+    // 리마인더는 정확한 알람이 필요 없는 방식(inexactAllowWhileIdle)이고 매니페스트에도
+    // SCHEDULE_EXACT_ALARM이 없다. 여기서 정확한 알람 권한을 요청하면 안드로이드 설정의
+    // "알람 및 리마인더" 화면이 앱 시작 때 열린다.
 
     final ios = _plugin.resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>();

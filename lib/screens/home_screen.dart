@@ -27,6 +27,7 @@ import 'in_app_billing_screen.dart';
 import 'in_challenge_screen.dart';
 import 'my_wallet_screen.dart';
 import 'store_screen.dart';
+import '../core/config/app_env.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -375,8 +376,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         SizedBox(height: tokens.spacing.sm),
         SoloQuickStartBanner(onTap: _onOpenSoloRun),
-        SizedBox(height: tokens.spacing.sm),
-        const AngelSponsorBanner(),
+        if (AppEnv.sponsorshipEnabled) ...[
+          SizedBox(height: tokens.spacing.sm),
+          const AngelSponsorBanner(),
+        ],
         SizedBox(height: tokens.spacing.xxl),
         _HomeStartButton(onPressed: _onStartRun),
         SizedBox(height: tokens.spacing.xxl),

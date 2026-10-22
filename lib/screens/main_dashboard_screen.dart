@@ -23,6 +23,7 @@ import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
 import 'preliminary_eval_screen.dart';
 import 'stamp_tour_screen.dart';
+import '../core/config/app_env.dart';
 
 /// 메인 대시보드 화면 (Screen 5). 검정 바탕 + 라임 포인트 새 디자인.
 class MainDashboardScreen extends ConsumerStatefulWidget {
@@ -217,8 +218,10 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                           HomeDonationCard(
                             onOpenSettlement: _onOpenDonationSettlement,
                           ),
-                          SizedBox(height: tokens.spacing.sm),
-                          AngelSponsorBanner(onTap: _onOpenPersonalSponsor),
+                          if (AppEnv.sponsorshipEnabled) ...[
+                            SizedBox(height: tokens.spacing.sm),
+                            AngelSponsorBanner(onTap: _onOpenPersonalSponsor),
+                          ],
                           SizedBox(height: tokens.spacing.lg),
                           Text(
                             AppStrings.dashboardOngoingChallenges,

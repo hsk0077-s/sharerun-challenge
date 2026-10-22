@@ -19,6 +19,7 @@ import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
 import 'sponsor_payment_screen.dart';
+import '../core/config/app_env.dart';
 
 class TournamentScreen extends ConsumerStatefulWidget {
   const TournamentScreen({this.initialTournamentId, super.key});
@@ -415,11 +416,12 @@ class _TournamentRoomCard extends StatelessWidget {
             ),
           if (tierTicketJoinLabel != null && !isJoined && !locked)
             _RoomLinkLine(label: tierTicketJoinLabel!, onTap: onTierTicketJoin),
-          _RoomLinkLine(
-            label: '이 대회 후원하기',
-            icon: Icons.campaign_rounded,
-            onTap: onSponsor,
-          ),
+          if (AppEnv.sponsorshipEnabled)
+            _RoomLinkLine(
+              label: '이 대회 후원하기',
+              icon: Icons.campaign_rounded,
+              onTap: onSponsor,
+            ),
         ],
       ),
     );

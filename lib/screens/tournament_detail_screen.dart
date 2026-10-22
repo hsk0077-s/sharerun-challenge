@@ -21,6 +21,7 @@ import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
 import '../features/tournaments/widgets/sponsor_rolling_banner.dart';
 import 'sponsor_payment_screen.dart';
+import '../core/config/app_env.dart';
 
 class TournamentDetailScreen extends ConsumerWidget {
   const TournamentDetailScreen({
@@ -243,18 +244,20 @@ class _JoinedTournamentDetail extends StatelessWidget {
             icon: const Icon(Icons.directions_run_rounded),
             label: const Text('러닝 시작하기'),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => context.push(
-              RouteNames.sponsorPayment,
-              extra: SponsorPaymentArgs(
-                tournamentId: room.id,
-                tournamentTitle: room.title,
+          if (AppEnv.sponsorshipEnabled) ...[
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => context.push(
+                RouteNames.sponsorPayment,
+                extra: SponsorPaymentArgs(
+                  tournamentId: room.id,
+                  tournamentTitle: room.title,
+                ),
               ),
+              icon: const Icon(Icons.campaign_rounded),
+              label: const Text('스폰서 후원하기'),
             ),
-            icon: const Icon(Icons.campaign_rounded),
-            label: const Text('스폰서 후원하기'),
-          ),
+          ],
         ],
       ),
     );

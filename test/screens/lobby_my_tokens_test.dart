@@ -212,6 +212,8 @@ void main() {
     expect(find.text('대회'), findsOneWidget);
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
     expect(find.text('후원  운영자'), findsOneWidget);
+    // 후원은 보류라 기본값에서는 후원 진입 줄이 보이지 않는다.
+    expect(find.text('이 대회 후원하기'), findsNothing);
     expect(find.text('100 SHARE'), findsOneWidget);
     expect(find.text('100 SHARE로 참가'), findsOneWidget);
     expect(find.text(AppStrings.winnerRewardNoConversion), findsOneWidget);

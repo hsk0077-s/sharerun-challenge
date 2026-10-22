@@ -11,11 +11,16 @@ final coachPlusEntitlementStoreProvider = Provider<CoachPlusEntitlementStore>(
 
 /// Writes the account entitlement. Tests replace this so they do not call
 /// the network. Production always hits the server.
-typedef CoachPlusServerGrant = Future<void> Function(String productId);
+typedef CoachPlusServerGrant = Future<void> Function(
+  String productId,
+  String purchaseToken,
+);
 
 final coachPlusServerGrantProvider = Provider<CoachPlusServerGrant>((ref) {
-  return (productId) {
-    return ref.read(securedActionApiClientProvider).activateCoachPlus(productId);
+  return (productId, purchaseToken) {
+    return ref
+        .read(securedActionApiClientProvider)
+        .activateCoachPlus(productId, purchaseToken);
   };
 });
 
@@ -45,9 +50,9 @@ class CoachPlusActiveNotifier extends Notifier<bool> {
     return ref.watch(coachPlusFromProfileProvider);
   }
 
-  Future<void> grant(String productId) async {
+  Future<void> grant(String productId, String purchaseToken) async {
     if (!CoachPlusPlan.isCoachPlusId(productId)) return;
-    await ref.read(coachPlusServerGrantProvider)(productId);
+    await ref.read(coachPlusServerGrantProvider)(productId, purchaseToken);
   }
 }
 

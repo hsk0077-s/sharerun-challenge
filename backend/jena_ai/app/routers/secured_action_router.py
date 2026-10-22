@@ -244,7 +244,11 @@ def activate_coach_plus(
     request: CoachPlusActivateRequest,
     uid: str = Depends(require_uid),
 ) -> SecuredActionResult:
-    return service.activate_coach_plus(uid=uid, product_id=request.product_id)
+    return service.activate_coach_plus(
+        uid=uid,
+        product_id=request.product_id,
+        purchase_token=request.purchase_token,
+    )
 
 
 @router.post("/shop/purchase", response_model=SecuredActionResult)

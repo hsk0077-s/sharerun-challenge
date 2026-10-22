@@ -43,10 +43,12 @@ void main() {
     );
   });
 
-  tearDown(() async {
+  tearDown(() {
     container.dispose();
-    await auth.close();
-    await wallet.close();
+    // close() on a controller nobody listened to never completes, so these
+    // are not awaited (the username tests never subscribe to [wallet]).
+    unawaited(auth.close());
+    unawaited(wallet.close());
   });
 
   test('a new account does not inherit the previous wallet', () async {

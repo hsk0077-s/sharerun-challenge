@@ -43,6 +43,39 @@ def verify_play_product_purchase(product_id: str, purchase_token: str) -> dict:
     return body
 
 
+def list_voided_purchases(start_ms: int, end_ms: int) -> list[dict]:
+    """Orders Play refunded or charged back between the two times (milliseconds since epoch).
+
+    Covers one-time products and subscriptions (``type=1``). Play keeps about 30 days of
+    history, so callers ask for a recent window and repeat it on a schedule.
+    """
+    session, package = _authorized_session()
+    url = (
+        "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
+        f"{quote(package, safe='')}/purchases/voidedpurchases"
+    )
+    voided: list[dict] = []
+    page_token: str | None = None
+    for _ in range(20):  # a hard stop so a bad page token can never loop forever
+        params: dict = {
+            "startTime": str(start_ms),
+            "endTime": str(end_ms),
+            "maxResults": "1000",
+            "type": "1",
+        }
+        if page_token:
+            params["token"] = page_token
+        response = session.get(url, params=params, timeout=30)
+        if response.status_code != 200:
+            raise HTTPException(status_code=502, detail="Play voided purchases could not be read.")
+        body = response.json() or {}
+        voided.extend(row for row in body.get("voidedPurchases") or [] if isinstance(row, dict))
+        page_token = (body.get("tokenPagination") or {}).get("nextPageToken")
+        if not page_token:
+            break
+    return voided
+
+
 def consume_play_product_purchase(product_id: str, purchase_token: str) -> None:
     """Consume a verified product so it can be bought again. No-op without credentials."""
     opened = _play_session()

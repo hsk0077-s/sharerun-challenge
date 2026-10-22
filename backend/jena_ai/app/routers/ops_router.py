@@ -7,12 +7,14 @@ from app.models.ops_result import (
     CreatePrizeRaceResult,
     CreateRankedTournamentResult,
     GradeBackfillResult,
+    PlayVoidedResult,
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
 )
 from app.services import crew_ranking
 from app.services.ops_auth_service import require_ops_admin
+from app.services.play_voided_service import process_voided_purchases
 from app.services.ops_service import OpsService
 
 router = APIRouter(prefix="/ops", tags=["operations"])
@@ -128,6 +130,20 @@ def purge_deleted_accounts(
     _: None = Depends(require_ops_admin),
 ) -> PurgeDeletedAccountsResult:
     return service.purge_deleted_accounts()
+
+
+@router.post("/play/voided-purchases/process", response_model=PlayVoidedResult)
+def process_play_voided_purchases(
+    _: None = Depends(require_ops_admin),
+) -> PlayVoidedResult:
+    """Undo DIA and Coach+ for orders Google Play refunded. Safe to run again and again."""
+    summary = process_voided_purchases(service.firebase_service.db)
+    return PlayVoidedResult(
+        accepted=True,
+        status="completed",
+        reason="Play voided purchases processed.",
+        **summary,
+    )
 
 
 @router.post("/grades/backfill", response_model=GradeBackfillResult)

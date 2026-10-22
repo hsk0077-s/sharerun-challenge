@@ -58,6 +58,19 @@ class PurgeDeletedAccountsResult(BaseModel):
     reason: str
 
 
+class PlayVoidedResult(BaseModel):
+    accepted: bool
+    read: int
+    dia_taken_back: int
+    coach_plus_ended: int
+    already_handled: int
+    unknown: int
+    failed: int
+    shortfall_dia: int
+    status: str
+    reason: str
+
+
 class GradeBackfillItem(BaseModel):
     uid: str
     gradeCode: str

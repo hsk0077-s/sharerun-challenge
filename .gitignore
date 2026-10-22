@@ -2,3 +2,9 @@
 
 __pycache__/
 *.pyc
+
+# 실제 설정 값이 든 환경 파일은 올리지 않는다. 견본(.example)만 올린다.
+.env
+.env.*
+!.env.example
+!.env.release.example

@@ -25,9 +25,25 @@ storeFile=C:\\keys\\sharerun-upload.jks
 
 ## 2. 구글에 올리는 파일 만들기
 
+출시용 설정은 개발용 `.env`와 **따로** 만든다. `.env.release.example`을 `.env.release`로 복사해 채운다
+(`.env.release`는 git에 올라가지 않는다).
+
 ```
-flutter build appbundle --release --dart-define-from-file=.env
+flutter build appbundle --release --dart-define-from-file=.env.release
 ```
+
+`.env.release`에는 앱이 실제로 읽는 이름만 넣는다. 서버 전용 비밀(`OPS_ADMIN_SECRET`,
+`PG_WEBHOOK_SECRET`)과 개발용 값(`LOCAL_DEV_MODE=true`, 에뮬레이터, 집 안 주소)은 넣지 않는다.
+빌드 전에 아래로 한 번 확인한다(아무것도 안 나와야 한다).
+
+```
+Select-String -Path .env.release -Pattern "OPS_ADMIN|PG_WEBHOOK|SECRET|UVICORN|EMULATOR_HOST|192\.168|127\.0\.0\.1"
+```
+
+앱이 읽는 이름은 `lib/core/config/app_env.dart`, `lib/features/integrity/integrity_check.dart`,
+`lib/features/iap/models/coach_plus_product.dart`에 있다(`String.fromEnvironment`). 이 목록에 없는 이름은
+`--dart-define-from-file`로 넘겨도 앱 안에 들어가지 않는다. `.env` 파일 자체도 앱에 포함되지 않는다
+(`pubspec.yaml`의 assets에 없음).
 
 결과: `build\app\outputs\bundle\release\app-release.aab`. Play Console에서 앱 서명은
 "Play 앱 서명"을 켜고, 이 파일을 올린다. 버전은 `pubspec.yaml`의 `version: 이름+번호`에서 오며

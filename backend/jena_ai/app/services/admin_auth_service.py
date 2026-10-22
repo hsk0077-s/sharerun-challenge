@@ -36,8 +36,9 @@ class AdminAuthService:
     def is_admin(self, decoded: dict) -> bool:
         if decoded.get("admin") is True:
             return True
-        email = decoded.get("email")
-        if email in ADMIN_EMAILS:
+        # Anyone can sign up with any address by email and password, so an address on the
+        # list counts only once Firebase has verified the person owns it.
+        if decoded.get("email") in ADMIN_EMAILS and decoded.get("email_verified") is True:
             return True
         uid = decoded.get("uid")
         if not isinstance(uid, str) or not uid:

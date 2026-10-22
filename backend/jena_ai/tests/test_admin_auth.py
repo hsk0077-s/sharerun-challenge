@@ -46,7 +46,7 @@ def test_whoami_invalid_token_is_401() -> None:
 
 
 def test_whoami_token_without_uid_is_401() -> None:
-    _token({"email": "admin@share-run-challenge.app"})
+    _token({"email": "admin@share-run-challenge.app", "email_verified": True})
 
     response = client.get("/admin/whoami", headers=AUTH)
 
@@ -67,12 +67,51 @@ def test_whoami_non_admin_is_403() -> None:
     ["admin@share-run-challenge.app", "ops@share-run-challenge.app"],
 )
 def test_whoami_allowlisted_email(email: str) -> None:
-    _token({"uid": "allow-1", "email": email})
+    _token({"uid": "allow-1", "email": email, "email_verified": True})
 
     response = client.get("/admin/whoami", headers=AUTH)
 
     assert response.status_code == 200
     assert response.json() == {"uid": "allow-1", "email": email, "admin": True}
+
+
+@pytest.mark.parametrize("verified", [False, None, "true", 1])
+def test_allowlisted_email_without_a_verified_email_is_not_admin(verified) -> None:
+    """A stranger can sign up as admin@... by email; that must never grant admin."""
+    decoded = {"uid": "squatter", "email": "admin@share-run-challenge.app"}
+    if verified is not None:
+        decoded["email_verified"] = verified
+    _token(decoded)
+
+    response = client.get("/admin/whoami", headers=AUTH)
+
+    assert response.status_code == 403
+
+
+def test_unverified_allowlisted_email_still_works_with_the_admin_claim() -> None:
+    _token(
+        {
+            "uid": "owner",
+            "email": "admin@share-run-challenge.app",
+            "email_verified": False,
+            "admin": True,
+        }
+    )
+
+    response = client.get("/admin/whoami", headers=AUTH)
+
+    assert response.status_code == 200
+
+
+def test_unverified_allowlisted_email_still_works_with_an_admins_document() -> None:
+    _token(
+        {"uid": "owner", "email": "admin@share-run-challenge.app", "email_verified": False},
+        doc_exists=True,
+    )
+
+    response = client.get("/admin/whoami", headers=AUTH)
+
+    assert response.status_code == 200
 
 
 def test_whoami_custom_claim() -> None:
@@ -151,6 +190,7 @@ def test_ping_writes_audit_log_and_does_not_touch_users() -> None:
         {
             "uid": "allow-1",
             "email": "admin@share-run-challenge.app",
+            "email_verified": True,
         }
     )
 

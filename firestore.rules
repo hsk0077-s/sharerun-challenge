@@ -337,10 +337,13 @@ service cloud.firestore {
       return signedIn() && (
         request.auth.token.admin == true
         || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        || request.auth.token.email in [
-          'admin@share-run-challenge.app',
-          'ops@share-run-challenge.app'
-        ]
+        || (
+          request.auth.token.email_verified == true
+          && request.auth.token.email in [
+            'admin@share-run-challenge.app',
+            'ops@share-run-challenge.app'
+          ]
+        )
       );
     }
 

@@ -31,7 +31,7 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
-  testWidgets('the sample crew is not shown while my crew is loading',
+  testWidgets('the sample crew is never shown, loading or not',
       (tester) async {
     final reply = Completer<MyCrew?>();
     await tester.pumpWidget(
@@ -55,11 +55,15 @@ void main() {
     expect(find.text('45/50'), findsNothing);
     expect(find.text('3,240km'), findsNothing);
 
-    // The server answers: no crew yet, so the sample shows as before.
+    // The server answers: no crew yet, so an empty state shows (never the sample).
     reply.complete(null);
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
-    expect(find.text('45/50'), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewNoCrewName), findsOneWidget);
+    expect(find.byKey(const Key('crew-empty-hint')), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewMyCrewName), findsNothing);
+    expect(find.text('45/50'), findsNothing);
+    expect(find.text('3,240km'), findsNothing);
+    expect(find.text('크루 관리'), findsNothing);
   });
 }

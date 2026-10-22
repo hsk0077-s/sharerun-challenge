@@ -14,6 +14,7 @@ import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/tournaments/providers/company_tournament_providers.dart';
 import '../features/tournaments/providers/local_joined_ids_provider.dart';
 import '../features/tournaments/utils/prize_display.dart';
+import '../features/tournaments/utils/sponsor_display.dart';
 import '../features/tournaments/utils/prize_race_entry.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import '../features/tournaments/utils/tournament_join_gate.dart';
@@ -374,7 +375,7 @@ class _TournamentRoomCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '후원  ${room.sponsorName}',
+            '후원  ${displaySponsorName(room.sponsorName)}',
             style: storeText(13, c.donation, w: FontWeight.w700),
           ),
           const SizedBox(height: 14),

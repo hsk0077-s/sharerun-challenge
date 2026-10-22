@@ -971,6 +971,13 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
 
   @override
   SrcOnboardingState build() {
+    // 로그아웃하거나 다른 계정으로 바꾸면 앞 계정의 닉네임·온보딩 상태를 비운다.
+    ref.listen(authStateChangesProvider, (prev, next) {
+      if (next.isLoading || next.hasError) return;
+      final prevUid = prev?.asData?.value?.uid ?? '';
+      final uid = next.asData?.value?.uid ?? '';
+      if (prevUid.isNotEmpty && prevUid != uid) ref.invalidateSelf();
+    });
     ref.listen<AsyncValue<UserModel>>(activeUserProfileProvider, (_, next) {
       next.whenData(_hydrateFromProfile);
     });
@@ -1524,8 +1531,22 @@ class PersistedUsernameNotifier extends Notifier<PersistedUsername> {
 
   @override
   PersistedUsername build() {
+    // 이 폰에 저장한 닉네임은 로그인한 계정의 것이다. 로그아웃하거나 다른
+    // 계정으로 바꾸면 지워서 새 계정에 앞 계정의 이름이 보이지 않게 한다.
+    ref.listen(authStateChangesProvider, (prev, next) {
+      if (next.isLoading || next.hasError) return;
+      final prevUid = prev?.asData?.value?.uid ?? '';
+      final uid = next.asData?.value?.uid ?? '';
+      if (prevUid.isNotEmpty && prevUid != uid) unawaited(_clear());
+    });
     unawaited(_hydrate());
     return const PersistedUsername();
+  }
+
+  Future<void> _clear() async {
+    state = const PersistedUsername(ready: true);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(prefsKey);
   }
 
   Future<void> _hydrate() async {

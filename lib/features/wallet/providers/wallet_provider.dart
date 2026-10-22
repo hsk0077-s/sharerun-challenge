@@ -59,8 +59,17 @@ class WalletNotifier extends Notifier<WalletState> {
     ref.listen<AsyncValue<WalletModel>>(activeWalletProvider, (_, next) {
       next.whenData(_syncFromRemote);
     });
-    ref.listen(authStateChangesProvider, (_, next) {
+    ref.listen(authStateChangesProvider, (prev, next) {
+      if (next.isLoading || next.hasError) return;
+      final prevUid = prev?.asData?.value?.uid ?? '';
       final uid = next.asData?.value?.uid;
+      // 로그아웃하거나 다른 계정으로 바꾸면 앞 계정의 재화를 비운다.
+      // 비우지 않으면 mergeRemote가 새 계정의 0을 "빈 스냅샷"으로 보고
+      // 앞 계정의 잔액을 그대로 보여 준다.
+      if (prevUid.isNotEmpty && prevUid != (uid ?? '')) {
+        _durableDebugShare = null;
+        state = const WalletState();
+      }
       if (uid != null && uid.isNotEmpty) {
         unawaited(_hydrateDurableBalances());
       }

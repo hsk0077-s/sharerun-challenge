@@ -342,14 +342,10 @@ index only if Firebase returns an index-build link at runtime.
 
 ### 2. Cloud Run (Jena AI + secured actions + PG webhook)
 
-One-shot production pipeline (Firestore + Cloud Run + IAM + Scheduler):
-
-```powershell
-.\scripts\deploy-all.ps1 `
-  -ProjectId <gcp-project-id> `
-  -PgWebhookSecret <pg-webhook-hmac-secret> `
-  -OpsAdminSecret <ops-admin-secret>
-```
+> The old one-shot scripts `deploy-all.ps1` and `deploy-cloud-run.ps1` were removed.
+> They used `--set-env-vars`, which **replaces every Cloud Run variable** (including
+> `OPS_ADMIN_SECRET`) with the values passed on the command line. Deploy with the command
+> below instead. It sets no variables, so the existing ones (secrets included) stay as they are.
 
 Install `gcloud` / `firebase` if missing:
 
@@ -357,25 +353,19 @@ Install `gcloud` / `firebase` if missing:
 .\scripts\install-deploy-tools.ps1
 ```
 
-Individual steps:
-
-```powershell
-.\scripts\deploy-cloud-run.ps1 `
-  -ProjectId <gcp-project-id> `
-  -PgWebhookSecret <pg-webhook-hmac-secret> `
-  -OpsAdminSecret <ops-admin-secret>
-```
-
-Manual equivalent:
+Deploy (keeps all existing environment variables):
 
 ```powershell
 gcloud run deploy src-jena-ai `
   --project <gcp-project-id> `
   --region asia-northeast3 `
   --source backend/jena_ai `
-  --allow-unauthenticated `
-  --set-env-vars PG_WEBHOOK_SECRET=<secret>,OPS_ADMIN_SECRET=<secret>
+  --allow-unauthenticated
 ```
+
+To change a single variable, use `--update-env-vars NAME=value` (one variable per flag, or
+quote the whole list in PowerShell) or `--remove-env-vars NAME`. Never use `--set-env-vars`
+on the live service.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
@@ -392,7 +382,7 @@ After deploy:
 1. Verify liveness: `GET https://<service-url>/health`
 2. Verify readiness: `GET https://<service-url>/health/ready`
 3. Optional post-deploy check:
-   `.\scripts\deploy-cloud-run.ps1 ... -ServiceUrl https://<service-url>`
+   `.\scripts\check-cloud-run-health.ps1 -ServiceUrl https://<service-url> -RequireReady`
 4. Configure the PG provider to call `POST https://<service-url>/payments/webhook`
 5. Store the same HMAC secret on both PG and Cloud Run
 6. Schedule `POST /ops/users/purge-deleted` daily via Cloud Scheduler (same ops secret header)

@@ -69,6 +69,25 @@ android {
     }
 }
 
+// 구글 플레이에 올리는 파일(AAB)을 만들 때 업로드 키가 없으면 디버그 키로 몰래 서명하지 않고 멈춘다.
+// (내 폰 시험용 flutter run / build apk 는 bundleRelease 를 쓰지 않으므로 영향이 없다.)
+gradle.taskGraph.whenReady {
+    if (allTasks.any { it.name == "bundleRelease" }) {
+        if (!keystorePropertiesFile.exists()) {
+            throw GradleException(
+                "업로드 키가 없습니다. android/key.properties 를 만든 뒤 다시 빌드하세요. (docs/play-release.md)",
+            )
+        }
+        val required = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
+        val missing = required.filter { keystoreProperties.getProperty(it).isNullOrBlank() }
+        if (missing.isNotEmpty()) {
+            throw GradleException(
+                "android/key.properties 에 빠진 항목이 있습니다: " + missing.joinToString(", "),
+            )
+        }
+    }
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17

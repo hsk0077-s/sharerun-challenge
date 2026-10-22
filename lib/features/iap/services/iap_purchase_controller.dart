@@ -18,7 +18,8 @@ class IapPurchaseController {
     required WalletRepository walletRepository,
     required String? Function() readUid,
     void Function(int shareAmount)? onLocalProvisionFallback,
-    Future<void> Function(String productId)? onCoachPlusPurchased,
+    Future<void> Function(String productId, String purchaseToken)?
+        onCoachPlusPurchased,
     Future<PaymentAuthResult> Function()? confirmPayment,
     InAppPurchase? iap,
   })  : _confirmPayment = confirmPayment,
@@ -36,7 +37,8 @@ class IapPurchaseController {
   final WalletRepository _walletRepository;
   final String? Function() _readUid;
   final void Function(int shareAmount)? _onLocalProvisionFallback;
-  final Future<void> Function(String productId)? _onCoachPlusPurchased;
+  final Future<void> Function(String productId, String purchaseToken)?
+      _onCoachPlusPurchased;
   final InAppPurchase _iap;
 
   /// 결제창을 열기 직전의 본인 확인. 없으면 확인하지 않는다(테스트용).
@@ -294,7 +296,12 @@ class IapPurchaseController {
     if (purchase.status == PurchaseStatus.purchased ||
         purchase.status == PurchaseStatus.restored) {
       try {
-        await _onCoachPlusPurchased?.call(purchase.productID);
+        // On Android this is the Google Play purchase token. The server checks it with
+        // Play, so a made-up token or product id grants nothing.
+        await _onCoachPlusPurchased?.call(
+          purchase.productID,
+          purchase.verificationData.serverVerificationData,
+        );
       } catch (error, stackTrace) {
         debugPrint('Coach+ grant failed: $error\n$stackTrace');
       }

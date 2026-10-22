@@ -41,8 +41,10 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
       );
     },
     confirmPayment: ref.read(paymentAuthGateProvider).confirm,
-    onCoachPlusPurchased: (productId) {
-      return ref.read(coachPlusActiveProvider.notifier).grant(productId);
+    onCoachPlusPurchased: (productId, purchaseToken) {
+      return ref
+          .read(coachPlusActiveProvider.notifier)
+          .grant(productId, purchaseToken);
     },
   );
   ref.onDispose(controller.dispose);

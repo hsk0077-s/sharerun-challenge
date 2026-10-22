@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
 
@@ -41,6 +42,60 @@ def verify_play_product_purchase(product_id: str, purchase_token: str) -> dict:
     if int(body.get("purchaseState", -1)) != 0:
         raise HTTPException(status_code=400, detail="Purchase is not completed.")
     return body
+
+
+# A subscription still pays for access in these states. A user who cancelled keeps access
+# until the period they already paid for ends; ON_HOLD, PAUSED, EXPIRED and PENDING do not.
+ENTITLED_SUBSCRIPTION_STATES = {
+    "SUBSCRIPTION_STATE_ACTIVE",
+    "SUBSCRIPTION_STATE_CANCELED",
+    "SUBSCRIPTION_STATE_IN_GRACE_PERIOD",
+}
+
+
+def verify_play_subscription(product_id: str, purchase_token: str) -> dict:
+    """Reject unless Play says this token is a paid-up subscription to ``product_id``.
+
+    Returns ``{"orderId", "expiresAt" (aware datetime), "state"}``. The expiry is the one Play
+    reports, never one the client or the server makes up.
+    """
+    session, package = _authorized_session()
+    url = (
+        "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
+        f"{quote(package, safe='')}/purchases/subscriptionsv2/tokens/"
+        f"{quote(purchase_token, safe='')}"
+    )
+    response = session.get(url, timeout=15)
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Subscription token could not be verified.")
+    body = response.json() or {}
+    state = str(body.get("subscriptionState", ""))
+    if state not in ENTITLED_SUBSCRIPTION_STATES:
+        raise HTTPException(status_code=400, detail="Subscription is not active.")
+    expiry = None
+    for item in body.get("lineItems") or []:
+        if not isinstance(item, dict) or item.get("productId") != product_id:
+            continue
+        parsed = _parse_rfc3339(item.get("expiryTime"))
+        if parsed is not None and (expiry is None or parsed > expiry):
+            expiry = parsed
+    if expiry is None:
+        raise HTTPException(status_code=400, detail="Subscription does not match this product.")
+    if expiry <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Subscription has expired.")
+    return {"orderId": body.get("latestOrderId"), "expiresAt": expiry, "state": state}
+
+
+def _parse_rfc3339(value) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
 
 
 def consume_play_product_purchase(product_id: str, purchase_token: str) -> None:

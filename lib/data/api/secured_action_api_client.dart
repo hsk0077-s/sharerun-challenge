@@ -353,10 +353,11 @@ class SecuredActionApiClient {
     await _post('/actions/account/delete', const {});
   }
 
-  Future<void> activateCoachPlus(String productId) async {
+  /// The server checks [purchaseToken] with Google Play before it grants Coach+.
+  Future<void> activateCoachPlus(String productId, String purchaseToken) async {
     await _post(
       '/actions/coach-plus/activate',
-      {'product_id': productId},
+      {'product_id': productId, 'purchase_token': purchaseToken},
     );
   }
 

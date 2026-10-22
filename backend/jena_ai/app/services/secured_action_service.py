@@ -62,6 +62,7 @@ from app.services.play_billing import (
     dia_pack_by_id,
     purchase_token_hash,
     verify_play_product_purchase,
+    verify_play_subscription,
 )
 from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
@@ -205,6 +206,8 @@ def _stored_donation_won(value: object) -> int:
         return 0
     return int(value)
 
+# Coach+ plans. Only the ids matter here: how long access lasts comes from Google Play,
+# not from this table (the numbers are kept as the plan lengths).
 _COACH_PLUS_DAYS = {
     "coach_plus_monthly": 32,
     "coach_plus_yearly": 370,
@@ -1117,38 +1120,80 @@ class SecuredActionService:
             user_ref,
         )
 
-    def activate_coach_plus(self, uid: str, product_id: str) -> SecuredActionResult:
+    def activate_coach_plus(
+        self,
+        uid: str,
+        product_id: str,
+        purchase_token: str,
+    ) -> SecuredActionResult:
         if product_id not in _COACH_PLUS_DAYS:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Unknown Coach+ product.",
             )
-        transaction = self.firebase_service.db.transaction()
-        user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_coach_plus_tx(transaction, self, product_id, user_ref)
+        # Nothing is written unless Play says this token is a paid subscription to this product.
+        verified = verify_play_subscription(product_id, purchase_token)
+        db = self.firebase_service.db
+        transaction = db.transaction()
+        user_ref = db.collection("users").document(uid)
+        token_hash = purchase_token_hash(purchase_token)
+        subscription_ref = db.collection("playSubscriptions").document(token_hash)
+        return _commit_coach_plus_tx(
+            transaction,
+            self,
+            uid,
+            product_id,
+            user_ref,
+            subscription_ref,
+            token_hash,
+            verified["expiresAt"],
+            verified.get("orderId"),
+        )
 
     def _activate_coach_plus_tx(
         self,
         transaction,
+        uid: str,
         product_id: str,
         user_ref,
+        subscription_ref,
+        token_hash: str,
+        active_until: datetime,
+        order_id: str | None,
     ) -> SecuredActionResult:
+        # Every read comes before the first write.
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
-        until = datetime.now(timezone.utc) + timedelta(
-            days=_COACH_PLUS_DAYS[product_id]
-        )
-        transaction.update(
-            user_ref,
+        prior_snapshot = subscription_ref.get(transaction=transaction)
+        if prior_snapshot.exists and (prior_snapshot.to_dict() or {}).get("uid") != uid:
+            raise HTTPException(status_code=409, detail="Purchase token already used.")
+        existing = (user_snapshot.to_dict() or {}).get("coachPlus") or {}
+        existing_until = _parse_iso_utc(existing.get("activeUntil"))
+        transaction.set(
+            subscription_ref,
             {
-                "coachPlus": {
-                    "productId": product_id,
-                    "activeUntil": until.isoformat(),
-                },
+                "uid": uid,
+                "productId": product_id,
+                "orderId": order_id,
+                "activeUntil": active_until.isoformat(),
                 "updatedAt": SERVER_TIMESTAMP,
             },
+            merge=True,
         )
+        # Never shorten access the user already paid for with another subscription.
+        if existing_until is None or existing_until < active_until:
+            transaction.update(
+                user_ref,
+                {
+                    "coachPlus": {
+                        "productId": product_id,
+                        "activeUntil": active_until.isoformat(),
+                        "tokenHash": token_hash,
+                    },
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
         return SecuredActionResult(
             accepted=True,
             status="coach_plus_active",
@@ -4937,10 +4982,34 @@ def _commit_personal_sponsor_tx(
 def _commit_coach_plus_tx(
     transaction,
     service,
+    uid: str,
     product_id: str,
     user_ref,
+    subscription_ref,
+    token_hash: str,
+    active_until: datetime,
+    order_id: str | None,
 ) -> SecuredActionResult:
-    return service._activate_coach_plus_tx(transaction, product_id, user_ref)
+    return service._activate_coach_plus_tx(
+        transaction,
+        uid,
+        product_id,
+        user_ref,
+        subscription_ref,
+        token_hash,
+        active_until,
+        order_id,
+    )
+
+
+def _parse_iso_utc(value) -> datetime | None:
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 @firestore.transactional

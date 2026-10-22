@@ -73,7 +73,7 @@ if (Test-Path (Join-Path $repoRoot "firestore.rules")) {
 if ($ready) {
     Write-Host ""
     Write-Host "Ready. Example:"
-    Write-Host "  .\scripts\deploy-all.ps1 -ProjectId <id> -PgWebhookSecret <s> -OpsAdminSecret <s>"
+    Write-Host "  gcloud run deploy src-jena-ai --project <id> --region asia-northeast3 --source backend/jena_ai --allow-unauthenticated"
     exit 0
 }
 

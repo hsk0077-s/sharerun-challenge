@@ -17,6 +17,10 @@ abstract final class LegalConstants {
 
   static const privacyPolicyLinkLabel = '개인정보 처리방침 전문 보기';
 
+  /// 이미지 생성 서비스(Grok) 약관의 AI 생성 표기 요구에 따른 안내 문구.
+  static const aiGeneratedTitle = 'AI 생성 이미지 안내';
+  static const aiGeneratedCredit = '일부 그림은 AI(Grok)로 생성되었습니다.';
+
   static const termsOfServiceTitle = '서비스 이용약관 (필수)';
   static const privacyPolicyTitle = '개인정보 처리방침 (필수)';
   static const pushNotificationsTitle = '마케팅·활동 알림 (선택)';

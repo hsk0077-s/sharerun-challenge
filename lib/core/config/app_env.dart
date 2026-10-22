@@ -45,6 +45,8 @@ abstract final class AppEnv {
   static const _firebaseFirestoreEmulatorPortDefine =
       String.fromEnvironment('FIREBASE_FIRESTORE_EMULATOR_PORT');
   static const _localDevModeDefine = String.fromEnvironment('LOCAL_DEV_MODE');
+  static const _sponsorshipEnabledDefine =
+      String.fromEnvironment('SPONSORSHIP_ENABLED');
   static const _useFirebaseEmulatorDefine =
       String.fromEnvironment('USE_FIREBASE_EMULATOR');
   static const _androidEmulatorDefine =
@@ -102,6 +104,15 @@ abstract final class AppEnv {
     required bool configured,
   }) =>
       debugMode && configured;
+
+  /// 이용자 후원(대회 후원, 러너 후원 배너와 결제)을 보여 줄지. 후원은 보류라
+  /// 기본값은 꺼짐이다. 다시 열 때만 `.env`나 `--dart-define`에
+  /// `SPONSORSHIP_ENABLED=true`를 넣는다.
+  static bool get sponsorshipEnabled => _bool(
+        'SPONSORSHIP_ENABLED',
+        defaultValue: false,
+        fromDefine: _sponsorshipEnabledDefine,
+      );
 
   static bool get useLocalMockData =>
       _bool('USE_LOCAL_MOCK_DATA', defaultValue: false);

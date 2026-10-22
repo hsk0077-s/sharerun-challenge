@@ -34,7 +34,6 @@ class RunningCrewScreen extends ConsumerStatefulWidget {
 
 class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   static const _currentNavIndex = DashboardTabNavigation.crew;
-  static const _completionRate = 0.8;
   static const _createCrewShareCost =
       SrcWalletPaymentSystem.crewCreateShareCost;
   static const _createCrewDiaCost = SrcWalletPaymentSystem.crewCreateDiaCost;
@@ -61,13 +60,6 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (!mounted || _searchQuery.isEmpty) return false;
     setState(() => _searchQuery = '');
     return true;
-  }
-
-  /// 검색어에 맞는 크루. 지금은 내 크루 하나뿐이다. (남의 크루 목록은 서버 랭킹이 생기면 채운다.)
-  bool get _myCrewMatches {
-    final q = _searchQuery.trim().toLowerCase();
-    return q.isEmpty ||
-        AppStrings.runningCrewMyCrewName.toLowerCase().contains(q);
   }
 
   void _toast(String message) {
@@ -215,9 +207,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     }
     setState(() => _searchQuery = result.trim());
     _toast(
-      result.trim().isEmpty
-          ? '전체 랭킹을 표시합니다.'
-          : '"$result" 검색 결과 ${_myCrewMatches ? 1 : 0}건',
+      result.trim().isEmpty ? '전체 랭킹을 표시합니다.' : '"$result" 검색 결과를 표시합니다.',
     );
   }
 
@@ -663,6 +653,8 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     // 서버 답이 오기 전(탭을 처음 열 때 잠깐)에는 샘플 크루를 보여 주지 않는다.
     // 샘플은 답을 받은 뒤 내 크루가 없을 때만 보인다.
     final loadingMine = myCrewAsync.isLoading && !myCrewAsync.hasValue;
+    // 답을 받았는데 내 크루가 없으면 가짜 숫자 대신 "아직 크루가 없어요"를 보여 준다.
+    final noCrew = mine == null && !loadingMine;
     // 서버에 내 크루가 있으면 서버 값을, 없으면 이 폰에 저장한 값을 쓴다.
     final emblem = (mine == null ? null : CrewEmblem.parse(mine.crew.emblem)) ??
         localEmblem;
@@ -681,9 +673,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                 children: [
                   _CrewPhotoHeader(
                     emblem: emblem,
+                    crewLabel:
+                        noCrew ? AppStrings.runningCrewNoCrewLabel : 'MY CREW',
                     crewName: loadingMine
                         ? ''
-                        : mine?.crew.name ?? AppStrings.runningCrewMyCrewName,
+                        : mine?.crew.name ?? AppStrings.runningCrewNoCrewName,
                     onEmblem: _onChangeEmblem,
                     onHallOfFame: _onOpenHallOfFame,
                     onBack: searching || Navigator.of(context).canPop()
@@ -695,44 +689,33 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Row(
-                          children: [
-                            _CrewStat(
-                              value: loadingMine
-                                  ? '-'
-                                  : mine == null
-                                      ? '45/50'
-                                      : '${mine.crew.memberCount}/${mine.crew.maxMembers}',
-                              label: '크루원',
-                            ),
-                            const SizedBox(width: 10),
-                            _CrewStat(
-                              value: loadingMine
-                                  ? '-'
-                                  : mine == null
-                                      ? '3,240km'
-                                      : '${_format(mine.crew.totalDistanceKm.round())}km',
-                              label: '누적 거리',
-                            ),
-                            // 대항전 진행률은 아직 서버 값이 없어서 샘플 크루에만 보인다.
-                            if (mine == null && !loadingMine) ...[
+                        if (!noCrew)
+                          Row(
+                            children: [
+                              _CrewStat(
+                                value: mine == null
+                                    ? '-'
+                                    : '${mine.crew.memberCount}/${mine.crew.maxMembers}',
+                                label: '크루원',
+                              ),
                               const SizedBox(width: 10),
-                              const _CrewStat(
-                                value: AppStrings.runningCrewProgressValue,
-                                label: '이번 주 대항전',
-                                highlight: true,
+                              _CrewStat(
+                                value: mine == null
+                                    ? '-'
+                                    : '${_format(mine.crew.totalDistanceKm.round())}km',
+                                label: '누적 거리',
                               ),
                             ],
-                          ],
-                        ),
+                          ),
                         if (mine != null) _CrewRankLine(ref: ref),
                         const SizedBox(height: 6),
-                        _CrewActionLine(
-                          index: '01',
-                          title: '크루 관리',
-                          subtitle: '공지 · 크루원 · 혜택 선물',
-                          onTap: _onOpenCrewManager,
-                        ),
+                        if (!noCrew)
+                          _CrewActionLine(
+                            index: '01',
+                            title: '크루 관리',
+                            subtitle: '공지 · 크루원 · 혜택 선물',
+                            onTap: _onOpenCrewManager,
+                          ),
                         if (mine != null)
                           _CrewActionLine(
                             index: '··',
@@ -789,32 +772,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                               '색 ${CrewEmblem.paletteColors.length}가지',
                           onTap: _onChangeEmblem,
                         ),
-                        if (mine == null && !loadingMine) ...[
+                        if (noCrew) ...[
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  AppStrings.runningCrewProgressLabel,
-                                  style: storeText(14, c.ink, w: FontWeight.w700),
-                                ),
-                              ),
-                              Text(
-                                AppStrings.runningCrewProgressValue,
-                                style:
-                                    storeText(14, c.primary, w: FontWeight.w900),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: LinearProgressIndicator(
-                              value: _completionRate,
-                              minHeight: 8,
-                              backgroundColor: c.outline,
-                              color: c.primary,
-                            ),
+                          Text(
+                            AppStrings.runningCrewNoCrewHint,
+                            key: const Key('crew-empty-hint'),
+                            style: storeText(14, c.muted, h: 1.45),
                           ),
                         ],
                         const SizedBox(height: 24),
@@ -841,23 +804,17 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             '검색: "$_searchQuery"',
                             style: storeText(12, c.muted),
                           ),
-                          if (_myCrewMatches)
-                            _MyCrewResultRow(
-                              emblem: emblem,
-                              onTap: _onOpenCrewManager,
-                            )
-                          else
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 20),
-                              child: Text(
-                                '검색 결과가 없습니다.',
-                                textAlign: TextAlign.center,
-                                style: storeText(14, c.muted),
-                              ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Text(
+                              '검색 결과가 없습니다.',
+                              textAlign: TextAlign.center,
+                              style: storeText(14, c.muted),
                             ),
+                          ),
                         ],
                         const SizedBox(height: 16),
-                        if (mine == null && !loadingMine)
+                        if (noCrew)
                           _CreateCrewTile(
                             busy: _isSubmitting,
                             onTap: _isSubmitting ? null : _onCreateCrew,
@@ -980,6 +937,7 @@ class _CrewSearchDialogState extends State<_CrewSearchDialog> {
 class _CrewPhotoHeader extends StatelessWidget {
   const _CrewPhotoHeader({
     required this.emblem,
+    required this.crewLabel,
     required this.crewName,
     required this.onEmblem,
     required this.onHallOfFame,
@@ -987,6 +945,7 @@ class _CrewPhotoHeader extends StatelessWidget {
   });
 
   final CrewEmblem emblem;
+  final String crewLabel;
   final String crewName;
   final VoidCallback onEmblem;
   final VoidCallback onHallOfFame;
@@ -1099,7 +1058,7 @@ class _CrewPhotoHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'MY CREW',
+                        crewLabel,
                         style: storeText(11, c.primary,
                             w: FontWeight.w800, ls: 1.8),
                       ),
@@ -1170,12 +1129,10 @@ class _CrewStat extends StatelessWidget {
   const _CrewStat({
     required this.value,
     required this.label,
-    this.highlight = false,
   });
 
   final String value;
   final String label;
-  final bool highlight;
 
   @override
   Widget build(BuildContext context) {
@@ -1196,8 +1153,7 @@ class _CrewStat extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
-                style: storeText(19, highlight ? c.primary : c.ink,
-                    w: FontWeight.w900),
+                style: storeText(19, c.ink, w: FontWeight.w900),
               ),
             ),
             const SizedBox(height: 4),
@@ -1290,43 +1246,6 @@ class _CrewSearchPill extends StatelessWidget {
   }
 }
 
-/// 검색 결과 한 줄. 지금은 내 크루만 나온다.
-class _MyCrewResultRow extends StatelessWidget {
-  const _MyCrewResultRow({required this.emblem, required this.onTap});
-
-  final CrewEmblem emblem;
-  final VoidCallback onTap;
-
-  static const rowKey = Key('crew-search-result');
-
-  @override
-  Widget build(BuildContext context) {
-    final c = context.srcTokens.colors;
-    return InkWell(
-      key: rowKey,
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 13),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: c.outline)),
-        ),
-        child: Row(
-          children: [
-            CrewEmblemBadge(emblem: emblem, size: 48),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                AppStrings.runningCrewMyCrewName,
-                style: storeText(16, c.ink, w: FontWeight.w700),
-              ),
-            ),
-            Icon(Icons.chevron_right_rounded, color: c.muted),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 /// 시안의 "크루 만들기" 카드: 올리브 빛 면에 라임 + 버튼.
 class _CreateCrewTile extends StatelessWidget {

@@ -15,6 +15,7 @@ import '../features/challenge/providers/challenge_room_providers.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
+import '../features/tournaments/utils/sponsor_display.dart';
 
 /// 유저 주도 챌린지 방 개설 화면 (Screen 8).
 class CreateChallengeRoomScreen extends ConsumerStatefulWidget {
@@ -109,7 +110,7 @@ class _CreateChallengeRoomScreenState
           participantCount: 1,
           requiredTier: 1,
           status: TournamentStatus.recruiting,
-          sponsorName: 'UNICEF',
+          sponsorName: operatorSponsorName,
           sponsorBillboardMessages: const [],
         );
       }
@@ -163,7 +164,7 @@ class _CreateChallengeRoomScreenState
       participantCount: 1,
       requiredTier: 1,
       status: TournamentStatus.recruiting,
-      sponsorName: 'UNICEF',
+      sponsorName: operatorSponsorName,
       sponsorBillboardMessages: const [],
     );
   }

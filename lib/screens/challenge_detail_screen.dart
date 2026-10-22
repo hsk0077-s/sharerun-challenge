@@ -19,6 +19,7 @@ import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'live_running_screen.dart';
+import '../features/tournaments/utils/sponsor_display.dart';
 
 /// 대회방 상세정보 및 기부처 선택 화면 (Screen 9).
 class ChallengeDetailScreen extends StatelessWidget {
@@ -433,7 +434,7 @@ class _ChallengeJoinPayButtonState
       participantCount: 1,
       requiredTier: 1,
       status: TournamentStatus.recruiting,
-      sponsorName: 'UNICEF',
+      sponsorName: operatorSponsorName,
     );
   }
 

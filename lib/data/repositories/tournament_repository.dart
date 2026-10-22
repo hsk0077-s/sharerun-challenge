@@ -7,6 +7,7 @@ import '../firebase/share_spend_transaction.dart';
 import '../models/tournament_join_result.dart';
 import '../models/tournament_model.dart';
 import '../models/tournament_participation_model.dart';
+import '../../features/tournaments/utils/sponsor_display.dart';
 
 class TournamentRepository {
   TournamentRepository(
@@ -23,7 +24,7 @@ class TournamentRepository {
     required int distanceKm,
     required int entryFeeShare,
     required String createdByUid,
-    String donationTarget = 'UNICEF',
+    String donationTarget = operatorSponsorName,
     int? minParticipantsBep,
     int? maxParticipants,
   }) async {

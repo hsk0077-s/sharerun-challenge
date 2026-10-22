@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../tournaments/utils/sponsor_display.dart';
 
 /// Neon marquee sponsor billboard for result / challenge screens.
 class SponsorBillboard extends ConsumerStatefulWidget {
@@ -34,9 +35,10 @@ class _SponsorBillboardState extends ConsumerState<SponsorBillboard>
   @override
   Widget build(BuildContext context) {
     final buff = ref.watch(activeSponsorBuffProvider);
-    final headline = buff?.sponsorName ?? 'UNICEF × 쉐어런';
+    final headline =
+        buff == null ? '쉐어런' : displaySponsorName(buff.sponsorName);
     final message = buff?.message ??
-        '검증된 러닝 한 걸음이 식수 지원으로 이어집니다';
+        '검증된 달리기 1km마다 100원이 기부돼요';
 
     return Container(
       height: 52,

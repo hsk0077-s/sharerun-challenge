@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
+import '../features/tournaments/utils/sponsor_display.dart';
 import '../app/theme/app_colors.dart';
 import '../core/strings/app_strings.dart';
 import '../core/widgets/async_value_section.dart';
@@ -290,7 +291,7 @@ class _TournamentInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('후원: ${room.sponsorName}'),
+          Text('후원: ${displaySponsorName(room.sponsorName)}'),
           const SizedBox(height: 8),
           Text('상태: ${_statusKo(room.status)}'),
           const SizedBox(height: 8),

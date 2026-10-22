@@ -394,6 +394,11 @@ abstract final class AppStrings {
   static const runningCrewTitle = '러닝 크루 (Crew)';
   static const runningCrewHeadline = '같이 달릴\n크루 찾기';
   static const runningCrewMyCrewName = '인천 논현 최강 크루';
+  static const runningCrewNoCrewLabel = '크루';
+  static const runningCrewNoCrewName = '아직 크루가 없어요';
+  static const runningCrewNoCrewHint =
+      '크루에 들어가면 함께 달린 거리를 모아 월간 순위에 도전할 수 있어요. '
+      '크루를 만들거나 아래에서 찾아보세요.';
   static const runningCrewMyCrewStats =
       '소속 크루원: 45/50명 | 누적 달성 거리: 3,240km';
   static const runningCrewCreateButton =

@@ -132,7 +132,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(CrewEmblemPicker.doneKey), findsNothing);
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewNoCrewName), findsOneWidget);
   });
 
   testWidgets('back closes the emblem picker first; the crew tab stays',
@@ -148,7 +148,7 @@ void main() {
     expect(find.byKey(CrewEmblemPicker.doneKey), findsNothing);
     expect(find.text('HOME_ROOT').hitTestable(), findsNothing,
         reason: 'must not jump to home while a sheet was open');
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewNoCrewName), findsOneWidget);
 
     // 창이 닫힌 뒤의 뒤로가기는 홈으로 간다.
     await tester.binding.handlePopRoute();
@@ -229,7 +229,7 @@ void main() {
 
     expect(find.text('크루 검색'), findsNothing);
     expect(find.text('검색: "부산"'), findsNothing);
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewNoCrewName), findsOneWidget);
   });
 
   testWidgets('back chevron clears crew search and restores the full list',
@@ -252,7 +252,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('검색: "부산"'), findsNothing);
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewNoCrewName), findsOneWidget);
   });
 
   testWidgets('system back on the crew tab clears search before leaving',
@@ -264,7 +264,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('검색: "부산"'), findsNothing);
-    expect(find.text(AppStrings.runningCrewMyCrewName), findsOneWidget);
+    expect(find.text(AppStrings.runningCrewNoCrewName), findsOneWidget);
     expect(find.text('HOME_ROOT'), findsNothing);
   });
 }

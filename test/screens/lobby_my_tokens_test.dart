@@ -211,7 +211,7 @@ void main() {
 
     expect(find.text('대회'), findsOneWidget);
     expect(find.text('Rookie 3K UNICEF Run'), findsOneWidget);
-    expect(find.text('후원  UNICEF Partner'), findsOneWidget);
+    expect(find.text('후원  운영자'), findsOneWidget);
     expect(find.text('100 SHARE'), findsOneWidget);
     expect(find.text('100 SHARE로 참가'), findsOneWidget);
     expect(find.text(AppStrings.winnerRewardNoConversion), findsOneWidget);

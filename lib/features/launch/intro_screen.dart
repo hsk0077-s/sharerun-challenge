@@ -167,7 +167,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         key: IntroScreen.startKey,
                         label: '시작하기',
                         color: AppColors.angelGold,
-                        textColor: AppColors.textBlack,
+                        textColor: AppColors.nightOnLime,
                         onPressed: _finish,
                       ),
                       TextButton(

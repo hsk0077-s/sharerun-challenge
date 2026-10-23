@@ -78,6 +78,12 @@ gradle.taskGraph.whenReady {
                 "업로드 키가 없습니다. android/key.properties 를 만든 뒤 다시 빌드하세요. (docs/play-release.md)",
             )
         }
+        // 이 파일이 없으면 빌드는 성공하지만 Firebase 설정이 빠져 앱이 시작되지 못할 수 있다.
+        if (!file("google-services.json").exists()) {
+            throw GradleException(
+                "android/app/google-services.json 이 없습니다. Firebase 콘솔에서 받아 android/app 에 둔 뒤 다시 빌드하세요. (docs/play-release.md)",
+            )
+        }
         val required = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
         val missing = required.filter { keystoreProperties.getProperty(it).isNullOrBlank() }
         if (missing.isNotEmpty()) {

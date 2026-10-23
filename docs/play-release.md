@@ -18,6 +18,9 @@ keyAlias=upload
 storeFile=C:\\keys\\sharerun-upload.jks
 ```
 
+`android/app/google-services.json`(Firebase 콘솔에서 받는 파일, git에는 올라가지 않음)도 있어야 한다.
+없으면 `flutter build appbundle`이 멈춘다. 업로드 키 지문을 Firebase에 등록한 뒤에는 이 파일을 다시 받아 덮어쓴다.
+
 이 파일이 있으면 릴리스 빌드가 업로드 키로 서명한다. 내 폰 시험용 빌드(`flutter run --release`,
 `flutter build apk`)는 파일이 없으면 예전처럼 디버그 키로 서명한다. 그러나 **구글에 올리는 파일(AAB,
 `flutter build appbundle`)은 파일이 없거나 항목이 빠져 있으면 빌드가 멈춘다**(디버그 키로 몰래

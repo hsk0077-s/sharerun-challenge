@@ -40,9 +40,9 @@ class HealthPermissionsRationaleActivity : Activity() {
         root.addView(
             TextView(this).apply {
                 text =
-                    "이 앱은 러닝 기록 검증을 위해 Health Connect / HealthKit에서 " +
-                        "심박수·걸음·운동·거리·칼로리 데이터를 읽습니다. " +
-                        "데이터는 기록 검증 목적에만 사용되며, 동의 철회는 " +
+                    "이 앱은 걸음 보상과 러닝 기록 검증을 위해 Health Connect / HealthKit에서 " +
+                        "걸음 수와 심박수 데이터를 읽습니다. " +
+                        "데이터는 이 목적에만 사용하며 광고나 판매에 쓰지 않습니다. 동의 철회는 " +
                         "기기 설정 > Health Connect에서 언제든 가능합니다."
                 setTextColor(Color.parseColor("#6B7280"))
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)

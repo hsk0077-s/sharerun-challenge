@@ -128,7 +128,6 @@ class _DeviceConnectionScreenState
                           final types = [
                             HealthDataType.STEPS,
                             HealthDataType.HEART_RATE,
-                            HealthDataType.ACTIVE_ENERGY_BURNED,
                           ];
                           // 1단계: 이미 권한이 부여되어 있는지 사전 체크
                           bool? hasPermissions =
@@ -331,7 +330,6 @@ class _DeviceConnectionScreenState
       const types = <HealthDataType>[
         HealthDataType.HEART_RATE,
         HealthDataType.STEPS,
-        HealthDataType.ACTIVE_ENERGY_BURNED,
       ];
       final permissions = List<HealthDataAccess>.filled(
         types.length,
@@ -393,7 +391,6 @@ class _DeviceConnectionScreenState
       const types = <HealthDataType>[
         HealthDataType.HEART_RATE,
         HealthDataType.STEPS,
-        HealthDataType.ACTIVE_ENERGY_BURNED,
       ];
       final permissions = List<HealthDataAccess>.filled(
         types.length,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_exception.dart';
+import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart';
 import '../app/router/route_names.dart';
@@ -156,15 +157,17 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => AppRouteNav.push(
-                      context,
-                      RouteNames.diaPackStore,
-                      materialBuilder: (_) => const DiaPackStoreScreen(),
+                  if (AppEnv.diaPacksEnabled) ...[
+                    TextButton(
+                      onPressed: () => AppRouteNav.push(
+                        context,
+                        RouteNames.diaPackStore,
+                        materialBuilder: (_) => const DiaPackStoreScreen(),
+                      ),
+                      child: const Text('DIA 팩 · 준비 중'),
                     ),
-                    child: const Text('DIA 팩 · 준비 중'),
-                  ),
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 8),
+                  ],
                   FilledButton(
                     onPressed: locked || _exchanging ? null : _exchange,
                     child: Text(_exchanging ? '교환 중...' : '교환'),

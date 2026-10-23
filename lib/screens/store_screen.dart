@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/api/api_exception.dart';
+import '../core/config/app_env.dart';
 import '../data/models/shop_item_model.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
@@ -286,25 +287,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         yearlyDiscountPct: _yearlyDiscountPct(),
         onTap: () => CoachPlusUpsellSheet.show(context),
       ),
-      StoreSectionLabel(
-        '다이아 충전',
-        more: '전체 보기',
-        onMore: () => setState(() => _tab = _StoreTab.diamond),
-      ),
-      Row(
-        children: [
-          for (final (i, pack) in featured.indexed) ...[
-            if (i > 0) const SizedBox(width: 8),
-            StorePackCard(
-              dia: '${pack.totalDia}',
-              bonus: pack.bonusDia > 0 ? '+${pack.bonusDia} 보너스' : '',
-              price: _won(pack.priceKrw),
-              hot: pack.productId == 'dia_pack_130',
-              onTap: _openDiaPacks,
-            ),
+      if (AppEnv.diaPacksEnabled) ...[
+        StoreSectionLabel(
+          '다이아 충전',
+          more: '전체 보기',
+          onMore: () => setState(() => _tab = _StoreTab.diamond),
+        ),
+        Row(
+          children: [
+            for (final (i, pack) in featured.indexed) ...[
+              if (i > 0) const SizedBox(width: 8),
+              StorePackCard(
+                dia: '${pack.totalDia}',
+                bonus: pack.bonusDia > 0 ? '+${pack.bonusDia} 보너스' : '',
+                price: _won(pack.priceKrw),
+                hot: pack.productId == 'dia_pack_130',
+                onTap: _openDiaPacks,
+              ),
+            ],
           ],
-        ],
-      ),
+        ),
+      ],
       StoreSectionLabel(
         '러닝 아이템',
         more: '전체 보기',
@@ -427,91 +430,96 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     ];
   }
 
-  /// 다이아 탭: 팩 목록(준비 중)과 SHARE로 교환.
+  /// 다이아 탭: SHARE로 교환. 팩 목록은 `AppEnv.diaPacksEnabled`가 켜질 때만 보인다.
   List<Widget> _diamondTab() {
     final tokens = context.srcTokens;
     final c = tokens.colors;
     return [
-      const StoreSectionLabel('다이아 충전'),
-      for (final pack in DiaPackProduct.catalog)
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: InkWell(
-            key: Key('store-pack-${pack.productId}'),
-            onTap: _openDiaPacks,
-            borderRadius: BorderRadius.circular(20),
-            child: Ink(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: c.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color:
-                      pack.productId == 'dia_pack_130' ? c.primary : c.outline,
-                  width: pack.productId == 'dia_pack_130' ? 1.6 : 1,
+      if (AppEnv.diaPacksEnabled) ...[
+        const StoreSectionLabel('다이아 충전'),
+        for (final pack in DiaPackProduct.catalog)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              key: Key('store-pack-${pack.productId}'),
+              onTap: _openDiaPacks,
+              borderRadius: BorderRadius.circular(20),
+              child: Ink(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: pack.productId == 'dia_pack_130'
+                        ? c.primary
+                        : c.outline,
+                    width: pack.productId == 'dia_pack_130' ? 1.6 : 1,
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.diamond_outlined, size: 22, color: c.ink),
-                          const SizedBox(width: 10),
-                          Text(
-                            _groupDigits(pack.totalDia),
-                            style: storeText(22, c.ink, w: FontWeight.w900),
-                          ),
-                          const SizedBox(width: 8),
-                          if (pack.bonusDia > 0)
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.diamond_outlined,
+                                size: 22, color: c.ink),
+                            const SizedBox(width: 10),
                             Text(
-                              '+${pack.bonusDia} 보너스',
-                              style:
-                                  storeText(12, c.primary, w: FontWeight.w800),
+                              _groupDigits(pack.totalDia),
+                              style: storeText(22, c.ink, w: FontWeight.w900),
                             ),
-                          if (pack.productId == 'dia_pack_130') ...[
                             const SizedBox(width: 8),
-                            Text(
-                              '인기',
-                              style: storeText(
-                                11,
-                                c.primary,
-                                w: FontWeight.w900,
-                                ls: 1,
+                            if (pack.bonusDia > 0)
+                              Text(
+                                '+${pack.bonusDia} 보너스',
+                                style: storeText(12, c.primary,
+                                    w: FontWeight.w800),
                               ),
-                            ),
+                            if (pack.productId == 'dia_pack_130') ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '인기',
+                                style: storeText(
+                                  11,
+                                  c.primary,
+                                  w: FontWeight.w900,
+                                  ls: 1,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        _won(pack.priceKrw),
-                        style: storeText(15, c.ink, w: FontWeight.w900),
-                      ),
-                      Text(
-                        '준비 중',
-                        style: storeText(11, c.muted, w: FontWeight.w700),
-                      ),
-                    ],
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          _won(pack.priceKrw),
+                          style: storeText(15, c.ink, w: FontWeight.w900),
+                        ),
+                        Text(
+                          '준비 중',
+                          style: storeText(11, c.muted, w: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
+        Text(
+          'Play 상품이 열리면 구매할 수 있어요. 지금은 결제해도 DIA가 지급되지 않아요.',
+          style: storeText(12, c.muted, h: 1.5),
         ),
-      Text(
-        'Play 상품이 열리면 구매할 수 있어요. 지금은 결제해도 DIA가 지급되지 않아요.',
-        style: storeText(12, c.muted, h: 1.5),
-      ),
+      ],
       const StoreSectionLabel('SHARE로 교환'),
       InkWell(
         key: const Key('store-dia-exchange'),
@@ -548,8 +556,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           ),
         ),
       ),
-      const SizedBox(height: 16),
-      const DiaNoticeCard(),
+      if (AppEnv.diaPacksEnabled) ...[
+        const SizedBox(height: 16),
+        const DiaNoticeCard(),
+      ],
     ];
   }
 
@@ -656,6 +666,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   @override
+
   /// VALUE 설명. 잔액 옆 "?"를 누르면 작은 창으로 보여 준다.
   void _showValueInfo() {
     final c = context.srcTokens.colors;

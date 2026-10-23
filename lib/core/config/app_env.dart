@@ -47,6 +47,8 @@ abstract final class AppEnv {
   static const _localDevModeDefine = String.fromEnvironment('LOCAL_DEV_MODE');
   static const _sponsorshipEnabledDefine =
       String.fromEnvironment('SPONSORSHIP_ENABLED');
+  static const _diaPacksEnabledDefine =
+      String.fromEnvironment('DIA_PACKS_ENABLED');
   static const _useFirebaseEmulatorDefine =
       String.fromEnvironment('USE_FIREBASE_EMULATOR');
   static const _androidEmulatorDefine =
@@ -112,6 +114,14 @@ abstract final class AppEnv {
         'SPONSORSHIP_ENABLED',
         defaultValue: false,
         fromDefine: _sponsorshipEnabledDefine,
+      );
+
+  /// DIA 팩(돈으로 사는 DIA)을 보여 줄지. 1.0은 판매가 없어 기본값은 꺼짐이다.
+  /// 판매를 시작할 때만 `--dart-define`에 `DIA_PACKS_ENABLED=true`를 넣는다.
+  static bool get diaPacksEnabled => _bool(
+        'DIA_PACKS_ENABLED',
+        defaultValue: false,
+        fromDefine: _diaPacksEnabledDefine,
       );
 
   static bool get useLocalMockData =>

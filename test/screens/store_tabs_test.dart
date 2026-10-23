@@ -55,7 +55,8 @@ void main() {
     expect(find.textContaining('골드 러닝화'), findsNothing);
   });
 
-  testWidgets('VALUE is explained by a ? on its balance, not by a card at the bottom',
+  testWidgets(
+      'VALUE is explained by a ? on its balance, not by a card at the bottom',
       (tester) async {
     await _pump(tester);
     expect(find.text(AppStrings.storeValueDetailTitle), findsNothing);
@@ -72,7 +73,8 @@ void main() {
     expect(find.text(AppStrings.storeValueDetailTitle), findsNothing);
   });
 
-  testWidgets('the funding card is honest: preparing, no fake progress, no dead button',
+  testWidgets(
+      'the funding card is honest: preparing, no fake progress, no dead button',
       (tester) async {
     await _pump(tester);
     await tester.ensureVisible(find.text(AppStrings.storeFundingTitle));
@@ -85,16 +87,22 @@ void main() {
     expect(find.textContaining('유니세프'), findsNothing);
   });
 
-  testWidgets('diamond tab lists the DIA packs as not yet on sale',
+  testWidgets('diamond tab has no DIA packs in 1.0, only the SHARE exchange',
       (tester) async {
     await _pump(tester);
     await tester.tap(find.byKey(const Key('store-tab-diamond')));
     await tester.pumpAndSettle();
 
-    expect(find.text('준비 중'), findsWidgets);
-    expect(find.text('1,200원'), findsOneWidget);
-    expect(find.text('119,000원'), findsOneWidget);
+    expect(find.text('1,200원'), findsNothing);
+    expect(find.text('119,000원'), findsNothing);
+    expect(find.byKey(const Key('store-pack-dia_pack_130')), findsNothing);
+    expect(find.textContaining('결제해도 DIA가 지급되지 않아요'), findsNothing);
     expect(find.byKey(const Key('store-dia-exchange')), findsOneWidget);
+  });
+
+  testWidgets('recommended tab shows no DIA pack row in 1.0', (tester) async {
+    await _pump(tester);
+    expect(find.text('다이아 충전'), findsNothing);
   });
 
   testWidgets('items tab keeps every buy card', (tester) async {

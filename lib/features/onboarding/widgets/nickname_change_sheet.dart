@@ -301,7 +301,7 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                               : Text(
                                   hasEnoughDia
                                       ? '100 DIA 소모하여 변경하기'
-                                      : '다이아몬드 부족 - 충전소로 이동하기',
+                                      : '다이아몬드 부족 - 교환소로 이동하기',
                                   style: AppTextStyles.buttonText.copyWith(
                                     color: hasEnoughDia ? AppColors.nightOnLime : AppColors.textWhite,
                                     fontSize: 15,

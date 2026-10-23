@@ -162,6 +162,29 @@ class _TermsAgreementScreenState extends ConsumerState<TermsAgreementScreen> {
                               value: v,
                             ),
                           ),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.only(left: 36),
+                              child: TextButton(
+                                key: const Key('terms-of-service-link'),
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(0, 32),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  foregroundColor: AppColors.primaryMint,
+                                ),
+                                onPressed: () => unawaited(
+                                  LegalLinks.openTermsOfService(),
+                                ),
+                                child: const Text(
+                                  '${LegalConstants.termsOfServiceLinkLabel} >',
+                                  style: AppTextStyles.link,
+                                ),
+                              ),
+                            ),
+                          ),
                           SRCAgreementRow(
                             label: AppStrings.termsRequiredPrivacy,
                             value: _privacyTerms,

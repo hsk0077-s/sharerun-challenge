@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config/app_env.dart';
 import '../../core/theme/theme.dart';
 import '../../app/providers/app_providers.dart';
 import '../../data/models/company_tournament_config.dart';
@@ -295,10 +296,19 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
             text,
             prizeConfig: widget.prizeConfig,
           );
+    final shown = !AppEnv.inAppPurchasesEnabled &&
+            MiniBotRoutes.isPurchaseDestination(read.destination)
+        ? MiniBotRead(
+            intent: read.intent,
+            destination: MiniBotDestination.none,
+            reply: '이 버전에서는 앱 안에서 결제하지 않아요.',
+            needsConfirm: false,
+          )
+        : read;
     // 그 밖의 이동·결제로 이어지는 말은 기존 확인 흐름이 먼저다. 나머지 질문은 FAQ가 답한다.
-    var reply = read.reply;
+    var reply = shown.reply;
     var mood = SnailBotMood.smiling;
-    if (read.intent == MiniBotIntent.unknown) {
+    if (shown.intent == MiniBotIntent.unknown) {
       final match = strongFaq?.entry ?? faq?.match(text);
       if (match != null) {
         reply = SnailFaq.answerFor(match, widget.faqValues);
@@ -313,7 +323,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     setState(() {
       _mood = mood;
       _lines.add(_MiniBotLine(text: text, fromUser: true));
-      _pending = read.awaitsConfirm ? read : null;
+      _pending = shown.awaitsConfirm ? shown : null;
       _lines.add(_MiniBotLine(text: reply, fromUser: false));
     });
     unawaited(_voice.speak(reply));
@@ -590,7 +600,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                           label: MiniBotFaqChips.shortLabels[id] ?? question,
                           onTap: () => _submit(question),
                         ),
-                    for (final chip in MiniBotPrompts.chips)
+                    for (final chip in MiniBotPrompts.visibleChips)
                       _Chip(
                         key: Key('mini-bot-chip-${chip.id}'),
                         label: chip.label,

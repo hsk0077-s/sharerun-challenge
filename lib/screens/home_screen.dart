@@ -376,7 +376,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         SizedBox(height: tokens.spacing.sm),
         SoloQuickStartBanner(onTap: _onOpenSoloRun),
-        if (AppEnv.sponsorshipEnabled) ...[
+        if (AppEnv.sponsorPaymentsVisible) ...[
           SizedBox(height: tokens.spacing.sm),
           const AngelSponsorBanner(),
         ],

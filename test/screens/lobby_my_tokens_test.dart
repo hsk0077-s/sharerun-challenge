@@ -276,7 +276,7 @@ void main() {
     }
     expect(find.byKey(HomeDiamondCard.toggleKey), findsOneWidget);
 
-    // 설정·구독 관리 진입점은 그대로 있다.
+    // 설정은 그대로 있고, 1.0은 구독 구매 진입점을 숨긴다.
     expect(find.byKey(const Key('my-page-settings')), findsOneWidget);
     expect(
       tester
@@ -284,13 +284,8 @@ void main() {
           .onPressed,
       isNotNull,
     );
-    expect(find.text(AppStrings.myPageSubscriptionManage), findsOneWidget);
-    expect(
-      tester
-          .widget<InkWell>(find.byKey(const Key('my-page-subscription')))
-          .onTap,
-      isNotNull,
-    );
+    expect(find.text(AppStrings.myPageSubscriptionManage), findsNothing);
+    expect(find.byKey(const Key('my-page-subscription')), findsNothing);
 
     // 아래 카드들은 그대로 이어진다.
     expect(find.text('나의 천사 연대기'), findsOneWidget);
@@ -310,13 +305,6 @@ void main() {
     expect(ctx.srcTokens.colors.primary, AppColors.nightLime);
     expect(ctx.srcTokens.colors.canvas, AppColors.nightBg);
     expect(Theme.of(ctx).colorScheme.primary, AppColors.nightLime);
-    expect(
-      tester
-          .widget<Text>(find.text(AppStrings.myPageSubscriptionManage))
-          .style
-          ?.color,
-      AppColors.nightLime,
-    );
   });
 
   testWidgets('My page streak, log, and chart follow recorded activity',

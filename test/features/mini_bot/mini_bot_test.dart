@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
+import 'package:share_run_challenge/core/config/app_env.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_bottom_nav.dart';
@@ -139,21 +140,34 @@ void main() {
     );
     expect(
       MiniBotRoutes.location(MiniBotDestination.personalSponsor),
-      RouteNames.personalSponsor,
+      isNull,
     );
     expect(
       MiniBotRoutes.location(MiniBotDestination.brandSponsor),
-      RouteNames.brandSponsor,
+      isNull,
     );
     expect(
       MiniBotRoutes.location(MiniBotDestination.subscription),
-      RouteNames.subscriptionManagement,
+      isNull,
     );
+    expect(MiniBotRoutes.location(MiniBotDestination.coachPlus), isNull);
     expect(
       MiniBotRoutes.location(MiniBotDestination.battlePass),
       RouteNames.battlePass,
     );
     expect(MiniBotRoutes.location(MiniBotDestination.none), isNull);
+
+    AppEnv.debugInAppPurchasesOverride = true;
+    addTearDown(() => AppEnv.debugInAppPurchasesOverride = null);
+    expect(
+      MiniBotRoutes.location(MiniBotDestination.personalSponsor),
+      RouteNames.personalSponsor,
+    );
+    expect(
+      MiniBotRoutes.location(MiniBotDestination.subscription),
+      RouteNames.subscriptionManagement,
+    );
+    AppEnv.debugInAppPurchasesOverride = null;
   });
 
   test('spend phrases recommend an existing screen and wait for a tap', () {
@@ -616,7 +630,10 @@ void main() {
     expect(labels.first, '앱 소개');
     expect(labels[1], '챌린지 로비');
     expect(labels[3], '스폰서');
-    expect(labels[4], '러너 후원');
+    expect(labels, isNot(contains('러너 후원')));
+    expect(labels, isNot(contains('구독')));
+    expect(labels, isNot(contains('Coach+')));
+    expect(labels[4], '챌린지 참가');
 
     await tester.tap(find.byKey(const Key('mini-bot-chip-donate')));
     await tester.pump();
@@ -933,6 +950,8 @@ void main() {
   testWidgets(
       'coach chip confirm waits, then routes to Coach+ without charging',
       (tester) async {
+    AppEnv.debugInAppPurchasesOverride = true;
+    addTearDown(() => AppEnv.debugInAppPurchasesOverride = null);
     final voice = _RecordingVoice();
     MiniBotRead? executed;
     await tester.pumpWidget(

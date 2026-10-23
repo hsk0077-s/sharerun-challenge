@@ -23,6 +23,8 @@ import '../data/repositories/auth_repository.dart';
 import '../features/auth/existing_account_question.dart';
 import '../features/auth/login_connection_providers.dart';
 
+enum _LinkStep { linked, pickAgain, stopped }
+
 /// 로그인 화면 (Screen 1) — src-1 목업 정합 UI.
 /// 버튼 순서: Google → Apple → Naver → Kakao.
 class LoginScreen extends ConsumerStatefulWidget {
@@ -147,7 +149,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         askToken: () => ref.read(kakaoAccessTokenProvider)(),
       );
 
-  Future<void> _loginProvider({
+  /// 연결에 성공하면 false(앱으로 들어감). 다시 고르면 true.
+  Future<bool> _loginProvider({
     required String provider,
     required String token,
     required String providerName,
@@ -164,89 +167,154 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       'google' => await api.googleLogin(token, createAccount: createAccount),
       _ => throw StateError(provider),
     };
-    if (!mounted) return;
+    if (!mounted) return false;
     if (result.needsAccountChoice || result.customToken.isEmpty) {
       if (!offerChoice) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.existingAccountNotFound)),
+        _say(AppStrings.existingAccountEmpty);
+        return true;
+      }
+      while (mounted) {
+        final answer = await showExistingAccountQuestion(
+          context,
+          provider: provider,
+          providerName: providerName,
         );
-        return;
+        if (!mounted) return false;
+        switch (answer) {
+          case ExistingAccountAnswer.cancel:
+            return false;
+          case ExistingAccountAnswer.create:
+            // 구글은 Firebase가 예전에 만든 구글 계정을 그대로 연다.
+            // 서버에서 빈 사용자를 만들면 그 계정과 갈라진다.
+            if (provider == 'google') {
+              await _enterWithExistingGoogleAccount(token, successMessage);
+              return false;
+            }
+            await _loginProvider(
+              provider: provider,
+              token: token,
+              providerName: providerName,
+              successMessage: successMessage,
+              createAccount: true,
+              offerChoice: false,
+            );
+            return false;
+          case ExistingAccountAnswer.google:
+          case ExistingAccountAnswer.kakao:
+          case ExistingAccountAnswer.naver:
+            final next = answer.name;
+            final nextToken = await _tokenFor(next);
+            if (nextToken == null || !mounted) return false;
+            final again = await _loginProvider(
+              provider: next,
+              token: nextToken,
+              providerName: _providerName(next),
+              successMessage: AppStrings.linkAttached(providerName),
+              offerChoice: false,
+              linkProvider: provider,
+              linkToken: token,
+            );
+            if (!again || !mounted) return false;
+        }
       }
-      final answer = await showExistingAccountQuestion(
-        context,
-        provider: provider,
-        providerName: providerName,
-      );
-      if (!mounted) return;
-      switch (answer) {
-        case ExistingAccountAnswer.cancel:
-          return;
-        case ExistingAccountAnswer.create:
-          // 구글은 Firebase가 예전에 만든 구글 계정을 그대로 연다.
-          // 서버에서 빈 사용자를 만들면 그 계정과 갈라진다.
-          if (provider == 'google') {
-            await _enterWithExistingGoogleAccount(token, successMessage);
-            return;
-          }
-          await _loginProvider(
-            provider: provider,
-            token: token,
-            providerName: providerName,
-            successMessage: successMessage,
-            createAccount: true,
-            offerChoice: false,
-          );
-          return;
-        case ExistingAccountAnswer.google:
-        case ExistingAccountAnswer.kakao:
-        case ExistingAccountAnswer.naver:
-          final next = answer.name;
-          final nextToken = await _tokenFor(next);
-          if (nextToken == null || !mounted) return;
-          await _loginProvider(
-            provider: next,
-            token: nextToken,
-            providerName: _providerName(next),
-            successMessage: '${_providerName(next)} 로그인에 성공했습니다!',
-            offerChoice: false,
-            linkProvider: provider,
-            linkToken: token,
-          );
-          return;
-      }
+      return false;
     }
 
     final credential = await ref
         .read(authRepositoryProvider)
         .signInWithCustomToken(result.customToken);
-    if (!mounted) return;
-    var linked = false;
+    if (!mounted) return false;
     if (linkProvider != null && (linkToken ?? '').isNotEmpty) {
-      try {
-        switch (linkProvider) {
-          case 'kakao':
-            await api.linkKakao(linkToken!);
-          case 'naver':
-            await api.linkNaver(linkToken!);
-          case 'google':
-            await api.linkGoogle(linkToken!);
-        }
-        linked = true;
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(ApiErrorMessage.from(e))),
-          );
-        }
-      }
+      final attached = await _confirmAndLink(
+        api: api,
+        linkProvider: linkProvider,
+        linkToken: linkToken!,
+        methodName: _providerName(linkProvider),
+      );
+      if (!mounted) return false;
+      if (attached == _LinkStep.pickAgain) return true;
+      if (attached != _LinkStep.linked) return false;
     }
-    if (!mounted) return;
     await _enterApp(
       uid: credential.user?.uid ?? '',
       newAccount: result.newAccount,
-      successMessage:
-          linked ? AppStrings.existingAccountLinked : successMessage,
+      successMessage: successMessage,
     );
+    return false;
+  }
+
+  void _say(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  Future<_LinkStep> _confirmAndLink({
+    required IdentityApiClient api,
+    required String linkProvider,
+    required String linkToken,
+    required String methodName,
+  }) async {
+    final AccountLinkPreview preview;
+    try {
+      preview = await api.fetchLinkPreview();
+    } catch (e) {
+      if (mounted) _say(ApiErrorMessage.from(e));
+      await _leaveSignedInAccount();
+      return _LinkStep.stopped;
+    }
+    if (!mounted) return _LinkStep.stopped;
+    if (!preview.canLink || preview.nickname.trim().isEmpty) {
+      await _leaveSignedInAccount();
+      if (mounted) _say(AppStrings.existingAccountEmpty);
+      return _LinkStep.pickAgain;
+    }
+    final ok = await showAccountLinkConfirm(
+      context,
+      methodName: methodName,
+      nickname: preview.nickname,
+      shareBalance: preview.shareBalance,
+    );
+    if (!mounted) return _LinkStep.stopped;
+    if (!ok) {
+      await _leaveSignedInAccount();
+      return _LinkStep.pickAgain;
+    }
+    try {
+      switch (linkProvider) {
+        case 'kakao':
+          await api.linkKakao(linkToken);
+        case 'naver':
+          await api.linkNaver(linkToken);
+        case 'google':
+          await api.linkGoogle(linkToken);
+        default:
+          throw StateError(linkProvider);
+      }
+    } on ApiException catch (e) {
+      await _leaveSignedInAccount();
+      if (!mounted) return _LinkStep.stopped;
+      _say(
+        e.detail == 'empty_account'
+            ? AppStrings.existingAccountEmpty
+            : e.userMessage,
+      );
+      return e.detail == 'empty_account'
+          ? _LinkStep.pickAgain
+          : _LinkStep.stopped;
+    } catch (e) {
+      await _leaveSignedInAccount();
+      if (mounted) _say(ApiErrorMessage.from(e));
+      return _LinkStep.stopped;
+    }
+    return _LinkStep.linked;
+  }
+
+  Future<void> _leaveSignedInAccount() async {
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+    } catch (_) {}
+    ref.read(persistedAuthSessionProvider.notifier).replace(null);
   }
 
   Future<void> _enterWithExistingGoogleAccount(
@@ -259,12 +327,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!mounted) return;
     try {
       await ref.read(identityApiClientProvider).linkGoogle(idToken);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(ApiErrorMessage.from(e))),
-        );
+    } on ApiException catch (e) {
+      // 닉네임 전 첫 로그인은 빈 계정 연결이 아니다. 안내만 건너뛴다.
+      if (e.detail != 'empty_account' && mounted) {
+        _say(e.userMessage);
       }
+    } catch (e) {
+      if (mounted) _say(ApiErrorMessage.from(e));
     }
     if (!mounted) return;
     await _enterApp(

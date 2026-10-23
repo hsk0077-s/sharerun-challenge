@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
+import '../core/config/app_env.dart';
+import '../features/iap/widgets/purchases_closed_page.dart';
 import '../app/router/route_names.dart';
 import '../core/constants/payment_constants.dart';
 import '../core/auth/email_verification_guard.dart';
@@ -39,6 +41,9 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!AppEnv.inAppPurchasesEnabled) {
+      return const PurchasesClosedPage(title: '대회 후원');
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('대회 후원')),
       body: ListView(

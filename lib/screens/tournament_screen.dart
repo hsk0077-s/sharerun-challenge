@@ -416,7 +416,7 @@ class _TournamentRoomCard extends StatelessWidget {
             ),
           if (tierTicketJoinLabel != null && !isJoined && !locked)
             _RoomLinkLine(label: tierTicketJoinLabel!, onTap: onTierTicketJoin),
-          if (AppEnv.sponsorshipEnabled)
+          if (AppEnv.sponsorPaymentsVisible)
             _RoomLinkLine(
               label: '이 대회 후원하기',
               icon: Icons.campaign_rounded,

@@ -220,7 +220,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                           HomeDonationCard(
                             onOpenSettlement: _onOpenDonationSettlement,
                           ),
-                          if (AppEnv.sponsorshipEnabled) ...[
+                          if (AppEnv.sponsorPaymentsVisible) ...[
                             SizedBox(height: tokens.spacing.sm),
                             AngelSponsorBanner(onTap: _onOpenPersonalSponsor),
                           ],

@@ -545,6 +545,66 @@ def _create_firebase_user(fb_auth, email: str | None):
         return fb_auth.create_user()
 
 
+def _user_profile(db, uid: str):
+    snap = db.collection(USERS).document(uid).get()
+    if not snap.exists:
+        return None
+    data = snap.to_dict() or {}
+    return data if isinstance(data, dict) else {}
+
+
+def _nickname(profile) -> str:
+    if not isinstance(profile, dict):
+        return ""
+    raw = profile.get("nickname")
+    if not isinstance(raw, str):
+        return ""
+    return raw.strip()
+
+
+def _share_balance(profile) -> int:
+    if not isinstance(profile, dict):
+        return 0
+    wallet = profile.get("wallet")
+    if not isinstance(wallet, dict):
+        return 0
+    try:
+        return int(wallet.get("shareBalance", 0))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _has_any_identity(db, uid: str) -> bool:
+    return bool(db.collection(IDENTITIES).where("uid", "==", uid).limit(1).get())
+
+
+def blocks_link_for_empty_account(db, uid: str) -> bool:
+    """Refuse a link into an account that has no nickname.
+
+    A brand-new uid with no profile and no login method may still record its
+    first method, before onboarding asks for a nickname. A profile that exists
+    without a nickname, or a uid that already has a method, is an empty shell
+    (the 2026-10-23 incident) and must not receive another login.
+    """
+    profile = _user_profile(db, uid)
+    if _nickname(profile):
+        return False
+    if profile is not None:
+        return True
+    return _has_any_identity(db, uid)
+
+
+def link_preview(db, uid: str) -> dict:
+    """Safe confirm payload: nickname and SHARE only. No email or ids."""
+    profile = _user_profile(db, uid) or {}
+    nickname = _nickname(profile)
+    return {
+        "nickname": nickname,
+        "share_balance": _share_balance(profile),
+        "can_link": bool(nickname),
+    }
+
+
 def link(
     db,
     uid: str,
@@ -573,6 +633,9 @@ def link(
     if _mapping_for(db, uid, provider) is not None:
         _log(db, uid, provider, provider_user_id, "link_refused")
         raise HTTPException(status_code=409, detail="provider_already_linked")
+    if blocks_link_for_empty_account(db, uid):
+        _log(db, uid, provider, provider_user_id, "link_refused")
+        raise HTTPException(status_code=409, detail="empty_account")
     try:
         ref.create(_identity_row(uid, provider))
     except AlreadyExists:

@@ -32,22 +32,64 @@ abstract final class AppStrings {
   static String loginSaveFailed(Object error) => '로그인 저장 실패: $error';
 
   /// 확인된 이메일로 기존 계정을 찾지 못했을 때, 계정을 만들기 전에 묻는다.
-  static const existingAccountTitle = '예전에 다른 방법으로 가입하셨나요?';
-  static const existingAccountCreate = '새 계정 만들기';
+  static const existingAccountTitle = '처음 가입할 때 어떤 방법을 쓰셨나요?';
+  static const existingAccountCreate = '새로 시작하기';
+  static const existingAccountCreateHint = '기억나지 않거나 처음이신가요?';
   static const existingAccountCancel = '취소';
-  static const existingAccountGoogle = '구글로 로그인';
-  static const existingAccountKakao = '카카오로 로그인';
-  static const existingAccountNaver = '네이버로 로그인';
+  static const existingAccountGoogle = '구글로 가입했어요';
+  static const existingAccountKakao = '카카오로 가입했어요';
+  static const existingAccountNaver = '네이버로 가입했어요';
   static const existingAccountNotFound =
-      '그 방법으로 가입된 계정을 찾지 못했어요. 다른 방법을 고르거나 새 계정을 만들어 주세요.';
-  static const existingAccountLinked = '기존 계정에 연결했어요.';
+      '그 방법으로 가입된 계정이 없어요. 다른 방법을 골라 주세요.';
+  static const existingAccountEmpty = existingAccountNotFound;
+  static const linkConfirmYes = '네, 연결할게요';
+  static const linkConfirmNo = '아니에요, 다시 고를게요';
+
+  static String subjectParticle(String word) =>
+      _hangulParticle(word, withBatchim: '이', without: '가');
+
+  static String objectParticle(String word) =>
+      _hangulParticle(word, withBatchim: '을', without: '를');
+
+  static String _hangulParticle(
+    String word, {
+    required String withBatchim,
+    required String without,
+  }) {
+    if (word.isEmpty) return withBatchim;
+    final code = word.runes.last;
+    if (code < 0xAC00 || code > 0xD7A3) return without;
+    final hasBatchim = (code - 0xAC00) % 28 != 0;
+    return hasBatchim ? withBatchim : without;
+  }
 
   static String existingAccountBody(String provider) =>
-      '$provider로 확인된 이메일과 같은 계정을 찾지 못해서, 새 계정을 만들지 않았어요.\n\n'
-      '예전에 다른 방법으로 가입하셨다면 그 방법으로 로그인해 주세요. '
-      '로그인되면 $provider를 그 계정에 바로 연결하고, 닉네임과 SHARE도 그대로 보여요. '
-      '확인된 이메일이 같은 계정은 이렇게 고르지 않아도 자동으로 이어져요.\n\n'
-      '쉐어런이 처음이시면 새 계정을 만들어 주세요.';
+      '그 방법으로 로그인하면 지금 $provider${subjectParticle(provider)} '
+      '그 계정에 연결돼요. 닉네임과 재화도 그대로예요.';
+
+  static String linkConfirmTitle(String method) =>
+      '이 계정에 $method${objectParticle(method)} 연결할까요?';
+
+  static String linkConfirmBody({
+    required String nickname,
+    required int shareBalance,
+  }) =>
+      '닉네임 $nickname\nSHARE ${groupedDigits(shareBalance)}';
+
+  static String linkAttached(String method) =>
+      '$method${subjectParticle(method)} 연결됐어요. '
+      '이제 어느 쪽으로 들어와도 같은 계정이에요.';
+
+  static String groupedDigits(int value) {
+    final negative = value < 0;
+    final digits = value.abs().toString();
+    final buffer = StringBuffer();
+    for (var i = 0; i < digits.length; i++) {
+      if (i > 0 && (digits.length - i) % 3 == 0) buffer.write(',');
+      buffer.write(digits[i]);
+    }
+    return negative ? '-$buffer' : buffer.toString();
+  }
 
   // ── Terms Agreement (Screen 2) ────────────────────────────────────
   static const termsTitle =

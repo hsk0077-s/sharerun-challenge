@@ -117,7 +117,7 @@ void main() {
       expect(find.text('250'), findsOneWidget);
       expect(find.text('1,000'), findsOneWidget);
       expect(find.text('먼저 사용'), findsOneWidget);
-      expect(find.textContaining('환불은 결제 다이아 기준'), findsOneWidget);
+      expect(find.textContaining('환불은 결제 다이아 기준'), findsNothing);
 
       await tester.tap(find.byKey(HomeDiamondCard.storeKey));
       expect(store, 1);

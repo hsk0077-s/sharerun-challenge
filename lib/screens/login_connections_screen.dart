@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_exception.dart';
+import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
+import '../data/api/identity_api_client.dart';
+import '../features/auth/existing_account_question.dart';
 import '../features/auth/login_connection_providers.dart';
 
 /// 설정 > 로그인 연결. 이 계정으로 들어올 수 있는 방법을 보고, 카카오를 붙이고 뗀다.
@@ -12,6 +15,7 @@ class LoginConnectionsScreen extends ConsumerStatefulWidget {
   const LoginConnectionsScreen({super.key});
 
   static const googleRowKey = Key('login-connection-google');
+  static const googleActionKey = Key('login-connection-google-action');
   static const kakaoRowKey = Key('login-connection-kakao');
   static const kakaoActionKey = Key('login-connection-kakao-action');
   static const naverRowKey = Key('login-connection-naver');
@@ -53,19 +57,36 @@ class _LoginConnectionsScreenState
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
+  bool get _canUnlink => (_providers?.length ?? 0) > 1;
+
   Future<void> _link({
+    required String methodName,
     required Future<String?> Function() askToken,
     required Future<void> Function(String token) send,
-    required String doneMessage,
   }) async {
     if (_busy) return;
     setState(() => _busy = true);
     try {
+      final api = ref.read(identityApiClientProvider);
+      final AccountLinkPreview preview = await api.fetchLinkPreview();
+      if (!mounted) return;
+      if (!preview.canLink || preview.nickname.trim().isEmpty) {
+        _say(AppStrings.existingAccountEmpty);
+        return;
+      }
+      final ok = await showAccountLinkConfirm(
+        context,
+        methodName: methodName,
+        nickname: preview.nickname,
+        shareBalance: preview.shareBalance,
+        declineLabel: '취소',
+      );
+      if (ok != true || !mounted) return;
       final token = await askToken();
       if (token == null || !mounted) return;
       await send(token);
       if (!mounted) return;
-      _say(doneMessage);
+      _say(AppStrings.linkAttached(methodName));
       await _load();
     } catch (e) {
       if (mounted) _say(ApiErrorMessage.from(e));
@@ -114,15 +135,15 @@ class _LoginConnectionsScreenState
   }
 
   Future<void> _linkKakao() => _link(
+        methodName: '카카오',
         askToken: ref.read(kakaoAccessTokenProvider),
         send: ref.read(identityApiClientProvider).linkKakao,
-        doneMessage: '카카오 계정을 연결했어요.',
       );
 
   Future<void> _linkNaver() => _link(
+        methodName: '네이버',
         askToken: ref.read(naverAccessTokenProvider),
         send: ref.read(identityApiClientProvider).linkNaver,
-        doneMessage: '네이버 계정을 연결했어요.',
       );
 
   Future<void> _unlinkKakao() => _unlink(
@@ -133,6 +154,11 @@ class _LoginConnectionsScreenState
   Future<void> _unlinkNaver() => _unlink(
         name: '네이버',
         send: ref.read(identityApiClientProvider).unlinkNaver,
+      );
+
+  Future<void> _unlinkGoogle() => _unlink(
+        name: '구글',
+        send: ref.read(identityApiClientProvider).unlinkGoogle,
       );
 
   @override
@@ -156,7 +182,7 @@ class _LoginConnectionsScreenState
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '같은 계정으로 여러 방법으로 로그인할 수 있어요. 연결해 두면 어떤 방법으로 들어와도 같은 SHARE와 기록이 보여요.',
+            '같은 계정으로 여러 방법으로 로그인할 수 있어요. 연결해 두면 어떤 방법으로 들어와도 같은 SHARE와 기록이 보여요. 마지막 로그인 방법은 해제할 수 없어요.',
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -185,10 +211,17 @@ class _LoginConnectionsScreenState
                     key: LoginConnectionsScreen.googleRowKey,
                     leading: const Icon(Icons.g_mobiledata_rounded, size: 32),
                     title: const Text('구글'),
-                    trailing: Text(
+                    subtitle: Text(
                       googleLinked ? '연결됨' : '연결 안 됨',
                       style: AppTextStyles.caption,
                     ),
+                    trailing: googleLinked
+                        ? TextButton(
+                            key: LoginConnectionsScreen.googleActionKey,
+                            onPressed: _busy || !_canUnlink ? null : _unlinkGoogle,
+                            child: const Text('해제'),
+                          )
+                        : null,
                   ),
                   const Divider(height: 1, color: AppColors.borderLight),
                   ListTile(
@@ -201,7 +234,7 @@ class _LoginConnectionsScreenState
                     ),
                     trailing: TextButton(
                       key: LoginConnectionsScreen.kakaoActionKey,
-                      onPressed: _busy
+                      onPressed: _busy || (kakaoLinked && !_canUnlink)
                           ? null
                           : (kakaoLinked ? _unlinkKakao : _linkKakao),
                       child: Text(kakaoLinked ? '해제' : '연결하기'),
@@ -218,7 +251,7 @@ class _LoginConnectionsScreenState
                     ),
                     trailing: TextButton(
                       key: LoginConnectionsScreen.naverActionKey,
-                      onPressed: _busy
+                      onPressed: _busy || (naverLinked && !_canUnlink)
                           ? null
                           : (naverLinked ? _unlinkNaver : _linkNaver),
                       child: Text(naverLinked ? '해제' : '연결하기'),

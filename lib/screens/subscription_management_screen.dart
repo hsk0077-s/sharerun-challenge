@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
+import '../features/iap/widgets/purchases_closed_page.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
@@ -27,6 +29,9 @@ class _SubscriptionManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    if (!AppEnv.inAppPurchasesEnabled) {
+      return const PurchasesClosedPage(title: '구독');
+    }
     return Scaffold(
       backgroundColor: AppColors.nightBg,
       body: SRCGradientBackground(

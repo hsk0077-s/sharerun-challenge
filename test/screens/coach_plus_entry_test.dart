@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/core/config/app_env.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/screens/store_screen.dart';
@@ -43,6 +44,8 @@ void main() {
 
   testWidgets('only Coach+ opens payment and no donation toggle is shown',
       (tester) async {
+    AppEnv.debugInAppPurchasesOverride = true;
+    addTearDown(() => AppEnv.debugInAppPurchasesOverride = null);
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -67,6 +70,8 @@ void main() {
   testWidgets('Coach+ sheet shows auto-renew, cancel path and health notice', (
     tester,
   ) async {
+    AppEnv.debugInAppPurchasesOverride = true;
+    addTearDown(() => AppEnv.debugInAppPurchasesOverride = null);
     await tester.binding.setSurfaceSize(const Size(360, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final controller = IapPurchaseController(
@@ -118,12 +123,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.storeTitle), findsWidgets);
-    expect(find.byKey(const Key('coach-plus-store')), findsOneWidget);
-
-    final coach = tester.widget<InkWell>(
-      find.byKey(const Key('coach-plus-store')),
-    );
-    expect(coach.onTap, isNotNull);
+    expect(find.byKey(const Key('coach-plus-store')), findsNothing);
 
     await tester.tap(find.byKey(const Key('store-tab-diamond')));
     await tester.pumpAndSettle();

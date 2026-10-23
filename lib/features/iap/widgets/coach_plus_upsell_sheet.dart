@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_env.dart';
 import '../../../core/constants/legal_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -13,6 +14,7 @@ class CoachPlusUpsellSheet extends ConsumerStatefulWidget {
   const CoachPlusUpsellSheet({super.key});
 
   static Future<void> show(BuildContext context) {
+    if (!AppEnv.inAppPurchasesEnabled) return Future<void>.value();
     return showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,

@@ -49,6 +49,11 @@ abstract final class AppEnv {
       String.fromEnvironment('SPONSORSHIP_ENABLED');
   static const _diaPacksEnabledDefine =
       String.fromEnvironment('DIA_PACKS_ENABLED');
+  static const _inAppPurchasesEnabledDefine =
+      String.fromEnvironment('IN_APP_PURCHASES_ENABLED');
+
+  /// Tests only. Release and profile ignore this.
+  static bool? debugInAppPurchasesOverride;
   static const _useFirebaseEmulatorDefine =
       String.fromEnvironment('USE_FIREBASE_EMULATOR');
   static const _androidEmulatorDefine =
@@ -116,9 +121,30 @@ abstract final class AppEnv {
         fromDefine: _sponsorshipEnabledDefine,
       );
 
-  /// DIA 팩(돈으로 사는 DIA)을 보여 줄지. 1.0은 판매가 없어 기본값은 꺼짐이다.
-  /// 판매를 시작할 때만 `--dart-define`에 `DIA_PACKS_ENABLED=true`를 넣는다.
-  static bool get diaPacksEnabled => _bool(
+  /// 구글 플레이 결제(Coach+, 구독, DIA 팩, 현금 환불, 후원 결제)를 보여 줄지.
+  /// 1.0은 앱 안 판매가 없어 기본값은 꺼짐이다. 다시 열 때만
+  /// `IN_APP_PURCHASES_ENABLED=true`.
+  static bool get inAppPurchasesEnabled {
+    if (kDebugMode) {
+      final override = debugInAppPurchasesOverride;
+      if (override != null) return override;
+    }
+    return _bool(
+      'IN_APP_PURCHASES_ENABLED',
+      defaultValue: false,
+      fromDefine: _inAppPurchasesEnabledDefine,
+    );
+  }
+
+  /// 후원 결제 화면. 출시 스위치와 후원 스위치가 모두 켜져 있을 때만 보인다.
+  static bool get sponsorPaymentsVisible =>
+      inAppPurchasesEnabled && sponsorshipEnabled;
+
+  /// DIA 팩(돈으로 사는 DIA)을 보여 줄지. 출시 스위치가 꺼져 있으면 보이지 않고,
+  /// 켜져 있어도 `DIA_PACKS_ENABLED=true`일 때만 보인다.
+  static bool get diaPacksEnabled =>
+      inAppPurchasesEnabled &&
+      _bool(
         'DIA_PACKS_ENABLED',
         defaultValue: false,
         fromDefine: _diaPacksEnabledDefine,

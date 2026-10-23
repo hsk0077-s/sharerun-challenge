@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="client_id">NNLQjRfEkRTRYbKGU9mW</string>
-    <string name="client_secret">G27TQjgAIa</string>
+    <!-- 네이버 client id / secret 은 git에 두지 않는다. Gradle이 dart-define 또는 android/naver.properties 에서 넣는다. -->
     <string name="client_name">쉐어런</string>
 </resources>

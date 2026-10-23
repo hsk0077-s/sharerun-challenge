@@ -12,6 +12,8 @@ import '../app/app.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/api/api_exception.dart';
+import '../core/config/app_env.dart';
+import '../features/legal/legal_links.dart';
 import '../core/auth/firebase_auth_messages.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/constants/legal_constants.dart';
@@ -259,13 +261,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           title: const Text('계정 삭제'),
-          content: const SingleChildScrollView(
+          content: SingleChildScrollView(
             child: Text(
               '계정을 삭제하면 아래와 같이 처리되며 되돌릴 수 없습니다.\n\n'
-              '• 보유한 SHARE·DIA·VALUE와 구매한 DIA가 모두 사라지고, 환불되지 않습니다.\n'
+              '• 보유한 SHARE·DIA·VALUE가 모두 사라지고, 현금으로 돌려받지 않습니다.\n'
               '• 활동 기록과 개인정보는 삭제 절차에 따라 지워집니다.\n'
-              '• Coach+ 구독은 자동으로 해지되지 않습니다. Google Play 스토어의 '
-              '구독 메뉴에서 직접 해지해 주세요.\n'
+              '${AppEnv.inAppPurchasesEnabled ? '• Coach+ 구독은 자동으로 해지되지 않습니다. Google Play 스토어의 구독 메뉴에서 직접 해지해 주세요.\n' : ''}'
               '• 크루장이라면 먼저 크루장을 다른 크루원에게 넘겨 주세요.\n\n'
               '정말 삭제하시겠습니까?',
             ),
@@ -501,23 +502,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         unawaited(MiniBotDockSettings.setVisible(value)),
                   ),
                 ),
-                const Divider(height: 1, color: AppColors.nightLine),
-                ListTile(
-                  key: const Key('coach-plus-settings'),
-                  title: Text(
-                    'Coach+',
-                    style: AppTextStyles.agreementLabel.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+                if (AppEnv.inAppPurchasesEnabled) ...[
+                  const Divider(height: 1, color: AppColors.nightLine),
+                  ListTile(
+                    key: const Key('coach-plus-settings'),
+                    title: Text(
+                      'Coach+',
+                      style: AppTextStyles.agreementLabel.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
+                    subtitle: Text(
+                      '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
+                      style: AppTextStyles.caption,
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_rounded),
+                    onTap: () => CoachPlusUpsellSheet.show(context),
                   ),
-                  subtitle: Text(
-                    '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
-                    style: AppTextStyles.caption,
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_rounded),
-                  onTap: () => CoachPlusUpsellSheet.show(context),
-                ),
+                ],
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(
@@ -633,6 +636,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: AppColors.textGreyLight,
                   ),
                   onTap: _replayIntro,
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  key: const Key('terms-of-service-settings'),
+                  title: Text(
+                    '서비스 이용약관',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    LegalConstants.termsOfServiceLinkLabel,
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: () => unawaited(LegalLinks.openTermsOfService()),
                 ),
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(

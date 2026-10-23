@@ -244,7 +244,7 @@ class _JoinedTournamentDetail extends StatelessWidget {
             icon: const Icon(Icons.directions_run_rounded),
             label: const Text('러닝 시작하기'),
           ),
-          if (AppEnv.sponsorshipEnabled) ...[
+          if (AppEnv.sponsorPaymentsVisible) ...[
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: () => context.push(

@@ -349,11 +349,20 @@ def test_routes_are_wired_and_only_login_is_open() -> None:
     assert client.post("/auth/kakao/link", json={"access_token": "t" * 20}).status_code == 401
     assert client.post("/auth/kakao/unlink").status_code == 401
     assert client.get("/auth/identities").status_code == 401
+    assert client.get("/auth/link-preview").status_code == 401
+
+
+def _named(db, uid, nickname="러너", share=100) -> None:
+    db.collection(identities.USERS).document(uid).set({
+        "nickname": nickname,
+        "wallet": {"shareBalance": share},
+    })
 
 
 def test_naver_works_like_kakao_and_both_can_share_one_account() -> None:
     db, fb = _Db(), _FbAuth(providers=["google.com"])
     fb.users["g1"] = True
+    _named(db, "g1", share=1200)
     identities.link(db, "g1", "kakao", "t" * 20, verify=_verify("777"))
     assert identities.link(db, "g1", "naver", "t" * 20, verify=_verify("n55")) == {
         "linked": True,
@@ -379,6 +388,7 @@ def test_a_new_naver_user_gets_a_new_account() -> None:
 def test_naver_unlink_is_allowed_when_kakao_remains() -> None:
     db, fb = _Db(), _FbAuth()
     fb.users["u1"] = True
+    _named(db, "u1")
     identities.link(db, "u1", "kakao", "t" * 20, verify=_verify("k1"))
     identities.link(db, "u1", "naver", "t" * 20, verify=_verify("n1"))
     assert identities.unlink(db, "u1", "naver", fb_auth=fb) == {"unlinked": True}
@@ -447,6 +457,7 @@ def test_naver_routes_are_wired_like_kakao() -> None:
     assert client.post("/auth/google/login", json={"id_token": "x"}).status_code == 422
     assert client.post("/auth/google/link", json={"id_token": "t" * 20}).status_code == 401
     assert client.post("/auth/google/unlink").status_code == 401
+    assert client.get("/auth/link-preview").status_code == 401
 
 
 def _verified(pid, email):
@@ -704,3 +715,52 @@ def test_google_email_is_verified_only_when_the_claim_says_so(monkeypatch) -> No
         lambda token, audience: {"sub": "g1", "email": "a@x.com", "email_verified": False},
     )
     assert identities.verify_google_id_token("t" * 20).verified_email is None
+
+
+def test_link_refuses_an_account_without_a_nickname() -> None:
+    db = _Db()
+    identities.link(db, "empty", "kakao", "t" * 20, verify=_verify("k1"))
+    with pytest.raises(HTTPException) as caught:
+        identities.link(db, "empty", "naver", "t" * 20, verify=_verify("n1"))
+    assert caught.value.status_code == 409
+    assert caught.value.detail == "empty_account"
+    assert "naver:n1" not in db.stores[identities.IDENTITIES]
+    assert [row["action"] for row in db.stores[identities.LOG].values()][-1] == "link_refused"
+
+    for provider, pid in (("kakao", "k9"), ("naver", "n9"), ("google", "g9")):
+        uid = f"shell-{provider}"
+        db.collection(identities.USERS).document(uid).set({
+            "nickname": "   ",
+            "wallet": {"shareBalance": 0},
+        })
+        with pytest.raises(HTTPException) as blank:
+            identities.link(db, uid, provider, "t" * 20, verify=_verify(pid))
+        assert blank.value.detail == "empty_account"
+        assert f"{provider}:{pid}" not in db.stores[identities.IDENTITIES]
+
+
+def test_a_named_account_can_link_another_method() -> None:
+    db = _Db()
+    _named(db, "u1", nickname="달림이", share=42)
+    identities.link(db, "u1", "kakao", "t" * 20, verify=_verify("k1"))
+    assert identities.link(db, "u1", "google", "t" * 20, verify=_verify("g1")) == {
+        "linked": True,
+        "already": False,
+    }
+
+
+def test_link_preview_returns_only_nickname_and_share() -> None:
+    db = _Db()
+    _named(db, "u1", nickname="달림이", share=1200)
+    db.collection(identities.USERS).document("u1").set(
+        {"nickname": "달림이", "email": "secret@example.com", "wallet": {"shareBalance": 1200}},
+    )
+    preview = identities.link_preview(db, "u1")
+    assert preview == {"nickname": "달림이", "share_balance": 1200, "can_link": True}
+    assert "email" not in preview
+
+    missing = identities.link_preview(db, "nobody")
+    assert missing == {"nickname": "", "share_balance": 0, "can_link": False}
+
+    db.collection(identities.USERS).document("blank").set({"nickname": "  ", "wallet": {}})
+    assert identities.link_preview(db, "blank")["can_link"] is False

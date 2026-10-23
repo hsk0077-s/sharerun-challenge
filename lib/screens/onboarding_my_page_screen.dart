@@ -7,6 +7,7 @@ import '../features/accessories/accessory_inventory.dart';
 import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
+import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
@@ -106,12 +107,13 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                         onTierBook: () => _openTierBook(context),
                         onSettings: _onSettings,
                       ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: _SubscriptionLink(
-                          onTap: _onSubscriptionManage,
+                      if (AppEnv.inAppPurchasesEnabled)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: _SubscriptionLink(
+                            onTap: _onSubscriptionManage,
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 6),
                       const MyPageInviteCodeCard(),
                       const MyPageReferralCodeEntry(),

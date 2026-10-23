@@ -136,7 +136,11 @@ service cloud.firestore {
         && (
           !request.resource.data.diff(resource.data).changedKeys()
               .hasAny(['nickname'])
-          || request.resource.data.nickname is string
+          || (
+            request.resource.data.nickname is string
+            && request.resource.data.nickname.size() >= 1
+            && request.resource.data.nickname.size() <= 12
+          )
         )
         && (
           !request.resource.data.diff(resource.data).changedKeys()
@@ -431,7 +435,11 @@ service cloud.firestore {
             )
             && (
               !keys.hasAny(['km'])
-              || request.resource.data.km is number
+              || (
+                request.resource.data.km is number
+                && request.resource.data.km >= 0
+                && request.resource.data.km <= 200
+              )
             )
             && (
               !keys.hasAny(['deviceId'])
@@ -616,19 +624,17 @@ service cloud.firestore {
     match /paymentIntents/{intentId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.uid == request.auth.uid);
-      allow create: if isOwnPaymentCreate();
-      allow update, delete: if false;
+      // Sponsor payments are off for 1.0 and PG_BASE_URL is still a
+      // placeholder. Reopen this together with SPONSORSHIP_ENABLED.
+      allow create, update, delete: if false;
     }
 
     match /purchases/{purchaseId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == 'PENDING_VERIFY'
-        && request.resource.data.productId is string
-        && request.resource.data.purchaseID is string;
-      allow update, delete: if isAdmin();
+      // Legacy receipt queue. No server job reads it and no shipped screen
+      // writes it (pack buttons are disabled; Coach+ goes to the Cloud Run API).
+      allow create, update, delete: if false;
     }
 
     match /walletTransactions/{txId} {

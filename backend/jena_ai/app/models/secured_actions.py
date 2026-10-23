@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class JoinTournamentRequest(BaseModel):
-    tournament_id: str
+    tournament_id: str = Field(min_length=1, max_length=128, pattern=r"^[^/]+$")
     diamond_deposit: int = Field(default=0, ge=0)
     selected_charity: str = Field(default="UNICEF", min_length=2, max_length=64)
     # Prize races only. ``share`` debits config SHARE. ``ticket`` spends free
@@ -13,14 +13,15 @@ class JoinTournamentRequest(BaseModel):
 
 
 class SettleTournamentFailureRequest(BaseModel):
-    tournament_id: str
-    distance_achieved_km: float = Field(ge=0)
+    tournament_id: str = Field(max_length=128)
+    distance_achieved_km: float = Field(ge=0, le=1000, allow_inf_nan=False)
 
 
 class CollectDiamondBoxRequest(BaseModel):
-    box_id: str
-    latitude: float
-    longitude: float
+    # NaN would pass the 80 m check (nan > 80 is False), so it is refused.
+    box_id: str = Field(min_length=1, max_length=128, pattern=r"^[^/]+$")
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False)
 
 
 class RefundRequest(BaseModel):
@@ -38,16 +39,16 @@ class HarvestPedometerRequest(BaseModel):
 
 
 class WinnerRewardRequest(BaseModel):
-    activity_id: str
+    activity_id: str = Field(min_length=1, max_length=128, pattern=r"^[^/]+$")
     action: str = Field(
         pattern="^(winner_reward_claim_all|winner_reward_donate_half|winner_reward_donate_all)$"
     )
 
 
 class RoutePointPayload(BaseModel):
-    latitude: float
-    longitude: float
-    recordedAt: str
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False)
+    recordedAt: str = Field(max_length=64)
 
 
 class RunDeviceInfo(BaseModel):
@@ -61,13 +62,13 @@ class RunDeviceInfo(BaseModel):
 
 
 class ValidateRunRequest(BaseModel):
-    activity_id: str
-    distance_km: float = Field(gt=0)
-    duration_seconds: int = Field(gt=0)
-    heart_rates: list[int] = Field(default_factory=list)
-    cadence_spm: list[int] = Field(default_factory=list)
-    gyro_stability_score: float = Field(ge=0, le=1)
-    gps_route: list[RoutePointPayload] = Field(default_factory=list)
+    activity_id: str = Field(min_length=1, max_length=128, pattern=r"^[^/]+$")
+    distance_km: float = Field(gt=0, le=1000, allow_inf_nan=False)
+    duration_seconds: int = Field(gt=0, le=172800)
+    heart_rates: list[int] = Field(default_factory=list, max_length=50000)
+    cadence_spm: list[int] = Field(default_factory=list, max_length=50000)
+    gyro_stability_score: float = Field(ge=0, le=1, allow_inf_nan=False)
+    gps_route: list[RoutePointPayload] = Field(default_factory=list, max_length=50000)
     # Optional. Stride uses this when the phone sends the session step total.
     # Absent means the server estimates steps from the cadence series.
     total_steps: int | None = Field(default=None, ge=0)

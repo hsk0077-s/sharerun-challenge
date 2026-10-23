@@ -119,6 +119,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       final paidWithDia = payWith == 'dia';
 
       if (!useRemote) {
+        // 재화는 서버만 차감한다. 기기 안에서 차감하는 길은 데모 모드에만 둔다.
+        if (!AppEnv.useLocalMockData) {
+          if (mounted) setState(() => _isSubmitting = false);
+          _toast('로그인한 뒤에 다시 시도해 주세요.');
+          return;
+        }
         final wallet = ref.read(walletProvider);
         if (paidWithDia) {
           if (wallet.diamondBalance < _createCrewDiaCost) {
@@ -135,7 +141,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
           ref.read(walletProvider.notifier).subtractShare(_createCrewShareCost);
         }
       } else {
-        final result = await api!.foundCrew(
+        final result = await api.foundCrew(
               crewName,
               payWith: payWith!,
               emblem: emblem.code,

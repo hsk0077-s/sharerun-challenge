@@ -78,6 +78,14 @@ class _CreateChallengeRoomScreenState
 
       final TournamentModel room;
       if (!useRemote) {
+        // 재화는 서버만 차감한다. 기기 안에서 차감하는 길은 데모 모드에만 둔다.
+        if (!AppEnv.useLocalMockData) {
+          if (mounted) setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('로그인한 뒤에 다시 시도해 주세요.')),
+          );
+          return;
+        }
         if (!_hasLocalShare(_entryFee)) {
           if (mounted) setState(() => _isSubmitting = false);
           await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);

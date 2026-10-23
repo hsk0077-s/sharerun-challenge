@@ -18,6 +18,7 @@ import '../data/models/wallet_transaction_model.dart';
 import '../features/shop/providers/shop_tab_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/wallet_inventory_section.dart';
+import '../features/wallet/widgets/wallet_sync_note.dart';
 import 'in_app_billing_screen.dart';
 import 'preliminary_eval_screen.dart';
 import 'settings_screen.dart';
@@ -108,6 +109,7 @@ class MyWalletScreen extends ConsumerWidget {
                 AppStrings.dashboardMyWallet,
                 style: storeText(36, c.ink, w: FontWeight.w900),
               ),
+              const WalletSyncNote(),
               const SizedBox(height: 16),
               _ShareCard(
                 share: share,

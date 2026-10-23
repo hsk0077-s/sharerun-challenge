@@ -198,10 +198,6 @@ class ChallengeDetailScreen extends StatelessWidget {
                       Row(
                         children: [
                           stat(after(copy.distance), 'DISTANCE'),
-                          const SizedBox(width: 10),
-                          stat(after(copy.timeRemaining), 'TIME LEFT'),
-                          const SizedBox(width: 10),
-                          stat(after(copy.recruitment), 'RECRUIT'),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -318,8 +314,6 @@ class _ChallengeDetailCopy {
     required this.prize,
     required this.donation,
     required this.distance,
-    required this.timeRemaining,
-    required this.recruitment,
     required this.donationTarget,
     required this.valueTip,
     required this.joinLabel,
@@ -333,8 +327,6 @@ class _ChallengeDetailCopy {
   final String prize;
   final String donation;
   final String distance;
-  final String timeRemaining;
-  final String recruitment;
   final String donationTarget;
   final String valueTip;
   final String joinLabel;
@@ -357,8 +349,6 @@ class _ChallengeDetailCopy {
         prize: AppStrings.challengeDetailPrize,
         donation: AppStrings.challengeDetailDonation,
         distance: '거리: 1km',
-        timeRemaining: AppStrings.challengeDetailTimeRemaining,
-        recruitment: '모집 인원: 120 / 200명',
         donationTarget: AppStrings.challengeDetailDonationTarget,
         valueTip: AppStrings.challengeDetailValueTip,
         joinLabel: AppStrings.challengeDetailJoin,
@@ -376,8 +366,6 @@ class _ChallengeDetailCopy {
       prize: AppStrings.challengeDetailPrize,
       donation: AppStrings.challengeDetailDonation,
       distance: AppStrings.challengeDetailDistance,
-      timeRemaining: AppStrings.challengeDetailTimeRemaining,
-      recruitment: AppStrings.challengeDetailRecruitment,
       donationTarget: AppStrings.challengeDetailDonationTarget,
       valueTip: AppStrings.challengeDetailValueTip,
       joinLabel: AppStrings.challengeDetailJoin,

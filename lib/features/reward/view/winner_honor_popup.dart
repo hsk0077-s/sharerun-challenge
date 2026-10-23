@@ -155,7 +155,7 @@ class _WinnerHonorPopupState extends State<WinnerHonorPopup>
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    '+${widget.rewardValueToken} SRV',
+                    '+${widget.rewardValueToken} VALUE',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           color: AppColors.electricBlue,
                           fontWeight: FontWeight.w900,

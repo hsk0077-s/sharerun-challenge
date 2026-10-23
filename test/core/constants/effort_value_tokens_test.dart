@@ -11,11 +11,11 @@ void main() {
     expect(EconomyConstants.effortValueTokens(0), 0);
     expect(
       AppStrings.liveRunningEffortTip(EconomyConstants.effortValueTokens(1)),
-      '순수 노력 목표: 완주 시 밸류 토큰 +10',
+      '순수 노력 목표: 완주 시 VALUE +10',
     );
     expect(
       AppStrings.liveRunningEffortTip(EconomyConstants.effortValueTokens(3)),
-      '순수 노력 목표: 완주 시 밸류 토큰 +30',
+      '순수 노력 목표: 완주 시 VALUE +30',
     );
   });
 }

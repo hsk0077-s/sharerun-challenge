@@ -155,8 +155,7 @@ abstract final class MiniBotCopy {
 
   static String get brandAmount => AppStrings.brandSponsorEntryFee;
 
-  static String get subscriptionAmount =>
-      AppStrings.subscriptionDonationStatus.split('\n').first;
+  static String get subscriptionAmount => '유료 구독은 Coach+ 하나예요';
 
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';

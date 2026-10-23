@@ -424,7 +424,7 @@ extension AngelTierX on AngelTier {
         AngelTier.cupid => '등 뒤 아기 날개 배지 장착',
         AngelTier.guardian => '은빛 날개 · 대회 입장 시 닉네임 볼드 테두리 강조',
         AngelTier.archangel =>
-          '황금 날개 · 골드 그라데이션 닉네임 · 개설 대회 러너 1.2배 토큰 부스트',
+          '황금 날개 · 골드 그라데이션 닉네임 · 개설 대회 러너 1.2배 VALUE 부스트',
         AngelTier.cherubim => '4익 날개 · 민트 오라 · 대회 입장 시 단독 등장 팝업',
         AngelTier.seraphim => '6익 날개 · 골드 광배 회전 · 명예의 전당 VVIP 단독 배너',
       };
@@ -1796,7 +1796,7 @@ abstract final class RetentionAlertEngine {
           title: '골든 아워 땀방울',
           body:
               '오늘의 영웅이 될 준비가 되셨나요? 러너님만을 위한 골든 아워입니다. '
-              '가볍게 걷고 일일 5km / 50 SRV 땀방울 한도를 채워 보세요! 👼',
+              '가볍게 걷고 일일 5km / 50 VALUE 한도를 채워 보세요! 👼',
           routeName: RouteNames.soloPedometer,
         ),
       );

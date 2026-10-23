@@ -7,6 +7,32 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/screens/store_screen.dart';
 import 'package:share_run_challenge/screens/subscription_management_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:share_run_challenge/data/repositories/purchase_repository.dart';
+import 'package:share_run_challenge/data/repositories/wallet_repository.dart';
+import 'package:share_run_challenge/features/iap/providers/iap_providers.dart';
+import 'package:share_run_challenge/features/iap/services/iap_purchase_controller.dart';
+
+class _FakeIap implements InAppPurchase {
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    if (invocation.memberName == #purchaseStream) {
+      return const Stream<List<PurchaseDetails>>.empty();
+    }
+    if (invocation.memberName == #isAvailable) return Future<bool>.value(false);
+    return super.noSuchMethod(invocation);
+  }
+}
+
+class _PurchaseRepo implements PurchaseRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _WalletRepo implements WalletRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +41,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  testWidgets('premium is a notice and only Coach+ opens payment', (tester) async {
+  testWidgets('only Coach+ opens payment and no donation toggle is shown',
+      (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -26,27 +53,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(AppStrings.subscriptionPremiumTitle), findsOneWidget);
-    expect(find.text(AppStrings.subscriptionPremiumBenefit1), findsOneWidget);
-    expect(find.text(AppStrings.subscriptionPremiumBenefit2), findsOneWidget);
-    expect(find.text(AppStrings.subscriptionPremiumNotice), findsOneWidget);
+    expect(find.byType(CupertinoSwitch), findsNothing);
+    expect(find.textContaining('정기 후원'), findsNothing);
     expect(find.textContaining('4,900'), findsNothing);
-    expect(find.textContaining('첫 달'), findsNothing);
     expect(find.textContaining('결제 수단'), findsNothing);
-    expect(find.byType(CupertinoSwitch), findsOneWidget);
-    final premiumColumn = find
-        .ancestor(
-          of: find.byKey(const Key('premium-notice')),
-          matching: find.byType(Column),
-        )
-        .first;
-    expect(
-      find.descendant(
-        of: premiumColumn,
-        matching: find.byType(CupertinoSwitch),
-      ),
-      findsNothing,
-    );
 
     final coach = tester.widget<InkWell>(
       find.byKey(const Key('coach-plus-subscription')),
@@ -54,7 +64,46 @@ void main() {
     expect(coach.onTap, isNotNull);
   });
 
-  testWidgets('shop tab opens Coach+ and the diamond charge station', (tester) async {
+  testWidgets('Coach+ sheet shows auto-renew, cancel path and health notice', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(360, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final controller = IapPurchaseController(
+      purchaseRepository: _PurchaseRepo(),
+      walletRepository: _WalletRepo(),
+      readUid: () => 'u1',
+      iap: _FakeIap(),
+    );
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          iapPurchaseControllerProvider.overrideWithValue(controller)
+        ],
+        child: MaterialApp(
+          theme: SrcTheme.light,
+          home: const SubscriptionManagementScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('coach-plus-subscription')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('coach-plus-terms')), findsOneWidget);
+    expect(find.textContaining('자동 갱신'), findsOneWidget);
+    expect(find.textContaining('구독에서 언제든 해지'), findsOneWidget);
+    expect(
+      find.byKey(const Key('coach-plus-health-disclaimer')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('shop tab opens Coach+ and the diamond charge station',
+      (tester) async {
     await tester.binding.setSurfaceSize(const Size(400, 900));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 

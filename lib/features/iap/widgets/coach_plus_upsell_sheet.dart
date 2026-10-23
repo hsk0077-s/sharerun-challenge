@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/constants/legal_constants.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../models/coach_plus_product.dart';
@@ -56,7 +57,8 @@ class _CoachPlusUpsellSheetState extends ConsumerState<CoachPlusUpsellSheet> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-        child: Column(
+        child: SingleChildScrollView(
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -107,8 +109,21 @@ class _CoachPlusUpsellSheetState extends ConsumerState<CoachPlusUpsellSheet> {
                 onPressed: _busyProductId == null ? _restore : null,
                 child: const Text('구매 복원'),
               ),
+              const SizedBox(height: 8),
+              Text(
+                LegalConstants.subscriptionTerms,
+                key: const Key('coach-plus-terms'),
+                style: AppTextStyles.caption,
+              ),
             ],
+            const SizedBox(height: 8),
+            Text(
+              LegalConstants.healthDisclaimer,
+              key: const Key('coach-plus-health-disclaimer'),
+              style: AppTextStyles.caption,
+            ),
           ],
+        ),
         ),
       ),
     );

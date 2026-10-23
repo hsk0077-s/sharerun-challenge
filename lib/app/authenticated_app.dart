@@ -5,11 +5,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'providers/app_providers.dart';
 import '../core/theme/src_theme.dart';
 import '../features/privacy/login_devices.dart';
 import '../features/integrity/integrity_check.dart';
 import '../features/run_tracking/run_recording_foreground.dart';
 import '../features/run_tracking/run_recording_policy.dart';
+import '../features/pedometer/daily_metrics_account.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
@@ -55,6 +57,18 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
             );
       },
     );
+    DailyMetricsAccount.serverWriter = ({
+      required String dayKey,
+      required int steps,
+      required String source,
+      int? lastHealth,
+    }) =>
+        ref.read(securedActionApiClientProvider).recordDailySteps(
+              dayKey: dayKey,
+              steps: steps,
+              source: source,
+              lastHealth: lastHealth,
+            );
     unawaited(_bootBackgroundRun());
     unawaited(registerThisDevice(ref));
     unawaited(reportDeviceIntegrity(ref));

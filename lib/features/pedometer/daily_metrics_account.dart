@@ -43,6 +43,15 @@ abstract final class DailyMetricsAccount {
   @visibleForTesting
   static var debugUseMemory = false;
 
+  /// 걸음 수 저장을 서버 API로 보낸다. 앱이 시작될 때 연결한다.
+  /// 연결되기 전(테스트 등)에는 예전처럼 기기에서 직접 쓴다.
+  static Future<void> Function({
+    required String dayKey,
+    required int steps,
+    required String source,
+    int? lastHealth,
+  })? serverWriter;
+
   @visibleForTesting
   static final debugDocs = <String, DailyMetricDoc>{};
 
@@ -356,6 +365,29 @@ abstract final class DailyMetricsAccount {
           .doc(uid)
           .collection('daily_metrics')
           .doc(dayKey);
+      final writer = serverWriter;
+      if (writer != null) {
+        final snap = await ref.get();
+        final data = snap.data();
+        final merged = merge(
+          dayKey: dayKey,
+          existingSteps: (data?['steps'] as num?)?.toInt() ?? 0,
+          incoming: steps,
+          isToday: isToday,
+          source: source,
+          lastHealth: lastHealth,
+          existingSource: data?['source'] as String?,
+          existingLastHealth: (data?['lastHealth'] as num?)?.toInt(),
+        );
+        if (merged == null) return false;
+        await writer(
+          dayKey: dayKey,
+          steps: merged.steps,
+          source: merged.source,
+          lastHealth: merged.lastHealth,
+        );
+        return true;
+      }
       var wrote = false;
       await FirebaseFirestore.instance.runTransaction((tx) async {
         final snap = await tx.get(ref);

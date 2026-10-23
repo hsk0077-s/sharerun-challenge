@@ -114,3 +114,8 @@ class WalletLedgerResult(BaseModel):
 class AppealDecisionRequest(BaseModel):
     decision: Literal["approved", "rejected"]
     note: str = Field(default="", max_length=300)
+
+
+class ReportStatusRequest(BaseModel):
+    status: Literal["reviewed", "resolved", "dismissed"]
+    note: str = Field(default="", max_length=300)

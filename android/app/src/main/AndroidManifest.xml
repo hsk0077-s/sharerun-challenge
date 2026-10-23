@@ -24,7 +24,6 @@
 
     <!-- Android 10+ 런타임 신체 활동(걸음) 감지 — 만보기 Health 연동 필수. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
 
     <!-- Google Health Connect — 앱이 실제로 읽는 종류만: 걸음, 심박, 거리, 운동, 활동 칼로리, 활동 강도. -->
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />

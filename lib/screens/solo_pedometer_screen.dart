@@ -317,29 +317,65 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     });
   }
 
+  bool _permissionPromptDeclined = false;
+
+  /// 시스템 권한 창을 띄우기 전에 왜 필요한지 먼저 알려 준다. 이미 허용했으면 묻지 않는다.
+  /// 권한 상태를 읽을 수 없으면(테스트 등) 예전처럼 바로 진행한다.
+  Future<bool> _explainPermissionsFirst() async {
+    try {
+      if (await Permission.activityRecognition.isGranted) return true;
+    } catch (_) {
+      return true;
+    }
+    if (!mounted) return false;
+    final agreed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('걸음 수를 세려면 권한이 필요해요'),
+        content: const Text(
+          '• 신체 활동: 폰이 센 걸음 수를 읽습니다.\n'
+          '• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어 '
+          '화면이 꺼져 있을 때의 걸음도 반영합니다.\n\n'
+          '걸음 수는 보상 계산에만 쓰이고, 동의하지 않아도 다른 기능은 쓸 수 있어요.',
+        ),
+        actions: [
+          TextButton(
+            key: const Key('pedometer-permission-later'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('나중에'),
+          ),
+          FilledButton(
+            key: const Key('pedometer-permission-continue'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('계속'),
+          ),
+        ],
+      ),
+    );
+    return agreed == true;
+  }
+
   Future<void> initPedometerSystem() async {
     try {
       await _restoreTodayFromPrefs();
       if (!mounted) return;
       await _restoreClaims();
-      try {
-        await Permission.activityRecognition.request();
-      } on PlatformException catch (e, st) {
-        debugPrint('initPedometerSystem activityRecognition: $e\n$st');
-      }
-      try {
-        await Permission.sensors.request();
-      } on PlatformException catch (e, st) {
-        debugPrint('initPedometerSystem sensors: $e\n$st');
-      } catch (e, st) {
-        debugPrint('initPedometerSystem sensors: $e\n$st');
-      }
+      final mayAsk = await _explainPermissionsFirst();
       if (!mounted) return;
-      try {
-        await _health.configure();
-        await _health.requestAuthorization(const [HealthDataType.STEPS]);
-      } on PlatformException catch (e, st) {
-        debugPrint('initPedometerSystem requestAuthorization: $e\n$st');
+      _permissionPromptDeclined = !mayAsk;
+      if (mayAsk) {
+        try {
+          await Permission.activityRecognition.request();
+        } on PlatformException catch (e, st) {
+          debugPrint('initPedometerSystem activityRecognition: $e\n$st');
+        }
+        if (!mounted) return;
+        try {
+          await _health.configure();
+          await _health.requestAuthorization(const [HealthDataType.STEPS]);
+        } on PlatformException catch (e, st) {
+          debugPrint('initPedometerSystem requestAuthorization: $e\n$st');
+        }
       }
       if (!mounted) return;
       await _backfillWeekFromHealth();
@@ -481,13 +517,15 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
   Future<void> syncBackgroundSteps({bool requestIfMissing = true}) async {
     if (_syncing) return;
     _syncing = true;
+    // 설명 창에서 "나중에"를 고른 뒤에는 앱을 다시 열 때마다 권한을 묻지 않는다.
+    final ask = requestIfMissing && !_permissionPromptDeclined;
     try {
-      if (requestIfMissing) {
+      if (ask) {
         await Permission.activityRecognition.request();
       }
       final total = await PedometerKstClock.queryTodaySteps(
         _health,
-        requestIfMissing: requestIfMissing,
+        requestIfMissing: ask,
       );
       if (!mounted) return;
       await _loadPersistedHealthCap();

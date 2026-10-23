@@ -69,7 +69,7 @@ Select-String -Path .env.release -Pattern "OPS_ADMIN|PG_WEBHOOK|SECRET|UVICORN|E
 - **Health Connect**: 걸음, 심박, 거리, 운동, 활동 칼로리, 활동 강도 읽기. 화면이 꺼진 상태에서도
   걸음을 읽으므로 `READ_HEALTH_DATA_IN_BACKGROUND`가 남아 있다 → Play Console의
   "Health Connect 권한 선언"에서 이유를 써야 한다.
-- **신체 활동**(`ACTIVITY_RECOGNITION`): 만보기. **센서**(`BODY_SENSORS`): 심박 센서 읽기(꼭 필요한지는 폰에서 확인 후 줄일 수 있음).
+- **신체 활동**(`ACTIVITY_RECOGNITION`): 만보기. 심박은 Health Connect로 읽으므로 `BODY_SENSORS`는 뺐다.
 - **마이크**(`RECORD_AUDIO`): 달팽이봇 말하기(누를 때만 요청). **카메라**: 완주 카드 배경 사진.
 - **foreground service**(건강·위치): 걸음과 달리기 기록이 꺼지지 않게 하는 지속 알림.
 - 알림, 진동, 부팅 완료(알림 다시 예약), 생체 인증(결제 확인), 인터넷.

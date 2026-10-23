@@ -143,8 +143,10 @@ class AuthRepository {
   /// 카카오 계정 로그인 창을 띄워 액세스 토큰만 받는다. 취소하면 null.
   ///
   /// 카톡 앱 자동 로그인이 화면 없이 토큰을 줄 수 있어서, 저장된 토큰을 지우고
-  /// [kakao.Prompt.login]으로 항상 계정 선택 화면을 보여 준다. 이름, 이메일 같은
-  /// 개인정보는 읽지 않는다. 서버가 토큰으로 사용자 번호와, 확인된 경우에만 이메일을 본다.
+  /// [kakao.Prompt.login]으로 항상 계정 선택 화면을 보여 준다. 앱은 이름, 이메일 같은
+  /// 개인정보를 읽지 않는다. 서버가 토큰으로 사용자 번호와, 카카오가 확인했다고 한 이메일만 본다.
+  /// 그 이메일로 예전에 같은 이메일로 가입한 계정을 찾아 이어 주려고, 카카오 콘솔에서 이메일
+  /// 동의항목이 켜져 있으면 로그인 직후 동의를 한 번 더 묻는다([_withKakaoEmailConsent]).
   Future<String?> kakaoAccessToken() async {
     try {
       try {
@@ -159,7 +161,7 @@ class AuthRepository {
       final token = await kakao.UserApi.instance.loginWithKakaoAccount(
         prompts: [kakao.Prompt.login],
       );
-      return token.accessToken;
+      return await _withKakaoEmailConsent(token.accessToken);
     } on kakao.KakaoClientException catch (e) {
       if (e.reason == kakao.ClientErrorCause.cancelled) {
         return null;
@@ -169,6 +171,28 @@ class AuthRepository {
       throw Exception('카카오 로그인 중 오류 발생: $e');
     }
   }
+
+  /// 이메일 동의항목이 켜져 있는데 아직 동의하지 않았으면 동의를 한 번 더 묻고 새 토큰을 돌려준다.
+  /// 동의항목이 꺼져 있거나, 사용자가 거절·취소하거나, 어디서든 실패하면 원래 토큰을 그대로 쓴다.
+  /// 그때는 서버가 이메일 없이 로그인을 처리하고, 앱은 "처음 가입할 때 어떤 방법을 쓰셨나요?"로 이어진다.
+  Future<String> _withKakaoEmailConsent(String accessToken) async {
+    try {
+      final info = await kakao.UserApi.instance.scopes(
+        scopes: const [_kakaoEmailScope],
+      );
+      for (final scope in info.scopes ?? const <kakao.Scope>[]) {
+        if (scope.id == _kakaoEmailScope && scope.using && !scope.agreed) {
+          final upgraded = await kakao.UserApi.instance.loginWithNewScopes(
+            const [_kakaoEmailScope],
+          );
+          return upgraded.accessToken;
+        }
+      }
+    } catch (_) {}
+    return accessToken;
+  }
+
+  static const _kakaoEmailScope = 'account_email';
 
   /// 서버가 준 로그인 열쇠로 Firebase에 로그인한다.
   Future<UserCredential> signInWithCustomToken(String token) {

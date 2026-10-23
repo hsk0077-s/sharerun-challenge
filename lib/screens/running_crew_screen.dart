@@ -16,6 +16,7 @@ import '../features/crew/crew_emblem.dart';
 import '../features/crew/crew_emblem_status.dart';
 import '../features/crew/crew_membership.dart';
 import '../features/crew/crew_ranking.dart';
+import '../features/report/report_dialog.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/src_wallet_payment_system.dart';
@@ -566,8 +567,34 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     }
   }
 
+  /// 크루 이름이나 크루원 닉네임을 신고한다.
+  Future<void> _report({
+    required String targetType,
+    required String targetId,
+    required String name,
+  }) async {
+    final reason = await askReportReason(context, name);
+    if (reason == null) return;
+    final api = ref.read(crewApiProvider);
+    if (api == null) {
+      _toast('지금은 신고할 수 없어요.');
+      return;
+    }
+    try {
+      await api.submitReport(
+        targetType: targetType,
+        targetId: targetId,
+        reason: reason,
+      );
+      if (mounted) _toast('신고했어요. 운영자가 확인할게요.');
+    } catch (_) {
+      if (mounted) _toast('신고하지 못했어요. 잠시 뒤 다시 해 주세요.');
+    }
+  }
+
   Future<void> _onShowMembers(MyCrew mine) async {
     final api = ref.read(crewApiProvider);
+    final myUid = ref.read(authStateChangesProvider).asData?.value?.uid;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -577,6 +604,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       ),
       builder: (ctx) => _CrewMembersSheet(
         mine: mine,
+        myUid: myUid,
+        onReport: (member) => _report(
+          targetType: 'user',
+          targetId: member.uid,
+          name: member.nickname,
+        ),
         onKick: api == null || !mine.isManager
             ? null
             : (member) async {
@@ -797,6 +830,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                             canJoin: mine == null,
                             onJoin: _onJoin,
                             onCancel: _onCancelRequest,
+                            onReport: (crew) => _report(
+                              targetType: 'crew',
+                              targetId: crew.id,
+                              name: crew.name,
+                            ),
                           ),
                         ] else if (searching) ...[
                           const SizedBox(height: 10),
@@ -1318,14 +1356,17 @@ class _RemoteCrewList extends ConsumerWidget {
     required this.canJoin,
     required this.onJoin,
     required this.onCancel,
+    this.onReport,
   });
 
   final String query;
   final bool canJoin;
   final Future<void> Function(CrewSummary crew) onJoin;
   final Future<void> Function() onCancel;
+  final Future<void> Function(CrewSummary crew)? onReport;
 
   static Key joinKey(String id) => Key('crew-join-$id');
+  static Key reportKey(String id) => Key('crew-report-$id');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -1380,6 +1421,13 @@ class _RemoteCrewList extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (onReport != null)
+                    IconButton(
+                      key: reportKey(crew.id),
+                      tooltip: '신고',
+                      icon: Icon(Icons.flag_outlined, size: 20, color: c.muted),
+                      onPressed: () => onReport!(crew),
+                    ),
                   if (canJoin)
                     if (result.pendingCrewId == crew.id)
                       OutlinedButton(
@@ -1421,9 +1469,13 @@ class _CrewMembersSheet extends StatelessWidget {
     required this.onRole,
     required this.onKick,
     required this.onTransfer,
+    this.myUid,
+    this.onReport,
   });
 
   final MyCrew mine;
+  final String? myUid;
+  final Future<void> Function(CrewMember member)? onReport;
   final Future<void> Function(CrewMember member, String role)? onRole;
   final Future<void> Function(CrewMember member)? onKick;
   final Future<void> Function(CrewMember member)? onTransfer;
@@ -1431,6 +1483,9 @@ class _CrewMembersSheet extends StatelessWidget {
   static Key roleKey(String uid) => Key('crew-role-$uid');
   static Key kickKey(String uid) => Key('crew-kick-$uid');
   static Key transferKey(String uid) => Key('crew-transfer-$uid');
+  static Key reportKey(String uid) => Key('crew-member-report-$uid');
+
+  bool _canReport(CrewMember m) => onReport != null && m.uid != myUid;
 
   /// 크루장은 누구나, 부크루장은 일반 크루원만 내보낼 수 있다.
   bool _canKick(CrewMember m) =>
@@ -1463,13 +1518,18 @@ class _CrewMembersSheet extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 title: Text(m.nickname, style: storeText(15, c.ink, w: FontWeight.w700)),
                 subtitle: Text(label(m.role), style: storeText(12, c.muted)),
-                trailing: m.role == 'leader'
+                trailing: m.role == 'leader' && !_canReport(m)
                     ? null
                     : PopupMenuButton<String>(
                         key: Key('crew-member-menu-${m.uid}'),
-                        enabled: onRole != null || _canKick(m) || onTransfer != null,
+                        enabled: onRole != null ||
+                            _canKick(m) ||
+                            onTransfer != null ||
+                            _canReport(m),
                         onSelected: (action) {
                           switch (action) {
+                            case 'report':
+                              onReport!(m);
                             case 'role':
                               onRole!(m, m.role == 'sub' ? 'member' : 'sub');
                             case 'kick':
@@ -1479,24 +1539,30 @@ class _CrewMembersSheet extends StatelessWidget {
                           }
                         },
                         itemBuilder: (_) => [
-                          if (onRole != null)
+                          if (m.role != 'leader' && onRole != null)
                             PopupMenuItem(
                               key: roleKey(m.uid),
                               value: 'role',
                               child: Text(
                                   m.role == 'sub' ? '부크루장 해제' : '부크루장으로'),
                             ),
-                          if (onTransfer != null)
+                          if (m.role != 'leader' && onTransfer != null)
                             PopupMenuItem(
                               key: transferKey(m.uid),
                               value: 'transfer',
                               child: const Text('크루장 넘기기'),
                             ),
-                          if (_canKick(m))
+                          if (m.role != 'leader' && _canKick(m))
                             PopupMenuItem(
                               key: kickKey(m.uid),
                               value: 'kick',
                               child: const Text('내보내기'),
+                            ),
+                          if (_canReport(m))
+                            PopupMenuItem(
+                              key: reportKey(m.uid),
+                              value: 'report',
+                              child: const Text('신고하기'),
                             ),
                         ],
                       ),

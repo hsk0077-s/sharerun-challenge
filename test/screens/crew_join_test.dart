@@ -26,7 +26,11 @@ class _SeededWallet extends WalletNotifier {
 
 /// 서버 대신 메모리에서 가입·탈퇴를 흉내 낸다.
 class _FakeApi extends Fake implements SecuredActionApiClient {
-  _FakeApi({this.myRole, this.joinMode = 'open', this.renameCost = 0, this.rejected = false});
+  _FakeApi(
+      {this.myRole,
+      this.joinMode = 'open',
+      this.renameCost = 0,
+      this.rejected = false});
 
   String? myRole;
   String joinMode;
@@ -52,7 +56,8 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
   Future<CrewListResult> listCrews(String query) async {
     calls.add('list:$query');
     return CrewListResult(
-      crews: query.isNotEmpty && !_crew.name.contains(query) ? const [] : [_crew],
+      crews:
+          query.isNotEmpty && !_crew.name.contains(query) ? const [] : [_crew],
       pendingCrewId: pending,
     );
   }
@@ -99,6 +104,15 @@ class _FakeApi extends Fake implements SecuredActionApiClient {
     }
     myRole = 'member';
     return 'joined';
+  }
+
+  @override
+  Future<void> submitReport({
+    required String targetType,
+    required String targetId,
+    required String reason,
+  }) async {
+    calls.add('report:$targetType:$targetId:$reason');
   }
 
   @override
@@ -252,6 +266,36 @@ void main() {
     expect(api.calls, contains('role:u2:sub'));
   });
 
+  testWidgets('a member can report another member and the crew name',
+      (tester) async {
+    final api = _FakeApi(myRole: 'member');
+    await _pump(tester, api);
+    await tester.ensureVisible(find.text('크루원 보기'));
+    await tester.tap(find.text('크루원 보기'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('crew-member-menu-u2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('crew-member-report-u2')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('report-reason-offensive_name')));
+    await tester.pumpAndSettle();
+
+    expect(api.calls, contains('report:user:u2:offensive_name'));
+  });
+
+  testWidgets('a crew in the search list can be reported', (tester) async {
+    final api = _FakeApi();
+    await _pump(tester, api);
+    await tester.ensureVisible(find.byKey(const Key('crew-report-c1')));
+    await tester.tap(find.byKey(const Key('crew-report-c1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('report-reason-spam')));
+    await tester.pumpAndSettle();
+
+    expect(api.calls, contains('report:crew:c1:spam'));
+  });
+
   testWidgets('a plain member sees the list but no appoint buttons',
       (tester) async {
     final api = _FakeApi(myRole: 'member');
@@ -387,7 +431,8 @@ void main() {
     expect(find.text('321km'), findsOneWidget);
   });
 
-  testWidgets('a real crew shows this month rank and its best ever', (tester) async {
+  testWidgets('a real crew shows this month rank and its best ever',
+      (tester) async {
     await _pump(tester, _FakeApi(myRole: 'leader'));
     expect(find.byKey(const Key('crew-rank-line')), findsOneWidget);
     expect(find.text('이번 달 2위 · 1인 평균 8.4km'), findsOneWidget);
@@ -425,7 +470,8 @@ void main() {
     await tester.enterText(find.byKey(const Key('crew-name-field')), '가');
     await tester.pump();
     expect(ok().onPressed, isNull);
-    await tester.enterText(find.byKey(const Key('crew-name-field')), '  한강 새벽러너  ');
+    await tester.enterText(
+        find.byKey(const Key('crew-name-field')), '  한강 새벽러너  ');
     await tester.pump();
     expect(ok().onPressed, isNotNull);
     await tester.tap(find.byKey(const Key('crew-name-ok')));
@@ -482,7 +528,8 @@ void main() {
     await tester.tap(find.byKey(const Key('crew-name-ok')));
     await tester.pumpAndSettle();
     expect(api.calls.where((c) => c.startsWith('rename')), isEmpty);
-    expect(find.textContaining('300 DIA가 들어요. 보너스 DIA를 먼저 써요.'), findsOneWidget);
+    expect(
+        find.textContaining('300 DIA가 들어요. 보너스 DIA를 먼저 써요.'), findsOneWidget);
     await tester.tap(find.text('300 DIA 내고 바꾸기'));
     await tester.pumpAndSettle();
     expect(api.calls, contains('rename:서울 밤 러너'));
@@ -512,7 +559,8 @@ void main() {
       (tester) async {
     final api = _FakeApi(rejected: true);
     await _pump(tester, api);
-    final button = tester.widget<FilledButton>(find.byKey(const Key('crew-join-c1')));
+    final button =
+        tester.widget<FilledButton>(find.byKey(const Key('crew-join-c1')));
     expect(button.onPressed, isNull);
     expect(find.text('가입 불가'), findsOneWidget);
   });

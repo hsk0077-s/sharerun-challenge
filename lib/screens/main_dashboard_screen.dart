@@ -50,12 +50,14 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     if (!mounted || _nicknameSheetOpen) return;
     if (!ref.read(needsNicknameSetupProvider)) return;
     _nicknameSheetOpen = true;
-    NicknameSetupSheet.show(context).whenComplete(() {
-      if (mounted) {
-        setState(() => _nicknameSheetOpen = false);
-        _maybeShowNicknameSheet();
-      }
-    });
+    _openNicknameSheet();
+  }
+
+  Future<void> _openNicknameSheet() async {
+    await NicknameSetupSheet.show(context);
+    if (!mounted) return;
+    setState(() => _nicknameSheetOpen = false);
+    _maybeShowNicknameSheet();
   }
 
   void _onNavTap(int index) {

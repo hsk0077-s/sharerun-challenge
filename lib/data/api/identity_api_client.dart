@@ -6,11 +6,17 @@ import 'package:http/http.dart' as http;
 import '../../core/api/api_exception.dart';
 
 class ProviderLoginResult {
-  const ProviderLoginResult(
-      {required this.customToken, required this.newAccount});
+  const ProviderLoginResult({
+    this.customToken = '',
+    this.newAccount = false,
+    this.needsAccountChoice = false,
+  });
 
   final String customToken;
   final bool newAccount;
+
+  /// 확인된 이메일로 기존 계정을 못 찾았을 때. 계정을 만들지 않았다는 뜻이다.
+  final bool needsAccountChoice;
 }
 
 /// 예전 이름. 카카오만 있던 때의 이름을 그대로 쓰는 곳을 위해 남긴다.
@@ -36,37 +42,69 @@ class IdentityApiClient {
   static const _timeout = Duration(seconds: 20);
 
   /// 카카오 토큰을 서버에 보내고 Firebase 로그인 열쇠를 받는다.
-  Future<ProviderLoginResult> kakaoLogin(String accessToken) =>
-      _login('kakao', accessToken);
+  /// [createAccount]는 사람이 새 계정을 만들겠다고 고른 뒤에만 true.
+  Future<ProviderLoginResult> kakaoLogin(
+    String accessToken, {
+    bool createAccount = false,
+  }) =>
+      _login('kakao', accessToken, createAccount: createAccount);
 
   /// 네이버 토큰을 서버에 보내고 Firebase 로그인 열쇠를 받는다.
-  Future<ProviderLoginResult> naverLogin(String accessToken) =>
-      _login('naver', accessToken);
+  Future<ProviderLoginResult> naverLogin(
+    String accessToken, {
+    bool createAccount = false,
+  }) =>
+      _login('naver', accessToken, createAccount: createAccount);
+
+  /// 구글 ID 토큰을 서버에 보낸다. 전화가 Firebase 사용자를 먼저 만들지 않는다.
+  Future<ProviderLoginResult> googleLogin(
+    String idToken, {
+    bool createAccount = false,
+  }) =>
+      _login(
+        'google',
+        idToken,
+        createAccount: createAccount,
+        tokenField: 'id_token',
+      );
 
   Future<void> linkKakao(String accessToken) => _link('kakao', accessToken);
 
   Future<void> linkNaver(String accessToken) => _link('naver', accessToken);
+
+  Future<void> linkGoogle(String idToken) =>
+      _signedIn('POST', '/auth/google/link', {'id_token': idToken});
 
   Future<void> unlinkKakao() => _unlink('kakao');
 
   Future<void> unlinkNaver() => _unlink('naver');
 
   Future<ProviderLoginResult> _login(
-      String provider, String accessToken) async {
+    String provider,
+    String token, {
+    bool createAccount = false,
+    String tokenField = 'access_token',
+  }) async {
     final response = await _httpClient
         .post(
           baseUri.resolve('/auth/$provider/login'),
           headers: const {'Content-Type': 'application/json'},
-          body: jsonEncode({'access_token': accessToken}),
+          body: jsonEncode({
+            tokenField: token,
+            if (createAccount) 'create_account': true,
+          }),
         )
         .timeout(_timeout);
     final json = _decode(response);
-    final token = json['custom_token'];
-    if (token is! String || token.isEmpty) {
+    if (json['needs_account_choice'] == true) {
+      return const ProviderLoginResult(needsAccountChoice: true);
+    }
+    final custom = json['custom_token'];
+    if (custom is! String || custom.isEmpty) {
       throw StateError('Login token missing from server response.');
     }
     return ProviderLoginResult(
-      customToken: token,
+      customToken: custom,
       newAccount: json['new_account'] == true,
     );
   }

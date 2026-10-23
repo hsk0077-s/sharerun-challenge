@@ -31,6 +31,24 @@ abstract final class AppStrings {
   static String loginComingSoon(String provider) => '$provider 로그인은 준비 중입니다.';
   static String loginSaveFailed(Object error) => '로그인 저장 실패: $error';
 
+  /// 확인된 이메일로 기존 계정을 찾지 못했을 때, 계정을 만들기 전에 묻는다.
+  static const existingAccountTitle = '예전에 다른 방법으로 가입하셨나요?';
+  static const existingAccountCreate = '새 계정 만들기';
+  static const existingAccountCancel = '취소';
+  static const existingAccountGoogle = '구글로 로그인';
+  static const existingAccountKakao = '카카오로 로그인';
+  static const existingAccountNaver = '네이버로 로그인';
+  static const existingAccountNotFound =
+      '그 방법으로 가입된 계정을 찾지 못했어요. 다른 방법을 고르거나 새 계정을 만들어 주세요.';
+  static const existingAccountLinked = '기존 계정에 연결했어요.';
+
+  static String existingAccountBody(String provider) =>
+      '$provider로 확인된 이메일과 같은 계정을 찾지 못해서, 새 계정을 만들지 않았어요.\n\n'
+      '예전에 다른 방법으로 가입하셨다면 그 방법으로 로그인해 주세요. '
+      '로그인되면 $provider를 그 계정에 바로 연결하고, 닉네임과 SHARE도 그대로 보여요. '
+      '확인된 이메일이 같은 계정은 이렇게 고르지 않아도 자동으로 이어져요.\n\n'
+      '쉐어런이 처음이시면 새 계정을 만들어 주세요.';
+
   // ── Terms Agreement (Screen 2) ────────────────────────────────────
   static const termsTitle =
       '환영합니다!\n시작 전 약관 동의가\n필요합니다.';

@@ -46,8 +46,28 @@ class _FakeIdentityApi implements IdentityApiClient {
   }
 
   @override
-  Future<KakaoLoginResult> kakaoLogin(String accessToken) =>
+  Future<KakaoLoginResult> kakaoLogin(
+    String accessToken, {
+    bool createAccount = false,
+  }) =>
       throw UnimplementedError();
+
+  @override
+  Future<ProviderLoginResult> naverLogin(
+    String accessToken, {
+    bool createAccount = false,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<ProviderLoginResult> googleLogin(
+    String idToken, {
+    bool createAccount = false,
+  }) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> linkGoogle(String idToken) => throw UnimplementedError();
 
   @override
   Uri get baseUri => throw UnimplementedError();

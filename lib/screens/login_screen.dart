@@ -18,7 +18,9 @@ import '../core/widgets/naver_login_button.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../core/widgets/src_logo_header.dart';
 import '../core/widgets/src_text_field.dart';
+import '../data/api/identity_api_client.dart';
 import '../data/repositories/auth_repository.dart';
+import '../features/auth/existing_account_question.dart';
 import '../features/auth/login_connection_providers.dart';
 
 /// 로그인 화면 (Screen 1) — src-1 목업 정합 UI.
@@ -32,8 +34,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _referralController = TextEditingController();
-  var _kakaoBusy = false;
-  var _naverBusy = false;
+  var _socialBusy = false;
   var _referralFieldVisible = false;
 
   @override
@@ -92,118 +93,225 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _onGoogle() async {
+  /// 구글·카카오·네이버. 서버가 확인된 이메일이면 기존 계정의 맞춤 토큰을 주고,
+  /// 아니면 계정을 만들기 전에 예전에 쓰던 방법을 묻는다.
+  Future<void> _startProvider({
+    required String provider,
+    required String providerName,
+    required String successMessage,
+    required String failureMessage,
+    required Future<String?> Function() askToken,
+  }) async {
+    if (_socialBusy) return;
+    setState(() => _socialBusy = true);
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final userCredential = await authRepo.signInWithGoogle();
+      final token = await askToken();
+      if (token == null || !mounted) return;
+      await _loginProvider(
+        provider: provider,
+        token: token,
+        providerName: providerName,
+        successMessage: successMessage,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$failureMessage${ApiErrorMessage.from(e)}')),
+      );
+    } finally {
+      if (mounted) setState(() => _socialBusy = false);
+    }
+  }
 
-      if (userCredential != null && mounted) {
-        await _rememberLogin(uid: userCredential.user?.uid);
-        if (!mounted) return;
+  Future<void> _onGoogle() => _startProvider(
+        provider: 'google',
+        providerName: '구글',
+        successMessage: '구글 로그인에 성공했습니다!',
+        failureMessage: '로그인 실패: ',
+        askToken: () => ref.read(googleIdTokenProvider)(),
+      );
+
+  Future<void> _onNaver() => _startProvider(
+        provider: 'naver',
+        providerName: '네이버',
+        successMessage: '네이버 로그인에 성공했습니다!',
+        failureMessage: '네이버 로그인 실패: ',
+        askToken: () => ref.read(naverAccessTokenProvider)(),
+      );
+
+  Future<void> _onKakao() => _startProvider(
+        provider: 'kakao',
+        providerName: '카카오',
+        successMessage: '카카오 로그인에 성공했습니다!',
+        failureMessage: '카카오 로그인 실패: ',
+        askToken: () => ref.read(kakaoAccessTokenProvider)(),
+      );
+
+  Future<void> _loginProvider({
+    required String provider,
+    required String token,
+    required String providerName,
+    required String successMessage,
+    bool createAccount = false,
+    bool offerChoice = true,
+    String? linkProvider,
+    String? linkToken,
+  }) async {
+    final api = ref.read(identityApiClientProvider);
+    final ProviderLoginResult result = switch (provider) {
+      'kakao' => await api.kakaoLogin(token, createAccount: createAccount),
+      'naver' => await api.naverLogin(token, createAccount: createAccount),
+      'google' => await api.googleLogin(token, createAccount: createAccount),
+      _ => throw StateError(provider),
+    };
+    if (!mounted) return;
+    if (result.needsAccountChoice || result.customToken.isEmpty) {
+      if (!offerChoice) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('구글 로그인에 성공했습니다!'),
-            duration: Duration(milliseconds: 1300),
-          ),
+          const SnackBar(content: Text(AppStrings.existingAccountNotFound)),
         );
-        await _redeemEnteredReferral();
-        if (!mounted) return;
-        final termsAccepted =
-            ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
-        Navigator.of(context).pushReplacementNamed(
-          termsAccepted ? RouteNames.home : RouteNames.termsAgreement,
+        return;
+      }
+      final answer = await showExistingAccountQuestion(
+        context,
+        provider: provider,
+        providerName: providerName,
+      );
+      if (!mounted) return;
+      switch (answer) {
+        case ExistingAccountAnswer.cancel:
+          return;
+        case ExistingAccountAnswer.create:
+          // 구글은 Firebase가 예전에 만든 구글 계정을 그대로 연다.
+          // 서버에서 빈 사용자를 만들면 그 계정과 갈라진다.
+          if (provider == 'google') {
+            await _enterWithExistingGoogleAccount(token, successMessage);
+            return;
+          }
+          await _loginProvider(
+            provider: provider,
+            token: token,
+            providerName: providerName,
+            successMessage: successMessage,
+            createAccount: true,
+            offerChoice: false,
+          );
+          return;
+        case ExistingAccountAnswer.google:
+        case ExistingAccountAnswer.kakao:
+        case ExistingAccountAnswer.naver:
+          final next = answer.name;
+          final nextToken = await _tokenFor(next);
+          if (nextToken == null || !mounted) return;
+          await _loginProvider(
+            provider: next,
+            token: nextToken,
+            providerName: _providerName(next),
+            successMessage: '${_providerName(next)} 로그인에 성공했습니다!',
+            offerChoice: false,
+            linkProvider: provider,
+            linkToken: token,
+          );
+          return;
+      }
+    }
+
+    final credential = await ref
+        .read(authRepositoryProvider)
+        .signInWithCustomToken(result.customToken);
+    if (!mounted) return;
+    var linked = false;
+    if (linkProvider != null && (linkToken ?? '').isNotEmpty) {
+      try {
+        switch (linkProvider) {
+          case 'kakao':
+            await api.linkKakao(linkToken!);
+          case 'naver':
+            await api.linkNaver(linkToken!);
+          case 'google':
+            await api.linkGoogle(linkToken!);
+        }
+        linked = true;
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(ApiErrorMessage.from(e))),
+          );
+        }
+      }
+    }
+    if (!mounted) return;
+    await _enterApp(
+      uid: credential.user?.uid ?? '',
+      newAccount: result.newAccount,
+      successMessage:
+          linked ? AppStrings.existingAccountLinked : successMessage,
+    );
+  }
+
+  Future<void> _enterWithExistingGoogleAccount(
+    String idToken,
+    String successMessage,
+  ) async {
+    final credential = await ref
+        .read(authRepositoryProvider)
+        .signInWithGoogleIdToken(idToken);
+    if (!mounted) return;
+    try {
+      await ref.read(identityApiClientProvider).linkGoogle(idToken);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(ApiErrorMessage.from(e))),
         );
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인 실패: $e')),
-      );
     }
+    if (!mounted) return;
+    await _enterApp(
+      uid: credential.user?.uid ?? '',
+      newAccount: credential.additionalUserInfo?.isNewUser ?? false,
+      successMessage: successMessage,
+    );
   }
 
-  Future<void> _onNaver() async {
-    if (_naverBusy) return;
-    setState(() => _naverBusy = true);
-    try {
-      final token = await ref.read(naverAccessTokenProvider)();
-      if (token == null || !mounted) return; // 사용자가 창을 닫음
-
-      // 서버가 네이버 토큰을 확인하고 우리 계정과 짝지어 로그인 열쇠를 준다.
-      final result =
-          await ref.read(identityApiClientProvider).naverLogin(token);
-      final credential = await ref
-          .read(authRepositoryProvider)
-          .signInWithCustomToken(result.customToken);
-      if (!mounted) return;
-
-      await _rememberLogin(uid: credential.user?.uid);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('네이버 로그인에 성공했습니다!'),
-          duration: Duration(milliseconds: 1300),
-        ),
-      );
-      await _redeemEnteredReferral();
-      if (!mounted) return;
-      final termsAccepted =
-          ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
-      Navigator.of(context).pushReplacementNamed(
-        !result.newAccount && termsAccepted
-            ? RouteNames.home
-            : RouteNames.termsAgreement,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('네이버 로그인 실패: ${ApiErrorMessage.from(e)}')),
-      );
-    } finally {
-      if (mounted) setState(() => _naverBusy = false);
-    }
+  Future<String?> _tokenFor(String provider) {
+    return switch (provider) {
+      'google' => ref.read(googleIdTokenProvider)(),
+      'kakao' => ref.read(kakaoAccessTokenProvider)(),
+      'naver' => ref.read(naverAccessTokenProvider)(),
+      _ => Future<String?>.value(null),
+    };
   }
 
-  Future<void> _onKakao() async {
-    if (_kakaoBusy) return;
-    setState(() => _kakaoBusy = true);
-    try {
-      final token = await ref.read(kakaoAccessTokenProvider)();
-      if (token == null || !mounted) return; // 사용자가 창을 닫음
+  String _providerName(String provider) {
+    return switch (provider) {
+      'google' => '구글',
+      'kakao' => '카카오',
+      'naver' => '네이버',
+      _ => provider,
+    };
+  }
 
-      // 서버가 카카오 토큰을 확인하고 우리 계정과 짝지어 로그인 열쇠를 준다.
-      final result =
-          await ref.read(identityApiClientProvider).kakaoLogin(token);
-      final credential = await ref
-          .read(authRepositoryProvider)
-          .signInWithCustomToken(result.customToken);
-      if (!mounted) return;
-
-      await _rememberLogin(uid: credential.user?.uid);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('카카오 로그인에 성공했습니다!'),
-          duration: Duration(milliseconds: 1300),
-        ),
-      );
-      await _redeemEnteredReferral();
-      if (!mounted) return;
-      final termsAccepted =
-          ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
-      Navigator.of(context).pushReplacementNamed(
-        !result.newAccount && termsAccepted
-            ? RouteNames.home
-            : RouteNames.termsAgreement,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('카카오 로그인 실패: ${ApiErrorMessage.from(e)}')),
-      );
-    } finally {
-      if (mounted) setState(() => _kakaoBusy = false);
-    }
+  Future<void> _enterApp({
+    required String uid,
+    required bool newAccount,
+    required String successMessage,
+  }) async {
+    await _rememberLogin(uid: uid);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(successMessage),
+        duration: const Duration(milliseconds: 1300),
+      ),
+    );
+    await _redeemEnteredReferral();
+    if (!mounted) return;
+    final termsAccepted =
+        ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
+    Navigator.of(context).pushReplacementNamed(
+      !newAccount && termsAccepted ? RouteNames.home : RouteNames.termsAgreement,
+    );
   }
 
   @override
@@ -253,7 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // 3) Kakao — 카카오 공식 버튼 이미지
                         KakaoLoginButton(
-                          busy: _kakaoBusy,
+                          busy: _socialBusy,
                           maxWidth: contentWidth,
                           onPressed: _onKakao,
                         ),
@@ -261,7 +369,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // 4) Naver — 네이버 공식 버튼 이미지
                         NaverLoginButton(
-                          busy: _naverBusy,
+                          busy: _socialBusy,
                           maxWidth: contentWidth,
                           onPressed: _onNaver,
                         ),

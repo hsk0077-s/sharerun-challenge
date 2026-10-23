@@ -764,3 +764,64 @@ def test_link_preview_returns_only_nickname_and_share() -> None:
 
     db.collection(identities.USERS).document("blank").set({"nickname": "  ", "wallet": {}})
     assert identities.link_preview(db, "blank")["can_link"] is False
+
+
+def test_link_endpoints_are_rate_limited_per_account_and_per_address(monkeypatch) -> None:
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+    from app.routers import identity_router
+    from app.services import auth_service, rate_limit
+
+    for limiter in (
+        rate_limit.LINK_BY_UID,
+        rate_limit.LINK_BY_IP,
+        rate_limit.PREVIEW_BY_UID,
+        rate_limit.PREVIEW_BY_IP,
+    ):
+        limiter.clear()
+    calls = {"link": 0, "preview": 0}
+    monkeypatch.setattr(identity_router, "_db", lambda: object())
+    monkeypatch.setattr(
+        identities, "link", lambda *a, **k: calls.__setitem__("link", calls["link"] + 1) or {}
+    )
+    monkeypatch.setattr(
+        identities,
+        "link_preview",
+        lambda *a, **k: calls.__setitem__("preview", calls["preview"] + 1) or {},
+    )
+    app.dependency_overrides[auth_service.require_uid] = lambda: "u1"
+    try:
+        client = TestClient(app)
+        body = {"access_token": "t" * 20}
+        statuses = [client.post("/auth/kakao/link", json=body).status_code for _ in range(12)]
+        assert statuses[:10] == [200] * 10
+        assert statuses[10:] == [429, 429]
+        assert calls["link"] == 10
+        refused = client.post("/auth/naver/unlink")
+        assert refused.status_code == 429
+        assert refused.json()["detail"] == "too_many_attempts"
+
+        previews = [client.get("/auth/link-preview").status_code for _ in range(32)]
+        assert previews[:30] == [200] * 30
+        assert previews[30:] == [429, 429]
+        assert calls["preview"] == 30
+    finally:
+        app.dependency_overrides.pop(auth_service.require_uid, None)
+        for limiter in (
+            rate_limit.LINK_BY_UID,
+            rate_limit.LINK_BY_IP,
+            rate_limit.PREVIEW_BY_UID,
+            rate_limit.PREVIEW_BY_IP,
+        ):
+            limiter.clear()
+
+
+def test_the_window_limiter_forgets_old_hits() -> None:
+    from app.services.rate_limit import WindowLimiter
+
+    limiter = WindowLimiter(limit=2, window_seconds=10)
+    assert limiter.allow("a", 0) and limiter.allow("a", 1)
+    assert limiter.allow("a", 2) is False
+    assert limiter.allow("b", 2) is True
+    assert limiter.allow("a", 12) is True

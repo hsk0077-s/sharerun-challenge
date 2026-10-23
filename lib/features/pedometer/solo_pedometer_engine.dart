@@ -102,11 +102,6 @@ class SoloPedometerEngine {
       // 권한 채널 실패는 무시하고 HealthKit/Health Connect로 이어간다.
     } catch (_) {}
     try {
-      await Permission.sensors.request();
-    } on PlatformException {
-      // iOS 등 sensors 미지원.
-    } catch (_) {}
-    try {
       await _health.configure();
       var granted = await _health.hasPermissions(
         _stepTypes,

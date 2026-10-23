@@ -170,7 +170,7 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
                       style: FilledButton.styleFrom(
                         backgroundColor: AppColors.tealAccent,
                         disabledBackgroundColor: AppColors.buttonDisabled,
-                        foregroundColor: AppColors.textWhite,
+                        foregroundColor: AppColors.nightOnLime,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -181,13 +181,13 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
                               height: 22,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.2,
-                                color: AppColors.textWhite,
+                                color: AppColors.nightOnLime,
                               ),
                             )
                           : Text(
                               AppStrings.watchSyncComplete,
                               style: AppTextStyles.buttonText.copyWith(
-                                color: AppColors.textWhite,
+                                color: AppColors.nightOnLime,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'app/app_config.dart';
+import 'app/boot_error_app.dart';
 import 'app/providers/app_providers.dart';
 import 'core/auth/auth_session_bootstrap.dart';
 import 'core/config/app_env.dart';
@@ -23,6 +25,25 @@ import 'features/wallet/debug_test_wallet_grant.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 화면 밖에서 난 오류가 앱을 죽이지 않게 기록만 남긴다.
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Unhandled error: $error\n$stack');
+    return true;
+  };
+  await _start();
+}
+
+/// 시작 중 오류가 나면 흰 화면 대신 안내와 다시 시도 버튼을 보여 준다.
+Future<void> _start() async {
+  try {
+    runApp(await _buildApp());
+  } catch (error, stackTrace) {
+    debugPrint('App start failed: $error\n$stackTrace');
+    runApp(BootErrorApp(onRetry: _start));
+  }
+}
+
+Future<Widget> _buildApp() async {
   try {
     await KakaoSdk.init(nativeAppKey: 'c45c63710e60f98b3fe617ae0b75c274');
   } catch (e) {
@@ -60,18 +81,16 @@ Future<void> main() async {
     app = DebugTestWalletGrantHost(child: app);
   }
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        if (bootstrap.session != null)
-          persistedAuthSessionProvider.overrideWith(() {
-            final notifier = PersistedAuthSessionNotifier();
-            notifier.seed(bootstrap.session);
-            return notifier;
-          }),
-      ],
-      child: app,
-    ),
+  return ProviderScope(
+    overrides: [
+      if (bootstrap.session != null)
+        persistedAuthSessionProvider.overrideWith(() {
+          final notifier = PersistedAuthSessionNotifier();
+          notifier.seed(bootstrap.session);
+          return notifier;
+        }),
+    ],
+    child: app,
   );
 }
 

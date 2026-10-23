@@ -677,6 +677,21 @@ class SecuredActionApiClient {
     });
   }
 
+  /// 하루 걸음 수를 서버에 기록한다. 서버가 규칙을 검사해 저장한다.
+  Future<void> recordDailySteps({
+    required String dayKey,
+    required int steps,
+    required String source,
+    int? lastHealth,
+  }) async {
+    await _post('/actions/daily-steps', {
+      'day_key': dayKey,
+      'steps': steps,
+      'source': source,
+      if (lastHealth != null && lastHealth > 0) 'last_health': lastHealth,
+    });
+  }
+
   /// 크루장·부크루장: 크루원을 내보낸다(부크루장은 일반 크루원만).
   Future<void> kickCrewMember(String uid) async {
     await _post('/actions/crew/kick', {'uid': uid});

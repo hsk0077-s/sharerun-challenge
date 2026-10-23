@@ -12,10 +12,13 @@ abstract final class LegalConstants {
   /// addresses, so the in-app text and the store listing never differ.
   static const privacyPolicyUrl =
       'https://share-run-challenge.web.app/privacy.html';
+  static const termsOfServiceUrl =
+      'https://share-run-challenge.web.app/terms.html';
   static const accountDeletionUrl =
       'https://share-run-challenge.web.app/account-deletion.html';
 
   static const privacyPolicyLinkLabel = '개인정보 처리방침 전문 보기';
+  static const termsOfServiceLinkLabel = '서비스 이용약관 전문 보기';
 
   /// 이미지 생성 서비스(Grok) 약관과 Brand Guidelines의 표기 요구에 따른 안내 문구.
   /// Brand Guidelines는 'Created with Grok'를 읽기 쉽게 보이라고 한다.

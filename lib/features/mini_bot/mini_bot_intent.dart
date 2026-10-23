@@ -1,3 +1,4 @@
+import '../../core/config/app_env.dart';
 import '../../core/challenge/challenge_entry_fee.dart';
 import '../../core/strings/app_strings.dart';
 import '../../data/models/company_tournament_config.dart';
@@ -127,6 +128,17 @@ abstract final class MiniBotPrompts {
     MiniBotChip(id: 'coach-plus', label: coachPlus),
     MiniBotChip(id: 'battle-pass', label: battlePass),
   ];
+
+  /// 1.0은 현금 결제 칩(러너 후원 결제, 구독, Coach+)을 보여 주지 않는다.
+  static const purchaseChipIds = {'runner', 'subscription', 'coach-plus'};
+
+  static List<MiniBotChip> get visibleChips {
+    if (AppEnv.inAppPurchasesEnabled) return chips;
+    return [
+      for (final chip in chips)
+        if (!purchaseChipIds.contains(chip.id)) chip,
+    ];
+  }
 }
 
 abstract final class MiniBotCopy {

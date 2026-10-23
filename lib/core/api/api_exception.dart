@@ -127,6 +127,7 @@ abstract final class ApiErrorMessage {
       'expired' => AppStrings.referralRedeemExpired,
       'identity_belongs_to_another_account' =>
         '이 계정은 이미 다른 쉐어런 계정에 연결돼 있어요.',
+      'empty_account' => AppStrings.existingAccountEmpty,
       'provider_already_linked' => '이미 같은 종류의 계정이 연결돼 있어요.',
       'last_login_method' => '마지막 로그인 방법은 해제할 수 없어요.',
       'not_linked' => '연결된 계정이 아니에요.',

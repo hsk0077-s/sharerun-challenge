@@ -17,15 +17,12 @@ void main() {
 
     expect(find.text(AppStrings.iapBillingTitle), findsOneWidget);
     expect(find.text('다이아 교환소'), findsOneWidget);
-    expect(find.text('Coach+'), findsOneWidget);
+    expect(find.text('Coach+'), findsNothing);
     expect(find.text('DIA · SHARE로 교환'), findsOneWidget);
     expect(find.text('DIA 팩'), findsNothing);
     expect(find.byKey(const Key('dia-pack-store')), findsNothing);
+    expect(find.byKey(const Key('coach-plus-billing')), findsNothing);
 
-    expect(
-      tester.widget<InkWell>(find.byKey(const Key('coach-plus-billing'))).onTap,
-      isNotNull,
-    );
     expect(
       tester.widget<InkWell>(find.byKey(const Key('dia-share-exchange'))).onTap,
       isNotNull,

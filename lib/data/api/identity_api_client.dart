@@ -22,6 +22,19 @@ class ProviderLoginResult {
 /// 예전 이름. 카카오만 있던 때의 이름을 그대로 쓰는 곳을 위해 남긴다.
 typedef KakaoLoginResult = ProviderLoginResult;
 
+/// 연결 직전에 보여 주는 대상 계정. 닉네임과 SHARE만 담는다.
+class AccountLinkPreview {
+  const AccountLinkPreview({
+    required this.nickname,
+    required this.shareBalance,
+    required this.canLink,
+  });
+
+  final String nickname;
+  final int shareBalance;
+  final bool canLink;
+}
+
 /// 로그인 방법을 계정에 잇는 서버 API. 로그인 요청만 Firebase 인증 없이 부른다.
 class IdentityApiClient {
   IdentityApiClient({
@@ -78,6 +91,20 @@ class IdentityApiClient {
   Future<void> unlinkKakao() => _unlink('kakao');
 
   Future<void> unlinkNaver() => _unlink('naver');
+
+  Future<void> unlinkGoogle() => _unlink('google');
+
+  /// 지금 로그인된 계정의 닉네임과 SHARE. 연결 확인 전에만 쓴다.
+  Future<AccountLinkPreview> fetchLinkPreview() async {
+    final json = await _signedIn('GET', '/auth/link-preview', null);
+    final nickname = json['nickname'];
+    final share = json['share_balance'];
+    return AccountLinkPreview(
+      nickname: nickname is String ? nickname.trim() : '',
+      shareBalance: share is num ? share.toInt() : 0,
+      canLink: json['can_link'] == true,
+    );
+  }
 
   Future<ProviderLoginResult> _login(
     String provider,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/router/route_names.dart';
+import '../../core/config/app_env.dart';
 import '../../core/navigation/app_route_nav.dart';
 import '../../core/navigation/dashboard_tab_navigation.dart';
 import '../../screens/battle_pass_screen.dart';
@@ -18,7 +19,30 @@ import 'mini_bot_intent.dart';
 
 /// Existing screens only. Does not join a room or start a purchase.
 abstract final class MiniBotRoutes {
+  /// 현금 결제나 유료 구독으로 이어지는 목적지. SHARE 교환은 여기 넣지 않는다.
+  static bool isPurchaseDestination(MiniBotDestination destination) {
+    return switch (destination) {
+      MiniBotDestination.personalSponsor ||
+      MiniBotDestination.brandSponsor ||
+      MiniBotDestination.subscription ||
+      MiniBotDestination.coachPlus =>
+        true,
+      MiniBotDestination.none ||
+      MiniBotDestination.beginnerRoom ||
+      MiniBotDestination.challengeLobby ||
+      MiniBotDestination.cprStore ||
+      MiniBotDestination.donateStore ||
+      MiniBotDestination.safeGuardStore ||
+      MiniBotDestination.shareCharge ||
+      MiniBotDestination.battlePass =>
+        false,
+    };
+  }
+
   static String? location(MiniBotDestination destination) {
+    if (!AppEnv.inAppPurchasesEnabled && isPurchaseDestination(destination)) {
+      return null;
+    }
     return switch (destination) {
       MiniBotDestination.beginnerRoom =>
         RouteNames.challengeDetailForRoom(RouteNames.beginner1kmRoomId),
@@ -41,6 +65,10 @@ abstract final class MiniBotRoutes {
 
 abstract final class MiniBotNavigator {
   static void go(BuildContext context, MiniBotDestination destination) {
+    if (!AppEnv.inAppPurchasesEnabled &&
+        MiniBotRoutes.isPurchaseDestination(destination)) {
+      return;
+    }
     switch (destination) {
       case MiniBotDestination.none:
         return;

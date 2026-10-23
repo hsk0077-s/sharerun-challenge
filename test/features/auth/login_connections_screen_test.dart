@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/api/api_exception.dart';
+import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/data/api/identity_api_client.dart';
 import 'package:share_run_challenge/features/auth/login_connection_providers.dart';
 import 'package:share_run_challenge/screens/login_connections_screen.dart';
@@ -11,12 +12,29 @@ class _FakeIdentityApi implements IdentityApiClient {
 
   List<String> providers;
   ApiException? linkError;
+  AccountLinkPreview preview = const AccountLinkPreview(
+    nickname: '달림이',
+    shareBalance: 1200,
+    canLink: true,
+  );
   final calls = <String>[];
 
   @override
   Future<List<String>> fetchProviders() async {
     calls.add('list');
     return List.of(providers);
+  }
+
+  @override
+  Future<AccountLinkPreview> fetchLinkPreview() async {
+    calls.add('preview');
+    return preview;
+  }
+
+  @override
+  Future<void> unlinkGoogle() async {
+    calls.add('unlink-google');
+    providers = providers.where((p) => p != 'google').toList();
   }
 
   @override
@@ -130,10 +148,15 @@ void main() {
 
     await tester.tap(find.byKey(LoginConnectionsScreen.kakaoActionKey));
     await tester.pumpAndSettle();
+    expect(find.textContaining('달림이'), findsOneWidget);
+    expect(find.textContaining('1,200'), findsOneWidget);
 
-    expect(api.calls, ['list', 'link:kakao-token-12345', 'list']);
+    await tester.tap(find.byKey(const Key('link-confirm-yes')));
+    await tester.pumpAndSettle();
+
+    expect(api.calls, ['list', 'preview', 'link:kakao-token-12345', 'list']);
     expect(_inKakaoRow('해제'), findsOneWidget);
-    expect(find.text('카카오 계정을 연결했어요.'), findsOneWidget);
+    expect(find.text('카카오가 연결됐어요. 이제 어느 쪽으로 들어와도 같은 계정이에요.'), findsOneWidget);
   });
 
   testWidgets('closing the Kakao window changes nothing', (tester) async {
@@ -142,8 +165,10 @@ void main() {
 
     await tester.tap(find.byKey(LoginConnectionsScreen.kakaoActionKey));
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('link-confirm-yes')));
+    await tester.pumpAndSettle();
 
-    expect(api.calls, ['list']);
+    expect(api.calls, ['list', 'preview']);
     expect(_inKakaoRow('연결하기'), findsOneWidget);
   });
 
@@ -157,6 +182,8 @@ void main() {
     await _pump(tester, api);
 
     await tester.tap(find.byKey(LoginConnectionsScreen.kakaoActionKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('link-confirm-yes')));
     await tester.pumpAndSettle();
 
     expect(find.text('이 계정은 이미 다른 쉐어런 계정에 연결돼 있어요.'), findsOneWidget);
@@ -205,8 +232,13 @@ void main() {
 
     await tester.tap(find.byKey(LoginConnectionsScreen.naverActionKey));
     await tester.pumpAndSettle();
-    expect(api.calls, ['list', 'link-naver:naver-token-12345', 'list']);
-    expect(find.text('네이버 계정을 연결했어요.'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('link-confirm-yes')));
+    await tester.pumpAndSettle();
+    expect(api.calls, ['list', 'preview', 'link-naver:naver-token-12345', 'list']);
+    expect(
+      find.text('네이버가 연결됐어요. 이제 어느 쪽으로 들어와도 같은 계정이에요.'),
+      findsOneWidget,
+    );
     expect(
       find.descendant(
         of: find.byKey(LoginConnectionsScreen.naverRowKey),
@@ -226,6 +258,53 @@ void main() {
     expect(
       find.descendant(
         of: find.byKey(LoginConnectionsScreen.naverRowKey),
+        matching: find.text('연결 안 됨'),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('the last login method cannot be removed', (tester) async {
+    final api = _FakeIdentityApi(['kakao']);
+    await _pump(tester, api);
+
+    final button = tester.widget<TextButton>(
+      find.byKey(LoginConnectionsScreen.kakaoActionKey),
+    );
+    expect(button.onPressed, isNull);
+    expect(api.calls, ['list']);
+  });
+
+  testWidgets('an empty account is not linked', (tester) async {
+    final api = _FakeIdentityApi(['google'])
+      ..preview = const AccountLinkPreview(
+        nickname: '',
+        shareBalance: 0,
+        canLink: false,
+      );
+    await _pump(tester, api);
+
+    await tester.tap(find.byKey(LoginConnectionsScreen.kakaoActionKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.existingAccountEmpty), findsOneWidget);
+    expect(api.calls, ['list', 'preview']);
+    expect(_inKakaoRow('연결하기'), findsOneWidget);
+  });
+
+  testWidgets('Google can be unlinked when another method remains', (tester) async {
+    final api = _FakeIdentityApi(['google', 'kakao']);
+    await _pump(tester, api);
+
+    await tester.tap(find.byKey(LoginConnectionsScreen.googleActionKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(LoginConnectionsScreen.unlinkConfirmKey));
+    await tester.pumpAndSettle();
+
+    expect(api.calls, contains('unlink-google'));
+    expect(
+      find.descendant(
+        of: find.byKey(LoginConnectionsScreen.googleRowKey),
         matching: find.text('연결 안 됨'),
       ),
       findsOneWidget,

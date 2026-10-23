@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/config/app_env.dart';
 import '../../core/theme/theme.dart';
 import '../../data/models/wallet_model.dart';
 import '../donation/today_donation.dart';
@@ -114,8 +115,10 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
               SizedBox(height: tokens.spacing.xs),
             ],
             Text(
-              '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.\n'
-              '환불은 결제 다이아 기준이에요.',
+              AppEnv.inAppPurchasesEnabled
+                  ? '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.\n'
+                      '환불은 결제 다이아 기준이에요.'
+                  : '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.',
               style: textTheme.bodySmall?.copyWith(
                 color: tokens.colors.muted,
                 height: 1.45,

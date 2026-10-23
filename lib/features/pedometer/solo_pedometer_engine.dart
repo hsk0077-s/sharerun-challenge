@@ -113,11 +113,8 @@ class SoloPedometerEngine {
           permissions: _stepAccess,
         );
       }
-      try {
-        await _health.requestHealthDataInBackgroundAuthorization();
-      } on PlatformException {
-        // 백그라운드 Health 미지원 기기.
-      } catch (_) {}
+      // 백그라운드 Health Connect 읽기는 1.0에서 쓰지 않는다. 화면이 켜져 있거나
+      // 건강 foreground service가 돌 때의 걸음 읽기만 한다.
       return granted == true;
     } on PlatformException {
       return false;

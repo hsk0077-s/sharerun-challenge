@@ -8,6 +8,9 @@ abstract final class LegalLinks {
   static Future<bool> openPrivacyPolicy() =>
       _open(LegalConstants.privacyPolicyUrl);
 
+  static Future<bool> openTermsOfService() =>
+      _open(LegalConstants.termsOfServiceUrl);
+
   static Future<bool> openAccountDeletion() =>
       _open(LegalConstants.accountDeletionUrl);
 

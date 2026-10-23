@@ -171,6 +171,7 @@ void main() {
       'try_again',
       'custom_token_unavailable',
       'too_many_attempts',
+      'empty_account',
     ]) {
       expect(ApiErrorMessage.forDetail(detail), isNot(detail), reason: detail);
     }
@@ -203,5 +204,34 @@ void main() {
     ]);
     expect(seen[1].headers['Authorization'], 'Bearer id-token');
     expect(seen[2].headers['Authorization'], 'Bearer id-token');
+  });
+
+  test('link preview asks with the Firebase token and ignores extra fields',
+      () async {
+    late http.Request seen;
+    final api = client((request) async {
+      seen = request;
+      return http.Response.bytes(
+        utf8.encode(
+          jsonEncode({
+            'nickname': '달림이',
+            'share_balance': 1200,
+            'can_link': true,
+            'email': 'secret@example.com',
+            'uid': 'should-not-matter',
+          }),
+        ),
+        200,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      );
+    });
+
+    final preview = await api.fetchLinkPreview();
+    expect(seen.method, 'GET');
+    expect(seen.url.path, '/auth/link-preview');
+    expect(seen.headers['Authorization'], 'Bearer id-token');
+    expect(preview.nickname, '달림이');
+    expect(preview.shareBalance, 1200);
+    expect(preview.canLink, isTrue);
   });
 }

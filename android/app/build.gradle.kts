@@ -1,4 +1,5 @@
 import java.io.FileInputStream
+import java.util.Base64
 import java.util.Properties
 
 plugins {
@@ -18,6 +19,69 @@ val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
     FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
+}
+
+// 네이버 로그인 SDK는 매니페스트의 client id / secret 을 읽는다. 값은 git에 두지 않는다.
+// 우선순위: --dart-define-from-file 이 넘긴 값, android/naver.properties, 프로젝트 .env.
+fun decodeDartDefines(): Map<String, String> {
+    val raw = (project.findProperty("dart-defines") as? String).orEmpty()
+    if (raw.isBlank()) return emptyMap()
+    val out = linkedMapOf<String, String>()
+    for (entry in raw.split(",")) {
+        if (entry.isBlank()) continue
+        val decoded = try {
+            String(Base64.getDecoder().decode(entry), Charsets.UTF_8)
+        } catch (_: IllegalArgumentException) {
+            entry
+        }
+        val separator = decoded.indexOf('=')
+        if (separator <= 0) continue
+        out[decoded.substring(0, separator)] = decoded.substring(separator + 1)
+    }
+    return out
+}
+
+fun parseEnvFile(envFile: java.io.File): Map<String, String> {
+    if (!envFile.isFile) return emptyMap()
+    val out = linkedMapOf<String, String>()
+    envFile.readLines(Charsets.UTF_8).forEach { rawLine ->
+        val line = rawLine.trim()
+        if (line.isEmpty() || line.startsWith("#")) return@forEach
+        val separator = line.indexOf('=')
+        if (separator <= 0) return@forEach
+        val key = line.substring(0, separator).trim()
+        var value = line.substring(separator + 1).trim()
+        if (value.length >= 2 &&
+            ((value.startsWith("\"") && value.endsWith("\"")) ||
+                (value.startsWith("'") && value.endsWith("'")))
+        ) {
+            value = value.substring(1, value.length - 1)
+        }
+        out[key] = value
+    }
+    return out
+}
+
+fun xmlAttr(value: String): String = value
+    .replace("&", "&amp;")
+    .replace("\"", "&quot;")
+    .replace("'", "&apos;")
+    .replace("<", "&lt;")
+
+val dartDefines = decodeDartDefines()
+val naverPropertiesFile = rootProject.file("naver.properties")
+val naverProperties = Properties()
+if (naverPropertiesFile.exists()) {
+    FileInputStream(naverPropertiesFile).use { naverProperties.load(it) }
+}
+val dotenvValues = parseEnvFile(rootProject.file("../.env"))
+
+fun naverCredential(key: String): String {
+    val fromDefine = dartDefines[key]?.trim().orEmpty()
+    if (fromDefine.isNotEmpty()) return fromDefine
+    val fromProperties = naverProperties.getProperty(key)?.trim().orEmpty()
+    if (fromProperties.isNotEmpty()) return fromProperties
+    return dotenvValues[key]?.trim().orEmpty()
 }
 
 android {
@@ -40,6 +104,8 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true
+        manifestPlaceholders["naverClientId"] = xmlAttr(naverCredential("NAVER_CLIENT_ID"))
+        manifestPlaceholders["naverClientSecret"] = xmlAttr(naverCredential("NAVER_CLIENT_SECRET"))
     }
 
     signingConfigs {

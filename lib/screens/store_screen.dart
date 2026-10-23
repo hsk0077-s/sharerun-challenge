@@ -281,12 +281,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final packs = DiaPackProduct.catalog.where((p) => p.totalDia > 12).toList();
     final featured = packs.length >= 3 ? packs.sublist(0, 3) : packs;
     return [
-      StoreCoachCard(
-        monthlyLabel: CoachPlusPlan.monthly.fallbackPriceLabel,
-        yearlyLabel: CoachPlusPlan.yearly.fallbackPriceLabel,
-        yearlyDiscountPct: _yearlyDiscountPct(),
-        onTap: () => CoachPlusUpsellSheet.show(context),
-      ),
+      if (AppEnv.inAppPurchasesEnabled)
+        StoreCoachCard(
+          monthlyLabel: CoachPlusPlan.monthly.fallbackPriceLabel,
+          yearlyLabel: CoachPlusPlan.yearly.fallbackPriceLabel,
+          yearlyDiscountPct: _yearlyDiscountPct(),
+          onTap: () => CoachPlusUpsellSheet.show(context),
+        ),
       if (AppEnv.diaPacksEnabled) ...[
         StoreSectionLabel(
           '다이아 충전',

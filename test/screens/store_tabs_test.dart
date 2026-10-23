@@ -40,7 +40,7 @@ void main() {
     ]) {
       expect(find.byKey(Key('store-tab-$key')), findsOneWidget);
     }
-    expect(find.byKey(const Key('coach-plus-store')), findsOneWidget);
+    expect(find.byKey(const Key('coach-plus-store')), findsNothing);
   });
 
   testWidgets('cosmetics tab no longer sells shoe skins or result-card frames',

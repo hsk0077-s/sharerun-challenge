@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../core/strings/app_strings.dart';
+import '../../core/theme/app_text_styles.dart';
 
 /// 확인된 이메일로 기존 계정을 못 찾았을 때의 선택.
 enum ExistingAccountAnswer { google, kakao, naver, create, cancel }
 
-/// "예전에 다른 방법으로 가입하셨나요?"
+/// "처음 가입할 때 어떤 방법을 쓰셨나요?"
 ///
 /// 계정을 만들기 전에 묻는다. 예전에 쓰던 방법을 고르면 그 로그인 뒤에
 /// 방금 고른 방법을 연결하고, 새 계정은 사람이 명시적으로 고른 뒤에만 만든다.
@@ -72,16 +73,23 @@ Future<ExistingAccountAnswer> showExistingAccountQuestion(
                 value: ExistingAccountAnswer.naver,
                 key: const Key('existing-account-naver'),
               ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                key: const Key('existing-account-create'),
-                onPressed: () => choose(ExistingAccountAnswer.create),
-                child: const Text(AppStrings.existingAccountCreate),
+              const SizedBox(height: 16),
+              Text(
+                AppStrings.existingAccountCreateHint,
+                style: AppTextStyles.caption,
               ),
-              TextButton(
-                key: const Key('existing-account-cancel'),
-                onPressed: () => choose(ExistingAccountAnswer.cancel),
-                child: const Text(AppStrings.existingAccountCancel),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const Key('existing-account-create'),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(0, 32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  onPressed: () => choose(ExistingAccountAnswer.create),
+                  child: const Text(AppStrings.existingAccountCreate),
+                ),
               ),
             ],
           ),
@@ -90,4 +98,40 @@ Future<ExistingAccountAnswer> showExistingAccountQuestion(
     },
   );
   return answer ?? ExistingAccountAnswer.cancel;
+}
+
+/// 연결 직전. 대상 계정의 닉네임과 SHARE만 보여 주고 확인받는다.
+Future<bool> showAccountLinkConfirm(
+  BuildContext context, {
+  required String methodName,
+  required String nickname,
+  required int shareBalance,
+  String declineLabel = AppStrings.linkConfirmNo,
+}) async {
+  final answer = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      key: const Key('link-confirm-dialog'),
+      title: Text(AppStrings.linkConfirmTitle(methodName)),
+      content: Text(
+        AppStrings.linkConfirmBody(
+          nickname: nickname,
+          shareBalance: shareBalance,
+        ),
+      ),
+      actions: [
+        TextButton(
+          key: const Key('link-confirm-no'),
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: Text(declineLabel),
+        ),
+        FilledButton(
+          key: const Key('link-confirm-yes'),
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text(AppStrings.linkConfirmYes),
+        ),
+      ],
+    ),
+  );
+  return answer == true;
 }

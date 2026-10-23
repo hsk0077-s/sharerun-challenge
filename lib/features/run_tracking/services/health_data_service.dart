@@ -65,9 +65,6 @@ class HealthDataService {
         try {
           await _health.requestHealthDataHistoryAuthorization();
         } catch (_) {}
-        try {
-          await _health.requestHealthDataInBackgroundAuthorization();
-        } catch (_) {}
       }
 
       return const HealthAuthorizationResult(granted: true);

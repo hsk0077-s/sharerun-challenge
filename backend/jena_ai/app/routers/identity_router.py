@@ -92,6 +92,12 @@ def google_unlink(uid: str = Depends(require_uid)) -> dict:
     return identities.unlink(_db(), uid, "google")
 
 
+@router.get("/link-preview")
+def link_preview(uid: str = Depends(require_uid)) -> dict:
+    """Nickname and SHARE of the signed-in account, before a link is confirmed."""
+    return identities.link_preview(_db(), uid)
+
+
 @router.get("/identities")
 def list_identities(uid: str = Depends(require_uid)) -> dict:
     return identities.list_providers(_db(), uid)

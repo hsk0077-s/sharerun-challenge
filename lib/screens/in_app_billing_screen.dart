@@ -64,8 +64,10 @@ class InAppBillingScreen extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                     children: [
-                      const _CoachPlusBillingEntry(),
-                      const SizedBox(height: 14),
+                      if (AppEnv.inAppPurchasesEnabled) ...[
+                        const _CoachPlusBillingEntry(),
+                        const SizedBox(height: 14),
+                      ],
                       const _DiaExchangeEntry(),
                       if (AppEnv.diaPacksEnabled) ...[
                         const SizedBox(height: 14),

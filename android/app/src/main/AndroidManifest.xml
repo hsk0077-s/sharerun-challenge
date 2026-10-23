@@ -32,7 +32,9 @@
     <uses-permission android:name="android.permission.health.READ_DISTANCE" />
     <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
     <uses-permission android:name="android.permission.health.READ_ACTIVITY_INTENSITY" />
-    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" />
+    <!-- 1.0은 포그라운드(및 건강 foreground service)에서만 걸음·심박을 읽는다. -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" tools:node="remove" />
+    <uses-permission android:name="android.permission.BODY_SENSORS" tools:node="remove" />
 
 
     <!-- Health Connect + Play Store visibility (Android 11+ package visibility). -->
@@ -206,10 +208,10 @@
         <!-- Naver Login SDK -->
         <meta-data
             android:name="com.naver.sdk.clientId"
-            android:value="@string/client_id" />
+            android:value="${naverClientId}" />
         <meta-data
             android:name="com.naver.sdk.clientSecret"
-            android:value="@string/client_secret" />
+            android:value="${naverClientSecret}" />
         <meta-data
             android:name="com.naver.sdk.clientName"
             android:value="@string/client_name" />

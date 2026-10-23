@@ -258,11 +258,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('회원 탈퇴'),
-          content: const Text(
-            '탈퇴 시 Firebase Auth 계정과 Wallet 잔액이 서버에서 삭제·익명화되며 '
-            '로컬 캐시도 초기됩니다. 이 작업은 되돌릴 수 없습니다.\n\n'
-            '정말 탈퇴하시겠습니까?',
+          title: const Text('계정 삭제'),
+          content: const SingleChildScrollView(
+            child: Text(
+              '계정을 삭제하면 아래와 같이 처리되며 되돌릴 수 없습니다.\n\n'
+              '• 보유한 SHARE·DIA·VALUE와 구매한 DIA가 모두 사라지고, 환불되지 않습니다.\n'
+              '• 활동 기록과 개인정보는 삭제 절차에 따라 지워집니다.\n'
+              '• Coach+ 구독은 자동으로 해지되지 않습니다. Google Play 스토어의 '
+              '구독 메뉴에서 직접 해지해 주세요.\n'
+              '• 크루장이라면 먼저 크루장을 다른 크루원에게 넘겨 주세요.\n\n'
+              '정말 삭제하시겠습니까?',
+            ),
           ),
           actions: [
             TextButton(
@@ -274,7 +280,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 backgroundColor: AppColors.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('탈퇴하기'),
+              child: const Text('삭제하기'),
             ),
           ],
         );
@@ -294,7 +300,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await ref.read(localAuthStoreProvider).clear();
       ref.read(persistedAuthSessionProvider.notifier).replace(null);
       if (!mounted) return;
-      _showSnack('회원 탈퇴가 완료되었습니다.');
+      _showSnack('계정이 삭제되었습니다.');
       navigateToLoginScreen();
     } catch (error) {
       _showSnack(FirebaseAuthMessages.from(error));
@@ -680,7 +686,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(
-                    '회원 탈퇴 (Account Withdrawal)',
+                    '계정 삭제',
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -815,6 +821,8 @@ class _SettingsLegalWebViewScreenState
   <h2>${LegalConstants.healthDataConsentTitle}</h2>
   <p>${LegalConstants.healthDataConsentSummary}</p>
   <div class="note">${LegalConstants.ephemeralSensorPolicy}</div>
+  <h2>${LegalConstants.healthDisclaimerTitle}</h2>
+  <p>${LegalConstants.healthDisclaimer}</p>
 </body>
 </html>
 ''';

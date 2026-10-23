@@ -233,8 +233,6 @@ abstract final class AppStrings {
   static const challengeDetailPrize = noCashPrizePool;
   static const challengeDetailDonation = '기부: 운영자·스폰서 이름으로';
   static const challengeDetailDistance = '거리: 3km';
-  static const challengeDetailTimeRemaining = '남은 시간: 2일 14시간';
-  static const challengeDetailRecruitment = '모집 인원: 290 / 400명';
   static const challengeDetailDonationTarget =
       '기부처: 정해지면 알려 드려요';
   static const challengeDetailValueTip =
@@ -256,7 +254,7 @@ abstract final class AppStrings {
   static const liveRunningYouLabel = '나 (You)';
   static const liveRunningGhostPace = '고스트 페이스';
   static String liveRunningEffortTip(int valueTokens) =>
-      '순수 노력 목표: 완주 시 밸류 토큰 +$valueTokens';
+      '순수 노력 목표: 완주 시 VALUE +$valueTokens';
   static const runValidationFailed =
       '기록 검증에 실패했습니다. 보상이 지급되지 않았습니다.';
   static const liveRunningFinish = '종료 / 저장';
@@ -529,15 +527,7 @@ abstract final class AppStrings {
   static const lobbyBattlePassCta = '시즌 1 배틀런 패스 확인';
 
   // ── Subscription Management (Screen 25) ───────────────────────────
-  static const subscriptionTitle = '구독 및 정기 후원 관리';
-  static const subscriptionDonationTitle = '글로벌 결식아동 정기 후원';
-  static const subscriptionDonationStatus =
-      '매월 10,000 SHARE 자동 후원 중\n(다음 결제일: 2026.07.15)';
-  static const subscriptionPremiumTitle = '쉐어런 프리미엄 멤버십';
-  static const subscriptionPremiumBenefit1 = '모든 전면 광고 제거 (예정)';
-  static const subscriptionPremiumBenefit2 = 'AI 심층 분석 리포트 무제한 (예정)';
-  static const subscriptionPremiumNotice =
-      '안내용이에요. 여기서는 결제할 수 없고, 유료 상품은 Coach+예요.';
+  static const subscriptionTitle = '구독 관리';
 
   // ── Hall of Fame (Screen 26) ──────────────────────────────────────
   static const hallOfFameTitle = '명예의 전당 (Hall of Fame)';

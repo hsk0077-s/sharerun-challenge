@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../core/strings/app_strings.dart';
@@ -9,7 +8,7 @@ import '../core/widgets/src_gradient_background.dart';
 import '../features/iap/models/coach_plus_product.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 
-/// 구독 및 정기 후원 관리 화면 (Screen 25).
+/// 구독 관리 화면 (Screen 25). 유료 구독은 Coach+ 하나다.
 class SubscriptionManagementScreen extends StatefulWidget {
   const SubscriptionManagementScreen({super.key});
 
@@ -25,8 +24,6 @@ class _SubscriptionManagementScreenState
     end: Alignment.bottomCenter,
     colors: [Color(0xFF0B120E), AppColors.nightBg],
   );
-
-  var _donationEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +44,6 @@ class _SubscriptionManagementScreenState
                       _SubscriptionHeader(
                         onBack: () => Navigator.pop(context),
                       ),
-                      const SizedBox(height: 20),
-                      _DonationSubscriptionCard(
-                        enabled: _donationEnabled,
-                        onChanged: (value) =>
-                            setState(() => _donationEnabled = value),
-                      ),
-                      const SizedBox(height: 20),
-                      const _PremiumMembershipCard(),
                       const SizedBox(height: 20),
                       const _CoachPlusSubscriptionCard(),
                     ],
@@ -130,114 +119,6 @@ class _SubscriptionWhiteCard extends StatelessWidget {
   }
 }
 
-class _DonationSubscriptionCard extends StatelessWidget {
-  const _DonationSubscriptionCard({
-    required this.enabled,
-    required this.onChanged,
-  });
-
-  final bool enabled;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return _SubscriptionWhiteCard(
-      child: Stack(
-        children: [
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Icon(
-              Icons.volunteer_activism_outlined,
-              size: 72,
-              color: AppColors.borderLight.withValues(alpha: 0.8),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      AppStrings.subscriptionDonationTitle,
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textBlack,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                  CupertinoSwitch(
-                    value: enabled,
-                    activeTrackColor: AppColors.primaryMint,
-                    onChanged: onChanged,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                AppStrings.subscriptionDonationStatus,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.textGrey,
-                  height: 1.45,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PremiumMembershipCard extends StatelessWidget {
-  const _PremiumMembershipCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return const _SubscriptionWhiteCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            AppStrings.subscriptionPremiumTitle,
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textBlack,
-              height: 1.3,
-            ),
-          ),
-          SizedBox(height: 10),
-          _BenefitRow(text: AppStrings.subscriptionPremiumBenefit1),
-          SizedBox(height: 4),
-          _BenefitRow(text: AppStrings.subscriptionPremiumBenefit2),
-          Spacer(),
-          Text(
-            AppStrings.subscriptionPremiumNotice,
-            key: Key('premium-notice'),
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textGrey,
-              height: 1.35,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _CoachPlusSubscriptionCard extends StatelessWidget {
   const _CoachPlusSubscriptionCard();
 
@@ -300,36 +181,6 @@ class _CoachPlusSubscriptionCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _BenefitRow extends StatelessWidget {
-  const _BenefitRow({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Text(
-          '✔️',
-          style: TextStyle(fontSize: 12),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textBlack,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

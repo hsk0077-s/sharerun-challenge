@@ -110,7 +110,7 @@ class NotificationService {
       hour: 20,
       minute: 30,
       title: '🎁 오늘 획득할 수 있는 SHARE가 남아있어요!',
-      body: '오늘의 걸음을 인증하고 준비된 토큰 보상을 놓치지 마세요.',
+      body: '오늘의 걸음을 인증하고 준비된 보상을 놓치지 마세요.',
     );
   }
 

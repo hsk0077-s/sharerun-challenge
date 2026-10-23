@@ -66,7 +66,7 @@ class _IntroScreenState extends State<IntroScreen> {
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF3FAF6),
+        backgroundColor: AppColors.nightBg,
         body: SafeArea(
           child: Column(
             children: [
@@ -74,11 +74,16 @@ class _IntroScreenState extends State<IntroScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
                 child: Row(
                   children: [
-                    const Icon(Icons.favorite, color: AppColors.tealAccent, size: 20),
+                    const Icon(Icons.favorite,
+                        color: AppColors.tealAccent, size: 20),
                     const SizedBox(width: 6),
                     const Text(
                       '쉐어런',
-                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: AppColors.nightInk,
+                      ),
                     ),
                     const Spacer(),
                     if (!isLast)
@@ -98,13 +103,16 @@ class _IntroScreenState extends State<IntroScreen> {
                     _IntroPage(
                       title: '걸으면 SHARE가 쌓여요',
                       body: '100걸음마다 10 SHARE를 받아요. 모은 SHARE로 대회에 참가할 수 있어요.',
-                      note: 'SHARE는 현금으로 바꿀 수 없는 활동 보상이고, 하루에 받을 수 있는 양에 한도가 있어요.',
+                      note:
+                          'SHARE는 현금으로 바꿀 수 없는 활동 보상이고, 하루에 받을 수 있는 양에 한도가 있어요.',
                       graphic: _ShareGraphic(),
                     ),
                     _IntroPage(
                       title: '한 걸음이 나눔이 된다',
-                      body: '검증된 모든 달리기, 1km마다 운영자가 100원을 기부해요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
-                      note: '운영자의 월 기부 예산 안에서 진행돼요. 예산을 다 쓴 달은 "기부 목표 달성"으로 알려 드려요.',
+                      body:
+                          '검증된 모든 달리기, 1km마다 운영자가 100원을 기부해요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
+                      note:
+                          '운영자의 월 기부 예산 안에서 진행돼요. 예산을 다 쓴 달은 "기부 목표 달성"으로 알려 드려요.',
                       graphic: _DonationGraphic(),
                     ),
                     _IntroPage(
@@ -128,7 +136,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       decoration: BoxDecoration(
                         color: i == _page
                             ? AppColors.tealAccent
-                            : AppColors.borderLight,
+                            : AppColors.nightMuted,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -143,7 +151,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         key: IntroScreen.nextKey,
                         label: '다음',
                         color: AppColors.tealAccent,
-                        textColor: Colors.white,
+                        textColor: AppColors.nightOnLime,
                         onPressed: _next,
                       )
                     else if (widget.replay)
@@ -151,7 +159,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         key: IntroScreen.closeKey,
                         label: '닫기',
                         color: AppColors.tealAccent,
-                        textColor: Colors.white,
+                        textColor: AppColors.nightOnLime,
                         onPressed: _finish,
                       )
                     else ...[
@@ -159,7 +167,7 @@ class _IntroScreenState extends State<IntroScreen> {
                         key: IntroScreen.startKey,
                         label: '시작하기',
                         color: AppColors.angelGold,
-                        textColor: AppColors.textBlack,
+                        textColor: AppColors.nightOnLime,
                         onPressed: _finish,
                       ),
                       TextButton(
@@ -203,7 +211,8 @@ class _PrimaryButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: color,
           foregroundColor: textColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
         child: Text(
           label,
@@ -280,15 +289,9 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.nightCard,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.nightLine),
       ),
       child: Padding(padding: const EdgeInsets.all(16), child: child),
     );
@@ -321,8 +324,16 @@ class _ShareGraphic extends StatelessWidget {
             child: const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('S', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w900, color: Colors.white)),
-                Text('SHARE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.white)),
+                Text('S',
+                    style: TextStyle(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.nightOnLime)),
+                Text('SHARE',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.nightOnLime)),
               ],
             ),
           ),
@@ -334,12 +345,21 @@ class _ShareGraphic extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('100걸음', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
+                Text('100걸음',
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.nightInk)),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 14),
-                  child: Icon(Icons.arrow_forward_rounded, color: AppColors.tealAccent),
+                  child: Icon(Icons.arrow_forward_rounded,
+                      color: AppColors.tealAccent),
                 ),
-                Text('10 SHARE', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.tealAccent)),
+                Text('10 SHARE',
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.tealAccent)),
               ],
             ),
           ),
@@ -358,7 +378,9 @@ class _DonationGraphic extends StatelessWidget {
           children: [
             const Icon(Icons.favorite, color: AppColors.angelGold, size: 28),
             const SizedBox(width: 10),
-            Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+            Text(label,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w800, color: AppColors.nightInk)),
             const SizedBox(width: 8),
             DecoratedBox(
               decoration: BoxDecoration(
@@ -367,7 +389,11 @@ class _DonationGraphic extends StatelessWidget {
               ),
               child: const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                child: Text('+100원', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+                child: Text('+100원',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                        color: AppColors.angelGold)),
               ),
             ),
           ],
@@ -391,12 +417,16 @@ class _DonationGraphic extends StatelessWidget {
         const _Card(
           child: Row(
             children: [
-              Icon(Icons.volunteer_activism_outlined, color: AppColors.tealAccent),
+              Icon(Icons.volunteer_activism_outlined,
+                  color: AppColors.tealAccent),
               SizedBox(width: 12),
               Expanded(
                 child: Text(
                   '운영자 이름으로 기부돼요 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인',
-                  style: TextStyle(fontWeight: FontWeight.w700, height: 1.4),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      height: 1.4,
+                      color: AppColors.nightInk),
                 ),
               ),
             ],
@@ -417,9 +447,13 @@ class _SnailGraphic extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundColor: unknown ? AppColors.borderLight : Colors.white,
+                backgroundColor: unknown ? AppColors.nightLine : Colors.white,
                 child: unknown
-                    ? const Text('?', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: AppColors.textGrey))
+                    ? const Text('?',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                            color: AppColors.textGrey))
                     : ClipOval(
                         child: Image.asset(
                           'assets/images/characters/chibi_snail_disappointed.png',
@@ -431,7 +465,10 @@ class _SnailGraphic extends StatelessWidget {
                       ),
               ),
               const SizedBox(height: 6),
-              Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
+              Text(label,
+                  textAlign: TextAlign.center,
+                  style:
+                      const TextStyle(fontSize: 12, color: AppColors.nightInk)),
             ],
           ),
         );
@@ -454,7 +491,10 @@ class _SnailGraphic extends StatelessWidget {
         const _Card(
           child: Text(
             '아직 순위가 없어서 살짝 시무룩해요… 같이 달려 볼래요?',
-            style: TextStyle(fontWeight: FontWeight.w700, height: 1.4),
+            style: TextStyle(
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+                color: AppColors.nightInk),
           ),
         ),
         const SizedBox(height: 14),

@@ -172,8 +172,8 @@ void main() {
 
     final charge = MiniBotInterpreter.interpret('SHARE 충전');
     expect(charge.destination, MiniBotDestination.shareCharge);
-    expect(charge.confirmLabel, '충전하기');
-    expect(charge.amountLabel, contains('10,000원'));
+    expect(charge.confirmLabel, '교환하기');
+    expect(charge.amountLabel, contains('1,200 SHARE'));
     expect(charge.reply, contains('결제되지 않아요'));
 
     final join = MiniBotInterpreter.interpret('챌린지 참가');
@@ -281,7 +281,7 @@ void main() {
         '스폰서',
         '러너 후원',
         '챌린지 참가',
-        '다이아 충전',
+        '다이아 교환',
         '심폐소생권',
         '세이프가드',
         '구독',

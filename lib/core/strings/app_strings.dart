@@ -127,13 +127,13 @@ abstract final class AppStrings {
   static const dashboardNavCrew = '크루';
   static const dashboardNavMyPage = '마이페이지';
 
-  static const myWalletCharge = '충전하기';
+  static const myWalletCharge = '교환하기';
   static const myWalletUse = '상점 가기';
   static const myWalletChargeShare = 'SHARE';
   static const myWalletChargeShareHint = '활동으로 모을 수 있어요';
   static const myWalletChargeDia = '다이아몬드';
   static const myWalletChargeDiaHint =
-      '충전소에서 구매하거나 연속 달리기로 모을 수 있어요';
+      '교환소에서 SHARE로 바꾸거나 연속 달리기로 모을 수 있어요';
   static const myWalletChargeValue = '밸류(VALUE)';
   static const myWalletChargeValueHint = '달리기로 모을 수 있어요';
   static const myWalletItemDuringRun = '달리기 중 사용 가능';
@@ -204,10 +204,10 @@ abstract final class AppStrings {
       '유저 간 상금 재원(N빵)으로 사용되지 않습니다.';
   static const createRoomPayAndCreateSuffix = 'SHARE 결제하고 대회 열기';
   static const createRoomInsufficientShare =
-      '가용 SHARE 잔액이 부족합니다. 충전 후 다시 시도해 주세요.';
+      '가용 SHARE 잔액이 부족합니다. 걸어서 모은 뒤 다시 시도해 주세요.';
   static const shareInsufficientTitle = 'SHARE 잔액 부족';
   static const shareInsufficientBody =
-      '보유하신 SHARE가 부족합니다. 충전소로 이동하시겠습니까?';
+      '보유하신 SHARE가 부족합니다. 교환소로 이동하시겠습니까?';
   static const shareInsufficientNo = '아니오';
   static const shareInsufficientYes = '예';
 
@@ -342,7 +342,7 @@ abstract final class AppStrings {
   static const storeValueDetailBody =
       'VALUE는 현금으로 바꿀 수 없는 명예 재화예요. 기부처 투표, 명예의 전당, 칭호·배지 등에 쓰여요.';
   static const walletHistoryShortcutTooltip = '재화 히스토리';
-  static const iapBillingTitle = '다이아 충전소';
+  static const iapBillingTitle = '다이아 교환소';
   static const iapBillingSubtitle = '구글 플레이 공식 보안 결제를 적용합니다.';
 
   // ── Pro Tools (Screen 15) ─────────────────────────────────────────

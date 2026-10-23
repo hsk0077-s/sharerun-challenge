@@ -2,7 +2,6 @@ import '../../core/challenge/challenge_entry_fee.dart';
 import '../../core/strings/app_strings.dart';
 import '../../data/models/company_tournament_config.dart';
 import '../iap/models/coach_plus_product.dart';
-import '../iap/models/share_iap_product.dart';
 import '../shop/providers/shop_tab_provider.dart';
 
 /// Mini-bot intents. Typed, chip, and speech text share [MiniBotInterpreter].
@@ -64,7 +63,7 @@ class MiniBotRead {
         MiniBotDestination.cprStore ||
         MiniBotDestination.safeGuardStore =>
           '구매하기',
-        MiniBotDestination.shareCharge => '충전하기',
+        MiniBotDestination.shareCharge => '교환하기',
         MiniBotDestination.beginnerRoom ||
         MiniBotDestination.brandSponsor =>
           '참가하기',
@@ -106,7 +105,7 @@ abstract final class MiniBotPrompts {
   static const cpr = '심폐소생권';
   static const donate = '후원';
   static const safeGuard = '세이프가드';
-  static const charge = '다이아 충전';
+  static const charge = '다이아 교환';
   static const sponsor = '스폰서';
   static const runnerSponsor = '러너 후원';
   static const subscription = '구독';
@@ -144,9 +143,7 @@ abstract final class MiniBotCopy {
 
   static String get itemAmount => '${ShopTabNotifier.itemDiaCost} DIA';
 
-  static String get chargeAmount => ShareIapProduct.catalog
-      .map((product) => '${_grouped(product.priceKrw)}원')
-      .join(' · ');
+  static String get chargeAmount => '1,200 SHARE = 1 DIA';
 
   static String get joinAmount =>
       '${_grouped(ChallengeEntryFee.beginner1kmShare)} SHARE';
@@ -203,8 +200,8 @@ abstract final class MiniBotCopy {
       '구매하기를 눌러도 결제하지 않아요. '
       '상점의 세이프 가드 칸에서 직접 구매해 주세요.';
 
-  static String get charge => '다이아 충전소로 이동할까요? $chargeAmount 팩이 있어요. '
-      '충전하기를 눌러도 여기서는 결제되지 않아요. 충전소에서 직접 골라 주세요.';
+  static String get charge => '다이아 교환소로 이동할까요? $chargeAmount예요. '
+      '교환하기를 눌러도 여기서는 결제되지 않아요. 교환소에서 직접 바꿔 주세요.';
 
   static String get sponsor => '러너 후원 화면으로 이동할까요? $sponsorAmount예요. '
       '후원하기를 눌러도 여기서는 후원이 끝나지 않아요. '
@@ -233,7 +230,7 @@ abstract final class MiniBotCopy {
 
   static const unknown = '그 말은 아직 연결되지 않았어요. '
       '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
-      '다이아 충전, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.';
+      '다이아 교환, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.';
 
   static const micDenied = '마이크 권한이 없어 음성을 듣지 못했어요. '
       '한글로 입력하거나 아래 버튼을 눌러 주세요.';
@@ -257,8 +254,8 @@ abstract final class MiniBotCopy {
           '세이프 가드를 눌러 구매해 주세요. 여기서는 결제되지 않아요.',
       MiniBotDestination.donateStore => '상점 기부 펀딩으로 이동할게요. '
           '기부 버튼으로 직접 눌러 주세요. 여기서는 기부되지 않아요.',
-      MiniBotDestination.shareCharge => '다이아 충전소로 이동할게요. '
-          '팩은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
+      MiniBotDestination.shareCharge => '다이아 교환소로 이동할게요. '
+          '교환은 그 화면에서 직접 해 주세요. 여기서는 결제되지 않아요.',
       MiniBotDestination.personalSponsor => '러너 후원 화면으로 이동할게요. '
           '후원 버튼으로 직접 확정해 주세요. 여기서는 후원되지 않아요.',
       MiniBotDestination.brandSponsor => '브랜드 스폰서 챌린지로 이동할게요. '
@@ -350,7 +347,7 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    if (text.contains('충전')) {
+    if (text.contains('충전') || text.contains('교환')) {
       return MiniBotRead(
         intent: MiniBotIntent.chargeShare,
         destination: MiniBotDestination.shareCharge,

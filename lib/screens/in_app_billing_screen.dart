@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
@@ -10,7 +11,7 @@ import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import 'dia_pack_store_screen.dart';
 import 'share_dia_exchange_screen.dart';
 
-/// src-14 Google Play 인앱 충전소.
+/// src-14 다이아 교환소. DIA 팩 판매는 `AppEnv.diaPacksEnabled`가 켜질 때만 보인다.
 class InAppBillingScreen extends StatelessWidget {
   const InAppBillingScreen({
     super.key,
@@ -66,8 +67,10 @@ class InAppBillingScreen extends StatelessWidget {
                       const _CoachPlusBillingEntry(),
                       const SizedBox(height: 14),
                       const _DiaExchangeEntry(),
-                      const SizedBox(height: 14),
-                      const _DiaPackStoreEntry(),
+                      if (AppEnv.diaPacksEnabled) ...[
+                        const SizedBox(height: 14),
+                        const _DiaPackStoreEntry(),
+                      ],
                     ],
                   ),
                 ),

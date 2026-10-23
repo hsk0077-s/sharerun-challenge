@@ -127,8 +127,8 @@ void main() {
 
     await tester.tap(find.byKey(const Key('store-tab-diamond')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('store-pack-dia_pack_130')));
-    await tester.pumpAndSettle();
-    expect(find.text('DIA 팩'), findsOneWidget);
+    // 1.0은 DIA 팩을 팔지 않는다. 교환만 보인다.
+    expect(find.byKey(const Key('store-pack-dia_pack_130')), findsNothing);
+    expect(find.byKey(const Key('store-dia-exchange')), findsOneWidget);
   });
 }

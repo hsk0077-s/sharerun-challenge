@@ -17,6 +17,7 @@ from fastapi import HTTPException
 from google.cloud import firestore
 from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
+from app.services import content_filter
 from app.services.social_items import member_crew_id
 
 def _run(tx_func, transaction, *args):
@@ -489,6 +490,10 @@ def rename(service, uid: str, name: str, request_id: str) -> dict:
     trimmed = (name or "").strip()
     if not NAME_MIN <= len(trimmed) <= NAME_MAX:
         raise HTTPException(status_code=400, detail="Invalid crew name.")
+    if content_filter.has_control_characters(
+        trimmed
+    ) or content_filter.contains_banned_word(trimmed):
+        raise HTTPException(status_code=400, detail="Inappropriate crew name.")
     request_id = require_request_id(request_id)
     db = service.firebase_service.db
     crew_id, crew_ref, _crew = _managed_crew(db, uid, leader_only=True)

@@ -637,6 +637,12 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Player reports of names. The server writes them. Only the operator reads.
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
     match /walletTransactions/{txId} {
       allow read: if isAdmin()
         || (signedIn() && resource.data.uid == request.auth.uid);

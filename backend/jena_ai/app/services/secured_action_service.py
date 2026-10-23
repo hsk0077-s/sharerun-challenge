@@ -25,6 +25,7 @@ from app.models.secured_actions import (
     Web3TransferRequest,
     WinnerRewardRequest,
 )
+from app.services import content_filter
 from app.services import identities
 from app.services.firebase_service import FirebaseService
 from app.services.route_privacy import trim_route
@@ -774,6 +775,8 @@ class SecuredActionService:
         compact = re.sub(r"\s+", "", nickname.strip())
         if _NICKNAME_PATTERN.fullmatch(compact) is None:
             raise HTTPException(status_code=400, detail="Invalid nickname.")
+        if content_filter.contains_banned_word(compact):
+            raise HTTPException(status_code=400, detail="Inappropriate nickname.")
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_nickname_tx(transaction, self, uid, compact, user_ref)
@@ -3107,6 +3110,10 @@ class SecuredActionService:
         trimmed = name.strip()
         if len(trimmed) < 2 or len(trimmed) > 20:
             raise HTTPException(status_code=400, detail="Invalid crew name.")
+        if content_filter.has_control_characters(
+            trimmed
+        ) or content_filter.contains_banned_word(trimmed):
+            raise HTTPException(status_code=400, detail="Inappropriate crew name.")
         prices = read_item_prices(self.firebase_service.db, transaction)
         dia_cost = int(prices[CREW_CREATE_DIA_ID])
         share_cost = int(prices[CREW_CREATE_SHARE_ID])

@@ -31,6 +31,21 @@ abstract final class AppStrings {
   static String loginComingSoon(String provider) => '$provider 로그인은 준비 중입니다.';
   static String loginSaveFailed(Object error) => '로그인 저장 실패: $error';
 
+  /// 카카오·네이버로 새 계정이 생겼을 때, 닉네임 설정 전에 보여 주는 안내.
+  static const newSocialAccountTitle = '새 계정이 만들어졌어요';
+  static const newSocialAccountContinue = '새 계정으로 계속';
+  static const newSocialAccountCancel = '다른 방법으로 로그인';
+  static const newSocialAccountSignedOut =
+      '로그아웃했어요. 쓰시던 방법으로 다시 로그인한 뒤, 설정에서 연결해 주세요.';
+
+  static String newSocialAccountBody(String provider) =>
+      '$provider로 쉐어런에 처음 들어오셔서, 기존 계정과 따로 새 계정이 만들어졌어요. '
+      '닉네임을 정하기 전에 한번만 확인해 주세요.\n\n'
+      '이미 다른 방법으로 가입하셨다면 여기서 이어가지 마세요. '
+      '그 방법으로 다시 로그인한 뒤 설정 > 로그인 연결에서 $provider를 연결해 주세요. '
+      '같은 SHARE와 기록이 그대로 보여요. '
+      '이메일 주소가 같아도 계정은 자동으로 합쳐지지 않아요.';
+
   // ── Terms Agreement (Screen 2) ────────────────────────────────────
   static const termsTitle =
       '환영합니다!\n시작 전 약관 동의가\n필요합니다.';

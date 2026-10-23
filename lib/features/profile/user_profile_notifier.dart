@@ -1,6 +1,7 @@
 import 'dart:async' show StreamSubscription;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,23 +20,23 @@ import '../wallet/providers/wallet_provider.dart';
 class UserProfileNotifier extends Notifier<UserProfile> {
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
       _profileSubscription;
+  int _profileListenGeneration = 0;
+  String? _profileListenUid;
+  int _profilePermissionRetries = 0;
 
   @override
   UserProfile build() {
-    ref.onDispose(() {
-      _profileSubscription?.cancel();
-    });
+    ref.onDispose(_stopFirestoreProfile);
     ref.listen<AsyncValue<UserModel>>(activeUserProfileProvider, (_, next) {
       next.whenData(_applyCloudProfile);
     });
-    ref.listen(authStateChangesProvider, (_, next) {
-      listenToFirestoreProfile(uid: next.asData?.value?.uid);
+    ref.listen(authStateChangesProvider, (_, __) {
+      _syncProfileSubscription();
     });
+    // Cold start: auth may still be loading. Do not read `state` here.
+    _syncProfileSubscription();
     final initial = ref.read(activeUserProfileProvider).asData?.value ??
         UserModel.dashboardDefault(uid: '');
-    // Pass uid from auth/session providers — never from `state`, which is
-    // uninitialized until this `build()` returns (cold-start ErrorWidget).
-    listenToFirestoreProfile(uid: _currentUid() ?? initial.uid);
     return initial;
   }
 
@@ -50,30 +51,93 @@ class UserProfileNotifier extends Notifier<UserProfile> {
     return null;
   }
 
-  /// 로그인 직후 Firestore 유저 문서를 실시간 구독해 자산·아이템을 복원한다.
-  void listenToFirestoreProfile({String? uid}) {
-    _profileSubscription?.cancel();
+  /// 로그인된 uid의 Firestore 문서를 구독한다.
+  ///
+  /// 로그아웃으로 auth가 null이 되면 이전 폰 세션 uid로 다시 구독하지 않는다.
+  /// 그 구독이 남으면 `permission-denied`가 반복된다. 계정이 바뀌면 이전
+  /// 구독을 끊고 새 uid로만 다시 연다.
+  void _syncProfileSubscription() {
+    final auth = ref.read(authStateChangesProvider);
+    final target = profileSubscriptionTarget(
+      authResolved: auth.hasValue || auth.hasError,
+      authUid: auth.asData?.value?.uid,
+      persistedUid: ref.read(persistedAuthSessionProvider)?.uid,
+    );
+    if (target == null) {
+      _stopFirestoreProfile();
+      return;
+    }
+    if (target == _profileListenUid && _profileSubscription != null) return;
+    _startFirestoreProfile(target);
+  }
+
+  void _stopFirestoreProfile() {
+    _profileListenGeneration++;
+    _profileListenUid = null;
+    _profilePermissionRetries = 0;
+    final previous = _profileSubscription;
     _profileSubscription = null;
-    final resolved =
-        (uid != null && uid.isNotEmpty) ? uid : (_currentUid() ?? '');
-    if (resolved.isEmpty || AppEnv.useLocalMockData) return;
+    previous?.cancel();
+  }
+
+  void _startFirestoreProfile(String uid) {
+    if (AppEnv.useLocalMockData) {
+      _stopFirestoreProfile();
+      return;
+    }
+    if (_profileListenUid != uid) _profilePermissionRetries = 0;
+    final generation = ++_profileListenGeneration;
+    _profileListenUid = uid;
+    final previous = _profileSubscription;
+    _profileSubscription = null;
+    previous?.cancel();
     _profileSubscription = FirebaseFirestore.instance
         .collection('users')
-        .doc(resolved)
+        .doc(uid)
         .snapshots()
         .listen(
       (snapshot) {
+        if (generation != _profileListenGeneration) return;
         if (!snapshot.exists) return;
         final raw = snapshot.data();
         if (raw == null) return;
         final data = Map<String, dynamic>.from(raw);
-        data['uid'] = resolved;
+        data['uid'] = uid;
         _applyCloudProfile(UserModel.fromJson(data));
       },
-      onError: (Object e) {
-        debugPrint('Firestore 프로필 구독 실패: $e');
+      onError: (Object error) {
+        if (generation != _profileListenGeneration) return;
+        final live = _liveAuthUid();
+        if (!shouldReportProfileSubscriptionError(
+          subscribedUid: uid,
+          liveAuthUid: live,
+        )) {
+          return;
+        }
+        // 로그인 직후 토큰이 Firestore에 닿기 전에 한 번 거부될 수 있다.
+        if (isFirestorePermissionDenied(error) &&
+            _profilePermissionRetries < 1) {
+          _profilePermissionRetries++;
+          Future<void>.delayed(const Duration(milliseconds: 350), () {
+            if (generation != _profileListenGeneration) return;
+            if (_liveAuthUid() != uid) return;
+            _startFirestoreProfile(uid);
+          });
+          return;
+        }
+        debugPrint('Firestore 프로필 구독 실패: $error');
       },
     );
+  }
+
+  /// Auth 스트림보다 Firebase 현재 사용자가 먼저 바뀐다. 로그아웃이면 null이다.
+  /// null을 이전 세션 uid로 바꾸면, 끊어야 할 구독의 거부를 다시 찍게 된다.
+  String? _liveAuthUid() {
+    try {
+      return FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return ref.read(authStateChangesProvider).asData?.value?.uid;
+    }
   }
 
   void _applyCloudProfile(UserModel profile) {
@@ -317,3 +381,36 @@ final userProfileProvider = userProfileNotifierProvider;
 final userAngelTierProvider = Provider<AngelTier>((ref) {
   return ref.watch(userProfileProvider).angelTier;
 });
+
+/// Which `users/{uid}` document the profile listener should follow.
+///
+/// A resolved signed-out auth state must not fall back to the persisted uid.
+/// That fallback resubscribes to the previous account after logout and
+/// Firestore answers permission-denied.
+String? profileSubscriptionTarget({
+  required bool authResolved,
+  required String? authUid,
+  String? persistedUid,
+}) {
+  final live = authUid?.trim() ?? '';
+  if (live.isNotEmpty) return live;
+  if (authResolved) return null;
+  final persisted = persistedUid?.trim() ?? '';
+  if (persisted.isNotEmpty) return persisted;
+  return null;
+}
+
+/// permission-denied on the listener we are dropping (logout or account
+/// switch) is expected. Only a denial for the account still signed in is logged.
+bool shouldReportProfileSubscriptionError({
+  required String subscribedUid,
+  required String? liveAuthUid,
+}) {
+  final subscribed = subscribedUid.trim();
+  final live = liveAuthUid?.trim() ?? '';
+  return subscribed.isNotEmpty && live.isNotEmpty && live == subscribed;
+}
+
+bool isFirestorePermissionDenied(Object error) {
+  return error.toString().contains('permission-denied');
+}

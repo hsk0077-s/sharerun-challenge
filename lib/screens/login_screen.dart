@@ -18,8 +18,10 @@ import '../core/widgets/naver_login_button.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../core/widgets/src_logo_header.dart';
 import '../core/widgets/src_text_field.dart';
+import '../data/api/identity_api_client.dart';
 import '../data/repositories/auth_repository.dart';
 import '../features/auth/login_connection_providers.dart';
+import '../features/auth/new_social_account_notice.dart';
 
 /// 로그인 화면 (Screen 1) — src-1 목업 정합 UI.
 /// 버튼 순서: Google → Apple → Naver → Kakao.
@@ -92,6 +94,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  /// 카카오·네이버 공통. 새 계정이면 닉네임 전에 안내하고, 취소하면 로그아웃한다.
+  /// 이메일로 기존 계정과 합치지는 않는다. 연결은 설정 > 로그인 연결의
+  /// /kakao/link, /naver/link 를 쓴다.
+  Future<void> _finishSocialLogin({
+    required ProviderLoginResult result,
+    required String uid,
+    required String providerName,
+    required String successMessage,
+  }) async {
+    await _rememberLogin(uid: uid);
+    if (!mounted) return;
+    if (result.newAccount && uid.isNotEmpty) {
+      await NewSocialAccountNoticeStore.mark(
+        uid: uid,
+        providerName: providerName,
+      );
+      if (!mounted) return;
+      final proceed = await showNewSocialAccountNotice(
+        context,
+        providerName: providerName,
+      );
+      if (!mounted) return;
+      if (!proceed) {
+        await signOutAfterNewSocialAccountCancel(ref);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text(AppStrings.newSocialAccountSignedOut)),
+        );
+        return;
+      }
+      await NewSocialAccountNoticeStore.clear();
+      if (!mounted) return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(successMessage),
+        duration: const Duration(milliseconds: 1300),
+      ),
+    );
+    await _redeemEnteredReferral();
+    if (!mounted) return;
+    final termsAccepted =
+        ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
+    Navigator.of(context).pushReplacementNamed(
+      !result.newAccount && termsAccepted
+          ? RouteNames.home
+          : RouteNames.termsAgreement,
+    );
+  }
+
   Future<void> _onGoogle() async {
     try {
       final authRepo = ref.read(authRepositoryProvider);
@@ -136,23 +189,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authRepositoryProvider)
           .signInWithCustomToken(result.customToken);
       if (!mounted) return;
-
-      await _rememberLogin(uid: credential.user?.uid);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('네이버 로그인에 성공했습니다!'),
-          duration: Duration(milliseconds: 1300),
-        ),
-      );
-      await _redeemEnteredReferral();
-      if (!mounted) return;
-      final termsAccepted =
-          ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
-      Navigator.of(context).pushReplacementNamed(
-        !result.newAccount && termsAccepted
-            ? RouteNames.home
-            : RouteNames.termsAgreement,
+      await _finishSocialLogin(
+        result: result,
+        uid: credential.user?.uid ?? '',
+        providerName: '네이버',
+        successMessage: '네이버 로그인에 성공했습니다!',
       );
     } catch (e) {
       if (!mounted) return;
@@ -178,23 +219,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .read(authRepositoryProvider)
           .signInWithCustomToken(result.customToken);
       if (!mounted) return;
-
-      await _rememberLogin(uid: credential.user?.uid);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('카카오 로그인에 성공했습니다!'),
-          duration: Duration(milliseconds: 1300),
-        ),
-      );
-      await _redeemEnteredReferral();
-      if (!mounted) return;
-      final termsAccepted =
-          ref.read(activeUserProfileProvider).value?.termsAccepted ?? false;
-      Navigator.of(context).pushReplacementNamed(
-        !result.newAccount && termsAccepted
-            ? RouteNames.home
-            : RouteNames.termsAgreement,
+      await _finishSocialLogin(
+        result: result,
+        uid: credential.user?.uid ?? '',
+        providerName: '카카오',
+        successMessage: '카카오 로그인에 성공했습니다!',
       );
     } catch (e) {
       if (!mounted) return;

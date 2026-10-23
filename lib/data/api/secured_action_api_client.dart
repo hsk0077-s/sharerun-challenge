@@ -664,6 +664,19 @@ class SecuredActionApiClient {
     await _post('/actions/crew/requests/cancel', const {});
   }
 
+  /// 크루 이름이나 닉네임을 신고한다. 운영자가 확인한다. 같은 대상은 한 번만 접수된다.
+  Future<void> submitReport({
+    required String targetType,
+    required String targetId,
+    required String reason,
+  }) async {
+    await _post('/actions/reports', {
+      'target_type': targetType,
+      'target_id': targetId,
+      'reason': reason,
+    });
+  }
+
   /// 크루장·부크루장: 크루원을 내보낸다(부크루장은 일반 크루원만).
   Future<void> kickCrewMember(String uid) async {
     await _post('/actions/crew/kick', {'uid': uid});

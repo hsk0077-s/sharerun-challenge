@@ -659,4 +659,34 @@ void main() {
       isTrue,
     );
   });
+
+  test('release mergeRemote shows the server balance, even a lower or zero one',
+      () {
+    const current = WalletState(
+      shareBalance: 5000,
+      diamondBalance: 50,
+      valueBalance: 10,
+    );
+    const afterSpend = WalletState(
+      shareBalance: 100,
+      diamondBalance: 0,
+      valueBalance: 10,
+    );
+    final merged =
+        WalletNotifier.mergeRemote(current, afterSpend, debugMode: false);
+    expect(merged.shareBalance, 100);
+    expect(merged.diamondBalance, 0);
+    expect(merged.valueBalance, 10);
+  });
+
+  test('release mergeRemote ignores the empty placeholder snapshot', () {
+    const current = WalletState(shareBalance: 5000, diamondBalance: 50);
+    final merged = WalletNotifier.mergeRemote(
+      current,
+      const WalletState(),
+      debugMode: false,
+    );
+    expect(merged.shareBalance, 5000);
+    expect(merged.diamondBalance, 50);
+  });
 }

@@ -39,6 +39,18 @@ class WalletRepository {
     );
   }
 
+  /// 지갑 문서가 서버에서 확인된 값인지. 기기 캐시만 있으면 false다.
+  Stream<bool> watchWalletServerConfirmed(String uid) {
+    return onStreamErrorEmit<bool>(
+      _firestoreService
+          .doc(FirestorePaths.user(uid))
+          .snapshots(includeMetadataChanges: true)
+          .map((snapshot) => !snapshot.metadata.isFromCache),
+      false,
+      debugLabel: 'watchWalletServerConfirmed',
+    );
+  }
+
   Stream<WalletModel> watchWallet(String uid) {
     return onStreamErrorEmit<WalletModel>(
       _firestoreService.doc(FirestorePaths.user(uid)).snapshots().map(

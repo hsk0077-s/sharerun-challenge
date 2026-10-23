@@ -4,6 +4,7 @@ import '../../core/constants/economy_constants.dart';
 import '../../core/strings/app_strings.dart';
 import '../../core/theme/theme.dart';
 import '../profile/widgets/retention_widgets.dart';
+import '../wallet/widgets/wallet_sync_note.dart';
 
 /// 지갑 카드. SHARE·VALUE 잔액을 누르면 충전·기부 화면으로 간다.
 /// 홈에서 마이로 옮겼다. 글자와 눌렀을 때 가는 곳은 그대로다.
@@ -79,6 +80,7 @@ class HomeWalletCard extends StatelessWidget {
               ),
             ),
           ),
+          const WalletSyncNote(),
           SizedBox(height: tokens.spacing.sm),
           DailyCapGauge(dailyKm: dailyKm),
         ],

@@ -174,10 +174,13 @@ class WalletNotifier extends Notifier<WalletState> {
     WalletState current,
     WalletState incoming, {
     int? durableShare,
+    bool? debugMode,
   }) {
     if (incoming.isEmpty && !current.isEmpty) {
       return current;
     }
+    // 출시 빌드: 서버가 보낸 값이 그대로 잔액이다. 아래 보정은 디버그 전용이다.
+    if (!(debugMode ?? kDebugMode)) return incoming;
     var share = incoming.shareBalance;
     if (shouldPreserveDebugShare(
       currentShare: current.shareBalance,

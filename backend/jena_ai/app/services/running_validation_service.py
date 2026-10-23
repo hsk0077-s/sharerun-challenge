@@ -12,6 +12,8 @@ from app.constants.jena_validation_constants import (
     KICKBOARD_MAX_HEART_RATE_BPM,
     KICKBOARD_PACE_NO_HR_SECONDS_PER_KM,
     KICKBOARD_PACE_SECONDS_PER_KM,
+    MAX_PLAUSIBLE_RUN_KM,
+    MIN_PLAUSIBLE_PACE_SECONDS_PER_KM,
     STRIDE_MAX_M,
     STRIDE_MIN_M,
     VERIFIED_CADENCE_MAX_SPM,
@@ -71,6 +73,18 @@ class RunningValidationService:
         hr_variance = self._variance(request.heart_rates)
         steps = self._steps(request, total_steps)
         distance_m = request.distance_km * 1000.0
+
+        # Stage 0 — physical limits. No sensor series can excuse these.
+        if (
+            request.distance_km > MAX_PLAUSIBLE_RUN_KM
+            or pace_seconds_per_km < MIN_PLAUSIBLE_PACE_SECONDS_PER_KM
+        ):
+            return self._rejected(
+                decision="rejected_unknown",
+                reason_code="implausible_pace",
+                reason="거리나 속도가 사람이 달릴 수 있는 범위를 벗어났습니다.",
+                forfeit_deposit=False,
+            )
 
         # Stage A — kickboard. Missing HR is not treated as HR <= 80.
         if heart_rate_samples > 0 and self._looks_like_kickboard(

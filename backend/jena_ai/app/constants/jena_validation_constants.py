@@ -33,3 +33,7 @@ STRIDE_MAX_M = 1.8
 # Vehicle-like segment. Sub-50m spikes are GPS jitter, not a car.
 GPS_MAX_SEGMENT_KMH = 25.0
 GPS_MIN_SEGMENT_M = 50.0
+
+# Physical limits. A claim past these is not a run, whatever the sensors say.
+MAX_PLAUSIBLE_RUN_KM = 100.0
+MIN_PLAUSIBLE_PACE_SECONDS_PER_KM = 150  # 2:30 / km, faster than any average

@@ -439,7 +439,22 @@ class SecuredActionService:
     def claim_streak_bonus(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
-        return _commit_streak_bonus_tx(transaction, self, uid, user_ref)
+        # Auth creation time is not client-writable. A streak cannot be longer
+        # than the account is old, whatever daily_metrics says.
+        try:
+            created_at = self._auth_account_created_at(uid)
+        except HTTPException:
+            raise
+        except Exception:
+            created_at = None
+        account_age_days = 0
+        if created_at is not None:
+            account_age_days = max(
+                0, (datetime.now(timezone.utc) - created_at).days + 1
+            )
+        return _commit_streak_bonus_tx(
+            transaction, self, uid, user_ref, account_age_days
+        )
 
     def claim_trial_reward(self, uid: str) -> SecuredActionResult:
         transaction = self.firebase_service.db.transaction()
@@ -2319,7 +2334,9 @@ class SecuredActionService:
         )
         return owned + SIGNUP_FREE_TICKET_COUNT, "granted"
 
-    def _claim_streak_bonus_tx(self, transaction, uid: str, user_ref) -> SecuredActionResult:
+    def _claim_streak_bonus_tx(
+        self, transaction, uid: str, user_ref, account_age_days: int | None = None
+    ) -> SecuredActionResult:
         user_snapshot = user_ref.get(transaction=transaction)
         if not user_snapshot.exists:
             raise HTTPException(status_code=404, detail="User not found.")
@@ -2327,6 +2344,8 @@ class SecuredActionService:
         user = user_snapshot.to_dict() or {}
         share, diamonds, value = self._wallet_balances(user)
         streak_days = self._walk_streak_days(transaction, uid)
+        if account_age_days is not None:
+            streak_days = min(streak_days, account_age_days)
         milestone = (streak_days // _STREAK_BONUS_DAYS) * _STREAK_BONUS_DAYS
         paid_milestone = int(user.get("streakBonusMilestone") or 0)
         if milestone <= 0:
@@ -3872,6 +3891,14 @@ class SecuredActionService:
                 reason="Mercy settlement was already processed.",
             )
 
+        # A deposit already taken for fraud, or a finished entry, is not refunded.
+        if participant.get("depositForfeited") is True or participant.get(
+            "status"
+        ) not in (None, "joined"):
+            raise HTTPException(
+                status_code=409, detail="This entry cannot be settled."
+            )
+
         tournament = tournament_snapshot.to_dict() or {}
         target_distance = float(tournament.get("targetDistanceKm") or 0)
         diamond_deposit = int(participant.get("diamondDeposit") or 0)
@@ -4003,7 +4030,8 @@ class SecuredActionService:
             float(box.get("latitude") or 0),
             float(box.get("longitude") or 0),
         )
-        if distance > 80:
+        # Written so that NaN is refused too (nan > 80 is False).
+        if not distance <= 80:
             raise HTTPException(status_code=403, detail="Move closer to collect.")
 
         reward = int(box.get("rewardDiamond") or 1)
@@ -5018,8 +5046,11 @@ def _commit_streak_bonus_tx(
     service,
     uid: str,
     user_ref,
+    account_age_days: int | None = None,
 ) -> SecuredActionResult:
-    return service._claim_streak_bonus_tx(transaction, uid, user_ref)
+    return service._claim_streak_bonus_tx(
+        transaction, uid, user_ref, account_age_days
+    )
 
 
 @firestore.transactional

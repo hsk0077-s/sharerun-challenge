@@ -26,6 +26,7 @@ from app.models.secured_actions import (
     AccessoryEquipRequest,
     CrewDecideRequest,
     CrewRenameRequest,
+    ReportRequest,
     DiaRefundRequest,
     CrewJoinModeRequest,
     CrewJoinRequest,
@@ -54,7 +55,7 @@ from app.models.secured_actions import (
 from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
-from app.services import appeals, integrity, login_devices, privacy_settings
+from app.services import appeals, integrity, login_devices, privacy_settings, reports
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
@@ -322,6 +323,18 @@ def kick_crew_member(request: CrewTargetRequest, uid: str = Depends(require_uid)
 @router.post("/crew/transfer")
 def transfer_crew(request: CrewTargetRequest, uid: str = Depends(require_uid)) -> dict:
     return crew_membership.transfer(service.firebase_service.db, uid, request.uid)
+
+
+@router.post("/reports")
+def submit_report(request: ReportRequest, uid: str = Depends(require_uid)) -> dict:
+    return reports.submit_report(
+        service.firebase_service.db,
+        uid,
+        request.target_type,
+        request.target_id,
+        request.reason,
+        request.detail,
+    )
 
 
 @router.post("/crew/disband")

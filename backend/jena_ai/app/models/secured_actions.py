@@ -339,6 +339,13 @@ class AccessoryEquipRequest(BaseModel):
     item_id: str = Field(default="", max_length=32)
 
 
+class ReportRequest(BaseModel):
+    target_type: str = Field(pattern="^(crew|user)$")
+    target_id: str = Field(min_length=1, max_length=128)
+    reason: str = Field(pattern="^(offensive_name|sexual|hate|spam|other)$")
+    detail: str = Field(default="", max_length=200)
+
+
 class CrewRenameRequest(BaseModel):
     name: str = Field(min_length=1, max_length=40)
     request_id: str = Field(min_length=8, max_length=80)

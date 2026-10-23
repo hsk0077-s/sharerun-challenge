@@ -31,20 +31,23 @@ abstract final class AppStrings {
   static String loginComingSoon(String provider) => '$provider 로그인은 준비 중입니다.';
   static String loginSaveFailed(Object error) => '로그인 저장 실패: $error';
 
-  /// 카카오·네이버로 새 계정이 생겼을 때, 닉네임 설정 전에 보여 주는 안내.
-  static const newSocialAccountTitle = '새 계정이 만들어졌어요';
-  static const newSocialAccountContinue = '새 계정으로 계속';
-  static const newSocialAccountCancel = '다른 방법으로 로그인';
-  static const newSocialAccountSignedOut =
-      '로그아웃했어요. 쓰시던 방법으로 다시 로그인한 뒤, 설정에서 연결해 주세요.';
+  /// 확인된 이메일로 기존 계정을 찾지 못했을 때, 계정을 만들기 전에 묻는다.
+  static const existingAccountTitle = '예전에 다른 방법으로 가입하셨나요?';
+  static const existingAccountCreate = '새 계정 만들기';
+  static const existingAccountCancel = '취소';
+  static const existingAccountGoogle = '구글로 로그인';
+  static const existingAccountKakao = '카카오로 로그인';
+  static const existingAccountNaver = '네이버로 로그인';
+  static const existingAccountNotFound =
+      '그 방법으로 가입된 계정을 찾지 못했어요. 다른 방법을 고르거나 새 계정을 만들어 주세요.';
+  static const existingAccountLinked = '기존 계정에 연결했어요.';
 
-  static String newSocialAccountBody(String provider) =>
-      '$provider로 쉐어런에 처음 들어오셔서, 기존 계정과 따로 새 계정이 만들어졌어요. '
-      '닉네임을 정하기 전에 한번만 확인해 주세요.\n\n'
-      '이미 다른 방법으로 가입하셨다면 여기서 이어가지 마세요. '
-      '그 방법으로 다시 로그인한 뒤 설정 > 로그인 연결에서 $provider를 연결해 주세요. '
-      '같은 SHARE와 기록이 그대로 보여요. '
-      '이메일 주소가 같아도 계정은 자동으로 합쳐지지 않아요.';
+  static String existingAccountBody(String provider) =>
+      '$provider로 확인된 이메일과 같은 계정을 찾지 못해서, 새 계정을 만들지 않았어요.\n\n'
+      '예전에 다른 방법으로 가입하셨다면 그 방법으로 로그인해 주세요. '
+      '로그인되면 $provider를 그 계정에 바로 연결하고, 닉네임과 SHARE도 그대로 보여요. '
+      '확인된 이메일이 같은 계정은 이렇게 고르지 않아도 자동으로 이어져요.\n\n'
+      '쉐어런이 처음이시면 새 계정을 만들어 주세요.';
 
   // ── Terms Agreement (Screen 2) ────────────────────────────────────
   static const termsTitle =

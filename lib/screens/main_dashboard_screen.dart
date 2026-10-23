@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
-import '../app/app.dart';
-import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -15,7 +13,6 @@ import '../core/widgets/src_exit_guard.dart';
 import '../features/home/home_cards.dart';
 import '../features/home/home_wallet_card.dart';
 import '../features/mini_bot/mini_bot_sheet.dart';
-import '../features/auth/new_social_account_notice.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/nickname_setup_sheet.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
@@ -53,41 +50,10 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     if (!mounted || _nicknameSheetOpen) return;
     if (!ref.read(needsNicknameSetupProvider)) return;
     _nicknameSheetOpen = true;
-    _openNicknameAfterNotice();
+    _openNicknameSheet();
   }
 
-  /// 소셜 로그인으로 막 생긴 계정이면 닉네임 시트 전에 안내한다.
-  /// 다른 방법으로 로그인하면 로그아웃하고, 이어가면 닉네임을 묻는다.
-  Future<void> _openNicknameAfterNotice() async {
-    var uid = '';
-    try {
-      uid = ref.read(firebaseAuthProvider).currentUser?.uid ?? '';
-    } catch (_) {}
-    if (uid.isEmpty) {
-      uid = ref.read(persistedAuthSessionProvider)?.uid ?? '';
-    }
-    final provider = await NewSocialAccountNoticeStore.pendingProvider(uid);
-    if (!mounted) return;
-    if (!ref.read(needsNicknameSetupProvider)) {
-      setState(() => _nicknameSheetOpen = false);
-      return;
-    }
-    if (provider != null) {
-      final proceed = await showNewSocialAccountNotice(
-        context,
-        providerName: provider,
-      );
-      if (!mounted) return;
-      if (!proceed) {
-        await signOutAfterNewSocialAccountCancel(ref);
-        if (!mounted) return;
-        setState(() => _nicknameSheetOpen = false);
-        navigateToLoginScreen();
-        return;
-      }
-      await NewSocialAccountNoticeStore.clear();
-      if (!mounted) return;
-    }
+  Future<void> _openNicknameSheet() async {
     await NicknameSetupSheet.show(context);
     if (!mounted) return;
     setState(() => _nicknameSheetOpen = false);

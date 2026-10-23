@@ -62,6 +62,7 @@ class _Db:
         self.stores = {identities.IDENTITIES: {}, identities.LOG: {}}
 
     def collection(self, name):
+        self.stores.setdefault(name, {})
         store = self.stores[name]
 
         class C:
@@ -78,6 +79,14 @@ class _NotFound(Exception):
     pass
 
 
+class _AuthUser:
+    def __init__(self, uid, email, email_verified, provider_ids):
+        self.uid = uid
+        self.email = email
+        self.email_verified = email_verified
+        self.provider_data = [type("P", (), {"provider_id": p})() for p in provider_ids]
+
+
 class _FbAuth:
     UserNotFoundError = _NotFound
 
@@ -86,17 +95,43 @@ class _FbAuth:
         self.providers = list(providers)
         self.next = 1
 
-    def create_user(self):
+    def add(self, uid, *, email=None, email_verified=False):
+        self.users[uid] = _AuthUser(uid, email, email_verified, list(self.providers))
+        return self.users[uid]
+
+    def create_user(self, email=None, email_verified=False, **_kwargs):
         uid = f"fb{self.next}"
         self.next += 1
-        self.users[uid] = True
-        return type("U", (), {"uid": uid})()
+        return self.add(uid, email=email, email_verified=email_verified)
 
     def get_user(self, uid):
-        if uid not in self.users:
+        raw = self.users.get(uid)
+        if raw is None:
             raise _NotFound()
-        info = [type("P", (), {"provider_id": p})() for p in self.providers]
-        return type("U", (), {"uid": uid, "provider_data": info})()
+        if raw is True:
+            raw = self.add(uid)
+        return raw
+
+    def get_user_by_email(self, email):
+        want = (email or "").strip().lower()
+        found = []
+        for uid in list(self.users):
+            user = self.get_user(uid)
+            if (user.email or "").strip().lower() == want:
+                found.append(user)
+        if not found:
+            raise _NotFound()
+        if len(found) > 1:
+            raise identities.AmbiguousVerifiedEmail()
+        return found[0]
+
+    def update_user(self, uid, email=None, email_verified=None, **_kwargs):
+        user = self.get_user(uid)
+        if email is not None:
+            user.email = email
+        if email_verified is not None:
+            user.email_verified = email_verified
+        return user
 
     def delete_user(self, uid):
         self.users.pop(uid, None)
@@ -111,7 +146,9 @@ def _verify(pid):
 
 def test_first_kakao_login_makes_one_account_and_a_token() -> None:
     db, fb = _Db(), _FbAuth()
-    out = identities.login(db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb)
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb, create_account=True
+    )
     assert out == {"custom_token": "custom-for-fb1", "new_account": True}
     assert db.stores[identities.IDENTITIES]["kakao:777"]["uid"] == "fb1"
     log = list(db.stores[identities.LOG].values())
@@ -121,19 +158,24 @@ def test_first_kakao_login_makes_one_account_and_a_token() -> None:
 
 def test_second_login_reuses_the_same_account() -> None:
     db, fb = _Db(), _FbAuth()
-    identities.login(db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb)
+    identities.login(
+        db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb, create_account=True
+    )
     out = identities.login(db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb)
     assert out == {"custom_token": "custom-for-fb1", "new_account": False}
     assert len(fb.users) == 1
 
 
-def test_a_deleted_account_gets_a_fresh_one() -> None:
+def test_a_deleted_account_is_not_recreated_in_silence() -> None:
     db, fb = _Db(), _FbAuth()
-    identities.login(db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb)
+    identities.login(
+        db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb, create_account=True
+    )
     fb.delete_user("fb1")
     out = identities.login(db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb)
-    assert out["new_account"] is True
-    assert db.stores[identities.IDENTITIES]["kakao:777"]["uid"] == "fb2"
+    assert out == {"needs_account_choice": True, "new_account": False}
+    assert "kakao:777" not in db.stores[identities.IDENTITIES]
+    assert fb.users == {}
 
 
 def test_link_attaches_kakao_to_the_signed_in_account() -> None:
@@ -174,7 +216,9 @@ def test_login_after_link_opens_the_linked_account() -> None:
 
 def test_unlink_needs_another_way_to_sign_in() -> None:
     db, fb = _Db(), _FbAuth()
-    out = identities.login(db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb)
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb, create_account=True
+    )
     uid = out["custom_token"].removeprefix("custom-for-")
     with pytest.raises(HTTPException) as caught:
         identities.unlink(db, uid, "kakao", fb_auth=fb)
@@ -219,7 +263,14 @@ def test_custom_token_failure_is_reported_not_hidden() -> None:
             raise RuntimeError("iam")
 
     with pytest.raises(HTTPException) as caught:
-        identities.login(_Db(), "kakao", "t" * 20, verify=_verify("1"), fb_auth=Broken())
+        identities.login(
+            _Db(),
+            "kakao",
+            "t" * 20,
+            verify=_verify("1"),
+            fb_auth=Broken(),
+            create_account=True,
+        )
     assert caught.value.detail == "custom_token_unavailable"
 
 
@@ -253,7 +304,7 @@ def test_kakao_token_must_belong_to_this_app(monkeypatch) -> None:
         "urlopen",
         lambda req, timeout=0: _Resp(b'{"id": 55, "app_id": 1234}'),
     )
-    assert identities.verify_kakao_token("t" * 20) == "55"
+    assert identities.verify_kakao_token("t" * 20).user_id == "55"
     monkeypatch.setattr(
         identities.urllib.request,
         "urlopen",
@@ -318,7 +369,9 @@ def test_naver_works_like_kakao_and_both_can_share_one_account() -> None:
 
 def test_a_new_naver_user_gets_a_new_account() -> None:
     db, fb = _Db(), _FbAuth()
-    out = identities.login(db, "naver", "t" * 20, verify=_verify("n1"), fb_auth=fb)
+    out = identities.login(
+        db, "naver", "t" * 20, verify=_verify("n1"), fb_auth=fb, create_account=True
+    )
     assert out["new_account"] is True
     assert db.stores[identities.IDENTITIES]["naver:n1"]["provider"] == "naver"
 
@@ -343,7 +396,9 @@ def test_naver_token_is_read_from_the_profile_answer(monkeypatch) -> None:
             b'{"resultcode":"00","message":"success","response":{"id":"abc123"}}'
         ),
     )
-    assert identities.verify_naver_token("t" * 20) == "abc123"
+    identity = identities.verify_naver_token("t" * 20)
+    assert identity.user_id == "abc123"
+    assert identity.verified_email is None
 
 
 def test_naver_bad_answers_are_refused(monkeypatch) -> None:
@@ -389,3 +444,263 @@ def test_naver_routes_are_wired_like_kakao() -> None:
     assert client.post("/auth/naver/login", json={"access_token": "x"}).status_code == 422
     assert client.post("/auth/naver/link", json={"access_token": "t" * 20}).status_code == 401
     assert client.post("/auth/naver/unlink").status_code == 401
+    assert client.post("/auth/google/login", json={"id_token": "x"}).status_code == 422
+    assert client.post("/auth/google/link", json={"id_token": "t" * 20}).status_code == 401
+    assert client.post("/auth/google/unlink").status_code == 401
+
+
+def _verified(pid, email):
+    return lambda token: identities.ProviderIdentity(pid, email)
+
+
+def test_a_verified_email_links_the_existing_account() -> None:
+    import hashlib
+
+    db, fb = _Db(), _FbAuth()
+    fb.add("google-user", email="Match@x.com", email_verified=True)
+    out = identities.login(
+        db,
+        "kakao",
+        "t" * 20,
+        verify=_verified("k9", "match@x.com"),
+        fb_auth=fb,
+    )
+    assert out == {"custom_token": "custom-for-google-user", "new_account": False}
+    assert db.stores[identities.IDENTITIES]["kakao:k9"]["uid"] == "google-user"
+    assert db.stores[identities.IDENTITIES]["kakao:k9"]["linkedBy"] == "verified_email"
+    assert list(fb.users) == ["google-user"]
+    log = list(db.stores[identities.LOG].values())
+    assert [row["action"] for row in log] == ["auto_link"]
+    assert log[0]["emailHash"] == hashlib.sha256(b"match@x.com").hexdigest()[:16]
+    assert "match@x.com" not in str(log) and "k9" not in str(log) and "t" * 20 not in str(log)
+    saved = list(db.stores[identities.VERIFIED_EMAILS].values())
+    assert saved == [{"uids": ["google-user"]}]
+    assert "match@x.com" not in str(saved)
+
+
+def test_an_unverified_or_missing_email_does_not_merge() -> None:
+    db, fb = _Db(), _FbAuth()
+    fb.add("google-user", email="match@x.com", email_verified=True)
+    for identity in (
+        identities.ProviderIdentity("k1", None),
+        identities.ProviderIdentity("k2", ""),
+        "k3",
+    ):
+        out = identities.login(
+            db, "kakao", "t" * 20, verify=lambda token, identity=identity: identity, fb_auth=fb
+        )
+        assert out == {"needs_account_choice": True, "new_account": False}
+    assert db.stores[identities.IDENTITIES] == {}
+    assert list(fb.users) == ["google-user"]
+
+    # The account's own address is not verified, so the provider address is not enough.
+    fb.add("plain", email="other@x.com", email_verified=False)
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verified("k4", "other@x.com"), fb_auth=fb
+    )
+    assert out["needs_account_choice"] is True
+    assert "kakao:k4" not in db.stores[identities.IDENTITIES]
+
+
+def test_duplicate_verified_emails_are_not_merged() -> None:
+    db, fb = _Db(), _FbAuth()
+    fb.add("a", email="same@x.com", email_verified=True)
+    fb.add("b", email="same@x.com", email_verified=True)
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verified("k9", "same@x.com"), fb_auth=fb
+    )
+    assert out == {"needs_account_choice": True, "new_account": False}
+    assert db.stores[identities.IDENTITIES] == {}
+    assert set(fb.users) == {"a", "b"}
+
+    # Asking for a new account is allowed once the person says so. It must not
+    # pick a or b.
+    created = identities.login(
+        db,
+        "kakao",
+        "t" * 20,
+        verify=_verified("k9", "same@x.com"),
+        fb_auth=fb,
+        create_account=True,
+    )
+    assert created["new_account"] is True
+    assert created["custom_token"] not in {"custom-for-a", "custom-for-b"}
+
+
+def test_an_email_index_duplicate_blocks_auto_link_when_auth_returns_one() -> None:
+    """Firebase get_user_by_email returns one user. A second verified uid we
+    already recorded still means the address is not safe to merge on."""
+
+    class _FirstOnly(_FbAuth):
+        def get_user_by_email(self, email):
+            want = (email or "").strip().lower()
+            for uid in self.users:
+                user = self.get_user(uid)
+                if (user.email or "").strip().lower() == want and user.email_verified:
+                    return user
+            raise _NotFound()
+
+    db, fb = _Db(), _FirstOnly()
+    fb.add("a", email="same@x.com", email_verified=True)
+    fb.add("b", email="same@x.com", email_verified=True)
+    db.collection(identities.VERIFIED_EMAILS).document(identities._email_doc("same@x.com")).set(
+        {"uids": ["a", "b"]}
+    )
+    out = identities.login(
+        db, "naver", "t" * 20, verify=_verified("n1", "same@x.com"), fb_auth=fb
+    )
+    assert out["needs_account_choice"] is True
+    assert db.stores[identities.IDENTITIES] == {}
+
+
+def test_an_identity_already_linked_elsewhere_is_not_moved() -> None:
+    db, fb = _Db(), _FbAuth()
+    fb.add("owner", email="owner@x.com", email_verified=True)
+    fb.add("match", email="match@x.com", email_verified=True)
+    identities.link(db, "owner", "kakao", "t" * 20, verify=_verify("777"))
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verified("777", "match@x.com"), fb_auth=fb
+    )
+    assert out == {"custom_token": "custom-for-owner", "new_account": False}
+    assert db.stores[identities.IDENTITIES]["kakao:777"]["uid"] == "owner"
+    assert [row["action"] for row in db.stores[identities.LOG].values()] == ["link", "login"]
+
+
+def test_auto_link_is_skipped_when_the_account_already_has_that_provider() -> None:
+    db, fb = _Db(), _FbAuth()
+    fb.add("match", email="match@x.com", email_verified=True)
+    identities.link(db, "match", "kakao", "t" * 20, verify=_verify("111"))
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verified("222", "match@x.com"), fb_auth=fb
+    )
+    assert out["needs_account_choice"] is True
+    assert "kakao:222" not in db.stores[identities.IDENTITIES]
+    assert db.stores[identities.IDENTITIES]["kakao:111"]["uid"] == "match"
+    assert "auto_link" not in [row["action"] for row in db.stores[identities.LOG].values()]
+
+
+def test_deleted_and_purging_accounts_are_not_merge_targets() -> None:
+    db, fb = _Db(), _FbAuth()
+    fb.add("gone", email="match@x.com", email_verified=True)
+    db.collection("users").document("gone").set({"accountStatus": "purged"})
+    out = identities.login(
+        db, "kakao", "t" * 20, verify=_verified("k9", "match@x.com"), fb_auth=fb
+    )
+    assert out["needs_account_choice"] is True
+    assert db.stores[identities.IDENTITIES] == {}
+
+    fb.add("old", email="old@x.com", email_verified=True)
+    identities.link(db, "old", "naver", "t" * 20, verify=_verify("n1"))
+    db.collection("users").document("old").set({"accountStatus": "deleted"})
+    again = identities.login(
+        db, "naver", "t" * 20, verify=_verified("n1", "old@x.com"), fb_auth=fb
+    )
+    assert again["needs_account_choice"] is True
+    assert "naver:n1" not in db.stores[identities.IDENTITIES]
+
+
+def test_explicit_create_then_the_other_provider_lands_on_it() -> None:
+    db, fb = _Db(), _FbAuth()
+    first = identities.login(
+        db,
+        "kakao",
+        "t" * 20,
+        verify=_verified("k1", "match@x.com"),
+        fb_auth=fb,
+        create_account=True,
+    )
+    assert first["new_account"] is True
+    uid = first["custom_token"].removeprefix("custom-for-")
+    assert fb.get_user(uid).email == "match@x.com"
+    assert fb.get_user(uid).email_verified is True
+    second = identities.login(
+        db, "google", "t" * 20, verify=_verified("gsub", "match@x.com"), fb_auth=fb
+    )
+    assert second == {"custom_token": f"custom-for-{uid}", "new_account": False}
+    assert db.stores[identities.IDENTITIES]["google:gsub"]["uid"] == uid
+    assert [row["action"] for row in db.stores[identities.LOG].values()] == [
+        "login_new",
+        "auto_link",
+    ]
+
+
+def test_kakao_email_needs_both_flags(monkeypatch) -> None:
+    monkeypatch.setenv("KAKAO_APP_ID", "1234")
+
+    def urlopen(req, timeout=0, body=None):
+        if req.full_url.endswith("access_token_info"):
+            return _Resp(b'{"id": 55, "app_id": 1234}')
+        return _Resp(body)
+
+    cases = (
+        (
+            b'{"kakao_account":{"email":"A@x.com","is_email_valid":true,"is_email_verified":true}}',
+            "a@x.com",
+        ),
+        (
+            b'{"kakao_account":{"email":"A@x.com","is_email_valid":true,"is_email_verified":false}}',
+            None,
+        ),
+        (
+            b'{"kakao_account":{"email":"A@x.com","is_email_valid":false,"is_email_verified":true}}',
+            None,
+        ),
+        (b'{"kakao_account":{"is_email_valid":true,"is_email_verified":true}}', None),
+        (b"{}", None),
+    )
+    for body, email in cases:
+        monkeypatch.setattr(
+            identities.urllib.request,
+            "urlopen",
+            lambda req, timeout=0, body=body: urlopen(req, timeout, body),
+        )
+        identity = identities.verify_kakao_token("t" * 20)
+        assert identity.user_id == "55"
+        assert identity.verified_email == email
+
+
+def test_naver_profile_email_is_treated_as_verified(monkeypatch) -> None:
+    monkeypatch.setattr(
+        identities.urllib.request,
+        "urlopen",
+        lambda req, timeout=0: _Resp(
+            b'{"resultcode":"00","message":"success","response":{"id":"abc","email":"User@Naver.com"}}'
+        ),
+    )
+    identity = identities.verify_naver_token("t" * 20)
+    assert identity.user_id == "abc"
+    assert identity.verified_email == "user@naver.com"
+
+    monkeypatch.setattr(
+        identities.urllib.request,
+        "urlopen",
+        lambda req, timeout=0: _Resp(
+            b'{"resultcode":"00","message":"success","response":{"id":"abc","email":"  "}}'
+        ),
+    )
+    assert identities.verify_naver_token("t" * 20).verified_email is None
+
+
+def test_google_email_is_verified_only_when_the_claim_says_so(monkeypatch) -> None:
+    seen = {}
+
+    def claims(token, audience):
+        seen["audience"] = audience
+        return {"sub": "g1", "email": "A@x.com", "email_verified": True}
+
+    monkeypatch.setattr(identities, "_google_claims", claims)
+    monkeypatch.delenv("GOOGLE_WEB_CLIENT_ID", raising=False)
+    assert identities.verify_google_id_token("t" * 20) == identities.ProviderIdentity(
+        "g1", "a@x.com"
+    )
+    assert seen["audience"] is None
+
+    monkeypatch.setenv("GOOGLE_WEB_CLIENT_ID", "web-client")
+    identities.verify_google_id_token("t" * 20)
+    assert seen["audience"] == "web-client"
+    monkeypatch.setattr(
+        identities,
+        "_google_claims",
+        lambda token, audience: {"sub": "g1", "email": "a@x.com", "email_verified": False},
+    )
+    assert identities.verify_google_id_token("t" * 20).verified_email is None

@@ -77,6 +77,44 @@ class AuthRepository {
     }
   }
 
+  /// 구글 로그인 창을 띄워 ID 토큰만 받는다. 닫으면 null.
+  ///
+  /// Firebase 사용자는 여기서 만들지 않는다. 서버가 확인된 이메일로 기존 계정을
+  /// 찾거나, 사람이 새 계정을 고른 뒤에 맞춤 토큰을 준다.
+  Future<String?> googleIdToken() async {
+    try {
+      await _ensureGoogleInitialized();
+      final GoogleSignInAccount? googleUser =
+          await _googleSignIn.authenticate();
+      if (googleUser == null) return null;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw Exception('구글 로그인 토큰을 가져오지 못했습니다.');
+      }
+      return idToken;
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return null;
+      }
+      throw Exception('구글 로그인 설정 오류: ${e.description ?? e.code.name}');
+    } catch (e) {
+      if (e is Exception && '$e'.contains('구글 로그인 토큰')) rethrow;
+      throw Exception('구글 로그인 중 알 수 없는 오류 발생: $e');
+    }
+  }
+
+  /// 이미 받아 둔 구글 ID 토큰으로 Firebase에 들어간다.
+  /// 예전에 구글로 만든 계정이면 그 계정이고, 없으면 그때 만들어진다.
+  Future<UserCredential> signInWithGoogleIdToken(String idToken) async {
+    try {
+      final credential = GoogleAuthProvider.credential(idToken: idToken);
+      return await _firebaseAuth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw Exception('Firebase 로그인 실패: ${e.message}');
+    }
+  }
+
   /// 네이버 로그인 창을 띄워 액세스 토큰만 받는다. 닫으면 null.
   /// 이름, 이메일 같은 개인정보는 읽지 않는다. 서버가 토큰으로 네이버 사용자 번호만 확인한다.
   Future<String?> naverAccessToken() async {
@@ -106,7 +144,7 @@ class AuthRepository {
   ///
   /// 카톡 앱 자동 로그인이 화면 없이 토큰을 줄 수 있어서, 저장된 토큰을 지우고
   /// [kakao.Prompt.login]으로 항상 계정 선택 화면을 보여 준다. 이름, 이메일 같은
-  /// 개인정보는 읽지 않는다. 서버가 토큰으로 카카오 사용자 번호만 확인한다.
+  /// 개인정보는 읽지 않는다. 서버가 토큰으로 사용자 번호와, 확인된 경우에만 이메일을 본다.
   Future<String?> kakaoAccessToken() async {
     try {
       try {

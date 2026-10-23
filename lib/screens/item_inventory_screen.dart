@@ -395,7 +395,7 @@ class _UseChip extends StatelessWidget {
           child: Text(
             label,
             style: AppTextStyles.buttonText.copyWith(
-              color: AppColors.textBlack,
+              color: AppColors.nightOnLime,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -508,7 +508,7 @@ class _DividerSlash extends StatelessWidget {
         '/',
         style: AppTextStyles.caption.copyWith(
           fontSize: 14,
-          color: AppColors.borderGrey,
+          color: AppColors.nightMuted,
         ),
       ),
     );

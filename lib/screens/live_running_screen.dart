@@ -702,7 +702,7 @@ class _StatsDashboard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: AppColors.nightBg,
         borderRadius: BorderRadius.circular(AppShapes.cardRadius),
         border: Border.all(color: AppColors.nightLime, width: 1.5),
         boxShadow: [

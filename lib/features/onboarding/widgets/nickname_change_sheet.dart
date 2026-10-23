@@ -284,7 +284,7 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                           style: FilledButton.styleFrom(
                             backgroundColor: hasEnoughDia
                                 ? AppColors.tealAccent
-                                : AppColors.tossBlue,
+                                : const Color(0xFF1F6FE0),
                             disabledBackgroundColor: AppColors.buttonDisabled,
                             foregroundColor: hasEnoughDia ? AppColors.nightOnLime : AppColors.textWhite,
                             shape: const StadiumBorder(),

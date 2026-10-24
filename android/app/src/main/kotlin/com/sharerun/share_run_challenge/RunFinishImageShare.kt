@@ -32,6 +32,13 @@ object RunFinishImageShare {
                         activity.shareInstagramStory(call.argument("path")),
                     )
                     "shareTikTok" -> result.success(activity.shareTikTok(call.argument("path")))
+                    "installedTargets" -> result.success(activity.installedShareTargets())
+                    "shareTarget" -> result.success(
+                        activity.shareToTarget(
+                            call.argument("id"),
+                            call.argument("path"),
+                        ),
+                    )
                     else -> result.notImplemented()
                 }
             }
@@ -69,6 +76,59 @@ private fun MainActivity.shareInstagramStory(path: String?): Boolean {
     }
     return try {
         grantUriPermission("com.instagram.android", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(intent)
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
+    }
+}
+
+private fun MainActivity.installedShareTargets(): List<String> {
+    val ids = mutableListOf<String>()
+    if (isPkgInstalled("com.instagram.android")) {
+        ids += "story"
+        ids += "feed"
+    }
+    if (isPkgInstalled("com.zhiliaoapp.musically") || isPkgInstalled("com.ss.android.ugc.trill")) {
+        ids += "tiktok"
+    }
+    if (isPkgInstalled("com.facebook.katana")) ids += "facebook"
+    if (isPkgInstalled("com.kakao.talk")) ids += "kakao"
+    if (isPkgInstalled("jp.naver.line.android")) ids += "line"
+    if (isPkgInstalled("com.twitter.android")) ids += "x"
+    if (isPkgInstalled("com.whatsapp")) ids += "whatsapp"
+    if (isPkgInstalled("org.telegram.messenger")) ids += "telegram"
+    return ids
+}
+
+private fun MainActivity.shareToTarget(id: String?, path: String?): Boolean {
+    if (id == "story") return shareInstagramStory(path)
+    val pkg = when (id) {
+        "feed" -> "com.instagram.android"
+        "tiktok" -> when {
+            isPkgInstalled("com.zhiliaoapp.musically") -> "com.zhiliaoapp.musically"
+            isPkgInstalled("com.ss.android.ugc.trill") -> "com.ss.android.ugc.trill"
+            else -> return false
+        }
+        "facebook" -> "com.facebook.katana"
+        "kakao" -> "com.kakao.talk"
+        "line" -> "jp.naver.line.android"
+        "x" -> "com.twitter.android"
+        "whatsapp" -> "com.whatsapp"
+        "telegram" -> "org.telegram.messenger"
+        else -> return false
+    }
+    if (!isPkgInstalled(pkg)) return false
+    val uri = shareUri(path) ?: return false
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/png"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        clipData = ClipData.newRawUri("share_run", uri)
+        setPackage(pkg)
+    }
+    return try {
+        grantUriPermission(pkg, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(intent)
         true
     } catch (_: ActivityNotFoundException) {

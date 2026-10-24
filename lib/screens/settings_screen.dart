@@ -265,7 +265,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Text(
               '계정을 삭제하면 아래와 같이 처리되며 되돌릴 수 없습니다.\n\n'
               '• 보유한 SHARE·DIA·VALUE가 모두 사라지고, 현금으로 돌려받지 않습니다.\n'
-              '• 활동 기록과 개인정보는 삭제 절차에 따라 지워집니다.\n'
+              '• 러닝 기록 등 활동 기록은 30일 안에 삭제됩니다. 법령에 따라 보관해야 하는 결제·거래 기록은 5년간 보관한 뒤 삭제돼요.\n'
               '${AppEnv.inAppPurchasesEnabled ? '• Coach+ 구독은 자동으로 해지되지 않습니다. Google Play 스토어의 구독 메뉴에서 직접 해지해 주세요.\n' : ''}'
               '• 크루장이라면 먼저 크루장을 다른 크루원에게 넘겨 주세요.\n\n'
               '정말 삭제하시겠습니까?',

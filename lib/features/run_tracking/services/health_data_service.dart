@@ -25,9 +25,6 @@ class HealthDataService {
   static const List<HealthDataType> watchLinkTypes = [
     HealthDataType.HEART_RATE,
     HealthDataType.STEPS,
-    HealthDataType.DISTANCE_DELTA,
-    HealthDataType.WORKOUT,
-    HealthDataType.ACTIVITY_INTENSITY,
   ];
 
   Future<bool> requestRunDataAuthorization() async {

@@ -6,11 +6,12 @@ from app.models.admin_api import (
     AuditPingResult,
     DailyStepsResult,
     ReferralListResult,
+    ReportStatusRequest,
     WalletAnomalyListResult,
     WalletLedgerResult,
     WhoAmIResult,
 )
-from app.services import appeals
+from app.services import appeals, reports
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
 from app.services.admin_daily_steps_service import admin_daily_steps_service
@@ -159,3 +160,39 @@ def decide_appeal(
         reason=f"{appeal_id}: {body.note[:120]}",
     )
     return outcome
+
+
+@router.get("/reports")
+def list_reports(
+    status: str = "open",
+    limit: int = Query(default=50, ge=1, le=100),
+    _actor: dict = Depends(require_admin_user),
+) -> dict:
+    """Player reports of names, oldest first."""
+    return {"reports": reports.list_reports(FirebaseService().db, status, limit)}
+
+
+@router.post("/reports/{report_id}/status")
+def set_report_status(
+    report_id: str,
+    body: ReportStatusRequest,
+    actor: dict = Depends(require_admin_user),
+) -> dict:
+    """Marks a report reviewed, resolved or dismissed. Every change is audited."""
+    outcome = reports.set_report_status(
+        FirebaseService().db,
+        report_id,
+        body.status,
+        str(actor["uid"]),
+        body.note,
+    )
+    admin_audit_service.write(
+        uid=str(actor["uid"]),
+        email=_actor_email(actor),
+        action="report_status",
+        target_uid=None,
+        before={"status": outcome["before"]},
+        after={"status": outcome["status"]},
+        reason=f"{report_id}: {body.note[:120]}",
+    )
+    return {"id": report_id, "status": outcome["status"]}

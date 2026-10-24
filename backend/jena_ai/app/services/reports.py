@@ -51,3 +51,51 @@ def submit_report(
         }
     )
     return {"status": "reported"}
+
+
+STATUSES = ("open", "reviewed", "resolved", "dismissed")
+
+
+def list_reports(db, status: str = "open", limit: int = 50) -> list[dict]:
+    """Oldest first, so the queue is worked in the order it arrived."""
+    if status not in STATUSES:
+        raise HTTPException(status_code=400, detail="Invalid status.")
+    rows = []
+    for snap in db.collection("reports").where("status", "==", status).limit(limit).get():
+        data = snap.to_dict() or {}
+        created = data.get("createdAt")
+        rows.append(
+            {
+                "id": snap.id,
+                "targetType": data.get("targetType"),
+                "targetId": data.get("targetId"),
+                "targetName": data.get("targetName"),
+                "reason": data.get("reason"),
+                "detail": data.get("detail"),
+                "status": data.get("status"),
+                "reporterUid": data.get("reporterUid"),
+                "createdAt": created.isoformat() if hasattr(created, "isoformat") else None,
+            }
+        )
+    rows.sort(key=lambda row: row["createdAt"] or "")
+    return rows
+
+
+def set_report_status(db, report_id: str, new_status: str, actor_uid: str, note: str = "") -> dict:
+    """Moves one report along. The audit ledger entry is written by the caller."""
+    if new_status not in STATUSES or new_status == "open":
+        raise HTTPException(status_code=400, detail="Invalid status.")
+    ref = db.collection("reports").document(report_id)
+    snap = ref.get()
+    if not snap.exists:
+        raise HTTPException(status_code=404, detail="Report not found.")
+    previous = (snap.to_dict() or {}).get("status")
+    ref.update(
+        {
+            "status": new_status,
+            "reviewedBy": actor_uid,
+            "reviewNote": (note or "").strip()[:300],
+            "reviewedAt": SERVER_TIMESTAMP,
+        }
+    )
+    return {"id": report_id, "before": previous, "status": new_status}

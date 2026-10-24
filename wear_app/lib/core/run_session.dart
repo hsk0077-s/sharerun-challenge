@@ -15,6 +15,7 @@ class RunSession {
   Duration _moving = Duration.zero;
   double _distanceKm = 0;
   int _lastHeartRate = 0;
+  int _steps = 0;
   final _heartRates = <int>[];
 
   RunPhase get phase => _phase;
@@ -22,6 +23,7 @@ class RunSession {
   DateTime? get endedAt => _endedAt;
   double get distanceKm => _distanceKm;
   int get lastHeartRate => _lastHeartRate;
+  int get steps => _steps;
   List<int> get heartRates => List.unmodifiable(_heartRates);
 
   /// 일시정지 시간은 빼고, 실제로 움직인 시간.
@@ -72,6 +74,12 @@ class RunSession {
       return;
     }
     _distanceKm += km;
+  }
+
+  /// 센서가 달리기 시작부터 센 걸음 수(누적). 줄어드는 값은 무시한다.
+  void setSteps(int total) {
+    if (_phase != RunPhase.running || total <= _steps) return;
+    _steps = total;
   }
 
   void addHeartRate(int bpm) {

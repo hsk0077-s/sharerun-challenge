@@ -1,4 +1,4 @@
-"""Sign-in with Google, Kakao or Naver that ends in one Firebase account.
+"""Sign-in with Google, Kakao, Naver or Apple that ends in one Firebase account.
 
 The phone sends a provider token. The server checks it, maps the provider user
 id to one Firebase account (`authIdentities`) and hands back a Firebase custom
@@ -16,6 +16,10 @@ Verified e-mail rules:
 - Google: the ID token e-mail is verified when `email_verified` is true.
 - Kakao: `kakao_account.is_email_valid` and `is_email_verified` must both be
   true. One flag, or a missing e-mail, is not enough.
+- Apple: `email_verified` is true (Apple sends it as a bool or as the string
+  "true"). A private-relay address counts as verified. The token is either a
+  Firebase ID token (`signInWithProvider` on Android) or Apple's own identity
+  token (iOS), see `verify_apple_id_token`.
 - Naver: `/v1/nid/me` has no verified flag. Naver will not finish sign-up until
   the member authenticates an e-mail, and `response.email` is that registered
   address (omitted when the person declines the e-mail scope). A non-empty
@@ -51,7 +55,9 @@ VERIFIED_EMAILS = "authVerifiedEmails"
 USERS = "users"
 REWARD_TOMBSTONES = "rewardTombstones"
 REWARD_BLOCKS = "rewardBlocks"
-PROVIDERS = ("kakao", "naver", "google")
+PROVIDERS = ("kakao", "naver", "google", "apple")
+APPLE_ISSUER = "https://appleid.apple.com"
+APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
 KAKAO_TOKEN_INFO_URL = "https://kapi.kakao.com/v1/user/access_token_info"
 KAKAO_USER_ME_URL = "https://kapi.kakao.com/v2/user/me"
 NAVER_PROFILE_URL = "https://openapi.naver.com/v1/nid/me"
@@ -233,10 +239,96 @@ def verify_google_id_token(token: str) -> ProviderIdentity:
     return ProviderIdentity(str(subject), email)
 
 
+def _is_true(value) -> bool:
+    return value is True or (isinstance(value, str) and value.strip().lower() == "true")
+
+
+def _unverified_issuer(token: str) -> str:
+    import jwt
+
+    claims = jwt.decode(
+        token,
+        options={"verify_signature": False, "verify_exp": False, "verify_aud": False},
+    )
+    return str(claims.get("iss") or "") if isinstance(claims, dict) else ""
+
+
+def _firebase_claims(token: str) -> dict:
+    info = firebase_auth.verify_id_token(token)
+    if not isinstance(info, dict):
+        raise ValueError("not a dict")
+    return info
+
+
+_apple_jwks = None
+
+
+def _apple_claims(token: str, audience: str | None) -> dict:
+    """Checks the signature, expiry, issuer and (when set) audience of an Apple JWT."""
+    global _apple_jwks
+    import jwt
+
+    if _apple_jwks is None:
+        _apple_jwks = jwt.PyJWKClient(APPLE_KEYS_URL, cache_keys=True)
+    key = _apple_jwks.get_signing_key_from_jwt(token).key
+    options = {"verify_aud": bool(audience)}
+    info = jwt.decode(
+        token,
+        key,
+        algorithms=["RS256"],
+        audience=audience or None,
+        issuer=APPLE_ISSUER,
+        options=options,
+    )
+    if not isinstance(info, dict):
+        raise ValueError("not a dict")
+    return info
+
+
+def verify_apple_id_token(token: str) -> ProviderIdentity:
+    """Apple subject, plus the e-mail when Apple marked it verified.
+
+    The phone sends one of two tokens. Apple's own identity token (iOS) has
+    `iss == https://appleid.apple.com`. Otherwise it is a Firebase ID token
+    from `signInWithProvider(apple.com)` (Android); it must have been issued by
+    Apple sign-in, and the provider user id is `firebase.identities["apple.com"]`,
+    which is the same `sub` Apple puts in its own token.
+
+    `APPLE_CLIENT_ID` (bundle id or services id) checks the audience of Apple's
+    own token. If it is unset signature, expiry and issuer are still checked.
+    """
+    try:
+        if _unverified_issuer(token) == APPLE_ISSUER:
+            audience = os.getenv("APPLE_CLIENT_ID", "").strip()
+            info = _apple_claims(token, audience or None)
+            subject = info.get("sub")
+            claim_email = info.get("email")
+            verified = _is_true(info.get("email_verified"))
+        else:
+            info = _firebase_claims(token)
+            firebase = info.get("firebase")
+            firebase = firebase if isinstance(firebase, dict) else {}
+            if firebase.get("sign_in_provider") != "apple.com":
+                raise ValueError("not an apple sign-in")
+            ids = (firebase.get("identities") or {}).get("apple.com") or []
+            subject = ids[0] if ids else None
+            claim_email = info.get("email")
+            verified = _is_true(info.get("email_verified"))
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="invalid_provider_token")
+    if not subject:
+        raise HTTPException(status_code=401, detail="invalid_provider_token")
+    email = _normalize_email(claim_email) if verified else None
+    return ProviderIdentity(str(subject), email)
+
+
 VERIFIERS: dict[str, Callable[[str], ProviderIdentity]] = {
     "kakao": verify_kakao_token,
     "naver": verify_naver_token,
     "google": verify_google_id_token,
+    "apple": verify_apple_id_token,
 }
 
 

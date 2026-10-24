@@ -1,3 +1,5 @@
+import time
+
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from app.config import debug_test_grant_enabled
@@ -60,6 +62,7 @@ from app.services import appeals, daily_steps, integrity, login_devices, privacy
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
+from app.services import rate_limit, watch_pairing
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -336,6 +339,13 @@ def submit_report(request: ReportRequest, uid: str = Depends(require_uid)) -> di
         request.reason,
         request.detail,
     )
+
+
+@router.post("/watch-pairing/code")
+def watch_pairing_code(uid: str = Depends(require_uid)) -> dict:
+    if not rate_limit.WATCH_CODE_BY_UID.allow(uid, time.monotonic()):
+        raise HTTPException(status_code=429, detail="too_many_attempts")
+    return watch_pairing.issue_code(service.firebase_service.db, uid)
 
 
 @router.post("/daily-steps")

@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 
 import '../../core/config/app_env.dart';
+import '../firebase/auth_service.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
@@ -114,6 +115,10 @@ class AuthRepository {
       throw Exception('Firebase 로그인 실패: ${e.message}');
     }
   }
+
+  /// 애플 로그인 창을 띄워 ID 토큰만 받는다. 닫으면 null.
+  Future<String?> appleIdToken() =>
+      AuthService(firebaseAuth: _firebaseAuth).obtainAppleIdToken();
 
   /// 네이버 로그인 창을 띄워 액세스 토큰만 받는다. 닫으면 null.
   /// 이름, 이메일 같은 개인정보는 읽지 않는다. 서버가 토큰으로 네이버 사용자 번호만 확인한다.

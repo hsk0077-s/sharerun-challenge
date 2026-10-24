@@ -51,22 +51,174 @@ class _Face extends StatelessWidget {
   }
 }
 
-/// ① 시작: 목표를 고르고 탭해서 시작.
+/// ① 시작: 탭해서 시작. 길게 누르면 계정 연결 화면.
 class StartFace extends StatelessWidget {
-  const StartFace({required this.targetKm, required this.onStart, this.onChangeTarget, super.key});
+  const StartFace({
+    required this.targetKm,
+    required this.onStart,
+    this.onChangeTarget,
+    this.onLongPress,
+    this.linkedName,
+    super.key,
+  });
 
   final double targetKm;
   final VoidCallback onStart;
   final VoidCallback? onChangeTarget;
+  final VoidCallback? onLongPress;
+
+  /// 연결된 계정의 닉네임. 연결 전이면 null.
+  final String? linkedName;
 
   @override
-  Widget build(BuildContext context) => _Face(
-        label: '시작',
-        big: '${targetKm.toStringAsFixed(0)}km',
-        sub: '탭해서 시작',
-        icon: Icons.play_arrow_rounded,
-        onTap: onStart,
+  Widget build(BuildContext context) => GestureDetector(
+        onLongPress: onLongPress,
+        child: _Face(
+          label: linkedName == null ? '시작' : (linkedName!.isEmpty ? '연결됨' : linkedName!),
+          big: '${targetKm.toStringAsFixed(0)}km',
+          sub: '탭해서 시작',
+          icon: Icons.play_arrow_rounded,
+          onTap: onStart,
+        ),
       );
+}
+
+/// ⓪ 연결: 휴대폰 앱이 보여 준 6자리 숫자를 워치에서 입력한다.
+/// 원형 화면에 맞춰 숫자판을 가운데에 모았다. 여섯 자리가 차면 바로 확인한다.
+class PairingFace extends StatefulWidget {
+  const PairingFace({required this.onSubmit, required this.onSkip, super.key});
+
+  /// 오류 메시지를 돌려주면 보여 주고, null이면 연결 성공.
+  final Future<String?> Function(String code) onSubmit;
+  final VoidCallback onSkip;
+
+  static const codeKey = Key('pairing-code');
+  static const messageKey = Key('pairing-message');
+  static const skipKey = Key('pairing-skip');
+  static Key digitKey(int digit) => Key('pairing-digit-$digit');
+  static const backKey = Key('pairing-back');
+
+  @override
+  State<PairingFace> createState() => _PairingFaceState();
+}
+
+class _PairingFaceState extends State<PairingFace> {
+  static const _length = 6;
+  var _code = '';
+  var _busy = false;
+  String? _message;
+
+  Future<void> _press(String digit) async {
+    if (_busy || _code.length >= _length) return;
+    setState(() {
+      _code += digit;
+      _message = null;
+    });
+    if (_code.length < _length) return;
+    setState(() => _busy = true);
+    final error = await widget.onSubmit(_code);
+    if (!mounted) return;
+    setState(() {
+      _busy = false;
+      if (error != null) {
+        _message = error;
+        _code = '';
+      }
+    });
+  }
+
+  void _back() {
+    if (_busy || _code.isEmpty) return;
+    setState(() {
+      _code = _code.substring(0, _code.length - 1);
+      _message = null;
+    });
+  }
+
+  Widget _key(Key key, String label, VoidCallback? onTap) => SizedBox(
+        width: 44,
+        height: 34,
+        child: TextButton(
+          key: key,
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            foregroundColor: _ink,
+            backgroundColor: const Color(0xFF1B231D),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(17)),
+          ),
+          onPressed: onTap,
+          child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+        ),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = _code.padRight(_length, '•');
+    final display = '${shown.substring(0, 3)} ${shown.substring(3)}';
+    return Scaffold(
+      backgroundColor: _bg,
+      body: Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _message ?? (_busy ? '확인하는 중' : '휴대폰 앱의 6자리'),
+                  key: PairingFace.messageKey,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _message == null ? _muted : const Color(0xFFFF8A80),
+                    fontSize: 11,
+                  ),
+                ),
+                Text(
+                  display,
+                  key: PairingFace.codeKey,
+                  style: const TextStyle(
+                    color: _lime,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                for (final row in const [
+                  [1, 2, 3],
+                  [4, 5, 6],
+                  [7, 8, 9],
+                ])
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 3),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final d in row) ...[
+                          _key(PairingFace.digitKey(d), '$d', () => _press('$d')),
+                          if (d % 3 != 0) const SizedBox(width: 3),
+                        ],
+                      ],
+                    ),
+                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _key(PairingFace.skipKey, '나중에', _busy ? null : widget.onSkip),
+                    const SizedBox(width: 3),
+                    _key(PairingFace.digitKey(0), '0', () => _press('0')),
+                    const SizedBox(width: 3),
+                    _key(PairingFace.backKey, '←', _back),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// ② 달리는 중: 페이스·심박·거리.

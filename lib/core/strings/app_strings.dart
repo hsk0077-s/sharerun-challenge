@@ -39,6 +39,7 @@ abstract final class AppStrings {
   static const existingAccountGoogle = '구글로 가입했어요';
   static const existingAccountKakao = '카카오로 가입했어요';
   static const existingAccountNaver = '네이버로 가입했어요';
+  static const existingAccountApple = '애플로 가입했어요';
   static const existingAccountNotFound =
       '그 방법으로 가입된 계정이 없어요. 다른 방법을 골라 주세요.';
   static const existingAccountEmpty = existingAccountNotFound;

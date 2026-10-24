@@ -33,3 +33,7 @@ LINK_BY_UID = WindowLimiter(limit=10, window_seconds=600)
 LINK_BY_IP = WindowLimiter(limit=40, window_seconds=600)
 PREVIEW_BY_UID = WindowLimiter(limit=30, window_seconds=600)
 PREVIEW_BY_IP = WindowLimiter(limit=90, window_seconds=600)
+
+# A 6-digit code is guessable, so pairing is slow per client and per account.
+WATCH_PAIR_BY_IP = WindowLimiter(limit=10, window_seconds=600)
+WATCH_CODE_BY_UID = WindowLimiter(limit=5, window_seconds=600)

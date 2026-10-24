@@ -253,7 +253,7 @@ def test_deleting_an_account_frees_the_kakao_id() -> None:
 
 def test_unknown_provider_is_refused() -> None:
     with pytest.raises(HTTPException) as caught:
-        identities.login(_Db(), "apple", "t" * 20, verify=_verify("1"), fb_auth=_FbAuth())
+        identities.login(_Db(), "facebook", "t" * 20, verify=_verify("1"), fb_auth=_FbAuth())
     assert caught.value.detail == "unknown_provider"
 
 
@@ -844,3 +844,130 @@ def test_signing_up_again_after_deletion_blocks_rewards() -> None:
     assert new_uid != uid
     assert new_uid in db.stores[identities.REWARD_BLOCKS]
     assert first
+
+
+def _firebase_apple_claims(**overrides):
+    claims = {
+        "email": "A@x.com",
+        "email_verified": True,
+        "firebase": {
+            "sign_in_provider": "apple.com",
+            "identities": {"apple.com": ["apple-sub"]},
+        },
+    }
+    claims.update(overrides)
+    return claims
+
+
+def test_apple_firebase_token_gives_the_apple_subject(monkeypatch) -> None:
+    monkeypatch.setattr(identities, "_unverified_issuer", lambda token: "firebase")
+    monkeypatch.setattr(identities, "_firebase_claims", lambda token: _firebase_apple_claims())
+    assert identities.verify_apple_id_token("t" * 20) == identities.ProviderIdentity(
+        "apple-sub", "a@x.com"
+    )
+
+
+def test_apple_firebase_token_from_another_provider_is_refused(monkeypatch) -> None:
+    monkeypatch.setattr(identities, "_unverified_issuer", lambda token: "firebase")
+    monkeypatch.setattr(
+        identities,
+        "_firebase_claims",
+        lambda token: {"firebase": {"sign_in_provider": "google.com", "identities": {}}},
+    )
+    with pytest.raises(HTTPException) as caught:
+        identities.verify_apple_id_token("t" * 20)
+    assert caught.value.status_code == 401
+
+    def broken(token):
+        raise ValueError("bad signature")
+
+    monkeypatch.setattr(identities, "_firebase_claims", broken)
+    with pytest.raises(HTTPException) as bad:
+        identities.verify_apple_id_token("t" * 20)
+    assert bad.value.status_code == 401
+
+
+def test_apple_email_is_verified_only_when_the_claim_says_so(monkeypatch) -> None:
+    monkeypatch.setattr(identities, "_unverified_issuer", lambda token: "firebase")
+    for flag, expected in ((True, "a@x.com"), ("true", "a@x.com"), ("TRUE", "a@x.com"),
+                           (False, None), ("false", None), (None, None)):
+        monkeypatch.setattr(
+            identities,
+            "_firebase_claims",
+            lambda token, flag=flag: _firebase_apple_claims(email_verified=flag),
+        )
+        assert identities.verify_apple_id_token("t" * 20).verified_email == expected
+
+
+def test_apple_identity_token_uses_the_apple_keys_and_audience(monkeypatch) -> None:
+    seen = {}
+
+    def claims(token, audience):
+        seen["audience"] = audience
+        return {"sub": "ios-sub", "email": "B@x.com", "email_verified": "true"}
+
+    monkeypatch.setattr(identities, "_unverified_issuer", lambda token: identities.APPLE_ISSUER)
+    monkeypatch.setattr(identities, "_apple_claims", claims)
+    monkeypatch.delenv("APPLE_CLIENT_ID", raising=False)
+    assert identities.verify_apple_id_token("t" * 20) == identities.ProviderIdentity(
+        "ios-sub", "b@x.com"
+    )
+    assert seen["audience"] is None
+    monkeypatch.setenv("APPLE_CLIENT_ID", "com.sharerun.app")
+    identities.verify_apple_id_token("t" * 20)
+    assert seen["audience"] == "com.sharerun.app"
+
+    def expired(token, audience):
+        raise ValueError("expired")
+
+    monkeypatch.setattr(identities, "_apple_claims", expired)
+    with pytest.raises(HTTPException) as caught:
+        identities.verify_apple_id_token("t" * 20)
+    assert caught.value.status_code == 401
+
+
+def test_apple_login_link_unlink_and_delete_flow() -> None:
+    db, fb = _Db(), _FbAuth()
+    first = identities.login(
+        db, "apple", "t" * 20, verify=_verify("a1"), fb_auth=fb, create_account=True
+    )
+    assert first["new_account"] is True
+    uid = next(iter(fb.users))
+    assert db.stores[identities.IDENTITIES]["apple:a1"]["uid"] == uid
+
+    again = identities.login(db, "apple", "t" * 20, verify=_verify("a1"), fb_auth=fb)
+    assert again["new_account"] is False
+
+    # Without a verified match and without consent no account is made.
+    assert identities.login(
+        db, "apple", "t" * 20, verify=_verify("a2"), fb_auth=fb
+    ) == {"needs_account_choice": True, "new_account": False}
+
+    _named(db, uid)
+    identities.link(db, uid, "kakao", "t" * 20, verify=_verify("k1"))
+    assert identities.unlink(db, uid, "apple", fb_auth=fb) == {"unlinked": True}
+    assert "apple:a1" not in db.stores[identities.IDENTITIES]
+    with pytest.raises(HTTPException) as caught:
+        identities.unlink(db, uid, "apple", fb_auth=fb)
+    assert caught.value.status_code == 404
+
+    identities.link(db, uid, "apple", "t" * 20, verify=_verify("a1"))
+    identities.forget_account(db, uid)
+    assert "apple:a1" not in db.stores[identities.IDENTITIES]
+    assert "a1" not in str(db.stores[identities.REWARD_TOMBSTONES])
+    again_new = identities.login(
+        db, "apple", "t" * 20, verify=_verify("a1"), fb_auth=fb, create_account=True
+    )
+    assert again_new["new_account"] is True
+    assert len(db.stores[identities.REWARD_BLOCKS]) == 1
+
+
+def test_apple_routes_are_wired_like_google() -> None:
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    client = TestClient(app)
+    assert client.post("/auth/apple/login", json={"id_token": "x"}).status_code == 422
+    assert client.post("/auth/apple/link", json={"id_token": "t" * 20}).status_code == 401
+    assert client.post("/auth/apple/unlink").status_code == 401

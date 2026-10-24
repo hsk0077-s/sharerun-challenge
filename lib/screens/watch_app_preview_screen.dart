@@ -1,13 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/api/api_exception.dart';
 import '../core/theme/theme.dart';
+import '../features/auth/login_connection_providers.dart';
 import '../features/shop/widgets/store_look.dart';
 
 /// 워치 전용 앱 안내. 아직 만들지 않았고 "예정"인 것만 보여 준다.
 /// 갤럭시 워치부터 시작하며, 아래 화면은 시안이다(실제 동작 아님).
-class WatchAppPreviewScreen extends StatelessWidget {
+class WatchAppPreviewScreen extends ConsumerStatefulWidget {
   const WatchAppPreviewScreen({super.key});
+
+  static const pairingButtonKey = Key('watch-pairing-code-button');
+  static const pairingCodeKey = Key('watch-pairing-code');
+  static const pairingErrorKey = Key('watch-pairing-error');
 
   static const platforms = <({String name, String note, bool first})>[
     (name: '갤럭시 워치', note: '가장 먼저 만들어요', first: true),
@@ -16,6 +25,65 @@ class WatchAppPreviewScreen extends StatelessWidget {
     (name: '가민', note: '그다음 순서로 검토해요', first: false),
     (name: '애플 워치', note: '그다음 순서로 검토해요', first: false),
   ];
+
+  @override
+  ConsumerState<WatchAppPreviewScreen> createState() =>
+      _WatchAppPreviewScreenState();
+}
+
+class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
+  String? _code;
+  String? _error;
+  var _busy = false;
+  Duration _left = Duration.zero;
+  Timer? _timer;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _requestCode() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final issued =
+          await ref.read(identityApiClientProvider).requestWatchPairingCode();
+      if (!mounted) return;
+      _timer?.cancel();
+      setState(() {
+        _code = issued.code;
+        _left = issued.expiresIn;
+      });
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (!mounted) return;
+        final next = _left - const Duration(seconds: 1);
+        if (next <= Duration.zero) {
+          timer.cancel();
+          setState(() {
+            _code = null;
+            _left = Duration.zero;
+          });
+        } else {
+          setState(() => _left = next);
+        }
+      });
+    } catch (e) {
+      if (mounted) setState(() => _error = ApiErrorMessage.from(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  String get _countdown {
+    final m = _left.inMinutes.toString().padLeft(2, '0');
+    final s = (_left.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +109,9 @@ class WatchAppPreviewScreen extends StatelessWidget {
             style: storeText(13, c.muted, h: 1.5),
           ),
           const SizedBox(height: 16),
-          for (final p in platforms) ...[
+          _pairingCard(c),
+          const SizedBox(height: 16),
+          for (final p in WatchAppPreviewScreen.platforms) ...[
             _PlatformRow(name: p.name, note: p.note, first: p.first),
             const SizedBox(height: 8),
           ],
@@ -58,6 +128,61 @@ class WatchAppPreviewScreen extends StatelessWidget {
                 _WatchFace(label: '대회 알림', big: '1위!', sub: '대회 2명 앞서요', icon: Icons.emoji_events_outlined),
                 _WatchFace(label: '끝', big: '3.00km', sub: '5:38/km · 17분', icon: Icons.check_rounded),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pairingCard(SrcColorRoles c) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('워치 연결', style: storeText(14, c.ink, w: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text(
+            '워치 앱에서 아래 6자리 숫자를 입력하면 이 계정으로 연결돼요. 코드는 5분 동안, 한 번만 쓸 수 있어요.',
+            style: storeText(12, c.muted, h: 1.5),
+          ),
+          const SizedBox(height: 12),
+          if (_code != null) ...[
+            Center(
+              child: Text(
+                _code!,
+                key: WatchAppPreviewScreen.pairingCodeKey,
+                style: storeText(36, c.ink, w: FontWeight.w900),
+              ),
+            ),
+            Center(
+              child: Text(
+                '남은 시간 $_countdown',
+                style: storeText(12, c.muted, w: FontWeight.w700),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (_error != null) ...[
+            Text(
+              _error!,
+              key: WatchAppPreviewScreen.pairingErrorKey,
+              style: storeText(12, c.muted),
+            ),
+            const SizedBox(height: 8),
+          ],
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              key: WatchAppPreviewScreen.pairingButtonKey,
+              onPressed: _busy ? null : _requestCode,
+              child: Text(_code == null ? '6자리 연결 코드 받기' : '새 코드 받기'),
             ),
           ),
         ],

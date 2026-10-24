@@ -7,6 +7,7 @@ from app.models.admin_api import (
     DailyStepsResult,
     ReferralListResult,
     ReportStatusRequest,
+    UserDetailResult,
     WalletAnomalyListResult,
     WalletLedgerResult,
     WhoAmIResult,
@@ -16,6 +17,7 @@ from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
 from app.services.admin_daily_steps_service import admin_daily_steps_service
 from app.services.admin_referral_service import admin_referral_service
+from app.services.admin_user_detail_service import admin_user_detail_service
 from app.services.admin_wallet_anomaly_service import admin_wallet_anomaly_service
 from app.services.admin_wallet_ledger_service import admin_wallet_ledger_service
 from app.services.firebase_service import FirebaseService
@@ -108,6 +110,19 @@ def get_wallet_ledger(
 def _actor_email(actor: dict) -> str | None:
     email = actor.get("email")
     return email if isinstance(email, str) else None
+
+
+@router.get("/user-detail", response_model=UserDetailResult)
+def get_user_detail(
+    uid: str,
+    actor: dict = Depends(require_admin_user),
+) -> UserDetailResult:
+    """Profile, login providers, reward block and crew for CS lookups."""
+    return admin_user_detail_service.lookup(
+        uid=uid,
+        actor_uid=str(actor["uid"]),
+        actor_email=_actor_email(actor),
+    )
 
 
 @router.get("/appeals/{appeal_id}/proof")

@@ -17,12 +17,13 @@ export default function Sidebar() {
         <NavLink to="/users" className={navClass}>유저/크루 관리</NavLink>
         <NavLink to="/abuse" className={navClass}>Jena 어뷰징 심사</NavLink>
         <NavLink to="/finance" className={navClass}>재무/환불 관리</NavLink>
-        <NavLink to="/sponsor" className={navClass}>B2B 스폰서 룸 승인</NavLink>
         <NavLink to="/referrals" className={navClass}>추천인</NavLink>
         <NavLink to="/steps" className={navClass}>일별 걸음</NavLink>
         <NavLink to="/wallet-anomalies" className={navClass}>지갑 이상</NavLink>
         <NavLink to="/runs" className={navClass}>런 검증</NavLink>
         <NavLink to="/wallet-ledger" className={navClass}>지갑 원장</NavLink>
+        <NavLink to="/reports" className={navClass}>신고 관리</NavLink>
+        <NavLink to="/audit-logs" className={navClass}>감사 로그</NavLink>
       </nav>
     </aside>
   );

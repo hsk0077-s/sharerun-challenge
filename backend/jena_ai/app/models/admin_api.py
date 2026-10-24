@@ -119,3 +119,20 @@ class AppealDecisionRequest(BaseModel):
 class ReportStatusRequest(BaseModel):
     status: Literal["reviewed", "resolved", "dismissed"]
     note: str = Field(default="", max_length=300)
+
+
+class UserDetailCrew(BaseModel):
+    id: str
+    name: str | None
+
+
+class UserDetailResult(BaseModel):
+    uid: str
+    nickname: str | None
+    email: str | None
+    country: str | None
+    providers: list[str]
+    rewardBlocked: bool
+    rewardBlockReason: str | None
+    rewardBlockedAt: str | None
+    crew: UserDetailCrew | None

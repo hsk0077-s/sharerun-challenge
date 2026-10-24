@@ -211,3 +211,68 @@ export async function fetchWalletLedger(idToken: string, uid: string): Promise<W
   if (!response.ok) throw new Error('jena');
   return response.json() as Promise<WalletLedger>;
 }
+
+export type ReportStatus = 'open' | 'reviewed' | 'resolved' | 'dismissed';
+
+export type AdminReport = {
+  id: string;
+  targetType: string | null;
+  targetId: string | null;
+  targetName: string | null;
+  reason: string | null;
+  detail: string | null;
+  status: string | null;
+  reporterUid: string | null;
+  createdAt: string | null;
+};
+
+export async function fetchReports(idToken: string, status: ReportStatus): Promise<AdminReport[]> {
+  const body = await jenaGet<{ reports: AdminReport[] }>(
+    `/admin/reports?status=${encodeURIComponent(status)}`,
+    idToken
+  );
+  return body.reports;
+}
+
+export async function updateReportStatus(
+  idToken: string,
+  reportId: string,
+  status: Exclude<ReportStatus, 'open'>,
+  note: string
+): Promise<{ id: string; status: string }> {
+  const response = await fetch(
+    `${jenaBaseUrl()}/admin/reports/${encodeURIComponent(reportId)}/status`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, note }),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(response.status === 401 || response.status === 403 ? 'forbidden' : 'jena');
+  }
+  return response.json() as Promise<{ id: string; status: string }>;
+}
+
+export type AdminUserDetail = {
+  uid: string;
+  nickname: string | null;
+  email: string | null;
+  country: string | null;
+  providers: string[];
+  rewardBlocked: boolean;
+  rewardBlockReason: string | null;
+  rewardBlockedAt: string | null;
+  crew: { id: string; name: string | null } | null;
+};
+
+export async function fetchUserDetail(idToken: string, uid: string): Promise<AdminUserDetail> {
+  const response = await fetch(
+    `${jenaBaseUrl()}/admin/user-detail?uid=${encodeURIComponent(uid)}`,
+    { headers: { Authorization: `Bearer ${idToken}` } }
+  );
+  if (response.status === 404) throw new Error('missing');
+  if (response.status === 401 || response.status === 403) throw new Error('forbidden');
+  if (!response.ok) throw new Error('jena');
+  return response.json() as Promise<AdminUserDetail>;
+}

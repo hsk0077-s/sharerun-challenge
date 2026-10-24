@@ -1,13 +1,15 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Activity } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { ensureAdminAuth } from '../../lib/adminAuth';
 import { fetchDailySteps, type DailyStepsPage } from '../../lib/jenaApi';
 
 type Filter = { uid: string; from: string; to: string };
 
 export default function DailySteps() {
-  const [draft, setDraft] = useState<Filter>({ uid: '', from: '', to: '' });
-  const [filter, setFilter] = useState<Filter>({ uid: '', from: '', to: '' });
+  const initialUid = useSearchParams()[0].get('uid')?.trim() ?? '';
+  const [draft, setDraft] = useState<Filter>({ uid: initialUid, from: '', to: '' });
+  const [filter, setFilter] = useState<Filter>({ uid: initialUid, from: '', to: '' });
   const [page, setPage] = useState<DailyStepsPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

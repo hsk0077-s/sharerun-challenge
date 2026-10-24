@@ -72,6 +72,7 @@ def apply_daily_steps(
     if stored is None:
         return {"status": "unchanged", "steps": previous}
     payload = {
+        "day": ref.id,
         "steps": stored,
         "km": round(stored * STRIDE_METERS / 1000.0, 3),
         "source": source if source in SOURCES else "sensor",

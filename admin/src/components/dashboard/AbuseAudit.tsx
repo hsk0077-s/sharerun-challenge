@@ -201,7 +201,7 @@ export default function AbuseAudit() {
           Jena 어뷰징 심사 · 소명 심사
         </h2>
         <p className="text-sm text-gray-400 mt-1">
-          소명 문서와 서버 활동 판정을 조회합니다. 승인·기각은 소명 status만 바꿉니다.
+          소명 문서와 서버 활동 판정을 조회합니다. 승인하면 해당 달리기가 인정되어 기부·SHARE·등급이 정산되며, 기각하면 반려됩니다.
         </p>
         {appealError && (
           <p className="text-xs text-amber-400 mt-1">appeals: {appealError}</p>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Wallet } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { ensureAdminAuth } from '../../lib/adminAuth';
 import { fetchWalletLedger, type WalletLedger as Ledger } from '../../lib/jenaApi';
 import { subscribeUsers, type AdminUser } from '../../lib/firestoreUsers';
@@ -31,6 +32,15 @@ export default function WalletLedger() {
       onError: () => setUsers([]),
     });
   }, []);
+
+  const linkedUid = useSearchParams()[0].get('uid')?.trim() ?? '';
+  useEffect(() => {
+    if (!linkedUid) return;
+    setDraft(linkedUid);
+    setQuery(linkedUid);
+    void load(linkedUid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkedUid]);
 
   const hits = useMemo(
     () => (query.trim() ? (users ?? []).filter((user) => matches(user, query)) : []),

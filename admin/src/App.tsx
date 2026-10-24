@@ -12,6 +12,8 @@ import DailySteps from './components/dashboard/DailySteps';
 import WalletAnomalies from './components/dashboard/WalletAnomalies';
 import Runs from './components/dashboard/Runs';
 import WalletLedger from './components/dashboard/WalletLedger';
+import Reports from './components/dashboard/Reports';
+import AuditLogs from './components/dashboard/AuditLogs';
 
 export default function App() {
   return (
@@ -38,6 +40,8 @@ export default function App() {
               <Route path="/wallet-anomalies" element={<WalletAnomalies />} />
               <Route path="/runs" element={<Runs />} />
               <Route path="/wallet-ledger" element={<WalletLedger />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/audit-logs" element={<AuditLogs />} />
             </Routes>
           </main>
         </div>

@@ -2,13 +2,18 @@ import re
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
+from google.api_core.exceptions import GoogleAPICallError
+from google.cloud.firestore_v1 import Query
 from google.cloud.firestore_v1.field_path import FieldPath
 
 from app.models.admin_api import DailyStepRow, DailyStepsResult
 from app.services.firebase_service import FirebaseService
 
-# Collection-group order is by document id only, so no composite index.
+# Newest-first scan by updatedAt (single-field collection-group index).
 SCAN_CAP = 800
+# Fallback when that index is missing: document-id order is by full path
+# (uid first), so read wider and filter by day in Python.
+FALLBACK_SCAN_CAP = 5000
 RETURN_CAP = 200
 MAX_SPAN_DAYS = 62
 ANOMALY_STEPS = 29_000
@@ -38,7 +43,7 @@ class AdminDailyStepsService:
             snaps = self._for_user(db, owner, start_day, end_day)
             truncated = False
         else:
-            snaps, truncated = self._group(db)
+            snaps, truncated = self._group(db, start_day, end_day)
         rows: list[DailyStepRow] = []
         for snap in snaps:
             row = _row(snap, owner)
@@ -73,14 +78,26 @@ class AdminDailyStepsService:
         )
         return list(query.stream())
 
-    def _group(self, db) -> tuple[list, bool]:
+    def _group(self, db, start_day: date, end_day: date) -> tuple[list, bool]:
+        try:
+            query = (
+                db.collection_group("daily_metrics")
+                .order_by("updatedAt", direction=Query.DESCENDING)
+                .limit(SCAN_CAP)
+            )
+            snaps = list(query.stream())
+            return snaps, len(snaps) >= SCAN_CAP
+        except (GoogleAPICallError, ValueError):
+            pass
         query = (
             db.collection_group("daily_metrics")
             .order_by(FieldPath.document_id())
-            .limit(SCAN_CAP)
+            .limit(FALLBACK_SCAN_CAP)
         )
-        snaps = list(query.stream())
-        return snaps, len(snaps) >= SCAN_CAP
+        scanned = list(query.stream())
+        low, high = start_day.isoformat(), end_day.isoformat()
+        snaps = [snap for snap in scanned if low <= str(snap.id) <= high]
+        return snaps, len(scanned) >= FALLBACK_SCAN_CAP
 
 
 def _range(

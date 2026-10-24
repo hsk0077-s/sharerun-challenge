@@ -96,7 +96,7 @@ def test_prices_and_caps_keep_defaults() -> None:
     assert prices[MATCH] == 100
     assert prices["donation_match_won"] == 1000
     assert prices["donation_match_user_monthly"] == 1
-    assert prices["donation_match_company_cap_won"] == 500_000
+    assert prices["donation_match_company_cap_won"] == 1_000_000
 
     overridden = resolve_item_prices(
         {

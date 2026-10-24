@@ -4,3 +4,8 @@ linter:
   rules:
     prefer_const_constructors: true
     prefer_final_locals: true
+
+analyzer:
+  exclude:
+    # 워치 전용 앱은 따로 빌드·분석한다(wear_app/README.md). 휴대폰 앱 분석에 섞지 않는다.
+    - wear_app/**

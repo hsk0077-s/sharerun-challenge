@@ -314,7 +314,8 @@ class WalletNotifier extends Notifier<WalletState> {
 
   /// src-14 PG 결제 완료 시 SHARE 충전.
   void chargeShare(int amount) {
-    if (amount <= 0) return;
+    // 디버그 전용. 출시 빌드의 충전은 서버 검증 뒤 지갑 문서로만 반영된다.
+    if (!kDebugMode || amount <= 0) return;
     _applyAfterReady(() {
       state = state.copyWith(shareBalance: state.shareBalance + amount);
     });

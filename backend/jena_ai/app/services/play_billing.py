@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import quote
 
 from fastapi import HTTPException
+
+logger = logging.getLogger(__name__)
 
 _ANDROID_PUBLISHER_SCOPE = "https://www.googleapis.com/auth/androidpublisher"
 
@@ -131,18 +134,35 @@ def list_voided_purchases(start_ms: int, end_ms: int) -> list[dict]:
     return voided
 
 
-def consume_play_product_purchase(product_id: str, purchase_token: str) -> None:
-    """Consume a verified product so it can be bought again. No-op without credentials."""
+def consume_play_product_purchase(product_id: str, purchase_token: str) -> bool:
+    """Consume a verified product so it can be bought again.
+
+    False when nothing was consumed (no credentials, or Play refused). Play refunds a
+    purchase that is never acknowledged or consumed after about three days, so a refusal
+    is logged for the operator. The DIA is already granted, so this never raises.
+    """
     opened = _play_session()
     if opened is None:
-        return
+        return False
     session, package = opened
     url = (
         "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
         f"{quote(package, safe='')}/purchases/products/"
         f"{quote(product_id, safe='')}/tokens/{quote(purchase_token, safe='')}:consume"
     )
-    session.post(url, timeout=15)
+    try:
+        response = session.post(url, timeout=15)
+    except Exception:  # network trouble must not undo a grant that already committed
+        logger.warning("Play consume failed for %s", product_id, exc_info=True)
+        return False
+    if 200 <= response.status_code < 300:
+        return True
+    logger.warning(
+        "Play consume refused for %s (HTTP %s); it may be refunded if left unconsumed",
+        product_id,
+        response.status_code,
+    )
+    return False
 
 
 def refund_play_order(order_id: str) -> bool:

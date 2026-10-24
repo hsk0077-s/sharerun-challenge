@@ -1,3 +1,5 @@
+import '../../../core/config/app_env.dart';
+
 /// GCP Garmin API 클라우드 연동 어댑터의 로컬 Mock.
 ///
 /// 실제 자격 증명은 네트워크로 유출하지 않으며, POST 패킷 형태만 재현한다.
@@ -21,6 +23,12 @@ class GarminOAuthSession {
 }
 
 class GarminCloudOAuthAdapter {
+  GarminCloudOAuthAdapter({bool? enabled})
+      : _enabled = enabled ?? AppEnv.garminLinkEnabled;
+
+  /// 실제 Garmin 연동이 아니라 모의 구현이라 출시 빌드에서는 쓰지 않는다.
+  final bool _enabled;
+
   static const String mockEndpoint =
       'https://europe-west1-src.cloudfunctions.net/garminOAuthAdapter';
 
@@ -28,6 +36,9 @@ class GarminCloudOAuthAdapter {
     required String email,
     required String password,
   }) async {
+    if (!_enabled) {
+      throw const GarminOAuthException('Garmin 연동은 아직 준비 중이에요.');
+    }
     final id = email.trim();
     if (id.isEmpty || password.isEmpty) {
       throw const GarminOAuthException('이메일과 비밀번호를 입력해 주세요.');

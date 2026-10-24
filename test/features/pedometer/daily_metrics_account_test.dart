@@ -244,4 +244,91 @@ void main() {
     expect(history, contains('2026-09-30:5940'));
     expect(history, contains('2026-09-28:8000'));
   });
+
+  group('commit goes through the server only', () {
+    test('without a server connection nothing is written', () async {
+      var read = false;
+      DailyMetricsAccount.debugReadDay = (_, __) async {
+        read = true;
+        return null;
+      };
+
+      final wrote = await DailyMetricsAccount.commit(
+        uid: 'account',
+        todayKey: today,
+        dayKey: today,
+        steps: 4000,
+        source: 'sensor',
+      );
+
+      expect(wrote, isFalse);
+      expect(read, isFalse);
+    });
+
+    test('a new total is sent to the server writer', () async {
+      final sent = <Map<String, Object?>>[];
+      DailyMetricsAccount.debugReadDay = (_, __) async => {'steps': 1000};
+      DailyMetricsAccount.serverWriter = ({
+        required String dayKey,
+        required int steps,
+        required String source,
+        int? lastHealth,
+      }) async {
+        sent.add({'day': dayKey, 'steps': steps, 'source': source});
+      };
+
+      final wrote = await DailyMetricsAccount.commit(
+        uid: 'account',
+        todayKey: today,
+        dayKey: today,
+        steps: 4000,
+        source: 'sensor',
+      );
+
+      expect(wrote, isTrue);
+      expect(sent, [
+        {'day': today, 'steps': 4000, 'source': 'sensor'},
+      ]);
+    });
+
+    test('a lower total is not sent, and a server error is not thrown',
+        () async {
+      var calls = 0;
+      DailyMetricsAccount.debugReadDay =
+          (_, __) async => {'steps': 5000, 'source': 'sensor'};
+      DailyMetricsAccount.serverWriter = ({
+        required String dayKey,
+        required int steps,
+        required String source,
+        int? lastHealth,
+      }) async {
+        calls++;
+        throw StateError('offline');
+      };
+
+      expect(
+        await DailyMetricsAccount.commit(
+          uid: 'account',
+          todayKey: today,
+          dayKey: today,
+          steps: 3000,
+          source: 'sensor',
+        ),
+        isFalse,
+      );
+      expect(calls, 0);
+
+      expect(
+        await DailyMetricsAccount.commit(
+          uid: 'account',
+          todayKey: today,
+          dayKey: today,
+          steps: 6000,
+          source: 'sensor',
+        ),
+        isFalse,
+      );
+      expect(calls, 1);
+    });
+  });
 }

@@ -2242,6 +2242,24 @@ class SecuredActionService:
         referral_code = economy.get("referralCode") or self._economy_service.generate_referral_code(
             uid
         )
+        if self._rewards_blocked(transaction, uid):
+            transaction.update(
+                user_ref,
+                {
+                    "economy": {
+                        **economy,
+                        "signupRewardClaimed": True,
+                        "signupFreeTicketGranted": True,
+                        "referralCode": referral_code,
+                    },
+                    "updatedAt": SERVER_TIMESTAMP,
+                },
+            )
+            return SecuredActionResult(
+                accepted=True,
+                status="already_claimed",
+                reason="Signup reward was already claimed.",
+            )
         reward = self._economy_service.signup_reward_amount()
         self._credit_value_tx(
             transaction,
@@ -2588,6 +2606,10 @@ class SecuredActionService:
         "trial_referrer": "친구 체험 런 3회",
     }
 
+    def _rewards_blocked(self, transaction, uid: str) -> bool:
+        ref = self.firebase_service.db.collection("rewardBlocks").document(uid)
+        return ref.get(transaction=transaction).exists
+
     def _referral_payout_ref(self, referee_uid: str, payout_type: str):
         return self.firebase_service.db.collection("referralPayouts").document(
             f"{referee_uid}_{payout_type}"
@@ -2735,6 +2757,8 @@ class SecuredActionService:
     ) -> dict | None:
         marker_ref = self._referral_payout_ref(referee_uid, payout_type)
         if marker_ref.get(transaction=transaction).exists:
+            return None
+        if self._rewards_blocked(transaction, referee_uid):
             return None
         return {
             "referee_uid": referee_uid,

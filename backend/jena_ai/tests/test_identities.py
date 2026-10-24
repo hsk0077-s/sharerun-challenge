@@ -825,3 +825,22 @@ def test_the_window_limiter_forgets_old_hits() -> None:
     assert limiter.allow("a", 2) is False
     assert limiter.allow("b", 2) is True
     assert limiter.allow("a", 12) is True
+
+
+def test_signing_up_again_after_deletion_blocks_rewards() -> None:
+    db, fb = _Db(), _FbAuth()
+    first = identities.login(
+        db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb, create_account=True
+    )
+    assert identities.REWARD_BLOCKS not in db.stores or not db.stores[identities.REWARD_BLOCKS]
+    uid = [r["uid"] for r in db.stores[identities.IDENTITIES].values()][0]
+    identities.forget_account(db, uid)
+    assert "777" not in str(db.stores[identities.REWARD_TOMBSTONES])
+
+    identities.login(
+        db, "kakao", "t" * 20, verify=_verify("777"), fb_auth=fb, create_account=True
+    )
+    new_uid = [r["uid"] for r in db.stores[identities.IDENTITIES].values()][0]
+    assert new_uid != uid
+    assert new_uid in db.stores[identities.REWARD_BLOCKS]
+    assert first

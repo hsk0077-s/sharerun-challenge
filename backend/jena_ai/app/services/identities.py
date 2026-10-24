@@ -49,6 +49,8 @@ IDENTITIES = "authIdentities"
 LOG = "authIdentityLog"
 VERIFIED_EMAILS = "authVerifiedEmails"
 USERS = "users"
+REWARD_TOMBSTONES = "rewardTombstones"
+REWARD_BLOCKS = "rewardBlocks"
 PROVIDERS = ("kakao", "naver", "google")
 KAKAO_TOKEN_INFO_URL = "https://kapi.kakao.com/v1/user/access_token_info"
 KAKAO_USER_ME_URL = "https://kapi.kakao.com/v2/user/me"
@@ -240,6 +242,10 @@ VERIFIERS: dict[str, Callable[[str], ProviderIdentity]] = {
 
 def _doc_id(provider: str, provider_user_id: str) -> str:
     return f"{provider}:{provider_user_id}"
+
+
+def _tombstone_doc(provider: str, provider_user_id: str) -> str:
+    return hashlib.sha256(_doc_id(provider, provider_user_id).encode()).hexdigest()
 
 
 def _email_doc(email: str) -> str:
@@ -526,6 +532,15 @@ def login(
         if not uid:
             raise HTTPException(status_code=409, detail="try_again")
         created = False
+    if created and db.collection(REWARD_TOMBSTONES).document(
+        _tombstone_doc(provider, provider_user_id)
+    ).get().exists:
+        # This sign-in belonged to an account that was deleted. The new
+        # account works normally but does not earn sign-up or invite rewards
+        # a second time.
+        db.collection(REWARD_BLOCKS).document(uid).set(
+            {"reason": "returning_identity", "createdAt": SERVER_TIMESTAMP}
+        )
     if created and email:
         _stamp_verified_email(fb_auth, uid, email)
         _remember_verified_email(db, uid, email)
@@ -684,4 +699,12 @@ def list_providers(db, uid: str, *, fb_auth=firebase_auth) -> dict:
 def forget_account(db, uid: str) -> None:
     """Called when an account is deleted, so the provider id can sign up again."""
     for row in db.collection(IDENTITIES).where("uid", "==", uid).get():
+        data = row.to_dict() or {}
+        provider = str(data.get("provider") or "")
+        provider_user_id = row.id.split(":", 1)[1] if ":" in row.id else ""
+        if provider and provider_user_id:
+            # Only a hash is kept, so a returning sign-in can be recognised.
+            db.collection(REWARD_TOMBSTONES).document(
+                _tombstone_doc(provider, provider_user_id)
+            ).set({"createdAt": SERVER_TIMESTAMP})
         row.reference.delete()

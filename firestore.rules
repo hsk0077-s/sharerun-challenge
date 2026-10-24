@@ -567,6 +567,14 @@ service cloud.firestore {
     match /authIdentityLog/{logId} {
       allow read, write: if false;
     }
+    // Hashes of deleted sign-ins and the accounts that must not earn sign-up
+    // or invite rewards a second time. Server only.
+    match /rewardTombstones/{hashId} {
+      allow read, write: if false;
+    }
+    match /rewardBlocks/{uid} {
+      allow read, write: if false;
+    }
 
     match /activities/{activityId} {
       allow read: if isAdmin()

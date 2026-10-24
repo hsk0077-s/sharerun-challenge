@@ -424,3 +424,30 @@ def test_transaction_wrapper_passes_transaction_before_service() -> None:
     service._apply_redeem_referral.assert_called_once_with(
         "transaction", "u2", "user-ref", "AB23CD45", None
     )
+
+
+def test_blocked_account_gets_no_redeem_payout() -> None:
+    db = _MemoryDb()
+    db.store["users/u2"] = {"economy": {}, "wallet": {"shareBalance": 40}}
+    db.store["referralCodes/AB23CD45"] = {"uid": "u1", "createdAt": "kept"}
+    db.store["rewardBlocks/u2"] = {"reason": "returning_identity"}
+    service = _service(db)
+
+    service.redeem_referral_code("u2", "AB23CD45")
+
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 40
+    assert "referralPayouts/u2_redeem" not in db.store
+
+
+def test_blocked_account_signup_reward_is_not_paid() -> None:
+    db = _MemoryDb()
+    db.store["users/u2"] = {"economy": {}, "wallet": {"shareBalance": 0}}
+    db.store["rewardBlocks/u2"] = {"reason": "returning_identity"}
+    service = _service(db)
+    user_ref = db.collection("users").document("u2")
+
+    result = service._claim_signup_reward_tx(_MemoryTxn(), "u2", user_ref)
+
+    assert result.status == "already_claimed"
+    assert db.store["users/u2"]["wallet"]["shareBalance"] == 0
+    assert db.store["users/u2"]["economy"]["signupRewardClaimed"] is True

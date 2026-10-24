@@ -27,12 +27,36 @@ import GoogleMaps
           result(Self.shareInstagramStory(path: path?["path"] as? String))
         case "shareTikTok":
           result(false)
+        case "installedTargets":
+          result(Self.installedShareTargets())
+        case "shareTarget":
+          let args = call.arguments as? [String: Any]
+          result(Self.shareTarget(id: args?["id"] as? String, path: args?["path"] as? String))
         default:
           result(FlutterMethodNotImplemented)
         }
       }
     }
     return launched
+  }
+
+  private static func installedShareTargets() -> [String] {
+    var ids: [String] = []
+    if canOpen("instagram-stories://share") { ids.append("story") }
+    if canOpen("instagram://app") { ids.append("feed") }
+    if canOpen("tiktok://") || canOpen("snssdk1233://") { ids.append("tiktok") }
+    if canOpen("fb://") { ids.append("facebook") }
+    if canOpen("kakaotalk://") { ids.append("kakao") }
+    if canOpen("line://") { ids.append("line") }
+    if canOpen("twitter://") { ids.append("x") }
+    if canOpen("whatsapp://") { ids.append("whatsapp") }
+    if canOpen("tg://") { ids.append("telegram") }
+    return ids
+  }
+
+  private static func shareTarget(id: String?, path: String?) -> Bool {
+    if id == "story" { return shareInstagramStory(path: path) }
+    return false
   }
 
   private static func canOpen(_ raw: String) -> Bool {

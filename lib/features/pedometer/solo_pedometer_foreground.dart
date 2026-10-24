@@ -560,7 +560,9 @@ abstract final class SoloPedometerForeground {
 
   static ForegroundTaskOptions get _taskOptions => ForegroundTaskOptions(
         eventAction: ForegroundTaskEventAction.repeat(1000),
-        autoRunOnBoot: true,
+        // 재부팅 직후 사용자가 시작하지 않은 건강 foreground service를 띄우지 않는다.
+        // 앱을 열면 다시 시작한다.
+        autoRunOnBoot: false,
         autoRunOnMyPackageReplaced: true,
         allowWakeLock: true,
         allowAutoRestart: true,

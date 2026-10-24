@@ -98,15 +98,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _healthTypes = [
     HealthDataType.HEART_RATE,
     HealthDataType.STEPS,
-    HealthDataType.DISTANCE_DELTA,
-    HealthDataType.WORKOUT,
-    HealthDataType.ACTIVITY_INTENSITY,
   ];
 
   static const _healthPermissions = [
-    HealthDataAccess.READ,
-    HealthDataAccess.READ,
-    HealthDataAccess.READ,
     HealthDataAccess.READ,
     HealthDataAccess.READ,
   ];
@@ -227,14 +221,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         [
                           HealthDataType.HEART_RATE,
                           HealthDataType.STEPS,
-                          HealthDataType.DISTANCE_DELTA,
-                          HealthDataType.WORKOUT,
-                          HealthDataType.ACTIVITY_INTENSITY,
                         ],
                         permissions: [
-                          HealthDataAccess.READ,
-                          HealthDataAccess.READ,
-                          HealthDataAccess.READ,
                           HealthDataAccess.READ,
                           HealthDataAccess.READ,
                         ],

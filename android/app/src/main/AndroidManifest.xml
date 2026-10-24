@@ -10,7 +10,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- 본인 확인(USE_BIOMETRIC)은 결제 전용이라 1.0에서는 뺀다. 결제를 다시 켤 때 이 줄을 지운다. local_auth 플러그인이 넣는 권한도 함께 뺀다. -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" tools:node="remove" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- 달리기 GPS는 foreground service(위치)로 화면이 꺼져도 이어진다. 항상 허용(백그라운드 위치)은 쓰지 않는다. -->
@@ -25,13 +26,9 @@
     <!-- Android 10+ 런타임 신체 활동(걸음) 감지 — 만보기 Health 연동 필수. -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
-    <!-- Google Health Connect — 앱이 실제로 읽는 종류만: 걸음, 심박, 거리, 운동, 활동 칼로리, 활동 강도. -->
+    <!-- Google Health Connect — 앱이 실제로 읽는 종류만: 걸음, 심박. -->
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
-    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
-    <uses-permission android:name="android.permission.health.READ_DISTANCE" />
-    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
-    <uses-permission android:name="android.permission.health.READ_ACTIVITY_INTENSITY" />
     <!-- 1.0은 포그라운드(및 건강 foreground service)에서만 걸음·심박을 읽는다. -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" tools:node="remove" />
     <uses-permission android:name="android.permission.BODY_SENSORS" tools:node="remove" />

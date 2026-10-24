@@ -469,7 +469,9 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         return AlertDialog(
           title: const Text('계정 삭제'),
           content: const Text(
-            '계정과 Wallet 잔액이 서버에서 삭제·익명화됩니다. '
+            '계정이 삭제되고 보유한 SHARE·DIA·VALUE는 사라집니다. '
+            '러닝 기록 등 활동 기록은 30일 안에 삭제되고, 법령에 따라 보관해야 하는 '
+            '결제·거래 기록은 5년간 보관한 뒤 삭제됩니다. '
             '이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?',
           ),
           actions: [

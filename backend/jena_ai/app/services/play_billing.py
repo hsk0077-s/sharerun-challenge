@@ -21,6 +21,28 @@ def purchase_token_hash(purchase_token: str) -> str:
     return hashlib.sha256(purchase_token.encode("utf-8")).hexdigest()
 
 
+def account_binding_id(uid: str) -> str:
+    """The value the app hands Play as obfuscatedAccountId: SHA-256 of the uid, 64 hex chars."""
+    return hashlib.sha256(uid.encode("utf-8")).hexdigest()
+
+
+def allow_test_purchases() -> bool:
+    """License-tester purchases pay nothing real, so they are refused unless explicitly enabled."""
+    return os.getenv("GOOGLE_PLAY_ALLOW_TEST_PURCHASES", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _check_account_binding(bound_id, uid: str | None) -> None:
+    """A token Play bound to another account must not pay this one.
+
+    Play only echoes an id back when the app set one, so a missing id stays accepted: purchases
+    made by app builds from before the binding was added still verify.
+    """
+    if not uid or not bound_id:
+        return
+    if str(bound_id) != account_binding_id(uid):
+        raise HTTPException(status_code=400, detail="Purchase belongs to another account.")
+
+
 def dia_pack_by_id(product_id: str) -> dict | None:
     from app.constants.economy_constants import DIA_PACKS
 
@@ -30,8 +52,14 @@ def dia_pack_by_id(product_id: str) -> dict | None:
     return None
 
 
-def verify_play_product_purchase(product_id: str, purchase_token: str) -> dict:
-    """Reject unless Android Publisher reports purchaseState purchased (0). Returns the body."""
+def verify_play_product_purchase(
+    product_id: str, purchase_token: str, uid: str | None = None
+) -> dict:
+    """Reject unless Android Publisher reports purchaseState purchased (0). Returns the body.
+
+    Also rejects a token bound to a different account than ``uid`` and, unless
+    ``GOOGLE_PLAY_ALLOW_TEST_PURCHASES`` is on, a license-tester purchase (purchaseType 0).
+    """
     session, package = _authorized_session()
     url = (
         "https://androidpublisher.googleapis.com/androidpublisher/v3/applications/"
@@ -44,6 +72,10 @@ def verify_play_product_purchase(product_id: str, purchase_token: str) -> dict:
     body = response.json()
     if int(body.get("purchaseState", -1)) != 0:
         raise HTTPException(status_code=400, detail="Purchase is not completed.")
+    if body.get("purchaseType") is not None and int(body["purchaseType"]) == 0:
+        if not allow_test_purchases():
+            raise HTTPException(status_code=400, detail="Test purchases are not accepted.")
+    _check_account_binding(body.get("obfuscatedExternalAccountId"), uid)
     return body
 
 
@@ -56,7 +88,9 @@ ENTITLED_SUBSCRIPTION_STATES = {
 }
 
 
-def verify_play_subscription(product_id: str, purchase_token: str) -> dict:
+def verify_play_subscription(
+    product_id: str, purchase_token: str, uid: str | None = None
+) -> dict:
     """Reject unless Play says this token is a paid-up subscription to ``product_id``.
 
     Returns ``{"orderId", "expiresAt" (aware datetime), "state"}``. The expiry is the one Play
@@ -72,6 +106,10 @@ def verify_play_subscription(product_id: str, purchase_token: str) -> dict:
     if response.status_code != 200:
         raise HTTPException(status_code=400, detail="Subscription token could not be verified.")
     body = response.json() or {}
+    if "testPurchase" in body and not allow_test_purchases():
+        raise HTTPException(status_code=400, detail="Test purchases are not accepted.")
+    identifiers = body.get("externalAccountIdentifiers") or {}
+    _check_account_binding(identifiers.get("obfuscatedExternalAccountId"), uid)
     state = str(body.get("subscriptionState", ""))
     if state not in ENTITLED_SUBSCRIPTION_STATES:
         raise HTTPException(status_code=400, detail="Subscription is not active.")

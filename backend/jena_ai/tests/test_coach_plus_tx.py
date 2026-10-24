@@ -158,7 +158,7 @@ def test_a_verified_token_grants_the_expiry_play_reported(monkeypatch) -> None:
     until = datetime(2030, 5, 5, tzinfo=timezone.utc)
     monkeypatch.setattr(
         "app.services.secured_action_service.verify_play_subscription",
-        lambda product_id, token: {"orderId": "GPA.7", "expiresAt": until, "state": "x"},
+        lambda product_id, token, uid=None: {"orderId": "GPA.7", "expiresAt": until, "state": "x"},
     )
     db = _MemoryDb()
     db.store["users/u1"] = {"wallet": {}}

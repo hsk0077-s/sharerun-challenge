@@ -689,4 +689,39 @@ void main() {
     expect(merged.shareBalance, 5000);
     expect(merged.diamondBalance, 50);
   });
+
+  test('release applyShareFromServer never adds SHARE on the device', () {
+    final container = ProviderContainer(
+      overrides: [
+        activeWalletProvider.overrideWith(
+          (ref) => Stream.value(
+            const WalletModel(
+              shareBalance: 100,
+              diamondBalance: 5,
+              valueTokenBalance: 7,
+              totalDonationValue: 0,
+            ),
+          ),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final notifier = container.read(walletProvider.notifier);
+    notifier.applyWalletSnapshot(
+      shareBalance: 100,
+      diamondBalance: 5,
+      valueBalance: 7,
+    );
+
+    notifier.applyShareFromServer(shareCredited: 40, debugMode: false);
+    expect(container.read(walletProvider).shareBalance, 100);
+
+    notifier.applyShareFromServer(
+      shareBalance: 140,
+      shareCredited: 40,
+      debugMode: false,
+    );
+    expect(container.read(walletProvider).shareBalance, 140);
+    expect(container.read(walletProvider).diamondBalance, 5);
+  });
 }

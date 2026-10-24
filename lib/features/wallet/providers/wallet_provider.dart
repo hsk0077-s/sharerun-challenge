@@ -242,11 +242,18 @@ class WalletNotifier extends Notifier<WalletState> {
   void applyShareFromServer({
     int? shareBalance,
     int shareCredited = 0,
+    bool? debugMode,
   }) {
+    final debug = debugMode ?? kDebugMode;
+    if (shareBalance == null && !debug) {
+      // 출시 빌드: 서버가 잔액을 주지 않았으면 기기에서 더하지 않는다.
+      // 지갑 문서(Firestore)가 갱신되면 그 값이 표시된다.
+      return;
+    }
     if (shareBalance != null) {
       // Debug local grant/harvest may already be ahead of Jena. Do not
       // replace a higher local SHARE with a stale server snapshot.
-      if (kDebugMode && shareBalance < state.shareBalance) {
+      if (debug && shareBalance < state.shareBalance) {
         if (shareCredited > 0) {
           state = state.copyWith(
             shareBalance: state.shareBalance + shareCredited,
@@ -257,7 +264,7 @@ class WalletNotifier extends Notifier<WalletState> {
       }
       // Jena wallet snapshot can still be the pre-join 1M. Only take a
       // harvest-sized bump; never re-apply the grant over a spent ledger.
-      if (kDebugMode &&
+      if (debug &&
           state.shareBalance > 0 &&
           shareBalance > state.shareBalance + DebugLocalWalletStore.harvestSlack) {
         if (shareCredited > 0) {

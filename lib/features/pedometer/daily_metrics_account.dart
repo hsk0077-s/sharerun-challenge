@@ -43,6 +43,10 @@ abstract final class DailyMetricsAccount {
   @visibleForTesting
   static var debugUseMemory = false;
 
+  @visibleForTesting
+  static Future<Map<String, dynamic>?> Function(String uid, String dayKey)?
+      debugReadDay;
+
   /// 걸음 수 저장을 서버 API로 보낸다. 앱이 시작될 때 연결한다.
   /// 연결되기 전(테스트 등)에는 예전처럼 기기에서 직접 쓴다.
   static Future<void> Function({
@@ -63,6 +67,8 @@ abstract final class DailyMetricsAccount {
   static void debugReset() {
     debugLoad = null;
     debugUseMemory = false;
+    debugReadDay = null;
+    serverWriter = null;
     debugDocs.clear();
     _pulledKey = '';
     _inflight = null;
@@ -359,69 +365,46 @@ abstract final class DailyMetricsAccount {
       debugDocs[dayKey] = merged;
       return true;
     }
-    try {
-      final ref = FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('daily_metrics')
-          .doc(dayKey);
-      final writer = serverWriter;
-      if (writer != null) {
-        final snap = await ref.get();
-        final data = snap.data();
-        final merged = merge(
-          dayKey: dayKey,
-          existingSteps: (data?['steps'] as num?)?.toInt() ?? 0,
-          incoming: steps,
-          isToday: isToday,
-          source: source,
-          lastHealth: lastHealth,
-          existingSource: data?['source'] as String?,
-          existingLastHealth: (data?['lastHealth'] as num?)?.toInt(),
-        );
-        if (merged == null) return false;
-        await writer(
-          dayKey: dayKey,
-          steps: merged.steps,
-          source: merged.source,
-          lastHealth: merged.lastHealth,
-        );
-        return true;
-      }
-      var wrote = false;
-      await FirebaseFirestore.instance.runTransaction((tx) async {
-        final snap = await tx.get(ref);
-        final data = snap.data();
-        final existingSteps = (data?['steps'] as num?)?.toInt() ?? 0;
-        final existingSource = data?['source'] as String?;
-        final existingHealth = (data?['lastHealth'] as num?)?.toInt();
-        final merged = merge(
-          dayKey: dayKey,
-          existingSteps: existingSteps,
-          incoming: steps,
-          isToday: isToday,
-          source: source,
-          lastHealth: lastHealth,
-          existingSource: existingSource,
-          existingLastHealth: existingHealth,
-        );
-        if (merged == null) return;
-        final payload = <String, dynamic>{
-          'steps': merged.steps,
-          'km': SoloPedometerEngine.kmFromSteps(merged.steps),
-          'source': merged.source,
-          'updatedAt': FieldValue.serverTimestamp(),
-        };
-        final health = merged.lastHealth;
-        if (health != null && health > 0) payload['lastHealth'] = health;
-        tx.set(ref, payload, SetOptions(merge: true));
-        wrote = true;
-      });
-      return wrote;
-    } catch (e) {
-      debugPrint('[CLOUD SYNC ERR] Firestore 걸음 수 백업 실패: $e');
+    // 걸음 수 저장은 서버 API만 쓴다. 연결 전이면 쓰지 않고 다음 기회에 다시 보낸다.
+    final writer = serverWriter;
+    if (writer == null) {
+      debugPrint('[CLOUD SYNC] 서버 연결 전이라 걸음 수 저장을 건너뜁니다.');
       return false;
     }
+    try {
+      final data = await (debugReadDay ?? _readDay)(uid, dayKey);
+      final merged = merge(
+        dayKey: dayKey,
+        existingSteps: (data?['steps'] as num?)?.toInt() ?? 0,
+        incoming: steps,
+        isToday: isToday,
+        source: source,
+        lastHealth: lastHealth,
+        existingSource: data?['source'] as String?,
+        existingLastHealth: (data?['lastHealth'] as num?)?.toInt(),
+      );
+      if (merged == null) return false;
+      await writer(
+        dayKey: dayKey,
+        steps: merged.steps,
+        source: merged.source,
+        lastHealth: merged.lastHealth,
+      );
+      return true;
+    } catch (e) {
+      debugPrint('[CLOUD SYNC ERR] 걸음 수 서버 저장 실패: $e');
+      return false;
+    }
+  }
+
+  static Future<Map<String, dynamic>?> _readDay(String uid, String dayKey) async {
+    final snap = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .collection('daily_metrics')
+        .doc(dayKey)
+        .get();
+    return snap.data();
   }
 
   static Future<List<DailyMetricDoc>> _loadRemote(String uid) async {

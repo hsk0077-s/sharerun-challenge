@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
@@ -22,7 +24,9 @@ class IapPurchaseController {
         onCoachPlusPurchased,
     Future<PaymentAuthResult> Function()? confirmPayment,
     InAppPurchase? iap,
-  })  : _confirmPayment = confirmPayment,
+    @visibleForTesting bool? simulateProvision,
+  })  : _simulateProvision = simulateProvision,
+        _confirmPayment = confirmPayment,
         _purchaseRepository = purchaseRepository,
         _walletRepository = walletRepository,
         _readUid = readUid,
@@ -40,6 +44,7 @@ class IapPurchaseController {
   final Future<void> Function(String productId, String purchaseToken)?
       _onCoachPlusPurchased;
   final InAppPurchase _iap;
+  final bool? _simulateProvision;
 
   /// 결제창을 열기 직전의 본인 확인. 없으면 확인하지 않는다(테스트용).
   final Future<PaymentAuthResult> Function()? _confirmPayment;
@@ -112,7 +117,7 @@ class IapPurchaseController {
         return;
       }
       final launched = await _iap.buyNonConsumable(
-        purchaseParam: PurchaseParam(productDetails: choice.purchase),
+        purchaseParam: _purchaseParam(choice.purchase),
       );
       if (!launched) {
         _emit(
@@ -176,6 +181,21 @@ class IapPurchaseController {
     return false;
   }
 
+  /// Play 가 영수증에 묶어 두는 계정 표시값. 서버가 같은 값으로 대조한다.
+  @visibleForTesting
+  static String accountBindingId(String uid) =>
+      sha256.convert(utf8.encode(uid)).toString();
+
+  PurchaseParam _purchaseParam(ProductDetails details) {
+    final uid = _readUid();
+    return PurchaseParam(
+      productDetails: details,
+      applicationUserName: (uid == null || uid.isEmpty)
+          ? null
+          : accountBindingId(uid),
+    );
+  }
+
   Future<void> buyConsumablePack(ShareIapProduct product) async {
     final available = await isStoreAvailable();
     if (!available) {
@@ -206,7 +226,7 @@ class IapPurchaseController {
         orElse: () => response.productDetails.first,
       );
       final launched = await _iap.buyConsumable(
-        purchaseParam: PurchaseParam(productDetails: details),
+        purchaseParam: _purchaseParam(details),
       );
       if (!launched) {
         _emit(
@@ -273,7 +293,11 @@ class IapPurchaseController {
       }
     } catch (error, stackTrace) {
       debugPrint('IAP handle purchase failed: $error\n$stackTrace');
-      await _completeQuietly(purchase);
+      // 결제된 구매는 서버 접수 전에 소비하지 않는다. 다음 실행에 Play 가 다시 넘긴다.
+      if (purchase.status != PurchaseStatus.purchased &&
+          purchase.status != PurchaseStatus.restored) {
+        await _completeQuietly(purchase);
+      }
       _emit(
         const IapUiEvent(
           kind: IapUiKind.error,
@@ -362,7 +386,8 @@ class IapPurchaseController {
       source: purchase.verificationData.source,
     );
 
-    await _completeQuietly(purchase);
+    // 소비는 서버가 지급을 끝냈다고 알려 준 뒤에 한다. 먼저 소비하면 서버가
+    // 일시적으로 실패했을 때 구매를 다시 처리할 길이 사라진다.
     _emit(
       IapUiEvent(
         kind: IapUiKind.verifying,
@@ -372,19 +397,21 @@ class IapPurchaseController {
       ),
     );
 
-    if (shouldSimulateProvision(
-      mockData: AppEnv.useLocalMockData,
-      localDev: AppEnv.localDevMode,
-    )) {
+    if (_simulateProvision ??
+        shouldSimulateProvision(
+          mockData: AppEnv.useLocalMockData,
+          localDev: AppEnv.localDevMode,
+        )) {
       await _simulateCloudFunctionProvision(
         uid: uid,
         purchaseDocId: docId,
         shareAmount: shareAmount,
       );
+      await _completeQuietly(purchase);
       return;
     }
 
-    await _awaitVerifiedStatus(docId, shareAmount);
+    await _awaitVerifiedStatus(purchase, docId, shareAmount);
   }
 
   /// 기기 안에서 지급을 흉내 내는 길은 디버그 빌드에서만 연다.
@@ -427,7 +454,11 @@ class IapPurchaseController {
     );
   }
 
-  Future<void> _awaitVerifiedStatus(String purchaseDocId, int shareAmount) async {
+  Future<void> _awaitVerifiedStatus(
+    PurchaseDetails purchase,
+    String purchaseDocId,
+    int shareAmount,
+  ) async {
     try {
       final status = await _purchaseRepository
           .watchStatus(purchaseDocId)
@@ -437,6 +468,9 @@ class IapPurchaseController {
                 value == PurchaseRepository.rejected,
           )
           .timeout(const Duration(minutes: 2));
+      // 서버가 끝낸 판정(지급 또는 거절)일 때만 소비한다. 시간 초과나 오류면
+      // 소비하지 않아 Play 가 다음 실행에서 구매를 다시 넘겨준다.
+      await _completeQuietly(purchase);
       if (status == PurchaseRepository.verified) {
         _emit(
           IapUiEvent(

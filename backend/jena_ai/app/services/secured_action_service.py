@@ -1096,7 +1096,7 @@ class SecuredActionService:
         pack = dia_pack_by_id(product_id)
         if pack is None:
             raise HTTPException(status_code=400, detail="Unknown DIA pack.")
-        play_body = verify_play_product_purchase(product_id, purchase_token) or {}
+        play_body = verify_play_product_purchase(product_id, purchase_token, uid) or {}
         token_hash = purchase_token_hash(purchase_token)
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
@@ -1150,7 +1150,7 @@ class SecuredActionService:
                 detail="Unknown Coach+ product.",
             )
         # Nothing is written unless Play says this token is a paid subscription to this product.
-        verified = verify_play_subscription(product_id, purchase_token)
+        verified = verify_play_subscription(product_id, purchase_token, uid)
         db = self.firebase_service.db
         transaction = db.transaction()
         user_ref = db.collection("users").document(uid)

@@ -88,7 +88,7 @@ def test_unknown_pack_writes_nothing() -> None:
 def test_grant_verifies_token_before_the_ledger(monkeypatch) -> None:
     seen: dict = {}
 
-    def verify(product_id, purchase_token):
+    def verify(product_id, purchase_token, uid=None):
         seen["verified"] = (product_id, purchase_token)
 
     def commit(transaction, service_arg, uid, pack, user_ref, purchase_ref, order_id=None):

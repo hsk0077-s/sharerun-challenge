@@ -95,4 +95,36 @@ void main() {
 
     expect(iap.queries, 1);
   });
+
+  group('local provisioning is debug only', () {
+    test('a release build never simulates a purchase', () {
+      expect(
+        IapPurchaseController.shouldSimulateProvision(
+          mockData: true,
+          localDev: true,
+          debugMode: false,
+        ),
+        isFalse,
+      );
+    });
+
+    test('a debug build simulates only with a mock or local-dev flag', () {
+      expect(
+        IapPurchaseController.shouldSimulateProvision(
+          mockData: false,
+          localDev: true,
+          debugMode: true,
+        ),
+        isTrue,
+      );
+      expect(
+        IapPurchaseController.shouldSimulateProvision(
+          mockData: false,
+          localDev: false,
+          debugMode: true,
+        ),
+        isFalse,
+      );
+    });
+  });
 }

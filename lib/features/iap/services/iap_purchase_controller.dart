@@ -372,7 +372,10 @@ class IapPurchaseController {
       ),
     );
 
-    if (AppEnv.useLocalMockData || AppEnv.localDevMode) {
+    if (shouldSimulateProvision(
+      mockData: AppEnv.useLocalMockData,
+      localDev: AppEnv.localDevMode,
+    )) {
       await _simulateCloudFunctionProvision(
         uid: uid,
         purchaseDocId: docId,
@@ -382,6 +385,17 @@ class IapPurchaseController {
     }
 
     await _awaitVerifiedStatus(docId, shareAmount);
+  }
+
+  /// 기기 안에서 지급을 흉내 내는 길은 디버그 빌드에서만 연다.
+  /// 출시 빌드는 `LOCAL_DEV_MODE`가 켜져 있어도 서버 검증이 끝나야 지급된다.
+  @visibleForTesting
+  static bool shouldSimulateProvision({
+    required bool mockData,
+    required bool localDev,
+    bool? debugMode,
+  }) {
+    return (debugMode ?? kDebugMode) && (mockData || localDev);
   }
 
   Future<void> _simulateCloudFunctionProvision({

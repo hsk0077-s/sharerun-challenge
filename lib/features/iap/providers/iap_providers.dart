@@ -1,5 +1,6 @@
 import 'dart:async' show unawaited;
 
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
@@ -26,6 +27,7 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
       return ref.read(persistedAuthSessionProvider)?.uid;
     },
     onLocalProvisionFallback: (amount) {
+      if (!kDebugMode) return;
       ref.read(walletProvider.notifier).chargeShare(amount);
       final uid = ref.read(authStateChangesProvider).asData?.value?.uid ??
           ref.read(persistedAuthSessionProvider)?.uid ??

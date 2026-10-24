@@ -3,7 +3,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from app.services import identities
+from app.services import identities, rate_limit
 from app.services.auth_service import require_uid
 from app.services.firebase_service import FirebaseService
 
@@ -32,6 +32,22 @@ def _client(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
+def _throttle(
+    request: Request,
+    uid: str,
+    by_uid: rate_limit.WindowLimiter,
+    by_ip: rate_limit.WindowLimiter,
+) -> None:
+    """Link, unlink and preview are for a person choosing, not for a script."""
+    now = time.monotonic()
+    if not by_uid.allow(uid, now) or not by_ip.allow(_client(request), now):
+        raise HTTPException(status_code=429, detail="too_many_attempts")
+
+
+def _throttle_link(request: Request, uid: str) -> None:
+    _throttle(request, uid, rate_limit.LINK_BY_UID, rate_limit.LINK_BY_IP)
+
+
 @router.post("/kakao/login")
 def kakao_login(body: ProviderTokenRequest, request: Request) -> dict:
     # No Firebase token yet: this is how a phone gets one.
@@ -43,12 +59,16 @@ def kakao_login(body: ProviderTokenRequest, request: Request) -> dict:
 
 
 @router.post("/kakao/link")
-def kakao_link(body: ProviderTokenRequest, uid: str = Depends(require_uid)) -> dict:
+def kakao_link(
+    body: ProviderTokenRequest, request: Request, uid: str = Depends(require_uid)
+) -> dict:
+    _throttle_link(request, uid)
     return identities.link(_db(), uid, "kakao", body.access_token)
 
 
 @router.post("/kakao/unlink")
-def kakao_unlink(uid: str = Depends(require_uid)) -> dict:
+def kakao_unlink(request: Request, uid: str = Depends(require_uid)) -> dict:
+    _throttle_link(request, uid)
     return identities.unlink(_db(), uid, "kakao")
 
 
@@ -62,12 +82,16 @@ def naver_login(body: ProviderTokenRequest, request: Request) -> dict:
 
 
 @router.post("/naver/link")
-def naver_link(body: ProviderTokenRequest, uid: str = Depends(require_uid)) -> dict:
+def naver_link(
+    body: ProviderTokenRequest, request: Request, uid: str = Depends(require_uid)
+) -> dict:
+    _throttle_link(request, uid)
     return identities.link(_db(), uid, "naver", body.access_token)
 
 
 @router.post("/naver/unlink")
-def naver_unlink(uid: str = Depends(require_uid)) -> dict:
+def naver_unlink(request: Request, uid: str = Depends(require_uid)) -> dict:
+    _throttle_link(request, uid)
     return identities.unlink(_db(), uid, "naver")
 
 
@@ -83,18 +107,23 @@ def google_login(body: GoogleTokenRequest, request: Request) -> dict:
 
 
 @router.post("/google/link")
-def google_link(body: GoogleTokenRequest, uid: str = Depends(require_uid)) -> dict:
+def google_link(
+    body: GoogleTokenRequest, request: Request, uid: str = Depends(require_uid)
+) -> dict:
+    _throttle_link(request, uid)
     return identities.link(_db(), uid, "google", body.id_token)
 
 
 @router.post("/google/unlink")
-def google_unlink(uid: str = Depends(require_uid)) -> dict:
+def google_unlink(request: Request, uid: str = Depends(require_uid)) -> dict:
+    _throttle_link(request, uid)
     return identities.unlink(_db(), uid, "google")
 
 
 @router.get("/link-preview")
-def link_preview(uid: str = Depends(require_uid)) -> dict:
+def link_preview(request: Request, uid: str = Depends(require_uid)) -> dict:
     """Nickname and SHARE of the signed-in account, before a link is confirmed."""
+    _throttle(request, uid, rate_limit.PREVIEW_BY_UID, rate_limit.PREVIEW_BY_IP)
     return identities.link_preview(_db(), uid)
 
 

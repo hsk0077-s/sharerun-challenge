@@ -346,6 +346,13 @@ class ReportRequest(BaseModel):
     detail: str = Field(default="", max_length=200)
 
 
+class DailyStepsRequest(BaseModel):
+    day_key: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    steps: int = Field(ge=1, le=30_000)
+    source: str = Field(default="sensor", pattern="^(health_connect|sensor)$")
+    last_health: int | None = Field(default=None, ge=1, le=30_000)
+
+
 class CrewRenameRequest(BaseModel):
     name: str = Field(min_length=1, max_length=40)
     request_id: str = Field(min_length=8, max_length=80)

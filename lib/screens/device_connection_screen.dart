@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,7 @@ import '../core/widgets/src_sync_button.dart';
 import '../data/models/user_model.dart';
 import 'garmin_auth_screen.dart';
 import 'health_data_consent_screen.dart';
+import 'wearable_brand_guide_sheet.dart';
 
 /// 네이티브 헬스(Apple Health / Google Health Connect) + 외부 기기 연동 화면.
 class DeviceConnectionScreen extends ConsumerStatefulWidget {
@@ -119,68 +121,21 @@ class _DeviceConnectionScreenState
                     const SizedBox(height: 12),
                     _NativeHealthConnectTile(
                       label: AppStrings.watchSyncGoogle,
-                      caption: '(Galaxy Watch, Pixel Watch 등 Wear OS 기기 지원)',
+                      caption: AppStrings.deviceConnectionGoogleCaption,
                       leading: const GoogleHealthConnectIcon(),
                       enabled: !_busy && authUser != null,
-                      onPressed: () async {
-                        try {
-                          Health().configure();
-
-                          final types = [
-                            HealthDataType.STEPS,
-                            HealthDataType.HEART_RATE,
-                          ];
-                          // 1단계: 이미 권한이 부여되어 있는지 사전 체크
-                          bool? hasPermissions =
-                              await Health().hasPermissions(types);
-                          if (hasPermissions == true) {
-                            // 이미 연동된 경우 팝업 후 등급 배정 안내로 진행
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('이미 구글 헬스 커넥트와 연동되어 있습니다.'),
-                                    backgroundColor: Color(0xFF00CBA9)),
-                              );
-                            }
-                            await _finishWatchAndContinue(
-                              uid: authUser?.uid,
-                              watchType: WatchType.galaxyWatch,
-                            );
-                            return;
-                          }
-                          // 2단계: 권한이 없을 경우에만 권한 창 띄우기
-                          final bool isAuthorized =
-                              await Health().requestAuthorization(types);
-                          if (isAuthorized) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text('구글 헬스 커넥트 연동 완료'),
-                                    backgroundColor: Color(0xFF00CBA9)),
-                              );
-                            }
-                            await _finishWatchAndContinue(
-                              uid: authUser?.uid,
-                              watchType: WatchType.galaxyWatch,
-                            );
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('권한이 거부되었습니다.')),
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          debugPrint('Health Connect Error: $e');
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('기기가 호환되지 않거나 연동 중 오류가 발생했습니다.')),
-                            );
-                          }
-                        }
-                      },
+                      onPressed: () =>
+                          _connectGoogleHealthConnect(uid: authUser?.uid),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton.icon(
+                      key: const Key('wearable-guide-entry'),
+                      onPressed: () => showWearableBrandGuide(
+                        context,
+                        onConnect: () => _connectFromGuide(authUser?.uid),
+                      ),
+                      icon: const Icon(Icons.search_rounded),
+                      label: const Text(AppStrings.wearableGuideEntry),
                     ),
                     const SizedBox(height: 28),
 
@@ -272,28 +227,6 @@ class _DeviceConnectionScreenState
     }
   }
 
-  /// Persist watch link (when possible) then continue onboarding → 등급 배정 안내.
-  Future<void> _finishWatchAndContinue({
-    required String? uid,
-    required WatchType watchType,
-  }) async {
-    if (uid != null) {
-      try {
-        await ref.read(userRepositoryProvider).updateWatchType(
-              uid: uid,
-              watchType: watchType,
-            );
-        await ref.read(userRepositoryProvider).completeNativeDeviceOnboarding(
-              uid: uid,
-            );
-      } catch (_) {
-        // Navigation must continue even if profile write fails offline.
-      }
-    }
-    if (!mounted || !context.mounted) return;
-    await _goPreliminaryEval();
-  }
-
   Future<void> _onSkip(String? uid) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -379,7 +312,16 @@ class _DeviceConnectionScreenState
     }
   }
 
+  /// iOS는 Apple 건강, 그 외는 Health Connect로 연결 (브랜드 가이드 CTA).
+  Future<void> _connectFromGuide(String? uid) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return _connectNativeHealth(watchType: WatchType.appleWatch, uid: uid);
+    }
+    return _connectGoogleHealthConnect(uid: uid);
+  }
+
   Future<void> _connectGoogleHealthConnect({required String? uid}) async {
+    if (_busy) return;
     if (uid == null) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -388,24 +330,23 @@ class _DeviceConnectionScreenState
       return;
     }
 
+    setState(() => _busy = true);
     try {
-      final health = Health();
-      await health.configure();
-      const types = <HealthDataType>[
-        HealthDataType.HEART_RATE,
-        HealthDataType.STEPS,
-      ];
-      final permissions = List<HealthDataAccess>.filled(
-        types.length,
-        HealthDataAccess.READ,
-      );
+      final service = ref.read(healthDataServiceProvider);
+      final result = await service.requestWatchLinkAuthorization();
+      if (!mounted || !context.mounted) return;
 
-      final bool isAuthorized = await health.requestAuthorization(
-        types,
-        permissions: permissions,
-      );
-
-      if (isAuthorized != true) return;
+      if (!result.granted) {
+        final message = result.openedInstall
+            ? 'Health Connect 설치 화면을 열었어요. 설치 후 다시 연결해 주세요.'
+            : result.installLaunchFailed
+                ? 'Health Connect를 열 수 없어요. Play 스토어에서 설치해 주세요.'
+                : '권한이 거부되었습니다.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+        return;
+      }
 
       await ref.read(userRepositoryProvider).updateWatchType(
             uid: uid,
@@ -415,7 +356,13 @@ class _DeviceConnectionScreenState
             uid: uid,
           );
 
+      final samples = await service.readRecentSampleCounts();
       if (!mounted || !context.mounted) return;
+      if (samples != null && samples.isEmpty) {
+        await _showNoSamplesTipDialog();
+        if (!mounted || !context.mounted) return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Google Health Connect 연동이 완료되었습니다!'),
@@ -429,11 +376,16 @@ class _DeviceConnectionScreenState
       await _goPreliminaryEval();
     } catch (e) {
       debugPrint('Google Health Connect error: $e');
+      if (!mounted || !context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('기기가 호환되지 않거나 연동 중 오류가 발생했습니다.')),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
     }
   }
 
-  Future<void> _showHealthConnectUnavailableDialog(Health? health) async {
-    if (!mounted || !context.mounted) return;
+  Future<void> _showNoSamplesTipDialog() async {
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -442,32 +394,13 @@ class _DeviceConnectionScreenState
             borderRadius: BorderRadius.circular(12),
           ),
           title: const Text('Health Connect'),
-          content: const Text(
-            'Health Connect 권한을 확인할 수 없거나 앱이 설치되지 않았습니다.',
-          ),
+          content: const Text(AppStrings.healthConnectNoSamplesTip),
           actions: [
             TextButton(
+              key: const Key('health-connect-tip-ok'),
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('닫기'),
+              child: const Text('확인'),
             ),
-            if (health != null)
-              TextButton(
-                onPressed: () async {
-                  Navigator.of(dialogContext).pop();
-                  try {
-                    await health.installHealthConnect();
-                  } catch (_) {
-                    await openAppSettings();
-                  }
-                },
-                child: const Text(
-                  '설치/설정',
-                  style: TextStyle(
-                    color: AppColors.primaryMintDark,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
           ],
         );
       },

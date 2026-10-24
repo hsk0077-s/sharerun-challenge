@@ -104,6 +104,31 @@ class HealthDataService {
     return (opened: opened, failed: !opened);
   }
 
+  /// Counts heart-rate / step samples from the last [window] so the UI can tell
+  /// "permission granted" apart from "band is not writing to Health Connect".
+  /// Returns null when the read itself fails.
+  Future<HealthRecentSamples?> readRecentSampleCounts({
+    Duration window = const Duration(hours: 24),
+  }) async {
+    final now = DateTime.now();
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: watchLinkTypes,
+        startTime: now.subtract(window),
+        endTime: now,
+      );
+      var heartRate = 0;
+      var steps = 0;
+      for (final point in points) {
+        if (point.type == HealthDataType.HEART_RATE) heartRate++;
+        if (point.type == HealthDataType.STEPS) steps++;
+      }
+      return HealthRecentSamples(heartRateCount: heartRate, stepsCount: steps);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Latest BPM from Health Connect / HealthKit (last ~2 minutes).
   Future<int?> readLatestHeartRate() async {
     final now = DateTime.now();
@@ -178,6 +203,18 @@ class HealthDataService {
     }
     return null;
   }
+}
+
+class HealthRecentSamples {
+  const HealthRecentSamples({
+    required this.heartRateCount,
+    required this.stepsCount,
+  });
+
+  final int heartRateCount;
+  final int stepsCount;
+
+  bool get isEmpty => heartRateCount == 0 && stepsCount == 0;
 }
 
 class HealthRunSamples {

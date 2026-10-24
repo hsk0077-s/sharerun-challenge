@@ -150,6 +150,9 @@ abstract final class AppEnv {
         fromDefine: _diaPacksEnabledDefine,
       );
 
+  /// Garmin 연동은 아직 모의 구현이다(실제 Garmin 로그인 없음). 출시 빌드에서는 막는다.
+  static bool get garminLinkEnabled => kDebugMode;
+
   static bool get useLocalMockData =>
       _bool('USE_LOCAL_MOCK_DATA', defaultValue: false);
 

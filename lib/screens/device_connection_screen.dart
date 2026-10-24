@@ -8,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/api/api_exception.dart';
+import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -192,7 +193,9 @@ class _DeviceConnectionScreenState
                       label: WatchType.garmin.displayLabel,
                       selected: watchType == WatchType.garmin,
                       enabled: !_busy && authUser != null,
-                      onConnect: () => _openGarminOAuth(authUser?.uid),
+                      onConnect: AppEnv.garminLinkEnabled
+                          ? () => _openGarminOAuth(authUser?.uid)
+                          : _showComingSoonDialog,
                     ),
                     const SizedBox(height: 8),
                     _ExternalDeviceTile(

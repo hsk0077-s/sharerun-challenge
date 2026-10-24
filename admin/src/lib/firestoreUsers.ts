@@ -1,8 +1,6 @@
 import {
   collection,
-  doc,
   onSnapshot,
-  updateDoc,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getDb, USERS_COLLECTION } from './firebase';
@@ -26,7 +24,37 @@ export type AdminUser = {
   account_status: string | null;
   share_balance?: number;
   diamond_balance?: number;
+  /** KR / US / JP / IN / OTHER, or UNKNOWN when no country, countryCode or locale is stored. */
+  country: UserCountry;
 };
+
+export type UserCountry = 'KR' | 'US' | 'JP' | 'IN' | 'OTHER' | 'UNKNOWN';
+
+const LANGUAGE_REGION: Record<string, string> = { ko: 'KR', ja: 'JP', hi: 'IN' };
+
+/** `countryCode` -> `country` -> `locale` (`ko_KR`, `en-US`, `ja`). */
+export function normalizeCountry(data: Record<string, unknown>): UserCountry {
+  for (const key of ['countryCode', 'country', 'locale']) {
+    const raw = data[key];
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    const parts = raw.trim().split(/[-_]/);
+    const region =
+      parts.length > 1 ? parts[parts.length - 1]!.toUpperCase() : key === 'locale'
+        ? (LANGUAGE_REGION[parts[0]!.toLowerCase()] ?? '')
+        : parts[0]!.toUpperCase();
+    if (!region) continue;
+    return region === 'KR' || region === 'US' || region === 'JP' || region === 'IN'
+      ? region
+      : 'OTHER';
+  }
+  return 'UNKNOWN';
+}
+
+/** 탈퇴(deleted)·정리(purged) 계정은 활성 계정에서 뺀다. */
+export function isActiveAccount(user: AdminUser): boolean {
+  const state = (user.account_status ?? '').toLowerCase();
+  return state !== 'deleted' && state !== 'purged';
+}
 
 function readWalletInt(
   wallet: Record<string, unknown> | undefined,
@@ -128,6 +156,7 @@ export function mapFirestoreUser(
     created_at: toIso(data.createdAt ?? data.created_at ?? data.termsAcceptedAt),
     joined_at: readJoinedAt(data.createdAt),
     account_status,
+    country: normalizeCountry(data),
   };
 }
 
@@ -167,16 +196,4 @@ export function subscribeUsers(handlers: UsersListenerHandlers): Unsubscribe {
     cancelled = true;
     innerUnsub?.();
   };
-}
-
-export async function updateUserStatus(
-  uid: string,
-  status: string
-): Promise<void> {
-  await ensureAdminAuth();
-  await updateDoc(doc(getDb(), USERS_COLLECTION, uid), {
-    status,
-    adminStatus: status,
-    updatedAt: new Date().toISOString(),
-  });
 }

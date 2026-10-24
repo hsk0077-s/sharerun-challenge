@@ -351,13 +351,6 @@ service cloud.firestore {
       );
     }
 
-    // Admin console status only. Wallet fields stay on the Admin SDK.
-    function isAdminUserOpsUpdate() {
-      return isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['status', 'adminStatus', 'updatedAt']);
-    }
-
     match /admins/{uid} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if false;
@@ -368,11 +361,8 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if validUserCreate(uid);
       // Profile/settings only. Balances and grant flags stay server-owned.
-      allow update: if isAdminUserOpsUpdate()
-        || (
-          validUserSettingsUpdate(uid)
-          && !clientCurrencyAffected()
-        );
+      allow update: if validUserSettingsUpdate(uid)
+        && !clientCurrencyAffected();
       allow delete: if false;
 
       match /collectedDiamondBoxes/{boxId} {
@@ -647,6 +637,12 @@ service cloud.firestore {
 
     // Player reports of names. The server writes them. Only the operator reads.
     match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    // Google Play receipts written by the secured API (Admin SDK). Admin read only.
+    match /playPurchases/{purchaseId} {
       allow read: if isAdmin();
       allow create, update, delete: if false;
     }

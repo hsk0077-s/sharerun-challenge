@@ -90,7 +90,7 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "donation_match": 100,
         "donation_match_won": 1000,
         "donation_match_user_monthly": 1,
-        "donation_match_company_cap_won": 500000,
+        "donation_match_company_cap_won": 1_000_000,
         "challenge_ticket_share": 1200,
         "challenge_ticket_dia": 1,
         "personal_sponsor_share": 50000,

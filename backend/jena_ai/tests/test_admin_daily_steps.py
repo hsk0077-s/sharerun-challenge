@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from types import SimpleNamespace
 
 import pytest
+from google.api_core.exceptions import FailedPrecondition
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -87,8 +88,12 @@ class MemoryGroup:
         self.db = db
         self.name = name
         self._limit: int | None = None
+        self._field = None
+        self._descending = False
 
-    def order_by(self, *_args, **_kwargs) -> "MemoryGroup":
+    def order_by(self, field, direction=None) -> "MemoryGroup":
+        self._field = field
+        self._descending = direction == "DESCENDING"
         return self
 
     def limit(self, count: int) -> "MemoryGroup":
@@ -96,6 +101,8 @@ class MemoryGroup:
         return self
 
     def stream(self) -> list[MemorySnap]:
+        if self._field == "updatedAt" and self.db.missing_index:
+            raise FailedPrecondition("The query requires an index.")
         rows: list[tuple[str, str, dict]] = []
         for path, data in self.db.docs.items():
             parts = path.split("/")
@@ -106,6 +113,8 @@ class MemoryGroup:
                 continue
             rows.append((path, parts[-1], data))
         rows.sort()
+        if self._field == "updatedAt":
+            rows.sort(key=lambda row: row[2].get("updatedAt", ""), reverse=self._descending)
         if self._limit is not None:
             rows = rows[: self._limit]
         return [MemorySnap(doc_id, path, data) for path, doc_id, data in rows]
@@ -115,6 +124,7 @@ class MemoryDb:
     def __init__(self, docs: dict[str, dict]) -> None:
         self.docs = docs
         self.reads = 0
+        self.missing_index = False
 
     def collection(self, name: str) -> MemoryCollection:
         self.reads += 1
@@ -272,3 +282,51 @@ def test_default_window_is_last_14_kst_days() -> None:
 
     assert result.start == "2026-09-20"
     assert result.end == "2026-10-03"
+
+
+def _many_old_users() -> dict[str, dict]:
+    docs = {
+        f"users/a{index:04d}/daily_metrics/2026-01-01": {
+            "steps": 100,
+            "updatedAt": f"2026-01-01T00:{index % 60:02d}:00+00:00",
+        }
+        for index in range(850)
+    }
+    docs["users/zz/daily_metrics/2026-10-03"] = {
+        "steps": 5000,
+        "source": "sensor",
+        "updatedAt": "2026-10-03T01:00:00+00:00",
+    }
+    return docs
+
+
+def test_all_users_view_keeps_recent_days_beyond_scan_cap() -> None:
+    _admin()
+    _bind(_many_old_users())
+
+    response = client.get(
+        "/admin/daily-steps",
+        headers=AUTH,
+        params={"from": "2026-10-01", "to": "2026-10-03"},
+    )
+
+    assert response.status_code == 200
+    rows = response.json()["rows"]
+    assert [(row["uid"], row["day"]) for row in rows] == [("zz", "2026-10-03")]
+
+
+def test_all_users_view_falls_back_when_index_is_missing() -> None:
+    _admin()
+    db = _bind(_many_old_users())
+    db.missing_index = True
+
+    response = client.get(
+        "/admin/daily-steps",
+        headers=AUTH,
+        params={"from": "2026-10-01", "to": "2026-10-03"},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [(row["uid"], row["day"]) for row in body["rows"]] == [("zz", "2026-10-03")]
+    assert body["truncated"] is False

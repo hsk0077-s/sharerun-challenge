@@ -256,24 +256,154 @@ function readText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+const PENDING_APPEAL_STATUSES = ['under_review', 'pending'];
+
+function mapAppeal(id: string, data: Record<string, unknown>): AdminAppeal {
+  return {
+    id,
+    userId: readText(data.userId),
+    userNickname: readText(data.userNickname),
+    activityId: readText(data.activityId),
+    reasonDetail: readText(data.reasonDetail),
+    status: readText(data.status),
+    createdAt: toIso(data.createdAt),
+  };
+}
+
+/**
+ * 대기 중인 소명(under_review, pending)은 항상 따로 구독하고, 최근 기록 80건과 합친다.
+ * 완료된 과거 소명이 limit을 채워도 대기 건이 밀려나지 않는다.
+ */
 export function subscribeAppeals(
   handlers: Handlers<AdminAppeal>,
   opts?: { limitCount?: number }
 ): Unsubscribe {
   const lim = opts?.limitCount ?? 80;
-  return subscribeCollection(
+  let pending: AdminAppeal[] = [];
+  let recent: AdminAppeal[] = [];
+  const emit = () => {
+    const byId = new Map<string, AdminAppeal>();
+    for (const row of [...recent, ...pending]) byId.set(row.id, row);
+    handlers.onData([...byId.values()]);
+  };
+  const unsubPending = subscribeCollection(
+    () =>
+      query(collection(getDb(), 'appeals'), where('status', 'in', PENDING_APPEAL_STATUSES), limit(200)),
+    mapAppeal,
+    {
+      onData: (rows) => {
+        pending = rows;
+        emit();
+      },
+      onError: handlers.onError,
+    }
+  );
+  const unsubRecent = subscribeCollection(
     () => query(collection(getDb(), 'appeals'), limit(lim)),
+    mapAppeal,
+    {
+      onData: (rows) => {
+        recent = rows;
+        emit();
+      },
+      onError: handlers.onError,
+    }
+  );
+  return () => {
+    unsubPending();
+    unsubRecent();
+  };
+}
+
+export type AdminPlayPurchase = {
+  id: string;
+  uid: string;
+  productId: string;
+  priceKrw: number;
+  diamondAmount: number;
+  orderId: string | null;
+  refundStatus: string | null;
+  createdAt: string;
+};
+
+/** Google Play 인앱 결제 영수증(`playPurchases`). 서버가 지급을 확정한 뒤에만 생긴다. */
+export function subscribePlayPurchases(
+  handlers: Handlers<AdminPlayPurchase>
+): Unsubscribe {
+  return subscribeCollection(
+    () =>
+      query(collection(getDb(), 'playPurchases'), orderBy('createdAt', 'desc'), limit(40)),
     (id, data) => ({
       id,
-      userId: readText(data.userId),
-      userNickname: readText(data.userNickname),
-      activityId: readText(data.activityId),
-      reasonDetail: readText(data.reasonDetail),
-      status: readText(data.status),
+      uid: readText(data.uid),
+      productId: readText(data.productId),
+      priceKrw: Math.trunc(num(data.priceKrw)),
+      diamondAmount: Math.trunc(num(data.diamondAmount)),
+      orderId: readText(data.orderId) || null,
+      refundStatus: readText(data.refundStatus) || null,
       createdAt: toIso(data.createdAt),
     }),
     handlers
   );
+}
+
+export type AdminAuditLog = {
+  id: string;
+  uid: string;
+  email: string;
+  action: string;
+  targetUid: string;
+  reason: string;
+  createdAt: string;
+};
+
+export function subscribeAuditLogs(handlers: Handlers<AdminAuditLog>): Unsubscribe {
+  return subscribeCollection(
+    () =>
+      query(collection(getDb(), 'adminAuditLogs'), orderBy('createdAt', 'desc'), limit(100)),
+    (id, data) => ({
+      id,
+      uid: readText(data.uid),
+      email: readText(data.email),
+      action: readText(data.action),
+      targetUid: readText(data.targetUid),
+      reason: readText(data.reason),
+      createdAt: toIso(data.createdAt),
+    }),
+    handlers
+  );
+}
+
+/** 현재 KST 연-월 (`YYYY-MM`). `donationMonthTotals`의 문서 ID. */
+export function currentKstMonth(now: Date = new Date()): string {
+  return new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 7);
+}
+
+export type DonationMonth = { month: string; totalWon: number };
+
+export function subscribeDonationMonth(
+  month: string,
+  onData: (value: DonationMonth) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  let inner: Unsubscribe | null = null;
+  let cancelled = false;
+  void (async () => {
+    await ensureAdminAuth();
+    if (cancelled) return;
+    inner = onSnapshot(
+      doc(getDb(), 'donationMonthTotals', month),
+      (snap) => {
+        const data = snap.exists() ? (snap.data() as Record<string, unknown>) : {};
+        onData({ month, totalWon: Math.max(0, Math.trunc(num(data.totalWon))) });
+      },
+      (err) => onError?.(err)
+    );
+  })();
+  return () => {
+    cancelled = true;
+    inner?.();
+  };
 }
 
 export type AdminRun = {

@@ -6,7 +6,7 @@ import {
   type AdminRun,
 } from '../../lib/firestoreOps';
 
-const TRIAL_RUNS_REQUIRED = 5;
+const TRIAL_RUNS_REQUIRED = 3;
 
 function isWatchLinkDoc(id: string): boolean {
   return id.startsWith('watch-link-');

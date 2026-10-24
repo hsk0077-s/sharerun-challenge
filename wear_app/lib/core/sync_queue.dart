@@ -37,7 +37,7 @@ class PendingRun {
         'cadence_spm': const <int>[],
         'gyro_stability_score': kUnknownGyroScore,
         'gps_route': const <Object>[],
-        'device_id': ?deviceId,
+        if (deviceId != null) 'device_id': deviceId,
         'device_info': {'watch_used': true, 'heart_rate_used': heartRates.isNotEmpty},
       };
 

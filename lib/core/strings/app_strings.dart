@@ -144,6 +144,8 @@ abstract final class AppStrings {
   static const dashboardNickname = '달리기부자45';
   static const dashboardGoldBadge = '골드';
   static const dashboardMyWallet = '내 지갑';
+  static const walletUnconfirmedNote =
+      '서버에서 확인하는 중이에요. 지금 보이는 값은 마지막으로 확인된 값이에요.';
   static const dashboardShareBalance = '보유 SHARE: 90,000';
   static const dashboardDiamondBalance = '💎 보유 다이아몬드: 5개';
   static const dashboardValueBalance = '🌱 보유 밸류(VALUE): 5,200';

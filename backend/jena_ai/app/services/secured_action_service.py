@@ -271,6 +271,20 @@ class SecuredActionService:
         self._economy_service = EconomyService()
         self._mercy_rule_service = MercyRuleService()
 
+    @staticmethod
+    def _cadence_series(request: ValidateRunRequest) -> list[int]:
+        """A watch reports a step total, not a cadence series. Derive the average."""
+        info = request.device_info
+        if (
+            request.cadence_spm
+            or info is None
+            or not info.watch_used
+            or not request.total_steps
+        ):
+            return request.cadence_spm
+        minutes = request.duration_seconds / 60.0
+        return [int(round(request.total_steps / minutes))]
+
     def validate_run(
         self,
         uid: str,
@@ -282,7 +296,7 @@ class SecuredActionService:
             distance_km=request.distance_km,
             duration_seconds=request.duration_seconds,
             heart_rates=request.heart_rates,
-            cadence_spm=request.cadence_spm,
+            cadence_spm=self._cadence_series(request),
             gyro_stability_score=request.gyro_stability_score,
         )
         result = self._running_validation_service.validate(

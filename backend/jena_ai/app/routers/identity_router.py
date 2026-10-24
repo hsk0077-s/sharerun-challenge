@@ -3,7 +3,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from app.services import identities, rate_limit
+from app.services import identities, rate_limit, watch_pairing
 from app.services.auth_service import require_uid
 from app.services.firebase_service import FirebaseService
 
@@ -19,6 +19,10 @@ class ProviderTokenRequest(BaseModel):
 class GoogleTokenRequest(BaseModel):
     id_token: str = Field(min_length=10, max_length=4000)
     create_account: bool = False
+
+
+class WatchPairRequest(BaseModel):
+    code: str = Field(min_length=6, max_length=6, pattern=r"^[0-9]{6}$")
 
 
 def _db():
@@ -118,6 +122,37 @@ def google_link(
 def google_unlink(request: Request, uid: str = Depends(require_uid)) -> dict:
     _throttle_link(request, uid)
     return identities.unlink(_db(), uid, "google")
+
+
+@router.post("/apple/login")
+def apple_login(body: GoogleTokenRequest, request: Request) -> dict:
+    if not identities.allow_login_attempt(_client(request), time.monotonic()):
+        raise HTTPException(status_code=429, detail="too_many_attempts")
+    return identities.login(
+        _db(), "apple", body.id_token, create_account=body.create_account
+    )
+
+
+@router.post("/apple/link")
+def apple_link(
+    body: GoogleTokenRequest, request: Request, uid: str = Depends(require_uid)
+) -> dict:
+    _throttle_link(request, uid)
+    return identities.link(_db(), uid, "apple", body.id_token)
+
+
+@router.post("/apple/unlink")
+def apple_unlink(request: Request, uid: str = Depends(require_uid)) -> dict:
+    _throttle_link(request, uid)
+    return identities.unlink(_db(), uid, "apple")
+
+
+@router.post("/watch-pair")
+def watch_pair(body: WatchPairRequest, request: Request) -> dict:
+    # No Firebase token yet: the watch trades the 6-digit code for one.
+    if not rate_limit.WATCH_PAIR_BY_IP.allow(_client(request), time.monotonic()):
+        raise HTTPException(status_code=429, detail="too_many_attempts")
+    return watch_pairing.pair(_db(), body.code)
 
 
 @router.get("/link-preview")

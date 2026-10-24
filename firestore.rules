@@ -696,5 +696,10 @@ service cloud.firestore {
       allow read: if isAdmin();
       allow create, update, delete: if false;
     }
+
+    // 워치 6자리 페어링 코드. 서버(Admin SDK)만 만들고 쓴다. 클라이언트는 접근 금지.
+    match /watchPairingCodes/{code} {
+      allow read, write: if false;
+    }
   }
 }

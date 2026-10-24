@@ -10,6 +10,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 6자리 코드 연결과 기록 올리기 -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="쉐어런"
@@ -37,6 +40,11 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- 달리는 동안 심박·걸음·GPS 수집이 끊기지 않게 하는 포그라운드 서비스 -->
+        <service
+            android:name=".TrackingService"
+            android:exported="false"
+            android:foregroundServiceType="health|location" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <!-- 휴대폰 없이도 단독으로 동작하는 워치 앱 -->

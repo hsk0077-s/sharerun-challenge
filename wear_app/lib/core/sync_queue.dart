@@ -2,14 +2,15 @@ import 'dart:convert';
 
 /// 워치에는 자이로 안정도 점수가 없다. 서버 필수 필드를 채우는 임시 값이며,
 /// 서버가 "워치 단독 기록"을 별도로 다루게 되면(README "서버 쪽 남은 일") 없앤다.
+/// 케이던스는 보내지 않는다. 서버가 `watch_used`와 `total_steps`로 평균을 계산한다.
 const kUnknownGyroScore = 0.5;
 
-/// 워치가 휴대폰/서버 없이 만든 기록을 담아 두는 대기열.
+/// 워치가 만든 기록을 서버에 올리기 전까지 담아 두는 대기열.
 ///
 /// 서버가 같은 `activity_id`를 한 번만 인정하므로(재전송해도 중복 지급 없음),
 /// 워치는 기록마다 한 번 만든 id를 끝까지 바꾸지 않는다.
-/// 워치 자신은 Firebase 토큰을 들고 있지 않다. 이 대기열의 내용은 휴대폰 앱이
-/// 받아서 로그인된 계정으로 서버에 올린다.
+/// 워치는 6자리 코드로 계정에 연결한 뒤(`WatchAccount`) 직접 올린다. 올리지 못한
+/// 기록은 이 대기열에 남아 다음 기회에 다시 올라간다.
 class PendingRun {
   PendingRun({
     required this.activityId,
@@ -18,6 +19,7 @@ class PendingRun {
     required this.heartRates,
     required this.startedAt,
     required this.endedAt,
+    this.totalSteps = 0,
   });
 
   final String activityId;
@@ -27,8 +29,12 @@ class PendingRun {
   final DateTime startedAt;
   final DateTime endedAt;
 
-  /// 서버 `POST /actions/validate-run` 본문과 같은 필드 이름.
-  /// 워치 단독 기록에는 GPS 경로·케이던스가 없으면 비워 둔다(서버가 근거 부족으로 판단).
+  /// 센서가 센 걸음 수. 0이면 못 쟀다는 뜻이라 보내지 않는다.
+  final int totalSteps;
+
+  /// 서버 `POST /actions/runs/validate` 본문과 같은 필드 이름.
+  /// 워치 단독 기록에는 GPS 경로와 케이던스 배열이 없어 비워 둔다. 걸음 수 합계를
+  /// `total_steps`로 보내면 서버가 평균 케이던스를 계산한다.
   Map<String, Object?> toValidateRunBody({String? deviceId}) => {
         'activity_id': activityId,
         'distance_km': distanceKm,
@@ -37,6 +43,7 @@ class PendingRun {
         'cadence_spm': const <int>[],
         'gyro_stability_score': kUnknownGyroScore,
         'gps_route': const <Object>[],
+        if (totalSteps > 0) 'total_steps': totalSteps,
         if (deviceId != null) 'device_id': deviceId,
         'device_info': {'watch_used': true, 'heart_rate_used': heartRates.isNotEmpty},
       };
@@ -48,6 +55,7 @@ class PendingRun {
         'heartRates': heartRates,
         'startedAt': startedAt.toUtc().toIso8601String(),
         'endedAt': endedAt.toUtc().toIso8601String(),
+        'totalSteps': totalSteps,
       };
 
   factory PendingRun.fromJson(Map<String, Object?> json) => PendingRun(
@@ -57,6 +65,7 @@ class PendingRun {
         heartRates: [for (final v in json['heartRates']! as List) (v as num).toInt()],
         startedAt: DateTime.parse(json['startedAt']! as String),
         endedAt: DateTime.parse(json['endedAt']! as String),
+        totalSteps: (json['totalSteps'] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -118,6 +127,7 @@ PendingRun? buildPendingRun({
   required List<int> heartRates,
   required DateTime startedAt,
   required DateTime endedAt,
+  int totalSteps = 0,
 }) {
   if (distanceKm <= 0 || movingTime.inSeconds <= 0) return null;
   return PendingRun(
@@ -127,5 +137,6 @@ PendingRun? buildPendingRun({
     heartRates: heartRates.length > 50000 ? heartRates.sublist(0, 50000) : heartRates,
     startedAt: startedAt,
     endedAt: endedAt,
+    totalSteps: totalSteps < 0 ? 0 : totalSteps,
   );
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../core/config/app_env.dart';
 import '../../core/strings/app_strings.dart';
 import '../../core/theme/app_text_styles.dart';
 
 /// 확인된 이메일로 기존 계정을 못 찾았을 때의 선택.
-enum ExistingAccountAnswer { google, kakao, naver, create, cancel }
+enum ExistingAccountAnswer { google, kakao, naver, apple, create, cancel }
 
 /// "처음 가입할 때 어떤 방법을 쓰셨나요?"
 ///
@@ -73,6 +74,13 @@ Future<ExistingAccountAnswer> showExistingAccountQuestion(
                 value: ExistingAccountAnswer.naver,
                 key: const Key('existing-account-naver'),
               ),
+              if (AppEnv.appleLoginEnabled)
+                methodButton(
+                  current: 'apple',
+                  label: AppStrings.existingAccountApple,
+                  value: ExistingAccountAnswer.apple,
+                  key: const Key('existing-account-apple'),
+                ),
               const SizedBox(height: 16),
               Text(
                 AppStrings.existingAccountCreateHint,

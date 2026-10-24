@@ -7,23 +7,25 @@
 ## 지금 들어 있는 것
 | 구분 | 내용 | 상태 |
 |---|---|---|
-| 5개 화면 | ① 시작(`3km`, 탭해서 시작) ② 달리는 중(페이스 `5:42`, 심박 `♥ 148`, 거리 `1.8km`) ③ 일시정지/재개/종료 ④ 대회 순위 알림(`1위!`, `대회 2명 앞서요`) ⑤ 완주 요약(`3.00km · 5:38/km · 17분`)과 동기화 대기 수 | 화면·흐름 구현, 위젯 테스트 있음 |
-| 러닝 상태 | 시작·일시정지(움직인 시간만 계산)·재개·종료, 비현실적 심박(30 미만, 230 초과) 무시, 달리는 중에만 거리·심박 기록 | 구현, 단위 테스트 있음 |
-| 오프라인 대기열 | 기록마다 한 번 만든 `activity_id`로 중복 방지, 최대 50건, 앱 재시작 후 복원, 서버가 확정한 기록만 제거 | 구현, 단위 테스트 있음 |
-| 서버 본문 | `POST /actions/validate-run`, `POST /actions/daily-steps` 필드 이름과 같은 본문 만들기 | 구현, 테스트 있음 |
+| 화면 | ⓪ 연결(6자리 숫자판, 원형 화면용) ① 시작 ② 달리는 중(페이스·심박·거리) ③ 일시정지/재개/종료 ④ 대회 순위 알림 ⑤ 완주 요약과 올리기 대기 수 | 구현, 위젯 테스트 있음 |
+| 실제 센서 | `MainActivity.kt`의 `sharerun/watch_sensors` 채널. 심박(`TYPE_HEART_RATE`), 걸음(`TYPE_STEP_COUNTER`), GPS(`LocationManager`), 부분 WakeLock, 포그라운드 서비스(`TrackingService`). 센서가 없거나 권한이 없으면 그 값은 0으로 남고 만들어 내지 않는다 | 구현, 빌드 확인 |
+| 러닝 상태 | 시작·일시정지(움직인 시간만 계산)·재개·종료, 비현실적 심박 무시, 일시정지 중 거리·걸음 무시 | 구현, 단위 테스트 있음 |
+| 6자리 연결 | 휴대폰 앱이 `POST /actions/watch-pairing/code`로 만든 코드를 워치에서 입력 → `POST /auth/watch-pair` → Firebase 맞춤 토큰 → Firebase REST 로그인. 갱신 토큰만 앱 전용 저장소에 둔다 | 구현, 단위 테스트 있음 |
+| 올리기 | 연결된 계정의 ID 토큰으로 `POST /actions/runs/validate`. 성공이거나 서버가 본문을 거부(400·409·413·422)하면 대기열에서 빼고, 네트워크·401·429·5xx는 남겨 다시 올림. 같은 `activity_id`는 서버가 한 번만 인정 | 구현, 단위 테스트 있음 |
+| 오프라인 대기열 | 기록마다 한 번 만든 `activity_id`, 최대 50건, 앱 재시작 후 복원(걸음 수 포함) | 구현, 단위 테스트 있음 |
 
-## 아직 없는 것 (다음 단계)
-- **센서 연결**: 실제 심박·걸음·위치 읽기와 러닝 중 포그라운드 서비스. 지금 화면은 값을 외부에서 받아 그리기만 합니다.
-- **휴대폰으로 보내기**: 워치는 Firebase 토큰을 들고 있지 않습니다. 대기열은 Wear OS Data Layer 같은 방법으로 휴대폰 앱에 넘기고, **휴대폰 앱이 로그인된 계정으로** 서버에 올리는 구조가 안전합니다(토큰 탈취 시 피해 범위 축소). 아직 구현하지 않았습니다.
-- **대회 순위 데이터**: ④ 화면은 휴대폰이 중계한 값을 그릴 뿐, 순위를 워치에서 계산하지 않습니다.
-- **서버 쪽 남은 일** (`docs/watch-garmin-apple-review.md` 3절): 오프라인 기록의 시작·종료 시각 검증(미래/너무 오래된 값 거부), 워치 기기 식별과 계정당 개수 상한, 재연결 일괄 업로드의 하루 상한 테스트. 워치에는 자이로 점수가 없어 서버 필수 필드를 임시값(`kUnknownGyroScore`)으로 채우고 있으므로, 서버가 워치 단독 기록을 따로 다루게 되면 없앱니다.
-- 앱 아이콘은 Flutter 기본 아이콘 자리표시자입니다(새 하트 로고 적용은 별도 결정).
-- 이 환경에는 Android SDK가 없어 **빌드는 확인하지 못했습니다.** 분석(`flutter analyze`)과 테스트(11개)만 통과했습니다. 첫 빌드는 Android SDK가 있는 PC에서 해 주세요.
+## 아직 없는 것
+- **대회 순위 데이터**: ④ 화면은 값을 받아 그릴 뿐, 순위를 워치에서 계산하지 않습니다. 중계 경로가 아직 없습니다.
+- **서버 쪽 남은 일** (`docs/watch-garmin-apple-review.md` 3절): 오프라인 기록의 시작·종료 시각 검증(미래/너무 오래된 값 거부), 워치 기기 식별과 계정당 개수 상한, 재연결 일괄 업로드의 하루 상한 테스트. 워치에는 자이로 점수가 없어 서버 필수 필드를 임시값(`kUnknownGyroScore`)으로 채웁니다. 케이던스 배열은 보내지 않고, 서버가 `device_info.watch_used`와 `total_steps`로 평균 케이던스를 계산합니다.
+- 연결 해제는 화면에 없습니다(저장소 삭제 또는 앱 데이터 삭제). 서버 쪽에서 코드가 한 번만 쓰이고 5분 뒤 만료됩니다.
+- 앱 아이콘은 휴대폰 앱의 `ic_launcher.png`를 그대로 복사했습니다(적응형 아이콘 없음).
+- 실제 시계에서의 정확도(GPS 거리, 심박 권한 동작)는 기기에서 확인하지 못했습니다.
 
 ## 매니페스트 요약 (`android/app/src/main/AndroidManifest.xml`)
 - `android.hardware.type.watch` (워치 전용 기기)
 - `com.google.android.wearable.standalone = true` (휴대폰 없이 동작)
-- 권한: `BODY_SENSORS`, `ACTIVITY_RECOGNITION`, `ACCESS_FINE_LOCATION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_HEALTH`, `FOREGROUND_SERVICE_LOCATION`, `WAKE_LOCK`
+- 권한: `BODY_SENSORS`, `ACTIVITY_RECOGNITION`, `ACCESS_FINE_LOCATION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_HEALTH`, `FOREGROUND_SERVICE_LOCATION`, `WAKE_LOCK`, `POST_NOTIFICATIONS`, `INTERNET`
+- 서비스: `TrackingService` (`health|location` 포그라운드)
 - 패키지 이름: 휴대폰 앱과 같은 `com.sharerun.share_run_challenge`, 최소 API 30(Wear OS 3.0)
 
 ## 버전 코드 체계
@@ -36,15 +38,22 @@ cd wear_app
 flutter pub get
 flutter analyze
 flutter test
-flutter build apk --release   # Android SDK가 있는 PC에서
+flutter build apk --release   --dart-define=JENA_BASE_URL=https://<서버 주소>   --dart-define=FIREBASE_API_KEY=<Firebase 웹 API 키>
 ```
-서명은 로컬에서 `android/key.properties`(저장소에 올리지 않음)로 설정하고, 휴대폰 앱과 같은 업로드 키를 쓸지는 소유자가 정합니다. 지금 `build.gradle.kts`는 debug 서명입니다.
+`JENA_BASE_URL`과 `FIREBASE_API_KEY`가 없는 빌드는 연결 단계에서 "서버 설정이 없는 빌드예요."를 보여 줍니다.
+
+서명: `wear_app/android/key.properties`가 있으면 그 키로, 없으면 휴대폰 앱의 `android/key.properties`(업로드 키)로, 둘 다 없으면 debug 키로 서명합니다. 키 파일은 저장소에 올리지 않습니다.
 
 ## 파일 구조
 ```
 lib/main.dart                  앱 시작과 화면 흐름(RunFlow)
-lib/core/run_session.dart      러닝 상태·거리·심박·페이스 계산과 표시 형식
+lib/core/run_session.dart      러닝 상태·거리·심박·걸음·페이스 계산과 표시 형식
 lib/core/sync_queue.dart       오프라인 대기열과 서버 본문 만들기
-lib/screens/watch_screens.dart 5개 화면
+lib/core/sync_uploader.dart    대기열 저장과 서버에 올리기
+lib/core/watch_account.dart    6자리 코드 연결, Firebase 토큰 갱신, 서명된 요청
+lib/core/watch_platform.dart   센서·저장소 채널(Kotlin)과 시험용 가짜
+lib/screens/watch_screens.dart 연결 + 5개 화면
+android/.../WatchTracker.kt    심박·걸음·GPS 수집
+android/.../TrackingService.kt 달리는 동안 켜 두는 포그라운드 서비스
 test/                          단위·위젯 테스트
 ```

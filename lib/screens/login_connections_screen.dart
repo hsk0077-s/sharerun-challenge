@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_exception.dart';
+import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
@@ -20,6 +21,8 @@ class LoginConnectionsScreen extends ConsumerStatefulWidget {
   static const kakaoActionKey = Key('login-connection-kakao-action');
   static const naverRowKey = Key('login-connection-naver');
   static const naverActionKey = Key('login-connection-naver-action');
+  static const appleRowKey = Key('login-connection-apple');
+  static const appleActionKey = Key('login-connection-apple-action');
   static const unlinkConfirmKey = Key('login-connection-unlink-confirm');
 
   @override
@@ -146,6 +149,17 @@ class _LoginConnectionsScreenState
         send: ref.read(identityApiClientProvider).linkNaver,
       );
 
+  Future<void> _linkApple() => _link(
+        methodName: '애플',
+        askToken: ref.read(appleIdTokenProvider),
+        send: ref.read(identityApiClientProvider).linkApple,
+      );
+
+  Future<void> _unlinkApple() => _unlink(
+        name: '애플',
+        send: ref.read(identityApiClientProvider).unlinkApple,
+      );
+
   Future<void> _unlinkKakao() => _unlink(
         name: '카카오',
         send: ref.read(identityApiClientProvider).unlinkKakao,
@@ -167,6 +181,7 @@ class _LoginConnectionsScreenState
     final googleLinked = providers?.contains('google') ?? false;
     final kakaoLinked = providers?.contains('kakao') ?? false;
     final naverLinked = providers?.contains('naver') ?? false;
+    final appleLinked = providers?.contains('apple') ?? false;
     return Scaffold(
       backgroundColor: AppColors.settingsBackground,
       appBar: AppBar(
@@ -258,11 +273,29 @@ class _LoginConnectionsScreenState
                     ),
                   ),
                   const Divider(height: 1, color: AppColors.borderLight),
-                  const ListTile(
-                    leading: Icon(Icons.apple),
-                    title: Text('애플'),
-                    trailing: Text('준비 중', style: AppTextStyles.caption),
-                  ),
+                  if (AppEnv.appleLoginEnabled)
+                    ListTile(
+                      key: LoginConnectionsScreen.appleRowKey,
+                      leading: const Icon(Icons.apple),
+                      title: const Text('애플'),
+                      subtitle: Text(
+                        appleLinked ? '연결됨' : '연결 안 됨',
+                        style: AppTextStyles.caption,
+                      ),
+                      trailing: TextButton(
+                        key: LoginConnectionsScreen.appleActionKey,
+                        onPressed: _busy || (appleLinked && !_canUnlink)
+                            ? null
+                            : (appleLinked ? _unlinkApple : _linkApple),
+                        child: Text(appleLinked ? '해제' : '연결하기'),
+                      ),
+                    )
+                  else
+                    const ListTile(
+                      leading: Icon(Icons.apple),
+                      title: Text('애플'),
+                      trailing: Text('준비 중', style: AppTextStyles.caption),
+                    ),
                 ],
               ),
             ),

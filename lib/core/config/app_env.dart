@@ -29,6 +29,8 @@ abstract final class AppEnv {
 
   // `String.fromEnvironment` only sees a const literal. A runtime key is ''.
   static const _jenaBaseUrlDefine = String.fromEnvironment('JENA_BASE_URL');
+  static const _appleLoginEnabledDefine =
+      String.fromEnvironment('APPLE_LOGIN_ENABLED');
   static const _googleWebClientIdDefine =
       String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
   static const _firebaseProjectIdDefine =
@@ -152,6 +154,14 @@ abstract final class AppEnv {
 
   /// Garmin 연동은 아직 모의 구현이다(실제 Garmin 로그인 없음). 출시 빌드에서는 막는다.
   static bool get garminLinkEnabled => kDebugMode;
+
+  /// 애플 로그인은 서버·콘솔 설정이 끝난 빌드에서만 켠다.
+  /// `--dart-define=APPLE_LOGIN_ENABLED=true`. 꺼져 있으면 "준비 중"으로 보인다.
+  static bool get appleLoginEnabled => _bool(
+        'APPLE_LOGIN_ENABLED',
+        defaultValue: false,
+        fromDefine: _appleLoginEnabledDefine,
+      );
 
   static bool get useLocalMockData =>
       _bool('USE_LOCAL_MOCK_DATA', defaultValue: false);

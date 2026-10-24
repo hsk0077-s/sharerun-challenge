@@ -7,6 +7,7 @@ import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../core/auth/local_auth_session.dart';
+import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
@@ -133,6 +134,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         askToken: () => ref.read(googleIdTokenProvider)(),
       );
 
+  Future<void> _onApple() => _startProvider(
+        provider: 'apple',
+        providerName: '애플',
+        successMessage: '애플 로그인에 성공했습니다!',
+        failureMessage: '애플 로그인 실패: ',
+        askToken: () => ref.read(appleIdTokenProvider)(),
+      );
+
   Future<void> _onNaver() => _startProvider(
         provider: 'naver',
         providerName: '네이버',
@@ -165,6 +174,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       'kakao' => await api.kakaoLogin(token, createAccount: createAccount),
       'naver' => await api.naverLogin(token, createAccount: createAccount),
       'google' => await api.googleLogin(token, createAccount: createAccount),
+      'apple' => await api.appleLogin(token, createAccount: createAccount),
       _ => throw StateError(provider),
     };
     if (!mounted) return false;
@@ -202,6 +212,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           case ExistingAccountAnswer.google:
           case ExistingAccountAnswer.kakao:
           case ExistingAccountAnswer.naver:
+          case ExistingAccountAnswer.apple:
             final next = answer.name;
             final nextToken = await _tokenFor(next);
             if (nextToken == null || !mounted) return false;
@@ -288,6 +299,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           await api.linkNaver(linkToken);
         case 'google':
           await api.linkGoogle(linkToken);
+        case 'apple':
+          await api.linkApple(linkToken);
         default:
           throw StateError(linkProvider);
       }
@@ -348,6 +361,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       'google' => ref.read(googleIdTokenProvider)(),
       'kakao' => ref.read(kakaoAccessTokenProvider)(),
       'naver' => ref.read(naverAccessTokenProvider)(),
+      'apple' => ref.read(appleIdTokenProvider)(),
       _ => Future<String?>.value(null),
     };
   }
@@ -357,6 +371,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       'google' => '구글',
       'kakao' => '카카오',
       'naver' => '네이버',
+      'apple' => '애플',
       _ => provider,
     };
   }
@@ -416,15 +431,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // 2) Apple (구글 아래 유지) — 준비 중
                         AppleLoginButton(
                           label: AppStrings.loginApple,
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  AppStrings.loginComingSoon('Apple'),
-                                ),
-                              ),
-                            );
-                          },
+                          onPressed: AppEnv.appleLoginEnabled
+                              ? _onApple
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        AppStrings.loginComingSoon('Apple'),
+                                      ),
+                                    ),
+                                  );
+                                },
                         ),
                         const SizedBox(height: AppShapes.loginButtonSpacing),
 

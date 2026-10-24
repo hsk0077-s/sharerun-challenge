@@ -19,6 +19,13 @@ class ProviderLoginResult {
   final bool needsAccountChoice;
 }
 
+class WatchPairingCode {
+  const WatchPairingCode({required this.code, required this.expiresIn});
+
+  final String code;
+  final Duration expiresIn;
+}
+
 /// 예전 이름. 카카오만 있던 때의 이름을 그대로 쓰는 곳을 위해 남긴다.
 typedef KakaoLoginResult = ProviderLoginResult;
 
@@ -81,12 +88,43 @@ class IdentityApiClient {
         tokenField: 'id_token',
       );
 
+  /// 애플 ID 토큰(iOS는 identityToken, 안드로이드는 Firebase ID 토큰)을 서버에 보낸다.
+  Future<ProviderLoginResult> appleLogin(
+    String idToken, {
+    bool createAccount = false,
+  }) =>
+      _login(
+        'apple',
+        idToken,
+        createAccount: createAccount,
+        tokenField: 'id_token',
+      );
+
   Future<void> linkKakao(String accessToken) => _link('kakao', accessToken);
 
   Future<void> linkNaver(String accessToken) => _link('naver', accessToken);
 
   Future<void> linkGoogle(String idToken) =>
       _signedIn('POST', '/auth/google/link', {'id_token': idToken});
+
+  Future<void> linkApple(String idToken) =>
+      _signedIn('POST', '/auth/apple/link', {'id_token': idToken});
+
+  Future<void> unlinkApple() => _unlink('apple');
+
+  /// 워치에 입력할 6자리 페어링 코드를 받는다. 5분 안에 한 번만 쓸 수 있다.
+  Future<WatchPairingCode> requestWatchPairingCode() async {
+    final json = await _signedIn('POST', '/actions/watch-pairing/code', const {});
+    final code = json['code'];
+    final expiresIn = json['expires_in'];
+    if (code is! String || code.isEmpty) {
+      throw StateError('Watch pairing code is missing.');
+    }
+    return WatchPairingCode(
+      code: code,
+      expiresIn: Duration(seconds: expiresIn is int ? expiresIn : 300),
+    );
+  }
 
   Future<void> unlinkKakao() => _unlink('kakao');
 

@@ -130,6 +130,16 @@ abstract final class AppStrings {
   static const deviceConnectionDisconnect = '연동 해제';
   static const deviceConnectionSingleActiveNote =
       '쉐어런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.';
+  static const deviceConnectionGoogleCaption =
+      '(갤럭시 워치, 샤오미 미밴드, 어메이즈핏, 가민, 핏빗 등)';
+  static const wearableGuideEntry = '내 워치·스마트밴드 연결 방법 찾기';
+  static const wearableGuideSearchHint = '브랜드 검색 (예: 샤오미, 가민, 핏빗)';
+  static const wearableGuideEmpty = '일치하는 브랜드가 없어요. 다른 이름으로 검색해 보세요.';
+  static const wearableGuideCtaAndroid = 'Health Connect 연결하기';
+  static const wearableGuideCtaIos = 'Apple 건강 연결하기';
+  static const healthConnectNoSamplesTip =
+      '권한은 연결되었어요. 밴드/워치 앱 안에서 Health Connect 데이터 쓰기 스위치가 켜져 있는지 확인해 주세요. '
+      '스마트밴드 기록은 밴드 앱 동기화 후 반영됩니다.';
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
 
   // ── Garmin OAuth (Screen 4) ───────────────────────────────────────

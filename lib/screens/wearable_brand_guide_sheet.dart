@@ -1,0 +1,300 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
+import '../core/strings/app_strings.dart';
+import '../core/theme/app_colors.dart';
+import '../core/theme/app_text_styles.dart';
+
+/// 브랜드별 워치·스마트밴드 → Health Connect 연결 안내 한 건.
+@immutable
+class WearableBrand {
+  const WearableBrand({
+    required this.id,
+    required this.name,
+    required this.app,
+    required this.keywords,
+    required this.steps,
+    this.note,
+  });
+
+  final String id;
+  final String name;
+
+  /// 기기 데이터를 모아 주는 공식(또는 연동) 앱 이름.
+  final String app;
+
+  /// 검색용 별칭 (소문자 비교).
+  final List<String> keywords;
+  final List<String> steps;
+  final String? note;
+
+  bool matches(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return true;
+    return name.toLowerCase().contains(q) ||
+        app.toLowerCase().contains(q) ||
+        keywords.any((k) => k.toLowerCase().contains(q));
+  }
+}
+
+const wearableBrands = <WearableBrand>[
+  WearableBrand(
+    id: 'xiaomi',
+    name: '샤오미 미밴드 / 레드미 워치',
+    app: 'Mi Fitness',
+    keywords: ['샤오미', 'xiaomi', 'mi band', '미밴드', '레드미', 'redmi', 'mi fitness'],
+    steps: [
+      'Mi Fitness 앱에서 밴드/워치를 페어링하고 한 번 동기화해 주세요.',
+      'Mi Fitness 앱 설정에서 Health Connect(헬스 커넥트) 연동을 켜고 걸음 수·심박수 쓰기를 허용해 주세요.',
+      '아래 버튼으로 쉐어 런의 Health Connect 읽기 권한을 허용해 주세요.',
+    ],
+    note: '메뉴 이름은 앱 버전에 따라 조금 다를 수 있어요.',
+  ),
+  WearableBrand(
+    id: 'amazfit',
+    name: '어메이즈핏',
+    app: 'Zepp',
+    keywords: ['어메이즈핏', 'amazfit', 'zepp', '제프', '지프'],
+    steps: [
+      'Zepp 앱에서 어메이즈핏 기기를 페어링하고 동기화해 주세요.',
+      'Zepp 앱 프로필 → 계정/서드파티 연결에서 Health Connect 연동을 켜 주세요.',
+      '아래 버튼으로 쉐어 런의 Health Connect 읽기 권한을 허용해 주세요.',
+    ],
+    note: '메뉴 이름은 앱 버전에 따라 조금 다를 수 있어요.',
+  ),
+  WearableBrand(
+    id: 'garmin',
+    name: '가민',
+    app: 'Garmin Connect',
+    keywords: ['가민', 'garmin', 'garmin connect', '포러너', 'forerunner'],
+    steps: [
+      'Garmin Connect 앱에서 워치를 동기화해 주세요.',
+      'Garmin Connect에 Health Connect 연동 항목이 있으면 켜 주세요. 없는 기기는 아래 "외부 전문 기기 연동"의 Garmin 연동을 이용해 주세요.',
+      '아래 버튼으로 쉐어 런의 Health Connect 읽기 권한을 허용해 주세요.',
+    ],
+    note: 'Health Connect 지원 여부는 기기·지역에 따라 달라요.',
+  ),
+  WearableBrand(
+    id: 'fitbit',
+    name: '핏빗 / 픽셀 워치',
+    app: 'Fitbit',
+    keywords: ['핏빗', 'fitbit', '픽셀', 'pixel', 'pixel watch', '구글'],
+    steps: [
+      'Fitbit 앱에서 핏빗/픽셀 워치를 동기화해 주세요.',
+      'Fitbit 앱 설정에서 Health Connect 데이터 공유(쓰기)를 켜 주세요.',
+      '아래 버튼으로 쉐어 런의 Health Connect 읽기 권한을 허용해 주세요.',
+    ],
+  ),
+  WearableBrand(
+    id: 'samsung',
+    name: '삼성 갤럭시 워치',
+    app: 'Samsung Health',
+    keywords: ['삼성', '갤럭시', 'galaxy', 'samsung', 'samsung health', '갤워치', '워치'],
+    steps: [
+      'Samsung Health 앱에서 갤럭시 워치를 연결하고 동기화해 주세요.',
+      'Samsung Health 설정 → Health Connect에서 걸음 수·심박수 공유를 켜 주세요. 워치 단독 앱을 쓴다면 6자리 페어링으로 연결할 수 있어요.',
+      '아래 버튼으로 쉐어 런의 Health Connect 읽기 권한을 허용해 주세요.',
+    ],
+  ),
+  WearableBrand(
+    id: 'coros_suunto',
+    name: '코로스 / 순토',
+    app: 'COROS · Suunto · Health Sync',
+    keywords: ['코로스', 'coros', '순토', 'suunto', 'health sync', '헬스싱크'],
+    steps: [
+      'COROS 또는 Suunto 앱에서 워치를 동기화해 주세요.',
+      '두 앱은 Health Connect에 직접 쓰지 않을 수 있어요. Health Sync 앱을 설치해 COROS/Suunto를 Health Connect로 내보내도록 설정해 주세요.',
+      '아래 버튼으로 쉐어 런의 Health Connect 읽기 권한을 허용해 주세요.',
+    ],
+    note: 'Health Sync는 서드파티 앱이며 일부 기능은 유료일 수 있어요.',
+  ),
+];
+
+/// "내 워치·스마트밴드 연결 방법 찾기" 바텀시트.
+///
+/// [onConnect]는 시트를 닫은 뒤 호출되며 Health Connect(iOS는 Apple 건강) 연결을 시작한다.
+Future<void> showWearableBrandGuide(
+  BuildContext context, {
+  required VoidCallback onConnect,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    backgroundColor: AppColors.surfaceWhite,
+    builder: (sheetContext) => WearableBrandGuide(
+      onConnect: () {
+        Navigator.of(sheetContext).pop();
+        onConnect();
+      },
+    ),
+  );
+}
+
+class WearableBrandGuide extends StatefulWidget {
+  const WearableBrandGuide({super.key, required this.onConnect});
+
+  final VoidCallback onConnect;
+
+  static const searchFieldKey = Key('wearable-guide-search');
+  static const connectButtonKey = Key('wearable-guide-connect');
+  static const emptyKey = Key('wearable-guide-empty');
+  static Key brandKey(String id) => Key('wearable-brand-$id');
+  static Key stepKey(int index) => Key('wearable-step-$index');
+
+  @override
+  State<WearableBrandGuide> createState() => _WearableBrandGuideState();
+}
+
+class _WearableBrandGuideState extends State<WearableBrandGuide> {
+  var _query = '';
+  WearableBrand? _selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = _selected;
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: selected == null ? _buildList() : _buildDetail(selected),
+      ),
+    );
+  }
+
+  Widget _buildList() {
+    final results = wearableBrands.where((b) => b.matches(_query)).toList();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          AppStrings.wearableGuideEntry,
+          style: AppTextStyles.header1.copyWith(fontSize: 18),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          key: WearableBrandGuide.searchFieldKey,
+          onChanged: (v) => setState(() => _query = v),
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.search_rounded),
+            hintText: AppStrings.wearableGuideSearchHint,
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Flexible(
+          child: results.isEmpty
+              ? Padding(
+                  key: WearableBrandGuide.emptyKey,
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Text(
+                    AppStrings.wearableGuideEmpty,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.textGrey),
+                  ),
+                )
+              : ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (final brand in results)
+                      ListTile(
+                        key: WearableBrandGuide.brandKey(brand.id),
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.watch_rounded,
+                            color: AppColors.primaryMint),
+                        title: Text(brand.name),
+                        subtitle: Text(brand.app),
+                        trailing: const Icon(Icons.chevron_right_rounded),
+                        onTap: () => setState(() => _selected = brand),
+                      ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetail(WearableBrand brand) {
+    final isIos = defaultTargetPlatform == TargetPlatform.iOS;
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              IconButton(
+                tooltip: '브랜드 목록',
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                onPressed: () => setState(() => _selected = null),
+              ),
+              Expanded(
+                child: Text(
+                  brand.name,
+                  style: AppTextStyles.header1.copyWith(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 12, bottom: 12),
+            child: Text(
+              '사용 앱: ${brand.app}',
+              style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
+            ),
+          ),
+          for (var i = 0; i < brand.steps.length; i++)
+            Padding(
+              key: WearableBrandGuide.stepKey(i + 1),
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 12,
+                    backgroundColor: AppColors.primaryMint,
+                    foregroundColor: AppColors.nightOnLime,
+                    child: Text('${i + 1}',
+                        style: const TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(brand.steps[i],
+                        style: AppTextStyles.caption
+                            .copyWith(color: AppColors.textBlack, height: 1.45)),
+                  ),
+                ],
+              ),
+            ),
+          if (brand.note != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                brand.note!,
+                style: AppTextStyles.caption
+                    .copyWith(color: AppColors.textGreyLight),
+              ),
+            ),
+          const SizedBox(height: 16),
+          FilledButton(
+            key: WearableBrandGuide.connectButtonKey,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryMint,
+              foregroundColor: AppColors.nightOnLime,
+            ),
+            onPressed: widget.onConnect,
+            child: Text(isIos
+                ? AppStrings.wearableGuideCtaIos
+                : AppStrings.wearableGuideCtaAndroid),
+          ),
+        ],
+      ),
+    );
+  }
+}

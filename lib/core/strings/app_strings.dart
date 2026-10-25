@@ -141,6 +141,20 @@ abstract final class AppStrings {
       '권한은 연결되었어요. 밴드/워치 앱 안에서 Health Connect 데이터 쓰기 스위치가 켜져 있는지 확인해 주세요. '
       '스마트밴드 기록은 밴드 앱 동기화 후 반영됩니다.';
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
+  static const bleHrSectionTitle = '실시간 블루투스 심박 센서 (BLE) 직접 연결';
+  static const bleHrSectionSubtitle =
+      'Health Connect 지연 없이 달리는 동안 실시간 심박수(0x180D)를 바로 받습니다.';
+  static const bleHrBroadcastGuideGarmin =
+      '• 가민(Garmin): 워치 설정 → 센서 및 액세서리 → 손목 심박수 → 심박수 전송(Broadcast HR) 켜기';
+  static const bleHrBroadcastGuideXiaomiAmazfit =
+      '• 샤오미(Mi Band) / 어메이즈핏(Zepp): 운동·심박수 설정 → 심박수 공유/전송(Heart Rate Broadcasting) 켜기';
+  static const bleHrBroadcastGuideStrap =
+      '• 가슴·암밴드 센서(Polar, Wahoo, Coospo, Magene): 착용 후 아래 [센서 찾기]를 눌러 연결';
+  static const bleHrScanButton = '센서 찾기';
+  static const bleHrScanningLabel = '근처 심박 센서 찾는 중...';
+  static const bleHrStopScanButton = '스캔 중지';
+  static const bleHrDisconnectButton = '연결 해제';
+  static const bleHrConnectButton = '연결';
 
   // ── Garmin OAuth (Screen 4) ───────────────────────────────────────
   static const garminAuthTitle = 'Garmin Connect 연동';

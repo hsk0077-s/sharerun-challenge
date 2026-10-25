@@ -8,6 +8,8 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/repositories/user_repository.dart';
+import 'dart:async';
+import 'package:share_run_challenge/features/run_tracking/services/ble_heart_rate_service.dart';
 import 'package:share_run_challenge/features/run_tracking/services/health_data_service.dart';
 import 'package:share_run_challenge/screens/device_connection_screen.dart';
 import 'package:share_run_challenge/screens/wearable_brand_guide_sheet.dart';
@@ -208,4 +210,91 @@ void main() {
     expect(find.textContaining('Health Connect 설치 화면'), findsOneWidget);
     expect(find.text('prelim-eval'), findsNothing);
   });
+
+  testWidgets('BLE Heart Rate section scans, connects, and displays live BPM',
+      (tester) async {
+    final controller = StreamController<Map<String, Object?>>.broadcast();
+    addTearDown(controller.close);
+    final bleAdapter = _FakeBleAdapter(controller);
+    final bleService = BleHeartRateService(adapter: bleAdapter);
+    addTearDown(bleService.dispose);
+
+    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final profile = UserModel.dashboardDefault(uid: 'u1');
+
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        authStateChangesProvider
+            .overrideWith((ref) => Stream<User?>.value(_FakeUser())),
+        activeUserProfileProvider
+            .overrideWith((ref) => Stream<UserModel>.value(profile)),
+        userRepositoryProvider.overrideWithValue(_FakeRepo()),
+        healthDataServiceProvider.overrideWithValue(_FakeHealth()),
+        bleHeartRateServiceProvider.overrideWithValue(bleService),
+      ],
+      child: MaterialApp(
+        theme: SrcTheme.light,
+        home: const DeviceConnectionScreen(),
+      ),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('ble-hr-card')), findsOneWidget);
+    expect(find.text('미연결'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('ble-hr-scan-button')));
+    await tester.pump();
+    controller.add({
+      'type': 'deviceFound',
+      'id': '11:22:33:44:55:66',
+      'name': 'Coospo HW807',
+      'rssi': -48,
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Coospo HW807'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('ble-hr-connect-11:22:33:44:55:66')));
+    await tester.pump();
+    controller.add({
+      'type': 'measurement',
+      'bytes': [0x00, 148],
+    });
+    await tester.pumpAndSettle();
+
+    expect(find.text('♥ 148 BPM'), findsOneWidget);
+    expect(find.byKey(const Key('ble-hr-disconnect-button')), findsOneWidget);
+  });
+}
+
+class _FakeBleAdapter implements BleHeartRateAdapter {
+  _FakeBleAdapter(this.controller);
+  final StreamController<Map<String, Object?>> controller;
+
+  @override
+  Stream<Map<String, Object?>> get events => controller.stream;
+
+  @override
+  Future<void> startScan({Duration timeout = const Duration(seconds: 10)}) async {
+    controller.add({'type': 'state', 'state': 'scanning'});
+  }
+
+  @override
+  Future<void> stopScan() async {}
+
+  @override
+  Future<void> connect(String deviceId, {String? deviceName}) async {
+    controller.add({
+      'type': 'state',
+      'state': 'connected',
+      'deviceId': deviceId,
+      'deviceName': deviceName ?? 'Coospo HW807',
+    });
+  }
+
+  @override
+  Future<void> disconnect() async {
+    controller.add({'type': 'state', 'state': 'disconnected'});
+  }
 }

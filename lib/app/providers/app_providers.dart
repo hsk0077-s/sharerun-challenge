@@ -38,6 +38,7 @@ import '../../features/run_tracking/services/abusing_defense_sensor_skeleton.dar
 import '../../features/run_tracking/services/accelerometer_collector_service.dart';
 import '../../features/run_tracking/services/gps_tracking_service.dart';
 import '../../features/run_tracking/services/gyro_stability_service.dart';
+import '../../features/run_tracking/services/ble_heart_rate_service.dart';
 import '../../features/run_tracking/services/health_data_service.dart';
 import '../../features/run_tracking/services/run_session_service.dart';
 import '../../features/run_tracking/services/watch_runtime_permissions_service.dart';
@@ -367,8 +368,25 @@ final gpsTrackingServiceProvider = Provider<GpsTrackingService>(
   (ref) => GpsTrackingService(),
 );
 
+final bleHeartRateServiceProvider = Provider<BleHeartRateService>((ref) {
+  final service = BleHeartRateService();
+  ref.onDispose(() {
+    unawaited(service.dispose());
+  });
+  return service;
+});
+
+final bleHeartRateSnapshotProvider =
+    StreamProvider<BleHeartRateSnapshot>((ref) async* {
+  final service = ref.watch(bleHeartRateServiceProvider);
+  yield service.snapshot;
+  yield* service.snapshotStream;
+});
+
 final healthDataServiceProvider = Provider<HealthDataService>(
-  (ref) => HealthDataService(),
+  (ref) => HealthDataService(
+    bleHeartRateService: ref.watch(bleHeartRateServiceProvider),
+  ),
 );
 
 final garminCloudOAuthAdapterProvider = Provider<GarminCloudOAuthAdapter>(

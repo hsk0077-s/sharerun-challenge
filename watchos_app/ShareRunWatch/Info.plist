@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>ko</string>
+	<key>CFBundleDisplayName</key>
+	<string>쉐어런 워치</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>10001</string>
+	<key>WKApplication</key>
+	<true/>
+	<key>WKCompanionAppBundleIdentifier</key>
+	<string>com.sharerun.shareRunChallenge</string>
+	<key>WKRunsIndependentlyOfCompanionApp</key>
+	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>달리는 동안 실시간 심박수, 걸음 수, 거리를 측정해 러닝 기록을 검증하기 위해 건강 데이터를 읽습니다.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>완주한 달리기 운동 세션을 Apple 건강에 저장하기 위해 권한이 필요합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>야외 달리기 거리를 측정하기 위해 위치 정보를 사용합니다.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>workout-processing</string>
+		<string>location</string>
+	</array>
+	<key>JENA_BASE_URL</key>
+	<string>$(JENA_BASE_URL)</string>
+	<key>FIREBASE_API_KEY</key>
+	<string>$(FIREBASE_API_KEY)</string>
+</dict>
+</plist>

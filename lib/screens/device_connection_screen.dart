@@ -137,6 +137,8 @@ class _DeviceConnectionScreenState
                       icon: const Icon(Icons.search_rounded),
                       label: const Text(AppStrings.wearableGuideEntry),
                     ),
+                    const SizedBox(height: 24),
+                    const _BleHeartRateSection(),
                     const SizedBox(height: 28),
 
                     Text(
@@ -774,6 +776,211 @@ class _ExternalDeviceTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BleHeartRateSection extends ConsumerWidget {
+  const _BleHeartRateSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final service = ref.watch(bleHeartRateServiceProvider);
+    final snapAsync = ref.watch(bleHeartRateSnapshotProvider);
+    final snap = snapAsync.asData?.value ?? service.snapshot;
+
+    return Container(
+      key: const Key('ble-hr-card'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceWhite,
+        borderRadius: AppShapes.cardBorderRadius,
+        border: Border.all(
+          color: snap.isConnected ? AppColors.primaryMint : AppColors.borderLight,
+          width: snap.isConnected ? 1.5 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.bluetooth_searching_rounded,
+                color: AppColors.primaryMint,
+                size: 22,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppStrings.bleHrSectionTitle,
+                  style: AppTextStyles.buttonText.copyWith(
+                    color: AppColors.textBlack,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Container(
+                key: const Key('ble-hr-live-bpm'),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: snap.isConnected
+                      ? AppColors.primaryMint
+                      : AppColors.agreementBoxFill,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  snap.lastBpm != null
+                      ? '♥ ${snap.lastBpm} BPM'
+                      : (snap.isConnected ? '♥ 연결됨' : '미연결'),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: snap.isConnected
+                        ? AppColors.nightOnLime
+                        : AppColors.textGrey,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            AppStrings.bleHrSectionSubtitle,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textGrey,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppStrings.bleHrBroadcastGuideGarmin,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textGreyLight,
+              fontSize: 11.5,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            AppStrings.bleHrBroadcastGuideXiaomiAmazfit,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textGreyLight,
+              fontSize: 11.5,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            AppStrings.bleHrBroadcastGuideStrap,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.textGreyLight,
+              fontSize: 11.5,
+              height: 1.35,
+            ),
+          ),
+          if (snap.deviceName != null && snap.isConnected) ...[
+            const SizedBox(height: 10),
+            Text(
+              '연결된 센서: ${snap.deviceName}',
+              key: const Key('ble-hr-connected-device'),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.textBlack,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          if (snap.errorMessage != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              snap.errorMessage!,
+              key: const Key('ble-hr-error'),
+              style: AppTextStyles.caption.copyWith(
+                color: Colors.redAccent,
+              ),
+            ),
+          ],
+          if (snap.discoveredDevices.isNotEmpty && !snap.isConnected) ...[
+            const SizedBox(height: 10),
+            for (final device in snap.discoveredDevices)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.favorite_rounded,
+                      size: 16,
+                      color: AppColors.primaryMint,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${device.name} (${device.rssi} dBm)',
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.textBlack,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 30,
+                      child: FilledButton(
+                        key: Key('ble-hr-connect-${device.id}'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primaryMint,
+                          foregroundColor: AppColors.nightOnLime,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                        ),
+                        onPressed: () => service.connect(device),
+                        child: const Text(
+                          AppStrings.bleHrConnectButton,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              if (!snap.isConnected)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const Key('ble-hr-scan-button'),
+                    onPressed: snap.isScanning
+                        ? () => service.stopScan()
+                        : () => service.startScan(),
+                    icon: Icon(
+                      snap.isScanning
+                          ? Icons.stop_circle_outlined
+                          : Icons.bluetooth_searching_rounded,
+                      size: 18,
+                    ),
+                    label: Text(
+                      snap.isScanning
+                          ? AppStrings.bleHrStopScanButton
+                          : AppStrings.bleHrScanButton,
+                    ),
+                  ),
+                ),
+              if (snap.isConnected)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    key: const Key('ble-hr-disconnect-button'),
+                    onPressed: () => service.disconnect(),
+                    icon: const Icon(Icons.bluetooth_disabled_rounded, size: 18),
+                    label: const Text(AppStrings.bleHrDisconnectButton),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

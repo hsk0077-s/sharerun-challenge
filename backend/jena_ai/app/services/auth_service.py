@@ -1,10 +1,17 @@
 import time
 
-from fastapi import Header, HTTPException, status
+from fastapi import Header, HTTPException, Request, status
 from firebase_admin import auth
 
 from app.services.firebase_service import FirebaseService
 
+
+# A watch signs in with a custom token that carries `provider: "watch"`. The watch only
+# uploads runs and step totals, so that token is accepted on those two routes and nowhere
+# else. A lost or copied watch then cannot spend currency, change the profile or delete
+# the account.
+WATCH_PROVIDER = "watch"
+WATCH_ALLOWED_PATHS = frozenset({"/actions/runs/validate", "/actions/daily-steps"})
 
 _CHECK_SECONDS = 30.0
 _valid_after: dict[str, tuple[float, int]] = {}
@@ -27,7 +34,7 @@ def _tokens_valid_after(uid: str) -> int:
 
 
 class AuthService:
-    def verify_bearer_token(self, authorization: str | None) -> str:
+    def verify_bearer_token(self, authorization: str | None, path: str | None = None) -> str:
         if not authorization or not authorization.startswith("Bearer "):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -51,6 +58,12 @@ class AuthService:
                 detail="Firebase token did not include uid.",
             )
 
+        if decoded.get("provider") == WATCH_PROVIDER and path not in WATCH_ALLOWED_PATHS:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="watch_scope",
+            )
+
         # A sign-out on all devices must stop the server from accepting tokens
         # issued before it. If the check itself fails, the request is allowed.
         try:
@@ -69,5 +82,5 @@ class AuthService:
 auth_service = AuthService()
 
 
-def require_uid(authorization: str | None = Header(default=None)) -> str:
-    return auth_service.verify_bearer_token(authorization)
+def require_uid(request: Request, authorization: str | None = Header(default=None)) -> str:
+    return auth_service.verify_bearer_token(authorization, request.url.path)

@@ -311,9 +311,17 @@ class BleHeartRateService {
     this.initialReconnectDelay = const Duration(seconds: 1),
   })  : _adapter = adapter ?? MethodChannelBleHeartRateAdapter(),
         _clock = clock ?? DateTime.now {
+    if (adapter != null) {
+      _ensureEventSubscription();
+    }
+  }
+
+  void _ensureEventSubscription() {
+    if (_eventSub != null) return;
     _eventSub = _adapter.events.listen(
       _handleAdapterEvent,
       onError: (Object error) {
+        if (error is MissingPluginException) return;
         _updateSnapshot(
           _snapshot.copyWith(
             state: BleConnectionState.error,
@@ -389,6 +397,7 @@ class BleHeartRateService {
   Future<void> startScan({
     Duration timeout = const Duration(seconds: 10),
   }) async {
+    _ensureEventSubscription();
     _updateSnapshot(
       _snapshot.copyWith(
         state: BleConnectionState.scanning,

@@ -2,8 +2,9 @@ import 'dart:io';
 
 import 'package:health/health.dart';
 
-import 'health_connect_store_launcher.dart';
+import 'ble_heart_rate_service.dart';
 import 'ephemeral_sensor_buffer.dart';
+import 'health_connect_store_launcher.dart';
 
 class HealthAuthorizationResult {
   const HealthAuthorizationResult({
@@ -18,9 +19,14 @@ class HealthAuthorizationResult {
 }
 
 class HealthDataService {
-  HealthDataService({Health? health}) : _health = health ?? Health();
+  HealthDataService({
+    Health? health,
+    BleHeartRateService? bleHeartRateService,
+  })  : _health = health ?? Health(),
+        _bleHeartRateService = bleHeartRateService;
 
   final Health _health;
+  final BleHeartRateService? _bleHeartRateService;
 
   static const List<HealthDataType> watchLinkTypes = [
     HealthDataType.HEART_RATE,
@@ -28,6 +34,9 @@ class HealthDataService {
   ];
 
   Future<bool> requestRunDataAuthorization() async {
+    if (_bleHeartRateService?.isConnected == true) {
+      return true;
+    }
     final result = await requestWatchLinkAuthorization();
     return result.granted;
   }
@@ -129,8 +138,14 @@ class HealthDataService {
     }
   }
 
-  /// Latest BPM from Health Connect / HealthKit (last ~2 minutes).
+  /// Latest BPM from direct BLE HR sensor (`0x180D`) when connected,
+  /// falling back to Health Connect / HealthKit (last ~2 minutes).
   Future<int?> readLatestHeartRate() async {
+    final bleBpm = _bleHeartRateService?.recentValidBpm();
+    if (bleBpm != null) {
+      return bleBpm;
+    }
+
     final now = DateTime.now();
     try {
       final points = await _health.getHealthDataFromTypes(
@@ -159,29 +174,40 @@ class HealthDataService {
     required DateTime startedAt,
     required DateTime endedAt,
   }) async {
-    final points = await _health.getHealthDataFromTypes(
-      types: watchLinkTypes,
-      startTime: startedAt,
-      endTime: endedAt,
-    );
-
     final heartRates = <int>[];
     var steps = 0;
 
-    for (final point in points) {
-      if (point.type == HealthDataType.HEART_RATE) {
-        final value = _numValue(point.value)?.round();
-        if (value != null && value > 0) {
-          heartRates.add(value);
-        }
-      }
+    final bleSamples = _bleHeartRateService?.samplesInWindow(
+          startedAt: startedAt,
+          endedAt: endedAt,
+        ) ??
+        const <int>[];
+    heartRates.addAll(bleSamples);
 
-      if (point.type == HealthDataType.STEPS) {
-        final value = _numValue(point.value)?.round();
-        if (value != null && value > 0) {
-          steps += value;
+    try {
+      final points = await _health.getHealthDataFromTypes(
+        types: watchLinkTypes,
+        startTime: startedAt,
+        endTime: endedAt,
+      );
+
+      for (final point in points) {
+        if (point.type == HealthDataType.HEART_RATE && bleSamples.isEmpty) {
+          final value = _numValue(point.value)?.round();
+          if (value != null && value > 0) {
+            heartRates.add(value);
+          }
+        }
+
+        if (point.type == HealthDataType.STEPS) {
+          final value = _numValue(point.value)?.round();
+          if (value != null && value > 0) {
+            steps += value;
+          }
         }
       }
+    } catch (_) {
+      // Allow BLE-only run samples even if Health Connect is not installed.
     }
 
     final minutes = endedAt.difference(startedAt).inSeconds / 60;

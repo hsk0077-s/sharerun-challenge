@@ -41,6 +41,7 @@ import 'router/route_names.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../data/models/activity_model.dart';
 import '../core/theme/src_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class ShareRunChallengeApp extends StatelessWidget {
   const ShareRunChallengeApp({super.key});
@@ -53,7 +54,7 @@ class ShareRunChallengeApp extends StatelessWidget {
       theme: SrcTheme.night,
       darkTheme: SrcTheme.night,
       themeMode: ThemeMode.dark,
-      supportedLocales: const [Locale('ko'), Locale('en')],
+      supportedLocales: ShareRunLocalizations.supportedLocales,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

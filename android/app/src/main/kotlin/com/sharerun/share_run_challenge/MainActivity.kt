@@ -103,6 +103,7 @@ class MainActivity : FlutterFragmentActivity() {
             }
         }
         RunFinishImageShare.register(this, flutterEngine)
+        BleHeartRatePlugin.register(this, flutterEngine)
     }
 
     override fun getInitialRoute(): String? {

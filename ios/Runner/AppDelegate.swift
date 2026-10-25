@@ -11,6 +11,12 @@ import GoogleMaps
     GMSServices.provideAPIKey("AIzaSyA-qQCDl1affyv8CPF6RWSHHxyw32618E0")
     GeneratedPluginRegistrant.register(with: self)
     let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    if let bleRegistrar = self.registrar(forPlugin: "BleHeartRatePlugin") {
+      BleHeartRatePlugin.register(with: bleRegistrar)
+    }
+    if let watchRegistrar = self.registrar(forPlugin: "WatchBridgePlugin") {
+      WatchBridgePlugin.register(with: watchRegistrar)
+    }
     if let registrar = self.registrar(forPlugin: "RunFinishImageShare") {
       let channel = FlutterMethodChannel(
         name: "share_run/finish_image_share",

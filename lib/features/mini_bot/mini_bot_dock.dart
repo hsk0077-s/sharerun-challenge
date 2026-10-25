@@ -184,8 +184,9 @@ class _MiniBotDockState extends State<MiniBotDock> {
   void _maybeShowMessage() {
     final text = widget.message;
     final id = widget.messageId;
-    if (text == null || id == null || !MiniBotDockSettings.visible.value)
+    if (text == null || id == null || !MiniBotDockSettings.visible.value) {
       return;
+    }
     if (!MiniBotDock._shownMessageIds.add(id)) return;
     if (!mounted) return;
     setState(() => _showMessage = true);
@@ -317,7 +318,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
                         onPanUpdate: _onPanUpdate,
                         onPanEnd: _onPanEnd,
                         child: DecoratedBox(
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: AppColors.nightCard,
                             border: Border.fromBorderSide(
@@ -336,7 +337,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
                             child: Transform.scale(
                               scale: 1.4,
                               alignment: const Alignment(0, 0.35),
-                              child: SnailBotFace(size: MiniBotDockMath.size),
+                              child: const SnailBotFace(size: MiniBotDockMath.size),
                             ),
                           ),
                         ),
@@ -401,10 +402,10 @@ class _DockMessage extends StatelessWidget {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(right: 20),
+            const Padding(
+              padding: EdgeInsets.only(right: 20),
               child: CustomPaint(
-                size: const Size(14, 8),
+                size: Size(14, 8),
                 painter: _TailPainter(AppColors.nightLime),
               ),
             ),

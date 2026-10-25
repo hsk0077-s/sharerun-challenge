@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
@@ -218,7 +219,41 @@ void main() {
 
     expect(find.text(faq.fallbackAnswer!), findsOneWidget);
   });
+
+  test('all 29 previously undecided FAQ items are resolved and [미정] is 0', () {
+    expect(faq.entries.length, 157);
+    final jsonRaw = File('assets/faq/snail_bot_faq.json').readAsStringSync();
+    final csvRaw = File('docs/snail-bot-faq.csv').readAsStringSync();
+    expect(jsonRaw.contains('[미정]'), isFalse);
+    expect(csvRaw.contains('[미정]'), isFalse);
+
+    expect(idFor('아래 탭에는 뭐가 있어요?'), 'AP-11');
+    expect(idFor('SHARE를 안 주우면 사라져요?'), 'SH-07');
+    expect(idFor('광고 보면 SHARE 줘요?'), 'SH-17');
+    expect(idFor('상점에서 뭘 살 수 있어요?'), 'DI-09');
+    expect(idFor('심폐소생권은 뭐예요?'), 'DI-16');
+    expect(idFor('다이아를 친구에게 선물할 수 있어요?'), 'DI-17');
+    expect(idFor('파이널은 어떻게 나가요?'), 'CO-10');
+    expect(idFor('크루 만들려면 뭐가 필요해요?'), 'CO-16');
+    expect(idFor('상금 받으면 세금 내요?'), 'CO-19');
+    expect(idFor('기부는 누구 이름으로 돼요?'), 'DO-05');
+    expect(idFor('어느 단체에 기부돼요?'), 'DO-11');
+    expect(idFor('다른 동물 캐릭터는 없어요?'), 'GR-10');
+    expect(idFor('달팽이 그림이 바뀌나요?'), 'GR-20');
+    expect(idFor('어떤 방법으로 로그인해요?'), 'AC-04');
+    expect(idFor('고객센터는 어디예요?'), 'AC-10');
+    expect(idFor('워치 전용 앱 있어요?'), 'RU-07');
+    expect(idFor('자랑 카드 만들 수 있어요?'), 'RU-20');
+    expect(idFor('Coach+ 가격은 얼마예요?'), 'CP-02');
+
+    final ac04 = faq.entries.firstWhere((e) => e.id == 'AC-04');
+    expect(ac04.answer, contains('애플'));
+    final ru07 = faq.entries.firstWhere((e) => e.id == 'RU-07');
+    expect(ru07.answer, contains('6자리 페어링 코드'));
+    expect(ru07.answer, contains('블루투스 심박'));
+  });
 }
+
 
 class _Voice implements MiniBotVoice {
   final spoken = <String>[];

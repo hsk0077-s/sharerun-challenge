@@ -132,3 +132,27 @@ def test_cadence_is_left_alone_when_the_phone_sent_one_or_no_watch_was_used() ->
     assert SecuredActionService._cadence_series(phone) == []
     assert SecuredActionService._cadence_series(_run_request(device_info=None)) == []
     assert SecuredActionService._cadence_series(_run_request(total_steps=None)) == []
+
+
+class _RecordingAuth(_FbAuth):
+    def create_custom_token(self, uid, claims=None):
+        self.claims = claims
+        return super().create_custom_token(uid, claims)
+
+
+def test_the_watch_token_carries_the_account_generation() -> None:
+    db, _ = _db_with_user()
+    fb = _RecordingAuth()
+    fb.add("u1")
+    db.store["users/u1"]["watchGeneration"] = 3
+    code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
+    watch_pairing.pair(db, code, fb_auth=fb, now=NOW)
+    assert fb.claims == {"provider": "watch", "wgen": 3}
+
+
+def test_disconnecting_all_watches_raises_the_generation() -> None:
+    db, _ = _db_with_user()
+    assert watch_pairing.revoke_all(db, "u1") == {"revoked": True, "generation": 1}
+    assert watch_pairing.revoke_all(db, "u1")["generation"] == 2
+    assert db.store["users/u1"]["watchGeneration"] == 2
+    assert db.store["users/u1"]["nickname"] == "달림이"

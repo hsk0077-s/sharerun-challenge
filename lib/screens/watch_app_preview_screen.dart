@@ -17,6 +17,8 @@ class WatchAppPreviewScreen extends ConsumerStatefulWidget {
   static const pairingButtonKey = Key('watch-pairing-code-button');
   static const pairingCodeKey = Key('watch-pairing-code');
   static const pairingErrorKey = Key('watch-pairing-error');
+  static const revokeButtonKey = Key('watch-revoke-button');
+  static const revokeDoneKey = Key('watch-revoke-done');
 
   static const platforms = <({String name, String note, bool first})>[
     (name: '갤럭시 워치', note: '가장 먼저 만들어요', first: true),
@@ -35,6 +37,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
   String? _code;
   String? _error;
   var _busy = false;
+  var _revoked = false;
   Duration _left = Duration.zero;
   Timer? _timer;
 
@@ -72,6 +75,37 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
           setState(() => _left = next);
         }
       });
+    } catch (e) {
+      if (mounted) setState(() => _error = ApiErrorMessage.from(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _revokeAll() async {
+    if (_busy) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('연결된 워치를 모두 해제할까요?'),
+        content: const Text(
+          '이 계정에 연결한 워치가 모두 로그아웃돼요. 워치에 남은 기록은 다시 연결하기 전까지 올라가지 않아요. 휴대폰 로그인은 그대로예요.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('모두 해제')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+      _revoked = false;
+    });
+    try {
+      await ref.read(identityApiClientProvider).revokeWatches();
+      if (mounted) setState(() => _revoked = true);
     } catch (e) {
       if (mounted) setState(() => _error = ApiErrorMessage.from(e));
     } finally {
@@ -185,6 +219,21 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
               child: Text(_code == null ? '6자리 연결 코드 받기' : '새 코드 받기'),
             ),
           ),
+          const SizedBox(height: 4),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              key: WatchAppPreviewScreen.revokeButtonKey,
+              onPressed: _busy ? null : _revokeAll,
+              child: const Text('연결된 워치 모두 해제'),
+            ),
+          ),
+          if (_revoked)
+            Text(
+              '연결된 워치를 모두 해제했어요.',
+              key: WatchAppPreviewScreen.revokeDoneKey,
+              style: storeText(12, c.muted),
+            ),
         ],
       ),
     );

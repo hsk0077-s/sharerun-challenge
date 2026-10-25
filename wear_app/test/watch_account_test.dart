@@ -158,6 +158,22 @@ void main() {
     expect(sent.map((c) => c.headers['Authorization']), ['Bearer id-1', 'Bearer id-2']);
   });
 
+  test('"disconnect all watches" on the phone unpairs this watch', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn)
+      ..on('/actions/runs/validate', const HttpReply(401, {'detail': 'watch_revoked'}));
+    final store = MemoryStore();
+    final account = _account(poster, store);
+    await account.pair('482910');
+
+    expect(await account.postSigned('/actions/runs/validate', {'a': 1}), isNull);
+    expect(account.isPaired, isFalse);
+    expect(store.values, isEmpty);
+    // 같은 사유로는 토큰을 다시 받지 않는다.
+    expect(poster.calls.where((c) => c.uri.path.contains('securetoken')), isEmpty);
+  });
+
   PendingRun run(String id, {int steps = 5400}) => PendingRun(
         activityId: id,
         distanceKm: 5,
@@ -171,6 +187,8 @@ void main() {
   test('the uploaded body carries the watch step total and watch flag', () {
     final body = run('a1').toValidateRunBody();
     expect(body['total_steps'], 5400);
+    expect(body['started_at'], '2026-10-24T01:00:00.000Z');
+    expect(body['ended_at'], '2026-10-24T01:30:00.000Z');
     expect(body['cadence_spm'], isEmpty);
     expect((body['device_info']! as Map)['watch_used'], isTrue);
     expect(run('a2', steps: 0).toValidateRunBody().containsKey('total_steps'), isFalse);

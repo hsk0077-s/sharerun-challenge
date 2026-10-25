@@ -11,6 +11,7 @@ class _PairingApi implements IdentityApiClient {
 
   final bool fail;
   var calls = 0;
+  var revoked = 0;
 
   @override
   Future<WatchPairingCode> requestWatchPairingCode() async {
@@ -20,6 +21,12 @@ class _PairingApi implements IdentityApiClient {
       code: '482910',
       expiresIn: Duration(seconds: 300),
     );
+  }
+
+  @override
+  Future<void> revokeWatches() async {
+    revoked++;
+    if (fail) throw StateError('down');
   }
 
   @override
@@ -72,5 +79,39 @@ void main() {
     await tester.pump();
     expect(find.byKey(WatchAppPreviewScreen.pairingErrorKey), findsOneWidget);
     expect(find.byKey(WatchAppPreviewScreen.pairingCodeKey), findsNothing);
+  });
+
+  testWidgets('disconnecting all watches asks first and then calls the server',
+      (tester) async {
+    final api = _PairingApi();
+    await _pump(tester, api);
+    await tester.ensureVisible(find.byKey(WatchAppPreviewScreen.revokeButtonKey));
+    await tester.tap(find.byKey(WatchAppPreviewScreen.revokeButtonKey));
+    await tester.pumpAndSettle();
+    expect(find.text('연결된 워치를 모두 해제할까요?'), findsOneWidget);
+
+    await tester.tap(find.text('취소'));
+    await tester.pumpAndSettle();
+    expect(api.revoked, 0);
+
+    await tester.tap(find.byKey(WatchAppPreviewScreen.revokeButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('모두 해제'));
+    await tester.pumpAndSettle();
+    expect(api.revoked, 1);
+    expect(find.byKey(WatchAppPreviewScreen.revokeDoneKey), findsOneWidget);
+  });
+
+  testWidgets('a failed disconnect shows a message, not the done line',
+      (tester) async {
+    final api = _PairingApi(fail: true);
+    await _pump(tester, api);
+    await tester.ensureVisible(find.byKey(WatchAppPreviewScreen.revokeButtonKey));
+    await tester.tap(find.byKey(WatchAppPreviewScreen.revokeButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('모두 해제'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(WatchAppPreviewScreen.pairingErrorKey), findsOneWidget);
+    expect(find.byKey(WatchAppPreviewScreen.revokeDoneKey), findsNothing);
   });
 }

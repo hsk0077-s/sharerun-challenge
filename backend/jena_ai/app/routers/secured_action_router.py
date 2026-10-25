@@ -1,6 +1,6 @@
 import time
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
@@ -62,7 +62,7 @@ from app.services import appeals, daily_steps, integrity, login_devices, privacy
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
-from app.services import rate_limit, watch_pairing
+from app.services import rate_limit, run_times, watch_pairing
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -72,8 +72,15 @@ service = SecuredActionService()
 @router.post("/runs/validate", response_model=ValidationResult)
 def validate_run(
     request: ValidateRunRequest,
+    http_request: Request,
     uid: str = Depends(require_uid),
 ) -> ValidationResult:
+    run_times.check_run_times(
+        request.started_at,
+        request.ended_at,
+        request.duration_seconds,
+        required=bool(getattr(http_request.state, "is_watch", False)),
+    )
     return service.validate_run(uid=uid, request=request)
 
 
@@ -339,6 +346,12 @@ def submit_report(request: ReportRequest, uid: str = Depends(require_uid)) -> di
         request.reason,
         request.detail,
     )
+
+
+@router.post("/watch-pairing/revoke")
+def watch_pairing_revoke(uid: str = Depends(require_uid)) -> dict:
+    """Disconnect every watch of this account (a watch token cannot call this)."""
+    return watch_pairing.revoke_all(service.firebase_service.db, uid)
 
 
 @router.post("/watch-pairing/code")

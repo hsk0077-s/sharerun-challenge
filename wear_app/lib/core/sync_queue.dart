@@ -43,6 +43,9 @@ class PendingRun {
         'cadence_spm': const <int>[],
         'gyro_stability_score': kUnknownGyroScore,
         'gps_route': const <Object>[],
+        // 서버는 워치 기록의 시작·끝 시각이 있어야 받는다(미래·너무 오래된 시각은 거부).
+        'started_at': startedAt.toUtc().toIso8601String(),
+        'ended_at': endedAt.toUtc().toIso8601String(),
         if (totalSteps > 0) 'total_steps': totalSteps,
         if (deviceId != null) 'device_id': deviceId,
         'device_info': {'watch_used': true, 'heart_rate_used': heartRates.isNotEmpty},

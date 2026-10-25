@@ -126,6 +126,10 @@ class IdentityApiClient {
     );
   }
 
+  /// 이 계정에 연결된 워치를 모두 해제한다. 휴대폰 로그인은 그대로 유지된다.
+  Future<void> revokeWatches() =>
+      _signedIn('POST', '/actions/watch-pairing/revoke', const {});
+
   Future<void> unlinkKakao() => _unlink('kakao');
 
   Future<void> unlinkNaver() => _unlink('naver');

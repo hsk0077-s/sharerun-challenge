@@ -1,0 +1,59 @@
+name: Wear OS build
+
+# 워치 앱(wear_app/)은 휴대폰 앱 CI와 따로 빌드한다. 안드로이드 코드(Kotlin)는 분석·테스트로
+# 컴파일되지 않으므로, 워치 앱 파일이 바뀐 PR은 여기서 디버그 APK를 실제로 만들어 확인한다.
+on:
+  pull_request:
+    paths:
+      - "wear_app/**"
+      - ".github/workflows/wear-build.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "wear_app/**"
+  workflow_dispatch:
+
+jobs:
+  wear:
+    name: Wear app analyze, test and debug build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: wear_app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build debug APK
+        # 서버 주소와 키는 비워 둔다. 연결 단계가 "서버 설정이 없는 빌드예요"를 보여 줄 뿐
+        # 컴파일에는 영향이 없다. 비밀값은 CI에 넣지 않는다.
+        run: flutter build apk --debug
+
+      - name: Keep the APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: wear-debug-apk
+          path: wear_app/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7

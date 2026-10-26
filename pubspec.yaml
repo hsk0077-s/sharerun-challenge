@@ -50,6 +50,7 @@ dependencies:
   share_plus: ^12.0.2
   # App version on the run record. Already in the lockfile via other plugins.
   package_info_plus: 9.0.1
+  flutter_timezone: ^5.1.1
 
 dev_dependencies:
   flutter_test:

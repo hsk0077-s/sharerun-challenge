@@ -100,17 +100,13 @@ Future<void> _openGuide(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('Suunto and Coros tiles open their connection guide',
+  testWidgets('unavailable devices are hidden, Apple Health only on iOS',
       (tester) async {
     await _pump(tester, health: _FakeHealth(), repo: _FakeRepo());
-    final buttons = find.widgetWithText(FilledButton, '연결 방법');
-    expect(buttons, findsNWidgets(2));
-    await tester.ensureVisible(buttons.first);
-    await tester.tap(buttons.first);
-    await tester.pumpAndSettle();
-    expect(find.byKey(WearableBrandGuide.stepKey(1)), findsOneWidget);
-    expect(find.textContaining('COROS 또는 Suunto 앱'), findsOneWidget);
-    expect(find.byKey(WearableBrandGuide.connectButtonKey), findsOneWidget);
+    expect(find.text(WatchType.suunto.displayLabel), findsNothing);
+    expect(find.text(WatchType.coros.displayLabel), findsNothing);
+    expect(find.text(AppStrings.watchSyncApple), findsNothing);
+    expect(find.text(AppStrings.watchSyncGoogle), findsOneWidget);
   });
 
   testWidgets('caption names smartbands and GPS watches, not only Wear OS',
@@ -289,7 +285,8 @@ class _FakeBleAdapter implements BleHeartRateAdapter {
   Stream<Map<String, Object?>> get events => controller.stream;
 
   @override
-  Future<void> startScan({Duration timeout = const Duration(seconds: 10)}) async {
+  Future<void> startScan(
+      {Duration timeout = const Duration(seconds: 10)}) async {
     controller.add({'type': 'state', 'state': 'scanning'});
   }
 

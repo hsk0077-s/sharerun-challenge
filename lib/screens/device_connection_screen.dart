@@ -108,17 +108,19 @@ class _DeviceConnectionScreenState
                       style: AppTextStyles.header1.copyWith(fontSize: 18),
                     ),
                     const SizedBox(height: 12),
-                    _NativeHealthConnectTile(
-                      label: AppStrings.watchSyncApple,
-                      caption: '(Apple Watch 전 기종 지원)',
-                      leading: const AppleHealthIcon(),
-                      enabled: !_busy && authUser != null,
-                      onPressed: () => _connectNativeHealth(
-                        watchType: WatchType.appleWatch,
-                        uid: authUser?.uid,
+                    if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                      _NativeHealthConnectTile(
+                        label: AppStrings.watchSyncApple,
+                        caption: '(Apple Watch 전 기종 지원)',
+                        leading: const AppleHealthIcon(),
+                        enabled: !_busy && authUser != null,
+                        onPressed: () => _connectNativeHealth(
+                          watchType: WatchType.appleWatch,
+                          uid: authUser?.uid,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
                     _NativeHealthConnectTile(
                       label: AppStrings.watchSyncGoogle,
                       caption: AppStrings.deviceConnectionGoogleCaption,
@@ -141,38 +143,21 @@ class _DeviceConnectionScreenState
                     const _BleHeartRateSection(),
                     const SizedBox(height: 28),
 
-                    Text(
-                      AppStrings.deviceConnectionExternalTitle,
-                      style: AppTextStyles.header1.copyWith(fontSize: 18),
-                    ),
-                    const SizedBox(height: 12),
-                    _ExternalDeviceTile(
-                      label: WatchType.garmin.displayLabel,
-                      actionLabel: AppEnv.garminLinkEnabled ? null : '연결 방법',
-                      selected: watchType == WatchType.garmin,
-                      enabled: !_busy && authUser != null,
-                      onConnect: AppEnv.garminLinkEnabled
-                          ? () => _openGarminOAuth(authUser?.uid)
-                          : () => _openBrandGuide('garmin', authUser?.uid),
-                    ),
-                    const SizedBox(height: 8),
-                    _ExternalDeviceTile(
-                      label: WatchType.suunto.displayLabel,
-                      actionLabel: '연결 방법',
-                      selected: watchType == WatchType.suunto,
-                      enabled: !_busy && authUser != null,
-                      onConnect: () =>
-                          _openBrandGuide('coros_suunto', authUser?.uid),
-                    ),
-                    const SizedBox(height: 8),
-                    _ExternalDeviceTile(
-                      label: WatchType.coros.displayLabel,
-                      actionLabel: '연결 방법',
-                      selected: watchType == WatchType.coros,
-                      enabled: !_busy && authUser != null,
-                      onConnect: () =>
-                          _openBrandGuide('coros_suunto', authUser?.uid),
-                    ),
+                    // 가민 계정 연동은 아직 없다(개발자 프로그램 승인 뒤 추가).
+                    // 개발용 모의 연결은 디버그 빌드에서만 보인다.
+                    if (AppEnv.garminLinkEnabled) ...[
+                      Text(
+                        AppStrings.deviceConnectionExternalTitle,
+                        style: AppTextStyles.header1.copyWith(fontSize: 18),
+                      ),
+                      const SizedBox(height: 12),
+                      _ExternalDeviceTile(
+                        label: WatchType.garmin.displayLabel,
+                        selected: watchType == WatchType.garmin,
+                        enabled: !_busy && authUser != null,
+                        onConnect: () => _openGarminOAuth(authUser?.uid),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     OutlinedButton(
                       key: const Key('watch-app-preview-entry'),
@@ -411,15 +396,6 @@ class _DeviceConnectionScreenState
           ],
         );
       },
-    );
-  }
-
-  /// 계정 로그인 연동이 없는 기기는, 그 기기 앱을 Health Connect와 잇는 방법을 안내한다.
-  void _openBrandGuide(String brandId, String? uid) {
-    showWearableBrandGuide(
-      context,
-      initialBrandId: brandId,
-      onConnect: () => _connectFromGuide(uid),
     );
   }
 
@@ -716,16 +692,12 @@ class _ExternalDeviceTile extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onConnect,
-    this.actionLabel,
   });
 
   final String label;
   final bool selected;
   final bool enabled;
   final VoidCallback onConnect;
-
-  /// 버튼 글자. 비우면 "연결".
-  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -765,7 +737,7 @@ class _ExternalDeviceTile extends StatelessWidget {
             ),
             onPressed: enabled ? onConnect : null,
             child: Text(
-              actionLabel ?? AppStrings.deviceConnectionConnect,
+              AppStrings.deviceConnectionConnect,
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),

@@ -19,6 +19,13 @@ class ProviderLoginResult {
   final bool needsAccountChoice;
 }
 
+class ConnectedWatch {
+  const ConnectedWatch({required this.id, required this.label});
+
+  final String id;
+  final String label;
+}
+
 class WatchPairingCode {
   const WatchPairingCode({required this.code, required this.expiresIn});
 
@@ -125,6 +132,25 @@ class IdentityApiClient {
       expiresIn: Duration(seconds: expiresIn is int ? expiresIn : 300),
     );
   }
+
+  /// 이 계정에 연결된 워치 목록. 한 계정에 최대 3대.
+  Future<List<ConnectedWatch>> listWatchDevices() async {
+    final json = await _signedIn('GET', '/actions/watch-pairing/devices', null);
+    final rows = json['devices'];
+    return [
+      if (rows is List)
+        for (final row in rows)
+          if (row is Map && row['id'] is String)
+            ConnectedWatch(id: row['id'] as String, label: '${row['label'] ?? ''}'),
+    ];
+  }
+
+  /// 워치 한 대만 해제한다.
+  Future<void> revokeWatchDevice(String id) => _signedIn(
+        'POST',
+        '/actions/watch-pairing/devices/${Uri.encodeComponent(id)}/revoke',
+        const {},
+      );
 
   /// 이 계정에 연결된 워치를 모두 해제한다. 휴대폰 로그인은 그대로 유지된다.
   Future<void> revokeWatches() =>

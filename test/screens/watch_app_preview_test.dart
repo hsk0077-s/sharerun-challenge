@@ -12,6 +12,11 @@ class _PairingApi implements IdentityApiClient {
   final bool fail;
   var calls = 0;
   var revoked = 0;
+  var revokedOne = <String>[];
+  var watches = <ConnectedWatch>[
+    const ConnectedWatch(id: 'w1', label: '내 갤럭시 워치'),
+    const ConnectedWatch(id: 'w2', label: 'Wear OS 워치'),
+  ];
 
   @override
   Future<WatchPairingCode> requestWatchPairingCode() async {
@@ -21,6 +26,15 @@ class _PairingApi implements IdentityApiClient {
       code: '482910',
       expiresIn: Duration(seconds: 300),
     );
+  }
+
+  @override
+  Future<List<ConnectedWatch>> listWatchDevices() async => List.of(watches);
+
+  @override
+  Future<void> revokeWatchDevice(String id) async {
+    revokedOne.add(id);
+    watches = watches.where((w) => w.id != id).toList();
   }
 
   @override
@@ -113,5 +127,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(WatchAppPreviewScreen.pairingErrorKey), findsOneWidget);
     expect(find.byKey(WatchAppPreviewScreen.revokeDoneKey), findsNothing);
+  });
+
+  testWidgets('the phone lists connected watches and removes just one',
+      (tester) async {
+    final api = _PairingApi();
+    await _pump(tester, api);
+    await tester.pumpAndSettle();
+    expect(find.text('연결된 워치 2/3'), findsOneWidget);
+    expect(find.text('내 갤럭시 워치'), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const Key('watch-revoke-w1')));
+    await tester.tap(find.byKey(const Key('watch-revoke-w1')));
+    await tester.pumpAndSettle();
+    expect(api.revokedOne, ['w1']);
+    expect(find.text('연결된 워치 1/3'), findsOneWidget);
+    expect(find.text('내 갤럭시 워치'), findsNothing);
+    expect(api.revoked, 0);
   });
 }

@@ -348,6 +348,16 @@ def submit_report(request: ReportRequest, uid: str = Depends(require_uid)) -> di
     )
 
 
+@router.get("/watch-pairing/devices")
+def watch_pairing_devices(uid: str = Depends(require_uid)) -> dict:
+    return watch_pairing.list_devices(service.firebase_service.db, uid)
+
+
+@router.post("/watch-pairing/devices/{device_id}/revoke")
+def watch_pairing_revoke_device(device_id: str, uid: str = Depends(require_uid)) -> dict:
+    return watch_pairing.revoke_device(service.firebase_service.db, uid, device_id)
+
+
 @router.post("/watch-pairing/revoke")
 def watch_pairing_revoke(uid: str = Depends(require_uid)) -> dict:
     """Disconnect every watch of this account (a watch token cannot call this)."""

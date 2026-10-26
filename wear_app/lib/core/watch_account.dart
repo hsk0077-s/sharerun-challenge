@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'watch_platform.dart';
 
@@ -98,6 +99,7 @@ class WatchAccount {
 
   static const _refreshKey = 'watch.refresh_token';
   static const _nicknameKey = 'watch.nickname';
+  static const _deviceKey = 'watch.device_id';
 
   final KeyValueStore _store;
   final JsonPoster _poster;
@@ -117,6 +119,18 @@ class WatchAccount {
   Future<void> load() async {
     _refreshToken = await _store.read(_refreshKey);
     nickname = await _store.read(_nicknameKey) ?? '';
+  }
+
+  /// 이 워치의 고유 번호. 한 번 만들어 계속 쓰므로 다시 연결해도 자리를 더 쓰지 않는다.
+  Future<String> deviceId() async {
+    final saved = await _store.read(_deviceKey);
+    if (saved != null && saved.length >= 8) return saved;
+    final random = Random.secure();
+    final fresh = base64Url
+        .encode(List<int>.generate(16, (_) => random.nextInt(256)))
+        .replaceAll('=', '');
+    await _store.write(_deviceKey, fresh);
+    return fresh;
   }
 
   Future<void> unpair() async {
@@ -139,13 +153,16 @@ class WatchAccount {
     try {
       paired = await _poster.post(
         Uri.parse('$_baseUrl/auth/watch-pair'),
-        {'code': code},
+        {'code': code, 'device_id': await deviceId(), 'device_label': 'Wear OS 워치'},
       );
     } catch (_) {
       throw const PairingUnavailable('연결할 수 없어요. 인터넷을 확인해 주세요.');
     }
     if (paired.status == 429) {
       throw const PairingRejected('잠시 뒤에 다시 해 주세요.');
+    }
+    if (paired.status == 409) {
+      throw const PairingRejected('연결된 워치가 이미 3개예요. 휴대폰에서 하나를 해제해 주세요.');
     }
     final custom = paired.body['custom_token'];
     if (!paired.ok || custom is! String || custom.isEmpty) {

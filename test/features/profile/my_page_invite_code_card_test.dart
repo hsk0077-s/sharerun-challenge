@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
+import 'package:share_run_challenge/core/widgets/social_brand_icons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
@@ -45,6 +48,7 @@ void main() {
   Future<void> pumpCard(
     WidgetTester tester, {
     required Future<String> Function() load,
+    Locale locale = const Locale('ko', 'KR'),
   }) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -53,6 +57,13 @@ void main() {
         ],
         child: MaterialApp(
           theme: SrcTheme.light,
+          locale: locale,
+          supportedLocales: ShareRunLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: const Scaffold(
             body: MyPageInviteCodeCard(),
           ),
@@ -180,5 +191,36 @@ void main() {
 
     expect(kakaoText, myPageInviteShareText('AB23CD45'));
     expect(sent, isNull);
+  });
+
+  testWidgets('non-Korean users get a neutral invite button and text',
+      (tester) async {
+    ShareParams? sent;
+    WalkingChallengeShare.debugShareOverride = (params) async {
+      sent = params;
+      return const ShareResult('', ShareResultStatus.success);
+    };
+
+    await pumpCard(
+      tester,
+      load: () async => 'AB23CD45',
+      locale: const Locale('en', 'US'),
+    );
+    await tester.pump();
+
+    expect(find.text('My invite code'), findsOneWidget);
+    expect(find.text('Invite friends'), findsOneWidget);
+    expect(find.text(MyPageInviteCodeCard.kakaoButtonLabel), findsNothing);
+    expect(find.byType(KakaoIcon), findsNothing);
+
+    await tester.tap(find.byKey(MyPageInviteCodeCard.kakaoKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(sent, isNotNull);
+    expect(sent!.text, contains('Join me on ShareRun!'));
+    expect(sent!.text, contains('Invite code: AB23CD45'));
+    expect(sent!.text, contains(myPageInvitePlayStoreUrl));
+    expect(sent!.subject, 'Join ShareRun');
   });
 }

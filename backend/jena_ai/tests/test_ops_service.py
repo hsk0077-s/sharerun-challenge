@@ -42,9 +42,18 @@ def test_purge_user_data_deletes_activities_and_marks_purged() -> None:
     device_snapshot = MagicMock()
     device_collection = MagicMock()
     device_collection.stream.return_value = [device_snapshot]
+    personal = {
+        name: MagicMock()
+        for name in ("daily_metrics", "notifications", "retentionPushes", "watchDevices")
+    }
+    personal_snapshots = {}
+    for name, collection in personal.items():
+        personal_snapshots[name] = MagicMock()
+        collection.stream.return_value = [personal_snapshots[name]]
     user_ref.collection.side_effect = lambda name: {
         "collectedDiamondBoxes": diamond_collection,
         "loginDevices": device_collection,
+        **personal,
     }[name]
 
     def collection_side_effect(name: str):
@@ -72,9 +81,21 @@ def test_purge_user_data_deletes_activities_and_marks_purged() -> None:
     activity_snapshot.reference.delete.assert_called_once()
     diamond_snapshot.reference.delete.assert_called_once()
     device_snapshot.reference.delete.assert_called_once()
+    for name, snapshot in personal_snapshots.items():
+        snapshot.reference.delete.assert_called_once()
     user_ref.set.assert_called_once()
     written = user_ref.set.call_args.args[0]
-    for field in ("nickname", "displayName", "email", "fcmToken"):
+    for field in (
+        "nickname",
+        "displayName",
+        "email",
+        "fcmToken",
+        "gender",
+        "genderUpdatedAt",
+        "nicknameUpdatedAt",
+        "nicknameSetAt",
+        "connectedDeviceType",
+    ):
         assert written[field] is firestore.DELETE_FIELD
 
 

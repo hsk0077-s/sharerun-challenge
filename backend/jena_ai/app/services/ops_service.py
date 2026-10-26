@@ -29,6 +29,14 @@ from app.services.wallet_funding import move_currency
 logger = logging.getLogger(__name__)
 
 
+PURGED_USER_SUBCOLLECTIONS = (
+    "daily_metrics",
+    "notifications",
+    "retentionPushes",
+    "watchDevices",
+)
+
+
 class OpsService:
     def __init__(self, firebase_service: FirebaseService | None = None) -> None:
         self._firebase_service = firebase_service
@@ -179,6 +187,13 @@ class OpsService:
         for device_snapshot in user_ref.collection("loginDevices").stream():
             device_snapshot.reference.delete()
 
+        # Personal records kept under the user: daily steps (with the phone model),
+        # notices, queued pushes and any watch left over. Money ledgers stay: the
+        # law requires them for five years, as the deletion page says.
+        for name in PURGED_USER_SUBCOLLECTIONS:
+            for snapshot in user_ref.collection(name).stream():
+                snapshot.reference.delete()
+
         user_ref.set(
             {
                 "uid": uid,
@@ -188,6 +203,11 @@ class OpsService:
                 "nickname": firestore.DELETE_FIELD,
                 "displayName": firestore.DELETE_FIELD,
                 "email": firestore.DELETE_FIELD,
+                "gender": firestore.DELETE_FIELD,
+                "genderUpdatedAt": firestore.DELETE_FIELD,
+                "nicknameUpdatedAt": firestore.DELETE_FIELD,
+                "nicknameSetAt": firestore.DELETE_FIELD,
+                "connectedDeviceType": firestore.DELETE_FIELD,
                 "sensitiveDataConsent": False,
                 "watchType": "none",
                 "accountPurgedAt": SERVER_TIMESTAMP,

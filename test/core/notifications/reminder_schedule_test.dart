@@ -67,4 +67,32 @@ void main() {
       expect(reminderCopyFor('KO').morningTitle, contains('아침'));
     });
   });
+
+  group('one evening reminder a day', () {
+    test('the legacy golden ids never collide with the shared evening id', () {
+      expect(
+          legacyGoldenReminderIds, isNot(contains(walkingEveningReminderId)));
+      expect(legacyGoldenReminderIds.toSet().length,
+          legacyGoldenReminderIds.length);
+    });
+
+    test('only Korean uses the personal evening copy', () {
+      expect(usesPersonalEveningCopy('ko'), isTrue);
+      expect(usesPersonalEveningCopy('KO'), isTrue);
+      for (final code in [
+        'en',
+        'ja',
+        'zh',
+        'es',
+        'pt',
+        'de',
+        'fr',
+        'vi',
+        'th',
+        'id'
+      ]) {
+        expect(usesPersonalEveningCopy(code), isFalse, reason: code);
+      }
+    });
+  });
 }

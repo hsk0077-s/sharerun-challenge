@@ -14,7 +14,7 @@ class NotificationService {
   static const _channelId = 'src_walking_daily_encourage';
   static const _morningId = 20830;
   static const _lunchId = 21230;
-  static const _eveningId = 22030;
+  static const _eveningId = walkingEveningReminderId;
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();

@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -13,9 +15,6 @@ import '../../core/notifications/reminder_zone.dart';
 const _goldenChannelId = 'src_walking_golden_hour';
 const _goldenChannelName = '워킹챌린지 코인 줍기';
 const _payload = RouteNames.soloPedometerPath;
-const _morningId = 830;
-const _lunchId = 1330;
-const _eveningId = 2130;
 
 @pragma('vm:entry-point')
 void walkingChallengeNotificationTapBackground(NotificationResponse response) {
@@ -66,6 +65,9 @@ abstract final class WalkingChallengeNotificationService {
         ),
       );
       _ready = true;
+      for (final id in legacyGoldenReminderIds) {
+        await _cancel(id);
+      }
       final launch = await _plugin.getNotificationAppLaunchDetails();
       if (launch?.didNotificationLaunchApp == true) {
         launchedFromNotification.value = true;
@@ -86,36 +88,29 @@ abstract final class WalkingChallengeNotificationService {
     SoloPedometerForeground.openWalkingChallenge();
   }
 
+  /// 저녁 알림 하나만 사용자 이름을 넣은 문구로 바꿔 예약한다. 일반 알림의 저녁 알림과
+  /// 같은 번호라서 하루에 저녁 알림은 한 번만 온다. 아침·낮은 일반 알림이 맡는다.
   static Future<void> syncDailyPushes({
     required bool enabled,
     required String nickname,
   }) async {
     try {
       await ensureInitialized();
-      if (!enabled || !await ReminderPreferences.isEnabled()) {
-        await _cancel(_morningId);
-        await _cancel(_lunchId);
-        await _cancel(_eveningId);
+      if (!await ReminderPreferences.isEnabled()) {
+        await _cancel(walkingEveningReminderId);
+        return;
+      }
+      if (!enabled ||
+          !usesPersonalEveningCopy(
+            PlatformDispatcher.instance.locale.languageCode,
+          )) {
+        // 일반(번역된) 저녁 알림이 그대로 남는다.
         return;
       }
       final name = _displayName(nickname);
       await _scheduleDaily(
-        id: _morningId,
-        hour: 8,
-        minute: 30,
-        title: '🏃‍♂️ $name님, 오늘 아침 걸음',
-        body: WalkingChallengeNotificationCopy.goldenMorningBody(),
-      );
-      await _scheduleDaily(
-        id: _lunchId,
-        hour: 13,
-        minute: 30,
-        title: '🏃‍♂️ $name님, 오후의 걷기',
-        body: WalkingChallengeNotificationCopy.goldenLunchBody(),
-      );
-      await _scheduleDaily(
-        id: _eveningId,
-        hour: 21,
+        id: walkingEveningReminderId,
+        hour: 20,
         minute: 30,
         title: '🚨 $name님, 아직 안 주운 SHARE',
         body: WalkingChallengeNotificationCopy.goldenEveningBody(),

@@ -49,10 +49,25 @@ class MainActivity : FlutterActivity() {
                 result.success(null)
             }
             "readSnapshot" -> result.success(WatchTracker.snapshot())
-            "getString" -> result.success(prefs().getString(call.argument<String>("key"), null))
+            "getString" -> {
+                val key = call.argument<String>("key")
+                val stored = prefs().getString(key, null)
+                val plain = SecretBox.open(stored)
+                if (plain != null && SecretBox.needsMigration(stored)) {
+                    // 예전에 평문으로 저장된 값은 읽을 때 암호화해서 다시 저장한다.
+                    SecretBox.seal(plain)?.let { prefs().edit().putString(key, it).apply() }
+                }
+                result.success(plain)
+            }
             "putString" -> {
-                prefs().edit().putString(call.argument<String>("key"), call.argument<String>("value")).apply()
-                result.success(null)
+                val value = call.argument<String>("value")
+                val sealed = value?.let { SecretBox.seal(it) }
+                if (value != null && sealed == null) {
+                    result.error("seal_failed", "could not encrypt value", null)
+                } else {
+                    prefs().edit().putString(call.argument<String>("key"), sealed).apply()
+                    result.success(null)
+                }
             }
             "remove" -> {
                 prefs().edit().remove(call.argument<String>("key")).apply()

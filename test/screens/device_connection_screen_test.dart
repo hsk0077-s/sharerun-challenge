@@ -100,6 +100,19 @@ Future<void> _openGuide(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('Suunto and Coros tiles open their connection guide',
+      (tester) async {
+    await _pump(tester, health: _FakeHealth(), repo: _FakeRepo());
+    final buttons = find.widgetWithText(FilledButton, '연결 방법');
+    expect(buttons, findsNWidgets(2));
+    await tester.ensureVisible(buttons.first);
+    await tester.tap(buttons.first);
+    await tester.pumpAndSettle();
+    expect(find.byKey(WearableBrandGuide.stepKey(1)), findsOneWidget);
+    expect(find.textContaining('COROS 또는 Suunto 앱'), findsOneWidget);
+    expect(find.byKey(WearableBrandGuide.connectButtonKey), findsOneWidget);
+  });
+
   testWidgets('caption names smartbands and GPS watches, not only Wear OS',
       (tester) async {
     await _pump(tester, health: _FakeHealth(), repo: _FakeRepo());

@@ -100,6 +100,15 @@ Future<void> _openGuide(WidgetTester tester) async {
 }
 
 void main() {
+  testWidgets('unavailable devices are hidden, Apple Health only on iOS',
+      (tester) async {
+    await _pump(tester, health: _FakeHealth(), repo: _FakeRepo());
+    expect(find.text(WatchType.suunto.displayLabel), findsNothing);
+    expect(find.text(WatchType.coros.displayLabel), findsNothing);
+    expect(find.text(AppStrings.watchSyncApple), findsNothing);
+    expect(find.text(AppStrings.watchSyncGoogle), findsOneWidget);
+  });
+
   testWidgets('caption names smartbands and GPS watches, not only Wear OS',
       (tester) async {
     await _pump(tester, health: _FakeHealth(), repo: _FakeRepo());
@@ -276,7 +285,8 @@ class _FakeBleAdapter implements BleHeartRateAdapter {
   Stream<Map<String, Object?>> get events => controller.stream;
 
   @override
-  Future<void> startScan({Duration timeout = const Duration(seconds: 10)}) async {
+  Future<void> startScan(
+      {Duration timeout = const Duration(seconds: 10)}) async {
     controller.add({'type': 'state', 'state': 'scanning'});
   }
 

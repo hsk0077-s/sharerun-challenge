@@ -108,17 +108,19 @@ class _DeviceConnectionScreenState
                       style: AppTextStyles.header1.copyWith(fontSize: 18),
                     ),
                     const SizedBox(height: 12),
-                    _NativeHealthConnectTile(
-                      label: AppStrings.watchSyncApple,
-                      caption: '(Apple Watch 전 기종 지원)',
-                      leading: const AppleHealthIcon(),
-                      enabled: !_busy && authUser != null,
-                      onPressed: () => _connectNativeHealth(
-                        watchType: WatchType.appleWatch,
-                        uid: authUser?.uid,
+                    if (defaultTargetPlatform == TargetPlatform.iOS) ...[
+                      _NativeHealthConnectTile(
+                        label: AppStrings.watchSyncApple,
+                        caption: '(Apple Watch 전 기종 지원)',
+                        leading: const AppleHealthIcon(),
+                        enabled: !_busy && authUser != null,
+                        onPressed: () => _connectNativeHealth(
+                          watchType: WatchType.appleWatch,
+                          uid: authUser?.uid,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
                     _NativeHealthConnectTile(
                       label: AppStrings.watchSyncGoogle,
                       caption: AppStrings.deviceConnectionGoogleCaption,
@@ -141,33 +143,21 @@ class _DeviceConnectionScreenState
                     const _BleHeartRateSection(),
                     const SizedBox(height: 28),
 
-                    Text(
-                      AppStrings.deviceConnectionExternalTitle,
-                      style: AppTextStyles.header1.copyWith(fontSize: 18),
-                    ),
-                    const SizedBox(height: 12),
-                    _ExternalDeviceTile(
-                      label: WatchType.garmin.displayLabel,
-                      selected: watchType == WatchType.garmin,
-                      enabled: !_busy && authUser != null,
-                      onConnect: AppEnv.garminLinkEnabled
-                          ? () => _openGarminOAuth(authUser?.uid)
-                          : _showComingSoonDialog,
-                    ),
-                    const SizedBox(height: 8),
-                    _ExternalDeviceTile(
-                      label: WatchType.suunto.displayLabel,
-                      selected: watchType == WatchType.suunto,
-                      enabled: !_busy && authUser != null,
-                      onConnect: _showComingSoonDialog,
-                    ),
-                    const SizedBox(height: 8),
-                    _ExternalDeviceTile(
-                      label: WatchType.coros.displayLabel,
-                      selected: watchType == WatchType.coros,
-                      enabled: !_busy && authUser != null,
-                      onConnect: _showComingSoonDialog,
-                    ),
+                    // 가민 계정 연동은 아직 없다(개발자 프로그램 승인 뒤 추가).
+                    // 개발용 모의 연결은 디버그 빌드에서만 보인다.
+                    if (AppEnv.garminLinkEnabled) ...[
+                      Text(
+                        AppStrings.deviceConnectionExternalTitle,
+                        style: AppTextStyles.header1.copyWith(fontSize: 18),
+                      ),
+                      const SizedBox(height: 12),
+                      _ExternalDeviceTile(
+                        label: WatchType.garmin.displayLabel,
+                        selected: watchType == WatchType.garmin,
+                        enabled: !_busy && authUser != null,
+                        onConnect: () => _openGarminOAuth(authUser?.uid),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     OutlinedButton(
                       key: const Key('watch-app-preview-entry'),
@@ -400,30 +390,6 @@ class _DeviceConnectionScreenState
           actions: [
             TextButton(
               key: const Key('health-connect-tip-ok'),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('확인'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _showComingSoonDialog() async {
-    if (!mounted || !context.mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text('준비 중'),
-          content: const Text(
-            '준비 중입니다. 빠른 시일 내에 연동 서비스를 제공하겠습니다.',
-          ),
-          actions: [
-            TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('확인'),
             ),
@@ -770,9 +736,9 @@ class _ExternalDeviceTile extends StatelessWidget {
               ),
             ),
             onPressed: enabled ? onConnect : null,
-            child: const Text(
+            child: Text(
               AppStrings.deviceConnectionConnect,
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -797,7 +763,8 @@ class _BleHeartRateSection extends ConsumerWidget {
         color: AppColors.surfaceWhite,
         borderRadius: AppShapes.cardBorderRadius,
         border: Border.all(
-          color: snap.isConnected ? AppColors.primaryMint : AppColors.borderLight,
+          color:
+              snap.isConnected ? AppColors.primaryMint : AppColors.borderLight,
           width: snap.isConnected ? 1.5 : 1,
         ),
       ),
@@ -823,7 +790,8 @@ class _BleHeartRateSection extends ConsumerWidget {
               ),
               Container(
                 key: const Key('ble-hr-live-bpm'),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: snap.isConnected
                       ? AppColors.primaryMint
@@ -853,33 +821,39 @@ class _BleHeartRateSection extends ConsumerWidget {
               height: 1.35,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            AppStrings.bleHrBroadcastGuideGarmin,
+            AppStrings.bleHrGuideTitle,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.textGreyLight,
-              fontSize: 11.5,
-              height: 1.35,
+              color: AppColors.textBlack,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            AppStrings.bleHrBroadcastGuideXiaomiAmazfit,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textGreyLight,
-              fontSize: 11.5,
-              height: 1.35,
+          const SizedBox(height: 6),
+          for (final (brand, how) in AppStrings.bleHrGuideItems)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '$brand  ',
+                      style: const TextStyle(
+                        color: AppColors.textBlack,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    TextSpan(
+                      text: how,
+                      style: const TextStyle(color: AppColors.textGrey),
+                    ),
+                  ],
+                ),
+                style:
+                    AppTextStyles.caption.copyWith(fontSize: 13, height: 1.45),
+              ),
             ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            AppStrings.bleHrBroadcastGuideStrap,
-            style: AppTextStyles.caption.copyWith(
-              color: AppColors.textGreyLight,
-              fontSize: 11.5,
-              height: 1.35,
-            ),
-          ),
           if (snap.deviceName != null && snap.isConnected) ...[
             const SizedBox(height: 10),
             Text(
@@ -974,7 +948,8 @@ class _BleHeartRateSection extends ConsumerWidget {
                   child: OutlinedButton.icon(
                     key: const Key('ble-hr-disconnect-button'),
                     onPressed: () => service.disconnect(),
-                    icon: const Icon(Icons.bluetooth_disabled_rounded, size: 18),
+                    icon:
+                        const Icon(Icons.bluetooth_disabled_rounded, size: 18),
                     label: const Text(AppStrings.bleHrDisconnectButton),
                   ),
                 ),

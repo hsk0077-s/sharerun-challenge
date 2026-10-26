@@ -25,7 +25,7 @@ COLLECTION = "watchPairingCodes"
 CODE_LENGTH = 6
 CODE_TTL_SECONDS = 300
 _ISSUE_TRIES = 8
-MAX_WATCHES = 3
+MAX_WATCHES = 1
 _DEVICE_ID = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 DEVICES = "watchDevices"
 
@@ -46,13 +46,15 @@ def _active_devices(db, uid: str) -> dict[str, dict]:
 def _register_device(db, uid: str, device_id: str | None, label: str) -> str:
     """Records this watch under the account. A watch pairs again under the same id.
 
-    At most MAX_WATCHES watches can be connected at once, so a leaked or reused code
-    cannot hang an unlimited number of devices on one account.
+    One watch is connected at a time. Pairing a different watch disconnects the
+    one before it: that watch is signed out on its next upload and removes its
+    own connection. This also keeps a leaked or reused code from hanging
+    devices on one account.
     """
     device_id = device_id if device_id and _DEVICE_ID.match(device_id) else secrets.token_urlsafe(12)
-    active = _active_devices(db, uid)
-    if device_id not in active and len(active) >= MAX_WATCHES:
-        raise HTTPException(status_code=409, detail="too_many_watches")
+    for other in _active_devices(db, uid):
+        if other != device_id:
+            revoke_device(db, uid, other)
     _devices(db, uid).document(device_id).set(
         {
             "label": (label or "").strip()[:40] or "Wear OS 워치",

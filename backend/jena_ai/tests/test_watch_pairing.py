@@ -175,29 +175,26 @@ def test_a_watch_keeps_its_id_and_pairing_again_uses_no_new_slot() -> None:
     assert first["device_id"] == again["device_id"] == "watch-aaaaaaaa"
     assert watch_pairing.list_devices(db, "u1") == {
         "devices": [{"id": "watch-aaaaaaaa", "label": "내 갤럭시 워치"}],
-        "max": 3,
+        "max": 1,
     }
 
 
-def test_a_fourth_watch_is_refused_until_one_is_removed() -> None:
+def test_pairing_a_new_watch_disconnects_the_previous_one() -> None:
     db, fb = _db_with_user()
-    for i in range(3):
-        _pair(db, fb, f"watch-{i}aaaaaaa")
-    with pytest.raises(HTTPException) as caught:
-        _pair(db, fb, "watch-newaaaaa", n=9)
-    assert caught.value.status_code == 409
-    assert caught.value.detail == "too_many_watches"
-
-    watch_pairing.revoke_device(db, "u1", "watch-0aaaaaaa")
-    assert _pair(db, fb, "watch-newaaaaa", n=10)["device_id"] == "watch-newaaaaa"
+    _pair(db, fb, "watch-0aaaaaaa", "갤럭시 워치")
+    out = _pair(db, fb, "watch-newaaaaa", "다른 워치", n=9)
+    assert out["device_id"] == "watch-newaaaaa"
+    assert watch_pairing.list_devices(db, "u1")["devices"] == [
+        {"id": "watch-newaaaaa", "label": "다른 워치"}
+    ]
+    assert db.store["users/u1/watchDevices/watch-0aaaaaaa"]["revoked"] is True
 
 
-def test_removing_one_watch_leaves_the_others_and_unknown_ids_are_404() -> None:
+def test_removing_the_watch_empties_the_list_and_unknown_ids_are_404() -> None:
     db, fb = _db_with_user()
-    _pair(db, fb, "watch-1aaaaaaa")
     _pair(db, fb, "watch-2aaaaaaa")
-    assert watch_pairing.revoke_device(db, "u1", "watch-1aaaaaaa")["revoked"] is True
-    assert [d["id"] for d in watch_pairing.list_devices(db, "u1")["devices"]] == ["watch-2aaaaaaa"]
+    assert watch_pairing.revoke_device(db, "u1", "watch-2aaaaaaa")["revoked"] is True
+    assert watch_pairing.list_devices(db, "u1")["devices"] == []
     with pytest.raises(HTTPException) as caught:
         watch_pairing.revoke_device(db, "u1", "nope-nope-nope")
     assert caught.value.status_code == 404

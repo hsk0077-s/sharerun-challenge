@@ -27,7 +27,6 @@ class MyWatchCard extends ConsumerWidget {
   static const cardKey = Key('my-watch-card');
   static const buttonKey = Key('my-watch-card-button');
   static const healthLineKey = Key('my-watch-health-line');
-  static const appLineKey = Key('my-watch-app-line');
 
   Future<void> _open(BuildContext context, WidgetRef ref) async {
     await AppRouteNav.push<void>(
@@ -47,13 +46,23 @@ class MyWatchCard extends ConsumerWidget {
     final healthLinked = watchType != WatchType.none;
     final anyConnected = healthLinked || apps.isNotEmpty;
 
-    // 연결된 것만 보여 준다. 없는 것을 "없음"이라고 적으면 연결이 안 된 것처럼 읽힌다.
-    final healthLine = '${watchType.displayLabel} 연결됨';
-    const healthNote = '걸음·심박을 휴대폰으로 받아요';
-    final appNames =
-        apps.map((w) => w.label).where((l) => l.isNotEmpty).join(', ');
-    final appLine = '시계 앱 ${apps.length}대 연결됨'
-        '${appNames.isEmpty ? '' : ' · $appNames'}';
+    // 연결된 것만 보여 주고, 한 대로 합쳐서 말한다. 건강 데이터와 시계 앱은 사용자가
+    // 구분할 필요가 없다. Health Connect 연결은 브랜드를 가리지 않으므로 이름은 일반 표현을 쓴다.
+    final appName = apps
+        .map((w) => w.label)
+        .firstWhere((l) => l.isNotEmpty, orElse: () => '');
+    final String headline;
+    final String note;
+    if (healthLinked && apps.isNotEmpty) {
+      headline = '스마트워치 연결됨';
+      note = '걸음·심박을 받고, 시계 앱으로도 기록해요';
+    } else if (healthLinked) {
+      headline = '스마트워치 연결됨';
+      note = '걸음·심박을 휴대폰으로 받아요';
+    } else {
+      headline = appName.isEmpty ? '시계 앱 연결됨' : '$appName 연결됨';
+      note = '시계에서 바로 기록해요';
+    }
 
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -87,9 +96,9 @@ class MyWatchCard extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      if (healthLinked) ...[
+                      if (anyConnected) ...[
                         Text(
-                          healthLine,
+                          headline,
                           key: healthLineKey,
                           style: TextStyle(
                             fontSize: 13,
@@ -98,28 +107,16 @@ class MyWatchCard extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          healthNote,
+                          note,
                           style: TextStyle(
                               fontSize: 12, height: 1.4, color: c.muted),
                         ),
-                      ] else if (apps.isEmpty)
+                      ] else
                         Text(
                           '걸음·심박을 시계에서 바로 기록해요',
                           style: TextStyle(
                               fontSize: 12, height: 1.4, color: c.muted),
                         ),
-                      if (apps.isNotEmpty) ...[
-                        if (healthLinked) const SizedBox(height: 4),
-                        Text(
-                          appLine,
-                          key: appLineKey,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: c.ink,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),

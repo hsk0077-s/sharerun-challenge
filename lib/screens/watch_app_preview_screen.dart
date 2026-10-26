@@ -125,8 +125,12 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
           '이 계정에 연결한 워치가 모두 로그아웃돼요. 워치에 남은 기록은 다시 연결하기 전까지 올라가지 않아요. 휴대폰 로그인은 그대로예요.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('모두 해제')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('취소')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('모두 해제')),
         ],
       ),
     );
@@ -207,7 +211,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
           Text('워치 연결', style: storeText(14, c.ink, w: FontWeight.w800)),
           const SizedBox(height: 4),
           Text(
-            '워치 앱에서 아래 6자리 숫자를 입력하면 이 계정으로 연결돼요. 코드는 5분 동안, 한 번만 쓸 수 있어요.',
+            '워치 앱에서 아래 6자리 숫자를 입력하면 이 계정으로 연결돼요. 코드는 5분 동안, 한 번만 쓸 수 있어요. 워치는 한 대만 연결돼서, 다른 워치를 연결하면 이전 워치는 해제돼요.',
             style: storeText(12, c.muted, h: 1.5),
           ),
           const SizedBox(height: 12),
@@ -245,12 +249,14 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
           ),
           if (_watches.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('연결된 워치 ${_watches.length}/3', style: storeText(12, c.ink, w: FontWeight.w800)),
+            Text('연결된 워치 ${_watches.length}/3',
+                style: storeText(12, c.ink, w: FontWeight.w800)),
             for (final watch in _watches)
               Row(
                 key: Key('watch-row-${watch.id}'),
                 children: [
-                  Expanded(child: Text(watch.label, style: storeText(12, c.muted))),
+                  Expanded(
+                      child: Text(watch.label, style: storeText(12, c.muted))),
                   TextButton(
                     key: Key('watch-revoke-${watch.id}'),
                     onPressed: _busy ? null : () => _revokeOne(watch),
@@ -281,7 +287,8 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
 }
 
 class _PlatformRow extends StatelessWidget {
-  const _PlatformRow({required this.name, required this.note, required this.first});
+  const _PlatformRow(
+      {required this.name, required this.note, required this.first});
   final String name;
   final String note;
   final bool first;
@@ -314,7 +321,8 @@ class _PlatformRow extends StatelessWidget {
               border: Border.all(color: c.muted),
               borderRadius: BorderRadius.circular(99),
             ),
-            child: Text('예정', style: storeText(12, c.muted, w: FontWeight.w800)),
+            child:
+                Text('예정', style: storeText(12, c.muted, w: FontWeight.w800)),
           ),
         ],
       ),
@@ -421,7 +429,8 @@ class _WatchFace extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 data.big,
-                style: storeText(data.big.length > 5 ? 26 : 40, Colors.white, w: FontWeight.w900),
+                style: storeText(data.big.length > 5 ? 26 : 40, Colors.white,
+                    w: FontWeight.w900),
               ),
               const SizedBox(height: 6),
               Text(data.sub, style: storeText(14, const Color(0xFFB8B8B8))),

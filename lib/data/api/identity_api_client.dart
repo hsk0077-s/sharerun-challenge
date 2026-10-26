@@ -133,7 +133,7 @@ class IdentityApiClient {
     );
   }
 
-  /// 이 계정에 연결된 워치 목록. 한 계정에 최대 3대.
+  /// 이 계정에 연결된 워치 목록. 한 계정에 한 대(새로 연결하면 이전 워치는 해제됨).
   Future<List<ConnectedWatch>> listWatchDevices() async {
     final json = await _signedIn('GET', '/actions/watch-pairing/devices', null);
     final rows = json['devices'];

@@ -66,17 +66,17 @@ def test_whoami_non_admin_is_403() -> None:
     "email",
     ["admin@share-run-challenge.app", "ops@share-run-challenge.app"],
 )
-def test_whoami_allowlisted_email(email: str) -> None:
-    _token({"uid": "allow-1", "email": email, "email_verified": True})
+def test_a_verified_email_alone_never_grants_admin(email: str) -> None:
+    """Whoever controls a mailbox (or its domain) must not become an admin."""
+    _token({"uid": "someone", "email": email, "email_verified": True})
 
     response = client.get("/admin/whoami", headers=AUTH)
 
-    assert response.status_code == 200
-    assert response.json() == {"uid": "allow-1", "email": email, "admin": True}
+    assert response.status_code == 403
 
 
 @pytest.mark.parametrize("verified", [False, None, "true", 1])
-def test_allowlisted_email_without_a_verified_email_is_not_admin(verified) -> None:
+def test_unverified_admin_looking_email_is_not_admin(verified) -> None:
     """A stranger can sign up as admin@... by email; that must never grant admin."""
     decoded = {"uid": "squatter", "email": "admin@share-run-challenge.app"}
     if verified is not None:
@@ -88,7 +88,7 @@ def test_allowlisted_email_without_a_verified_email_is_not_admin(verified) -> No
     assert response.status_code == 403
 
 
-def test_unverified_allowlisted_email_still_works_with_the_admin_claim() -> None:
+def test_the_admin_claim_works_whatever_the_email_state() -> None:
     _token(
         {
             "uid": "owner",
@@ -103,7 +103,7 @@ def test_unverified_allowlisted_email_still_works_with_the_admin_claim() -> None
     assert response.status_code == 200
 
 
-def test_unverified_allowlisted_email_still_works_with_an_admins_document() -> None:
+def test_an_admins_document_works_whatever_the_email_state() -> None:
     _token(
         {"uid": "owner", "email": "admin@share-run-challenge.app", "email_verified": False},
         doc_exists=True,
@@ -186,13 +186,7 @@ def test_ping_writes_audit_log_and_does_not_touch_users() -> None:
 
     db.collection.side_effect = collection
     admin_audit_service.firebase_service = MagicMock(db=db)
-    _token(
-        {
-            "uid": "allow-1",
-            "email": "admin@share-run-challenge.app",
-            "email_verified": True,
-        }
-    )
+    _token({"uid": "allow-1", "email": "owner@example.com", "admin": True})
 
     response = client.post(
         "/admin/audit/ping",
@@ -206,7 +200,7 @@ def test_ping_writes_audit_log_and_does_not_touch_users() -> None:
     assert response.json()["action"] == "audit_ping"
     payload = ref.set.call_args.args[0]
     assert payload["uid"] == "allow-1"
-    assert payload["email"] == "admin@share-run-challenge.app"
+    assert payload["email"] == "owner@example.com"
     assert payload["action"] == "audit_ping"
     assert payload["targetUid"] is None
     assert payload["before"] is None

@@ -141,11 +141,9 @@ function NotAdmin({ email }: { email: string }) {
     <Frame>
       <h1 className="text-xl font-bold">관리자 계정이 아닙니다</h1>
       <p className="text-sm text-gray-300 leading-relaxed">
-        {email} 은 Firestore 규칙 <span className="text-amber-300">isAdmin()</span>에
-        해당하지 않습니다. 허용 이메일은 admin@share-run-challenge.app 와
-        ops@share-run-challenge.app 이며 <b>이메일 인증이 된 계정</b>이어야 합니다.
-        인증이 안 된 계정이거나 다른 계정이면 Authentication 커스텀 클레임
-        admin=true 또는 Firestore admins/(내 uid) 문서가 있어야 합니다.
+        {email} 은 관리자 계정이 아닙니다. 관리자는 Authentication 커스텀 클레임
+        admin=true 이거나 Firestore <span className="text-amber-300">admins/(내 uid)</span> 문서가
+        있는 계정입니다. 이메일 주소만으로는 관리자가 되지 않습니다.
       </p>
       <button
         type="button"

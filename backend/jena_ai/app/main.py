@@ -10,11 +10,15 @@ from app.routers.identity_router import router as identity_router
 from app.routers.ops_router import router as ops_router
 from app.routers.payment_router import router as payment_router
 from app.routers.secured_action_router import router as secured_action_router
-from app.routers.validation_router import router as validation_router
 
+# The interactive docs list every route. Show them only on a developer machine.
+_docs = config.is_local_dev_mode()
 app = FastAPI(
     title="SRC Jena AI Engine",
     version="0.1.0",
+    docs_url="/docs" if _docs else None,
+    redoc_url="/redoc" if _docs else None,
+    openapi_url="/openapi.json" if _docs else None,
 )
 
 # Browser admin calls /admin with an ID token. No cookies.
@@ -54,7 +58,6 @@ def health_ready() -> dict[str, str]:
 
 app.include_router(admin_router)
 app.include_router(identity_router)
-app.include_router(validation_router)
 app.include_router(payment_router)
 app.include_router(secured_action_router)
 app.include_router(ops_router)

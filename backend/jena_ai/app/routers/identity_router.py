@@ -33,9 +33,14 @@ def _db():
 
 
 def _client(request: Request) -> str:
+    """The address Cloud Run saw. It appends the real client to the END of
+    X-Forwarded-For; the entries before it are whatever the caller sent, so
+    taking the first one would let anyone dodge the per-address limits."""
     forwarded = request.headers.get("x-forwarded-for", "")
     if forwarded:
-        return forwarded.split(",")[0].strip()
+        last = forwarded.split(",")[-1].strip()
+        if last:
+            return last
     return request.client.host if request.client else ""
 
 

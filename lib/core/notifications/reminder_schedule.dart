@@ -168,3 +168,15 @@ const reminderCopyByLanguage = <String, ReminderCopy>{
 /// 앱 언어 코드(예: `ko`, `en`)에 맞는 리마인더 문구. 모르는 언어는 영어.
 ReminderCopy reminderCopyFor(String languageCode) =>
     reminderCopyByLanguage[languageCode.toLowerCase()] ?? _englishCopy;
+
+/// 저녁 알림의 번호. 일반 알림과 "코인 줍기" 알림이 **같은 번호**를 써서, 개인 문구가
+/// 예약되면 일반 문구를 대신한다(하루 저녁 알림은 한 번).
+const walkingEveningReminderId = 22030;
+
+/// 예전 "코인 줍기" 서비스가 따로 예약하던 알림 번호(아침·낮·저녁). 이제 쓰지 않으며,
+/// 이미 예약돼 있는 것은 앱을 켤 때 지운다.
+const legacyGoldenReminderIds = [830, 1330, 2130];
+
+/// 사용자 이름을 넣은 저녁 문구는 한국어로만 있다. 다른 언어는 일반(번역된) 저녁 알림을 쓴다.
+bool usesPersonalEveningCopy(String languageCode) =>
+    languageCode.toLowerCase() == 'ko';

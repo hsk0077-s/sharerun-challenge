@@ -62,5 +62,5 @@
 - (완료) 워치 갱신 토큰은 Android Keystore 키로 암호화해 저장(예전 평문 값은 읽을 때 자동 변환).
 - 연결 요청 횟수 제한(#302)은 인스턴스 메모리 기준이라 재시작하면 초기화.
 - `daily_metrics` 클라이언트 쓰기 닫기(앱 채택 후).
-- 걷기 보상의 적립량만 더하는 경로(`solo_pedometer_screen.dart`)는 정리 예정.
+- (확인함) 걷기 보상 적립량 더하기 경로(`solo_pedometer_screen.dart`)는 출시 빌드에서 서버 잔액이 없으면 기기에서 더하지 않음(디버그 빌드에서만 로컬 적립). 걸음 수 저장도 앱은 서버 API만 사용 — 남은 것은 앱 채택 뒤 규칙 닫기뿐.
 - Garmin 실연동, Apple 로그인(iOS)은 1.0 범위 밖(`docs/watch-garmin-apple-review.md`).

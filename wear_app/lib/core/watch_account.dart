@@ -229,6 +229,11 @@ class WatchAccount {
         return null;
       }
       if (reply.status != 401) return reply;
+      // 휴대폰에서 "워치 모두 해제"를 눌렀다. 이 워치의 연결은 더 못 쓰므로 지운다.
+      if (reply.body['detail'] == 'watch_revoked') {
+        await unpair();
+        return null;
+      }
     }
     return null;
   }

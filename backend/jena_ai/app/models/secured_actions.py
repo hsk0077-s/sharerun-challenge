@@ -69,6 +69,9 @@ class ValidateRunRequest(BaseModel):
     cadence_spm: list[int] = Field(default_factory=list, max_length=50000)
     gyro_stability_score: float = Field(ge=0, le=1, allow_inf_nan=False)
     gps_route: list[RoutePointPayload] = Field(default_factory=list, max_length=50000)
+    # Optional for a phone, required for a watch. ISO 8601 start and end of the run.
+    started_at: str | None = Field(default=None, max_length=40)
+    ended_at: str | None = Field(default=None, max_length=40)
     # Optional. Stride uses this when the phone sends the session step total.
     # Absent means the server estimates steps from the cadence series.
     total_steps: int | None = Field(default=None, ge=0)

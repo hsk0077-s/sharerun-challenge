@@ -85,6 +85,27 @@ def issue_code(db, uid: str, *, now: datetime | None = None) -> dict:
     raise HTTPException(status_code=503, detail="try_again")
 
 
+def _generation(db, uid: str) -> int:
+    snap = db.collection("users").document(uid).get()
+    raw = (snap.to_dict() or {}).get("watchGeneration") if snap.exists else 0
+    return raw if isinstance(raw, int) and not isinstance(raw, bool) else 0
+
+
+def revoke_all(db, uid: str) -> dict:
+    """Disconnect every watch of this account. The phone stays signed in.
+
+    A watch's sign-in token carries the generation it was issued under. Raising the
+    account's generation makes the server refuse all of them (`watch_revoked`).
+    """
+    from app.services import auth_service
+
+    ref = db.collection("users").document(uid)
+    nxt = _generation(db, uid) + 1
+    ref.set({"watchGeneration": nxt}, merge=True)
+    auth_service.forget_watch_generation(uid)
+    return {"revoked": True, "generation": nxt}
+
+
 def pair(db, code: str, *, fb_auth=firebase_auth, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     code = (code or "").strip()
@@ -100,8 +121,9 @@ def pair(db, code: str, *, fb_auth=firebase_auth, now: datetime | None = None) -
         raise HTTPException(status_code=503, detail="try_again") from error
     if not alive:
         raise HTTPException(status_code=400, detail="invalid_code")
+    claims = {"provider": "watch", "wgen": _generation(db, uid)}
     try:
-        custom = fb_auth.create_custom_token(uid, {"provider": "watch"})
+        custom = fb_auth.create_custom_token(uid, claims)
     except Exception as error:
         raise HTTPException(status_code=500, detail="custom_token_unavailable") from error
     token = custom.decode("utf-8") if isinstance(custom, bytes) else str(custom)

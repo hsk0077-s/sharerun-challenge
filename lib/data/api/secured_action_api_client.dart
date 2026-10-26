@@ -107,6 +107,7 @@ class SecuredActionApiClient {
       old.close();
     } catch (_) {}
   }
+
   final ShopRequestIds _requestIds = ShopRequestIds();
 
   Future<TournamentJoinResult> joinTournament({
@@ -580,7 +581,8 @@ class SecuredActionApiClient {
 
   /// 산 지 7일 안의 DIA 팩 하나를 환불한다. 쓰지 않은 유료 DIA만, 덤은 함께 빠진다.
   Future<DiaRefundResult> requestDiaRefund(String purchaseId) async {
-    final json = await _post('/actions/wallet/dia-refund', {'purchase_id': purchaseId});
+    final json =
+        await _post('/actions/wallet/dia-refund', {'purchase_id': purchaseId});
     return DiaRefundResult(
       status: json['status'] as String? ?? '',
       refundKrw: (json['refund_krw'] as num?)?.toInt() ?? 0,
@@ -606,7 +608,8 @@ class SecuredActionApiClient {
   }
 
   /// 내 크루와 내 역할, 크루원. 크루가 없으면 null.
-  Future<MyCrew?> myCrew() async => MyCrew.fromJson(await _get('/actions/crew/mine'));
+  Future<MyCrew?> myCrew() async =>
+      MyCrew.fromJson(await _get('/actions/crew/mine'));
 
   /// 크루에 가입한다. 자유 가입이면 `joined`, 승인 크루면 `requested`.
   /// 이미 다른 크루에 있거나 가득 차면 409.
@@ -622,7 +625,8 @@ class SecuredActionApiClient {
 
   /// 크루장: 인원 한도를 10명 늘린다(300 DIA). 새 한도와 DIA 잔액을 돌려준다.
   Future<({int maxMembers, int? diamondBalance})> expandCrew() async {
-    final json = await _postWithRequest('/actions/crew/expand', const {}, 'crew-expand');
+    final json =
+        await _postWithRequest('/actions/crew/expand', const {}, 'crew-expand');
     return (
       maxMembers: (json['max_members'] as num?)?.toInt() ?? 0,
       diamondBalance: (json['diamond_balance'] as num?)?.toInt(),
@@ -656,7 +660,8 @@ class SecuredActionApiClient {
 
   /// 크루장·부크루장: 신청을 받아들이거나 거절한다.
   Future<void> decideCrewRequest(String uid, {required bool approve}) async {
-    await _post('/actions/crew/requests/decide', {'uid': uid, 'approve': approve});
+    await _post(
+        '/actions/crew/requests/decide', {'uid': uid, 'approve': approve});
   }
 
   /// 내가 한 가입 신청을 거둔다.
@@ -689,6 +694,23 @@ class SecuredActionApiClient {
       'steps': steps,
       'source': source,
       if (lastHealth != null && lastHealth > 0) 'last_health': lastHealth,
+    });
+  }
+
+  /// 앱이 처리하지 못한 오류를 서버 로그로 보낸다.
+  Future<void> reportClientError({
+    required String message,
+    required String stack,
+    required bool fatal,
+    required String appVersion,
+    required String platform,
+  }) async {
+    await _post('/actions/diagnostics/client-error', {
+      'message': message.length > 2000 ? message.substring(0, 2000) : message,
+      'stack': stack.length > 20000 ? stack.substring(0, 20000) : stack,
+      'fatal': fatal,
+      'app_version': appVersion,
+      'platform': platform,
     });
   }
 
@@ -886,14 +908,16 @@ class SecuredActionApiClient {
   ) async {
     final token = await _firebaseIdToken();
 
-    final response = await _httpClient.post(
-      baseUri.resolve(path),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(body),
-    ).timeout(requestTimeout);
+    final response = await _httpClient
+        .post(
+          baseUri.resolve(path),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(body),
+        )
+        .timeout(requestTimeout);
     return _decode(response);
   }
 

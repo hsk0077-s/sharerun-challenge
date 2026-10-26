@@ -37,3 +37,6 @@ PREVIEW_BY_IP = WindowLimiter(limit=90, window_seconds=600)
 # A 6-digit code is guessable, so pairing is slow per client and per account.
 WATCH_PAIR_BY_IP = WindowLimiter(limit=10, window_seconds=600)
 WATCH_CODE_BY_UID = WindowLimiter(limit=5, window_seconds=600)
+
+# 앱이 보내는 처리되지 않은 오류 보고. 계정당 10분에 20건까지.
+CLIENT_ERROR_BY_UID = WindowLimiter(limit=20, window_seconds=600)

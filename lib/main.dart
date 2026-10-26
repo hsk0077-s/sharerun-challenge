@@ -17,6 +17,7 @@ import 'core/config/app_env.dart';
 import 'core/notifications/notification_service.dart';
 import 'data/firebase/firebase_bootstrap.dart';
 import 'features/iap/widgets/iap_lifecycle_host.dart';
+import 'core/crash/client_error_reporter.dart';
 import 'features/launch/intro_store.dart';
 import 'features/pedometer/kst_calendar.dart';
 import 'features/pedometer/solo_pedometer_foreground.dart';
@@ -28,7 +29,19 @@ Future<void> main() async {
   // 화면 밖에서 난 오류가 앱을 죽이지 않게 기록만 남긴다.
   PlatformDispatcher.instance.onError = (error, stack) {
     debugPrint('Unhandled error: $error\n$stack');
+    unawaited(ClientErrorReporter.report(error, stack, fatal: true));
     return true;
+  };
+  final presentFlutterError = FlutterError.onError;
+  FlutterError.onError = (details) {
+    presentFlutterError?.call(details);
+    unawaited(
+      ClientErrorReporter.report(
+        details.exception,
+        details.stack,
+        fatal: !details.silent,
+      ),
+    );
   };
   await _start();
 }

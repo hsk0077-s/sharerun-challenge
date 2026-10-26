@@ -9,6 +9,7 @@ import '../../../app/providers/app_providers.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/social_brand_icons.dart';
 import '../../pedometer/walking_challenge_share.dart';
+import '../invite_copy.dart';
 
 /// Play Store listing. Package id is `applicationId` in
 /// `android/app/build.gradle.kts`.
@@ -16,11 +17,8 @@ const myPageInvitePlayStoreUrl =
     'https://play.google.com/store/apps/details?id=com.sharerun.share_run_challenge';
 
 /// Short invite body. No reward amounts — payout copy is a later step.
-String myPageInviteShareText(String code) {
-  return '쉐어런에 초대해요!\n'
-      '초대 코드: $code\n'
-      '$myPageInvitePlayStoreUrl';
-}
+String myPageInviteShareText(String code) =>
+    inviteCopyFor('ko').shareText(code, myPageInvitePlayStoreUrl);
 
 /// Loads the signed-in user's stable invite code.
 ///
@@ -103,19 +101,22 @@ class _MyPageInviteCodeCardState extends ConsumerState<MyPageInviteCodeCard> {
     if (code == null) return;
     await Clipboard.setData(ClipboardData(text: code));
     if (!mounted) return;
+    final copy = inviteCopyFor(Localizations.localeOf(context).languageCode);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(MyPageInviteCodeCard.copiedMessage)),
+      SnackBar(content: Text(copy.copiedMessage)),
     );
   }
 
   Future<void> _shareInvite(BuildContext buttonContext) async {
     final code = _code;
     if (code == null) return;
+    final copy =
+        inviteCopyFor(Localizations.localeOf(buttonContext).languageCode);
     try {
       await WalkingChallengeShare.openChooser(
         buttonContext,
-        text: myPageInviteShareText(code),
-        subject: MyPageInviteCodeCard.shareSubject,
+        text: copy.shareText(code, myPageInvitePlayStoreUrl),
+        subject: copy.shareSubject,
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {
@@ -128,6 +129,9 @@ class _MyPageInviteCodeCardState extends ConsumerState<MyPageInviteCodeCard> {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final code = _code;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final copy = inviteCopyFor(languageCode);
+    final kakaoStyle = languageCode == 'ko';
 
     return SrcSurfaceCard(
       key: MyPageInviteCodeCard.cardKey,
@@ -136,7 +140,7 @@ class _MyPageInviteCodeCardState extends ConsumerState<MyPageInviteCodeCard> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            MyPageInviteCodeCard.title,
+            copy.title,
             style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: tokens.colors.ink,
@@ -168,7 +172,7 @@ class _MyPageInviteCodeCardState extends ConsumerState<MyPageInviteCodeCard> {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text(MyPageInviteCodeCard.loadFailedMessage),
+                child: Text(copy.loadFailedMessage),
               ),
             )
           else
@@ -191,20 +195,36 @@ class _MyPageInviteCodeCardState extends ConsumerState<MyPageInviteCodeCard> {
                   style: TextButton.styleFrom(
                     foregroundColor: tokens.colors.accent,
                   ),
-                  child: const Text(MyPageInviteCodeCard.copyLabel),
+                  child: Text(copy.copyLabel),
                 ),
               ],
             ),
           SizedBox(height: tokens.spacing.sm),
           Builder(
             builder: (buttonContext) {
+              final onPressed = code == null
+                  ? null
+                  : () => unawaited(_shareInvite(buttonContext));
+              if (!kakaoStyle) {
+                // 한국어 외에는 카카오 대신 휴대폰 공유 창(어느 앱이든)으로 보낸다.
+                return FilledButton.icon(
+                  key: MyPageInviteCodeCard.kakaoKey,
+                  onPressed: onPressed,
+                  icon: const Icon(Icons.share_rounded, size: 18),
+                  label: Text(copy.buttonLabel),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(44),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: tokens.radii.capsule,
+                    ),
+                  ),
+                );
+              }
               return FilledButton.icon(
                 key: MyPageInviteCodeCard.kakaoKey,
-                onPressed: code == null
-                    ? null
-                    : () => unawaited(_shareInvite(buttonContext)),
+                onPressed: onPressed,
                 icon: const KakaoIcon(size: 18),
-                label: const Text(MyPageInviteCodeCard.kakaoButtonLabel),
+                label: Text(copy.buttonLabel),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.kakaoYellow,
                   foregroundColor: AppColors.brandInk,

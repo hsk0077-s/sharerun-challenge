@@ -144,12 +144,13 @@ abstract final class AppStrings {
   static const bleHrSectionTitle = '실시간 블루투스 심박 센서 (BLE) 직접 연결';
   static const bleHrSectionSubtitle =
       'Health Connect 지연 없이 달리는 동안 실시간 심박수(0x180D)를 바로 받습니다.';
-  static const bleHrBroadcastGuideGarmin =
-      '• 가민(Garmin): 워치 설정 → 센서 및 액세서리 → 손목 심박수 → 심박수 전송(Broadcast HR) 켜기';
-  static const bleHrBroadcastGuideXiaomiAmazfit =
-      '• 샤오미(Mi Band) / 어메이즈핏(Zepp): 운동·심박수 설정 → 심박수 공유/전송(Heart Rate Broadcasting) 켜기';
-  static const bleHrBroadcastGuideStrap =
-      '• 가슴·암밴드 센서(Polar, Wahoo, Coospo, Magene): 착용 후 아래 [센서 찾기]를 눌러 연결';
+  static const bleHrGuideTitle = '내 기기별로 이렇게 하세요';
+  static const bleHrGuideItems = <(String, String)>[
+    ('가민(Garmin)', '시계 설정 → 센서 및 액세서리 → 손목 심박수 → "심박수 전송" 켜기'),
+    ('샤오미 · 어메이즈핏', '운동·심박수 설정 → "심박수 공유/전송" 켜기'),
+    ('가슴·암밴드 센서', '착용한 뒤 아래 [센서 찾기] 누르기 (Polar, Wahoo, Coospo, Magene)'),
+    ('갤럭시 워치 · 애플워치', '이 방식이 아니에요. 위의 Health Connect / Apple 건강으로 연결하세요'),
+  ];
   static const bleHrScanButton = '센서 찾기';
   static const bleHrScanningLabel = '근처 심박 센서 찾는 중...';
   static const bleHrStopScanButton = '스캔 중지';

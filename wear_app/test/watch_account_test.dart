@@ -69,7 +69,8 @@ void main() {
 
     expect(account.isPaired, isTrue);
     expect(account.nickname, '달림이');
-    expect(poster.calls.first.body, {'code': '482910'});
+    expect(poster.calls.first.body['code'], '482910');
+    expect(poster.calls.first.body['device_id'], isNotEmpty);
     expect(poster.calls[1].body['token'], 'custom-1');
     expect(store.values['watch.refresh_token'], 'refresh-1');
 
@@ -87,7 +88,7 @@ void main() {
 
     await expectLater(account.pair('000000'), throwsA(isA<PairingRejected>()));
     expect(account.isPaired, isFalse);
-    expect(store.values, isEmpty);
+    expect(store.values.keys, ['watch.device_id']); // 같은 번호로 다시 연결하려고 남긴다
     await expectLater(account.pair('12'), throwsA(isA<PairingRejected>()));
   });
 
@@ -136,7 +137,7 @@ void main() {
 
     expect(await account.idToken(), isNull);
     expect(account.isPaired, isFalse);
-    expect(store.values, isEmpty);
+    expect(store.values.keys, ['watch.device_id']); // 같은 번호로 다시 연결하려고 남긴다
   });
 
   test('a 401 refreshes the token once and sends the request again', () async {
@@ -169,7 +170,7 @@ void main() {
 
     expect(await account.postSigned('/actions/runs/validate', {'a': 1}), isNull);
     expect(account.isPaired, isFalse);
-    expect(store.values, isEmpty);
+    expect(store.values.keys, ['watch.device_id']);
     // 같은 사유로는 토큰을 다시 받지 않는다.
     expect(poster.calls.where((c) => c.uri.path.contains('securetoken')), isEmpty);
   });
@@ -240,4 +241,36 @@ void main() {
     expect(restored.runs.single.totalSteps, 777);
     expect(restored.runs.single.activityId, 'a1');
   });
+
+  test('the watch sends the same device id every time it pairs', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn)
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn);
+    final store = MemoryStore();
+    final account = _account(poster, store);
+    await account.pair('482910');
+    await account.unpair();
+    await account.pair('111111');
+
+    final sent = poster.calls
+        .where((c) => c.uri.path == '/auth/watch-pair')
+        .map((c) => c.body['device_id'])
+        .toList();
+    expect(sent.toSet().length, 1);
+    expect(sent.first, isA<String>());
+  });
+
+  test('a full account tells the person what to do', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', const HttpReply(409, {'detail': 'too_many_watches'}));
+    final account = _account(poster, MemoryStore());
+    expect(
+      () => account.pair('482910'),
+      throwsA(isA<PairingRejected>().having((e) => e.message, 'message', contains('3개'))),
+    );
+    expect(account.isPaired, isFalse);
+  });
 }
+

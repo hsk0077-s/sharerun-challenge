@@ -63,7 +63,9 @@ def test_pair_returns_the_account_and_burns_the_code() -> None:
     db, fb = _db_with_user()
     code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
     out = watch_pairing.pair(db, code, fb_auth=fb, now=NOW + timedelta(seconds=30))
-    assert out == {"uid": "u1", "nickname": "달림이", "custom_token": "custom-for-u1"}
+    assert out["uid"] == "u1" and out["nickname"] == "달림이"
+    assert out["custom_token"] == "custom-for-u1"
+    assert out["device_id"]  # the server names a watch that did not bring an id
     assert db.store[f"watchPairingCodes/{code}"]["used"] is True
 
     with pytest.raises(HTTPException) as again:
@@ -147,7 +149,8 @@ def test_the_watch_token_carries_the_account_generation() -> None:
     db.store["users/u1"]["watchGeneration"] = 3
     code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
     watch_pairing.pair(db, code, fb_auth=fb, now=NOW)
-    assert fb.claims == {"provider": "watch", "wgen": 3}
+    assert fb.claims["provider"] == "watch" and fb.claims["wgen"] == 3
+    assert fb.claims["wdev"]
 
 
 def test_disconnecting_all_watches_raises_the_generation() -> None:
@@ -156,3 +159,51 @@ def test_disconnecting_all_watches_raises_the_generation() -> None:
     assert watch_pairing.revoke_all(db, "u1")["generation"] == 2
     assert db.store["users/u1"]["watchGeneration"] == 2
     assert db.store["users/u1"]["nickname"] == "달림이"
+
+
+def _pair(db, fb, device_id, label="", n=0):
+    code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
+    return watch_pairing.pair(
+        db, code, device_id=device_id, device_label=label, fb_auth=fb, now=NOW + timedelta(seconds=n)
+    )
+
+
+def test_a_watch_keeps_its_id_and_pairing_again_uses_no_new_slot() -> None:
+    db, fb = _db_with_user()
+    first = _pair(db, fb, "watch-aaaaaaaa", "내 갤럭시 워치")
+    again = _pair(db, fb, "watch-aaaaaaaa", "내 갤럭시 워치", 5)
+    assert first["device_id"] == again["device_id"] == "watch-aaaaaaaa"
+    assert watch_pairing.list_devices(db, "u1") == {
+        "devices": [{"id": "watch-aaaaaaaa", "label": "내 갤럭시 워치"}],
+        "max": 3,
+    }
+
+
+def test_a_fourth_watch_is_refused_until_one_is_removed() -> None:
+    db, fb = _db_with_user()
+    for i in range(3):
+        _pair(db, fb, f"watch-{i}aaaaaaa")
+    with pytest.raises(HTTPException) as caught:
+        _pair(db, fb, "watch-newaaaaa", n=9)
+    assert caught.value.status_code == 409
+    assert caught.value.detail == "too_many_watches"
+
+    watch_pairing.revoke_device(db, "u1", "watch-0aaaaaaa")
+    assert _pair(db, fb, "watch-newaaaaa", n=10)["device_id"] == "watch-newaaaaa"
+
+
+def test_removing_one_watch_leaves_the_others_and_unknown_ids_are_404() -> None:
+    db, fb = _db_with_user()
+    _pair(db, fb, "watch-1aaaaaaa")
+    _pair(db, fb, "watch-2aaaaaaa")
+    assert watch_pairing.revoke_device(db, "u1", "watch-1aaaaaaa")["revoked"] is True
+    assert [d["id"] for d in watch_pairing.list_devices(db, "u1")["devices"]] == ["watch-2aaaaaaa"]
+    with pytest.raises(HTTPException) as caught:
+        watch_pairing.revoke_device(db, "u1", "nope-nope-nope")
+    assert caught.value.status_code == 404
+
+
+def test_a_malformed_device_id_is_replaced_by_a_server_id() -> None:
+    db, fb = _db_with_user()
+    out = _pair(db, fb, "bad id/with slash")
+    assert "/" not in out["device_id"] and len(out["device_id"]) >= 8

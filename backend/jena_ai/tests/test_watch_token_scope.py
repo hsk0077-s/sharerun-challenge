@@ -152,3 +152,29 @@ def test_a_phone_run_does_not_need_times(monkeypatch) -> None:
     client = _real_app(monkeypatch, {"provider": "google"})
     response = client.post("/actions/runs/validate", json=_body(), headers=HEADERS)
     assert response.status_code == 418  # got past the time check to the service
+
+
+def _watch_device(monkeypatch, *, device, active) -> TestClient:
+    _sign_in_as(monkeypatch, {"provider": "watch", "wgen": 0, "wdev": device})
+    monkeypatch.setattr(auth_module, "_current_watch_generation", lambda _uid: 0)
+    monkeypatch.setattr(auth_module, "_watch_device_active", lambda _uid, _device: active)
+    return _app()
+
+
+def test_a_removed_watch_is_refused_but_the_others_work(monkeypatch) -> None:
+    gone = _watch_device(monkeypatch, device="watch-1aaaaaaa", active=False)
+    response = gone.post("/actions/daily-steps", headers=HEADERS)
+    assert response.status_code == 401
+    assert response.json()["detail"] == "watch_revoked"
+    kept = _watch_device(monkeypatch, device="watch-2aaaaaaa", active=True)
+    assert kept.post("/actions/daily-steps", headers=HEADERS).status_code == 200
+
+
+def test_a_watch_cannot_list_or_remove_watches(monkeypatch) -> None:
+    app = FastAPI()
+    app.get("/actions/watch-pairing/devices")(lambda uid=Depends(require_uid): {"uid": uid})
+    app.post("/actions/watch-pairing/devices/x/revoke")(lambda uid=Depends(require_uid): {"uid": uid})
+    _sign_in_as(monkeypatch, {"provider": "watch"})
+    client = TestClient(app)
+    assert client.get("/actions/watch-pairing/devices", headers=HEADERS).status_code == 403
+    assert client.post("/actions/watch-pairing/devices/x/revoke", headers=HEADERS).status_code == 403

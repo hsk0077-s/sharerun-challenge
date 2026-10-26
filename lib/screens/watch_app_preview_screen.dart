@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/api/api_exception.dart';
 import '../core/theme/theme.dart';
+import '../data/api/identity_api_client.dart';
 import '../features/auth/login_connection_providers.dart';
 import '../features/shop/widgets/store_look.dart';
 
@@ -38,8 +39,40 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
   String? _error;
   var _busy = false;
   var _revoked = false;
+  List<ConnectedWatch> _watches = const [];
   Duration _left = Duration.zero;
   Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadWatches());
+  }
+
+  Future<void> _loadWatches() async {
+    try {
+      final rows = await ref.read(identityApiClientProvider).listWatchDevices();
+      if (mounted) setState(() => _watches = rows);
+    } catch (_) {
+      // 목록을 못 받아도 연결 코드 받기는 쓸 수 있다.
+    }
+  }
+
+  Future<void> _revokeOne(ConnectedWatch watch) async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref.read(identityApiClientProvider).revokeWatchDevice(watch.id);
+      await _loadWatches();
+    } catch (e) {
+      if (mounted) setState(() => _error = ApiErrorMessage.from(e));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -106,6 +139,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
     try {
       await ref.read(identityApiClientProvider).revokeWatches();
       if (mounted) setState(() => _revoked = true);
+      await _loadWatches();
     } catch (e) {
       if (mounted) setState(() => _error = ApiErrorMessage.from(e));
     } finally {
@@ -219,6 +253,22 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
               child: Text(_code == null ? '6자리 연결 코드 받기' : '새 코드 받기'),
             ),
           ),
+          if (_watches.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text('연결된 워치 ${_watches.length}/3', style: storeText(12, c.ink, w: FontWeight.w800)),
+            for (final watch in _watches)
+              Row(
+                key: Key('watch-row-${watch.id}'),
+                children: [
+                  Expanded(child: Text(watch.label, style: storeText(12, c.muted))),
+                  TextButton(
+                    key: Key('watch-revoke-${watch.id}'),
+                    onPressed: _busy ? null : () => _revokeOne(watch),
+                    child: const Text('해제'),
+                  ),
+                ],
+              ),
+          ],
           const SizedBox(height: 4),
           SizedBox(
             width: double.infinity,

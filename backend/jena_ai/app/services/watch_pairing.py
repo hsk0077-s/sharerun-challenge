@@ -10,6 +10,7 @@ Only the server reads or writes these documents (`firestore.rules` denies all
 client access). Codes are short, so the pair call is rate limited per client.
 """
 
+import re
 import secrets
 from datetime import datetime, timedelta, timezone
 
@@ -24,6 +25,64 @@ COLLECTION = "watchPairingCodes"
 CODE_LENGTH = 6
 CODE_TTL_SECONDS = 300
 _ISSUE_TRIES = 8
+MAX_WATCHES = 3
+_DEVICE_ID = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
+DEVICES = "watchDevices"
+
+
+def _devices(db, uid: str):
+    return db.collection("users").document(uid).collection(DEVICES)
+
+
+def _active_devices(db, uid: str) -> dict[str, dict]:
+    rows = {}
+    for snap in _devices(db, uid).get():
+        data = snap.to_dict() or {}
+        if data.get("revoked") is not True:
+            rows[snap.id] = data
+    return rows
+
+
+def _register_device(db, uid: str, device_id: str | None, label: str) -> str:
+    """Records this watch under the account. A watch pairs again under the same id.
+
+    At most MAX_WATCHES watches can be connected at once, so a leaked or reused code
+    cannot hang an unlimited number of devices on one account.
+    """
+    device_id = device_id if device_id and _DEVICE_ID.match(device_id) else secrets.token_urlsafe(12)
+    active = _active_devices(db, uid)
+    if device_id not in active and len(active) >= MAX_WATCHES:
+        raise HTTPException(status_code=409, detail="too_many_watches")
+    _devices(db, uid).document(device_id).set(
+        {
+            "label": (label or "").strip()[:40] or "Wear OS 워치",
+            "pairedAt": SERVER_TIMESTAMP,
+            "revoked": False,
+        }
+    )
+    return device_id
+
+
+def list_devices(db, uid: str) -> dict:
+    return {
+        "devices": [
+            {"id": key, "label": str(row.get("label") or "")}
+            for key, row in sorted(_active_devices(db, uid).items())
+        ],
+        "max": MAX_WATCHES,
+    }
+
+
+def revoke_device(db, uid: str, device_id: str) -> dict:
+    from app.services import auth_service
+
+    ref = _devices(db, uid).document(device_id)
+    snap = ref.get()
+    if not snap.exists:
+        raise HTTPException(status_code=404, detail="watch_not_found")
+    ref.set({"revoked": True}, merge=True)
+    auth_service.forget_watch_device(uid, device_id)
+    return {"revoked": True, "id": device_id}
 
 
 def _run(tx_func, transaction, *args):
@@ -106,7 +165,15 @@ def revoke_all(db, uid: str) -> dict:
     return {"revoked": True, "generation": nxt}
 
 
-def pair(db, code: str, *, fb_auth=firebase_auth, now: datetime | None = None) -> dict:
+def pair(
+    db,
+    code: str,
+    *,
+    device_id: str | None = None,
+    device_label: str = "",
+    fb_auth=firebase_auth,
+    now: datetime | None = None,
+) -> dict:
     now = now or datetime.now(timezone.utc)
     code = (code or "").strip()
     if len(code) != CODE_LENGTH or not code.isdigit():
@@ -121,11 +188,12 @@ def pair(db, code: str, *, fb_auth=firebase_auth, now: datetime | None = None) -
         raise HTTPException(status_code=503, detail="try_again") from error
     if not alive:
         raise HTTPException(status_code=400, detail="invalid_code")
-    claims = {"provider": "watch", "wgen": _generation(db, uid)}
+    device = _register_device(db, uid, device_id, device_label)
+    claims = {"provider": "watch", "wgen": _generation(db, uid), "wdev": device}
     try:
         custom = fb_auth.create_custom_token(uid, claims)
     except Exception as error:
         raise HTTPException(status_code=500, detail="custom_token_unavailable") from error
     token = custom.decode("utf-8") if isinstance(custom, bytes) else str(custom)
     nickname = identities._nickname(identities._user_profile(db, uid))
-    return {"uid": uid, "nickname": nickname, "custom_token": token}
+    return {"uid": uid, "nickname": nickname, "custom_token": token, "device_id": device}

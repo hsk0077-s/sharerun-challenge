@@ -23,6 +23,9 @@ class GoogleTokenRequest(BaseModel):
 
 class WatchPairRequest(BaseModel):
     code: str = Field(min_length=6, max_length=6, pattern=r"^[0-9]{6}$")
+    # The watch makes one random id and keeps it, so pairing again does not use a slot.
+    device_id: str | None = Field(default=None, max_length=64)
+    device_label: str = Field(default="", max_length=60)
 
 
 def _db():
@@ -152,7 +155,9 @@ def watch_pair(body: WatchPairRequest, request: Request) -> dict:
     # No Firebase token yet: the watch trades the 6-digit code for one.
     if not rate_limit.WATCH_PAIR_BY_IP.allow(_client(request), time.monotonic()):
         raise HTTPException(status_code=429, detail="too_many_attempts")
-    return watch_pairing.pair(_db(), body.code)
+    return watch_pairing.pair(
+        _db(), body.code, device_id=body.device_id, device_label=body.device_label
+    )
 
 
 @router.get("/link-preview")

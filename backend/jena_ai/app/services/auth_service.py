@@ -22,6 +22,33 @@ def forget_watch_generation(uid: str) -> None:
     _watch_generation.pop(uid, None)
 
 
+_watch_device: dict[tuple[str, str], tuple[float, bool]] = {}
+
+
+def forget_watch_device(uid: str, device_id: str) -> None:
+    _watch_device.pop((uid, device_id), None)
+
+
+def _watch_device_active(uid: str, device_id: str) -> bool:
+    """False once this watch was removed from the account. Cached briefly."""
+    now = time.monotonic()
+    key = (uid, device_id)
+    cached = _watch_device.get(key)
+    if cached and now - cached[0] < _CHECK_SECONDS:
+        return cached[1]
+    snap = (
+        FirebaseService()
+        .db.collection("users")
+        .document(uid)
+        .collection("watchDevices")
+        .document(device_id)
+        .get()
+    )
+    active = bool(snap.exists) and (snap.to_dict() or {}).get("revoked") is not True
+    _watch_device[key] = (now, active)
+    return active
+
+
 def _current_watch_generation(uid: str) -> int:
     """Bumped by "disconnect all watches". Cached briefly, like the sign-out check."""
     now = time.monotonic()
@@ -96,6 +123,17 @@ class AuthService:
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="watch_revoked",
                 )
+            device = decoded.get("wdev")
+            if isinstance(device, str) and device:
+                try:
+                    active = _watch_device_active(uid, device)
+                except Exception:
+                    active = True
+                if not active:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="watch_revoked",
+                    )
 
         # A sign-out on all devices must stop the server from accepting tokens
         # issued before it. If the check itself fails, the request is allowed.

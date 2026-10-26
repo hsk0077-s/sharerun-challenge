@@ -4538,6 +4538,9 @@ class SecuredActionService:
             merge=True,
         )
 
+        for device in user_ref.collection("watchDevices").get():
+            device.reference.delete()
+
         try:
             firebase_auth.delete_user(uid)
         except firebase_auth.UserNotFoundError:

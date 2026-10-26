@@ -47,13 +47,13 @@ class MyWatchCard extends ConsumerWidget {
     final healthLinked = watchType != WatchType.none;
     final anyConnected = healthLinked || apps.isNotEmpty;
 
-    final healthLine = healthLinked
-        ? '건강 데이터: ${watchType.displayLabel} 연동됨'
-        : '건강 데이터: 연동 안 됨';
-    final appLine = apps.isEmpty
-        ? '워치 앱: 연결된 시계 없음'
-        : '워치 앱: ${apps.length}대 연결됨'
-            '${apps.any((w) => w.label.isNotEmpty) ? ' · ${apps.map((w) => w.label).where((l) => l.isNotEmpty).join(', ')}' : ''}';
+    // 연결된 것만 보여 준다. 없는 것을 "없음"이라고 적으면 연결이 안 된 것처럼 읽힌다.
+    final healthLine = '${watchType.displayLabel} 연결됨';
+    const healthNote = '걸음·심박을 휴대폰으로 받아요';
+    final appNames =
+        apps.map((w) => w.label).where((l) => l.isNotEmpty).join(', ');
+    final appLine = '시계 앱 ${apps.length}대 연결됨'
+        '${appNames.isEmpty ? '' : ' · $appNames'}';
 
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -87,16 +87,39 @@ class MyWatchCard extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(
-                        healthLine,
-                        key: healthLineKey,
-                        style: TextStyle(fontSize: 12, height: 1.4, color: c.muted),
-                      ),
-                      Text(
-                        appLine,
-                        key: appLineKey,
-                        style: TextStyle(fontSize: 12, height: 1.4, color: c.muted),
-                      ),
+                      if (healthLinked) ...[
+                        Text(
+                          healthLine,
+                          key: healthLineKey,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: c.ink,
+                          ),
+                        ),
+                        Text(
+                          healthNote,
+                          style: TextStyle(
+                              fontSize: 12, height: 1.4, color: c.muted),
+                        ),
+                      ] else if (apps.isEmpty)
+                        Text(
+                          '걸음·심박을 시계에서 바로 기록해요',
+                          style: TextStyle(
+                              fontSize: 12, height: 1.4, color: c.muted),
+                        ),
+                      if (apps.isNotEmpty) ...[
+                        if (healthLinked) const SizedBox(height: 4),
+                        Text(
+                          appLine,
+                          key: appLineKey,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: c.ink,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

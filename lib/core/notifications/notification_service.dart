@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'reminder_preferences.dart';
 import 'reminder_schedule.dart';
+import 'reminder_zone.dart';
 
 /// 워킹챌린지 매일 반복 로컬 푸시 (기기 현지 시간 08:30 / 12:30 / 20:30).
 class NotificationService {
@@ -19,36 +19,15 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
   var _ready = false;
-  var _tzReady = false;
-
-  /// 기기의 현재 시간대로 맞춘다. 시간대를 알 수 없으면 한국 시간.
-  /// 앱을 켤 때마다 다시 예약하므로 여행이나 일광절약시간 변경은 다음 실행 때 반영된다.
-  Future<void> _ensureTimeZones() async {
-    if (_tzReady) return;
-    tz.initializeTimeZones();
-    final zone = await resolveReminderZone(
-      () async => (await FlutterTimezone.getLocalTimezone()).identifier,
-      isKnown: (name) {
-        try {
-          tz.getLocation(name);
-          return true;
-        } catch (_) {
-          return false;
-        }
-      },
-    );
-    tz.setLocalLocation(tz.getLocation(zone));
-    _tzReady = true;
-  }
 
   ReminderCopy get _copy =>
       reminderCopyFor(PlatformDispatcher.instance.locale.languageCode);
 
   Future<void> initialize() async {
     try {
-      await _ensureTimeZones();
+      await ensureReminderTimeZone();
       if (_ready) {
-        await scheduleDailyWalkingReminders();
+        await applyPreference(await ReminderPreferences.isEnabled());
         return;
       }
 
@@ -65,7 +44,7 @@ class NotificationService {
       await _requestPermissions();
       await _ensureAndroidChannel();
       _ready = true;
-      await scheduleDailyWalkingReminders();
+      await applyPreference(await ReminderPreferences.isEnabled());
     } catch (e, st) {
       debugPrint('NotificationService initialize: $e\n$st');
     }
@@ -106,8 +85,23 @@ class NotificationService {
     );
   }
 
+  /// 설정에서 켜고 끌 때와 앱을 켤 때 호출한다. 끄면 예약된 알림을 모두 지운다.
+  Future<void> applyPreference(bool enabled) async {
+    try {
+      if (enabled) {
+        await scheduleDailyWalkingReminders();
+      } else {
+        await _plugin.cancel(_morningId);
+        await _plugin.cancel(_lunchId);
+        await _plugin.cancel(_eveningId);
+      }
+    } catch (e, st) {
+      debugPrint('NotificationService applyPreference: $e\n$st');
+    }
+  }
+
   Future<void> scheduleDailyWalkingReminders() async {
-    await _ensureTimeZones();
+    await ensureReminderTimeZone();
     final copy = _copy;
     await _scheduleDaily(
       id: _morningId,

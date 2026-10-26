@@ -171,8 +171,9 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
           Text(
-            '손목에서 바로 뛸 수 있는 쉐어런 앱을 준비하고 있어요. '
-            '아래 화면은 시안이고, 아직 쓸 수 없어요.',
+            '손목에서 바로 뛸 수 있는 쉐어런 워치 앱을 준비하고 있어요. '
+            '워치 앱이 설치된 시계에서 아래 연결 코드를 입력하면 연결돼요. '
+            '아래 시계 화면은 시안이에요.',
             key: const Key('watch-preview-intro'),
             style: storeText(13, c.muted, h: 1.5),
           ),

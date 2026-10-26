@@ -172,7 +172,7 @@ class _DeviceConnectionScreenState
                     OutlinedButton(
                       key: const Key('watch-app-preview-entry'),
                       onPressed: () => context.push(RouteNames.watchAppPreview),
-                      child: const Text('워치 전용 앱 (예정) 미리 보기'),
+                      child: const Text('워치 앱 연결 코드 · 연결된 워치'),
                     ),
                     const SizedBox(height: 28),
                     Text(

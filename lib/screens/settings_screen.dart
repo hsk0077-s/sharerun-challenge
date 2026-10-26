@@ -18,6 +18,7 @@ import '../core/auth/firebase_auth_messages.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/constants/legal_constants.dart';
 import '../core/navigation/app_route_nav.dart';
+import 'device_connection_screen.dart';
 import '../core/strings/app_strings.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../core/theme/app_colors.dart';
@@ -162,6 +163,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         setState(() => _permissionBusy = false);
       }
     }
+  }
+
+  void _openWatchConnection() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.watchSettings,
+      materialBuilder: (_) => const DeviceConnectionScreen(),
+    );
   }
 
   void _openProTools() {
@@ -572,6 +581,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsCategoryCard(
               title: '러너 전문 기능',
               children: [
+                ListTile(
+                  key: const Key('settings-watch-connection'),
+                  title: Text(
+                    '스마트워치 · 워치 앱 연결',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '건강 데이터 연동, 워치 앱 6자리 연결 코드',
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: _openWatchConnection,
+                ),
                 ListTile(
                   title: Text(
                     AppStrings.proToolsTitle,

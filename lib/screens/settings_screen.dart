@@ -18,6 +18,9 @@ import '../core/auth/firebase_auth_messages.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/constants/legal_constants.dart';
 import '../core/navigation/app_route_nav.dart';
+import '../core/notifications/notification_service.dart';
+import '../core/notifications/reminder_preferences.dart';
+import '../features/pedometer/walking_challenge_notification_service.dart';
 import 'device_connection_screen.dart';
 import '../core/strings/app_strings.dart';
 import '../features/shop/widgets/store_look.dart';
@@ -50,11 +53,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   var _permissionBusy = false;
   var _pushEnabled = false;
+  var _remindersEnabled = true;
 
   @override
   void initState() {
     super.initState();
     _loadPushPreference();
+    unawaited(_loadReminderPreference());
   }
 
   Future<void> _loadPushPreference() async {
@@ -62,6 +67,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final saved = prefs.getBool(_pushPrefKey) ?? false;
     if (!mounted) return;
     setState(() => _pushEnabled = saved);
+  }
+
+  Future<void> _loadReminderPreference() async {
+    final enabled = await ReminderPreferences.isEnabled();
+    if (!mounted) return;
+    setState(() => _remindersEnabled = enabled);
+  }
+
+  /// 걷기 알림(아침·점심·저녁)을 켜고 끈다. 끄면 예약된 알림을 모두 지운다.
+  Future<void> _setReminders(bool enabled) async {
+    setState(() => _remindersEnabled = enabled);
+    await ReminderPreferences.setEnabled(enabled);
+    await NotificationService.instance.applyPreference(enabled);
+    if (!enabled) {
+      await WalkingChallengeNotificationService.syncDailyPushes(
+        enabled: false,
+        nickname: ref.read(userNicknameProvider),
+      );
+    }
   }
 
   Future<void> _savePushPreference(bool enabled) async {
@@ -446,6 +470,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             _SettingsCategoryCard(
               title: '알림 및 서비스 제어',
               children: [
+                SwitchListTile.adaptive(
+                  key: const Key('settings-walking-reminders'),
+                  title: Text(
+                    '걷기 알림 (아침·점심·저녁)',
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '정해진 시각에 걷기를 알려 줘요. 끄면 이 알림은 오지 않아요.',
+                    style: AppTextStyles.caption,
+                  ),
+                  value: _remindersEnabled,
+                  onChanged: (value) => unawaited(_setReminders(value)),
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
                 SwitchListTile.adaptive(
                   title: Text(
                     '푸시 알림 수신 설정',

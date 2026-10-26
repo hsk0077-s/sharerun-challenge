@@ -1,13 +1,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../app/router/route_names.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import 'pedometer_step_truth.dart';
 import 'solo_pedometer_foreground.dart';
+import '../../core/notifications/reminder_preferences.dart';
 import '../../core/notifications/reminder_schedule.dart';
+import '../../core/notifications/reminder_zone.dart';
 
 const _goldenChannelId = 'src_walking_golden_hour';
 const _goldenChannelName = '워킹챌린지 코인 줍기';
@@ -30,18 +31,10 @@ abstract final class WalkingChallengeNotificationService {
   /// 알림을 눌러 앱이 열렸으면 true. 시작 화면을 건너뛰는 데 쓴다.
   static final ValueNotifier<bool> launchedFromNotification =
       ValueNotifier<bool>(false);
-  static var _tzReady = false;
-
-  static void _ensureTimeZones() {
-    if (_tzReady) return;
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
-    _tzReady = true;
-  }
 
   static Future<void> ensureInitialized() async {
     try {
-      _ensureTimeZones();
+      await ensureReminderTimeZone();
       if (_ready) return;
       const initSettings = InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -57,9 +50,8 @@ abstract final class WalkingChallengeNotificationService {
         onDidReceiveBackgroundNotificationResponse:
             walkingChallengeNotificationTapBackground,
       );
-      final android = _plugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
       try {
         await android?.requestNotificationsPermission();
       } catch (e, st) {
@@ -100,7 +92,7 @@ abstract final class WalkingChallengeNotificationService {
   }) async {
     try {
       await ensureInitialized();
-      if (!enabled) {
+      if (!enabled || !await ReminderPreferences.isEnabled()) {
         await _cancel(_morningId);
         await _cancel(_lunchId);
         await _cancel(_eveningId);
@@ -150,7 +142,7 @@ abstract final class WalkingChallengeNotificationService {
     required String title,
     required String body,
   }) async {
-    _ensureTimeZones();
+    await ensureReminderTimeZone();
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
         _goldenChannelId,
@@ -169,7 +161,7 @@ abstract final class WalkingChallengeNotificationService {
       id,
       title,
       body,
-      _nextKst(hour, minute),
+      _nextLocal(hour, minute),
       details,
       androidScheduleMode: reminderScheduleMode,
       uiLocalNotificationDateInterpretation:
@@ -179,7 +171,7 @@ abstract final class WalkingChallengeNotificationService {
     );
   }
 
-  static tz.TZDateTime _nextKst(int hour, int minute) {
+  static tz.TZDateTime _nextLocal(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     var when = tz.TZDateTime(
       tz.local,

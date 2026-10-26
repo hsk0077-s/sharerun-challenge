@@ -356,6 +356,14 @@ class DailyStepsRequest(BaseModel):
     last_health: int | None = Field(default=None, ge=1, le=30_000)
 
 
+class ClientErrorRequest(BaseModel):
+    message: str = Field(default="", max_length=2000)
+    stack: str = Field(default="", max_length=20_000)
+    fatal: bool = False
+    app_version: str = Field(default="", max_length=100)
+    platform: str = Field(default="", max_length=100)
+
+
 class CrewRenameRequest(BaseModel):
     name: str = Field(min_length=1, max_length=40)
     request_id: str = Field(min_length=8, max_length=80)

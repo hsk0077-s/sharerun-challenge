@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -11,6 +12,9 @@ import '../features/privacy/login_devices.dart';
 import '../features/integrity/integrity_check.dart';
 import '../features/run_tracking/run_recording_foreground.dart';
 import '../features/run_tracking/run_recording_policy.dart';
+import '../core/crash/client_error_reporter.dart';
+import '../features/jena_validation/run_device_info.dart'
+    show readInstalledAppVersion;
 import '../features/pedometer/daily_metrics_account.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/today_steps.dart';
@@ -69,6 +73,20 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
               source: source,
               lastHealth: lastHealth,
             );
+    ClientErrorReporter.sender = ({
+      required String message,
+      required String stack,
+      required bool fatal,
+    }) async {
+      final version = await readInstalledAppVersion();
+      await ref.read(securedActionApiClientProvider).reportClientError(
+            message: message,
+            stack: stack,
+            fatal: fatal,
+            appVersion: version,
+            platform: defaultTargetPlatform.name,
+          );
+    };
     unawaited(_bootBackgroundRun());
     unawaited(registerThisDevice(ref));
     unawaited(reportDeviceIntegrity(ref));

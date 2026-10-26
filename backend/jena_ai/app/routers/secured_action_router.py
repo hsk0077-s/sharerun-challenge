@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
+    ClientErrorRequest,
     AppealRequest,
     IntegrityReportRequest,
     AiLearningRequest,
@@ -62,7 +63,7 @@ from app.services import appeals, daily_steps, integrity, login_devices, privacy
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
-from app.services import rate_limit, run_times, watch_pairing
+from app.services import client_errors, rate_limit, run_times, watch_pairing
 from app.services.secured_action_service import SecuredActionService
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
@@ -380,6 +381,18 @@ def record_daily_steps(request: DailyStepsRequest, uid: str = Depends(require_ui
         request.steps,
         request.source,
         request.last_health,
+    )
+
+
+@router.post("/diagnostics/client-error")
+def report_client_error(request: ClientErrorRequest, uid: str = Depends(require_uid)) -> dict:
+    return client_errors.record(
+        uid,
+        message=request.message,
+        stack=request.stack,
+        fatal=request.fatal,
+        app_version=request.app_version,
+        platform=request.platform,
     )
 
 

@@ -63,7 +63,16 @@ const wearableBrands = <WearableBrand>[
     id: 'amazfit',
     name: '어메이즈핏 (Amazfit)',
     app: 'Zepp',
-    keywords: ['어메이즈핏', 'amazfit', 'zepp', '제프', '지프', 't-rex', 'balance', 'bip'],
+    keywords: [
+      '어메이즈핏',
+      'amazfit',
+      'zepp',
+      '제프',
+      '지프',
+      't-rex',
+      'balance',
+      'bip'
+    ],
     steps: [
       'Zepp 앱에서 어메이즈핏 워치/밴드를 페어링하고 동기화해 주세요.',
       'Zepp 하단 [프로필(Profile)] → [타사 계정 연결(Third-party account linking / Add accounts)] → [Health Connect(헬스 커넥트)]를 켜고 걸음 수·심박수 쓰기를 허용해 주세요.',
@@ -75,7 +84,16 @@ const wearableBrands = <WearableBrand>[
     id: 'garmin',
     name: '가민 (Garmin)',
     app: 'Garmin Connect',
-    keywords: ['가민', 'garmin', 'garmin connect', '포러너', 'forerunner', 'fenix', 'epix', 'venu'],
+    keywords: [
+      '가민',
+      'garmin',
+      'garmin connect',
+      '포러너',
+      'forerunner',
+      'fenix',
+      'epix',
+      'venu'
+    ],
     steps: [
       'Garmin Connect 앱에서 가민 워치를 동기화해 주세요.',
       'Garmin Connect 하단 [더보기(More ···)] → [설정(Settings)] → [연결된 앱(Connected Apps)] → [헬스 커넥트(Health Connect)]에서 심박수·걸음 수 쓰기 권한을 허용해 주세요.',
@@ -109,13 +127,23 @@ const wearableBrands = <WearableBrand>[
     id: 'coros_suunto',
     name: '코로스 / 순토 (COROS · Suunto)',
     app: 'COROS · Suunto · Health Sync',
-    keywords: ['코로스', 'coros', '순토', 'suunto', 'health sync', '헬스싱크', 'pace', 'race'],
+    keywords: [
+      '코로스',
+      'coros',
+      '순토',
+      'suunto',
+      'health sync',
+      '헬스싱크',
+      'pace',
+      'race'
+    ],
     steps: [
       'COROS 또는 Suunto 앱에서 워치를 동기화해 주세요.',
       'Android에서는 [Health Sync] 브리지 앱으로 COROS/Suunto 기록을 [Health Connect]로 내보내거나, 워치에서 [심박수 브로드캐스트(Broadcast HR)]를 켜 주세요.',
       '아래 버튼으로 Health Connect 권한을 허용하거나, 기기 연동 화면의 [실시간 블루투스 심박 센서(BLE)]에서 워치를 직접 연결해 주세요.',
     ],
-    note: 'iOS는 COROS/Suunto 앱 [프로필 → 설정 → 타사 앱 → Apple 건강(Health)]을 켜면 바로 연동됩니다.',
+    note:
+        'iOS는 COROS/Suunto 앱 [프로필 → 설정 → 타사 앱 → Apple 건강(Health)]을 켜면 바로 연동됩니다.',
   ),
 ];
 
@@ -125,6 +153,7 @@ const wearableBrands = <WearableBrand>[
 Future<void> showWearableBrandGuide(
   BuildContext context, {
   required VoidCallback onConnect,
+  String? initialBrandId,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -132,6 +161,7 @@ Future<void> showWearableBrandGuide(
     useSafeArea: true,
     backgroundColor: AppColors.surfaceWhite,
     builder: (sheetContext) => WearableBrandGuide(
+      initialBrandId: initialBrandId,
       onConnect: () {
         Navigator.of(sheetContext).pop();
         onConnect();
@@ -141,9 +171,16 @@ Future<void> showWearableBrandGuide(
 }
 
 class WearableBrandGuide extends StatefulWidget {
-  const WearableBrandGuide({super.key, required this.onConnect});
+  const WearableBrandGuide({
+    super.key,
+    required this.onConnect,
+    this.initialBrandId,
+  });
 
   final VoidCallback onConnect;
+
+  /// 주어지면 목록 없이 이 기기의 안내부터 연다.
+  final String? initialBrandId;
 
   static const searchFieldKey = Key('wearable-guide-search');
   static const connectButtonKey = Key('wearable-guide-connect');
@@ -158,6 +195,17 @@ class WearableBrandGuide extends StatefulWidget {
 class _WearableBrandGuideState extends State<WearableBrandGuide> {
   var _query = '';
   WearableBrand? _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = widget.initialBrandId;
+    if (id != null) {
+      for (final b in wearableBrands) {
+        if (b.id == id) _selected = b;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -275,8 +323,8 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(brand.steps[i],
-                        style: AppTextStyles.caption
-                            .copyWith(color: AppColors.textBlack, height: 1.45)),
+                        style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textBlack, height: 1.45)),
                   ),
                 ],
               ),

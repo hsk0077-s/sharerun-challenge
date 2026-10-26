@@ -148,28 +148,30 @@ class _DeviceConnectionScreenState
                     const SizedBox(height: 12),
                     _ExternalDeviceTile(
                       label: WatchType.garmin.displayLabel,
+                      actionLabel: AppEnv.garminLinkEnabled ? null : '연결 방법',
                       selected: watchType == WatchType.garmin,
                       enabled: !_busy && authUser != null,
-                      comingSoon: !AppEnv.garminLinkEnabled,
                       onConnect: AppEnv.garminLinkEnabled
                           ? () => _openGarminOAuth(authUser?.uid)
-                          : _showComingSoonDialog,
+                          : () => _openBrandGuide('garmin', authUser?.uid),
                     ),
                     const SizedBox(height: 8),
                     _ExternalDeviceTile(
                       label: WatchType.suunto.displayLabel,
+                      actionLabel: '연결 방법',
                       selected: watchType == WatchType.suunto,
                       enabled: !_busy && authUser != null,
-                      comingSoon: true,
-                      onConnect: _showComingSoonDialog,
+                      onConnect: () =>
+                          _openBrandGuide('coros_suunto', authUser?.uid),
                     ),
                     const SizedBox(height: 8),
                     _ExternalDeviceTile(
                       label: WatchType.coros.displayLabel,
+                      actionLabel: '연결 방법',
                       selected: watchType == WatchType.coros,
                       enabled: !_busy && authUser != null,
-                      comingSoon: true,
-                      onConnect: _showComingSoonDialog,
+                      onConnect: () =>
+                          _openBrandGuide('coros_suunto', authUser?.uid),
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton(
@@ -412,27 +414,12 @@ class _DeviceConnectionScreenState
     );
   }
 
-  Future<void> _showComingSoonDialog() async {
-    if (!mounted || !context.mounted) return;
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: const Text('준비 중'),
-          content: const Text(
-            '준비 중입니다. 빠른 시일 내에 연동 서비스를 제공하겠습니다.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('확인'),
-            ),
-          ],
-        );
-      },
+  /// 계정 로그인 연동이 없는 기기는, 그 기기 앱을 Health Connect와 잇는 방법을 안내한다.
+  void _openBrandGuide(String brandId, String? uid) {
+    showWearableBrandGuide(
+      context,
+      initialBrandId: brandId,
+      onConnect: () => _connectFromGuide(uid),
     );
   }
 
@@ -729,7 +716,7 @@ class _ExternalDeviceTile extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onConnect,
-    this.comingSoon = false,
+    this.actionLabel,
   });
 
   final String label;
@@ -737,8 +724,8 @@ class _ExternalDeviceTile extends StatelessWidget {
   final bool enabled;
   final VoidCallback onConnect;
 
-  /// 아직 연동이 없는 기기. 버튼 대신 "준비 중" 표시만 보인다.
-  final bool comingSoon;
+  /// 버튼 글자. 비우면 "연결".
+  final String? actionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -764,42 +751,25 @@ class _ExternalDeviceTile extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: comingSoon
-            ? Container(
-                key: Key('external-device-coming-soon-$label'),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppColors.borderLight),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                child: Text(
-                  '준비 중',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textGrey,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              )
-            : SizedBox(
-                height: 36,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primaryMint,
-                    foregroundColor: AppColors.nightOnLime,
-                    disabledBackgroundColor: AppColors.buttonDisabled,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: enabled ? onConnect : null,
-                  child: const Text(
-                    AppStrings.deviceConnectionConnect,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                  ),
-                ),
+        trailing: SizedBox(
+          height: 36,
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryMint,
+              foregroundColor: AppColors.nightOnLime,
+              disabledBackgroundColor: AppColors.buttonDisabled,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
+            ),
+            onPressed: enabled ? onConnect : null,
+            child: Text(
+              actionLabel ?? AppStrings.deviceConnectionConnect,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
       ),
     );
   }

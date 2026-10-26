@@ -18,6 +18,7 @@ import '../features/profile/widgets/activity_list_card.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/my_dashboard_sections.dart';
 import '../features/profile/widgets/my_page_invite_code_card.dart';
+import '../features/profile/widgets/my_watch_card.dart';
 import '../features/profile/widgets/my_page_referral_code_entry.dart';
 import '../features/profile/widgets/my_village_hero.dart';
 import '../features/profile/widgets/retention_widgets.dart';
@@ -99,6 +100,7 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const MyWatchCard(),
                       const PromotionProgressCard(),
                       const MyWalletChips(),
                       const SizedBox(height: 8),

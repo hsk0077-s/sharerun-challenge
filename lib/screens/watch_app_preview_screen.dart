@@ -187,18 +187,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
           const SizedBox(height: 16),
           const StoreSectionLabel('갤럭시 워치 화면 시안'),
           const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: const [
-                _WatchFace(label: '시작', big: '3km', sub: '탭해서 시작', icon: Icons.play_arrow_rounded),
-                _WatchFace(label: '달리는 중', big: '5:42', sub: '♥ 148  ·  1.8km', icon: Icons.directions_run),
-                _WatchFace(label: '일시정지', big: '일시정지', sub: '탭해서 다시 시작', icon: Icons.pause_rounded),
-                _WatchFace(label: '대회 알림', big: '1위!', sub: '대회 2명 앞서요', icon: Icons.emoji_events_outlined),
-                _WatchFace(label: '끝', big: '3.00km', sub: '5:38/km · 17분', icon: Icons.check_rounded),
-              ],
-            ),
-          ),
+          const _WatchFaceCarousel(),
         ],
       ),
     );
@@ -333,48 +322,115 @@ class _PlatformRow extends StatelessWidget {
   }
 }
 
-class _WatchFace extends StatelessWidget {
-  const _WatchFace({
-    required this.label,
-    required this.big,
-    required this.sub,
-    required this.icon,
-  });
+class _WatchFaceData {
+  const _WatchFaceData(this.label, this.big, this.sub, this.icon);
   final String label;
   final String big;
   final String sub;
   final IconData icon;
+}
+
+const _watchFaces = [
+  _WatchFaceData('시작', '3km', '탭해서 시작', Icons.play_arrow_rounded),
+  _WatchFaceData('달리는 중', '5:42', '♥ 148  ·  1.8km', Icons.directions_run),
+  _WatchFaceData('일시정지', '일시정지', '탭해서 다시 시작', Icons.pause_rounded),
+  _WatchFaceData('대회 알림', '1위!', '대회 2명 앞서요', Icons.emoji_events_outlined),
+  _WatchFaceData('끝', '3.00km', '5:38/km · 17분', Icons.check_rounded),
+];
+
+/// 시계 화면 시안을 크게 한 장씩 넘겨 본다. 실제 워치 앱의 화면 순서와 같다.
+class _WatchFaceCarousel extends StatefulWidget {
+  const _WatchFaceCarousel();
+
+  @override
+  State<_WatchFaceCarousel> createState() => _WatchFaceCarouselState();
+}
+
+class _WatchFaceCarouselState extends State<_WatchFaceCarousel> {
+  final _controller = PageController(viewportFraction: 0.8);
+  var _page = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
-    return Padding(
-      padding: const EdgeInsets.only(right: 14),
-      child: Column(
-        children: [
-          Container(
-            width: 132,
-            height: 132,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF0A0A0A),
-              border: Border.all(color: const Color(0xFF3A3A3A), width: 5),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 22, color: c.primary),
-                const SizedBox(height: 4),
-                Text(big, style: storeText(big.length > 5 ? 15 : 24, Colors.white, w: FontWeight.w900)),
-                const SizedBox(height: 4),
-                Text(sub, style: storeText(10, const Color(0xFFB8B8B8))),
-              ],
-            ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 290,
+          child: PageView.builder(
+            key: const Key('watch-face-carousel'),
+            controller: _controller,
+            itemCount: _watchFaces.length,
+            onPageChanged: (i) => setState(() => _page = i),
+            itemBuilder: (_, i) => _WatchFace(data: _watchFaces[i]),
           ),
-          const SizedBox(height: 8),
-          Text(label, style: storeText(12, c.muted, w: FontWeight.w700)),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < _watchFaces.length; i++)
+              Container(
+                width: i == _page ? 18 : 7,
+                height: 7,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(99),
+                  color: i == _page ? c.primary : c.outline,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '시안입니다. 실제 시계 화면과 조금 다를 수 있어요.',
+          style: storeText(11, c.muted),
+        ),
+      ],
+    );
+  }
+}
+
+class _WatchFace extends StatelessWidget {
+  const _WatchFace({required this.data});
+  final _WatchFaceData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return Column(
+      children: [
+        Container(
+          width: 220,
+          height: 220,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF0A0A0A),
+            border: Border.all(color: const Color(0xFF3A3A3A), width: 8),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(data.icon, size: 36, color: c.primary),
+              const SizedBox(height: 6),
+              Text(
+                data.big,
+                style: storeText(data.big.length > 5 ? 26 : 40, Colors.white, w: FontWeight.w900),
+              ),
+              const SizedBox(height: 6),
+              Text(data.sub, style: storeText(14, const Color(0xFFB8B8B8))),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(data.label, style: storeText(14, c.muted, w: FontWeight.w700)),
+      ],
     );
   }
 }

@@ -43,6 +43,22 @@ import '../features/wallet/providers/debug_local_share_history_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import 'my_wallet_screen.dart';
 
+/// 챌린지 화면 위쪽 글자. 등급 목표를 채우면 막대가 아직 차지 않아도 "달성"이라 말하고,
+/// 막대의 끝(만보)까지 남은 걸음을 알려 준다.
+@visibleForTesting
+String walkingGoalLabel({
+  required int percent,
+  required bool complete,
+  required int steps,
+  required String Function(int) comma,
+  int dailyGoalSteps = 10000,
+}) {
+  if (!complete) return '등급 목표 달성률: $percent%';
+  final left = dailyGoalSteps - steps;
+  if (left <= 0) return '등급 목표 달성 · 만보 달성!';
+  return '등급 목표 달성! 만보까지 ${comma(left)}걸음';
+}
+
 class PedometerData {
   const PedometerData({
     required this.steps,
@@ -96,9 +112,8 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
       final capped = PedometerHealthCap.cap(savedSteps, capHealth);
       if (capped != savedSteps) {
         savedSteps = capped;
-        savedKm = savedSteps > 0
-            ? SoloPedometerEngine.kmFromSteps(savedSteps)
-            : 0.0;
+        savedKm =
+            savedSteps > 0 ? SoloPedometerEngine.kmFromSteps(savedSteps) : 0.0;
         injectedCloud = true;
       }
       if (injectedCloud) {
@@ -229,8 +244,10 @@ class PedometerNotifier extends StateNotifier<PedometerData> {
     String dateKey,
     int steps,
   ) async {
-    List<String> history = prefs.getStringList('pedometer_weekly_history') ?? [];
-    final existingIndex = history.indexWhere((item) => item.startsWith(dateKey));
+    List<String> history =
+        prefs.getStringList('pedometer_weekly_history') ?? [];
+    final existingIndex =
+        history.indexWhere((item) => item.startsWith(dateKey));
     if (existingIndex != -1) {
       history[existingIndex] = '$dateKey:$steps';
     } else {
@@ -1213,7 +1230,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         prefs.get(PedometerHarvestLedger.todayClaimedKey(todayKey)),
       );
       final savedClaimedGlobal = PedometerHarvestLedger.claimedFromGlobal(
-        storedDate: prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
+        storedDate:
+            prefs.getString(PedometerHarvestLedger.globalClaimedDateKey),
         storedClaimed: _prefToInt(
           prefs.get(PedometerHarvestLedger.globalClaimedKey),
         ),
@@ -1223,12 +1241,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           prefs.getBool('$prefix.hasReceivedChallengeReward') ?? false;
       final savedBonusReward =
           prefs.getBool('$prefix.hasReceivedBonusReward') ?? false;
-      final savedMilestone1 =
-          prefs.getBool('$prefix.hasReceivedMilestone1') ?? savedChallengeReward;
-      final savedMilestone2 =
-          prefs.getBool('$prefix.hasReceivedMilestone2') ?? savedChallengeReward;
-      final savedMilestone3 =
-          prefs.getBool('$prefix.hasReceivedMilestone3') ?? savedChallengeReward;
+      final savedMilestone1 = prefs.getBool('$prefix.hasReceivedMilestone1') ??
+          savedChallengeReward;
+      final savedMilestone2 = prefs.getBool('$prefix.hasReceivedMilestone2') ??
+          savedChallengeReward;
+      final savedMilestone3 = prefs.getBool('$prefix.hasReceivedMilestone3') ??
+          savedChallengeReward;
       final savedBonus =
           prefs.getBool('$prefix.hasReceivedBonus') ?? savedBonusReward;
       final storedCoins = prefs.get('collected_share_coins');
@@ -1347,10 +1365,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         _claimedTenths
           ..clear()
           ..addAll(
-            raw
-                .split(',')
-                .map((e) => int.tryParse(e.trim()))
-                .whereType<int>(),
+            raw.split(',').map((e) => int.tryParse(e.trim())).whereType<int>(),
           );
       });
       _spawnCoinsForKm(_km);
@@ -1515,91 +1530,94 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       }
       final uid = _harvestUid();
       try {
-      if (uid.isEmpty) {
-        throw StateError('로그인이 필요합니다.');
-      }
-      final result = await ref.read(walletRepositoryProvider).harvestPedometerShare(
-            claimedSteps: nextClaimed,
-          );
-      final credited = result.creditedShare(fallback: toClaim);
-      final minted = result.mintedShare && credited > 0;
-      final accepted = result.status == 'harvested' ||
-          result.status == 'already_harvested' ||
-          result.status == 'daily_cap_reached';
-      if (minted || result.shareBalance != null) {
-        ref.read(walletProvider.notifier).applyShareFromServer(
-              shareBalance: result.shareBalance,
-              shareCredited: minted ? credited : 0,
-            );
-      }
-      if (accepted) {
-        _claimedSteps = nextClaimed;
-        if (minted && mounted) {
-          setState(() => _mascotPickupNonce += 1);
+        if (uid.isEmpty) {
+          throw StateError('로그인이 필요합니다.');
         }
-        if (mounted) {
-          ref.read(walkingPendingShareProvider.notifier).state =
-              _computePendingShare(liveSteps);
-          unawaited(_syncForegroundNotification(liveSteps));
-        }
-      }
-      ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
-      if (accepted) {
-        await _persistHarvestWalletUi(
-          uid: uid,
-          credited: minted ? credited : 0,
-          source: 'jena',
-        );
-      }
-      if (minted || credited > 0) {
-        final coach = _voiceCoachOf();
-        final beforeEpoch = coach.liveSessionEpoch;
-        unawaited(coach.onHarvestCompleted());
-        if (coach.liveSessionEpoch != beforeEpoch) {
-          _voiceCoachEpoch = coach.liveSessionEpoch;
-        }
-      }
-    } catch (e) {
-      debugPrint('[HARVEST] secured credit failed: $e');
-      if (DebugLocalHarvest.shouldCreditOnJenaFailure(
-        debugMode: kDebugMode,
-        toClaim: toClaim,
-      )) {
-        ref.read(debugEconomyStatusProvider.notifier).markJenaFail();
-        ref.read(walletProvider.notifier).applyShareFromServer(
-              shareCredited: toClaim,
-            );
-        final walletShare = ref.read(walletProvider).shareBalance;
-        _claimedSteps = nextClaimed;
-        try {
-          await ref.read(walletRepositoryProvider).creditLocalDebugHarvestShare(
-                uid: uid,
-                shareBalance: walletShare,
+        final result =
+            await ref.read(walletRepositoryProvider).harvestPedometerShare(
+                  claimedSteps: nextClaimed,
+                );
+        final credited = result.creditedShare(fallback: toClaim);
+        final minted = result.mintedShare && credited > 0;
+        final accepted = result.status == 'harvested' ||
+            result.status == 'already_harvested' ||
+            result.status == 'daily_cap_reached';
+        if (minted || result.shareBalance != null) {
+          ref.read(walletProvider.notifier).applyShareFromServer(
+                shareBalance: result.shareBalance,
+                shareCredited: minted ? credited : 0,
               );
-        } catch (writeError) {
-          debugPrint(
-            '${DebugLocalHarvest.logPrefix} harvest Firestore write failed: '
-            '$writeError',
+        }
+        if (accepted) {
+          _claimedSteps = nextClaimed;
+          if (minted && mounted) {
+            setState(() => _mascotPickupNonce += 1);
+          }
+          if (mounted) {
+            ref.read(walkingPendingShareProvider.notifier).state =
+                _computePendingShare(liveSteps);
+            unawaited(_syncForegroundNotification(liveSteps));
+          }
+        }
+        ref.read(debugEconomyStatusProvider.notifier).markJenaOk();
+        if (accepted) {
+          await _persistHarvestWalletUi(
+            uid: uid,
+            credited: minted ? credited : 0,
+            source: 'jena',
           );
         }
-        await _persistHarvestWalletUi(
-          uid: uid,
-          credited: toClaim,
-          source: 'local',
-        );
-        final coach = _voiceCoachOf();
-        final beforeEpoch = coach.liveSessionEpoch;
-        unawaited(coach.onHarvestCompleted());
-        if (coach.liveSessionEpoch != beforeEpoch) {
-          _voiceCoachEpoch = coach.liveSessionEpoch;
+        if (minted || credited > 0) {
+          final coach = _voiceCoachOf();
+          final beforeEpoch = coach.liveSessionEpoch;
+          unawaited(coach.onHarvestCompleted());
+          if (coach.liveSessionEpoch != beforeEpoch) {
+            _voiceCoachEpoch = coach.liveSessionEpoch;
+          }
         }
-      } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('SHARE 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
-          ),
-        );
-      }
+      } catch (e) {
+        debugPrint('[HARVEST] secured credit failed: $e');
+        if (DebugLocalHarvest.shouldCreditOnJenaFailure(
+          debugMode: kDebugMode,
+          toClaim: toClaim,
+        )) {
+          ref.read(debugEconomyStatusProvider.notifier).markJenaFail();
+          ref.read(walletProvider.notifier).applyShareFromServer(
+                shareCredited: toClaim,
+              );
+          final walletShare = ref.read(walletProvider).shareBalance;
+          _claimedSteps = nextClaimed;
+          try {
+            await ref
+                .read(walletRepositoryProvider)
+                .creditLocalDebugHarvestShare(
+                  uid: uid,
+                  shareBalance: walletShare,
+                );
+          } catch (writeError) {
+            debugPrint(
+              '${DebugLocalHarvest.logPrefix} harvest Firestore write failed: '
+              '$writeError',
+            );
+          }
+          await _persistHarvestWalletUi(
+            uid: uid,
+            credited: toClaim,
+            source: 'local',
+          );
+          final coach = _voiceCoachOf();
+          final beforeEpoch = coach.liveSessionEpoch;
+          unawaited(coach.onHarvestCompleted());
+          if (coach.liveSessionEpoch != beforeEpoch) {
+            _voiceCoachEpoch = coach.liveSessionEpoch;
+          }
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('SHARE 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
+            ),
+          );
+        }
       }
     } finally {
       _harvestInFlight = false;
@@ -1714,8 +1732,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       memoryDayKey: _kstDayKey,
       todayKey: todayKey,
     );
-    final shownHealth =
-        _lastHealthToday ?? PedometerHealthCap.cached(todayKey);
+    final shownHealth = _lastHealthToday ?? PedometerHealthCap.cached(todayKey);
     final effectiveSteps = PedometerStepTruth.dailyFromSources(
       liveDaily: liveSteps,
       persistedToday: localSteps,
@@ -1740,8 +1757,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       claimedSteps: claimedSteps,
     );
     final hasPendingCoins = pendingCoinsInt >= 1;
-    final harvestProfile =
-        ref.watch(activeUserProfileProvider).asData?.value;
+    final harvestProfile = ref.watch(activeUserProfileProvider).asData?.value;
     final serverMined = PedometerHarvestLedger.displayHarvestedShare(
       dateKey: harvestProfile?.pedometerHarvestDateKey ?? '',
       harvestedShare: harvestProfile?.pedometerHarvestedShare ?? 0,
@@ -1756,104 +1772,104 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         value: SystemUiOverlayStyle.light
             .copyWith(statusBarColor: Colors.transparent),
         child: PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _goHomeSafe();
-      },
-      child: Scaffold(
-        backgroundColor: WalkingLook.pageMist,
-        body: DecoratedBox(
-          decoration: const BoxDecoration(
-            gradient: WalkingLook.pageGradient,
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: _WalkingHeroCanvas(
-                        title: '워킹챌린지',
-                        onBack: _goHomeSafe,
-                        onShare: _onShareWalkingChallenge,
-                        gauge: _buildHybridProgressGauge(
-                          tier: running,
-                          currentKm: displayedKm,
-                          currentSteps: displayedSteps,
-                          characterSize: buddySize,
-                          moving: _isMoving,
-                          pickupNonce: _mascotPickupNonce,
-                        ),
-                        stepCount: _comma(displayedSteps),
-                        km: displayedKm,
-                        kcal: displayedSteps * 0.045,
-                        pendingShare: pendingCoinsInt.toDouble(),
-                        tierLabel: '[${running.koreanName}] 산책 중',
-                      ),
-                    ),
-                    SliverPadding(
-                      padding: EdgeInsets.fromLTRB(
-                        tokens.spacing.page,
-                        tokens.spacing.md,
-                        tokens.spacing.page,
-                        tokens.spacing.sm,
-                      ),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate(
-                          [
-                            _buildCumulativeShareAccountCard(),
-                            SizedBox(height: tokens.spacing.sm),
-                            _WeekJournalCard(
-                              days: weekDays,
-                              stepsByKey: weekSteps,
-                              selectedKey: selectedKey,
-                              todayKey: todayKey,
-                              stepOffset: 0,
-                              onSelect: _onSelectWeekDay,
-                            ),
-                            if (running.isSnail) ...[
-                              SizedBox(height: tokens.spacing.sm),
-                              Text(
-                                '👼 ${WalkingChallengeNotificationCopy.harvestHint(running.targetSteps)}',
-                                textAlign: TextAlign.center,
-                                style: textTheme.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12,
-                                  color: tokens.colors.accent,
-                                ),
-                              ),
-                            ],
-                            SizedBox(height: tokens.spacing.md),
-                            _BenefitNotifBanner(
-                              enabled: _isNotificationEnabled,
-                              onToggle: () => unawaited(
-                                _setBenefitNotifEnabled(
-                                  !_isNotificationEnabled,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: tokens.spacing.sm),
-                            const VoiceCoachingWalkBanner(),
-                            SizedBox(height: tokens.spacing.lg),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            _goHomeSafe();
+          },
+          child: Scaffold(
+            backgroundColor: WalkingLook.pageMist,
+            body: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: WalkingLook.pageGradient,
               ),
-              _WalkingHarvestDock(
-                isMaxDailyReached: isMaxDailyReached,
-                hasPendingCoins: hasPendingCoins,
-                pendingCoinsInt: pendingCoinsInt,
-                onClaim: () => unawaited(_onHarvestCoins()),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: _WalkingHeroCanvas(
+                            title: '워킹챌린지',
+                            onBack: _goHomeSafe,
+                            onShare: _onShareWalkingChallenge,
+                            gauge: _buildHybridProgressGauge(
+                              tier: running,
+                              currentKm: displayedKm,
+                              currentSteps: displayedSteps,
+                              characterSize: buddySize,
+                              moving: _isMoving,
+                              pickupNonce: _mascotPickupNonce,
+                            ),
+                            stepCount: _comma(displayedSteps),
+                            km: displayedKm,
+                            kcal: displayedSteps * 0.045,
+                            pendingShare: pendingCoinsInt.toDouble(),
+                            tierLabel: '[${running.koreanName}] 산책 중',
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(
+                            tokens.spacing.page,
+                            tokens.spacing.md,
+                            tokens.spacing.page,
+                            tokens.spacing.sm,
+                          ),
+                          sliver: SliverList(
+                            delegate: SliverChildListDelegate(
+                              [
+                                _buildCumulativeShareAccountCard(),
+                                SizedBox(height: tokens.spacing.sm),
+                                _WeekJournalCard(
+                                  days: weekDays,
+                                  stepsByKey: weekSteps,
+                                  selectedKey: selectedKey,
+                                  todayKey: todayKey,
+                                  stepOffset: 0,
+                                  onSelect: _onSelectWeekDay,
+                                ),
+                                if (running.isSnail) ...[
+                                  SizedBox(height: tokens.spacing.sm),
+                                  Text(
+                                    '👼 ${WalkingChallengeNotificationCopy.harvestHint(running.targetSteps)}',
+                                    textAlign: TextAlign.center,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                      color: tokens.colors.accent,
+                                    ),
+                                  ),
+                                ],
+                                SizedBox(height: tokens.spacing.md),
+                                _BenefitNotifBanner(
+                                  enabled: _isNotificationEnabled,
+                                  onToggle: () => unawaited(
+                                    _setBenefitNotifEnabled(
+                                      !_isNotificationEnabled,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: tokens.spacing.sm),
+                                const VoiceCoachingWalkBanner(),
+                                SizedBox(height: tokens.spacing.lg),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _WalkingHarvestDock(
+                    isMaxDailyReached: isMaxDailyReached,
+                    hasPendingCoins: hasPendingCoins,
+                    pendingCoinsInt: pendingCoinsInt,
+                    onClaim: () => unawaited(_onHarvestCoins()),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
         ),
       ),
     );
@@ -1865,8 +1881,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final tokens = SrcTokens.night;
     final textTheme = SrcTheme.night.textTheme;
     final walletShare = ref.watch(walletProvider).shareBalance;
-    final harvestProfile =
-        ref.watch(activeUserProfileProvider).asData?.value;
+    final harvestProfile = ref.watch(activeUserProfileProvider).asData?.value;
     final todayCollectedCoins = PedometerHarvestLedger.displayHarvestedShare(
       dateKey: harvestProfile?.pedometerHarvestDateKey ?? '',
       harvestedShare: harvestProfile?.pedometerHarvestedShare ?? 0,
@@ -1934,12 +1949,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     required double currentKm,
     required int currentSteps,
   }) {
-    final progressKm =
-        tier.targetKm <= 0 ? 0.0 : currentKm / tier.targetKm;
+    final progressKm = tier.targetKm <= 0 ? 0.0 : currentKm / tier.targetKm;
     final progressSteps =
         tier.targetSteps <= 0 ? 0.0 : currentSteps / tier.targetSteps;
-    final finalProgress =
-        math.max(progressKm, progressSteps).clamp(0.0, 1.0);
+    final finalProgress = math.max(progressKm, progressSteps).clamp(0.0, 1.0);
     if (finalProgress.isNaN || finalProgress.isInfinite) return 0.0;
     return finalProgress.toDouble();
   }
@@ -2037,7 +2050,13 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     return Column(
       children: [
         Text(
-          '목표 달성률: $percent%',
+          // 등급 목표(깃발)와 만보(막대 끝)는 서로 다른 목표다. 글자가 어느 쪽인지 말해 준다.
+          walkingGoalLabel(
+            percent: percent,
+            complete: complete,
+            steps: currentSteps,
+            comma: _comma,
+          ),
           textAlign: TextAlign.center,
           style: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w800,
@@ -2283,7 +2302,9 @@ class _WalkingHeroCanvas extends StatelessWidget {
                   SizedBox(height: tokens.spacing.md),
                   Row(
                     children: [
-                      Expanded(child: _HeroStatChip(label: '${km.toStringAsFixed(2)} km')),
+                      Expanded(
+                          child: _HeroStatChip(
+                              label: '${km.toStringAsFixed(2)} km')),
                       SizedBox(width: tokens.spacing.xs),
                       Expanded(
                         child: _HeroStatChip(
@@ -2482,9 +2503,7 @@ class _BenefitNotifBanner extends StatelessWidget {
           SizedBox(width: tokens.spacing.xs),
           Expanded(
             child: Text(
-              enabled
-                  ? '워킹챌린지 혜택 알림 받는 중 🔔'
-                  : '혜택 알림이 완전히 꺼져 있습니다 🔕',
+              enabled ? '워킹챌린지 혜택 알림 받는 중 🔔' : '혜택 알림이 완전히 꺼져 있습니다 🔕',
               style: textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: enabled ? tokens.colors.ink : tokens.colors.muted,
@@ -2509,9 +2528,8 @@ class _BenefitNotifBanner extends StatelessWidget {
                 enabled ? '알림 해지' : '알림 받기',
                 style: textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w800,
-                  color: enabled
-                      ? tokens.colors.accent
-                      : tokens.colors.onPrimary,
+                  color:
+                      enabled ? tokens.colors.accent : tokens.colors.onPrimary,
                 ),
               ),
             ),

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'providers/app_providers.dart';
+import '../core/navigation/root_back_fallback.dart';
 import '../core/theme/src_theme.dart';
 import '../features/privacy/login_devices.dart';
 import '../features/integrity/integrity_check.dart';
@@ -133,10 +134,8 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        final inner = _router?.routerDelegate.navigatorKey.currentState;
-        if (inner != null && inner.mounted) {
-          inner.maybePop();
-        }
+        final router = _router;
+        if (router != null) unawaited(backWithHomeFallback(router));
       },
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

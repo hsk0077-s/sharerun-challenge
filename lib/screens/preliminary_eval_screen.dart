@@ -31,8 +31,31 @@ class PreliminaryEvalScreen extends ConsumerWidget {
     );
   }
 
+  /// 이 화면 위에 돌아갈 화면이 없을 때(건너뛰기로 들어온 경우 등) 뒤로 가기는 앱을 끄지 않고
+  /// 홈으로 보낸다.
+  void _backToHome(BuildContext context) {
+    final router = GoRouter.maybeOf(context);
+    if (router != null) {
+      router.go(RouteNames.home);
+      return;
+    }
+    _goHome(context);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final canPop = Navigator.of(context).canPop() ||
+        (GoRouter.maybeOf(context)?.canPop() ?? false);
+    return PopScope(
+      canPop: canPop,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _backToHome(context);
+      },
+      child: _screen(context, ref),
+    );
+  }
+
+  Widget _screen(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(activeUserProfileProvider).asData?.value;
     final hasRouter = GoRouter.maybeOf(context) != null;
     final tier = UserTier.tryFromRankScore(profile?.gradeRank ?? 0);
@@ -86,7 +109,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                   final reached = step <= done;
                   return Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(right: index < _total - 1 ? 8 : 0),
+                      padding:
+                          EdgeInsets.only(right: index < _total - 1 ? 8 : 0),
                       child: Column(
                         children: [
                           Container(

@@ -47,6 +47,51 @@ void main() {
     expect(find.byType(PreliminaryEvalScreen), findsNothing);
   });
 
+  testWidgets('back on the root grade screen goes home instead of quitting',
+      (tester) async {
+    final router = GoRouter(
+      initialLocation: RouteNames.preliminaryEval,
+      routes: [
+        GoRoute(
+          path: RouteNames.preliminaryEval,
+          builder: (_, __) => const PreliminaryEvalScreen(),
+        ),
+        GoRoute(
+          path: RouteNames.home,
+          builder: (_, __) => const Scaffold(body: Text('home-shell')),
+        ),
+      ],
+    );
+    await tester.pumpWidget(_scope(MaterialApp.router(routerConfig: router)));
+    await tester.pumpAndSettle();
+
+    final handled = await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(handled, isTrue);
+    expect(find.text('home-shell'), findsOneWidget);
+  });
+
+  testWidgets('without a router, back on the root also goes home',
+      (tester) async {
+    await tester.pumpWidget(
+      _scope(
+        MaterialApp(
+          routes: {
+            RouteNames.home: (_) => const Scaffold(body: Text('home-shell')),
+          },
+          home: const PreliminaryEvalScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('home-shell'), findsOneWidget);
+  });
+
   testWidgets('opened from home the start button runs the preflight',
       (tester) async {
     final router = GoRouter(

@@ -25,6 +25,10 @@ class _FakeUser implements User {
 class _FakeRepo implements UserRepository {
   final watchTypes = <WatchType>[];
   var onboardingCompleted = 0;
+  var skipped = 0;
+
+  @override
+  Future<void> skipDeviceOnboarding({required String uid}) async => skipped++;
 
   @override
   Future<void> updateWatchType({
@@ -107,6 +111,60 @@ void main() {
     expect(find.text(WatchType.coros.displayLabel), findsNothing);
     expect(find.text(AppStrings.watchSyncApple), findsNothing);
     expect(find.text(AppStrings.watchSyncGoogle), findsOneWidget);
+  });
+
+  testWidgets(
+      'opened from settings the top button just closes and does not skip onboarding',
+      (tester) async {
+    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repo = _FakeRepo();
+    final profile = UserModel.dashboardDefault(uid: 'u1');
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        authStateChangesProvider
+            .overrideWith((ref) => Stream<User?>.value(_FakeUser())),
+        activeUserProfileProvider
+            .overrideWith((ref) => Stream<UserModel>.value(profile)),
+        userRepositoryProvider.overrideWithValue(repo),
+        healthDataServiceProvider.overrideWithValue(_FakeHealth()),
+      ],
+      child: MaterialApp(
+        theme: SrcTheme.light,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              key: const Key('open-device'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const DeviceConnectionScreen(),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.byKey(const Key('open-device')));
+    await tester.pumpAndSettle();
+
+    expect(find.text(AppStrings.watchSyncSkip), findsNothing);
+    await tester.tap(find.text('닫기'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DeviceConnectionScreen), findsNothing);
+    expect(find.byKey(const Key('open-device')), findsOneWidget);
+    expect(repo.skipped, 0);
+  });
+
+  testWidgets('during sign-up (nothing below it) skip still moves on',
+      (tester) async {
+    final repo = _FakeRepo();
+    await _pump(tester, health: _FakeHealth(), repo: repo);
+    expect(find.text(AppStrings.watchSyncSkip), findsOneWidget);
+    expect(find.text('닫기'), findsNothing);
   });
 
   testWidgets('caption names smartbands and GPS watches, not only Wear OS',

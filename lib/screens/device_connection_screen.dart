@@ -80,7 +80,7 @@ class _DeviceConnectionScreenState
                     TextButton(
                       onPressed: _busy ? null : () => _onSkip(authUser?.uid),
                       child: Text(
-                        AppStrings.watchSyncSkip,
+                        _canGoBack() ? '닫기' : AppStrings.watchSyncSkip,
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.textGrey,
                           fontWeight: FontWeight.w500,
@@ -219,8 +219,24 @@ class _DeviceConnectionScreenState
     }
   }
 
+  /// 이 화면 위에 돌아갈 화면이 있는지. 설정·마이 화면에서 열었으면 있다.
+  bool _canGoBack() {
+    try {
+      if (Navigator.of(context).canPop()) return true;
+      return GoRouter.maybeOf(context)?.canPop() ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> _onSkip(String? uid) async {
     if (_busy) return;
+    // 설정·마이 화면에서 연 관리 화면이면 "건너뛰기"는 그냥 닫기다. 가입 중 온보딩 단계가
+    // 아니므로 등급 배정 화면으로 보내거나 온보딩을 다시 끝낸 것으로 기록하지 않는다.
+    if (_canGoBack()) {
+      _safeBack();
+      return;
+    }
     setState(() => _busy = true);
     try {
       if (uid != null) {

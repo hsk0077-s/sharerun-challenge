@@ -222,7 +222,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '오늘 걸음 (이 폰)',
+              '오늘 걸음',
               style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
             ),
             FittedBox(

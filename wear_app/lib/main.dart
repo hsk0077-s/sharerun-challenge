@@ -172,7 +172,7 @@ class _RunFlowState extends State<RunFlow> {
       queue: _queue,
       onChanged: () async => widget.queueStore?.save(_queue),
     );
-    final sent = await uploader.flush();
+    final sent = await uploader.flush(deviceId: await account.deviceId());
     if (sent > 0 && mounted) setState(() {});
   }
 

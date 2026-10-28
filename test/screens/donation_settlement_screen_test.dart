@@ -63,7 +63,7 @@ void main() {
     expect(find.text(DonationSettlementScreen.intro), findsOneWidget);
     expect(find.text('12,500원'), findsOneWidget);
     expect(find.text('480,000원'), findsOneWidget);
-    expect(find.text('이번 달 한도 1,000,000원'), findsOneWidget);
+    expect(find.text('이번 달 4,800 / 10,000 km · 48%'), findsOneWidget);
     expect(find.text(DonationSettlementScreen.capReachedLine), findsNothing);
   });
 
@@ -93,9 +93,10 @@ void main() {
     await tester.pumpAndSettle();
 
     final text = _allText(tester).join('\n');
-    for (final banned in ['UNICEF', '유니세프', '영수증', '세금', '공제', '완벽', '내 이름으로']) {
+    for (final banned in ['UNICEF', '유니세프', '완벽', '내 이름으로']) {
       expect(text.contains(banned), isFalse, reason: banned);
     }
+    expect(text, contains(DonationSettlementScreen.disclaimer));
     expect(text, contains('운영자·스폰서'));
   });
 

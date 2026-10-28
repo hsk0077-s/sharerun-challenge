@@ -82,8 +82,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 16),
               const Text(
-                '1km 이상 검증된 달리기를 서로 다른 날 3번 마치면, '
-                '서버가 세 기록의 중간 페이스로 등급을 정해 드려요.',
+                '첫 검증 1km를 마치면 거북이 브론즈로 시작합니다. '
+                '그 다음은 기록이 쌓인 날마다 한 칸씩만 움직입니다.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.nightMuted,

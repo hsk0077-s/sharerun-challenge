@@ -426,7 +426,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         key: _fundingKey,
         child: const StoreSectionLabel('기부 펀딩'),
       ),
-      const _UnicefFundingCard(),
+      const _CompanyFundingCard(),
       const DonationMatchContribution(),
     ];
   }
@@ -884,8 +884,8 @@ class _CosmeticsPreviewRow extends StatelessWidget {
 }
 
 /// 기부 펀딩 카드. 라임 바탕에 어두운 글자. 서버 값이 있으면 이번 달 모인 기부금과 목표를 보여 준다.
-class _UnicefFundingCard extends ConsumerWidget {
-  const _UnicefFundingCard();
+class _CompanyFundingCard extends ConsumerWidget {
+  const _CompanyFundingCard();
 
   static const progressKey = Key('store-funding-progress');
 

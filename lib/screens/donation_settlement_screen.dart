@@ -18,7 +18,11 @@ class DonationSettlementScreen extends ConsumerStatefulWidget {
   static const capKey = Key('donation-settlement-cap');
 
   static const intro = '달리기 1km마다 100원을 운영자·스폰서 이름으로 기부해요.';
-  static const capReachedLine = '이번 달 기부 목표 달성!';
+  static const capReachedLine =
+      '이번 달 운영자 기부 예산을 모두 사용했어요 · 넘는 거리는 기록으로 남아요';
+  static const disclaimer =
+      '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 냅니다. '
+      '이용자의 기부금이 아니며 세금 공제 영수증이 발급되지 않습니다.';
 
   @override
   ConsumerState<DonationSettlementScreen> createState() =>
@@ -57,6 +61,23 @@ class _DonationSettlementScreenState
         _failed = true;
       });
     }
+  }
+
+  static String kmGauge(int totalWon, int capWon) {
+    String km(int wonAmount) {
+      final whole = wonAmount ~/ 100;
+      final digits = whole.toString();
+      final out = StringBuffer();
+      for (var i = 0; i < digits.length; i++) {
+        final remaining = digits.length - i;
+        if (i > 0 && remaining % 3 == 0) out.write(',');
+        out.write(digits[i]);
+      }
+      return out.toString();
+    }
+
+    final pct = capWon <= 0 ? 0 : ((totalWon / capWon) * 100).round();
+    return '이번 달 ${km(totalWon)} / ${km(capWon)} km · $pct%';
   }
 
   static String won(int value) {
@@ -141,7 +162,8 @@ class _DonationSettlementScreenState
                 capLabel: data.capReached
                     ? DonationSettlementScreen.capReachedLine
                     : (data.monthCapWon > 0
-                        ? '이번 달 한도 ${won(data.monthCapWon)}'
+                        ? _DonationSettlementScreenState.kmGauge(
+                            data.monthTotalWon, data.monthCapWon)
                         : null),
                 capKey: DonationSettlementScreen.capKey,
               ),
@@ -167,6 +189,11 @@ class _DonationSettlementScreenState
               const SizedBox(height: 18),
               Text(
                 '기부는 운영자·스폰서가 해요. 앱에서는 내가 기여한 금액을 확인할 수 있어요.',
+                style: storeText(13, c.muted, h: 1.5),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                DonationSettlementScreen.disclaimer,
                 style: storeText(13, c.muted, h: 1.5),
               ),
             ],

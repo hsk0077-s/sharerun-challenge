@@ -86,17 +86,24 @@ from app.services.company_tournament_config import (
     verified_runs_in_window,
 )
 from app.services.company_tournament_settlement import prize_finish_fields
+from app.services.charity_partner import DEFAULT_RELIEF_PARTNER
 from app.services.grade_assignment import (
     GRADE_ASSIGNMENTS,
     advance_grade_runs,
     assignment_document,
-    assignment_from_runs,
+    beginner_entry_block,
     counts_for_grade,
+    note_pace_sample,
+    on_signup_grade_track,
     run_pace_sec_per_km,
+    step_signup_grade,
 )
 from app.services.donation_cap import (
     CAP_REACHED,
+    DAILY_CAP_REACHED,
     DONATION_MONTH_TOTALS,
+    clip_daily_donation,
+    daily_donation_used,
     month_total_won,
     read_monthly_cap_won,
     won_within_cap,
@@ -1402,8 +1409,15 @@ class SecuredActionService:
         ).document(f"crew_cheer_{activity_ref.id}")
         cheer_already = cheer_ledger_ref.get(transaction=transaction).exists
 
-        requested_won = (
+        full_won = (
             verified_run_donation_won(request.distance_km) if result.verified else 0
+        )
+        donation_day = kst_day_key(current)
+        used_km, used_won = daily_donation_used(user, donation_day)
+        requested_won, counted_donation_km = (
+            clip_daily_donation(request.distance_km, full_won, used_km, used_won)
+            if result.verified
+            else (0, 0.0)
         )
         month_key = kst_month_key(current)
         donation_ref = self.firebase_service.db.collection("donationLedger").document(
@@ -1435,12 +1449,27 @@ class SecuredActionService:
         )
         if donation_counted:
             donation_reason = ""
+        elif full_won > 0 and requested_won <= 0:
+            donation_reason = DAILY_CAP_REACHED
         elif requested_won > 0:
             donation_reason = CAP_REACHED
         elif result.verified:
             donation_reason = "거리가 짧아 기부 금액이 없어요."
         else:
             donation_reason = result.reason or ""
+        paid_km = counted_donation_km
+        if requested_won > company_won and requested_won > 0:
+            paid_km = counted_donation_km * (company_won / requested_won)
+        honor_km = (
+            max(0.0, float(request.distance_km) - paid_km) if result.verified else 0.0
+        )
+        if donation_exists:
+            stored_paid = existing.get("donationCountedKm")
+            stored_honor = existing.get("donationHonorOnlyKm")
+            if isinstance(stored_paid, (int, float)) and not isinstance(stored_paid, bool):
+                paid_km = float(stored_paid)
+            if isinstance(stored_honor, (int, float)) and not isinstance(stored_honor, bool):
+                honor_km = float(stored_honor)
         raw_name = user.get("nickname")
         contributor = (
             raw_name.strip()[:12]
@@ -1490,6 +1519,8 @@ class SecuredActionService:
                     else bool(result.forfeit_deposit)
                 ),
                 "companyDonationWon": company_won if donation_counted else 0,
+                "donationCountedKm": round(paid_km, 4) if donation_counted else 0,
+                "donationHonorOnlyKm": round(honor_km, 4),
                 "donationCounted": donation_counted,
                 "donationReason": donation_reason,
                 "donationCapReached": cap_reached,
@@ -1591,20 +1622,35 @@ class SecuredActionService:
             result.verified
             and grade_pace is not None
             and counts_for_grade(request.distance_km)
-            and not _has_grade(user)
+            and on_signup_grade_track(user)
         ):
+            pace_samples, pace_added = note_pace_sample(
+                economy.get("paceSamples"),
+                activity_id=activity_ref.id,
+                day_key=kst_day_key(current),
+                pace_sec=grade_pace,
+            )
             grade_runs, grade_counted = advance_grade_runs(
                 economy.get("gradeRuns"),
                 activity_id=activity_ref.id,
                 day_key=kst_day_key(current),
                 pace_sec=grade_pace,
             )
-            if grade_counted:
-                economy_updates["gradeRuns"] = grade_runs
-                assigned = assignment_from_runs(grade_runs)
-                if assigned is not None:
-                    user_updates["gradeCode"] = assigned["gradeCode"]
-                    user_updates["gradeRank"] = assigned["gradeRank"]
+            if pace_added or grade_counted:
+                if pace_added:
+                    economy_updates["paceSamples"] = pace_samples
+                if grade_counted:
+                    economy_updates["gradeRuns"] = grade_runs
+                code, rank = step_signup_grade(
+                    pace_samples,
+                    user.get("gradeRank") if _has_grade(user) else None,
+                )
+                user_updates["gradeCode"] = code
+                user_updates["gradeRank"] = rank
+                user_updates["gradeSource"] = (
+                    "signup_floor" if not _has_grade(user) else "pace_step"
+                )
+                if not _has_grade(user):
                     user_updates["gradeAssignedAt"] = SERVER_TIMESTAMP
                     transaction.set(
                         self.firebase_service.db.collection(GRADE_ASSIGNMENTS).document(
@@ -1612,11 +1658,23 @@ class SecuredActionService:
                         ),
                         assignment_document(
                             uid,
-                            assigned,
-                            source="trial_runs",
+                            {
+                                "gradeCode": code,
+                                "gradeRank": rank,
+                                "medianPaceSec": grade_pace,
+                                "runs": grade_runs,
+                            },
+                            source="signup_floor",
                             server_time=SERVER_TIMESTAMP,
                         ),
                     )
+
+        if not donation_exists and company_won > 0:
+            user_updates["donationDaily"] = {
+                "day": donation_day,
+                "countedKm": round(used_km + paid_km, 4),
+                "countedWon": used_won + company_won,
+            }
 
         if result.verified and reward_tokens > 0:
             self._credit_value_tx(
@@ -1915,7 +1973,7 @@ class SecuredActionService:
         )
         participant_snapshots = list(transaction.get(query))
         total_forfeited = 0
-        charity = "UNICEF"
+        charity = DEFAULT_RELIEF_PARTNER
 
         for snapshot in participant_snapshots:
             if not snapshot.exists:
@@ -3284,7 +3342,7 @@ class SecuredActionService:
                 "participantCount": 1,
                 "requiredTier": 1,
                 "status": "recruiting",
-                "sponsorName": "UNICEF",
+                "sponsorName": DEFAULT_RELIEF_PARTNER,
                 "sponsorBillboardMessages": [],
                 "createdByUid": uid,
                 "userCreated": True,
@@ -3297,7 +3355,7 @@ class SecuredActionService:
                 "uid": uid,
                 "entryFeeShare": fee,
                 "diamondDeposit": 0,
-                "selectedCharity": "UNICEF",
+                "selectedCharity": DEFAULT_RELIEF_PARTNER,
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
             },
@@ -3536,7 +3594,7 @@ class SecuredActionService:
                     "uid": uid,
                     "entryFeeShare": int(tournament.get("entryFeeShare") or 0),
                     "diamondDeposit": 0,
-                    "selectedCharity": request.selected_charity or "UNICEF",
+                    "selectedCharity": request.selected_charity or DEFAULT_RELIEF_PARTNER,
                     "joinedAt": SERVER_TIMESTAMP,
                     "status": "joined",
                 },
@@ -3586,7 +3644,7 @@ class SecuredActionService:
         entry_fee = int(tournament.get("entryFeeShare") or 0)
         required_deposit = int(tournament.get("diamondDepositRequired") or 0)
         diamond_deposit = request.diamond_deposit or required_deposit
-        selected_charity = request.selected_charity or "UNICEF"
+        selected_charity = request.selected_charity or DEFAULT_RELIEF_PARTNER
 
         needs_ticket = False
         if tournament.get("status", "recruiting") != "recruiting":
@@ -3714,6 +3772,10 @@ class SecuredActionService:
         tier = config["tiers"].get(tier_id)
         if tier is None:
             raise HTTPException(status_code=400, detail="Unknown prize tier.")
+        if tier_id == "beginner":
+            blocked = beginner_entry_block(user)
+            if blocked:
+                raise HTTPException(status_code=403, detail=blocked)
         if tournament.get("status", "recruiting") != "recruiting":
             raise HTTPException(status_code=400, detail="Tournament is not recruiting.")
         if self._tournament_is_full(
@@ -3868,7 +3930,7 @@ class SecuredActionService:
                 "prizeTier": tier_id,
                 **({"tierTicketId": tier_ticket_id} if tier_ticket_id else {}),
                 "diamondDeposit": 0,
-                "selectedCharity": request.selected_charity or "UNICEF",
+                "selectedCharity": request.selected_charity or DEFAULT_RELIEF_PARTNER,
                 "joinedAt": SERVER_TIMESTAMP,
                 "status": "joined",
             },
@@ -3947,7 +4009,7 @@ class SecuredActionService:
         tournament = tournament_snapshot.to_dict() or {}
         target_distance = float(tournament.get("targetDistanceKm") or 0)
         diamond_deposit = int(participant.get("diamondDeposit") or 0)
-        charity_target = participant.get("selectedCharity") or "UNICEF"
+        charity_target = participant.get("selectedCharity") or DEFAULT_RELIEF_PARTNER
 
         settlement = self._mercy_rule_service.compute_settlement(
             diamond_deposit=diamond_deposit,
@@ -4653,7 +4715,7 @@ class SecuredActionService:
                 "valueAmount": -donation,
                 "claimedValue": retained,
                 "donatedValue": donation,
-                "donationTarget": "UNICEF" if donation > 0 else None,
+                "donationTarget": DEFAULT_RELIEF_PARTNER if donation > 0 else None,
                 "createdAt": SERVER_TIMESTAMP,
             },
         )

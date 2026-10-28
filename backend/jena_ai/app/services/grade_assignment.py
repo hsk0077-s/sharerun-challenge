@@ -18,9 +18,13 @@ GRADE_ASSIGNMENTS = "gradeAssignments"
 
 _MEDALS = ("master", "diamond", "gold", "silver", "bronze")
 
-# (slowest pace is the first group). Each row: animal, rank base, lowest pace
-# of the group in sec/km, and the slowest pace that still earns master, diamond,
-# gold and silver. Anything slower in the group is bronze.
+# Slowest animal first. Each row: animal, rank base, fastest pace still in the
+# group (sec/km), then the slowest pace that still earns master, diamond, gold
+# and silver. Anything slower inside the group is bronze.
+# 449 sec/km is beagle bronze (rank 6) and 450 is turtle master (rank 5).
+# That is one rank down as the pace gets slower, not a reversed ladder.
+# A single run must not write this pace straight onto gradeRank. See
+# ``step_signup_grade``.
 _GROUPS = (
     ("turtle", 0, 450, (479, 509, 539, 569)),
     ("beagle", 5, 360, (377, 395, 413, 431)),
@@ -226,3 +230,87 @@ def backfill_grades(db, *, dry_run: bool) -> dict:
             for item in planned
         ],
     }
+
+
+_ANIMALS = ("turtle", "beagle", "wolf", "zebra", "cheetah")
+_MEDAL_SLOW_TO_FAST = ("bronze", "silver", "gold", "diamond", "master")
+PACE_SAMPLE_LIMIT = 8
+SIGNUP_GRADE = ("turtle_bronze", 1)
+# Faster than turtle master. A beginner prize race refuses this median.
+TURTLE_FAST_PACE_SEC = 450
+
+
+def rank_code(rank: int) -> tuple[str, int]:
+    """``(gradeCode, gradeRank)`` for a 1..25 rank. Bronze is the low end."""
+    clamped = max(1, min(25, int(rank)))
+    animal = _ANIMALS[(clamped - 1) // 5]
+    medal = _MEDAL_SLOW_TO_FAST[(clamped - 1) % 5]
+    return f"{animal}_{medal}", clamped
+
+
+def note_pace_sample(
+    samples: object,
+    *,
+    activity_id: str,
+    day_key: str,
+    pace_sec: int,
+) -> tuple[list[dict], bool]:
+    """One pace per KST day, newest eight. Returns ``(samples, added)``."""
+    current = [
+        dict(row)
+        for row in (samples if isinstance(samples, list) else [])
+        if isinstance(row, dict)
+    ]
+    if any(row.get("activityId") == activity_id or row.get("day") == day_key for row in current):
+        return current, False
+    current.append({"day": day_key, "activityId": activity_id, "paceSec": int(pace_sec)})
+    if len(current) > PACE_SAMPLE_LIMIT:
+        current = current[-PACE_SAMPLE_LIMIT:]
+    return current, True
+
+
+def step_signup_grade(samples: list[dict], current_rank: int | None) -> tuple[str, int]:
+    """Floor at turtle bronze, then at most one medal toward the median pace.
+
+    The median can say cheetah. One run still moves a single step, so a
+    downhill kilometre cannot land on zebra or cheetah.
+    """
+    if not samples or current_rank is None or current_rank <= 0:
+        return SIGNUP_GRADE
+    held = max(1, min(25, int(current_rank)))
+    target = grade_for_pace(median_pace([int(row["paceSec"]) for row in samples]))[1]
+    nxt = held + 1 if target > held else held
+    return rank_code(nxt)
+
+
+def on_signup_grade_track(user: dict) -> bool:
+    """New accounts step from turtle bronze. An older assigned grade stays."""
+    if not _ranked(user.get("gradeRank")):
+        return True
+    return user.get("gradeSource") in {"signup_floor", "pace_step"}
+
+
+def _ranked(rank: object) -> bool:
+    return isinstance(rank, int) and not isinstance(rank, bool) and rank > 0
+
+
+def beginner_entry_block(user: dict) -> str | None:
+    """``pace_too_fast`` when a beginner prize race would be farmed.
+
+    Missing grade is allowed (they have not left turtle). Beagle and above,
+    or a median pace faster than turtle master, are refused.
+    """
+    rank = user.get("gradeRank")
+    if _ranked(rank) and int(rank) >= 6:
+        return "pace_too_fast"
+    economy = user.get("economy") if isinstance(user.get("economy"), dict) else {}
+    samples = economy.get("paceSamples") if isinstance(economy, dict) else None
+    paces = [
+        int(row["paceSec"])
+        for row in (samples if isinstance(samples, list) else [])
+        if isinstance(row, dict) and isinstance(row.get("paceSec"), (int, float))
+        and not isinstance(row.get("paceSec"), bool)
+    ]
+    if paces and median_pace(paces) < TURTLE_FAST_PACE_SEC:
+        return "pace_too_fast"
+    return None

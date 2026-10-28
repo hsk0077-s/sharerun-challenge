@@ -629,7 +629,7 @@ def _apply_payout(
                 "companyWon": payout.donation_krw,
                 "monthKey": month,
                 "sponsorName": "SRC",
-                "donationTarget": "UNICEF",
+                "donationTarget": "GLOBAL_RELIEF_PARTNER",
                 "receiptIssued": False,
                 "fundedByEntryFees": False,
                 "createdAt": SERVER_TIMESTAMP,

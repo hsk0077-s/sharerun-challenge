@@ -26,6 +26,7 @@ from app.services.donation_cap import (
     month_total_won,
     read_monthly_cap_won,
 )
+from app.services.charity_partner import DEFAULT_RELIEF_PARTNER
 from app.services.item_price_config import (
     DONATION_MATCH_COMPANY_CAP_ID,
     DONATION_MATCH_ID,
@@ -46,7 +47,7 @@ from app.services.streak_protection import (
 )
 
 COMPANY_SPONSOR_NAME = "SRC"
-DONATION_CHARITY = "UNICEF"
+DONATION_CHARITY = DEFAULT_RELIEF_PARTNER
 DONATION_LEDGER = "donationLedger"
 DONATION_POOLS = "donationPools"
 

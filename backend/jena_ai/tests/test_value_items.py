@@ -350,7 +350,7 @@ def test_donation_match_records_company_won_and_the_user() -> None:
     assert donation["sponsorName"] == "SRC"
     assert donation["contributorName"] == "러너상"
     assert donation["companyWon"] == 1000
-    assert donation["donationTarget"] == "UNICEF"
+    assert donation["donationTarget"] == "GLOBAL_RELIEF_PARTNER"
     assert donation["valueAmount"] == -80
     assert donation["receiptIssued"] is False
     assert db.store["donationPools/2026-10"]["totalWon"] == 1000

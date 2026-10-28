@@ -30,6 +30,7 @@ ShareRun (« Tant que votre cœur bat, le partage court aussi ») est l'applicat
 ■ Anti-Triche Jena AI & Cagnotte Solidaire
 • Jena AI analyse le GPS, la cadence, le gyroscope et le rythme cardiaque pour garantir des courses authentiques.
 • Chaque kilomètre vérifié ajoute l'équivalent de 100 KRW (dans la limite mensuelle de l'opérateur) à la cagnotte caritative de l'opérateur.
+• Budget mensuel unique de l'opérateur pour le monde entier, pas un don de l'utilisateur. Versé à un organisme enregistré en Corée, sans reçu fiscal.
 
 [Mentions Importantes]
 ※ SHARE, DIA et VALUE sont des points virtuels sans valeur monétaire, non échangeables contre de l'argent.

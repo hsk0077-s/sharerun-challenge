@@ -140,7 +140,10 @@ void main() {
       runFinishDonationSkippedLine('심박 곡선이 평평합니다.'),
       '이번 달리기는 기부에 포함되지 않았어요. 심박 곡선이 평평합니다.',
     );
-    expect(runFinishDonationSkippedLine('cap_reached'), '이번 달 기부 목표 달성!');
+    expect(
+      runFinishDonationSkippedLine('cap_reached'),
+      '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.',
+    );
     expect(
       runFinishShareText(distanceKm: '2.40', time: '12:00', donationWon: 200),
       '이번 달리기로 운영자가 200원을 기부해요. 쉐어런 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',

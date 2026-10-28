@@ -31,6 +31,7 @@ ShareRun ("Mientras lata tu corazón, la solidaridad sigue corriendo") es la app
 ■ Verificación Jena AI Antitrampas y Fondo Solidario
 • Jena AI analiza GPS, cadencia, giroscopio y pulso para filtrar vehículos o dispositivos fraudulentos.
 • Cada km de carrera verificada aporta el equivalente a 100 KRW (dentro del límite mensual del operador) al fondo benéfico del operador y patrocinadores.
+• Es un presupuesto mensual del operador para todo el mundo, no un donativo del usuario. Se entrega a una sola entidad registrada en Corea y no hay recibo deducible.
 
 [Avisos Importantes]
 ※ SHARE, DIA y VALUE son puntos virtuales exclusivos de la app sin valor monetario; no se pueden canjear por dinero ni transferir.

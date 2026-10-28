@@ -203,7 +203,8 @@ class HomeDonationCard extends ConsumerWidget {
 
   static const rule = '검증된 모든 달리기, 1km마다 운영자·스폰서 이름으로 100원을 기부해요.';
   static const budget = '운영자의 월 기부 예산 안에서 진행돼요.';
-  static const capReachedLine = '이번 달 기부 목표 달성!';
+  static const capReachedLine =
+      '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

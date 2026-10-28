@@ -4,7 +4,9 @@ from pydantic import BaseModel, Field
 class JoinTournamentRequest(BaseModel):
     tournament_id: str = Field(min_length=1, max_length=128, pattern=r"^[^/]+$")
     diamond_deposit: int = Field(default=0, ge=0)
-    selected_charity: str = Field(default="UNICEF", min_length=2, max_length=64)
+    selected_charity: str = Field(
+        default="GLOBAL_RELIEF_PARTNER", min_length=2, max_length=64
+    )
     # Prize races only. ``share`` debits config SHARE. ``ticket`` spends free
     # tickets. ``tier_ticket`` spends one account-bound tier entry ticket.
     entry_method: str = Field(default="share", pattern="^(share|ticket|tier_ticket)$")

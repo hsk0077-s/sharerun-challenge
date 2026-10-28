@@ -80,12 +80,21 @@ String? runFinishDonationLine(int? won) {
 }
 
 /// Shown when this month's company donation limit is used up.
-const runFinishDonationCapLine = '이번 달 기부 목표 달성!';
+const runFinishDonationCapLine =
+    '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
+
+/// Today's 10km company-donation room is already full.
+const runFinishDailyDonationCapLine =
+    '오늘은 기부 인정 10km를 모두 채웠어요. 넘는 거리는 기록으로 남아요.';
+
+/// Record name. This is not a tax receipt.
+const runFinishDonationRecordLabel = '기부 참여 기록';
 
 /// Server did not count a donation. [reason] is the server's explanation.
 String runFinishDonationSkippedLine(String reason) {
   final detail = reason.trim();
   if (detail == 'cap_reached') return runFinishDonationCapLine;
+  if (detail == 'daily_donation_cap') return runFinishDailyDonationCapLine;
   const lead = '이번 달리기는 기부에 포함되지 않았어요.';
   if (detail.isEmpty) return lead;
   return '$lead $detail';
@@ -787,16 +796,34 @@ class _DonationBadge extends StatelessWidget {
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                donation,
-                key: RunFinishShareCard.donationKey,
-                style: TextStyle(
-                  fontFamily: RunFinishShareCard.fontFamily,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  height: 1.35,
-                  color: palette.badgeInk,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    runFinishDonationRecordLabel,
+                    style: TextStyle(
+                      fontFamily: RunFinishShareCard.fontFamily,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                      color: palette.badgeInk,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    donation,
+                    key: RunFinishShareCard.donationKey,
+                    style: TextStyle(
+                      fontFamily: RunFinishShareCard.fontFamily,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w700,
+                      height: 1.35,
+                      color: palette.badgeInk,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1333,6 +1360,12 @@ class RunFinishSharePreview extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                if (photoActive)
+                  _ThemeDot(
+                    theme: RunFinishCardTheme.photo,
+                    selected: true,
+                    onTap: () {},
+                  ),
                 for (var i = 0; i < colors.length; i++)
                   _ThemeDot(
                     theme: colors[i],

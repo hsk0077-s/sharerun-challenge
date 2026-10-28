@@ -30,6 +30,7 @@ ShareRun ("Selama jantung berdetak, berbagi terus berlari") adalah aplikasi tant
 ■ Anti-Curang Jena AI & Dana Amal
 • Jena AI memeriksa GPS, kadens, giroskop, dan detak jantung untuk mencegah kecurangan kendaraan atau alat pengocok langkah.
 • Setiap 1 km lari terverifikasi menyumbangkan setara 100 KRW (dalam batas bulanan penyelenggara) ke dana donasi penyelenggara dan sponsor.
+• Satu anggaran bulanan penyelenggara untuk seluruh dunia, bukan donasi pengguna. Disalurkan ke satu lembaga terdaftar di Korea, tanpa bukti potong pajak.
 
 [Pemberitahuan Penting]
 ※ SHARE, DIA, dan VALUE adalah poin virtual khusus di dalam aplikasi tanpa nilai uang tunai dan tidak dapat diuangkan atau dipindahtangankan.

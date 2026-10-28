@@ -30,6 +30,7 @@ ShareRun („Solange dein Herz schlägt, läuft das Teilen weiter“) ist die fa
 ■ Jena AI Anti-Cheat & Spenden-Matching
 • Jena AI prüft GPS, Schrittfrequenz, Gyroskop und Puls, um Fahrzeuge und Manipulationsgeräte auszuschließen.
 • Jeder verifizierte Laufkilometer trägt im Rahmen des monatlichen Betreiberlimits den Gegenwert von 100 KRW zum Spendenpool bei.
+• Ein weltweites Monatsbudget des Betreibers, kein Spendenbeitrag der Nutzer. Auszahlung an eine in Korea registrierte Stelle, ohne Steuerquittung.
 
 [Wichtige Hinweise]
 ※ SHARE, DIA und VALUE sind rein virtuelle In-App-Punkte ohne Geldwert und können weder ausgezahlt noch übertragen werden.

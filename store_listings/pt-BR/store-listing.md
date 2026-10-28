@@ -30,6 +30,7 @@ ShareRun ("Enquanto o coração bater, a solidariedade continua correndo") é o 
 ■ Sistema Antifraude Jena AI e Impacto Social
 • Jena AI valida GPS, cadência, giroscópio e frequência cardíaca para garantir corridas 100% autênticas.
 • Cada km verificado soma o equivalente a 100 KRW (dentro do teto mensal da operadora) ao fundo filantrópico da plataforma e patrocinadores.
+• É um orçamento mensal da operadora para o mundo todo, não uma doação do usuário. Vai para uma entidade registrada na Coreia e não gera recibo dedutível.
 
 [Avisos Importantes]
 ※ SHARE, DIA e VALUE são moedas virtuais restritas ao app, sem valor monetário e não conversíveis em dinheiro.

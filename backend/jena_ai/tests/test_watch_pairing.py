@@ -204,3 +204,14 @@ def test_a_malformed_device_id_is_replaced_by_a_server_id() -> None:
     db, fb = _db_with_user()
     out = _pair(db, fb, "bad id/with slash")
     assert "/" not in out["device_id"] and len(out["device_id"]) >= 8
+
+def test_re_pairing_a_revoked_watch_clears_the_revocation_cache() -> None:
+    from app.services import auth_service
+
+    db, fb = _db_with_user()
+    _pair(db, fb, "watch-repaired")
+    watch_pairing.revoke_device(db, "u1", "watch-repaired")
+    auth_service._watch_device[("u1", "watch-repaired")] = (999999999.0, False)
+    _pair(db, fb, "watch-repaired", n=5)
+    assert ("u1", "watch-repaired") not in auth_service._watch_device
+

@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/donation/today_donation.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
@@ -12,7 +14,14 @@ import 'package:share_run_challenge/features/profile/widgets/retention_widgets.d
 Widget _host(Widget child, {List<Override> overrides = const []}) {
   return ProviderScope(
     overrides: overrides,
-    child: MaterialApp(
+      child: MaterialApp(
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: ShareRunLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: SrcTheme.light,
       home: Scaffold(body: SingleChildScrollView(child: child)),
     ),

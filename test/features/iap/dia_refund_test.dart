@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/api/api_exception.dart';
@@ -7,6 +8,7 @@ import 'package:share_run_challenge/data/api/secured_action_api_client.dart';
 import 'package:share_run_challenge/features/crew/crew_membership.dart';
 import 'package:share_run_challenge/features/iap/dia_refund.dart';
 import 'package:share_run_challenge/features/iap/widgets/dia_notice.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 
 class _FakeApi extends Fake implements SecuredActionApiClient {
   _FakeApi(this.purchases);
@@ -66,6 +68,13 @@ Future<_FakeApi> _pump(WidgetTester tester, List<DiaPurchase> list) async {
     ProviderScope(
       overrides: [crewApiProvider.overrideWithValue(api)],
       child: MaterialApp(
+        locale: const Locale('ko', 'KR'),
+        supportedLocales: ShareRunLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: SrcTheme.night,
         home: const Scaffold(body: SingleChildScrollView(child: DiaNoticeCard())),
       ),

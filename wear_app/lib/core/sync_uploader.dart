@@ -30,30 +30,32 @@ class SyncUploader {
   final SyncQueue queue;
   final Future<void> Function()? onChanged;
 
-  var _busy = false;
-
   /// 이번에 대기열에서 뺀 기록 수.
+  ///
+  /// 오프라인(`postSigned`가 null)과 429·5xx는 기록을 남긴다. 다음 flush가
+  /// 같은 `activity_id`로 다시 보낸다. 서버는 이미 마감된 활동이면 지급을
+  /// 반복하지 않는다. 400·409·413·422는 같은 본문으로 다시 보내도 거절되므로 뺀다.
   Future<int> flush({String? deviceId}) async {
-    if (_busy || !account.isPaired) return 0;
-    _busy = true;
+    if (!account.isPaired) return 0;
+    if (!queue.tryBeginFlush()) return 0;
     var done = 0;
     try {
-      for (final run in queue.runs) {
+      for (final run in List<PendingRun>.of(queue.runs)) {
         final reply = await account.postSigned(
           '/actions/runs/validate',
           run.toValidateRunBody(deviceId: deviceId),
         );
-        if (reply == null) break; // 연결·로그인 문제: 나머지도 같은 이유로 실패한다.
+        if (reply == null) break;
         if (reply.ok || _final(reply.status)) {
           queue.acknowledge(run.activityId);
           done++;
-        } else if (reply.status == 429) {
+        } else if (reply.status == 429 || reply.status >= 500) {
           break;
         }
       }
       if (done > 0) await onChanged?.call();
     } finally {
-      _busy = false;
+      queue.endFlush();
     }
     return done;
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/theme.dart';
+import '../l10n/guidance_copy.dart';
 import '../features/donation/donation_settlement.dart';
 import '../features/profile/my_page_activity_stats.dart';
 import '../features/shop/providers/donation_match_provider.dart';
@@ -63,7 +64,7 @@ class _DonationSettlementScreenState
     }
   }
 
-  static String kmGauge(int totalWon, int capWon) {
+  static String kmGauge(int totalWon, int capWon, {Locale? locale}) {
     String km(int wonAmount) {
       final whole = wonAmount ~/ 100;
       final digits = whole.toString();
@@ -77,10 +78,11 @@ class _DonationSettlementScreenState
     }
 
     final pct = capWon <= 0 ? 0 : ((totalWon / capWon) * 100).round();
-    return '이번 달 ${km(totalWon)} / ${km(capWon)} km · $pct%';
+    final copy = DonationGuidance.of(locale ?? const Locale('ko', 'KR'));
+    return copy.kmGauge(km(totalWon), km(capWon), pct);
   }
 
-  static String won(int value) {
+  static String won(int value, {Locale? locale}) {
     final digits = value.toString();
     final out = StringBuffer();
     for (var i = 0; i < digits.length; i++) {
@@ -88,7 +90,9 @@ class _DonationSettlementScreenState
       if (i > 0 && remaining % 3 == 0) out.write(',');
       out.write(digits[i]);
     }
-    return '$out원';
+    final suffix =
+        DonationGuidance.of(locale ?? const Locale('ko', 'KR')).currencySuffix;
+    return '$out$suffix';
   }
 
   @override
@@ -96,6 +100,8 @@ class _DonationSettlementScreenState
     final data = _data;
     final c = context.srcTokens.colors;
     final now = DateTime.now();
+    final copy = DonationGuidance.of(Localizations.localeOf(context));
+    final locale = Localizations.localeOf(context);
     return Scaffold(
       backgroundColor: c.canvas,
       body: SafeArea(
@@ -108,7 +114,7 @@ class _DonationSettlementScreenState
                 IconButton(
                   key: const Key('donation-back'),
                   onPressed: () => Navigator.of(context).maybePop(),
-                  tooltip: '뒤로',
+                  tooltip: copy.back,
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                   icon: Icon(Icons.arrow_back_rounded, color: c.ink),
@@ -122,12 +128,12 @@ class _DonationSettlementScreenState
             ),
             const SizedBox(height: 6),
             Text(
-              '내가 만든\n기부',
+              copy.settlementTitle,
               style: storeText(36, c.ink, w: FontWeight.w900, h: 1.1),
             ),
             const SizedBox(height: 6),
             Text(
-              DonationSettlementScreen.intro,
+              copy.intro,
               style: storeText(14, c.muted, h: 1.5),
             ),
             const SizedBox(height: 16),
@@ -138,32 +144,35 @@ class _DonationSettlementScreenState
               )
             else if (data == null && _failed) ...[
               Text(
-                '기부 정산을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+                copy.fail,
                 style: storeText(14, c.muted),
               ),
               const SizedBox(height: 8),
               OutlinedButton(
                 key: DonationSettlementScreen.retryKey,
                 onPressed: _load,
-                child: const Text('다시 시도'),
+                child: Text(copy.retry),
               ),
             ] else if (data != null) ...[
               _GoldTile(
-                total: won(data.myTotalWon),
+                total: won(data.myTotalWon, locale: locale),
                 totalKey: DonationSettlementScreen.myTotalKey,
               ),
               const SizedBox(height: 10),
               _MonthTile(
-                total: won(data.monthTotalWon),
+                total: won(data.monthTotalWon, locale: locale),
                 totalKey: DonationSettlementScreen.monthKey,
                 cap: data.monthCapWon,
                 monthTotal: data.monthTotalWon,
                 capReached: data.capReached,
                 capLabel: data.capReached
-                    ? DonationSettlementScreen.capReachedLine
+                    ? copy.capReachedSettlement
                     : (data.monthCapWon > 0
                         ? _DonationSettlementScreenState.kmGauge(
-                            data.monthTotalWon, data.monthCapWon)
+                            data.monthTotalWon,
+                            data.monthCapWon,
+                            locale: locale,
+                          )
                         : null),
                 capKey: DonationSettlementScreen.capKey,
               ),
@@ -188,12 +197,12 @@ class _DonationSettlementScreenState
               ),
               const SizedBox(height: 18),
               Text(
-                '기부는 운영자·스폰서가 해요. 앱에서는 내가 기여한 금액을 확인할 수 있어요.',
+                copy.operatorLine,
                 style: storeText(13, c.muted, h: 1.5),
               ),
               const SizedBox(height: 8),
               Text(
-                DonationSettlementScreen.disclaimer,
+                copy.disclaimer,
                 style: storeText(13, c.muted, h: 1.5),
               ),
             ],
@@ -238,7 +247,7 @@ class _GoldTile extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '운영자가 대신 내요 · 내 돈은 0원',
+            DonationGuidance.of(Localizations.localeOf(context)).paidByOperator,
             style: storeText(14, const Color(0xFFC9B27A)),
           ),
         ],
@@ -284,7 +293,7 @@ class _MonthTile extends StatelessWidget {
           const StoreTag('THIS MONTH'),
           const SizedBox(height: 6),
           Text(
-            '이번 달 기부',
+            DonationGuidance.of(Localizations.localeOf(context)).monthLabel,
             style: storeText(14, c.muted, w: FontWeight.w700),
           ),
           const SizedBox(height: 4),

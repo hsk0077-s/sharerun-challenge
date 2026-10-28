@@ -29,11 +29,13 @@ class WearableBrand {
   final List<String> steps;
   final String? note;
 
-  bool matches(String query) {
+  bool matches(String query, {String? localizedName}) {
     final q = query.trim().toLowerCase();
     if (q.isEmpty) return true;
+    final localized = localizedName?.toLowerCase() ?? '';
     return name.toLowerCase().contains(q) ||
         app.toLowerCase().contains(q) ||
+        localized.contains(q) ||
         keywords.any((k) => k.toLowerCase().contains(q));
   }
 }
@@ -175,7 +177,10 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
   }
 
   Widget _buildList() {
-    final results = wearableBrands.where((b) => b.matches(_query)).toList();
+    final chrome = GuideChrome.of(Localizations.localeOf(context));
+    final results = wearableBrands
+        .where((b) => b.matches(_query, localizedName: chrome.brands[b.id]?.name))
+        .toList();
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -218,7 +223,7 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
                         contentPadding: EdgeInsets.zero,
                         leading: const Icon(Icons.watch_rounded,
                             color: AppColors.primaryMint),
-                        title: Text(brand.name),
+                        title: Text(chrome.brands[brand.id]?.name ?? brand.name),
                         subtitle: Text(brand.app),
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () => setState(() => _selected = brand),

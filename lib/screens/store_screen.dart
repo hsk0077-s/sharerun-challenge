@@ -12,6 +12,7 @@ import '../data/models/shop_item_model.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/guidance_copy.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
@@ -905,6 +906,7 @@ class _CompanyFundingCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.srcTokens.colors;
     final summary = ref.watch(fundingSummaryProvider).asData?.value;
+    final copy = ShopFundingGuidance.of(Localizations.localeOf(context));
     if (summary != null) {
       return Container(
         key: progressKey,
@@ -917,12 +919,12 @@ class _CompanyFundingCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              AppStrings.storeFundingTitle,
+              copy.title,
               style: storeText(17, c.onPrimary, w: FontWeight.w900, h: 1.4),
             ),
             const SizedBox(height: 12),
             Text(
-              AppStrings.storeFundingMonthLabel,
+              copy.monthLabel,
               style: storeText(12, c.onPrimary, w: FontWeight.w700),
             ),
             const SizedBox(height: 2),
@@ -943,20 +945,20 @@ class _CompanyFundingCard extends ConsumerWidget {
             const SizedBox(height: 6),
             Text(
               summary.allReached
-                  ? AppStrings.storeFundingAllReached
-                  : '목표 ${summary.stage}단계 · ${_won(summary.goalWon)}',
+                  ? copy.allReached
+                  : copy.stageLine(summary.stage, _won(summary.goalWon)),
               style: storeText(12, c.onPrimary, w: FontWeight.w800),
             ),
             if (summary.capReached) ...[
               const SizedBox(height: 8),
               Text(
-                AppStrings.storeFundingCapReached,
+                copy.capReached,
                 style: storeText(12, c.onPrimary, w: FontWeight.w700, h: 1.4),
               ),
             ],
             const SizedBox(height: 10),
             Text(
-              AppStrings.storeFundingNote,
+              copy.note,
               style: storeText(11, c.onPrimary, w: FontWeight.w600, h: 1.4),
             ),
           ],
@@ -973,12 +975,12 @@ class _CompanyFundingCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            AppStrings.storeFundingTitle,
+            copy.title,
             style: storeText(17, c.onPrimary, w: FontWeight.w900, h: 1.4),
           ),
           const SizedBox(height: 10),
           Text(
-            AppStrings.storeFundingPreparingNote,
+            copy.preparingNote,
             key: preparingKey,
             style: storeText(13, c.onPrimary, w: FontWeight.w700, h: 1.4),
           ),
@@ -995,7 +997,7 @@ class _CompanyFundingCard extends ConsumerWidget {
                 ),
               ),
               child: Text(
-                AppStrings.storeFundingPreparing,
+                copy.preparing,
                 style: storeText(14, c.onPrimary, w: FontWeight.w800),
               ),
             ),

@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/features/donation/donation_settlement.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
 
 Widget _app(DonationSettlementLoader loader) {
   return ProviderScope(
     overrides: [donationSettlementLoaderProvider.overrideWithValue(loader)],
-    child: const MaterialApp(home: DonationSettlementScreen()),
+    child: const MaterialApp(
+      locale: Locale('ko', 'KR'),
+      supportedLocales: ShareRunLocalizations.supportedLocales,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: DonationSettlementScreen(),
+    ),
   );
 }
 

@@ -41,6 +41,37 @@ class _OfflinePoster implements JsonPoster {
   }
 }
 
+class _RecordingPoster implements JsonPoster {
+  final calls = <Map<String, Object?>>[];
+
+  @override
+  Future<HttpReply> post(
+    Uri uri,
+    Map<String, Object?> body, {
+    Map<String, String> headers = const {},
+  }) async {
+    calls.add(body);
+    if (uri.path == '/auth/watch-pair') {
+      return const HttpReply(200, {
+        'uid': 'u1',
+        'nickname': '달림이',
+        'custom_token': 'custom-1',
+      });
+    }
+    if (uri.toString().contains('signInWithCustomToken')) {
+      return const HttpReply(200, {
+        'idToken': 'id-1',
+        'refreshToken': 'refresh-1',
+        'expiresIn': '3600',
+      });
+    }
+    if (uri.path == '/actions/runs/validate') {
+      return const HttpReply(200, {'decision': 'verified'});
+    }
+    return const HttpReply(404, {});
+  }
+}
+
 Future<void> _tapDigits(WidgetTester tester, String digits) async {
   for (final d in digits.split('')) {
     await tester.tap(find.byKey(PairingFace.digitKey(int.parse(d))));
@@ -158,5 +189,51 @@ void main() {
     expect(run.totalSteps, 90);
     // 일시정지 중의 심박(100)은 기록에 들어가지 않는다.
     expect(run.heartRates.toSet(), {150, 152});
+  });
+
+  testWidgets('a finished run uploads with this watch\'s persistent device id',
+      (tester) async {
+    final poster = _RecordingPoster();
+    final store = MemoryStore();
+    final account = WatchAccount(
+      store: store,
+      poster: poster,
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+    );
+    await account.pair('482910');
+    final pairCall = poster.calls.firstWhere((c) => c.containsKey('code'));
+    final deviceId = pairCall['device_id'] as String;
+    expect(deviceId, isNotEmpty);
+
+    final sensors = _FakeSensors();
+    final queue = SyncQueue();
+    var now = DateTime.utc(2026, 10, 24, 1);
+    await tester.pumpWidget(MaterialApp(
+      home: RunFlow(
+        account: account,
+        queue: queue,
+        sensors: sensors,
+        newId: () => 'watch_device_id_test',
+        clock: () => now = now.add(const Duration(seconds: 20)),
+        pollInterval: const Duration(milliseconds: 100),
+      ),
+    ));
+
+    await tester.tap(find.text('탭해서 시작'));
+    await tester.pump();
+    sensors.snapshot = const SensorSnapshot(distanceKm: 1.0);
+    await tester.pump(const Duration(milliseconds: 150));
+    await tester.tap(find.text('달리는 중'));
+    await tester.pump();
+    await tester.longPress(find.text('일시정지').first);
+    await tester.pumpAndSettle();
+
+    final uploaded = poster.calls.firstWhere(
+      (c) => c['activity_id'] == 'watch_device_id_test',
+    );
+    // 휴대폰 없이 올라간 기록도 페어링 때 등록한 것과 같은 워치 식별자를 달고 가야
+    // 개별 워치 해제(watch_revoked)와 기기별 집계가 누락 없이 들어맞는다.
+    expect(uploaded['device_id'], deviceId);
   });
 }

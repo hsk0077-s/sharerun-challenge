@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'watch_platform.dart';
+
 /// 워치에는 자이로 안정도 점수가 없다. 서버 필수 필드를 채우는 임시 값이며,
 /// 서버가 "워치 단독 기록"을 별도로 다루게 되면(README "서버 쪽 남은 일") 없앤다.
 /// 케이던스는 보내지 않는다. 서버가 `watch_used`와 `total_steps`로 평균을 계산한다.
@@ -20,6 +22,8 @@ class PendingRun {
     required this.startedAt,
     required this.endedAt,
     this.totalSteps = 0,
+    this.gpsRoute = const [],
+    this.paceSamples = const [],
   });
 
   final String activityId;
@@ -31,10 +35,11 @@ class PendingRun {
 
   /// 센서가 센 걸음 수. 0이면 못 쟀다는 뜻이라 보내지 않는다.
   final int totalSteps;
+  final List<GpsFix> gpsRoute;
+  final List<Map<String, Object>> paceSamples;
 
   /// 서버 `POST /actions/runs/validate` 본문과 같은 필드 이름.
-  /// 워치 단독 기록에는 GPS 경로와 케이던스 배열이 없어 비워 둔다. 걸음 수 합계를
-  /// `total_steps`로 보내면 서버가 평균 케이던스를 계산한다.
+  /// 측정된 GPS와 50m마다의 페이스가 있으면 그대로 올린다.
   Map<String, Object?> toValidateRunBody({String? deviceId}) => {
         'activity_id': activityId,
         'distance_km': distanceKm,
@@ -42,7 +47,8 @@ class PendingRun {
         'heart_rates': heartRates,
         'cadence_spm': const <int>[],
         'gyro_stability_score': kUnknownGyroScore,
-        'gps_route': const <Object>[],
+        'gps_route': [for (final fix in gpsRoute) fix.toJson()],
+        'pace_samples': paceSamples,
         // 서버는 워치 기록의 시작·끝 시각이 있어야 받는다(미래·너무 오래된 시각은 거부).
         'started_at': startedAt.toUtc().toIso8601String(),
         'ended_at': endedAt.toUtc().toIso8601String(),
@@ -59,6 +65,8 @@ class PendingRun {
         'startedAt': startedAt.toUtc().toIso8601String(),
         'endedAt': endedAt.toUtc().toIso8601String(),
         'totalSteps': totalSteps,
+        'gpsRoute': [for (final fix in gpsRoute) fix.toJson()],
+        'paceSamples': paceSamples,
       };
 
   factory PendingRun.fromJson(Map<String, Object?> json) => PendingRun(
@@ -69,7 +77,34 @@ class PendingRun {
         startedAt: DateTime.parse(json['startedAt']! as String),
         endedAt: DateTime.parse(json['endedAt']! as String),
         totalSteps: (json['totalSteps'] as num?)?.toInt() ?? 0,
+        gpsRoute: _fixes(json['gpsRoute']),
+        paceSamples: _paces(json['paceSamples']),
       );
+
+  static List<GpsFix> _fixes(Object? raw) {
+    if (raw is! List) return const [];
+    return [
+      for (final item in raw)
+        if (item is Map)
+          GpsFix(
+            latitude: (item['latitude'] as num).toDouble(),
+            longitude: (item['longitude'] as num).toDouble(),
+            recordedAt: item['recordedAt'] as String,
+          ),
+    ];
+  }
+
+  static List<Map<String, Object>> _paces(Object? raw) {
+    if (raw is! List) return const [];
+    return [
+      for (final item in raw)
+        if (item is Map)
+          {
+            'secondsPerKm': (item['secondsPerKm'] as num).toInt(),
+            'recordedAt': item['recordedAt'] as String,
+          },
+    ];
+  }
 }
 
 /// 하루 걸음 수 한 건. 서버 `POST /actions/daily-steps` 본문과 같은 필드 이름.
@@ -131,6 +166,8 @@ PendingRun? buildPendingRun({
   required DateTime startedAt,
   required DateTime endedAt,
   int totalSteps = 0,
+  List<GpsFix> gpsRoute = const [],
+  List<Map<String, Object>> paceSamples = const [],
 }) {
   if (distanceKm <= 0 || movingTime.inSeconds <= 0) return null;
   return PendingRun(
@@ -141,5 +178,9 @@ PendingRun? buildPendingRun({
     startedAt: startedAt,
     endedAt: endedAt,
     totalSteps: totalSteps < 0 ? 0 : totalSteps,
+    gpsRoute: gpsRoute.length > 400 ? gpsRoute.sublist(gpsRoute.length - 400) : gpsRoute,
+    paceSamples: paceSamples.length > 2000
+        ? paceSamples.sublist(paceSamples.length - 2000)
+        : paceSamples,
   );
 }

@@ -1,3 +1,5 @@
+import 'watch_platform.dart';
+
 /// 워치 러닝 한 번의 상태와 숫자. 화면과 동기화 큐가 같은 값을 쓴다.
 enum RunPhase { idle, running, paused, finished }
 
@@ -17,6 +19,9 @@ class RunSession {
   int _lastHeartRate = 0;
   int _steps = 0;
   final _heartRates = <int>[];
+  final _route = <GpsFix>[];
+  final _paceSamples = <Map<String, Object>>[];
+  double _lastPaceKm = 0;
 
   RunPhase get phase => _phase;
   DateTime? get startedAt => _startedAt;
@@ -25,6 +30,8 @@ class RunSession {
   int get lastHeartRate => _lastHeartRate;
   int get steps => _steps;
   List<int> get heartRates => List.unmodifiable(_heartRates);
+  List<GpsFix> get route => List.unmodifiable(_route);
+  List<Map<String, Object>> get paceSamples => List.unmodifiable(_paceSamples);
 
   /// 일시정지 시간은 빼고, 실제로 움직인 시간.
   Duration get movingTime {
@@ -74,6 +81,26 @@ class RunSession {
       return;
     }
     _distanceKm += km;
+    _samplePace();
+  }
+
+  /// 네이티브가 모아 둔 경로로 바꾼다. 같은 점을 두 번 넣지 않는다.
+  void replaceRoute(List<GpsFix> fixes) {
+    _route
+      ..clear()
+      ..addAll(fixes.length > 400 ? fixes.sublist(fixes.length - 400) : fixes);
+  }
+
+  void _samplePace() {
+    if (_phase != RunPhase.running) return;
+    if (_distanceKm + 1e-9 < _lastPaceKm + 0.05) return;
+    final pace = paceSecondsPerKm;
+    if (pace <= 0 || _startedAt == null) return;
+    _lastPaceKm = _distanceKm;
+    _paceSamples.add({
+      'secondsPerKm': pace,
+      'recordedAt': _clock().toUtc().toIso8601String(),
+    });
   }
 
   /// 센서가 달리기 시작부터 센 걸음 수(누적). 줄어드는 값은 무시한다.

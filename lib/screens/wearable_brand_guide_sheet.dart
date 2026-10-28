@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../core/strings/app_strings.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/guide_chrome.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 
@@ -180,16 +181,17 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          AppStrings.wearableGuideEntry,
+          ShareRunLocalizations.ofLocale(Localizations.localeOf(context))
+              .wearableGuideEntry,
           style: AppTextStyles.header1.copyWith(fontSize: 18),
         ),
         const SizedBox(height: 12),
         TextField(
           key: WearableBrandGuide.searchFieldKey,
           onChanged: (v) => setState(() => _query = v),
-          decoration: const InputDecoration(
-            prefixIcon: Icon(Icons.search_rounded),
-            hintText: AppStrings.wearableGuideSearchHint,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.search_rounded),
+            hintText: GuideChrome.of(Localizations.localeOf(context)).searchHint,
             border: OutlineInputBorder(),
             isDense: true,
           ),
@@ -201,7 +203,7 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
                   key: WearableBrandGuide.emptyKey,
                   padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Text(
-                    AppStrings.wearableGuideEmpty,
+                    GuideChrome.of(Localizations.localeOf(context)).empty,
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption
                         .copyWith(color: AppColors.textGrey),
@@ -230,6 +232,11 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
 
   Widget _buildDetail(WearableBrand brand) {
     final isIos = defaultTargetPlatform == TargetPlatform.iOS;
+    final chrome = GuideChrome.of(Localizations.localeOf(context));
+    final text = chrome.brands[brand.id];
+    final steps = text?.steps ?? brand.steps;
+    final note = text?.note ?? brand.note;
+    final title = text?.name ?? brand.name;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -238,13 +245,13 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
           Row(
             children: [
               IconButton(
-                tooltip: '브랜드 목록',
+                tooltip: chrome.back,
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
                 onPressed: () => setState(() => _selected = null),
               ),
               Expanded(
                 child: Text(
-                  brand.name,
+                  title,
                   style: AppTextStyles.header1.copyWith(fontSize: 18),
                 ),
               ),
@@ -253,11 +260,11 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
           Padding(
             padding: const EdgeInsets.only(left: 12, bottom: 12),
             child: Text(
-              '사용 앱: ${brand.app}',
+              '${chrome.usingApp}: ${brand.app}',
               style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
             ),
           ),
-          for (var i = 0; i < brand.steps.length; i++)
+          for (var i = 0; i < steps.length; i++)
             Padding(
               key: WearableBrandGuide.stepKey(i + 1),
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -274,18 +281,18 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(brand.steps[i],
+                    child: Text(steps[i],
                         style: AppTextStyles.caption
                             .copyWith(color: AppColors.textBlack, height: 1.45)),
                   ),
                 ],
               ),
             ),
-          if (brand.note != null)
+          if (note != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                brand.note!,
+                note,
                 style: AppTextStyles.caption
                     .copyWith(color: AppColors.textGreyLight),
               ),
@@ -298,9 +305,7 @@ class _WearableBrandGuideState extends State<WearableBrandGuide> {
               foregroundColor: AppColors.nightOnLime,
             ),
             onPressed: widget.onConnect,
-            child: Text(isIos
-                ? AppStrings.wearableGuideCtaIos
-                : AppStrings.wearableGuideCtaAndroid),
+            child: Text(isIos ? chrome.ctaIos : chrome.ctaAndroid),
           ),
         ],
       ),

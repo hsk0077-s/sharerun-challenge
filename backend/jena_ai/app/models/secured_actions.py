@@ -53,6 +53,13 @@ class RoutePointPayload(BaseModel):
     recordedAt: str = Field(max_length=64)
 
 
+class PaceSamplePayload(BaseModel):
+    """One watch pace sample. Seconds per kilometre at [recordedAt]."""
+
+    secondsPerKm: int = Field(ge=0, le=7200)
+    recordedAt: str = Field(max_length=64)
+
+
 class RunDeviceInfo(BaseModel):
     """Diagnostics on the run record. No account, serial, or location."""
 
@@ -71,6 +78,8 @@ class ValidateRunRequest(BaseModel):
     cadence_spm: list[int] = Field(default_factory=list, max_length=50000)
     gyro_stability_score: float = Field(ge=0, le=1, allow_inf_nan=False)
     gps_route: list[RoutePointPayload] = Field(default_factory=list, max_length=50000)
+    # Watch runs send a pace each time the distance grows. Phones omit it.
+    pace_samples: list[PaceSamplePayload] = Field(default_factory=list, max_length=2000)
     # Optional for a phone, required for a watch. ISO 8601 start and end of the run.
     started_at: str | None = Field(default=None, max_length=40)
     ended_at: str | None = Field(default=None, max_length=40)

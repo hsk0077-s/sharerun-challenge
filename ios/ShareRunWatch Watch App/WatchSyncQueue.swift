@@ -1,5 +1,24 @@
 import Foundation
 
+struct WatchRoutePoint: Codable, Equatable {
+    let latitude: Double
+    let longitude: Double
+    let recordedAt: String
+
+    func toJson() -> [String: Any] {
+        ["latitude": latitude, "longitude": longitude, "recordedAt": recordedAt]
+    }
+}
+
+struct WatchPaceSample: Codable, Equatable {
+    let secondsPerKm: Int
+    let recordedAt: String
+
+    func toJson() -> [String: Any] {
+        ["secondsPerKm": secondsPerKm, "recordedAt": recordedAt]
+    }
+}
+
 struct WatchPendingRun: Codable, Identifiable, Equatable {
     let activityId: String
     let distanceKm: Double
@@ -8,8 +27,45 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
     let startedAtIso: String
     let endedAtIso: String
     let totalSteps: Int
+    let gpsRoute: [WatchRoutePoint]
+    let paceSamples: [WatchPaceSample]
 
     var id: String { activityId }
+
+    init(
+        activityId: String,
+        distanceKm: Double,
+        durationSeconds: Int,
+        heartRates: [Int],
+        startedAtIso: String,
+        endedAtIso: String,
+        totalSteps: Int,
+        gpsRoute: [WatchRoutePoint] = [],
+        paceSamples: [WatchPaceSample] = []
+    ) {
+        self.activityId = activityId
+        self.distanceKm = distanceKm
+        self.durationSeconds = durationSeconds
+        self.heartRates = heartRates
+        self.startedAtIso = startedAtIso
+        self.endedAtIso = endedAtIso
+        self.totalSteps = totalSteps
+        self.gpsRoute = gpsRoute
+        self.paceSamples = paceSamples
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        activityId = try container.decode(String.self, forKey: .activityId)
+        distanceKm = try container.decode(Double.self, forKey: .distanceKm)
+        durationSeconds = try container.decode(Int.self, forKey: .durationSeconds)
+        heartRates = try container.decode([Int].self, forKey: .heartRates)
+        startedAtIso = try container.decode(String.self, forKey: .startedAtIso)
+        endedAtIso = try container.decode(String.self, forKey: .endedAtIso)
+        totalSteps = try container.decode(Int.self, forKey: .totalSteps)
+        gpsRoute = try container.decodeIfPresent([WatchRoutePoint].self, forKey: .gpsRoute) ?? []
+        paceSamples = try container.decodeIfPresent([WatchPaceSample].self, forKey: .paceSamples) ?? []
+    }
 
     func toValidateRunBody() -> [String: Any] {
         var body: [String: Any] = [
@@ -19,11 +75,13 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
             "heart_rates": Array(heartRates.prefix(50000)),
             "cadence_spm": [Int](),
             "gyro_stability_score": 0.5,
-            "gps_route": [[String: Any]](),
+            "gps_route": gpsRoute.suffix(400).map { $0.toJson() },
+            "pace_samples": paceSamples.suffix(2000).map { $0.toJson() },
+            "started_at": startedAtIso,
+            "ended_at": endedAtIso,
             "source": "watch",
             "device_info": [
                 "watch_used": true,
-                "platform": "watchos",
                 "heart_rate_used": !heartRates.isEmpty
             ]
         ]

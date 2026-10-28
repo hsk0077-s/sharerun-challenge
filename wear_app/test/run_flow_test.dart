@@ -4,6 +4,11 @@ import 'package:share_run_wear/core/sync_queue.dart';
 import 'package:share_run_wear/main.dart';
 
 void main() {
+  setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher.localeTestValue =
+        const Locale('ko');
+  });
+
   testWidgets('start, run, pause, long press to finish, and the run is queued',
       (tester) async {
     final queue = SyncQueue();

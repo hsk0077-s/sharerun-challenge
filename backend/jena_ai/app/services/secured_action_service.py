@@ -1504,6 +1504,18 @@ class SecuredActionService:
                 "averagePaceSecondsPerKm": average_pace,
                 "gyroStabilityScore": request.gyro_stability_score,
                 "gpsRoute": route,
+                **(
+                    {
+                        "paceSamples": [
+                            sample.model_dump()
+                            if hasattr(sample, "model_dump")
+                            else sample.dict()
+                            for sample in request.pace_samples
+                        ]
+                    }
+                    if request.pace_samples
+                    else {}
+                ),
                 "jenaVerified": result.verified,
                 "jenaDecision": result.decision,
                 "jenaReason": result.reason,

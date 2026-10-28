@@ -109,7 +109,7 @@ struct WatchStartView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text(linkedName ?? "시작")
+            Text(linkedName ?? WatchCopy.current.start)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
             Image(systemName: "play.fill")
@@ -118,7 +118,7 @@ struct WatchStartView: View {
             Text(String(format: "%.0fkm", targetKm))
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(watchInk)
-            Text(linkedName == nil ? "탭해서 시작 · 길게 눌러 6자리 연결" : "탭해서 시작")
+            Text(linkedName == nil ? "\(WatchCopy.current.tapToStart) · \(WatchCopy.current.pairingHint)" : WatchCopy.current.tapToStart)
                 .font(.system(size: 11))
                 .multilineTextAlignment(.center)
                 .foregroundColor(watchMuted)
@@ -148,7 +148,7 @@ struct WatchPairingView: View {
 
     var body: some View {
         VStack(spacing: 3) {
-            Text(message ?? (busy ? "확인하는 중" : "휴대폰 앱의 6자리"))
+            Text(message ?? (busy ? WatchCopy.current.checking : WatchCopy.current.pairingHint))
                 .font(.system(size: 10))
                 .foregroundColor(message == nil ? watchMuted : Color.red.opacity(0.85))
                 .lineLimit(1)
@@ -166,7 +166,7 @@ struct WatchPairingView: View {
                 }
             }
             HStack(spacing: 3) {
-                keypadButton("나중에", action: busy ? nil : onSkip)
+                keypadButton(WatchCopy.current.later, action: busy ? nil : onSkip)
                 keypadButton("0") { pressDigit("0") }
                 keypadButton("←", action: backspace)
             }
@@ -222,7 +222,7 @@ struct WatchRunningView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text("달리는 중")
+            Text(WatchCopy.current.running)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
             Image(systemName: "figure.run")
@@ -253,16 +253,16 @@ struct WatchPausedView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text("일시정지")
+            Text(WatchCopy.current.paused)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
             Image(systemName: "pause.fill")
                 .font(.system(size: 20))
                 .foregroundColor(watchLime)
-            Text("일시정지")
+            Text(WatchCopy.current.paused)
                 .font(.system(size: 28, weight: .heavy))
                 .foregroundColor(watchInk)
-            Text("탭해서 다시 시작\n길게 눌러 끝내기")
+            Text(WatchCopy.current.pauseHint)
                 .font(.system(size: 12))
                 .multilineTextAlignment(.center)
                 .foregroundColor(watchMuted)
@@ -282,7 +282,7 @@ struct WatchRankAlertView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text("대회 알림")
+            Text(WatchCopy.current.rankAlert)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
             Image(systemName: "trophy.fill")
@@ -291,7 +291,7 @@ struct WatchRankAlertView: View {
             Text("\(rank)위!")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(watchInk)
-            Text(gapPeople > 0 ? "대회 \(gapPeople)명 앞서요" : "선두예요")
+            Text(gapPeople > 0 ? WatchCopy.current.ahead(of: gapPeople) : WatchCopy.current.leading)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
         }
@@ -311,7 +311,7 @@ struct WatchSummaryView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            Text("끝")
+            Text(WatchCopy.current.done)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
             Image(systemName: "checkmark.circle.fill")
@@ -320,7 +320,7 @@ struct WatchSummaryView: View {
             Text("\(distanceText)km")
                 .font(.system(size: 30, weight: .heavy))
                 .foregroundColor(watchInk)
-            Text("\(paceText)/km · \(minutesText)\n\(pendingCount > 0 ? "휴대폰 연결 시 올려요 (\(pendingCount))" : "올릴 기록 없음")")
+            Text("\(paceText)/km · \(minutesText)\n\(pendingCount > 0 ? WatchCopy.current.uploadPending(pendingCount) : WatchCopy.current.nothingToUpload)")
                 .font(.system(size: 11))
                 .multilineTextAlignment(.center)
                 .foregroundColor(watchMuted)

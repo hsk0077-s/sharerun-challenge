@@ -159,6 +159,58 @@ void main() {
     expect(repo.skipped, 0);
   });
 
+  testWidgets(
+      'opened from settings connecting Health Connect pops back instead of going to prelim-eval',
+      (tester) async {
+    tester.view.physicalSize = const Size(900, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repo = _FakeRepo();
+    final health = _FakeHealth();
+    final profile = UserModel.dashboardDefault(uid: 'u1');
+    await tester.pumpWidget(ProviderScope(
+      overrides: [
+        authStateChangesProvider
+            .overrideWith((ref) => Stream<User?>.value(_FakeUser())),
+        activeUserProfileProvider
+            .overrideWith((ref) => Stream<UserModel>.value(profile)),
+        userRepositoryProvider.overrideWithValue(repo),
+        healthDataServiceProvider.overrideWithValue(health),
+      ],
+      child: MaterialApp(
+        theme: SrcTheme.light,
+        routes: {
+          RouteNames.preliminaryEval: (_) =>
+              const Scaffold(body: Text('prelim-eval')),
+        },
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              key: const Key('open-device'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const DeviceConnectionScreen(),
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.byKey(const Key('open-device')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(AppStrings.watchSyncGoogle));
+    await tester.pumpAndSettle();
+
+    expect(health.authCalls, 1);
+    expect(repo.watchTypes, [WatchType.galaxyWatch]);
+    expect(find.byType(DeviceConnectionScreen), findsNothing);
+    expect(find.byKey(const Key('open-device')), findsOneWidget);
+    expect(find.text('prelim-eval'), findsNothing);
+  });
+
   testWidgets('during sign-up (nothing below it) skip still moves on',
       (tester) async {
     final repo = _FakeRepo();

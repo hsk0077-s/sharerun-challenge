@@ -55,6 +55,8 @@ def _register_device(db, uid: str, device_id: str | None, label: str) -> str:
     for other in _active_devices(db, uid):
         if other != device_id:
             revoke_device(db, uid, other)
+    from app.services import auth_service
+
     _devices(db, uid).document(device_id).set(
         {
             "label": (label or "").strip()[:40] or "Wear OS 워치",
@@ -62,6 +64,7 @@ def _register_device(db, uid: str, device_id: str | None, label: str) -> str:
             "revoked": False,
         }
     )
+    auth_service.forget_watch_device(uid, device_id)
     return device_id
 
 

@@ -308,7 +308,11 @@ class _DeviceConnectionScreenState
           ),
         ),
       );
-      await _goPreliminaryEval();
+      if (_canGoBack()) {
+        _safeBack();
+      } else {
+        await _goPreliminaryEval();
+      }
     } on PlatformException catch (_) {
       if (!mounted || !context.mounted) return;
       await _showIncompatibleWatchDialog();
@@ -381,7 +385,11 @@ class _DeviceConnectionScreenState
           ),
         ),
       );
-      await _goPreliminaryEval();
+      if (_canGoBack()) {
+        _safeBack();
+      } else {
+        await _goPreliminaryEval();
+      }
     } catch (e) {
       debugPrint('Google Health Connect error: $e');
       if (!mounted || !context.mounted) return;

@@ -14,6 +14,8 @@ void main() {
       expect(s.deviceConnectionTitle, isNotEmpty, reason: locale.toLanguageTag());
       expect(s.bleHrSectionTitle, isNotEmpty, reason: locale.toLanguageTag());
       expect(s.pedometerRuleSummary, contains('100'), reason: locale.toLanguageTag());
+      expect(s.charityDisclosure, isNotEmpty, reason: locale.toLanguageTag());
+      expect(s.charityDisclosure.toLowerCase(), isNot(contains('unicef')));
     }
     // Unknown locale falls back to English cleanly
     expect(

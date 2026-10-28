@@ -21,6 +21,7 @@ class ShareRunLocalizedStrings {
     required this.startRunCta,
     required this.pedometerRuleSummary,
     required this.donationRuleSummary,
+    required this.charityDisclosure,
   });
 
   final String localeCode;
@@ -39,6 +40,9 @@ class ShareRunLocalizedStrings {
   final String startRunCta;
   final String pedometerRuleSummary;
   final String donationRuleSummary;
+
+  /// Operator-paid, one Korea-registered payee. Not a user donation.
+  final String charityDisclosure;
 }
 
 abstract final class ShareRunLocalizations {
@@ -74,6 +78,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: '달리기 시작하기',
       pedometerRuleSummary: '100걸음 = 10 SHARE (일일 기본 600 SHARE 한도)',
       donationRuleSummary: '검증 러닝 1km = 100원 상당 기부 풀 적립 (월간 운영자 한도 내)',
+      charityDisclosure:
+          '운영자가 자기 돈으로, 전 세계 거리를 한 달 예산에 모아 한국에 등록된 한 단체에 냅니다. 이용자의 기부금이 아니고 세금 공제 영수증은 없습니다.',
     ),
     'en': ShareRunLocalizedStrings(
       localeCode: 'en-US',
@@ -92,6 +98,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Start Running',
       pedometerRuleSummary: '100 steps = 10 SHARE (600 SHARE/day base cap)',
       donationRuleSummary: 'Verified 1 km = 100 KRW equiv. charity pool (within monthly cap)',
+      charityDisclosure:
+          'The operator pays its own money from one worldwide monthly budget to a single charity registered in Korea. This is not your donation and no tax receipt is issued.',
     ),
     'ja': ShareRunLocalizedStrings(
       localeCode: 'ja-JP',
@@ -110,6 +118,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'ランニング開始',
       pedometerRuleSummary: '100歩 = 10 SHARE（1日基本600 SHARE上限）',
       donationRuleSummary: '認証ラン1km = 100ウォン相当を寄付プールに積立（月間上限内）',
+      charityDisclosure:
+          '運営者が自己資金で、世界中の距離をひとつの月間予算にまとめ、韓国で登録された一つの団体へ支払います。利用者の寄付ではなく、税額控除の領収書はありません。',
     ),
     'zh': ShareRunLocalizedStrings(
       localeCode: 'zh-TW',
@@ -128,6 +138,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: '開始跑步',
       pedometerRuleSummary: '100 步 = 10 SHARE（每日基本上限 600 SHARE）',
       donationRuleSummary: '驗證跑步 1km = 提撥 100 韓元等值公益池（每月上限內）',
+      charityDisclosure:
+          '這是營運方的自有資金，把全球驗證里程合成一個每月預算，結算給韓國登記的單一團體。不是使用者的捐款，也不開立抵稅收據。',
     ),
     'es': ShareRunLocalizedStrings(
       localeCode: 'es-ES',
@@ -146,6 +158,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Empezar a Correr',
       pedometerRuleSummary: '100 pasos = 10 SHARE (límite base 600 SHARE/día)',
       donationRuleSummary: '1 km verificado = 100 KRW equiv. al fondo solidario (con tope mensual)',
+      charityDisclosure:
+          'El operador paga con su dinero, en un presupuesto mensual mundial, a una sola entidad registrada en Corea. No es tu donativo y no hay recibo fiscal.',
     ),
     'pt': ShareRunLocalizedStrings(
       localeCode: 'pt-BR',
@@ -164,6 +178,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Iniciar Corrida',
       pedometerRuleSummary: '100 passos = 10 SHARE (limite base de 600 SHARE/dia)',
       donationRuleSummary: '1 km verificado = 100 KRW equiv. para doação (dentro do teto mensal)',
+      charityDisclosure:
+          'A operadora paga com o próprio dinheiro, num orçamento mensal mundial, a uma entidade registrada na Coreia. Não é doação do usuário e não há recibo fiscal.',
     ),
     'de': ShareRunLocalizedStrings(
       localeCode: 'de-DE',
@@ -182,6 +198,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Lauf starten',
       pedometerRuleSummary: '100 Schritte = 10 SHARE (600 SHARE Tageslimit)',
       donationRuleSummary: '1 verifizierter km = 100 KRW Äquiv. Spendenpool (im Monatslimit)',
+      charityDisclosure:
+          'Der Betreiber zahlt eigenes Geld aus einem weltweiten Monatsbudget an eine in Korea registrierte Stelle. Kein Spendenbeitrag der Nutzer und keine Steuerquittung.',
     ),
     'fr': ShareRunLocalizedStrings(
       localeCode: 'fr-FR',
@@ -200,6 +218,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Démarrer la course',
       pedometerRuleSummary: '100 pas = 10 SHARE (plafond de base 600 SHARE/jour)',
       donationRuleSummary: '1 km vérifié = équiv. 100 KRW au fonds caritatif (plafond mensuel)',
+      charityDisclosure:
+          'L\'opérateur paie avec son argent, sur un budget mensuel mondial, à un seul organisme enregistré en Corée. Ce n\'est pas un don de l\'utilisateur et il n\'y a pas de reçu fiscal.',
     ),
     'vi': ShareRunLocalizedStrings(
       localeCode: 'vi-VN',
@@ -218,6 +238,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Bắt đầu chạy',
       pedometerRuleSummary: '100 bước = 10 SHARE (hạn mức cơ bản 600 SHARE/ngày)',
       donationRuleSummary: '1 km hợp lệ = góp 100 KRW vào quỹ thiện nguyện (trong hạn mức tháng)',
+      charityDisclosure:
+          'Đơn vị vận hành dùng tiền của mình, gộp km toàn cầu vào một ngân sách tháng, chi cho một tổ chức đăng ký tại Hàn Quốc. Không phải tiền quyên góp của người dùng và không có biên lai thuế.',
     ),
     'th': ShareRunLocalizedStrings(
       localeCode: 'th-TH',
@@ -236,6 +258,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'เริ่มวิ่ง',
       pedometerRuleSummary: '100 ก้าว = 10 SHARE (สูงสุด 600 SHARE/วัน)',
       donationRuleSummary: 'วิ่งที่ยืนยันแล้ว 1 กม. = สมทบทุน 100 วอน (ภายในวงเงินรายเดือน)',
+      charityDisclosure:
+          'ผู้ให้บริการจ่ายด้วยเงินของตนเอง จากงบรายเดือนเดียวทั่วโลก ให้องค์กรที่จดทะเบียนในเกาหลี ไม่ใช่เงินบริจาคของผู้ใช้ และไม่มีใบเสร็จลดหย่อนภาษี',
     ),
     'id': ShareRunLocalizedStrings(
       localeCode: 'id-ID',
@@ -254,6 +278,8 @@ abstract final class ShareRunLocalizations {
       startRunCta: 'Mulai Lari',
       pedometerRuleSummary: '100 langkah = 10 SHARE (batas dasar 600 SHARE/hari)',
       donationRuleSummary: '1 km terverifikasi = setara 100 KRW ke dana donasi (batas bulanan)',
+      charityDisclosure:
+          'Penyelenggara membayar dengan uangnya sendiri, dari satu anggaran bulanan dunia, ke satu lembaga terdaftar di Korea. Bukan donasi pengguna dan tanpa bukti potong pajak.',
     ),
   };
 

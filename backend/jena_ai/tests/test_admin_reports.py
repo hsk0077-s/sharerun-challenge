@@ -70,8 +70,7 @@ class _Db:
 def _admin(monkeypatch):
     admin_auth_service._verify_token = lambda _t: {
         "uid": "admin-1",
-        "email": "admin@share-run-challenge.app",
-        "email_verified": True,
+        "admin": True,
     }
     admin_auth_service._admin_doc_exists = lambda _u: False
     yield

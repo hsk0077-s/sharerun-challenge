@@ -337,17 +337,13 @@ service cloud.firestore {
         );
     }
 
+    // An email address never grants admin: whoever controls the mailbox or its
+    // domain could sign in as that address. Admins are accounts with the
+    // `admin` custom claim or an `admins/{uid}` document.
     function isAdmin() {
       return signedIn() && (
         request.auth.token.admin == true
         || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        || (
-          request.auth.token.email_verified == true
-          && request.auth.token.email in [
-            'admin@share-run-challenge.app',
-            'ops@share-run-challenge.app'
-          ]
-        )
       );
     }
 

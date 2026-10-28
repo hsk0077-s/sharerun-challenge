@@ -5,13 +5,9 @@ from firebase_admin import auth
 
 from app.services.firebase_service import FirebaseService
 
-# Keep in sync with firestore.rules isAdmin() email allowlist.
-ADMIN_EMAILS = frozenset(
-    {
-        "admin@share-run-challenge.app",
-        "ops@share-run-challenge.app",
-    }
-)
+# An email address never grants admin by itself: whoever controls the mailbox
+# (or the domain behind it) could sign in as that address. Admins are the
+# accounts with the `admin` custom claim or an `admins/{uid}` document.
 
 
 class AdminAuthService:
@@ -35,10 +31,6 @@ class AdminAuthService:
 
     def is_admin(self, decoded: dict) -> bool:
         if decoded.get("admin") is True:
-            return True
-        # Anyone can sign up with any address by email and password, so an address on the
-        # list counts only once Firebase has verified the person owns it.
-        if decoded.get("email") in ADMIN_EMAILS and decoded.get("email_verified") is True:
             return True
         uid = decoded.get("uid")
         if not isinstance(uid, str) or not uid:

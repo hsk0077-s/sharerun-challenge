@@ -149,8 +149,7 @@ def reset_admin():
 def _admin() -> None:
     admin_auth_service._verify_token = lambda _token: {
         "uid": "admin-1",
-        "email": "admin@share-run-challenge.app",
-        "email_verified": True,
+        "admin": True,
     }
     admin_auth_service._admin_doc_exists = lambda _uid: False
 

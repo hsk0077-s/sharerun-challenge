@@ -15,7 +15,10 @@ struct WatchPaceSample: Codable, Equatable {
     let recordedAt: String
 
     func toJson() -> [String: Any] {
-        ["secondsPerKm": secondsPerKm, "recordedAt": recordedAt]
+        // PaceSamplePayload.secondsPerKm is 0...7200. A slower sample would
+        // 422 the whole run, and the queue treats 422 as final.
+        let pace = min(7200, max(0, secondsPerKm))
+        return ["secondsPerKm": pace, "recordedAt": recordedAt]
     }
 }
 
@@ -70,7 +73,7 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
     func toValidateRunBody() -> [String: Any] {
         var body: [String: Any] = [
             "activity_id": activityId,
-            "distance_km": Double(String(format: "%.3f", distanceKm)) ?? distanceKm,
+            "distance_km": (distanceKm * 1000).rounded() / 1000,
             "duration_seconds": durationSeconds,
             "heart_rates": Array(heartRates.prefix(50000)),
             "cadence_spm": [Int](),
@@ -79,7 +82,6 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
             "pace_samples": paceSamples.suffix(2000).map { $0.toJson() },
             "started_at": startedAtIso,
             "ended_at": endedAtIso,
-            "source": "watch",
             "device_info": [
                 "watch_used": true,
                 "heart_rate_used": !heartRates.isEmpty
@@ -97,10 +99,12 @@ struct WatchPendingSteps: Codable, Equatable {
     let steps: Int
 
     func toDailyStepsBody() -> [String: Any] {
+        // DailyStepsRequest.source is only health_connect or sensor.
+        // steps is 1...30000. A larger total is a 422, which this queue drops.
         [
             "day_key": dayKey,
-            "steps": steps,
-            "source": "watch"
+            "steps": min(30_000, steps),
+            "source": "sensor"
         ]
     }
 }

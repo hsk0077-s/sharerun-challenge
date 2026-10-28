@@ -14,16 +14,17 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
     func toValidateRunBody() -> [String: Any] {
         var body: [String: Any] = [
             "activity_id": activityId,
-            "distance_km": Double(String(format: "%.3f", distanceKm)) ?? distanceKm,
+            "distance_km": (distanceKm * 1000).rounded() / 1000,
             "duration_seconds": durationSeconds,
             "heart_rates": Array(heartRates.prefix(50000)),
             "cadence_spm": [Int](),
             "gyro_stability_score": 0.5,
             "gps_route": [[String: Any]](),
-            "source": "watch",
+            "pace_samples": [[String: Any]](),
+            "started_at": startedAtIso,
+            "ended_at": endedAtIso,
             "device_info": [
                 "watch_used": true,
-                "platform": "watchos",
                 "heart_rate_used": !heartRates.isEmpty
             ]
         ]
@@ -41,8 +42,8 @@ struct WatchPendingSteps: Codable, Equatable {
     func toDailyStepsBody() -> [String: Any] {
         [
             "day_key": dayKey,
-            "steps": steps,
-            "source": "watch"
+            "steps": min(30_000, steps),
+            "source": "sensor"
         ]
     }
 }

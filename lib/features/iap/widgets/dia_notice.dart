@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../l10n/guidance_copy.dart';
 import '../../../core/theme/theme.dart';
 import '../../crew/crew_membership.dart';
 import '../../shop/widgets/store_look.dart';
@@ -26,6 +27,7 @@ class DiaNoticeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
+    final copy = DiaNoticeGuidance.of(Localizations.localeOf(context));
     return Container(
       key: noticeKey,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -37,9 +39,9 @@ class DiaNoticeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('DIA 안내', style: storeText(15, c.ink, w: FontWeight.w900)),
+          Text(copy.title, style: storeText(15, c.ink, w: FontWeight.w900)),
           const SizedBox(height: 8),
-          for (final line in lines)
+          for (final line in copy.lines)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
               child: Text('• $line', style: storeText(12, c.muted, h: 1.45)),

@@ -91,6 +91,25 @@ void main() {
     expect(again.runs.single.paceSamples.single['secondsPerKm'], 300);
   });
 
+  test('a pace above the server maximum is clamped, not sent raw', () {
+    final run = buildPendingRun(
+      activityId: 'slow',
+      distanceKm: 0.05,
+      movingTime: const Duration(minutes: 8),
+      heartRates: const [90],
+      startedAt: DateTime.utc(2026, 10, 25, 9),
+      endedAt: DateTime.utc(2026, 10, 25, 9, 8),
+      paceSamples: const [
+        {'secondsPerKm': 9600, 'recordedAt': '2026-10-25T09:08:00Z'},
+        {'secondsPerKm': -3, 'recordedAt': '2026-10-25T09:08:01Z'},
+      ],
+    );
+    expect(run!.toValidateRunBody()['pace_samples'], [
+      {'secondsPerKm': 7200, 'recordedAt': '2026-10-25T09:08:00Z'},
+      {'secondsPerKm': 0, 'recordedAt': '2026-10-25T09:08:01Z'},
+    ]);
+  });
+
   test('a run with no distance or time is not queued', () {
     expect(
       buildPendingRun(

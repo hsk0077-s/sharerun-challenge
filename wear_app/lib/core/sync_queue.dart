@@ -48,7 +48,15 @@ class PendingRun {
         'cadence_spm': const <int>[],
         'gyro_stability_score': kUnknownGyroScore,
         'gps_route': [for (final fix in gpsRoute) fix.toJson()],
-        'pace_samples': paceSamples,
+        // PaceSamplePayload rejects secondsPerKm above 7200, and a 422
+        // removes the run from this queue. Clamp instead of dropping it.
+        'pace_samples': [
+          for (final sample in paceSamples)
+            {
+              'secondsPerKm': _paceSeconds(sample['secondsPerKm']),
+              'recordedAt': sample['recordedAt'],
+            },
+        ],
         // 서버는 워치 기록의 시작·끝 시각이 있어야 받는다(미래·너무 오래된 시각은 거부).
         'started_at': startedAt.toUtc().toIso8601String(),
         'ended_at': endedAt.toUtc().toIso8601String(),
@@ -94,6 +102,13 @@ class PendingRun {
     ];
   }
 
+  static int _paceSeconds(Object? raw) {
+    final value = raw is num ? raw.toInt() : 0;
+    if (value < 0) return 0;
+    if (value > 7200) return 7200;
+    return value;
+  }
+
   static List<Map<String, Object>> _paces(Object? raw) {
     if (raw is! List) return const [];
     return [
@@ -124,9 +139,22 @@ class SyncQueue {
 
   final int maxRuns;
   final _runs = <PendingRun>[];
+  var _flushing = false;
 
   List<PendingRun> get runs => List.unmodifiable(_runs);
   int get length => _runs.length;
+
+  /// 같은 대기열을 두 번 동시에 올리지 못하게 잠근다.
+  /// 앱이 업로드를 겹치면 같은 `activity_id`가 두 번 나간다.
+  bool tryBeginFlush() {
+    if (_flushing) return false;
+    _flushing = true;
+    return true;
+  }
+
+  void endFlush() {
+    _flushing = false;
+  }
 
   /// 새로 담았으면 true, 같은 id가 이미 있으면 false.
   bool add(PendingRun run) {

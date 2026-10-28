@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/config/app_env.dart';
 import '../../core/theme/theme.dart';
+import '../../l10n/guidance_copy.dart';
 import '../../data/models/wallet_model.dart';
 import '../donation/today_donation.dart';
 
@@ -211,6 +212,7 @@ class HomeDonationCard extends ConsumerWidget {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final today = ref.watch(todayDonationProvider);
+    final copy = DonationGuidance.of(Localizations.localeOf(context));
     return SrcSurfaceCard(
       padding: EdgeInsets.all(tokens.spacing.md),
       color: tokens.colors.donation.withValues(alpha: 0.08),
@@ -224,7 +226,7 @@ class HomeDonationCard extends ConsumerWidget {
               SizedBox(width: tokens.spacing.xs),
               Expanded(
                 child: Text(
-                  '오늘 나의 기부 기여',
+                  copy.homeTitle,
                   style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: tokens.colors.ink,
@@ -234,7 +236,7 @@ class HomeDonationCard extends ConsumerWidget {
               TextButton(
                 key: HomeDonationCard.detailKey,
                 onPressed: onOpenSettlement,
-                child: const Text('기부 내역 ›'),
+                child: Text(copy.homeDetail),
               ),
             ],
           ),
@@ -244,8 +246,8 @@ class HomeDonationCard extends ConsumerWidget {
               children: [
                 Text(
                   data.todayWon > 0
-                      ? '${groupedNumber(data.todayWon)}원'
-                      : '오늘은 아직 기여가 없어요',
+                      ? '${groupedNumber(data.todayWon)}${copy.currencySuffix}'
+                      : copy.homeEmpty,
                   key: HomeDonationCard.amountKey,
                   style: (data.todayWon > 0
                           ? textTheme.headlineSmall
@@ -258,7 +260,7 @@ class HomeDonationCard extends ConsumerWidget {
                 if (data.capReached) ...[
                   SizedBox(height: tokens.spacing.xxs),
                   Text(
-                    HomeDonationCard.capReachedLine,
+                    copy.capReachedHome,
                     key: HomeDonationCard.capKey,
                     style: textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -280,7 +282,7 @@ class HomeDonationCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '기부 정보를 불러오지 못했어요.',
+                    copy.homeFail,
                     style: textTheme.bodySmall?.copyWith(
                       color: tokens.colors.muted,
                     ),
@@ -289,14 +291,14 @@ class HomeDonationCard extends ConsumerWidget {
                 TextButton(
                   key: HomeDonationCard.retryKey,
                   onPressed: () => ref.invalidate(todayDonationProvider),
-                  child: const Text('다시 시도'),
+                  child: Text(copy.retry),
                 ),
               ],
             ),
           ),
           SizedBox(height: tokens.spacing.xs),
           Text(
-            '${HomeDonationCard.rule}\n${HomeDonationCard.budget}',
+            '${copy.rule}\n${copy.budget}',
             style: textTheme.bodySmall?.copyWith(
               color: tokens.colors.muted,
               height: 1.45,

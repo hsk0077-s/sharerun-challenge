@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.dart';
 import 'package:share_run_challenge/screens/store_screen.dart';
@@ -15,6 +17,13 @@ Future<void> _pump(WidgetTester tester, {StoreFocus? focus}) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
+        locale: const Locale('ko', 'KR'),
+        supportedLocales: ShareRunLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: SrcTheme.night,
         home: StoreScreen(initialFocus: focus),
       ),

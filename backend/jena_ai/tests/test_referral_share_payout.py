@@ -6,7 +6,8 @@ from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
 
-from app.models.secured_actions import ValidateRunRequest
+from app.models.secured_actions import RoutePointPayload, ValidateRunRequest
+from app.services.twin_run import run_signature
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
 from app.services.secured_action_service import (
@@ -436,3 +437,61 @@ def test_validation_wrapper_passes_transaction_before_service() -> None:
         account_created_at=None,
         now=None,
     )
+
+
+def test_a_twin_of_the_referrer_does_not_count_toward_the_trial() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=0)
+    started = "2026-10-01T03:00:00+00:00"
+    route = [
+        {"latitude": 37.5, "longitude": 127.0},
+        {"latitude": 37.501, "longitude": 127.001},
+    ]
+    db.store["activities/referrer-run"] = {
+        "userId": "u1",
+        "startedAt": started,
+        "runSignature": run_signature(
+            distance_km=1.1, duration_seconds=400, cadence_spm=[]
+        ),
+        "gpsRoute": route,
+    }
+    service = _service(db)
+    points = [
+        RoutePointPayload(latitude=37.5, longitude=127.0, recordedAt=started),
+        RoutePointPayload(latitude=37.501, longitude=127.001, recordedAt=started),
+    ]
+
+    def persist(activity_id: str, started_at: str) -> None:
+        request = ValidateRunRequest(
+            activity_id=activity_id,
+            distance_km=1.1,
+            duration_seconds=400,
+            gyro_stability_score=0.5,
+            started_at=started_at,
+            gps_route=points,
+        )
+        result = ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=0,
+            forfeit_deposit=False,
+        )
+        service._persist_validation_tx(
+            _MemoryTxn(),
+            "u2",
+            request,
+            result,
+            db.collection("activities").document(activity_id),
+            db.collection("users").document("u2"),
+            account_created_at=_DAY1,
+            now=_DAY1,
+        )
+
+    persist("twin", started)
+    assert db.store["users/u2"]["economy"]["trialRunCount"] == 0
+    assert "referralPayouts/u2_trial_referee_1" not in db.store
+    assert db.store["activities/twin"]["runSignature"] == db.store["activities/referrer-run"]["runSignature"]
+
+    persist("later", "2026-10-01T04:00:00+00:00")
+    assert db.store["users/u2"]["economy"]["trialRunCount"] == 1

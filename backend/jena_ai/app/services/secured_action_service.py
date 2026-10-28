@@ -96,8 +96,10 @@ from app.services.grade_assignment import (
     note_pace_sample,
     on_signup_grade_track,
     run_pace_sec_per_km,
+    sandbag_pace,
     step_signup_grade,
 )
+from app.services.twin_run import is_twin_run, run_signature
 from app.services.donation_cap import (
     CAP_REACHED,
     DAILY_CAP_REACHED,
@@ -1299,6 +1301,18 @@ class SecuredActionService:
         device_owner = self._trial_device_owner(transaction, device_id)
         device_blocked = bool(device_owner and device_owner != uid)
         trial_milestone_reached = bool(economy.get("trialMilestoneRewardClaimed"))
+        referred_by = economy.get("referredBy")
+        if isinstance(referred_by, str):
+            referred_by = referred_by.strip()
+        else:
+            referred_by = ""
+        if referred_by == uid:
+            referred_by = ""
+        twin_blocked = (
+            result.verified
+            and bool(referred_by)
+            and self._referrer_has_twin(transaction, referred_by, request)
+        )
 
         if result.verified:
             allowance = self._economy_service.compute_mining_reward(
@@ -1319,18 +1333,11 @@ class SecuredActionService:
                 now=current,
                 signup_at=account_created_at,
                 config=trial_config,
-                device_blocked=device_blocked,
+                device_blocked=device_blocked or twin_blocked,
             )
 
         # Reads before the activity write. Milestones pay once, by ledger id.
         referral_payouts: list[dict] = []
-        referred_by = economy.get("referredBy")
-        if isinstance(referred_by, str):
-            referred_by = referred_by.strip()
-        else:
-            referred_by = ""
-        if referred_by == uid:
-            referred_by = ""
         # Staged SHARE is the invited runner's reward. A run with no referrer
         # still counts, and claim/redeem pays the same ledger ids later.
         owes_trial = bool(referred_by) and (
@@ -1404,6 +1411,24 @@ class SecuredActionService:
                             duration_seconds=request.duration_seconds,
                             activity_id=activity_ref.id,
                         )
+                        if (
+                            is_prize
+                            and prize_tier_id(tournament_doc) == "beginner"
+                            and prize_finish is not None
+                        ):
+                            finish_pace = run_pace_sec_per_km(
+                                request.distance_km, request.duration_seconds
+                            )
+                            samples = economy.get("paceSamples")
+                            stored = [
+                                int(row["paceSec"])
+                                for row in (samples if isinstance(samples, list) else [])
+                                if isinstance(row, dict)
+                                and isinstance(row.get("paceSec"), (int, float))
+                                and not isinstance(row.get("paceSec"), bool)
+                            ]
+                            if finish_pace is not None and sandbag_pace(stored, finish_pace):
+                                prize_finish = None
         cheer_ledger_ref = self.firebase_service.db.collection(
             "walletTransactions"
         ).document(f"crew_cheer_{activity_ref.id}")
@@ -1504,6 +1529,16 @@ class SecuredActionService:
                 "averagePaceSecondsPerKm": average_pace,
                 "gyroStabilityScore": request.gyro_stability_score,
                 "gpsRoute": route,
+                "runSignature": run_signature(
+                    distance_km=request.distance_km,
+                    duration_seconds=request.duration_seconds,
+                    cadence_spm=list(request.cadence_spm or []),
+                ),
+                **(
+                    {"startedAt": request.started_at}
+                    if isinstance(request.started_at, str) and request.started_at
+                    else {}
+                ),
                 **(
                     {
                         "paceSamples": [
@@ -3060,6 +3095,40 @@ class SecuredActionService:
             return ""
         owner = (snapshot.to_dict() or {}).get("uid")
         return owner if isinstance(owner, str) else ""
+
+    def _referrer_has_twin(self, transaction, referrer_uid: str, request) -> bool:
+        """True when this run matches a stored run of the person who invited them.
+
+        ``is_twin_run`` needs a start time, the same signature, and an overlapping
+        route. A run with no start time cannot match, so older rows stay eligible.
+        """
+        started = request.started_at
+        if not isinstance(started, str) or not started:
+            return False
+        route = [
+            point.model_dump() if hasattr(point, "model_dump") else point.dict()
+            for point in request.gps_route
+        ]
+        candidate = {
+            "startedAt": started,
+            "runSignature": run_signature(
+                distance_km=request.distance_km,
+                duration_seconds=request.duration_seconds,
+                cadence_spm=list(request.cadence_spm or []),
+            ),
+            "gpsRoute": route,
+        }
+        snapshots = (
+            self.firebase_service.db.collection("activities")
+            .where("userId", "==", referrer_uid)
+            .limit(40)
+            .get(transaction=transaction)
+        )
+        for snapshot in snapshots:
+            data = snapshot.to_dict() or {}
+            if is_twin_run(candidate, data):
+                return True
+        return False
 
     def _write_share_receipt(self, transaction, payout: dict) -> None:
         referee_uid = payout["referee_uid"]

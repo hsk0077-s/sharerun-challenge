@@ -49,3 +49,6 @@ def test_the_summary_reads_this_months_totals_and_the_configured_stages() -> Non
 def test_without_any_data_the_card_starts_at_the_first_goal() -> None:
     out = fg.summary(_MemoryDb(), datetime(2026, 10, 1, tzinfo=timezone.utc))
     assert (out["total_won"], out["goal_won"], out["cap_won"]) == (0, 100_000, 1_000_000)
+    assert fg.DEFAULT_STAGES == (100_000, 300_000, 500_000, 1_000_000)
+    assert fg.progress(400_000, fg.DEFAULT_STAGES, 1_000_000)["goal_won"] == 500_000
+    assert fg.progress(1_000_000, fg.DEFAULT_STAGES, 1_000_000)["goal_won"] == 0

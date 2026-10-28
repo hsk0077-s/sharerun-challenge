@@ -4,7 +4,12 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/features/iap/widgets/dia_notice.dart';
 import 'package:share_run_challenge/l10n/app_localizations.dart';
+import 'package:share_run_challenge/features/accessories/accessory_catalog.dart';
+import 'package:share_run_challenge/features/accessories/accessory_names.dart';
+import 'package:share_run_challenge/features/shop/donation_match_line.dart';
+import 'package:share_run_challenge/l10n/dia_refund_copy.dart';
 import 'package:share_run_challenge/l10n/guidance_copy.dart';
+import 'package:share_run_challenge/l10n/shop_catalog_copy.dart';
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
 
@@ -49,6 +54,54 @@ void main() {
     expect(dia.lines.first, contains('100'));
     expect(dia.lines.last, contains('7'));
     expect(dia.lines.last, contains('100'));
+  });
+
+  test('refund, donation match, shop items, and accessory names cover 11 locales', () {
+    expect(koreanOnlyGuidanceSurfaces, isEmpty);
+    const ko = Locale('ko');
+    expect(
+      donationMatchContributionLine(
+        sponsorName: 'SRC',
+        contributorName: '러너상',
+        companyWon: 1000,
+        locale: ko,
+      ),
+      'SRC 명의 1,000원 · 러너상 기여',
+    );
+    for (final locale in ShareRunLocalizations.supportedLocales) {
+      final refund = DiaRefundCopy.of(locale);
+      expect(refund.sheetTitle, isNotEmpty);
+      expect(refund.window(7), isNotEmpty);
+      expect(refund.openButton, isNotEmpty);
+      final shop = ShopCatalogCopy.of(locale);
+      for (final id in ShopCatalogCopy.itemIds) {
+        expect(shop.storeName(id), isNotEmpty, reason: '${locale.languageCode}.$id');
+        expect(shop.title(id), isNotEmpty);
+        expect(shop.description(id), isNotEmpty);
+      }
+      expect(shop.pass('title'), isNotEmpty);
+      expect(shop.pass('cosmeticNote'), isNotEmpty);
+      if (locale.languageCode != 'en') {
+        expect(shop.pass('title'), isNot(ShopCatalogCopy.of(const Locale('en')).pass('title')));
+      }
+      final line = donationMatchContributionLine(
+        sponsorName: 'SRC',
+        contributorName: 'Ada',
+        companyWon: 1000,
+        locale: locale,
+      );
+      expect(line, contains('1,000'));
+      expect(line, contains('Ada'));
+    }
+    expect(accessoryCatalog, hasLength(46));
+    for (final item in accessoryCatalog) {
+      expect(item.displayName(ko), item.nameKo);
+      for (final code in accessoryNameLanguages) {
+        final name = item.displayName(Locale(code));
+        expect(name, isNotEmpty, reason: '${item.id}.$code');
+        expect(name, isNot(item.nameKo), reason: '${item.id}.$code');
+      }
+    }
   });
 
   test('a locale with no entry falls back to English, not to a blank sheet', () {

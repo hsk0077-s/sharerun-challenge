@@ -15,7 +15,11 @@ class DonationMatchContribution extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final entries = ref.watch(donationMatchProvider).asData?.value ?? const [];
     final monthKey = KstCalendar.dateKey().substring(0, 7);
-    final line = donationMatchSummary(entries, monthKey);
+    final line = donationMatchSummary(
+      entries,
+      monthKey,
+      Localizations.localeOf(context),
+    );
     if (line.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 8),

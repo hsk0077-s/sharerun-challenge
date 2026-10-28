@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/api/api_exception.dart';
 import '../../accessories/accessory_catalog.dart';
+import '../../accessories/accessory_names.dart';
 import '../../accessories/accessory_inventory.dart';
 import '../../accessories/dressed_mascot.dart';
 import '../../accessories/try_on_sheet.dart';
@@ -278,7 +279,7 @@ class _AccessoryCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              accessory.nameKo,
+              accessory.displayName(Localizations.localeOf(context)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: storeText(14, c.ink, w: FontWeight.w800),
@@ -373,8 +374,21 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
       builder: (ctx) => AlertDialog(
         title: const Text('소품 사기'),
         content: Text(
-          '${a.nameKo}을(를) ${a.priceLabel}로 살까요?'
-          '${dia ? '\n보너스 DIA가 있으면 먼저 써요.' : ''}',
+          () {
+            final locale = Localizations.localeOf(context);
+            final ask = accessoryPhrase(
+              locale,
+              'buy',
+              name: a.displayName(locale),
+              price: a.priceLabel,
+            );
+            final bonus = !dia
+                ? ''
+                : locale.languageCode == 'ko'
+                    ? '\n보너스 DIA가 있으면 먼저 써요.'
+                    : '\nBonus DIA is spent first.';
+            return '$ask$bonus';
+          }(),
         ),
         actions: [
           TextButton(
@@ -398,7 +412,11 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
-      _toast('${a.nameKo}을(를) 샀어요.');
+      _toast(accessoryPhrase(
+        Localizations.localeOf(context),
+        'bought',
+        name: a.displayName(Localizations.localeOf(context)),
+      ));
     } on ApiException catch (error) {
       _toast(switch (error.statusCode) {
         400 => '${dia ? 'DIA' : 'SHARE'}가 모자라거나 이미 가진 소품이에요.',
@@ -419,7 +437,12 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
     setState(() => _busy = true);
     try {
       await api.equipAccessory(slot: a.slot.name, itemId: wearing ? a.id : '');
-      _toast(wearing ? '${a.nameKo}을(를) 입었어요.' : '${a.nameKo}을(를) 벗었어요.');
+      final locale = Localizations.localeOf(context);
+      _toast(accessoryPhrase(
+        locale,
+        wearing ? 'wore' : 'off',
+        name: a.displayName(locale),
+      ));
     } catch (_) {
       _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
     } finally {
@@ -456,7 +479,10 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            Text(a.nameKo, style: storeText(22, c.ink, w: FontWeight.w900)),
+            Text(
+              a.displayName(Localizations.localeOf(context)),
+              style: storeText(22, c.ink, w: FontWeight.w900),
+            ),
             const SizedBox(height: 4),
             Text(
               '${a.rarity.labelKo} · ${a.slot.labelKo}'

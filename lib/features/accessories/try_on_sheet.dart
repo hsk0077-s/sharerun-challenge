@@ -146,7 +146,7 @@ class _ItemCard extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: acc.nameKo,
+      label: acc.displayName(Localizations.localeOf(context)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
@@ -193,7 +193,7 @@ class _ItemCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                acc.nameKo,
+                acc.displayName(Localizations.localeOf(context)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption.copyWith(

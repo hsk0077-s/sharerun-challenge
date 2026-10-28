@@ -313,4 +313,23 @@ def beginner_entry_block(user: dict) -> str | None:
     ]
     if paces and median_pace(paces) < TURTLE_FAST_PACE_SEC:
         return "pace_too_fast"
+    if sandbag_pace(paces):
+        return "sandbag_pace"
     return None
+
+
+def sandbag_pace(paces: list[int], finish_pace: int | None = None) -> bool:
+    """True when a slow median hides a much faster sample.
+
+    A beginner who walks most days and sprints once keeps a turtle median.
+    The fastest sample, or this finish, has to sit with that median.
+    """
+    pool = [int(pace) for pace in paces]
+    if finish_pace is not None:
+        pool.append(int(finish_pace))
+    if len(pool) < 2:
+        return False
+    ordered = sorted(pool)
+    middle = ordered[len(ordered) // 2]
+    fastest = ordered[0]
+    return fastest < TURTLE_FAST_PACE_SEC and middle - fastest >= 90

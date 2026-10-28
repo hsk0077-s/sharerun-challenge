@@ -19,7 +19,7 @@ from app.services.donation_cap import (
 )
 
 FUNDING_GOAL_CONFIG_ID = "funding_goal"
-DEFAULT_STAGES = (100_000, 300_000)
+DEFAULT_STAGES = (100_000, 300_000, 500_000, 1_000_000)
 _KST = timezone(timedelta(hours=9))
 
 

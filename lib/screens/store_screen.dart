@@ -13,6 +13,7 @@ import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../l10n/guidance_copy.dart';
+import '../l10n/shop_catalog_copy.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
@@ -51,6 +52,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   var _tab = _StoreTab.recommended;
   final _fundingKey = GlobalKey();
   var _buyBusy = false;
+
+  ShopCatalogCopy get _shop => ShopCatalogCopy.of(Localizations.localeOf(context));
 
   @override
   void initState() {
@@ -320,13 +323,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _tile(
             id: 'record_cpr_ticket',
             icon: Icons.healing_rounded,
-            name: AppStrings.storeItemCpr,
+            name: _shop.storeName('record_cpr_ticket'),
           ),
           const SizedBox(width: 8),
           _tile(
             id: 'record_safe_guard',
             icon: Icons.shield_outlined,
-            name: AppStrings.storeItemSafeGuard,
+            name: _shop.storeName('record_safe_guard'),
           ),
         ],
       ),
@@ -336,13 +339,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _tile(
             id: 'coach_one_point_ticket',
             icon: Icons.record_voice_over_rounded,
-            name: AppStrings.storeItemCoachOnePoint,
+            name: _shop.storeName('coach_one_point_ticket'),
           ),
           const SizedBox(width: 8),
           _tile(
             id: 'friend_ghost_pace',
             icon: Icons.directions_run_rounded,
-            name: AppStrings.storeItemFriendGhost,
+            name: _shop.storeName('friend_ghost_pace'),
           ),
         ],
       ),
@@ -352,13 +355,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _tile(
             id: 'extra_entry_ticket',
             icon: Icons.confirmation_number_outlined,
-            name: AppStrings.storeItemExtraEntry,
+            name: _shop.storeName('extra_entry_ticket'),
           ),
           const SizedBox(width: 8),
           _tile(
             id: 'crew_cheer_flag',
             icon: Icons.flag_rounded,
-            name: AppStrings.storeItemCrewCheer,
+            name: _shop.storeName('crew_cheer_flag'),
           ),
         ],
       ),
@@ -572,20 +575,20 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _row(
         id: 'record_cpr_ticket',
         icon: Icons.healing_rounded,
-        name: AppStrings.storeItemCpr,
+        name: _shop.storeName('record_cpr_ticket'),
         owned: inventory.cprCount,
       ),
       _row(
         id: 'record_safe_guard',
         icon: Icons.shield_outlined,
-        name: AppStrings.storeItemSafeGuard,
+        name: _shop.storeName('record_safe_guard'),
         owned: inventory.safeGuardCount,
       ),
       _row(
         id: 'rest_day_ticket',
         icon: Icons.bedtime_outlined,
-        name: AppStrings.storeItemRestDay,
-        sub: AppStrings.storeItemRestDayNote,
+        name: _shop.storeName('rest_day_ticket'),
+        sub: _shop.storeNote('rest_day_ticket'),
         owned: inventory.restDayCount,
         plainLabel: '${_format(_valueCost('rest_day_ticket'))} VALUE',
       ),
@@ -593,34 +596,34 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _row(
         id: 'coach_one_point_ticket',
         icon: Icons.record_voice_over_rounded,
-        name: AppStrings.storeItemCoachOnePoint,
+        name: _shop.storeName('coach_one_point_ticket'),
         owned: inventory.coachOnePointCount,
       ),
       _row(
         id: 'friend_ghost_pace',
         icon: Icons.directions_run_rounded,
-        name: AppStrings.storeItemFriendGhost,
+        name: _shop.storeName('friend_ghost_pace'),
         sub: '10회 묶음 ${_diaCost('friend_ghost_pace_10pack')}',
         owned: inventory.friendGhostCount,
       ),
       _row(
         id: 'crew_cheer_flag',
         icon: Icons.flag_rounded,
-        name: AppStrings.storeItemCrewCheer,
+        name: _shop.storeName('crew_cheer_flag'),
         owned: inventory.crewCheerCount,
       ),
       const StoreSectionLabel('대회'),
       _row(
         id: 'extra_entry_ticket',
         icon: Icons.confirmation_number_outlined,
-        name: AppStrings.storeItemExtraEntry,
+        name: _shop.storeName('extra_entry_ticket'),
         sub: '3장 묶음 ${_diaCost('extra_entry_ticket_3pack')}',
         owned: inventory.extraEntryCount,
       ),
       StoreItemRow(
         icon: Icons.bolt_rounded,
-        name: '배틀런 패스',
-        sub: '시즌 보상 · 패스+',
+        name: _shop.pass('rowName'),
+        sub: _shop.pass('rowNote'),
         plainLabel: '보기',
         onTap: _openBattlePass,
       ),
@@ -628,24 +631,24 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _row(
         id: 'boost_run',
         icon: Icons.rocket_launch_outlined,
-        name: AppStrings.storeItemBoostRun,
-        sub: AppStrings.storeItemBoostRunNote,
+        name: _shop.storeName('boost_run'),
+        sub: _shop.storeNote('boost_run'),
         owned: inventory.boostRunCount,
         plainLabel: '${_format(_shareCost('boost_run'))} SHARE',
       ),
       _row(
         id: 'step_incubator',
         icon: Icons.egg_outlined,
-        name: AppStrings.storeItemStepIncubator,
-        sub: AppStrings.storeItemStepIncubatorNote,
+        name: _shop.storeName('step_incubator'),
+        sub: _shop.storeNote('step_incubator'),
         owned: inventory.stepIncubatorCount,
         plainLabel: '${_format(_shareCost('step_incubator'))} SHARE',
       ),
       _row(
         id: 'donation_match',
         icon: Icons.favorite_border_rounded,
-        name: AppStrings.storeItemDonationMatch,
-        sub: AppStrings.storeItemDonationMatchNote,
+        name: _shop.storeName('donation_match'),
+        sub: _shop.storeNote('donation_match'),
         owned: 0,
         plainLabel: '${_format(_valueCost('donation_match'))} VALUE',
       ),
@@ -864,7 +867,7 @@ class _CosmeticsPreviewRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      a.nameKo,
+                      a.displayName(Localizations.localeOf(context)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: storeText(13, c.ink, w: FontWeight.w800),

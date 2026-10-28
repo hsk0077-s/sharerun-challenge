@@ -99,7 +99,15 @@ void main() {
     await tester.tap(find.byKey(AccessoryDetailSheet.buyKey));
     await tester.pumpAndSettle();
     expect(api.calls, isEmpty);
-    expect(find.textContaining('보너스 DIA가 있으면 먼저'), findsOneWidget);
+    final code = Localizations.localeOf(
+      tester.element(find.byKey(AccessoryDetailSheet.buyConfirmKey)),
+    ).languageCode;
+    expect(
+      find.textContaining(
+        code == 'ko' ? '보너스 DIA가 있으면 먼저' : 'Bonus DIA is spent first',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(AccessoryDetailSheet.buyConfirmKey));
     await tester.pumpAndSettle();
     expect(api.calls, ['buy:P004']);

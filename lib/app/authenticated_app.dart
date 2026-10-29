@@ -20,6 +20,7 @@ import '../features/pedometer/daily_metrics_account.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
+import '../l10n/remaining_surface.dart';
 import '../screens/solo_pedometer_screen.dart';
 import 'router/dashboard_router.dart';
 
@@ -148,6 +149,10 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        builder: (context, child) {
+          RemainingSurface.currentLocale = Localizations.localeOf(context);
+          return child ?? const SizedBox.shrink();
+        },
         routerConfig: _router!,
       ),
     );

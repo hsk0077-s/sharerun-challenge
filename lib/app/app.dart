@@ -42,6 +42,7 @@ import '../core/navigation/dashboard_tab_navigation.dart';
 import '../data/models/activity_model.dart';
 import '../core/theme/src_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../l10n/remaining_surface.dart';
 
 class ShareRunChallengeApp extends StatelessWidget {
   const ShareRunChallengeApp({super.key});
@@ -60,6 +61,10 @@ class ShareRunChallengeApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) {
+        RemainingSurface.currentLocale = Localizations.localeOf(context);
+        return child ?? const SizedBox.shrink();
+      },
       navigatorKey: rootNavigatorKey,
       home: AppConfig.showIntro
           ? FirstRunSplash(

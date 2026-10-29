@@ -25,6 +25,68 @@ class RemainingSurface {
     return table?[key] ?? key;
   }
 
+  /// Locale the app currently renders in. Kept in sync by the widget
+  /// tree (see lib/app/app.dart) for callers without a BuildContext.
+  static Locale currentLocale = const Locale('ko', 'KR');
+
+  /// Returns [ko] (with [args] substituted) for the Korean locale or
+  /// when [key] has no translation for the resolved language.
+  static String tr(
+    BuildContext? context,
+    String key,
+    String ko, [
+    Map<String, Object?> args = const {},
+  ]) {
+    final locale = context == null
+        ? currentLocale
+        : (Localizations.maybeLocaleOf(context) ?? currentLocale);
+    return _resolve(locale, key, ko, args);
+  }
+
+  /// Context-free variant of [tr] for models/services/constants, using
+  /// [currentLocale].
+  static String trNow(
+    String key,
+    String ko, [
+    Map<String, Object?> args = const {},
+  ]) {
+    return _resolve(currentLocale, key, ko, args);
+  }
+
+  static String _resolve(
+    Locale locale,
+    String key,
+    String ko,
+    Map<String, Object?> args,
+  ) {
+    if (locale.languageCode != 'ko') {
+      final translated = _byLanguage[locale.languageCode]?[key];
+      if (translated != null) return _applyArgs(translated, args);
+    }
+    return _applyArgs(ko, args);
+  }
+
+  static final _simpleArgName = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
+
+  /// Substitutes `${name}` and, for simple identifiers, bare `$name`
+  /// tokens -- matching the 'format' tokens in
+  /// docs/l10n/remaining-ko-strings.json.
+  static String _applyArgs(String value, Map<String, Object?> args) {
+    if (args.isEmpty) return value;
+    var result = value;
+    for (final entry in args.entries) {
+      final text = '${entry.value}';
+      result = result.replaceAll('\${${entry.key}}', text);
+      if (_simpleArgName.hasMatch(entry.key)) {
+        result = result.replaceAllMapped(
+          RegExp('\\\$${entry.key}(?![A-Za-z0-9_])'),
+          (_) => text,
+        );
+      }
+    }
+    return result;
+  }
+
   static const keys = <String>[
     'boot_error_app.body',
     'boot_error_app.body.2',

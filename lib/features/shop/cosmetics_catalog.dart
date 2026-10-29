@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// Server cosmetics catalog. Code defaults match the API defaults so a
 /// missing config doc still lists the same items. The phone does not invent
 /// a price the server did not confirm once the catalog request succeeds.
@@ -165,8 +167,14 @@ const cosmeticCategories = {shoeSkin, shareFrame};
 
 String cosmeticCategoryLabel(String category) {
   return switch (category) {
-    shoeSkin => '러닝화 스킨',
-    shareFrame => '결과 카드 프레임',
+    shoeSkin => RemainingSurface.trNow(
+        'shop.cosmetics_catalog.body',
+        '러닝화 스킨',
+      ),
+    shareFrame => RemainingSurface.trNow(
+        'shop.cosmetics_catalog.body.2',
+        '결과 카드 프레임',
+      ),
     _ => category,
   };
 }

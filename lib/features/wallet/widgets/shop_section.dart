@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/economy_constants.dart';
 import '../../../data/models/shop_item_model.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class ShopSection extends StatelessWidget {
   const ShopSection({
@@ -25,10 +26,18 @@ class ShopSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('다이아 상점', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          RemainingSurface.tr(context, 'wallet.shop_section.body', '다이아 상점'),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 8),
         Text(
-          '보유 Diamond $diamondBalance',
+          RemainingSurface.tr(
+            context,
+            'wallet.shop_section.body.2',
+            '보유 Diamond $diamondBalance',
+            {'diamondBalance': diamondBalance},
+          ),
           style: const TextStyle(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 12),
@@ -40,7 +49,15 @@ class ShopSection extends StatelessWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.diamond_outlined),
-          label: Text(buyingDiamonds ? '결제 준비 중...' : 'DIA 충전하기'),
+          label: Text(
+            buyingDiamonds
+                ? '결제 준비 중...'
+                : RemainingSurface.tr(
+                    context,
+                    'wallet.shop_section.body.3',
+                    'DIA 충전하기',
+                  ),
+          ),
         ),
         const SizedBox(height: 10),
         Container(
@@ -142,7 +159,13 @@ class _ShopItemCard extends StatelessWidget {
                         dimension: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('구매'),
+                    : Text(
+                        RemainingSurface.tr(
+                          context,
+                          'wallet.shop_section.body.4',
+                          '구매',
+                        ),
+                      ),
               ),
             ],
           ),

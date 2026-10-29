@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/theme.dart';
 import '../../../l10n/accessory_names.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../../../core/api/api_exception.dart';
 import '../../accessories/accessory_catalog.dart';
 import '../../accessories/accessory_inventory.dart';
@@ -85,7 +86,14 @@ class _AccessoryShopGridState extends ConsumerState<AccessoryShopGrid> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 40),
             child: Center(
-              child: Text('아직 준비 중이에요', style: storeText(14, c.muted)),
+              child: Text(
+                RemainingSurface.tr(
+                  context,
+                  'shop.accessory_shop_grid.body',
+                  '아직 준비 중이에요',
+                ),
+                style: storeText(14, c.muted),
+              ),
             ),
           )
         else
@@ -261,7 +269,15 @@ class _AccessoryCard extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${accessory.tierLock!.labelKo} 티어',
+                                  RemainingSurface.tr(
+                                    context,
+                                    'shop.accessory_shop_grid.body.2',
+                                    '${accessory.tierLock!.labelKo} 티어',
+                                    {
+                                      'accessory.tierLock!.labelKo':
+                                          accessory.tierLock!.labelKo,
+                                    },
+                                  ),
                                   style: storeText(
                                     10,
                                     Colors.white,
@@ -367,7 +383,11 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
     final locale = Localizations.localeOf(context);
     final name = accessoryName(a.id, a.nameKo, locale);
     if (api == null) {
-      _toast('서버에 연결되면 살 수 있어요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'shop.accessory_shop_grid.toast',
+        '서버에 연결되면 살 수 있어요.',
+      ));
       return;
     }
     final dia = a.currency == AccessoryCurrency.dia;
@@ -405,11 +425,23 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
     } on ApiException catch (error) {
       _toast(switch (error.statusCode) {
         400 => '${dia ? 'DIA' : 'SHARE'}가 모자라거나 이미 가진 소품이에요.',
-        403 => '아직 티어가 모자라요.',
-        _ => '사지 못했어요. 잠시 뒤 다시 해 주세요.',
+        403 => RemainingSurface.tr(
+            context,
+            'shop.accessory_shop_grid.toast.3',
+            '아직 티어가 모자라요.',
+          ),
+        _ => RemainingSurface.tr(
+            context,
+            'shop.accessory_shop_grid.toast.4',
+            '사지 못했어요. 잠시 뒤 다시 해 주세요.',
+          ),
       });
     } catch (_) {
-      _toast('사지 못했어요. 잠시 뒤 다시 해 주세요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'shop.accessory_shop_grid.toast.4',
+        '사지 못했어요. 잠시 뒤 다시 해 주세요.',
+      ));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -474,7 +506,14 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
             if (a.provisional)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('가격은 바뀔 수 있어요.', style: storeText(12, c.muted)),
+                child: Text(
+                  RemainingSurface.tr(
+                    context,
+                    'shop.accessory_shop_grid.button',
+                    '가격은 바뀔 수 있어요.',
+                  ),
+                  style: storeText(12, c.muted),
+                ),
               ),
             const SizedBox(height: 16),
             OutlinedButton(
@@ -484,28 +523,59 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
                 animal: widget.animal,
                 title: widget.animal.labelKo,
               ),
-              child: const Text('입혀 보기'),
+              child: Text(RemainingSurface.tr(
+                context,
+                'shop.accessory_shop_grid.button.2',
+                '입혀 보기',
+              )),
             ),
             const SizedBox(height: 8),
             if (owned || rewardReady)
               FilledButton(
                 key: AccessoryDetailSheet.wearKey,
                 onPressed: _busy ? null : () => _wear(!worn),
-                child: Text(worn ? '벗기' : '입기'),
+                child: Text(worn
+                    ? RemainingSurface.tr(
+                        context,
+                        'shop.accessory_shop_grid.button.3',
+                        '벗기',
+                      )
+                    : RemainingSurface.tr(
+                        context,
+                        'shop.accessory_shop_grid.button.4',
+                        '입기',
+                      )),
               )
             else if (_forSale && _locked)
               FilledButton(
                 onPressed: null,
-                child: Text('${a.tierLock!.labelKo} 티어가 되면 살 수 있어요'),
+                child: Text(RemainingSurface.tr(
+                  context,
+                  'shop.accessory_shop_grid.button.5',
+                  '${a.tierLock!.labelKo} 티어가 되면 살 수 있어요',
+                  {'a.tierLock!.labelKo': a.tierLock!.labelKo},
+                )),
               )
             else if (_forSale)
               FilledButton(
                 key: AccessoryDetailSheet.buyKey,
                 onPressed: _busy ? null : _buy,
-                child: Text('사기 · ${a.priceLabel}'),
+                child: Text(RemainingSurface.tr(
+                  context,
+                  'shop.accessory_shop_grid.button.6',
+                  '사기 · ${a.priceLabel}',
+                  {'a.priceLabel': a.priceLabel},
+                )),
               )
             else
-              const FilledButton(onPressed: null, child: Text('티어 보상이에요')),
+              FilledButton(
+                onPressed: null,
+                child: Text(RemainingSurface.tr(
+                  context,
+                  'shop.accessory_shop_grid.button.7',
+                  '티어 보상이에요',
+                )),
+              ),
           ],
         ),
       ),

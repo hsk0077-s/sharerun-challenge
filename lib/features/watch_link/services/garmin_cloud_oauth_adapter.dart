@@ -1,4 +1,5 @@
 import '../../../core/config/app_env.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// GCP Garmin API 클라우드 연동 어댑터의 로컬 Mock.
 ///
@@ -37,11 +38,17 @@ class GarminCloudOAuthAdapter {
     required String password,
   }) async {
     if (!_enabled) {
-      throw const GarminOAuthException('Garmin 연동은 아직 준비 중이에요.');
+      throw GarminOAuthException(RemainingSurface.trNow(
+        'watch_link.garmin_cloud_oauth_adapter.body',
+        'Garmin 연동은 아직 준비 중이에요.',
+      ));
     }
     final id = email.trim();
     if (id.isEmpty || password.isEmpty) {
-      throw const GarminOAuthException('이메일과 비밀번호를 입력해 주세요.');
+      throw GarminOAuthException(RemainingSurface.trNow(
+        'watch_link.garmin_cloud_oauth_adapter.body.2',
+        '이메일과 비밀번호를 입력해 주세요.',
+      ));
     }
     if (!_looksLikeEmail(id)) {
       throw const GarminOAuthException('올바른 이메일 형식이 아닙니다.');
@@ -63,8 +70,11 @@ class GarminCloudOAuthAdapter {
     assert(packet['method'] == 'POST');
 
     if (password.length < 4) {
-      throw const GarminOAuthException(
-        '인증에 실패했습니다. Garmin 계정 정보를 확인해 주세요.',
+      throw GarminOAuthException(
+        RemainingSurface.trNow(
+          'watch_link.garmin_cloud_oauth_adapter.body.3',
+          '인증에 실패했습니다. Garmin 계정 정보를 확인해 주세요.',
+        ),
       );
     }
 

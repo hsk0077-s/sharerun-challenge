@@ -7,6 +7,7 @@ import '../core/theme/app_text_styles.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 예비 천사 → 세라핌 6단계 천사 도감.
 class AngelBookPage extends ConsumerWidget {
@@ -26,7 +27,7 @@ class AngelBookPage extends ConsumerWidget {
         elevation: 0,
         foregroundColor: AppColors.textBlack,
         title: Text(
-          '천사 도감',
+          RemainingSurface.tr(context, 'angel_book.title', '천사 도감'),
           style: AppTextStyles.header1.copyWith(fontSize: 20),
         ),
       ),
@@ -40,12 +41,16 @@ class AngelBookPage extends ConsumerWidget {
           ),
           const SizedBox(height: 22),
           Text(
-            '6단계 천사 연대기',
+            RemainingSurface.tr(context, 'angel_book.body', '6단계 천사 연대기'),
             style: AppTextStyles.header1.copyWith(fontSize: 16),
           ),
           const SizedBox(height: 4),
           Text(
-            '예비 천사부터 세라핌까지 모든 천사를 열람할 수 있습니다.',
+            RemainingSurface.tr(
+              context,
+              'angel_book.body.2',
+              '예비 천사부터 세라핌까지 모든 천사를 열람할 수 있습니다.',
+            ),
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -98,12 +103,22 @@ class AngelBookPage extends ConsumerWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                '요건  ·  ${tier.requirementLabel}',
+                RemainingSurface.tr(
+                  context,
+                  'angel_book.body.3',
+                  '요건  ·  ${tier.requirementLabel}',
+                  {'tier.requirementLabel': tier.requirementLabel},
+                ),
                 style: AppTextStyles.agreementLabel.copyWith(fontSize: 13),
               ),
               const SizedBox(height: 8),
               Text(
-                '특전  ·  ${tier.rewardLabel}',
+                RemainingSurface.tr(
+                  context,
+                  'angel_book.body.4',
+                  '특전  ·  ${tier.rewardLabel}',
+                  {'tier.rewardLabel': tier.rewardLabel},
+                ),
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -167,12 +182,25 @@ class _AngelAchievementDash extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _TossStat(
-                  label: '누적 후원 횟수',
-                  value: '$donationCount회',
+                  label: RemainingSurface.tr(
+                    context,
+                    'angel_book.body.5',
+                    '누적 후원 횟수',
+                  ),
+                  value: RemainingSurface.tr(
+                    context,
+                    'angel_book.body.6',
+                    '$donationCount회',
+                    {'donationCount': donationCount},
+                  ),
                 ),
                 const SizedBox(height: 8),
                 _TossStat(
-                  label: '누적 후원 SHARE',
+                  label: RemainingSurface.tr(
+                    context,
+                    'angel_book.body.7',
+                    '누적 후원 SHARE',
+                  ),
                   value: AngelTierX.formatWon(amountWon),
                 ),
               ],

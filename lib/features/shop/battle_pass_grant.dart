@@ -1,3 +1,5 @@
+import '../../l10n/remaining_surface.dart';
+
 /// Server-confirmed 배틀런 패스 cosmetics for the current season.
 ///
 /// Ownership and reward ids come from `shopInventory/battle_run_pass`.
@@ -17,21 +19,48 @@ class BattlePassReward {
 const battlePassItemId = 'battle_run_pass';
 const battlePassPlusItemId = 'battle_run_pass_plus';
 
-const battlePassRewards = <BattlePassReward>[
-  BattlePassReward(id: 'season1_frame', title: '시즌 1 프레임', plusOnly: false),
-  BattlePassReward(id: 'season1_badge', title: '시즌 1 배지', plusOnly: false),
-  BattlePassReward(
-    id: 'season1_plus_frame',
-    title: '시즌 1 플러스 프레임',
-    plusOnly: true,
-  ),
-  BattlePassReward(id: 'season1_skin', title: '시즌 1 스킨', plusOnly: true),
-  BattlePassReward(
-    id: 'season1_plus_badge',
-    title: '시즌 1 플러스 배지',
-    plusOnly: true,
-  ),
-];
+List<BattlePassReward> get battlePassRewards => <BattlePassReward>[
+      BattlePassReward(
+        id: 'season1_frame',
+        title: RemainingSurface.trNow(
+          'shop.battle_pass_grant.body',
+          '시즌 1 프레임',
+        ),
+        plusOnly: false,
+      ),
+      BattlePassReward(
+        id: 'season1_badge',
+        title: RemainingSurface.trNow(
+          'shop.battle_pass_grant.body.2',
+          '시즌 1 배지',
+        ),
+        plusOnly: false,
+      ),
+      BattlePassReward(
+        id: 'season1_plus_frame',
+        title: RemainingSurface.trNow(
+          'shop.battle_pass_grant.body.3',
+          '시즌 1 플러스 프레임',
+        ),
+        plusOnly: true,
+      ),
+      BattlePassReward(
+        id: 'season1_skin',
+        title: RemainingSurface.trNow(
+          'shop.battle_pass_grant.body.4',
+          '시즌 1 스킨',
+        ),
+        plusOnly: true,
+      ),
+      BattlePassReward(
+        id: 'season1_plus_badge',
+        title: RemainingSurface.trNow(
+          'shop.battle_pass_grant.body.5',
+          '시즌 1 플러스 배지',
+        ),
+        plusOnly: true,
+      ),
+    ];
 
 class BattlePassGrant {
   const BattlePassGrant({this.tier = '', this.rewardIds = const []});

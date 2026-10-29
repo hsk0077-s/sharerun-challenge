@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../core/strings/app_strings.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../../pedometer/kst_calendar.dart';
 import '../firestore_stamp_landmark_source.dart';
 import '../stamp_landmark.dart';
@@ -55,8 +56,14 @@ class StampTourState {
             landmark.isVisited && pendingOfficialRewardIds.contains(landmark.id),
       );
 
-  String get stampMissionTitle =>
-      '우리 동네 랜드마크 스탬프 찍기 ($officialVisitedCount/${officialLandmarks.length})';
+  String get stampMissionTitle => RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body',
+        '우리 동네 랜드마크 스탬프 찍기 ($officialVisitedCount/${officialLandmarks.length})',
+        {
+          'officialVisitedCount': officialVisitedCount,
+          'officialLandmarks.length': officialLandmarks.length,
+        },
+      );
 
   factory StampTourState.initial() {
     return StampTourState(
@@ -226,7 +233,10 @@ class StampTourNotifier extends Notifier<StampTourState> {
       if (!_isLive) return;
       if (!granted) {
         state = state.copyWith(
-          lastError: '위치 권한이 필요합니다. 설정에서 허용해 주세요.',
+          lastError: RemainingSurface.trNow(
+            'stamp.stamp_tour_provider.body.2',
+            '위치 권한이 필요합니다. 설정에서 허용해 주세요.',
+          ),
         );
         return;
       }
@@ -243,13 +253,23 @@ class StampTourNotifier extends Notifier<StampTourState> {
         onError: (Object e) {
           debugPrint('StampTour GPS error: $e');
           if (!_isLive) return;
-          state = state.copyWith(lastError: 'GPS 수신 중 오류가 발생했습니다.');
+          state = state.copyWith(
+            lastError: RemainingSurface.trNow(
+              'stamp.stamp_tour_provider.body.3',
+              'GPS 수신 중 오류가 발생했습니다.',
+            ),
+          );
         },
       );
     } catch (e) {
       debugPrint('StampTour startTracking error: $e');
       if (!_isLive) return;
-      state = state.copyWith(lastError: '위치 추적을 시작할 수 없습니다.');
+      state = state.copyWith(
+        lastError: RemainingSurface.trNow(
+          'stamp.stamp_tour_provider.body.4',
+          '위치 추적을 시작할 수 없습니다.',
+        ),
+      );
     }
   }
 
@@ -302,31 +322,55 @@ class StampTourNotifier extends Notifier<StampTourState> {
   Future<String?> tryClaimStampMission() async {
     await _ensureHydrated();
     if (state.stampMissionCompleted) {
-      return '모든 공식 랜드마크 스탬프를 이미 획득했습니다.';
+      return RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body.5',
+        '모든 공식 랜드마크 스탬프를 이미 획득했습니다.',
+      );
     }
 
     final position = await _resolveCurrentPosition();
     if (position == null) {
-      return '현재 위치를 확인할 수 없습니다. 위치 권한을 허용해 주세요.';
+      return RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body.6',
+        '현재 위치를 확인할 수 없습니다. 위치 권한을 허용해 주세요.',
+      );
     }
 
     final unlocked = await _unlockNearestIfInRange(position);
     if (unlocked == null) {
-      return '목표 랜드마크 반경 50m 이내로 접근해 주세요.';
+      return RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body.7',
+        '목표 랜드마크 반경 50m 이내로 접근해 주세요.',
+      );
     }
 
     if (unlocked.awardsOfficialDia) {
       await enqueueOfficialDiaPending(rewardId: unlocked.id);
-      return '${unlocked.name} 스탬프 획득! ${AppStrings.stampTourOfficialDiaPending}';
+      return RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body.8',
+        '${unlocked.name} 스탬프 획득! ${AppStrings.stampTourOfficialDiaPending}',
+        {
+          'unlocked.name': unlocked.name,
+          'AppStrings.stampTourOfficialDiaPending':
+              AppStrings.stampTourOfficialDiaPending,
+        },
+      );
     }
-    return '${unlocked.name} 개인 스탬프 기록됨 (공식 DIA 없음)';
+    return RemainingSurface.trNow(
+      'stamp.stamp_tour_provider.body.9',
+      '${unlocked.name} 개인 스탬프 기록됨 (공식 DIA 없음)',
+      {'unlocked.name': unlocked.name},
+    );
   }
 
   /// Manual walk-mission tap. Returns a user-facing snackbar message, or null.
   Future<String?> tryClaimWalkMission() async {
     await _ensureHydrated();
     if (state.walkMissionCompleted) {
-      return '오늘의 1km 걷기 미션을 이미 완료했습니다.';
+      return RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body.10',
+        '오늘의 1km 걷기 미션을 이미 완료했습니다.',
+      );
     }
 
     await _resolveCurrentPosition();
@@ -334,12 +378,23 @@ class StampTourNotifier extends Notifier<StampTourState> {
       state = state.copyWith(walkMissionCompleted: true);
       await _persistProgress();
       await enqueueOfficialDiaPending(rewardId: walkRewardId);
-      return '1km 걷기 미션 완료! ${AppStrings.stampTourOfficialDiaPending}';
+      return RemainingSurface.trNow(
+        'stamp.stamp_tour_provider.body.11',
+        '1km 걷기 미션 완료! ${AppStrings.stampTourOfficialDiaPending}',
+        {
+          'AppStrings.stampTourOfficialDiaPending':
+              AppStrings.stampTourOfficialDiaPending,
+        },
+      );
     }
 
     final remain =
         (walkMissionKm - state.walkDistanceKm).clamp(0.0, walkMissionKm);
-    return '아직 ${remain.toStringAsFixed(2)}km 더 걸어주세요.';
+    return RemainingSurface.trNow(
+      'stamp.stamp_tour_provider.body.12',
+      '아직 ${remain.toStringAsFixed(2)}km 더 걸어주세요.',
+      {'remain.toStringAsFixed(2)': remain.toStringAsFixed(2)},
+    );
   }
 
   Future<StampLandmark?> _unlockNearestIfInRange(Position currentPosition) async {
@@ -429,7 +484,12 @@ class StampTourNotifier extends Notifier<StampTourState> {
     } catch (e) {
       debugPrint('enqueueOfficialDiaPending: $e');
       if (_isLive) {
-        state = state.copyWith(lastError: '공식 DIA 대기 기록에 실패했습니다.');
+        state = state.copyWith(
+          lastError: RemainingSurface.trNow(
+            'stamp.stamp_tour_provider.body.13',
+            '공식 DIA 대기 기록에 실패했습니다.',
+          ),
+        );
       }
     } finally {
       if (_isLive) {

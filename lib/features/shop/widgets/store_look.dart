@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/theme.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 상점 새 디자인의 작은 부품들. 시안(추천·다이아·아이템 화면)의 모양을 그대로 옮겼다.
 
@@ -235,7 +236,11 @@ class StoreCoachCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              '심박·상황에 맞춘 심층 코칭',
+              RemainingSurface.tr(
+                context,
+                'shop.store_look.body',
+                '심박·상황에 맞춘 심층 코칭',
+              ),
               style: storeText(
                 14,
                 on.withValues(alpha: 0.75),
@@ -259,7 +264,11 @@ class StoreCoachCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '월간',
+                          RemainingSurface.tr(
+                            context,
+                            'shop.store_look.body.2',
+                            '월간',
+                          ),
                           style: storeText(
                             11,
                             c.primary.withValues(alpha: 0.8),
@@ -291,7 +300,11 @@ class StoreCoachCard extends StatelessWidget {
                         Row(
                           children: [
                             Text(
-                              '연간',
+                              RemainingSurface.tr(
+                                context,
+                                'shop.store_look.body.3',
+                                '연간',
+                              ),
                               style: storeText(
                                 11,
                                 on.withValues(alpha: 0.75),
@@ -537,7 +550,13 @@ class StoreItemRow extends StatelessWidget {
                     Text(
                       [
                         if (sub.isNotEmpty) sub,
-                        if (owned > 0) '보관함 $owned',
+                        if (owned > 0)
+                          RemainingSurface.tr(
+                            context,
+                            'shop.store_look.body.4',
+                            '보관함 $owned',
+                            {'owned': owned},
+                          ),
                       ].join(' · '),
                       style: storeText(12, c.muted),
                     ),

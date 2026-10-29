@@ -20,6 +20,7 @@ import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'live_running_screen.dart';
 import '../features/tournaments/utils/sponsor_display.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 대회방 상세정보 및 기부처 선택 화면 (Screen 9).
 class ChallengeDetailScreen extends StatelessWidget {
@@ -33,8 +34,17 @@ class ChallengeDetailScreen extends StatelessWidget {
     if (title.isEmpty) return;
     try {
       await WalkingChallengeShare.openSystemSheet(
-        text: '쉐어런 $title 대회에 같이 도전해요!\n#쉐어런 #ShareRun',
-        subject: '쉐어런 챌린지 초대',
+        text: RemainingSurface.tr(
+          buttonContext,
+          'challenge_detail.body',
+          '쉐어런 $title 대회에 같이 도전해요!\n#쉐어런 #ShareRun',
+          {'title': title},
+        ),
+        subject: RemainingSurface.tr(
+          buttonContext,
+          'challenge_detail.body.2',
+          '쉐어런 챌린지 초대',
+        ),
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {
@@ -48,7 +58,7 @@ class ChallengeDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final copy = _ChallengeDetailCopy.forRoom(roomId);
+    final copy = _ChallengeDetailCopy.forRoom(context, roomId);
 
     final c = context.srcTokens.colors;
     String after(String text) {
@@ -338,17 +348,21 @@ class _ChallengeDetailCopy {
     'beginner-1km-room-01',
   };
 
-  factory _ChallengeDetailCopy.forRoom(String? roomId) {
+  factory _ChallengeDetailCopy.forRoom(BuildContext context, String? roomId) {
     final isBeginner = roomId != null && _beginnerRoomIds.contains(roomId);
     if (isBeginner) {
       const fee = ChallengeEntryFee.beginner1kmShare;
       return _ChallengeDetailCopy(
         title: '1km 초보 챌린지',
         entryFee: AppStrings.dashboardChallenge1Sub,
-        badge: '입문',
+        badge: RemainingSurface.tr(context, 'challenge_detail.body.3', '입문'),
         prize: AppStrings.challengeDetailPrize,
         donation: AppStrings.challengeDetailDonation,
-        distance: '거리: 1km',
+        distance: RemainingSurface.tr(
+          context,
+          'challenge_detail.body.4',
+          '거리: 1km',
+        ),
         donationTarget: AppStrings.challengeDetailDonationTarget,
         valueTip: AppStrings.challengeDetailValueTip,
         joinLabel: AppStrings.challengeDetailJoin,

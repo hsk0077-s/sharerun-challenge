@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../../tournaments/utils/sponsor_display.dart';
 
 /// Neon marquee sponsor billboard for result / challenge screens.
@@ -38,7 +39,11 @@ class _SponsorBillboardState extends ConsumerState<SponsorBillboard>
     final headline =
         buff == null ? '쉐어런' : displaySponsorName(buff.sponsorName);
     final message = buff?.message ??
-        '검증된 달리기 1km마다 100원이 기부돼요';
+        RemainingSurface.tr(
+          context,
+          'sponsor.sponsor_billboard.body',
+          '검증된 달리기 1km마다 100원이 기부돼요',
+        );
 
     return Container(
       height: 52,

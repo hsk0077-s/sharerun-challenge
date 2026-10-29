@@ -1,4 +1,5 @@
 import '../../../data/models/tournament_model.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Fail-closed client checks before `POST /actions/tournaments/join`.
 ///
@@ -42,12 +43,18 @@ abstract final class TournamentJoinGate {
         return null;
       }
       if (prizeEntryShare > 0 && shareBalance < prizeEntryShare) {
-        return 'SHARE 잔액이 부족합니다.';
+        return RemainingSurface.trNow(
+          'tournaments.tournament_join_gate.body',
+          'SHARE 잔액이 부족합니다.',
+        );
       }
       return null;
     }
     if (shareBalance < tournament.entryFeeShare) {
-      return 'SHARE 잔액이 부족합니다.';
+      return RemainingSurface.trNow(
+        'tournaments.tournament_join_gate.body',
+        'SHARE 잔액이 부족합니다.',
+      );
     }
     return null;
   }

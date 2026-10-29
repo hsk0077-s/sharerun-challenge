@@ -1,3 +1,5 @@
+import '../../l10n/remaining_surface.dart';
+
 /// Phase 3a ships the free coach only. Later DIA/paid tiers can extend this
 /// without a second on/off toggle.
 enum VoiceCoachPlan { free }
@@ -8,14 +10,24 @@ class VoiceCue {
     required this.id,
     required this.ko,
     required this.en,
+    this.l10nKey,
+    this.l10nArgs = const {},
   });
 
   final String id;
   final String ko;
   final String en;
 
+  /// [RemainingSurface] lookup key for [ko]. Null keeps the literal spoken
+  /// text used by the mp3 cue-file hashes untouched.
+  final String? l10nKey;
+  final Map<String, Object?> l10nArgs;
+
   String text({String languageCode = 'ko'}) {
-    return languageCode.toLowerCase().startsWith('ko') ? ko : en;
+    if (!languageCode.toLowerCase().startsWith('ko')) return en;
+    final key = l10nKey;
+    if (key == null) return ko;
+    return RemainingSurface.trNow(key, ko, l10nArgs);
   }
 }
 
@@ -25,36 +37,42 @@ abstract final class VoiceCoachingCues {
     id: 'pref.enabled',
     ko: '보이스 코칭을 켤게요.',
     en: 'Voice coaching is on.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body',
   );
 
   static const walkStart = VoiceCue(
     id: 'walk.start',
     ko: '워킹 챌린지 시작이에요. 천천히 걸어볼까요?',
     en: 'Walking challenge started. Easy steps.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.2',
   );
 
   static const walkHarvest = VoiceCue(
     id: 'walk.harvest',
     ko: 'SHARE를 수확했어요. 수고했어요.',
     en: 'SHARE harvested. Nice work.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.3',
   );
 
   static const walkGoal = VoiceCue(
     id: 'walk.goal',
     ko: '오늘의 목표 거리를 채웠어요. 대단해요!',
     en: 'Daily distance goal done. Amazing!',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.4',
   );
 
   static const runStart = VoiceCue(
     id: 'run.start',
     ko: '러닝을 시작해요. 호흡을 맞춰볼까요?',
     en: 'Run started. Match your breath.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.5',
   );
 
   static const runFinish = VoiceCue(
     id: 'run.finish',
     ko: '러닝 종료. 오늘도 잘 달렸어요.',
     en: 'Run finished. Well done today.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.6',
   );
 
   /// Remaining distance that counts as "almost there" on a known race target.
@@ -64,6 +82,7 @@ abstract final class VoiceCoachingCues {
     id: 'run.near_finish',
     ko: '200미터 남았어요.',
     en: '200 meters to go.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.7',
   );
 
   /// Wall-clock spacing for the mid-run pep. The 45s gate still applies.
@@ -73,6 +92,7 @@ abstract final class VoiceCoachingCues {
     id: 'run.encourage',
     ko: '좋아요. 호흡 유지해요.',
     en: 'Nice. Keep your breath.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.8',
   );
 
   /// Age-agnostic BPM bands for the challenge-tracker reading.
@@ -101,18 +121,21 @@ abstract final class VoiceCoachingCues {
     id: 'run.hr.high',
     ko: '심박이 높아요. 속도를 줄여요.',
     en: 'Heart rate is high. Ease off.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.9',
   );
 
   static const runHeartRateSteady = VoiceCue(
     id: 'run.hr.steady',
     ko: '심박이 좋아요. 이 페이스 유지해요.',
     en: 'Heart rate looks good. Hold this pace.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.10',
   );
 
   static const runHeartRateRecovered = VoiceCue(
     id: 'run.hr.recovered',
     ko: '심박이 내려왔어요. 페이스 유지해요.',
     en: 'Heart rate came down. Hold this pace.',
+    l10nKey: 'voice_coaching.voice_coaching_cues.body.11',
   );
 
   static const walkStepMilestones = <int>[1000, 3000, 5000, 8000, 10000];
@@ -123,31 +146,38 @@ abstract final class VoiceCoachingCues {
           id: 'walk.steps.1000',
           ko: '천 보 달성! 좋아요.',
           en: 'One thousand steps. Nice.',
+          l10nKey: 'voice_coaching.voice_coaching_cues.body.12',
         ),
       3000 => const VoiceCue(
           id: 'walk.steps.3000',
           ko: '삼천 보예요. 페이스 잘 유지하고 있어요.',
           en: 'Three thousand steps. Steady pace.',
+          l10nKey: 'voice_coaching.voice_coaching_cues.body.13',
         ),
       5000 => const VoiceCue(
           id: 'walk.steps.5000',
           ko: '오천 보! 잘하고 있어요.',
           en: 'Five thousand steps. You are doing great.',
+          l10nKey: 'voice_coaching.voice_coaching_cues.body.14',
         ),
       8000 => const VoiceCue(
           id: 'walk.steps.8000',
           ko: '팔천 보. 거의 다 왔어요.',
           en: 'Eight thousand steps. Almost there.',
+          l10nKey: 'voice_coaching.voice_coaching_cues.body.15',
         ),
       10000 => const VoiceCue(
           id: 'walk.steps.10000',
           ko: '만 보 달성! 오늘 정말 잘했어요.',
           en: 'Ten thousand steps. Fantastic today.',
+          l10nKey: 'voice_coaching.voice_coaching_cues.body.16',
         ),
       _ => VoiceCue(
           id: 'walk.steps.$steps',
           ko: '$steps보 달성! 좋아요.',
           en: '$steps steps. Nice.',
+          l10nKey: 'voice_coaching.voice_coaching_cues.body.17',
+          l10nArgs: {'steps': steps},
         ),
     };
   }
@@ -162,12 +192,20 @@ abstract final class VoiceCoachingCues {
         en: km == 1
             ? 'One kilometer. Keep your breath.'
             : '$km kilometers. Hold this pace.',
+        l10nKey: km == 1
+            ? 'voice_coaching.voice_coaching_cues.body.18'
+            : 'voice_coaching.voice_coaching_cues.body.19',
+        l10nArgs: km == 1 ? const {} : {'km': km},
       );
     }
     return VoiceCue(
       id: 'run.km.$km',
       ko: km == 1 ? '1킬로미터. 페이스 좋아요.' : '$km킬로미터 통과. 잘하고 있어요.',
       en: km == 1 ? 'One kilometer. Good pace.' : '$km kilometers. Keep it up.',
+      l10nKey: km == 1
+          ? 'voice_coaching.voice_coaching_cues.body.20'
+          : 'voice_coaching.voice_coaching_cues.body.21',
+      l10nArgs: km == 1 ? const {} : {'km': km},
     );
   }
 

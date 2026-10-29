@@ -17,6 +17,7 @@ import 'challenge_detail_screen.dart';
 import 'create_challenge_room_screen.dart';
 import 'my_tournaments_screen.dart';
 import 'tournament_screen.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 다자간 챌린지 실시간 로비 화면 (Screen 7).
 class ChallengeLobbyScreen extends ConsumerStatefulWidget {
@@ -74,10 +75,29 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
           number: 0,
           title: room.title,
           subtitle: room.maxParticipants > 0
-              ? '${room.targetDistanceKm.toStringAsFixed(0)}km · '
-                  '${room.participantCount}/${room.maxParticipants}명'
-              : '${room.targetDistanceKm.toStringAsFixed(0)}km · '
-                  '참가자 ${room.participantCount}명',
+              ? RemainingSurface.tr(
+                  context,
+                  'challenge_lobby.body',
+                  '${room.targetDistanceKm.toStringAsFixed(0)}km · '
+                      '${room.participantCount}/${room.maxParticipants}명',
+                  {
+                    'room.targetDistanceKm.toStringAsFixed(0)':
+                        room.targetDistanceKm.toStringAsFixed(0),
+                    'room.participantCount': room.participantCount,
+                    'room.maxParticipants': room.maxParticipants,
+                  },
+                )
+              : RemainingSurface.tr(
+                  context,
+                  'challenge_lobby.body.2',
+                  '${room.targetDistanceKm.toStringAsFixed(0)}km · '
+                      '참가자 ${room.participantCount}명',
+                  {
+                    'room.targetDistanceKm.toStringAsFixed(0)':
+                        room.targetDistanceKm.toStringAsFixed(0),
+                    'room.participantCount': room.participantCount,
+                  },
+                ),
           onEnter: () => _onOpenLiveRoom(room),
         )).toList();
   }
@@ -139,7 +159,12 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
       ),
       children: [
         Text(
-          '$total개 챌린지가\n열려 있어요',
+          RemainingSurface.tr(
+            context,
+            'challenge_lobby.body.3',
+            '$total개 챌린지가\n열려 있어요',
+            {'total': total},
+          ),
           style: textTheme.headlineMedium?.copyWith(
             color: tokens.colors.ink,
             fontWeight: FontWeight.w900,
@@ -160,7 +185,13 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
         SizedBox(height: tokens.spacing.xs),
         for (final row in fixed) numbered(row),
         if (live.isNotEmpty) ...[
-          const ChallengeSectionLabel('실시간 개설 · 참가 가능 대회'),
+          ChallengeSectionLabel(
+            RemainingSurface.tr(
+              context,
+              'challenge_lobby.body.4',
+              '실시간 개설 · 참가 가능 대회',
+            ),
+          ),
           for (final row in live) numbered(row),
         ],
         SizedBox(height: tokens.spacing.sm),
@@ -262,10 +293,16 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                   unselectedLabelStyle: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
-                  tabs: const [
-                    Tab(text: '챌린지'),
-                    Tab(text: '대회'),
-                    Tab(text: '내 기록'),
+                  tabs: [
+                    const Tab(text: '챌린지'),
+                    const Tab(text: '대회'),
+                    Tab(
+                      text: RemainingSurface.tr(
+                        context,
+                        'challenge_lobby.body.5',
+                        '내 기록',
+                      ),
+                    ),
                   ],
                 ),
                 Expanded(

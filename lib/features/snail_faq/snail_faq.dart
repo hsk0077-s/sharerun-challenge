@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// 미리 써 둔 달팽이 FAQ 한 건. 생성형 AI 없이 이 답만 보여 준다.
 class FaqEntry {
   const FaqEntry({
@@ -80,7 +82,10 @@ class SnailFaq {
   }
 
   /// 내 값이 필요한 답인데 서버에서 확인한 값이 아직 없을 때의 안내.
-  static const valueUnavailable = '지금은 값을 불러오지 못했어요. 연결된 뒤에 다시 물어봐 주세요.';
+  static String get valueUnavailable => RemainingSurface.trNow(
+        'snail_faq.body',
+        '지금은 값을 불러오지 못했어요. 연결된 뒤에 다시 물어봐 주세요.',
+      );
 
   /// 답 문장을 만든다. 내 값이 필요한 답은 [values]로 채우고,
   /// 하나라도 없으면 지어내지 않고 [valueUnavailable]을 돌려준다.

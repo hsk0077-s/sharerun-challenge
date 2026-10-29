@@ -5,6 +5,7 @@ import '../../app/providers/app_providers.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/strings/app_strings.dart';
 import '../../data/api/secured_action_api_client.dart';
+import '../../l10n/remaining_surface.dart';
 import 'providers/server_shop_inventory_provider.dart';
 import 'streak_item_message.dart';
 
@@ -82,7 +83,11 @@ class _FriendGhostUseButtonState extends ConsumerState<FriendGhostUseButton> {
             .friendGhostCount ??
         0;
     if (owned <= 0) {
-      _toast('친구 고스트 페이스 보유량이 없습니다. 상점에서 구매해 주세요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'shop.friend_ghost_run.toast',
+        '친구 고스트 페이스 보유량이 없습니다. 상점에서 구매해 주세요.',
+      ));
       return;
     }
     final picked = await showDialog<_FriendPick>(
@@ -99,11 +104,24 @@ class _FriendGhostUseButtonState extends ConsumerState<FriendGhostUseButton> {
       if (!mounted) return;
       final pace = result.paceSecPerKm;
       if (friendGhostStatusUnlocks(result.status) && pace != null) {
-        _toast('친구 고스트 ${formatPaceSecPerKm(pace)}');
+        _toast(RemainingSurface.tr(
+          context,
+          'shop.friend_ghost_run.toast.2',
+          '친구 고스트 ${formatPaceSecPerKm(pace)}',
+          {'formatPaceSecPerKm(pace)': formatPaceSecPerKm(pace)},
+        ));
       } else if (result.status == 'own_best') {
-        _toast('내 최고 기록 비교는 무료입니다. 티켓을 쓰지 않았습니다.');
+        _toast(RemainingSurface.tr(
+          context,
+          'shop.friend_ghost_run.toast.3',
+          '내 최고 기록 비교는 무료입니다. 티켓을 쓰지 않았습니다.',
+        ));
       } else {
-        _toast('친구 기록을 확인하지 못했습니다.');
+        _toast(RemainingSurface.tr(
+          context,
+          'shop.friend_ghost_run.toast.4',
+          '친구 기록을 확인하지 못했습니다.',
+        ));
       }
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -115,7 +133,11 @@ class _FriendGhostUseButtonState extends ConsumerState<FriendGhostUseButton> {
       );
     } catch (_) {
       if (!mounted) return;
-      _toast('친구 고스트를 사용하지 못했습니다.');
+      _toast(RemainingSurface.tr(
+        context,
+        'shop.friend_ghost_run.toast.5',
+        '친구 고스트를 사용하지 못했습니다.',
+      ));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -133,8 +155,21 @@ class _FriendGhostUseButtonState extends ConsumerState<FriendGhostUseButton> {
         0;
     final pace = ref.watch(friendGhostPaceProvider);
     final label = pace == null
-        ? '${AppStrings.storeItemFriendGhost} · 보유 $count'
-        : '친구 고스트 ${formatPaceSecPerKm(pace)}';
+        ? RemainingSurface.tr(
+            context,
+            'shop.friend_ghost_run.body',
+            '${AppStrings.storeItemFriendGhost} · 보유 $count',
+            {
+              'AppStrings.storeItemFriendGhost': AppStrings.storeItemFriendGhost,
+              'count': count,
+            },
+          )
+        : RemainingSurface.tr(
+            context,
+            'shop.friend_ghost_run.toast.2',
+            '친구 고스트 ${formatPaceSecPerKm(pace)}',
+            {'formatPaceSecPerKm(pace)': formatPaceSecPerKm(pace)},
+          );
     return Align(
       alignment: Alignment.centerLeft,
       child: TextButton(
@@ -181,12 +216,24 @@ class _FriendRunDialogState extends State<_FriendRunDialog> {
           TextField(
             key: const Key('friend-ghost-uid'),
             controller: _friend,
-            decoration: const InputDecoration(labelText: '친구 아이디'),
+            decoration: InputDecoration(
+              labelText: RemainingSurface.tr(
+                context,
+                'shop.friend_ghost_run.hint',
+                '친구 아이디',
+              ),
+            ),
           ),
           TextField(
             key: const Key('friend-ghost-activity'),
             controller: _activity,
-            decoration: const InputDecoration(labelText: '기록 아이디'),
+            decoration: InputDecoration(
+              labelText: RemainingSurface.tr(
+                context,
+                'shop.friend_ghost_run.hint.2',
+                '기록 아이디',
+              ),
+            ),
           ),
         ],
       ),
@@ -205,7 +252,11 @@ class _FriendRunDialogState extends State<_FriendRunDialog> {
               _FriendPick(friendUid: friendUid, activityId: activityId),
             );
           },
-          child: const Text('비교 시작'),
+          child: Text(RemainingSurface.tr(
+            context,
+            'shop.friend_ghost_run.body.2',
+            '비교 시작',
+          )),
         ),
       ],
     );

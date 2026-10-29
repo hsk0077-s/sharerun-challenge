@@ -1,5 +1,6 @@
 import '../../../core/api/api_exception.dart';
 import '../../../data/models/tournament_join_result.dart';
+import '../../../l10n/remaining_surface.dart';
 import 'tournament_join_debit.dart';
 
 /// Client payment-history title. Same `users/{uid}/wallet_transactions`
@@ -61,15 +62,34 @@ class TournamentJoinPlan {
 }
 
 abstract final class TournamentJoinMessages {
-  static const alreadyJoined = '이미 참가한 챌린지입니다. 참가비는 다시 차감되지 않습니다.';
-  static const rejected = '참가가 거절되었습니다. 참가비는 차감되지 않았습니다.';
-  static const joinPaymentFailed = '참가·결제가 완료되지 않았습니다. 서버 연결 또는 인증에 실패했습니다.';
-  static const freeJoined = '참가 완료.';
+  static String get alreadyJoined => RemainingSurface.trNow(
+        'tournaments.tournament_join_outcome.body',
+        '이미 참가한 챌린지입니다. 참가비는 다시 차감되지 않습니다.',
+      );
+  static String get rejected => RemainingSurface.trNow(
+        'tournaments.tournament_join_outcome.body.2',
+        '참가가 거절되었습니다. 참가비는 차감되지 않았습니다.',
+      );
+  static String get joinPaymentFailed => RemainingSurface.trNow(
+        'tournaments.tournament_join_outcome.body.3',
+        '참가·결제가 완료되지 않았습니다. 서버 연결 또는 인증에 실패했습니다.',
+      );
+  static String get freeJoined => RemainingSurface.trNow(
+        'tournaments.tournament_join_outcome.body.4',
+        '참가 완료.',
+      );
 
-  static String paid(int fee) => '참가 완료. 참가비 $fee SHARE가 잠겼습니다.';
+  static String paid(int fee) => RemainingSurface.trNow(
+        'tournaments.tournament_join_outcome.body.5',
+        '참가 완료. 참가비 $fee SHARE가 잠겼습니다.',
+        {'fee': fee},
+      );
 
-  static String debugLocalPaid(int fee) =>
-      '참가 완료(디버그). 참가비 $fee SHARE가 차감되었습니다.';
+  static String debugLocalPaid(int fee) => RemainingSurface.trNow(
+        'tournaments.tournament_join_outcome.body.6',
+        '참가 완료(디버그). 참가비 $fee SHARE가 차감되었습니다.',
+        {'fee': fee},
+      );
 }
 
 abstract final class DebugLocalJoinLedger {
@@ -95,7 +115,7 @@ abstract final class TournamentJoinPlanner {
     required int entryFeeShare,
   }) {
     if (result.alreadyJoined) {
-      return const TournamentJoinPlan(
+      return TournamentJoinPlan(
         kind: TournamentJoinKind.alreadyJoined,
         applyDebit: false,
         debitAmount: 0,

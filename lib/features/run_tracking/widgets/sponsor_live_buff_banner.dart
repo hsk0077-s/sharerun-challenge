@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../data/models/sponsor_live_buff_model.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class SponsorLiveBuffBanner extends StatelessWidget {
   const SponsorLiveBuffBanner({
@@ -34,7 +35,11 @@ class SponsorLiveBuffBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '스폰서 라이브 버프',
+                  RemainingSurface.tr(
+                    context,
+                    'run_tracking.sponsor_live_buff_banner.body',
+                    '스폰서 라이브 버프',
+                  ),
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                         color: AppColors.neonLime,
                         fontWeight: FontWeight.w800,

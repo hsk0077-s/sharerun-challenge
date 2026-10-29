@@ -16,6 +16,7 @@ import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
 import '../features/shop/streak_item_message.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 배틀런 패스. Purchase and cosmetics come from the server.
 class BattlePassScreen extends ConsumerStatefulWidget {
@@ -69,14 +70,30 @@ class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
       _toast(
         result.status == 'already_purchased'
             ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
-            : '$title을 구매했습니다.',
+            : RemainingSurface.tr(
+                context,
+                'battle_pass.toast',
+                '$title을 구매했습니다.',
+                {'title': title},
+              ),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
-      _toast(streakItemMessage(error, fallback: '구매하지 못했습니다.'));
+      _toast(
+        streakItemMessage(
+          error,
+          fallback: RemainingSurface.tr(
+            context,
+            'battle_pass.toast.2',
+            '구매하지 못했습니다.',
+          ),
+        ),
+      );
     } catch (_) {
       if (!mounted) return;
-      _toast('구매하지 못했습니다.');
+      _toast(
+        RemainingSurface.tr(context, 'battle_pass.toast.2', '구매하지 못했습니다.'),
+      );
     } finally {
       _busy = false;
     }
@@ -304,15 +321,32 @@ class _BuyRow extends StatelessWidget {
           TextButton(
             key: const Key('battle-pass-buy-pass'),
             onPressed: () => onBuy(battlePassItemId),
-            child: Text('배틀런 패스 · $passCost DIA'),
+            child: Text(
+              RemainingSurface.tr(
+                context,
+                'battle_pass.button',
+                '배틀런 패스 · $passCost DIA',
+                {'passCost': passCost},
+              ),
+            ),
           ),
         TextButton(
           key: const Key('battle-pass-buy-plus'),
           onPressed: () => onBuy(battlePassPlusItemId),
           child: Text(
             grant.ownsPass
-                ? '패스+ 업그레이드 · $upgradeCost DIA'
-                : '패스+ · $plusCost DIA',
+                ? RemainingSurface.tr(
+                    context,
+                    'battle_pass.button.2',
+                    '패스+ 업그레이드 · $upgradeCost DIA',
+                    {'upgradeCost': upgradeCost},
+                  )
+                : RemainingSurface.tr(
+                    context,
+                    'battle_pass.button.3',
+                    '패스+ · $plusCost DIA',
+                    {'plusCost': plusCost},
+                  ),
           ),
         ),
       ],

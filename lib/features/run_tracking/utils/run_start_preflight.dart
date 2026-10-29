@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
 import '../../../data/models/user_model.dart';
+import '../../../l10n/remaining_surface.dart';
 
 Future<void> startRunWithPreflight({
   required BuildContext context,
@@ -10,7 +11,15 @@ Future<void> startRunWithPreflight({
 }) async {
   if (profile == null || profile.uid.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('로그인 후 러닝을 시작할 수 있습니다.')),
+      SnackBar(
+        content: Text(
+          RemainingSurface.tr(
+            context,
+            'run_tracking.run_start_preflight.toast',
+            '로그인 후 러닝을 시작할 수 있습니다.',
+          ),
+        ),
+      ),
     );
     return;
   }
@@ -20,10 +29,20 @@ Future<void> startRunWithPreflight({
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('건강정보 동의 필요'),
-          content: const Text(
-            '심박수·케이던스 검증을 위해 [선택] 건강정보 수집 동의가 필요합니다. '
-            '일반 이용약관과 별도로 Opt-in 해 주세요.',
+          title: Text(
+            RemainingSurface.tr(
+              context,
+              'run_tracking.run_start_preflight.dialog',
+              '건강정보 동의 필요',
+            ),
+          ),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'run_tracking.run_start_preflight.button',
+              '심박수·케이던스 검증을 위해 [선택] 건강정보 수집 동의가 필요합니다. '
+                  '일반 이용약관과 별도로 Opt-in 해 주세요.',
+            ),
           ),
           actions: [
             TextButton(
@@ -32,7 +51,13 @@ Future<void> startRunWithPreflight({
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('동의 화면으로'),
+              child: Text(
+                RemainingSurface.tr(
+                  context,
+                  'run_tracking.run_start_preflight.button.2',
+                  '동의 화면으로',
+                ),
+              ),
             ),
           ],
         );

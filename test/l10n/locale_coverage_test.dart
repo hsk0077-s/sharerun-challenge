@@ -11,8 +11,8 @@ import 'package:share_run_challenge/features/accessories/accessory_catalog.dart'
 import 'package:share_run_challenge/features/accessories/accessory_names.dart';
 import 'package:share_run_challenge/features/shop/donation_match_line.dart';
 import 'package:share_run_challenge/l10n/commerce_copy.dart';
-import 'package:share_run_challenge/l10n/dia_refund_copy.dart';
 import 'package:share_run_challenge/l10n/guidance_copy.dart';
+import 'package:share_run_challenge/l10n/legal_fallback.dart';
 import 'package:share_run_challenge/l10n/shop_catalog_copy.dart';
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/l10n/surface_copy.dart';
@@ -148,7 +148,7 @@ void main() {
     );
     for (final locale in ShareRunLocalizations.supportedLocales) {
       final refund = DiaRefundCopy.of(locale);
-      expect(refund.sheetTitle, isNotEmpty);
+      expect(refund.title, isNotEmpty);
       expect(refund.window(7), isNotEmpty);
       expect(refund.openButton, isNotEmpty);
       final shop = ShopCatalogCopy.of(locale);
@@ -180,6 +180,38 @@ void main() {
         expect(name, isNot(item.nameKo), reason: '${item.id}.$code');
       }
     }
+  });
+
+  test('wired copy and the terms fallback show no Korean outside ko', () {
+    final hangul = RegExp(r'[\uac00-\ud7a3]');
+    final rows = [
+      ...homeSurfaceRows.values,
+      ...settingsSurfaceRows.values,
+      ...walletSurfaceRows.values,
+      ...animalRows.values,
+      ...medalRows.values,
+      ...gradeUiRows.values,
+    ];
+    for (final row in rows) {
+      for (var index = 1; index < row.length; index++) {
+        expect(hangul.hasMatch(row[index]), isFalse, reason: row[index]);
+      }
+    }
+    expect(
+      legalFallbackHtml(const Locale('ko')).contains('서비스 이용약관'),
+      isTrue,
+    );
+    for (final locale in ShareRunLocalizations.supportedLocales) {
+      if (locale.languageCode == 'ko') continue;
+      expect(
+        hangul.hasMatch(legalFallbackHtml(locale)),
+        isFalse,
+        reason: locale.languageCode,
+      );
+    }
+    final settings = File('lib/screens/settings_screen.dart').readAsStringSync();
+    expect(settings.contains('<h1>서비스 이용약관'), isFalse);
+    expect(missingSurfaceKeys(), isEmpty);
   });
 
   test('a locale with no entry falls back to English, not to a blank sheet', () {

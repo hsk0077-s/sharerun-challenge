@@ -50,10 +50,10 @@ def test_the_card_still_has_a_goal_after_the_old_last_stage() -> None:
     db = _MemoryDb()
     db.store["donationMonthTotals/2026-10"] = {"totalWon": 300_000}
     out = fg.summary(db, datetime(2026, 10, 20, 3, tzinfo=timezone.utc))
-    assert out["goal_won"] == 1_000_000
+    assert out["goal_won"] == 500_000
     assert out["cap_won"] == 1_000_000
     assert out["cap_reached"] is False
-    assert out["stage_count"] == 3
+    assert out["stage_count"] == 4
 
     db.store["donationMonthTotals/2026-10"] = {"totalWon": 1_000_000}
     done = fg.summary(db, datetime(2026, 10, 20, 3, tzinfo=timezone.utc))

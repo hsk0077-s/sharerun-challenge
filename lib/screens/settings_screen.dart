@@ -23,6 +23,7 @@ import '../core/notifications/reminder_preferences.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import 'device_connection_screen.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/legal_fallback.dart';
 import '../l10n/surface_copy.dart';
 import '../l10n/surface_rest.dart';
 import '../features/shop/widgets/store_look.dart';
@@ -889,39 +890,7 @@ class _SettingsLegalWebViewScreenState
   late final WebViewController _controller;
   var _loading = true;
 
-  static const _html = '''
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
-         margin: 20px; color: #E8EFE6; background: #070B09; line-height: 1.55; }
-  h1 { font-size: 20px; margin: 0 0 12px; }
-  h2 { font-size: 16px; margin: 22px 0 8px; color: #D4FF4A; }
-  p { font-size: 14px; margin: 0 0 10px; color: #93A299; }
-  .note { background: #101813; padding: 12px 14px; border-radius: 12px;
-          font-size: 13px; color: #D4FF4A; }
-</style>
-</head>
-<body>
-  <h1>서비스 이용약관 및 개인정보 처리방침</h1>
-  <h2>${LegalConstants.termsOfServiceTitle}</h2>
-  <p>${LegalConstants.termsOfServiceSummary}</p>
-  <h2>${LegalConstants.privacyPolicyTitle}</h2>
-  <p>${LegalConstants.privacyPolicySummary}</p>
-  <h2>위치기반서비스(LBS) 약관</h2>
-  <p>러닝 검증·크루 맵·스탬프 투어를 위해 위치정보를 수집·이용합니다.
-     동의 철회 시 위치 기반 기능이 제한될 수 있습니다.</p>
-  <h2>${LegalConstants.healthDataConsentTitle}</h2>
-  <p>${LegalConstants.healthDataConsentSummary}</p>
-  <div class="note">${LegalConstants.ephemeralSensorPolicy}</div>
-  <h2>${LegalConstants.healthDisclaimerTitle}</h2>
-  <p>${LegalConstants.healthDisclaimer}</p>
-</body>
-</html>
-''';
+  String _fallbackHtml() => legalFallbackHtml(Localizations.localeOf(context));
 
   @override
   void initState() {
@@ -937,7 +906,7 @@ class _SettingsLegalWebViewScreenState
           // instead of an empty error page.
           onWebResourceError: (error) {
             if (error.isForMainFrame ?? true) {
-              _controller.loadHtmlString(_html);
+              _controller.loadHtmlString(_fallbackHtml());
             }
           },
         ),

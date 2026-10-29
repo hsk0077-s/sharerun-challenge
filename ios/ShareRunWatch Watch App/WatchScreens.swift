@@ -37,7 +37,7 @@ struct WatchRootView: View {
             case .start:
                 WatchStartView(
                     targetKm: workout.targetKm,
-                    linkedName: account.isPaired ? (account.nickname.isEmpty ? "연결됨" : account.nickname) : nil,
+                    linkedName: account.isPaired ? (account.nickname.isEmpty ? WatchCopy.current.linked : account.nickname) : nil,
                     onStart: {
                         Task { await workout.startRun() }
                     },
@@ -95,8 +95,7 @@ struct WatchRootView: View {
     }
 
     static func formatMinutes(_ seconds: Int) -> String {
-        let m = max(0, seconds) / 60
-        return "\(m)분"
+        WatchCopy.minutes(max(0, seconds) / 60)
     }
 }
 
@@ -148,7 +147,7 @@ struct WatchPairingView: View {
 
     var body: some View {
         VStack(spacing: 3) {
-            Text(message ?? (busy ? WatchCopy.current.checking : WatchCopy.current.pairingHint))
+            Text(message.map(WatchCopy.displayMessage) ?? (busy ? WatchCopy.current.checking : WatchCopy.current.pairingHint))
                 .font(.system(size: 10))
                 .foregroundColor(message == nil ? watchMuted : Color.red.opacity(0.85))
                 .lineLimit(1)
@@ -288,7 +287,7 @@ struct WatchRankAlertView: View {
             Image(systemName: "trophy.fill")
                 .font(.system(size: 20))
                 .foregroundColor(watchLime)
-            Text("\(rank)위!")
+            Text(WatchCopy.rankPlace(rank))
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(watchInk)
             Text(gapPeople > 0 ? WatchCopy.current.ahead(of: gapPeople) : WatchCopy.current.leading)

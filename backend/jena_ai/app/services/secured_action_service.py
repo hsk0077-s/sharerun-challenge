@@ -56,7 +56,12 @@ from app.services.referral_trial_config import (
     read_referral_trial_config,
     referrer_due,
 )
-from app.services.twin_run import describe_run, referral_twin_reason, run_signature
+from app.services.twin_run import (
+    REFERRER_RUN_ABSENT,
+    describe_run,
+    referral_twin_reason,
+    run_signature,
+)
 from app.services.mercy_rule_service import MercyRuleService
 from app.services.run_device_info import device_info_document
 from app.services.play_billing import (
@@ -2604,9 +2609,17 @@ class SecuredActionService:
 
         self._write_referral_payouts(transaction, payouts)
         if credited <= 0:
+            held_reason = next(
+                (
+                    row.get("reason")
+                    for row in payouts
+                    if row.get("held") and row.get("reason")
+                ),
+                "twin_run",
+            )
             return self._harvest_result(
                 status="held",
-                reason="Trial reward is held: twin_run.",
+                reason=f"Trial reward is held: {held_reason}.",
                 share_credited=0,
                 share_balance=share,
                 diamond_balance=diamonds,
@@ -2817,6 +2830,10 @@ class SecuredActionService:
                 self._referee_run_views(transaction, referee_uid),
                 referrer_runs,
             )
+            # Paying now would skip the twin check. Hold until a referrer
+            # run exists. The next referee run reopens this reason only.
+            if not twin_reason and not referrer_runs:
+                twin_reason = REFERRER_RUN_ABSENT
         payouts: list[dict] = []
         for milestone in milestones_due(trial_run_count, config):
             run = int(milestone["run"])
@@ -2844,7 +2861,10 @@ class SecuredActionService:
             return payouts
 
         marker_ref = self._referral_payout_ref(referee_uid, "trial_referrer")
-        if marker_ref.get(transaction=transaction).exists:
+        marker_snapshot = marker_ref.get(transaction=transaction)
+        if marker_snapshot.exists and not _reopen_absent_referrer(
+            marker_snapshot.to_dict()
+        ):
             return payouts
 
         referrer_ref = self.firebase_service.db.collection("users").document(
@@ -2985,7 +3005,10 @@ class SecuredActionService:
         amount: int,
     ) -> dict | None:
         marker_ref = self._referral_payout_ref(referee_uid, payout_type)
-        if marker_ref.get(transaction=transaction).exists:
+        marker_snapshot = marker_ref.get(transaction=transaction)
+        if marker_snapshot.exists and not _reopen_absent_referrer(
+            marker_snapshot.to_dict()
+        ):
             return None
         if self._rewards_blocked(transaction, referee_uid):
             return None
@@ -5031,6 +5054,20 @@ def _route_dicts(points) -> list[dict]:
         elif isinstance(point, dict):
             route.append(dict(point))
     return route
+
+
+def _reopen_absent_referrer(marker: dict | None) -> bool:
+    """A hold with no referrer run can be paid once a run exists.
+
+    ``twin_run`` stays held. This does not release on the referrer's own
+    upload. The referee's next verified run is what reads the marker again.
+    """
+    if not isinstance(marker, dict):
+        return False
+    return (
+        marker.get("status") == "held"
+        and marker.get("reason") == REFERRER_RUN_ABSENT
+    )
 
 
 def _twin_against(run_view: dict | None, referee_runs: list[dict], referrer_runs: list[dict]) -> str:

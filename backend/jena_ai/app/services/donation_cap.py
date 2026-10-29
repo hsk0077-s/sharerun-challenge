@@ -15,6 +15,7 @@ DAILY_USER_DONATION_CAP_WON = 1_000
 CAP_REACHED = "cap_reached"
 DAILY_CAP_REACHED = "daily_donation_cap"
 _SLIDING_KEYS = ("baseCapWon", "priorMonthNetRevenueWon", "sponsorAttributedWon")
+CURRENT_MONTH_NET_REVENUE_KEY = "currentMonthNetRevenueWon"
 
 
 def _nonneg(value: object) -> int | None:
@@ -31,6 +32,12 @@ def resolve_monthly_cap_won(raw: dict | None) -> int:
     revenue, or sponsor amount is present:
 
     ``min(monthlyCapWon, max(baseCapWon, prior * 0.2 + sponsor))``.
+
+    When ``currentMonthNetRevenueWon`` is present and a non-negative number,
+    the result is cut again: ``min(that cap, currentMonthNetRevenueWon)``.
+    A missing or unreadable value leaves the cap above unchanged. The 300,000
+    floor is not re-applied after this cut, so a weaker month can sit under it.
+    A current-month figure above the hard ceiling does not raise the cap.
     """
     if not isinstance(raw, dict):
         return DEFAULT_MONTHLY_CAP_WON
@@ -41,13 +48,24 @@ def resolve_monthly_cap_won(raw: dict | None) -> int:
     else:
         hard = DEFAULT_MONTHLY_CAP_WON
     if not any(key in raw for key in _SLIDING_KEYS):
-        return hard
-    base = _nonneg(raw.get("baseCapWon")) if "baseCapWon" in raw else DEFAULT_BASE_CAP_WON
-    if base is None:
-        base = DEFAULT_BASE_CAP_WON
-    prior = _nonneg(raw.get("priorMonthNetRevenueWon")) or 0
-    sponsor = _nonneg(raw.get("sponsorAttributedWon")) or 0
-    return min(hard, max(base, int(prior * 0.2) + sponsor))
+        cap = hard
+    else:
+        base = _nonneg(raw.get("baseCapWon")) if "baseCapWon" in raw else DEFAULT_BASE_CAP_WON
+        if base is None:
+            base = DEFAULT_BASE_CAP_WON
+        prior = _nonneg(raw.get("priorMonthNetRevenueWon")) or 0
+        sponsor = _nonneg(raw.get("sponsorAttributedWon")) or 0
+        cap = min(hard, max(base, int(prior * 0.2) + sponsor))
+    return _clip_current_month(raw, cap)
+
+
+def _clip_current_month(raw: dict, cap: int) -> int:
+    if CURRENT_MONTH_NET_REVENUE_KEY not in raw:
+        return cap
+    current = _nonneg(raw.get(CURRENT_MONTH_NET_REVENUE_KEY))
+    if current is None:
+        return cap
+    return min(cap, current)
 
 
 def daily_donation_used(user: dict | None, day_key: str) -> tuple[float, int]:

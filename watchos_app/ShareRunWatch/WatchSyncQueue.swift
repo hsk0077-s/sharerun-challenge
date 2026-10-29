@@ -58,8 +58,18 @@ final class WatchSyncQueue: ObservableObject {
     private let storageKey = "sharerun.watchos.sync_queue.v1"
     private let stepsStorageKey = "sharerun.watchos.pending_steps.v1"
     private let defaults = UserDefaults.standard
+    private var flushGate = WatchFlushGate()
 
     var pendingCount: Int { runs.count }
+
+    /// False when a flush is already in progress. Wear OS calls this `tryBeginFlush`.
+    func tryBeginFlush() -> Bool {
+        flushGate.tryBegin()
+    }
+
+    func endFlush() {
+        flushGate.end()
+    }
 
     init() {
         load()
@@ -91,6 +101,8 @@ final class WatchSyncQueue: ObservableObject {
     /// Uploads queued runs (`POST /actions/runs/validate`) and daily steps (`POST /actions/daily-steps`).
     func flush(using account: WatchAccountManager) async {
         guard account.isPaired else { return }
+        guard tryBeginFlush() else { return }
+        defer { endFlush() }
 
         for run in runs {
             guard let (status, _) = await account.postSigned(

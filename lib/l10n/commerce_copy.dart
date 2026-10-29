@@ -7,6 +7,7 @@ import 'app_localizations.dart';
 
 /// Shop item names, cosmetic names, the DIA refund sheet, and the donation
 /// match line. Korean strings match the copy the screens already shipped.
+/// 원어민 검수 전. 광고 랜딩에 쓰지 않는다.
 ///
 /// Each row is [accessoryLanguageOrder]: ko, en, ja, zh, es, pt, de, fr, vi, th, id.
 const shopCopyRows = <String, List<String>>{

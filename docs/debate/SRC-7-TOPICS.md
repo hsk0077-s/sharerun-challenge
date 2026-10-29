@@ -105,7 +105,7 @@
 
 결론: **출시일에 미끄럼 상한을 켠다.** 전월 순매출이 0이면 상한은 바닥 30만 원이다. 1%·2%로 10,000 MAU에 머무는 동안 고정 100만 원을 두면, 달린 사람이 1,250명(**가정** 1인 8km)만 되어도 기부가 순매출을 넘는다. 코드 기본값은 그대로 100만 원 고정이다. 켜는 절차는 5번에 있다.
 
-15시 판정: 완료. 1·2·3% 표를 다시 만들었고, 10,000 MAU의 1%·2%에서는 고정 천장이 순매출보다 먼저 차서 출시일 미끄럼이 맞다. 실물 메달·스폰서 가격은 코드에 없어 이 매출 모형 밖에 둔다.
+15시 판정: 완료. 이번 라운드는 매출 식을 다시 열지 않았다. 1·2·3% 표와 출시일 미끄럼 결론은 그대로다. 실물 메달·스폰서 가격은 코드에 없다.
 
 ---
 
@@ -115,7 +115,7 @@
 
 1파는 한국어와 영어다. 워치 단독 업로드가 여기 먼저 있고, 런데이와 가격으로 비교할 수 있다. 2파는 일본어와 번체 중국어다. 3파는 스페인어, 포르투갈어(브라질), 독일어, 프랑스어, 그다음 베트남어, 태국어, 인도네시아어다. 문구는 각 언어로 쓰고, 한국 본사 검수용으로 한국어를 붙인다.
 
-이 PR에서 워치 연결 단계, 기부 안내, 상점 펀딩 카드, DIA 안내 5줄에 더해 소품 이름, DIA 환불 시트, 상점 아이템 이름, 코스메틱 이름, 기부 매칭 한 줄을 11로케일에 넣었다. 빠진 키는 `missingCommerceKeys`가 테스트에서 잡는다. 문장은 초벌이다. 원어민 검수 전에 그 화면을 광고 랜딩으로 쓰면 안 된다.
+이 PR에서 워치 연결 단계, 기부 안내, 상점 펀딩 카드, DIA 안내 5줄에 더해 소품 이름, DIA 환불 시트, 상점 아이템 이름, 코스메틱 이름, 기부 매칭 한 줄을 11로케일에 넣었다. 이번 라운드에 워치 화면의 분·순위, 페어링 오류, Wear OS에만 있던 화면 문구를 watchOS에도 붙였다. 빠진 키는 `missingCommerceKeys`, `missingGuidanceKeys`, `GuideChrome.missingKeys`, `missingCoreLocaleKeys`, `missingInviteKeys`, Wear의 `missingWatchCopyKeys`가 잡는다. 문장은 초벌이다. 원어민 검수 전에 그 화면을 광고 랜딩으로 쓰면 안 된다.
 
 ### 가장 강한 반론
 
@@ -127,21 +127,24 @@
 
 ### 숫자와 카피
 
-워치, 출처가 있는 것:
+워치, 출처가 있는 것. 이번 라운드에 연 페이지만 적는다. 열지 못한 나라의 점유는 표에서 **가정**이다.
 
 - 일본, IDC Japan이 발표한 2024년 스마트워치+밴드 출하 281만 대. Apple 42.8%, Huawei 13.7%, Xiaomi 11.5%, Garmin 11.2%, Google 6.5%. [IoTNEWS가 IDC Japan 2024년 통년 발표를 인용](https://iotnews.jp/wearable/262221/). 2026년 숫자가 아니다.
 - 세계, Counterpoint가 공개한 분기 출하 표에서 2026년 2분기는 Huawei 22%, Apple 20%라고 적혀 있다. [Counterpoint Global Smartwatch Shipments](https://counterpointresearch.com/en/insights/global-smartwatch-shipments-market-share). 나라별 표는 그 페이지에 없다.
+- 한국, [ZDNet이 한국 IDC 2024년 발표를 인용](https://zdnet.co.kr/view/?no=20250423225319). 웨어러블 849만 대, 스마트워치 238만 대(28.1%), 손목밴드 53만 대. 삼성·애플이 스마트폰 연동으로 선호된다고 적고, 브랜드 점유 %는 없다. 갤럭시 핏3가 밴드 성장에 기여했다고 적는다. 2025년 4월 24일 기사다.
+- 북미, [Counterpoint 2025년 2분기 베스트셀러 시리즈](https://counterpointresearch.com/en/insights/north-america-top-10-best-selling-smartwatch-series-q2-2025). Apple 1위(점유는 전년보다 2%p, 절대 %는 그 글에 없음), Garmin 2위, Samsung 3위. Pixel Watch 3는 시장 1.4%. 미국만의 표는 아니다.
+- 미국·독일 범위는 [AMA wearable study PDF](https://www.ama-assn.org/system/files/ama-wearable-study.pdf)가 옮긴 추정이다. 미국 Apple 45–50%·Samsung 15–18%는 Counterpoint·Statista 2024 인용이라고 AMA가 적는다. 독일 Samsung 30–35%·Apple 25–28%는 Mintel Germany 2024 인용이라고 적는다. 이 문서가 그 원표를 다시 열지는 못했다. 프랑스·스페인 칸은 AMA가 나라별 원표가 아닌 합성 추정이라고 각주하므로 여기 표에는 넣지 않는다.
 
 | 로케일 | 겨눌 앱 | 워치·밴드 | 커뮤니티 | 카피 |
 | --- | --- | --- | --- | --- |
-| ko-KR | 런데이. 스토어 문구의 올데이는 월 9,900원 / 연 99,000원. | 삼성 갤럭시 워치가 안드로이드 기본이라는 것은 **가정**이다. 아이폰은 Apple Watch. | 런데이 공식 카페 `cafe.naver.com/hanbitfitness` (플레이 스토어 문구에 링크). 나이키 런클럽 크루는 별도. | 워치는 공짜로 혼자 달린다. 광고도 없다. / 워치 단독과 광고 제거를 구독으로 팔지 않는다. |
-| en-US | Strava, Nike Run Club. 유료 구독이 분석·경로에 붙어 있다. 가격은 여기 적지 않는다. 이 문서에서 확인한 미국 가격표가 없다. | Apple Watch가 많다는 것은 업계에서 흔히 말하지만, 이 문서에 쓸 미국 출하 비율 출처는 없다. **가정.** | r/running, Strava 클럽. 회원 수는 가정하지 않는다. | Your watch runs alone. No subscription, no ads. / 시계만으로 기록되고, 구독과 광고가 없다. |
-| ja-JP | Nike Run Club, STRAVA. 일본 런 인구의 ‘1위 앱’ 점유율은 **가정하지 않는다.** | 위 IDC 2024 표의 Apple. | ランネット, 지역 러닝 클럽. 규모는 미확인. | ウォッチだけで走る。追加料金も広告もない。 / 워치만으로 달린다. 추가 요금과 광고가 없다. |
-| zh-TW | Nike Run Club, Garmin Connect. 대만 1위는 **미확인.** | Garmin과 Apple이 러닝 쪽에서 강하다는 것은 **가정.** | 대만 러닝 페이스북 그룹, Garmin 포럼. 규모 미확인. | 手錶自己跑，不加價，沒有廣告。 / 워치가 혼자 달리고, 추가 요금과 광고가 없다. |
+| ko-KR | 런데이. 스토어 문구의 올데이는 월 9,900원 / 연 99,000원. | 위 한국 IDC 2024. 브랜드 %는 없다. 갤럭시가 안드로이드 기본이라는 것은 **가정**. 아이폰은 Apple Watch. | [런데이 카페](https://cafe.naver.com/hanbitfitness). 회원 수는 세지 않았다. | 워치는 공짜로 혼자 달린다. 광고도 없다. / 워치 단독과 광고 제거를 구독으로 팔지 않는다. |
+| en-US | Strava, Nike Run Club. 유료 구독이 분석·경로에 붙어 있다. 가격은 여기 적지 않는다. 이 문서에서 확인한 미국 가격표가 없다. | 위 북미 Counterpoint 순위와 AMA가 인용한 미국 45–50% 추정. 미국만의 출하 원표는 이 문서에 없다. | [r/running](https://www.reddit.com/r/running/). 회원 수는 가정하지 않는다. | Your watch runs alone. No subscription, no ads. / 시계만으로 기록되고, 구독과 광고가 없다. |
+| ja-JP | Nike Run Club, STRAVA. 일본 런 인구의 ‘1위 앱’ 점유율은 **가정하지 않는다.** | 위 IDC 2024 표의 Apple. | [parkrun Japan](https://www.parkrun.jp/). 2026-10-29에 연 페이지가 개최지 50, 등록 참가자 38,283, 누적 307,220이라고 적는다. 페이지 카운터다. ランネット은 이름만 있고 이번 라운드에 URL을 확인하지 못했다. | ウォッチだけで走る。追加料金も広告もない。 / 워치만으로 달린다. 추가 요금과 광고가 없다. |
+| zh-TW | Nike Run Club, Garmin Connect. 대만 1위는 **미확인.** | Garmin과 Apple이 러닝 쪽에서 강하다는 것은 **가정.** | [運動筆記](https://running.biji.co/)가 대회 일정을 올린다. 회원 수는 세지 않았다. | 手錶自己跑，不加價，沒有廣告。 / 워치가 혼자 달리고, 추가 요금과 광고가 없다. |
 | es-ES | Strava, Nike Run Club. | Apple과 Garmin. **가정.** | 스페인 러닝 클럽, Strava 클럽. | El reloj corre solo. Sin suscripción y sin anuncios. / 시계가 혼자 달린다. 구독도 광고도 없다. |
 | pt-BR | Strava, Nike Run Club. Adidas Running도 있다. 순위는 **미확인.** | Samsung과 Xiaomi, Apple. **가정.** | 브라질 Strava 클럽, 지역 아카데미아 러닝. | O relógio corre sozinho. Sem assinatura e sem anúncio. / 시계가 혼자 달린다. 구독과 광고가 없다. |
-| de-DE | Strava, Adidas Running, Garmin. 독일 매출 1위 워치 비율은 이 문서에 출처가 없다. | Garmin이 스포츠 워치에서 강하다는 서술은 흔하지만 출하 비율은 **미확인.** | Laufszene, Strava 클럽. | Die Uhr läuft allein. Kein Abo, keine Werbung. / 시계가 혼자 달린다. 구독도 광고도 없다. |
-| fr-FR | Strava, Nike Run Club, Kiprun. 순위 **미확인.** | Apple. **가정.** | 프랑스 러닝 클럽, Strava. | La montre court seule. Sans abonnement, sans pub. / 시계가 혼자 달린다. 구독도 광고도 없다. |
+| de-DE | Strava, Adidas Running, Garmin. | 위 AMA가 인용한 Mintel 추정: Samsung 30–35%, Apple 25–28%. Garmin 출하 %는 그 표에 없다. Garmin이 스포츠 워치에서 강하다는 말은 **가정.** | [parkrun Germany](https://www.parkrun.com.de/). 2026-10-29에 연 페이지가 전국 77곳이라고 적는다. | Die Uhr läuft allein. Kein Abo, keine Werbung. / 시계가 혼자 달린다. 구독도 광고도 없다. |
+| fr-FR | Strava, Nike Run Club, Kiprun. 순위 **미확인.** | Apple. **가정.** AMA의 프랑스 숫자는 합성 추정이라고 각주돼 있어 표에 넣지 않는다. | [parkrun France](https://www.parkrun.fr/)는 이벤트가 중단됐고 주간 개최가 0이라고 페이지가 적는다. 규모로 세지 않는다. | La montre court seule. Sans abonnement, sans pub. / 시계가 혼자 달린다. 구독도 광고도 없다. |
 | vi-VN | Strava, Nike Run Club. | Xiaomi 밴드와 Samsung. **가정.** | 페이스북 러닝 그룹. 규모 미확인. | Đồng hồ tự chạy. Không gói trả phí, không quảng cáo. / 시계가 혼자 달린다. 유료 구독과 광고가 없다. |
 | th-TH | Strava, Nike Run Club. | Garmin, Apple, Xiaomi. **가정.** | 방콕 러닝 클럽, Strava. | นาฬิกาวิ่งเอง ไม่มีค่าสมาชิก ไม่มีโฆษณา / 시계가 혼자 달린다. 구독료와 광고가 없다. |
 | id-ID | Strava, Nike Run Club. | Xiaomi 밴드와 Samsung. **가정.** | 자카르타 러닝 커뮤니티, Strava. | Jam tangannya lari sendiri. Tanpa langganan, tanpa iklan. / 시계가 혼자 달린다. 구독과 광고가 없다. |
@@ -152,7 +155,7 @@
 2. 11–20일: ja-JP, zh-TW. 워치 연결 단계를 그 언어로 한 번 끝까지 눌러 본다.
 3. 21–30일: es-ES, pt-BR, de-DE, fr-FR. vi-VN, th-TH, id-ID는 상점 문장을 그 언어로 한 번 읽어 본 뒤에 광고를 켠다. 그 전에는 스토어 페이지 문구만 연다.
 
-15시 판정: 미흡. 11로케일 키는 채웠으나 원어민 검수 전이라 광고 랜딩으로 쓰면 안 된다. 나라별 워치 점유는 출처가 있는 일본·세계 표 외에는 여전히 가정이다.
+15시 판정: 미흡. 소품·환불·상점·기부 매칭·워치 연결·워치 화면·페어링 오류·초대 문구의 키는 11로케일이다. 문장은 초벌이고 원어민 검수 전이라 광고 랜딩으로 쓰면 안 된다. 폰 앱의 나머지 화면(공정 적립, 상점 크롬, 등급 안내 등)은 아직 한국어다. 워치 점유는 일본 IDC, 한국 IDC(브랜드 % 없음), 북미 Counterpoint 순위, AMA가 인용한 미국·독일 추정까지다. 스페인·브라질·베트남·태국·인도네시아·대만과, AMA가 합성으로 표시한 프랑스·스페인은 **가정**이다.
 
 ---
 
@@ -182,7 +185,20 @@
 
 테스트 `test_first_verified_run_starts_at_turtle_bronze_and_steps_once`는 첫 검증 런의 `gradeRank`가 1이고 `gradeSource`가 `signup_floor`인 것을 확인한다. `test_beginner_prize_refuses_a_higher_animal_and_a_fast_median`은 순위 8과, 거북인데 표본 300초/km인 계정을 둘 다 `pace_too_fast`로 막는다. `test_beginner_prize_finish_holds_a_pace_faster_than_450`은 2km를 800초(400초/km)에 끝난 초급 완주를 `prizeHeld`로 두고, 정산 DIA가 0인 것을 확인한다. 2km를 900초(450초/km)에 끝난 기록은 완주로 남는다.
 
-15시 판정: 완료. 대회 당일 450초/km보다 빠른 초급 완주는 상금을 보류하고, 등급 문서의 첫 문장은 가입 경로와 맞다. 등급이 없거나 표본이 비어 있으면 입구는 여전히 막지 않는다.
+`test_slow_gps_pace_band.py`가 이번 라운드에 경계만 다시 돌렸다. 함수 이름은 여전히 `pace_too_fast`가 아니고, 검증 거절 코드는 `implausible_pace`와 `vehicle_speed`다.
+
+| 표본 | 검증 | 등급 표본 | 초급 입구 | 초급 상금 완주 |
+| --- | --- | --- | --- | --- |
+| 1km를 149초에 주장 | `implausible_pace` | 안 됨 | 빈 표본이면 열림 | 해당 없음 |
+| 150초/km, 심박·케이던스가 러닝 범위 | 통과 | 될 수 있음 | 중앙값이 150이면 `pace_too_fast` | `prizeHeld` |
+| 449초/km | 통과 | 될 수 있음 | 중앙값이 449이면 `pace_too_fast` | `prizeHeld` |
+| 450초/km | 통과 | 될 수 있음 | 열림 | 완주 |
+| GPS를 북으로 약 1km, 900초(약 4km/h, 구간 25km/h 미만) | 통과 | 900초/km로 들어감 | 그 표본만이면 열림 | 그 페이스면 완주 |
+| 심박이 있어도 한 구간이 25km/h 초과 | `vehicle_speed` | 안 됨 | | |
+
+천천히 그린 1km는 느린 달리기와 숫자가 같다. 그걸 거절하는 보강은 넣지 않았다. 넣으면 실제로 천천히 달린 사람이 같이 떨어진다. 보강한 것은 하나다. 심박이 있으면 차량 속도 검사를 건너뛰던 길을 닫았다. 25km/h 아래는 그대로 통과한다.
+
+15시 판정: 부분. 150초/km 미만은 검증이 거절한다. 150~449초/km는 검증을 통과할 수 있고, 그 중앙값이면 입구와 초급 상금이 `pace_too_fast`다. 450초/km와 천천히 그린 1km는 통과해서 입구가 열린다. 빈 표본도 입구를 막지 않는다. 천천히 그린 길과 느린 달리기를 가를 신호는 없다.
 
 ---
 
@@ -200,8 +216,8 @@
 
 - 쌍둥이 정의: 시작 시각 3분 이내, 거리·시간·케이던스 서명이 같고, 비교한 경로 점의 절반 이상이 40m 안. 경로가 없는 폰 런은 겹침 0이라 이 세 가지로는 거짓이다. 그 경우 시작이 60초 안이고, 기기 id가 같거나 서명이 같으면 `twin_run`이다. 둘 다 경로가 있는데 겹치지 않으면 같은 폰이어도 쌍둥이가 아니다.
 - 시작을 3분 1초 늦추거나, 경로가 있는 런에서 케이던스만 바꾸면 서명이 달라져 GPS 쌍둥이를 비낀다. 경로가 없고 기기가 같으며 시작이 60초 안이면 서명이 달라도 보류다. 서명은 거리를 0.01km, 시간을 초 단위로 자른다.
-- 같은 기기 검사는 추천인 `trialDeviceId`만 보던 구멍을 닫았다. 추천인 문서에 그 필드가 없어도, 로그인 기기 문서·체험 기기 주인·추천인 런의 `deviceId` 가운데 하나라도 같으면 추천인 금액은 0이다. 그 셋이 모두 없으면 같은 폰을 알 수 없다.
-- 비교는 추천인의 최근 활동 최대 40건과 `economy.latestRun`이다. 피추천인이 먼저 올리고 추천인 런이 아직 없으면 그 시점의 지급은 쌍둥이를 못 본다. 시작 시각이 없는 예전 기록은 맞추지 않는다.
+- 같은 기기 검사는 추천인 `trialDeviceId`, 로그인 기기 문서, 체험 기기 주인, 추천인 런의 `deviceId` 중 하나라도 피추천인 `device_id`와 같으면 추천인 금액을 0으로 둔다. 그 넷이 모두 없으면 같은 폰을 막을 신호가 없다. 보류로 막지 않았다. Apple Watch 검증 본문(`WatchPendingRun.toValidateRunBody`)은 `device_id`를 넣지 않는다. 기기 id가 없다고 지급을 잡으면 워치로만 체험을 끝낸 추천이 같이 멈춘다. 남는 금액은 그 쌍의 추천인 30,000 SHARE다. 피추천인 50,000 SHARE는 원래 같은 폰 검사가 0으로 만들지 않는다. 교환 단위 120 SHARE = 1 DIA = 100원이면 30,000 SHARE는 25,000원이다. 이 원화는 **가정**이다. 추천인 10명 상한은 계정마다라서, 기기 id가 없는 폰은 계정을 새로 만들어 그 상한을 넘긴다.
+- 비교는 추천인의 최근 활동 최대 40건과 `economy.latestRun`이다. 그 목록이 비어 있으면 피추천인 마일스톤과, 회차가 찼을 때의 추천인 금액은 `referrer_run_absent`로 보류한다. 지갑에 넣지 않는다. 피추천인의 다음 검증 런에서 추천인 런이 생기면 그 보류만 다시 연다. 쌍둥이면 `twin_run`으로 남고, 아니면 그때 지급한다. 추천인만 나중에 달려도 이 보류는 풀리지 않는다. 피추천인이 한 번 달리고 멈추면 10,000 SHARE는 보류인 채로 남는다. 시작 시각이 없는 예전 기록은 목록에 있어도 맞추지 않는다. 그 경우는 비어 있는 것이 아니므로 이 보류에 안 들어간다.
 - `watch_required: True`를 설정 문서에 넣어도 코드가 거짓으로 고정한다. 테스트가 그 사실을 확인한다. 워치 없는 런도 체험에 센다.
 - 피추천인 1회차 10,000 SHARE는 추천인보다 먼저, 유예 없이 나간다. 서로 같이 받는 구조가 아니다.
 - 자기 코드, 이미 체험을 끝낸 뒤의 코드, 추천인 지급 횟수 10회는 막는다. 이 세 가지는 연결되어 있다.
@@ -227,7 +243,7 @@
 
 80,000 / 3 = 26,666.67, 반올림 26,667. 800,000 / 120 × 100 = 666,666.67, 반올림 666,667. 한 쌍만 보면 1회 안이 싸다. 같은 폰이 한 달에 끝내는 쌍은 3배라서, 월 SHARE는 80만에서 120만으로 늘어난다. 3일과 7일 유예를 1회로 줄이는 쪽이 가짜 계정에 더 싸다. 쌍둥이 보류는 그 단가를 0으로 만드는 쪽이고, 횟수를 줄이는 쪽이 아니다. 코드의 지급 규칙은 바꾸지 않았다.
 
-15시 판정: 완료. 체험 지급 앞에 쌍둥이 보류를 붙였고, GPS 없는 폰과 `trialDeviceId`가 없는 추천인 폰은 보조 신호로 막는다. 3회/14일 규칙은 유지한다. 경로가 어긋난 GPS 쌍, 추천인 런이 아직 없을 때의 선지급, 어디에도 안 남은 기기는 여전히 통과한다.
+15시 판정: 부분. 추천인 런이 없을 때의 선지급은 `referrer_run_absent`로 막는다. 푸는 쪽은 피추천인의 다음 검증 런뿐이다. 어디에도 안 남은 기기는 막지 못했다. 이유는 위에 있다. 경로가 어긋난 GPS 쌍은 여전히 통과한다. 3회/14일 규칙은 유지한다.
 
 ---
 
@@ -257,7 +273,7 @@
 
 ### 2차 — 매출이 꺾인 달의 방어 하나
 
-전월 순매출의 20%가 이번 달 순매출보다 커지면, 지금 식은 전월을 보고 이번 달에 더 많이 낸다. 제안은 하나다. **이번 달 실제 순매출로 다시 자른다.** 코드는 아직 이 키를 읽지 않는다. 운영 문서에 `currentMonthNetRevenueWon`이 있을 때의 식:
+전월 순매출의 20%가 이번 달 순매출보다 커지면, 미끄럼만 보면 전월을 보고 이번 달에 더 많이 낸다. **이번 달 실제 순매출로 다시 자른다.** `resolve_monthly_cap_won`이 `currentMonthNetRevenueWon`을 읽는다. 키가 없거나 숫자가 아니면(문자열, 음수) 자르지 않는다. 키가 있을 때의 식:
 
 `cap = min(지금 미끄럼 결과, currentMonthNetRevenueWon)`.
 
@@ -289,9 +305,9 @@
 3. 다음 검증 런의 기부 원장이 그 상한을 쓰는지 `donationMonthTotals/{YYYY-MM}.capWon`으로 본다.
 4. 펀딩 카드의 마지막 단계는 그 상한과 같다. 30만 원에서 ‘다 채움’으로 끝나지 않는다.
 5. 미끄럼을 끄려면 `baseCapWon`, `priorMonthNetRevenueWon`, `sponsorAttributedWon` 세 키를 지운다. `monthlyCapWon`만 남으면 그 고정액이다. 문서 전체를 지우면 코드 기본 1,000,000원이다.
-6. 매출이 꺾인 달에는 같은 문서에 `currentMonthNetRevenueWon`을 적는 안을 위에 뒀다. 그 키는 아직 코드가 읽지 않는다.
+6. 매출이 꺾인 달에는 같은 문서에 `currentMonthNetRevenueWon`을 적는다. 코드가 그 키를 읽는다. 바닥 30만 원보다 작으면 그 작은 값이 상한이다. 하드 천장보다 크면 천장이 이긴다. 키를 지우면 미끄럼 또는 고정액으로 돌아간다.
 
-15시 판정: 완료. 게이지는 실제 월 상한까지 보여주고, 미끄럼을 켜는 문서와 절차를 적었다. 매출이 꺾인 달의 방어는 이번 달 순매출로 다시 자르는 안이고, 그 키는 아직 코드에 없다. 나라별 풀은 그대로 하나다.
+15시 판정: 완료. 게이지는 실제 월 상한까지 보여주고, 미끄럼을 켜는 절차가 있다. `currentMonthNetRevenueWon`이 없으면 이전과 같다. 20만 원은 바닥 아래로 잘리고, 미끄럼이 100만 원인 달의 500만 원은 100만 원에서 멈춘다. 테스트 `test_current_month_revenue_is_optional_and_can_cut_under_the_floor`. 나라별 풀은 그대로 하나다.
 
 ---
 
@@ -325,7 +341,7 @@
 
 Wear OS(`wear_app`)는 이 환경에서 코드와 테스트로 확인했다. 올리지 못한 기록은 큐에 남고, 다시 보낼 때도 같은 `activity_id`를 쓴다. 같은 id를 두 번 넣으면 두 번째는 거절된다. 큐를 저장했다가 앱을 다시 열어도 id가 같다. 두 flush가 겹치면 나중 것은 0건을 보내고, POST는 한 번이다. 오프라인과 429·5xx는 기록을 남긴다. 400·409·413·422는 큐에서 뺀다. 테스트는 `wear_app/test/sync_idempotency_test.dart`와 `sync_queue_test.dart`다. 서버는 이미 `validationFinalized`인 활동을 다시 정산하지 않는다. `test_verified_run_appends_company_won_and_leaves_the_wallet`가 같은 `act-1`을 두 번 넣고 기부 원장이 하나이며 지갑 SHARE가 그대로인 것을 본다.
 
-Apple Watch는 이 환경에 Xcode가 없어 빌드하지 않았다. `watchos_app/ShareRunWatch/WatchSyncQueue.swift`는 같은 `activityId`의 중복 enqueue를 거절하고, 응답이 없으면 flush를 멈추며, 200대와 400·409·413·422는 큐에서 빼고, 그 밖(429·5xx)은 남겨 다음 flush가 같은 id로 다시 보낸다. 겹친 flush를 막는 잠금은 Wear OS의 `tryBeginFlush`에만 있고 Swift 큐에는 없다. 맥에서 확인할 목록:
+Apple Watch는 이 환경에 Xcode가 없어 빌드하지 않았다. `swiftc`도 없다. `watchos_app/ShareRunWatch/WatchSyncQueue.swift`와 `ios/ShareRunWatch Watch App/WatchSyncQueue.swift`는 같은 `activityId`의 중복 enqueue를 거절하고, 응답이 없으면 flush를 멈추며, 200대와 400·409·413·422는 큐에서 빼고, 그 밖(429·5xx)은 남겨 다음 flush가 같은 id로 다시 보낸다. 겹친 flush는 `WatchFlushGate`가 막는다. `tryBeginFlush`가 거짓이면 `flush`는 바로 돌아간다. Wear OS `SyncQueue.tryBeginFlush`와 같은 잠금이다. 잠금 자체는 `watchos_app/ShareRunWatchTests/WatchFlushGateTests.swift`(맥의 XCTest)와 `flush_gate_linux_check.swift`(`swiftc`로 두 파일을 같이 컴파일)에 있다. 이 리눅스에서는 그 컴파일을 실행하지 못했다. 맥에서 확인할 목록:
 
 1. `watchos_app/README-XCODE-SETUP.md`대로 `ios/Runner.xcworkspace`에 watchOS 타깃을 붙이고, HealthKit과 백그라운드(운동, 위치)를 켠 뒤 시뮬레이터와 실기기에서 빌드한다.
 2. 6자리 코드로 `POST /auth/watch-pair`가 되고, 페어링 없이 업로드가 나가지 않는지 본다.
@@ -333,10 +349,10 @@ Apple Watch는 이 환경에 Xcode가 없어 빌드하지 않았다. `watchos_ap
 4. 망이 돌아오면 그 id로 한 번만 성공하고, 성공 뒤에 큐가 비는지 본다.
 5. 끝내기를 두 번 눌러도 enqueue가 하나인지 본다.
 6. 409는 큐에서 빠지고, 429와 5xx는 남는지 본다.
-7. 플러시가 겹칠 때 POST가 두 번 나가지 않는지 본다. Swift에 잠금이 없으므로, 나가면 Wear OS와 같이 `flush` 잠금을 넣은 뒤에 다시 본다.
+7. 플러시가 겹칠 때 POST가 두 번 나가지 않는지 본다. Swift 큐는 이제 `tryBeginFlush`로 잠근다. 시뮬레이터에서 두 flush가 겹쳐 POST가 한 번인지는 아직 맥에서 봐야 한다. 잠금을 다시 넣는 일이 아니다.
 8. 서버가 같은 `activity_id`의 두 번째 검증에서 기부·SHARE를 다시 주지 않는지는 위 서버 테스트가 이미 본다. 워치 실기기에서 한 번 더 재전송해 원장이 하나인지 대조한다.
 
-15시 판정: 미흡. Wear OS의 오프라인·재시도·중복 전송은 테스트로 확인했다. Apple Watch는 맥에서 빌드와 위 목록을 보기 전이다.
+15시 판정: 미흡. Wear OS의 오프라인·재시도·중복 전송은 이 환경의 테스트로 확인했다. Apple Watch 잠금은 소스에 들어갔고, 맥 빌드와 시뮬레이터에서 겹친 POST를 보는 일은 남았다. 이 머신에 Xcode와 swiftc가 없다.
 
 ---
 
@@ -471,6 +487,17 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
 
 스킨을 종류별로 한 장만 판다고 따로 두면, 레전드 5종의 현재 합 1,200 DIA가 120×5 = 600 DIA가 되어 −600 DIA = −60,000원이다. 이것도 구매자 1명씩이라는 **가정**이다. 이 가정의 집합에서는 패스를 올리는 쪽의 매출 차이가 양수이고, 레전드를 내리는 쪽은 음수다. 희소성을 지킬지, 패스 120을 기준점으로 남길지는 표만 두고 대표가 고른다.
 
-15시 판정: 완료. 두 안의 장단과 가정 매출 차이를 표로 뒀다. 코드 가격은 그대로이고, 어느 쪽인지는 정하지 않았다.
+15시 판정: 완료. 두 안 비교표는 그대로다. 입문 팩은 표의 `입문 팩 (없음) | 없음 | 12 DIA = 1,200원`이다. 코드에는 그 팩이 없다. Basic(SHARE 유지, 0원) / Common(30–50 DIA) / Rare(60 DIA) / Hero(100 DIA) / Legend(120 DIA) 권고 표와, 그 안을 행마다 적은 소품·스킨 표가 있다. 서버 `accessory_catalog.py`의 판매 행은 P015(티어 보상, 표에서 뺌)를 빼면 문서 행과 같다. 코드 가격은 바꾸지 않았고, 어느 쪽인지는 정하지 않았다.
+
+---
+
+## 이번 라운드 테스트
+
+2026-10-29, 이 리눅스.
+
+- 서버 `python3 -m pytest` (`backend/jena_ai`): **835 passed**, 경고 1개(StarletteDeprecationWarning).
+- `wear_app` `flutter test`: **38 passed**.
+- 폰 앱 `flutter test`: **960 passed, 7 failed**. 실패한 7개는 골든 이미지다. 테마 쇼케이스, 걷기, 홈 두 장, 로비, 대회 목록, 마이. 픽셀 차이가 화면의 약 4~25%라 문구 한 줄 차이가 아니다. 그 화면은 이번 라운드에 고치지 않았다. 이 머신의 Flutter는 방금 받은 3.47.8이다. 골든을 여기서 다시 찍지는 않았다. `flutter test --exclude-tags golden`은 **959 passed**.
+- `swiftc`: 없음. Apple Watch 잠금의 리눅스 실행 확인은 못 했다.
 
 ---

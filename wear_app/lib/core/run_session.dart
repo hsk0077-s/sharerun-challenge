@@ -127,5 +127,3 @@ String formatPace(int secondsPerKm) {
 }
 
 String formatKm(double km) => km.toStringAsFixed(km >= 10 ? 1 : 2);
-
-String formatMinutes(Duration d) => '${d.inMinutes}분';

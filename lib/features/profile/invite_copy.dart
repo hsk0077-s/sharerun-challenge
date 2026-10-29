@@ -1,4 +1,7 @@
+import '../../l10n/app_localizations.dart';
+
 /// 마이 화면 초대 카드의 문구. 앱이 지원하는 언어별로 나눈다.
+/// 원어민 검수 전. 광고 랜딩에 쓰지 않는다.
 ///
 /// 한국어만 카카오톡 직접 초대 버튼을 쓰고, 다른 언어는 휴대폰 공유 창(어느 앱으로든)으로 보낸다.
 class InviteCopy {
@@ -151,3 +154,34 @@ const inviteCopyByLanguage = <String, InviteCopy>{
 /// 앱 언어 코드(예: `ko`)에 맞는 초대 문구. 모르는 언어는 영어.
 InviteCopy inviteCopyFor(String languageCode) =>
     inviteCopyByLanguage[languageCode.toLowerCase()] ?? _en;
+
+List<String> missingInviteKeys() {
+  final missing = <String>[];
+  final korean = inviteCopyByLanguage['ko'];
+  for (final locale in ShareRunLocalizations.supportedLocales) {
+    final code = locale.languageCode;
+    final tag = '${locale.languageCode}-${locale.countryCode}';
+    final row = inviteCopyByLanguage[code];
+    if (row == null) {
+      missing.add('$tag.invite');
+      continue;
+    }
+    final fields = <String, String>{
+      'title': row.title,
+      'copyLabel': row.copyLabel,
+      'copiedMessage': row.copiedMessage,
+      'loadFailedMessage': row.loadFailedMessage,
+      'buttonLabel': row.buttonLabel,
+      'shareSubject': row.shareSubject,
+      'shareLead': row.shareLead,
+      'codeLabel': row.codeLabel,
+    };
+    for (final entry in fields.entries) {
+      if (entry.value.trim().isEmpty) missing.add('$tag.invite.${entry.key}');
+    }
+    if (code != 'ko' && korean != null && row.title == korean.title) {
+      missing.add('$tag.invite.title=ko');
+    }
+  }
+  return missing;
+}

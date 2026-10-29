@@ -287,3 +287,47 @@ abstract final class ShareRunLocalizations {
     return byLanguage[locale.languageCode] ?? byLanguage['en']!;
   }
 }
+
+/// Empty when every supported locale has the core phrases, and a non-Korean
+/// locale did not keep the Korean slogan.
+List<String> missingCoreLocaleKeys() {
+  final missing = <String>[];
+  final korean = ShareRunLocalizations.byLanguage['ko'];
+  for (final locale in ShareRunLocalizations.supportedLocales) {
+    final code = locale.languageCode;
+    final tag = '${locale.languageCode}-${locale.countryCode}';
+    final row = ShareRunLocalizations.byLanguage[code];
+    if (row == null) {
+      missing.add('$tag.core');
+      continue;
+    }
+    final fields = <String, String>{
+      'appTitle': row.appTitle,
+      'slogan': row.slogan,
+      'navHome': row.navHome,
+      'navChallenge': row.navChallenge,
+      'navCrew': row.navCrew,
+      'navStore': row.navStore,
+      'navWallet': row.navWallet,
+      'navMyPage': row.navMyPage,
+      'deviceConnectionTitle': row.deviceConnectionTitle,
+      'wearableGuideEntry': row.wearableGuideEntry,
+      'bleHrSectionTitle': row.bleHrSectionTitle,
+      'bleHrScanButton': row.bleHrScanButton,
+      'startRunCta': row.startRunCta,
+      'pedometerRuleSummary': row.pedometerRuleSummary,
+      'donationRuleSummary': row.donationRuleSummary,
+      'charityDisclosure': row.charityDisclosure,
+    };
+    for (final entry in fields.entries) {
+      if (entry.value.trim().isEmpty) missing.add('$tag.core.${entry.key}');
+    }
+    if (code != 'ko' && korean != null && row.slogan == korean.slogan) {
+      missing.add('$tag.core.slogan=ko');
+    }
+    if (code != 'ko' && korean != null && row.charityDisclosure == korean.charityDisclosure) {
+      missing.add('$tag.core.charity=ko');
+    }
+  }
+  return missing;
+}

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/theme.dart';
+import '../../../l10n/accessory_names.dart';
 import '../../../core/api/api_exception.dart';
 import '../../accessories/accessory_catalog.dart';
-import '../../accessories/accessory_names.dart';
 import '../../accessories/accessory_inventory.dart';
 import '../../accessories/dressed_mascot.dart';
 import '../../accessories/try_on_sheet.dart';
@@ -279,7 +279,7 @@ class _AccessoryCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              accessory.displayName(Localizations.localeOf(context)),
+              accessoryName(accessory.id, accessory.nameKo, Localizations.localeOf(context)),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: storeText(14, c.ink, w: FontWeight.w800),
@@ -364,6 +364,8 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
   Future<void> _buy() async {
     final a = widget.accessory;
     final api = ref.read(crewApiProvider);
+    final locale = Localizations.localeOf(context);
+    final name = accessoryName(a.id, a.nameKo, locale);
     if (api == null) {
       _toast('서버에 연결되면 살 수 있어요.');
       return;
@@ -372,33 +374,20 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('소품 사기'),
+        title: Text(accessoryPhrase(locale, 'buyTitle')),
         content: Text(
-          () {
-            final locale = Localizations.localeOf(context);
-            final ask = accessoryPhrase(
-              locale,
-              'buy',
-              name: a.displayName(locale),
-              price: a.priceLabel,
-            );
-            final bonus = !dia
-                ? ''
-                : locale.languageCode == 'ko'
-                    ? '\n보너스 DIA가 있으면 먼저 써요.'
-                    : '\nBonus DIA is spent first.';
-            return '$ask$bonus';
-          }(),
+          accessoryPhrase(locale, 'buyAsk', name: name, price: a.priceLabel) +
+              (dia ? accessoryPhrase(locale, 'bonusFirst') : ''),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(accessoryPhrase(locale, 'cancel')),
           ),
           FilledButton(
             key: AccessoryDetailSheet.buyConfirmKey,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('사기'),
+            child: Text(accessoryPhrase(locale, 'buy')),
           ),
         ],
       ),
@@ -412,11 +401,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
-      _toast(accessoryPhrase(
-        Localizations.localeOf(context),
-        'bought',
-        name: a.displayName(Localizations.localeOf(context)),
-      ));
+      _toast(accessoryPhrase(locale, 'bought', name: name));
     } on ApiException catch (error) {
       _toast(switch (error.statusCode) {
         400 => '${dia ? 'DIA' : 'SHARE'}가 모자라거나 이미 가진 소품이에요.',
@@ -438,11 +423,8 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
     try {
       await api.equipAccessory(slot: a.slot.name, itemId: wearing ? a.id : '');
       final locale = Localizations.localeOf(context);
-      _toast(accessoryPhrase(
-        locale,
-        wearing ? 'wore' : 'off',
-        name: a.displayName(locale),
-      ));
+      final name = accessoryName(a.id, a.nameKo, locale);
+      _toast(accessoryPhrase(locale, wearing ? 'worn' : 'removed', name: name));
     } catch (_) {
       _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
     } finally {
@@ -480,7 +462,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
             ),
             const SizedBox(height: 12),
             Text(
-              a.displayName(Localizations.localeOf(context)),
+              accessoryName(a.id, a.nameKo, Localizations.localeOf(context)),
               style: storeText(22, c.ink, w: FontWeight.w900),
             ),
             const SizedBox(height: 4),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
-import '../../../l10n/dia_refund_copy.dart';
+import '../../../l10n/commerce_copy.dart';
 import '../../../l10n/guidance_copy.dart';
 import '../../../core/theme/theme.dart';
 import '../../crew/crew_membership.dart';
@@ -89,9 +89,12 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
         (_) => ',',
       );
 
-  DiaRefundCopy get _copy => DiaRefundCopy.of(Localizations.localeOf(context));
-
-  String _why(DiaPurchase p) => _copy.why(p.reason, p.status);
+  String _why(DiaRefundCopy copy, DiaPurchase p) => switch (p.reason) {
+        'already_refunded' => p.status == 'refunded' ? copy.whyDone : copy.whyPending,
+        'nothing_left' => copy.whyNothing,
+        'period_over' => copy.whyPeriod,
+        _ => copy.whyOther,
+      };
 
   void _toast(String message) {
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -104,26 +107,27 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
 
   Future<void> _refund(DiaPurchase p) async {
     final api = ref.read(crewApiProvider);
+    final copy = DiaRefundCopy.of(Localizations.localeOf(context));
     if (api == null || _busy) return;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(_copy.dialogTitle),
+        title: Text(copy.confirmTitle),
         content: Text(
-          _copy.confirmBody(
+          copy.confirmBody(
             paidDia: p.paidDia,
             bonusRevoked: p.bonusRevoked,
-            refund: _won(p.refundKrw),
+            refundWon: _won(p.refundKrw),
             bonusSpent: p.bonusSpent,
-            spent: _won(p.bonusSpent * 100),
+            spentWon: _won(p.bonusSpent * 100),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(_copy.cancel)),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(copy.cancel)),
           FilledButton(
             key: DiaRefundSheet.confirmKey,
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(_copy.confirm),
+            child: Text(copy.confirmButton),
           ),
         ],
       ),
@@ -133,12 +137,14 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
     try {
       final result = await api.requestDiaRefund(p.purchaseId);
       ref.invalidate(diaPurchasesProvider);
-      _toast(result.done ? _copy.done(_won(result.refundKrw)) : _copy.pending);
+      _toast(result.done
+          ? copy.doneToast(_won(result.refundKrw))
+          : copy.pendingToast);
     } on ApiException catch (error) {
-      _toast(error.statusCode == 409 ? _copy.already : _copy.failed);
+      _toast(error.statusCode == 409 ? copy.already : copy.failed);
       ref.invalidate(diaPurchasesProvider);
     } catch (_) {
-      _toast(_copy.failed);
+      _toast(copy.failed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -147,7 +153,7 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
-    final copy = _copy;
+    final copy = DiaRefundCopy.of(Localizations.localeOf(context));
     final data = ref.watch(diaPurchasesProvider);
     final days = data.asData?.value?.refundDays ?? 7;
     final purchases = data.asData?.value?.purchases ?? const <DiaPurchase>[];
@@ -158,7 +164,7 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           children: [
-            Text(copy.sheetTitle, style: storeText(20, c.ink, w: FontWeight.w900)),
+            Text(copy.title, style: storeText(20, c.ink, w: FontWeight.w900)),
             const SizedBox(height: 4),
             Text(
               copy.window(days),
@@ -207,21 +213,18 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
                     const SizedBox(height: 8),
                     if (p.eligible) ...[
                       Text(
-                        copy.eligible(
-                          refund: _won(p.refundKrw),
-                          paidDia: p.paidDia,
-                          bonusRevoked: p.bonusRevoked,
-                        ),
+                        copy.summary(_won(p.refundKrw), p.paidDia) +
+                            (p.bonusRevoked > 0 ? copy.bonusRevoke(p.bonusRevoked) : ''),
                         style: storeText(13, c.ink),
                       ),
                       const SizedBox(height: 8),
                       FilledButton(
                         key: DiaRefundSheet.refundKey(p.purchaseId),
                         onPressed: _busy ? null : () => _refund(p),
-                        child: Text(copy.apply(_won(p.refundKrw))),
+                        child: Text(copy.requestButton(_won(p.refundKrw))),
                       ),
                     ] else
-                      Text(_why(p), style: storeText(13, c.muted)),
+                      Text(_why(copy, p), style: storeText(13, c.muted)),
                   ],
                 ),
               ),

@@ -44,6 +44,7 @@ from app.services.donation_cap import (
     read_monthly_cap_won,
     won_within_cap,
 )
+from app.services.grade_assignment import TURTLE_FAST_PACE_SEC, run_pace_sec_per_km
 from app.services.promotion_points import award_tournament_results
 from app.services.streak_protection import kst_month_key
 from app.services.wallet_funding import move_currency
@@ -100,6 +101,25 @@ def prize_finish_fields(
     target = _number(tournament.get("targetDistanceKm")) or 0
     if target > 0 and distance + 1e-9 < target:
         return None
+    # Beginner prize entry only saw the stored median. The finish pace is
+    # checked here: faster than turtle master (450 sec/km) does not take the
+    # prize. A legal finish already on the row is left as it is.
+    pace = run_pace_sec_per_km(distance, duration)
+    if (
+        prize_tier_id(tournament) == "beginner"
+        and pace is not None
+        and pace < TURTLE_FAST_PACE_SEC
+    ):
+        if participant.get("verifiedFinish") is True:
+            return None
+        return {
+            "verifiedFinish": False,
+            "prizeHeld": True,
+            "prizeHoldReason": "pace_too_fast",
+            "distanceKm": distance,
+            "durationSeconds": duration,
+            "finishActivityId": activity_id,
+        }
     if participant.get("verifiedFinish") is True:
         previous = _number(participant.get("durationSeconds"))
         if previous is not None and duration >= previous:

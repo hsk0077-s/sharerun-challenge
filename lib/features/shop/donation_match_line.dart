@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+import '../../l10n/commerce_copy.dart';
+
 /// Company won added for this user. VALUE spent is not won.
-///
-/// No locale keeps the Korean line the first screens shipped.
 String donationMatchContributionLine({
   required String sponsorName,
   required String contributorName,
@@ -11,48 +11,17 @@ String donationMatchContributionLine({
 }) {
   final sponsor = sponsorName.trim();
   if (sponsor.isEmpty || companyWon <= 0) return '';
-  final code = _line.containsKey(locale?.languageCode) ? locale!.languageCode : 'ko';
-  final name = contributorName.trim().isEmpty ? _member[code]! : contributorName.trim();
-  return _line[code]!
-      .replaceAll('{sponsor}', sponsor)
-      .replaceAll('{amount}', _grouped(companyWon))
-      .replaceAll('{name}', name);
+  final copy = DonationMatchCopy.of(locale ?? const Locale('ko'));
+  final name = contributorName.trim().isEmpty ? copy.member : contributorName.trim();
+  return copy.line(sponsor, _grouped(companyWon), name);
 }
-
-const _member = <String, String>{
-  'ko': '회원',
-  'en': 'member',
-  'ja': '会員',
-  'zh': '會員',
-  'es': 'miembro',
-  'pt': 'membro',
-  'de': 'Mitglied',
-  'fr': 'membre',
-  'vi': 'thành viên',
-  'th': 'สมาชิก',
-  'id': 'anggota',
-};
-
-const _line = <String, String>{
-  'ko': '{sponsor} 명의 {amount}원 · {name} 기여',
-  'en': '{amount} KRW in {sponsor}\'s name · {name}',
-  'ja': '{sponsor} の名義で {amount}ウォン · {name} の貢献',
-  'zh': '以 {sponsor} 的名義 {amount} 韓元 · {name} 的貢獻',
-  'es': '{amount} KRW a nombre de {sponsor} · aporte de {name}',
-  'pt': '{amount} KRW em nome de {sponsor} · contribuição de {name}',
-  'de': '{amount} KRW im Namen von {sponsor} · Beitrag von {name}',
-  'fr': '{amount} KRW au nom de {sponsor} · apport de {name}',
-  'vi': '{amount} KRW dưới tên {sponsor} · đóng góp của {name}',
-  'th': '{amount} วอน ในนาม {sponsor} · ส่วนร่วมของ {name}',
-  'id': '{amount} KRW atas nama {sponsor} · kontribusi {name}',
-};
 
 /// Sum of this month's company matches, shown under the company name.
 String donationMatchSummary(
   List<DonationMatchEntry> entries,
-  String monthKey, [
+  String monthKey, {
   Locale? locale,
-]) {
+}) {
   final month = [
     for (final entry in entries)
       if (entry.monthKey == monthKey && entry.companyWon > 0) entry,

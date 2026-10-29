@@ -18,7 +18,7 @@ class DonationMatchContribution extends ConsumerWidget {
     final line = donationMatchSummary(
       entries,
       monthKey,
-      Localizations.localeOf(context),
+      locale: Localizations.localeOf(context),
     );
     if (line.isEmpty) return const SizedBox.shrink();
     return Padding(

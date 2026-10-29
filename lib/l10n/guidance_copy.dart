@@ -580,7 +580,8 @@ class DiaNoticeGuidance {
   };
 }
 
-/// Surfaces that used to be Korean only. Empty once each one has 11 locales.
+/// Shop, refund, accessory, and donation-match copy now live in
+/// `commerce_copy.dart` and `accessory_names.dart` for all 11 locales.
 const koreanOnlyGuidanceSurfaces = <String>[];
 
 List<String> missingGuidanceKeys() {

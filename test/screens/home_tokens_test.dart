@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
@@ -10,6 +11,7 @@ import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/donation/today_donation.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/l10n/guidance_copy.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/profile/widgets/retention_widgets.dart';
@@ -79,6 +81,13 @@ Widget _scopedApp({required Widget home, UserModel? profileOverride}) {
     ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: const Locale('ko', 'KR'),
+      supportedLocales: ShareRunLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       theme: SrcTheme.light,
       home: home,
     ),

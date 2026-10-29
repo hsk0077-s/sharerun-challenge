@@ -1,9 +1,15 @@
-"""Runner grade, set once by the server from three verified 1km runs.
+"""Runner grade.
 
-A verified run of at least 1km on a new KST day counts. The third counted run
-sets the grade from the median pace of the three. The grade lives in
-``gradeCode`` / ``gradeRank`` on the user doc, apart from the room ``tier``
-number, so room locks do not change. Nothing here demotes a grade.
+A new account becomes turtle bronze on the first verified 1km
+(``step_signup_grade``). Each later verified day moves at most one medal
+toward the median of the stored pace samples. The account does not wait for
+three runs.
+
+``assignment_from_runs`` is the older median of three verified 1km days.
+``backfill_grades`` still uses it for an account that never received a signup
+grade. The grade lives in ``gradeCode`` / ``gradeRank`` on the user doc, apart
+from the room ``tier`` number, so room locks do not change. Nothing here
+demotes a grade.
 """
 
 from datetime import datetime, timezone
@@ -87,7 +93,11 @@ def advance_grade_runs(
 
 
 def assignment_from_runs(runs: list[dict]) -> dict | None:
-    """The grade for a full set of runs, or ``None`` while runs are missing."""
+    """Median grade for three runs. Signup uses ``step_signup_grade`` instead.
+
+    ``None`` while the three runs are missing. Backfill is the caller that
+    still needs this.
+    """
     if len(runs) < GRADE_RUNS_REQUIRED:
         return None
     basis = runs[:GRADE_RUNS_REQUIRED]

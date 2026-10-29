@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../l10n/accessory_names.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import 'accessory_catalog.dart';
@@ -146,7 +147,7 @@ class _ItemCard extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: acc.displayName(Localizations.localeOf(context)),
+      label: accessoryName(acc.id, acc.nameKo, Localizations.localeOf(context)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
@@ -193,7 +194,7 @@ class _ItemCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                acc.displayName(Localizations.localeOf(context)),
+                accessoryName(acc.id, acc.nameKo, Localizations.localeOf(context)),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.caption.copyWith(

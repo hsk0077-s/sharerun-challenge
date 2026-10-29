@@ -2,11 +2,16 @@
 
 A GPS pair is a twin when three signals match: start times within three
 minutes, the same cadence/distance signature, and at least half of the
-compared route points within 40 metres. A phone run that sends no route
-used to pass that check, because overlap of an empty route is zero. That
-pair is a twin when the starts are within one minute and a supporting
-signal matches: the same device id, or the same signature. The run itself
-still counts. Missing times do not match, so older rows are left alone.
+compared route points within 40 metres. The other route is not thinned
+before that distance check: thinning both sides can hide the points that
+actually sat within 40 metres, so one road looks like two. A phone run
+that sends no route used to pass the overlap check, because overlap of an
+empty route is zero. That pair is a twin when the starts are within one
+minute and a supporting signal matches: the same device id, or the same
+signature. Once both sides send a route, a shifted track used to skip the
+device check as well. The same device inside the three-minute window is
+still one outing. The run itself still counts. Missing times do not match,
+so older rows are left alone.
 """
 
 from datetime import datetime, timedelta
@@ -24,6 +29,9 @@ TWIN_REASON = "twin_run"
 # Payout is held because the referrer has no run to compare yet.
 # It is not a twin. A later referee run reopens it once a run exists.
 REFERRER_RUN_ABSENT = "referrer_run_absent"
+# Neither account has a device id to compare. A later referee run reopens
+# it once either side has one. It is not a twin.
+DEVICE_ID_ABSENT = "device_id_absent"
 
 
 def run_signature(
@@ -88,9 +96,11 @@ def _overlap(left: list[tuple[float, float]], right: list[tuple[float, float]]) 
     if len(left) < 2 or len(right) < 2:
         return 0.0
     sample = left[:: max(1, len(left) // 20)]
+    # Keep every point on the other route. Sampling both sides drops the
+    # neighbours that were inside 40 metres when the traces are long.
     hits = 0
     for point in sample:
-        if any(_meters(point, other) <= TWIN_ROUTE_METERS for other in right[:: max(1, len(right) // 20)]):
+        if any(_meters(point, other) <= TWIN_ROUTE_METERS for other in right):
             hits += 1
     return hits / len(sample)
 
@@ -181,8 +191,32 @@ def bare_phone_twin(left: dict, right: dict) -> bool:
     return isinstance(left_sig, str) and bool(left_sig) and left_sig == right_sig
 
 
+def same_device_shifted_route(left: dict, right: dict) -> bool:
+    """True when both routes exist but the handset is the same.
+
+    ``bare_phone_twin`` returns false once both sides have a route, so a
+    shifted track used to hide the device id. The same device inside the
+    GPS window is one outing even when the tracks do not overlap.
+    """
+    if not (_has_route(left) and _has_route(right)):
+        return False
+    started = _started(left)
+    other = _started(right)
+    if started is None or other is None:
+        return False
+    if abs((started - other).total_seconds()) > TWIN_WINDOW_SECONDS:
+        return False
+    left_device = _device_id(left)
+    right_device = _device_id(right)
+    return bool(left_device) and left_device == right_device
+
+
 def referral_twin_reason(left: dict, right: dict) -> str | None:
     """``twin_run`` when a referral payout for this pair should be held."""
-    if is_twin_run(left, right) or bare_phone_twin(left, right):
+    if (
+        is_twin_run(left, right)
+        or bare_phone_twin(left, right)
+        or same_device_shifted_route(left, right)
+    ):
         return TWIN_REASON
     return None

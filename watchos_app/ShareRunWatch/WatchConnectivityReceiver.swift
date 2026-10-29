@@ -30,7 +30,7 @@ final class WatchConnectivityReceiver: NSObject, ObservableObject, WCSessionDele
         guard WCSession.isSupported(), WCSession.default.activationState == .activated else { return }
         WCSession.default.transferUserInfo([
             "type": "watch_run_completed",
-            "payload": run.toValidateRunBody()
+            "payload": run.toValidateRunBody(deviceId: account?.deviceId())
         ])
     }
 

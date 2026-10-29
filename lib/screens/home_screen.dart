@@ -8,6 +8,7 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/auth/health_data_consent_store.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/surface_copy.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/widgets/async_value_section.dart';
 import '../core/widgets/currency_badge.dart';
@@ -286,7 +287,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () => context.pushNamed(RouteNames.preliminaryEvalName),
             icon: const Icon(Icons.emoji_events_outlined),
             label: Text(
-              '등급 배정 ($trialDone/3회)',
+              GradeGuide.of(Localizations.localeOf(context))
+                  .homeEntry(trialDone, 3),
               style:
                   textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
             ),

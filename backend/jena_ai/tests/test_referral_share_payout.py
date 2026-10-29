@@ -57,6 +57,7 @@ def _seed_pair(
     payout_count: int = 0,
     referrer_device: str = "",
     referrer_has_run: bool = True,
+    referrer_run_device: str = "referrer-phone",
 ) -> None:
     mining = {
         "dateKey": EconomyService().kst_today_key(),
@@ -82,16 +83,18 @@ def _seed_pair(
     if referrer_has_run:
         # An older outing, far from the referee's clock, so it is not a twin.
         # Without this, the first referee payout is held.
-        referrer_economy["latestRun"] = {
+        latest_run = {
             "activityId": "referrer-older",
             "startedAt": "2026-09-01T00:00:00+00:00",
             "runSignature": "not-the-referee",
-            "deviceId": "referrer-phone",
             "gpsRoute": [
                 {"latitude": 35.0, "longitude": 129.0},
                 {"latitude": 35.01, "longitude": 129.01},
             ],
         }
+        if referrer_run_device:
+            latest_run["deviceId"] = referrer_run_device
+        referrer_economy["latestRun"] = latest_run
     db.store["users/u1"] = {
         "economy": referrer_economy,
         "wallet": _wallet(20, dia=1, value=2),
@@ -569,6 +572,104 @@ def test_missing_trial_device_id_still_blocks_a_known_phone() -> None:
     assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
     assert _payout_count(db, "u1") == 0
     assert "trialDeviceId" not in db.store["users/u1"]["economy"]
+
+
+def test_no_device_on_either_side_holds_until_one_appears() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=0, referrer_run_device="")
+    service = _service(db)
+    _persist(service, "u2", "run-1", now=_DAY1, signup_at=_DAY1)
+    assert _share(db, "u2") == 40
+    assert _share(db, "u1") == 20
+    marker = db.store["referralPayouts/u2_trial_referee_1"]
+    assert marker["status"] == "held"
+    assert marker["reason"] == "device_id_absent"
+    assert marker["amount"] == 10_000
+
+    _persist(
+        service,
+        "u2",
+        "run-2",
+        now=_DAY2,
+        signup_at=_DAY1,
+        device_id="watch-abc12345",
+    )
+    assert _share(db, "u2") == 10_040
+    assert db.store["referralPayouts/u2_trial_referee_1"].get("status") != "held"
+
+
+def test_a_watch_device_id_is_not_treated_as_missing() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=0, referrer_run_device="")
+    _persist(
+        _service(db),
+        "u2",
+        "run-1",
+        now=_DAY1,
+        signup_at=_DAY1,
+        device_id="watch-abc12345",
+    )
+    assert _share(db, "u2") == 10_040
+    marker = db.store["referralPayouts/u2_trial_referee_1"]
+    assert marker.get("status") != "held"
+    assert marker["amount"] == 10_000
+
+
+def test_same_device_shifted_gps_holds_the_referral() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2)
+    cadence = [170] * 20
+    signature = run_signature(
+        distance_km=1.1, duration_seconds=400, cadence_spm=cadence
+    )
+    far = [
+        {"latitude": 35.1, "longitude": 129.0, "recordedAt": "t"},
+        {"latitude": 35.12, "longitude": 129.02, "recordedAt": "t"},
+        {"latitude": 35.14, "longitude": 129.04, "recordedAt": "t"},
+    ]
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _route("t"),
+        "deviceId": "phone-same",
+    }
+    service = _service(db)
+    request = ValidateRunRequest(
+        activity_id="run-3",
+        distance_km=1.1,
+        duration_seconds=400,
+        gyro_stability_score=0.5,
+        cadence_spm=cadence,
+        gps_route=far,
+        started_at=(_DAY3 + timedelta(seconds=40)).isoformat(),
+        device_id="phone-same",
+    )
+    service._persist_validation_tx(
+        _MemoryTxn(),
+        "u2",
+        request,
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=0,
+            forfeit_deposit=False,
+        ),
+        db.collection("activities").document("run-3"),
+        db.collection("users").document("u2"),
+        account_created_at=_DAY1,
+        now=_DAY3,
+    )
+    assert _share(db, "u2") == 40
+    assert db.store["referralPayouts/u2_trial_referee"]["reason"] == "twin_run"
+    assert db.store["referralPayouts/u2_trial_referee"]["amount"] == 40_000
+    # Same phone still zeros the referrer. The new part is the referee hold.
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["status"] == "held"
+    assert referrer["reason"] == "twin_run"
+    assert referrer["amount"] == 0
 
 
 def test_no_referrer_run_holds_the_referee_until_a_later_run() -> None:

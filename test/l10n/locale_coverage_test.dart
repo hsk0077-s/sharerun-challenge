@@ -15,7 +15,9 @@ import 'package:share_run_challenge/l10n/dia_refund_copy.dart';
 import 'package:share_run_challenge/l10n/guidance_copy.dart';
 import 'package:share_run_challenge/l10n/shop_catalog_copy.dart';
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
+import 'package:share_run_challenge/l10n/surface_copy.dart';
 import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
+import 'package:share_run_challenge/screens/fair_earning_policy_screen.dart';
 
 void main() {
   test('every supported locale has native wearable brand steps', () {
@@ -26,7 +28,8 @@ void main() {
       final chrome = GuideChrome.of(locale);
       expect(chrome.brands.keys, containsAll(GuideChrome.brandIds));
       for (final id in GuideChrome.brandIds) {
-        expect(chrome.brands[id]!.steps, hasLength(3), reason: '${locale.languageCode}.$id');
+        expect(chrome.brands[id]!.steps, hasLength(3),
+            reason: '${locale.languageCode}.$id');
       }
     }
   });
@@ -36,9 +39,21 @@ void main() {
     expect(missing, isEmpty, reason: missing.join('\n'));
   });
 
-  test('shop items, refund sheet, accessories, and donation match exist in every locale', () {
+  test(
+      'shop items, refund sheet, accessories, and donation match exist in every locale',
+      () {
     final missing = missingCommerceKeys();
     expect(missing, isEmpty, reason: missing.join('\n'));
+  });
+
+  test('fair earning, shop chrome, and grade guide exist in every locale', () {
+    final missing = missingSurfaceKeys();
+    expect(missing, isEmpty, reason: missing.join('\n'));
+    expect(FairEarningCopy.of(const Locale('ko')).screenTitle, '공정한 적립 정책');
+    expect(
+      FairEarningPolicyScreen.sections.map((block) => block.title),
+      contains('검증 기준'),
+    );
   });
 
   test('core phrases and invite copy exist in every locale', () {
@@ -46,8 +61,21 @@ void main() {
     expect(missing, isEmpty, reason: missing.join('\n'));
   });
 
-  test('watchOS copy files carry the same 11 language codes and pairing errors', () {
-    const codes = ['ko', 'en', 'ja', 'zh', 'es', 'pt', 'de', 'fr', 'vi', 'th', 'id'];
+  test('watchOS copy files carry the same 11 language codes and pairing errors',
+      () {
+    const codes = [
+      'ko',
+      'en',
+      'ja',
+      'zh',
+      'es',
+      'pt',
+      'de',
+      'fr',
+      'vi',
+      'th',
+      'id'
+    ];
     const pairing = [
       'no_server',
       'need_six_digits',
@@ -80,7 +108,8 @@ void main() {
     final shop = ShopFundingGuidance.of(ko);
     final dia = DiaNoticeGuidance.of(ko);
     expect(donation.intro, DonationSettlementScreen.intro);
-    expect(donation.capReachedSettlement, DonationSettlementScreen.capReachedLine);
+    expect(
+        donation.capReachedSettlement, DonationSettlementScreen.capReachedLine);
     expect(donation.disclaimer, DonationSettlementScreen.disclaimer);
     expect(donation.rule, HomeDonationCard.rule);
     expect(donation.budget, HomeDonationCard.budget);

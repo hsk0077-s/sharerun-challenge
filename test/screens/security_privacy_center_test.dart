@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/features/privacy/ai_learning_tile.dart';
 import 'package:share_run_challenge/screens/fair_earning_policy_screen.dart';
 import 'package:share_run_challenge/screens/security_privacy_center_screen.dart';
@@ -99,13 +101,24 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [aiLearningProvider.overrideWith((ref) async => false)],
-        child: const MaterialApp(home: SecurityPrivacyCenterScreen()),
+        child: MaterialApp(
+          locale: const Locale('ko', 'KR'),
+          supportedLocales: ShareRunLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const SecurityPrivacyCenterScreen(),
+        ),
       ),
     );
 
     expect(find.text('보안·프라이버시 센터'), findsOneWidget);
-    expect(find.byKey(SecurityPrivacyCenterScreen.policyTileKey), findsOneWidget);
-    expect(find.byKey(SecurityPrivacyCenterScreen.appealTileKey), findsOneWidget);
+    expect(
+        find.byKey(SecurityPrivacyCenterScreen.policyTileKey), findsOneWidget);
+    expect(
+        find.byKey(SecurityPrivacyCenterScreen.appealTileKey), findsOneWidget);
 
     await tester.tap(find.byKey(SecurityPrivacyCenterScreen.policyTileKey));
     await tester.pumpAndSettle();

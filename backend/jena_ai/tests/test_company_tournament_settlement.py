@@ -410,6 +410,7 @@ def test_verified_prize_finish_keeps_the_faster_time() -> None:
             distance_km=distance,
             duration_seconds=duration,
             gyro_stability_score=0.9,
+            cadence_spm=[160, 164, 158],
             tournament_id="race",
         )
         result = ValidationResult(
@@ -476,6 +477,56 @@ def test_verified_prize_finish_keeps_the_faster_time() -> None:
         other.collection("users").document("u1"),
     )
     assert "verifiedFinish" not in other.store["tournaments/plain/participants/u1"]
+
+
+def test_uniform_gps_holds_beginner_prize_and_keeps_value() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _wallet()
+    db.store["tournaments/race"] = {
+        "prizeTier": "beginner",
+        "targetDistanceKm": 1,
+        "status": "active",
+    }
+    db.store["tournaments/race/participants/u1"] = {"uid": "u1", "status": "joined"}
+    start = datetime(2026, 10, 5, tzinfo=timezone.utc)
+    points = [
+        {
+            "latitude": 37.5 + (index * 100.0 / 111_320.0),
+            "longitude": 127.0,
+            "recordedAt": (start + timedelta(seconds=90 * index)).isoformat(),
+        }
+        for index in range(11)
+    ]
+    SecuredActionService(firebase_service=SimpleNamespace(db=db))._persist_validation_tx(
+        _MemoryTxn(),
+        "u1",
+        ValidateRunRequest(
+            activity_id="drawn",
+            distance_km=1.0,
+            duration_seconds=900,
+            gyro_stability_score=0.4,
+            heart_rates=[120, 140, 160],
+            cadence_spm=[160, 164, 158],
+            total_steps=1400,
+            gps_route=points,
+            tournament_id="race",
+        ),
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=10,
+            forfeit_deposit=False,
+        ),
+        db.collection("activities").document("drawn"),
+        db.collection("users").document("u1"),
+    )
+    row = db.store["tournaments/race/participants/u1"]
+    assert row["prizeHeld"] is True
+    assert row["prizeHoldReason"] == "uniform_gps"
+    assert row["verifiedFinish"] is False
+    assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 15
+    assert _settle(db).paid_dia == 0
 
 
 def test_beginner_prize_finish_holds_a_pace_faster_than_450() -> None:

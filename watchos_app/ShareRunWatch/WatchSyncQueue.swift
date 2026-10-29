@@ -11,7 +11,7 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
 
     var id: String { activityId }
 
-    func toValidateRunBody() -> [String: Any] {
+    func toValidateRunBody(deviceId: String? = nil) -> [String: Any] {
         var body: [String: Any] = [
             "activity_id": activityId,
             "distance_km": (distanceKm * 1000).rounded() / 1000,
@@ -30,6 +30,11 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
         ]
         if totalSteps > 0 {
             body["total_steps"] = totalSteps
+        }
+        // Same field as ValidateRunRequest.device_id. Empty is omitted so a
+        // missing id is not stored as a blank string.
+        if let deviceId, !deviceId.isEmpty {
+            body["device_id"] = deviceId
         }
         return body
     }
@@ -107,7 +112,7 @@ final class WatchSyncQueue: ObservableObject {
         for run in runs {
             guard let (status, _) = await account.postSigned(
                 path: "/actions/runs/validate",
-                payload: run.toValidateRunBody()
+                payload: run.toValidateRunBody(deviceId: account.deviceId())
             ) else {
                 break
             }

@@ -15,6 +15,7 @@ import '../core/strings/app_strings.dart';
 import '../l10n/accessory_names.dart';
 import '../l10n/commerce_copy.dart';
 import '../l10n/guidance_copy.dart';
+import '../l10n/surface_copy.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
@@ -159,29 +160,32 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
+      final chrome = ShopChrome.of(Localizations.localeOf(context));
       _toast(
         result.status == 'already_purchased' ||
                 result.status == 'already_matched'
             ? item.valueCost > 0
-                ? '이미 처리된 구매입니다. VALUE는 한 번만 차감됩니다.'
+                ? chrome.alreadyValue
                 : item.shareCost > 0
-                    ? '이미 처리된 구매입니다. SHARE는 한 번만 차감됩니다.'
-                    : '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+                    ? chrome.alreadyShare
+                    : chrome.alreadyDia
             : item.id == 'donation_match'
-                ? '기부 매칭을 기록했습니다. 운영자 명의 기부에 내 이름이 함께 표시됩니다.'
-                : '${item.title}을 구매했습니다.',
+                ? chrome.donationMatchDone
+                : chrome.bought(item.title),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(
         streakItemMessage(
           error,
-          fallback: 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+          fallback: ShopChrome.of(Localizations.localeOf(context)).diaShort,
         ),
       );
     } catch (error) {
       if (!mounted) return;
-      _toast('${item.title}을 구매하지 못했습니다.');
+      _toast(
+        ShopChrome.of(Localizations.localeOf(context)).buyFailed(item.title),
+      );
     } finally {
       _buyBusy = false;
     }
@@ -282,6 +286,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ServerShopInventory inventory, ShopTabState shop) {
     final tokens = context.srcTokens;
     final copy = ShopCopy.of(Localizations.localeOf(context));
+    final chrome = ShopChrome.of(Localizations.localeOf(context));
     final packs = DiaPackProduct.catalog.where((p) => p.totalDia > 12).toList();
     final featured = packs.length >= 3 ? packs.sublist(0, 3) : packs;
     return [
@@ -294,8 +299,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       if (AppEnv.diaPacksEnabled) ...[
         StoreSectionLabel(
-          '다이아 충전',
-          more: '전체 보기',
+          chrome.diaTopUp,
+          more: chrome.seeAll,
           onMore: () => setState(() => _tab = _StoreTab.diamond),
         ),
         Row(
@@ -304,7 +309,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
               if (i > 0) const SizedBox(width: 8),
               StorePackCard(
                 dia: '${pack.totalDia}',
-                bonus: pack.bonusDia > 0 ? '+${pack.bonusDia} 보너스' : '',
+                bonus: pack.bonusDia > 0 ? chrome.bonus(pack.bonusDia) : '',
                 price: _won(pack.priceKrw),
                 hot: pack.productId == 'dia_pack_130',
                 onTap: _openDiaPacks,
@@ -314,8 +319,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       ],
       StoreSectionLabel(
-        '러닝 아이템',
-        more: '전체 보기',
+        chrome.runningItems,
+        more: chrome.seeAll,
         onMore: () => setState(() => _tab = _StoreTab.items),
       ),
       Row(
@@ -365,7 +370,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           ),
         ],
       ),
-      const StoreSectionLabel('배틀런 패스'),
+      StoreSectionLabel(chrome.battlePassSection),
       InkWell(
         key: const Key('store-battle-pass'),
         onTap: _openBattlePass,
@@ -394,7 +399,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '배틀런 챌린지 패스',
+                      chrome.battlePassTitle,
                       style: storeText(
                         16,
                         tokens.colors.ink,
@@ -402,7 +407,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       ),
                     ),
                     Text(
-                      '시즌 보상 · 패스+',
+                      chrome.battlePassSubtitle,
                       style: storeText(12, tokens.colors.muted),
                     ),
                   ],
@@ -418,8 +423,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         ),
       ),
       StoreSectionLabel(
-        '꾸미기',
-        more: '전체 보기',
+        chrome.cosmetics,
+        more: chrome.seeAll,
         onMore: () => setState(() => _tab = _StoreTab.cosmetics),
       ),
       _CosmeticsPreviewRow(
@@ -428,7 +433,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
       KeyedSubtree(
         key: _fundingKey,
-        child: const StoreSectionLabel('기부 펀딩'),
+        child: StoreSectionLabel(chrome.donationFunding),
       ),
       const _CompanyFundingCard(),
       const DonationMatchContribution(),
@@ -439,9 +444,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   List<Widget> _diamondTab() {
     final tokens = context.srcTokens;
     final c = tokens.colors;
+    final chrome = ShopChrome.of(Localizations.localeOf(context));
     return [
       if (AppEnv.diaPacksEnabled) ...[
-        const StoreSectionLabel('다이아 충전'),
+        StoreSectionLabel(chrome.diaTopUp),
         for (final pack in DiaPackProduct.catalog)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -481,14 +487,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                             const SizedBox(width: 8),
                             if (pack.bonusDia > 0)
                               Text(
-                                '+${pack.bonusDia} 보너스',
+                                chrome.bonus(pack.bonusDia),
                                 style: storeText(12, c.primary,
                                     w: FontWeight.w800),
                               ),
                             if (pack.productId == 'dia_pack_130') ...[
                               const SizedBox(width: 8),
                               Text(
-                                '인기',
+                                chrome.popular,
                                 style: storeText(
                                   11,
                                   c.primary,
@@ -510,7 +516,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           style: storeText(15, c.ink, w: FontWeight.w900),
                         ),
                         Text(
-                          '준비 중',
+                          chrome.preparing,
                           style: storeText(11, c.muted, w: FontWeight.w700),
                         ),
                       ],
@@ -521,11 +527,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ),
           ),
         Text(
-          'Play 상품이 열리면 구매할 수 있어요. 지금은 결제해도 DIA가 지급되지 않아요.',
+          chrome.packsClosed,
           style: storeText(12, c.muted, h: 1.5),
         ),
       ],
-      const StoreSectionLabel('SHARE로 교환'),
+      StoreSectionLabel(chrome.shareExchange),
       InkWell(
         key: const Key('store-dia-exchange'),
         onTap: _openDiaExchange,
@@ -546,11 +552,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SHARE를 DIA로',
+                      chrome.shareToDia,
                       style: storeText(16, c.ink, w: FontWeight.w900),
                     ),
                     Text(
-                      '1,200 SHARE = 1 DIA · 주간 한도 안에서 교환',
+                      chrome.shareToDiaNote,
                       style: storeText(12, c.muted),
                     ),
                   ],
@@ -571,8 +577,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   /// 아이템 탭: 시안의 글머리별 한 줄 목록.
   List<Widget> _itemsTab(ServerShopInventory inventory) {
     final shop = ShopCopy.of(Localizations.localeOf(context));
+    final chrome = ShopChrome.of(Localizations.localeOf(context));
     return [
-      const StoreSectionLabel('기록 지키기'),
+      StoreSectionLabel(chrome.keepRecord),
       _row(
         id: 'record_cpr_ticket',
         icon: Icons.healing_rounded,
@@ -593,7 +600,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         owned: inventory.restDayCount,
         plainLabel: '${_format(_valueCost('rest_day_ticket'))} VALUE',
       ),
-      const StoreSectionLabel('같이 달리기'),
+      StoreSectionLabel(chrome.runTogether),
       _row(
         id: 'coach_one_point_ticket',
         icon: Icons.record_voice_over_rounded,
@@ -604,7 +611,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         id: 'friend_ghost_pace',
         icon: Icons.directions_run_rounded,
         name: shop.friendGhost,
-        sub: '10회 묶음 ${_diaCost('friend_ghost_pace_10pack')}',
+        sub: chrome.ghostPack(_diaCost('friend_ghost_pace_10pack')),
         owned: inventory.friendGhostCount,
       ),
       _row(
@@ -613,22 +620,22 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         name: shop.crewCheer,
         owned: inventory.crewCheerCount,
       ),
-      const StoreSectionLabel('대회'),
+      StoreSectionLabel(chrome.tournament),
       _row(
         id: 'extra_entry_ticket',
         icon: Icons.confirmation_number_outlined,
         name: shop.extraEntry,
-        sub: '3장 묶음 ${_diaCost('extra_entry_ticket_3pack')}',
+        sub: chrome.entryPack(_diaCost('extra_entry_ticket_3pack')),
         owned: inventory.extraEntryCount,
       ),
       StoreItemRow(
         icon: Icons.bolt_rounded,
         name: shop.battlePass,
         sub: shop.battlePassNote,
-        plainLabel: '보기',
+        plainLabel: chrome.view,
         onTap: _openBattlePass,
       ),
-      const StoreSectionLabel('걸음으로 얻기'),
+      StoreSectionLabel(chrome.earnBySteps),
       _row(
         id: 'boost_run',
         icon: Icons.rocket_launch_outlined,
@@ -691,7 +698,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('확인'),
+            child: Text(ShopChrome.of(Localizations.localeOf(ctx)).confirm),
           ),
         ],
       ),
@@ -717,6 +724,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         const ServerShopInventory();
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
     final c = context.srcTokens.colors;
+    final chrome = ShopChrome.of(Localizations.localeOf(context));
 
     final body = switch (_tab) {
       _StoreTab.recommended => _recommendedTab(inventory, shop),
@@ -771,7 +779,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ),
             const SizedBox(height: 10),
             StoreUnderlineTabs(
-              labels: [for (final t in _StoreTab.values) t.label],
+              labels: [for (final t in _StoreTab.values) t.label(chrome)],
               selected: _tab.index,
               onSelected: (i) => setState(() => _tab = _StoreTab.values[i]),
               keys: [
@@ -799,15 +807,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 }
 
-enum _StoreTab {
-  recommended('추천'),
-  diamond('다이아'),
-  items('아이템'),
-  cosmetics('꾸미기');
+enum _StoreTab { recommended, diamond, items, cosmetics }
 
-  const _StoreTab(this.label);
-
-  final String label;
+extension on _StoreTab {
+  String label(ShopChrome chrome) => switch (this) {
+        _StoreTab.recommended => chrome.tabRecommended,
+        _StoreTab.diamond => chrome.tabDiamond,
+        _StoreTab.items => chrome.tabItems,
+        _StoreTab.cosmetics => chrome.tabCosmetics,
+      };
 }
 
 /// 추천 화면의 꾸미기 미리보기: 소품 세 개를 입힌 모습 세 장.
@@ -868,7 +876,8 @@ class _CosmeticsPreviewRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      accessoryName(a.id, a.nameKo, Localizations.localeOf(context)),
+                      accessoryName(
+                          a.id, a.nameKo, Localizations.localeOf(context)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: storeText(13, c.ink, w: FontWeight.w800),

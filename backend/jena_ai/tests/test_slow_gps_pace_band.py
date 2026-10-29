@@ -10,7 +10,11 @@ number, not at the shape of the trace.
 from datetime import datetime, timedelta, timezone
 
 from app.models.validation_request import ValidationRequest
-from app.services.company_tournament_settlement import prize_finish_fields
+from app.services.company_tournament_settlement import (
+    beginner_signal_hold,
+    gps_spacing_uniform,
+    prize_finish_fields,
+)
 from app.services.grade_assignment import (
     beginner_entry_block,
     counts_for_grade,
@@ -65,13 +69,14 @@ def _user(samples: list[int], rank: int = 1) -> dict:
     }
 
 
-def _finish(duration: int, distance: float = 1.0) -> dict | None:
+def _finish(duration: int, distance: float = 1.0, **signals) -> dict | None:
     return prize_finish_fields(
         {"prizeTier": "beginner", "targetDistanceKm": 1, "status": "active"},
         {"uid": "runner", "status": "joined"},
         distance_km=distance,
         duration_seconds=duration,
         activity_id="finish",
+        **signals,
     )
 
 
@@ -87,7 +92,19 @@ def test_a_slowly_drawn_kilometre_is_a_grade_sample() -> None:
     assert added is True
     assert samples[0]["paceSec"] == 900
     assert beginner_entry_block(_user([900])) is None
+    # Pace alone still pays. The drawing is the even gaps, not the 900s.
     assert _finish(900)["verifiedFinish"] is True
+    assert gps_spacing_uniform(route) is True
+    drawn = _finish(
+        900,
+        heart_rates=[120, 140, 160],
+        cadence_spm=[160, 164, 158],
+        total_steps=1400,
+        gps_route=route,
+    )
+    assert drawn["prizeHeld"] is True
+    assert drawn["prizeHoldReason"] == "uniform_gps"
+    assert drawn["verifiedFinish"] is False
 
 
 def test_heart_rate_does_not_excuse_a_vehicle_segment() -> None:
@@ -146,3 +163,34 @@ def test_pace_band_from_150_to_450() -> None:
     # the median only. One slow day among fast days does not hide the median.
     assert beginner_entry_block(_user([200, 900, 220])) == "pace_too_fast"
     assert beginner_entry_block(_user([900, 800, 450])) is None
+
+
+def test_a_beginner_prize_holds_when_the_run_has_no_companion_signal() -> None:
+    bare = _finish(
+        900,
+        heart_rates=[],
+        cadence_spm=[],
+        total_steps=0,
+        gps_route=[],
+    )
+    assert bare["prizeHeld"] is True
+    assert bare["prizeHoldReason"] == "missing_run_signal"
+    # A real slow run keeps steps or cadence, and the gaps are not even.
+    uneven = [
+        {"latitude": 37.50, "longitude": 127.00, "recordedAt": "2026-10-05T00:00:00+00:00"},
+        {"latitude": 37.501, "longitude": 127.0004, "recordedAt": "2026-10-05T00:01:10+00:00"},
+        {"latitude": 37.503, "longitude": 127.001, "recordedAt": "2026-10-05T00:03:40+00:00"},
+        {"latitude": 37.504, "longitude": 127.002, "recordedAt": "2026-10-05T00:04:05+00:00"},
+        {"latitude": 37.508, "longitude": 127.001, "recordedAt": "2026-10-05T00:08:20+00:00"},
+        {"latitude": 37.509, "longitude": 127.004, "recordedAt": "2026-10-05T00:15:00+00:00"},
+    ]
+    assert gps_spacing_uniform(uneven) is False
+    assert beginner_signal_hold(
+        heart_rates=[],
+        cadence_spm=[150, 162, 158],
+        total_steps=None,
+        gps_route=uneven,
+    ) is None
+    paid = _finish(900, cadence_spm=[150, 162, 158], gps_route=uneven)
+    assert paid["verifiedFinish"] is True
+    assert "prizeHeld" not in paid

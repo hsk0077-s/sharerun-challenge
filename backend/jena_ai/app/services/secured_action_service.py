@@ -57,6 +57,7 @@ from app.services.referral_trial_config import (
     referrer_due,
 )
 from app.services.twin_run import (
+    DEVICE_ID_ABSENT,
     REFERRER_RUN_ABSENT,
     describe_run,
     referral_twin_reason,
@@ -1417,16 +1418,26 @@ class SecuredActionService:
                     )
                     participant_snapshot = participant_ref.get(transaction=transaction)
                     if participant_snapshot.exists:
-                        finish_fields = (
-                            prize_finish_fields if is_prize else ranked_finish_fields
-                        )
-                        prize_finish = finish_fields(
-                            tournament_doc,
-                            participant_snapshot.to_dict() or {},
-                            distance_km=request.distance_km,
-                            duration_seconds=request.duration_seconds,
-                            activity_id=activity_ref.id,
-                        )
+                        if is_prize:
+                            prize_finish = prize_finish_fields(
+                                tournament_doc,
+                                participant_snapshot.to_dict() or {},
+                                distance_km=request.distance_km,
+                                duration_seconds=request.duration_seconds,
+                                activity_id=activity_ref.id,
+                                heart_rates=list(request.heart_rates or []),
+                                cadence_spm=list(request.cadence_spm or []),
+                                total_steps=request.total_steps,
+                                gps_route=_route_dicts(request.gps_route),
+                            )
+                        else:
+                            prize_finish = ranked_finish_fields(
+                                tournament_doc,
+                                participant_snapshot.to_dict() or {},
+                                distance_km=request.distance_km,
+                                duration_seconds=request.duration_seconds,
+                                activity_id=activity_ref.id,
+                            )
                         if (
                             is_prize
                             and prize_tier_id(tournament_doc) == "beginner"
@@ -2869,6 +2880,15 @@ class SecuredActionService:
             # run exists. The next referee run reopens this reason only.
             if not twin_reason and not referrer_runs:
                 twin_reason = REFERRER_RUN_ABSENT
+            elif not twin_reason and not self._pair_has_device_id(
+                transaction,
+                referee_uid=referee_uid,
+                referee_ref=referee_ref,
+                referrer_uid=referrer_uid,
+                referee_device_id=device_id,
+                referrer_runs=referrer_runs,
+            ):
+                twin_reason = DEVICE_ID_ABSENT
         payouts: list[dict] = []
         for milestone in milestones_due(trial_run_count, config):
             run = int(milestone["run"])
@@ -2992,6 +3012,75 @@ class SecuredActionService:
 
     def _referee_run_views(self, transaction, referee_uid: str) -> list[dict]:
         return self._activity_run_views(transaction, referee_uid)
+
+    def _pair_has_device_id(
+        self,
+        transaction,
+        *,
+        referee_uid: str,
+        referee_ref,
+        referrer_uid: str,
+        referee_device_id: str,
+        referrer_runs: list[dict],
+    ) -> bool:
+        """True when the referrer or the referee has any device id.
+
+        A watch upload carries ``device_id``, so that pair is not held for
+        a missing id. Login devices and stored runs count too.
+        """
+        if isinstance(referee_device_id, str) and referee_device_id.strip():
+            return True
+        referee_snapshot = referee_ref.get(transaction=transaction)
+        referee_economy = {}
+        if referee_snapshot.exists:
+            referee_economy = (referee_snapshot.to_dict() or {}).get("economy") or {}
+        if self._economy_has_device(referee_economy):
+            return True
+        if self._runs_have_device(self._referee_run_views(transaction, referee_uid)):
+            return True
+        if self._login_device_exists(transaction, referee_uid):
+            return True
+        referrer_snapshot = (
+            self.firebase_service.db.collection("users")
+            .document(referrer_uid)
+            .get(transaction=transaction)
+        )
+        referrer_economy = {}
+        if referrer_snapshot.exists:
+            referrer_economy = (referrer_snapshot.to_dict() or {}).get("economy") or {}
+        if self._economy_has_device(referrer_economy):
+            return True
+        if self._runs_have_device(referrer_runs):
+            return True
+        return self._login_device_exists(transaction, referrer_uid)
+
+    @staticmethod
+    def _economy_has_device(economy: dict) -> bool:
+        trial = economy.get("trialDeviceId") if isinstance(economy, dict) else None
+        return isinstance(trial, str) and bool(trial.strip())
+
+    @staticmethod
+    def _runs_have_device(runs: list[dict]) -> bool:
+        for run in runs:
+            if not isinstance(run, dict):
+                continue
+            for key in ("deviceId", "device_id"):
+                value = run.get(key)
+                if isinstance(value, str) and value.strip():
+                    return True
+        return False
+
+    def _login_device_exists(self, transaction, uid: str) -> bool:
+        if not uid:
+            return False
+        rows = (
+            self.firebase_service.db.collection("users")
+            .document(uid)
+            .collection("loginDevices")
+            .limit(1)
+            .get(transaction=transaction)
+        )
+        return len(list(rows)) > 0
 
     def _same_referrer_phone(
         self,
@@ -5126,17 +5215,19 @@ def _route_dicts(points) -> list[dict]:
 
 
 def _reopen_absent_referrer(marker: dict | None) -> bool:
-    """A hold with no referrer run can be paid once a run exists.
+    """A hold that is waiting for a missing fact can be paid once it appears.
 
-    ``twin_run`` stays held. This does not release on the referrer's own
-    upload. The referee's next verified run is what reads the marker again.
+    ``twin_run`` stays held. ``referrer_run_absent`` reopens when a referrer
+    run exists. ``device_id_absent`` reopens when either side has a device
+    id. This does not release on the referrer's own upload. The referee's
+    next verified run is what reads the marker again.
     """
     if not isinstance(marker, dict):
         return False
-    return (
-        marker.get("status") == "held"
-        and marker.get("reason") == REFERRER_RUN_ABSENT
-    )
+    return marker.get("status") == "held" and marker.get("reason") in {
+        REFERRER_RUN_ABSENT,
+        DEVICE_ID_ABSENT,
+    }
 
 
 def _twin_against(run_view: dict | None, referee_runs: list[dict], referrer_runs: list[dict]) -> str:

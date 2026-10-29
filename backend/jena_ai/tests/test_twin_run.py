@@ -2,7 +2,13 @@
 
 from datetime import datetime, timedelta, timezone
 
-from app.services.twin_run import bare_phone_twin, is_twin_run, referral_twin_reason, run_signature
+from app.services.twin_run import (
+    bare_phone_twin,
+    is_twin_run,
+    referral_twin_reason,
+    run_signature,
+    same_device_shifted_route,
+)
 
 NOW = datetime(2026, 10, 6, 1, 0, tzinfo=timezone.utc)
 ROUTE = [
@@ -87,10 +93,54 @@ def test_two_routes_that_do_not_overlap_stay_on_the_gps_check() -> None:
     ]
     left = _run(deviceId="phone-a")
     right = _run(
-        deviceId="phone-a",
+        deviceId="phone-b",
         gpsRoute=far,
         runSignature="other",
         startedAt=(NOW + timedelta(seconds=20)).isoformat(),
     )
     assert not bare_phone_twin(left, right)
     assert not is_twin_run(left, right)
+    assert not same_device_shifted_route(left, right)
+    assert referral_twin_reason(left, right) is None
+
+
+def test_same_device_with_a_shifted_route_is_still_a_twin() -> None:
+    far = [
+        {"latitude": 35.1, "longitude": 129.0},
+        {"latitude": 35.12, "longitude": 129.02},
+        {"latitude": 35.14, "longitude": 129.04},
+    ]
+    left = _run(deviceId="phone-a")
+    right = _run(
+        deviceId="phone-a",
+        gpsRoute=far,
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not is_twin_run(left, right)
+    assert not bare_phone_twin(left, right)
+    assert same_device_shifted_route(left, right)
+    assert referral_twin_reason(left, right) == "twin_run"
+    later = _run(
+        deviceId="phone-a",
+        gpsRoute=far,
+        startedAt=(NOW + timedelta(minutes=4)).isoformat(),
+    )
+    assert not same_device_shifted_route(left, later)
+
+
+def _north(index: int, step_m: float, shift_m: float = 0.0) -> dict:
+    return {
+        "latitude": 37.5 + ((index * step_m) + shift_m) / 111_320.0,
+        "longitude": 127.0,
+    }
+
+
+def test_a_long_route_still_matches_when_samples_are_out_of_phase() -> None:
+    """Subsampling both traces used to miss a point that sat inside 40m."""
+    left = _run(gpsRoute=[_north(i, 10.0) for i in range(200)])
+    right = _run(
+        gpsRoute=[_north(i, 10.0, shift_m=50.0) for i in range(200)],
+        startedAt=(NOW + timedelta(seconds=30)).isoformat(),
+    )
+    assert is_twin_run(left, right)

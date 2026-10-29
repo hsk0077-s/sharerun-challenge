@@ -6,6 +6,7 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/constants/economy_constants.dart';
 import '../core/theme/app_colors.dart';
+import '../l10n/surface_copy.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/run_tracking/utils/run_start_preflight.dart';
 
@@ -58,6 +59,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
   Widget _screen(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(activeUserProfileProvider).asData?.value;
     final hasRouter = GoRouter.maybeOf(context) != null;
+    final guide = GradeGuide.of(Localizations.localeOf(context));
     final tier = UserTier.tryFromRankScore(profile?.gradeRank ?? 0);
     final done = tier != null
         ? _total
@@ -70,9 +72,9 @@ class PreliminaryEvalScreen extends ConsumerWidget {
         elevation: 0,
         foregroundColor: AppColors.nightInk,
         centerTitle: true,
-        title: const Text(
-          '등급 배정',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          guide.title,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: SafeArea(
@@ -81,9 +83,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              const Text(
-                '첫 검증 1km를 마치면 거북이 브론즈로 시작합니다. '
-                '그 다음은 기록이 쌓인 날마다 한 칸씩만 움직입니다.',
+              Text(
+                guide.intro,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.nightMuted,
@@ -94,8 +95,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Text(
                 tier == null
-                    ? '진행 상황: $done/$_total회 완료'
-                    : '배정된 등급: ${tier.koreanName}',
+                    ? guide.progress(done, _total)
+                    : guide.assigned(tier.koreanName),
                 style: const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
@@ -140,9 +141,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                 }),
               ),
               const SizedBox(height: 16),
-              const Text(
-                '같은 날 달린 기록은 한 번으로 세요. '
-                '기록이 서버에서 확인된 뒤에 횟수가 올라가요.',
+              Text(
+                guide.sameDay,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.nightMuted,
@@ -152,8 +152,8 @@ class PreliminaryEvalScreen extends ConsumerWidget {
               ),
               const Spacer(),
               if (!hasRouter) ...[
-                const Text(
-                  '등급은 홈에서 달리면서 정해져요. 지금 건너뛰어도 괜찮아요.',
+                Text(
+                  guide.skipNote,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.nightMuted,
@@ -183,7 +183,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                       ),
                     ),
                     child: Text(
-                      hasRouter ? '달리기 시작하기' : '홈으로 가기',
+                      hasRouter ? guide.startRun : guide.goHome,
                       style: const TextStyle(
                           fontWeight: FontWeight.w800, fontSize: 16),
                     ),

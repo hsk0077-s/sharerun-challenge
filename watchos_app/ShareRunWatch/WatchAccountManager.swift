@@ -13,6 +13,7 @@ final class WatchAccountManager: ObservableObject {
     private let defaults = UserDefaults.standard
     private let refreshKey = "sharerun.watch.refresh_token"
     private let nicknameKey = "sharerun.watch.nickname"
+    private let deviceKey = "sharerun.watch.device_id"
 
     private var refreshToken: String?
     private var idToken: String?
@@ -34,6 +35,18 @@ final class WatchAccountManager: ObservableObject {
         self.refreshToken = defaults.string(forKey: refreshKey)
         self.nickname = defaults.string(forKey: nicknameKey) ?? ""
         self.isPaired = !(self.refreshToken ?? "").isEmpty
+    }
+
+    /// Stable id for `POST /auth/watch-pair` and `ValidateRunRequest.device_id`.
+    /// Unpair keeps it so the same watch does not look like a new handset.
+    func deviceId() -> String {
+        if let saved = defaults.string(forKey: deviceKey),
+           saved.range(of: #"^[A-Za-z0-9_-]{8,64}$"#, options: .regularExpression) != nil {
+            return saved
+        }
+        let fresh = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        defaults.set(fresh, forKey: deviceKey)
+        return fresh
     }
 
     func applyCompanionCredentials(refreshToken: String, nickname: String) {
@@ -77,7 +90,14 @@ final class WatchAccountManager: ObservableObject {
         }
 
         do {
-            let (status, body) = try await postJson(url: pairUrl, payload: ["code": trimmed])
+            let (status, body) = try await postJson(
+                url: pairUrl,
+                payload: [
+                    "code": trimmed,
+                    "device_id": deviceId(),
+                    "device_label": "Apple Watch",
+                ]
+            )
             if status == 429 {
                 let msg = "rate_limited"
                 errorMessage = msg

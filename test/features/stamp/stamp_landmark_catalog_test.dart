@@ -50,7 +50,7 @@ class _ProposalSource implements StampProposalSource {
 
 void main() {
   test('empty remote catalog falls back to the Seoul seed set', () async {
-    const catalog = StampLandmarkCatalog(
+    final catalog = StampLandmarkCatalog(
       remote: MemoryOfficialLandmarkSource([]),
     );
 
@@ -67,7 +67,7 @@ void main() {
   });
 
   test('non-empty remote catalog replaces the seed list', () async {
-    const catalog = StampLandmarkCatalog(
+    final catalog = StampLandmarkCatalog(
       remote: MemoryOfficialLandmarkSource([_remoteNamsan]),
     );
 

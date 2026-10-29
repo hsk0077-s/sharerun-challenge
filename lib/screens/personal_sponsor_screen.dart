@@ -156,7 +156,7 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
                   ),
                 );
               },
-              child: const Text(AppStrings.personalSponsorCelebrateHall),
+              child: Text(AppStrings.personalSponsorCelebrateHall),
             ),
           ],
         );

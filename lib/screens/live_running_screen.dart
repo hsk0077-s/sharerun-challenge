@@ -438,7 +438,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
     if (!_validationSession) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.runValidationFailed)),
+        SnackBar(content: Text(AppStrings.runValidationFailed)),
       );
       setState(() => _validating = false);
       return;
@@ -503,7 +503,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       session?.discardAllSensitive();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.runValidationFailed)),
+        SnackBar(content: Text(AppStrings.runValidationFailed)),
       );
     } finally {
       if (mounted) setState(() => _validating = false);

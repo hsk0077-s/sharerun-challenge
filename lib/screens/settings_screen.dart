@@ -889,7 +889,7 @@ class _SettingsLegalWebViewScreenState
   late final WebViewController _controller;
   var _loading = true;
 
-  static const _html = '''
+  static String get _html => '''
 <!DOCTYPE html>
 <html lang="ko">
 <head>

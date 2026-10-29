@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 Future<bool> ensureEmailVerified({
   required BuildContext context,
   required User user,
@@ -24,10 +26,16 @@ Future<bool> ensureEmailVerified({
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('이메일 인증 필요'),
-        content: const Text(
-          '결제·대회 참가 전에 이메일 인증을 완료해 주세요. '
-          '상단 배너에서 인증 메일을 재발송할 수 있습니다.',
+        title: Text(
+          RemainingSurface.tr(context, 'email_verification_guard.dialog', '이메일 인증 필요'),
+        ),
+        content: Text(
+          RemainingSurface.tr(
+            context,
+            'email_verification_guard.button',
+            '결제·대회 참가 전에 이메일 인증을 완료해 주세요. '
+            '상단 배너에서 인증 메일을 재발송할 수 있습니다.',
+          ),
         ),
         actions: [
           FilledButton(

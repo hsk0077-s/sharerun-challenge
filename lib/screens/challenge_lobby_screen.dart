@@ -153,7 +153,7 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
         ),
         SizedBox(height: tokens.spacing.md),
         // 실제 스폰서가 없을 때는 눌러도 가지 않는 "준비 중" 카드로 둔다.
-        const _HeroRoomCard(
+        _HeroRoomCard(
           title: AppStrings.lobbySponsorRoomTitle,
           subtitle: AppStrings.lobbySponsorRoomSub,
         ),

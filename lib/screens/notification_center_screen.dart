@@ -524,7 +524,7 @@ class _PaymentHistoryTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 AppStrings.notificationPaymentReceipt,
                 style: TextStyle(
                   color: AppColors.tealAccent,

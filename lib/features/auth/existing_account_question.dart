@@ -49,7 +49,7 @@ Future<ExistingAccountAnswer> showExistingAccountQuestion(
         },
         child: AlertDialog(
           key: const Key('existing-account-question'),
-          title: const Text(AppStrings.existingAccountTitle),
+          title: Text(AppStrings.existingAccountTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -96,7 +96,7 @@ Future<ExistingAccountAnswer> showExistingAccountQuestion(
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: () => choose(ExistingAccountAnswer.create),
-                  child: const Text(AppStrings.existingAccountCreate),
+                  child: Text(AppStrings.existingAccountCreate),
                 ),
               ),
             ],
@@ -114,8 +114,9 @@ Future<bool> showAccountLinkConfirm(
   required String methodName,
   required String nickname,
   required int shareBalance,
-  String declineLabel = AppStrings.linkConfirmNo,
+  String? declineLabel,
 }) async {
+  final resolvedDeclineLabel = declineLabel ?? AppStrings.linkConfirmNo;
   final answer = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
@@ -131,12 +132,12 @@ Future<bool> showAccountLinkConfirm(
         TextButton(
           key: const Key('link-confirm-no'),
           onPressed: () => Navigator.of(dialogContext).pop(false),
-          child: Text(declineLabel),
+          child: Text(resolvedDeclineLabel),
         ),
         FilledButton(
           key: const Key('link-confirm-yes'),
           onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: const Text(AppStrings.linkConfirmYes),
+          child: Text(AppStrings.linkConfirmYes),
         ),
       ],
     ),

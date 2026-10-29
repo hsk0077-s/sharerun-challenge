@@ -204,19 +204,19 @@ class MyWalletScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const ListTile(
+              ListTile(
                 title: Text(AppStrings.myWalletChargeShare),
                 subtitle: Text(AppStrings.myWalletChargeShareHint),
               ),
               ListTile(
-                title: const Text(AppStrings.myWalletChargeDia),
-                subtitle: const Text(AppStrings.myWalletChargeDiaHint),
+                title: Text(AppStrings.myWalletChargeDia),
+                subtitle: Text(AppStrings.myWalletChargeDiaHint),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _openBilling(context);
                 },
               ),
-              const ListTile(
+              ListTile(
                 title: Text(AppStrings.myWalletChargeValue),
                 subtitle: Text(AppStrings.myWalletChargeValueHint),
               ),

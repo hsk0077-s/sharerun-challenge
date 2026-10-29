@@ -410,7 +410,7 @@ class _DeviceConnectionScreenState
             borderRadius: BorderRadius.circular(12),
           ),
           title: const Text('Health Connect'),
-          content: const Text(AppStrings.healthConnectNoSamplesTip),
+          content: Text(AppStrings.healthConnectNoSamplesTip),
           actions: [
             TextButton(
               key: const Key('health-connect-tip-ok'),
@@ -931,7 +931,7 @@ class _BleHeartRateSection extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                         onPressed: () => service.connect(device),
-                        child: const Text(
+                        child: Text(
                           AppStrings.bleHrConnectButton,
                           style: TextStyle(
                             fontSize: 12,
@@ -974,7 +974,7 @@ class _BleHeartRateSection extends ConsumerWidget {
                     onPressed: () => service.disconnect(),
                     icon:
                         const Icon(Icons.bluetooth_disabled_rounded, size: 18),
-                    label: const Text(AppStrings.bleHrDisconnectButton),
+                    label: Text(AppStrings.bleHrDisconnectButton),
                   ),
                 ),
             ],

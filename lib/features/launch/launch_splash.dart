@@ -15,7 +15,7 @@ class LaunchSplashView extends StatelessWidget {
   static const photoAsset = 'assets/images/splash_morning_run.jpg';
   /// 실제 로고(로그인 화면과 같은 파일). `src_logo_mark.png`는 1x1 자리표시 이미지라 쓰지 않는다.
   static const logoAsset = 'assets/images/sharerun_logo.png';
-  static const slogan = AppStrings.slogan;
+  static String get slogan => AppStrings.slogan;
   static const sloganKey = Key('launch-splash-slogan');
 
   static const _green = Color(0xFF0E3B2E);
@@ -72,10 +72,10 @@ class LaunchSplashView extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const Text(
+                    Text(
                       slogan,
                       key: sloganKey,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 34,
                         height: 1.3,

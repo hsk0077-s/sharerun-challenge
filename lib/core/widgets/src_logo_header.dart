@@ -44,7 +44,7 @@ class SRCLogoHeader extends StatelessWidget {
               style: AppTextStyles.header1,
             ),
             const SizedBox(height: AppShapes.loginTitleToSubtitleGap),
-            const Text(
+            Text(
               AppStrings.loginSubtitle,
               textAlign: TextAlign.center,
               style: AppTextStyles.subtitle1,

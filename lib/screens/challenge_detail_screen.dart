@@ -280,7 +280,7 @@ class ChallengeDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const ServerItemUseButton(
+                  ServerItemUseButton(
                     itemId: ServerShopInventory.cprId,
                     label: AppStrings.challengeDetailCprUse,
                     emptyHint: AppStrings.challengeDetailCprBuyHint,
@@ -342,7 +342,7 @@ class _ChallengeDetailCopy {
     final isBeginner = roomId != null && _beginnerRoomIds.contains(roomId);
     if (isBeginner) {
       const fee = ChallengeEntryFee.beginner1kmShare;
-      return const _ChallengeDetailCopy(
+      return _ChallengeDetailCopy(
         title: '1km 초보 챌린지',
         entryFee: AppStrings.dashboardChallenge1Sub,
         badge: '입문',
@@ -359,7 +359,7 @@ class _ChallengeDetailCopy {
 
     // Default / intermediate-3km-room → 중급 3km (longer = higher fee).
     const fee = ChallengeEntryFee.intermediate3kmShare;
-    return const _ChallengeDetailCopy(
+    return _ChallengeDetailCopy(
       title: AppStrings.challengeDetailTitle,
       entryFee: AppStrings.challengeDetailEntryFee,
       badge: AppStrings.challengeDetailGoldBadge,

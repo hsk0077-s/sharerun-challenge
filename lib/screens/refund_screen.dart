@@ -21,7 +21,7 @@ class RefundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!AppEnv.inAppPurchasesEnabled) {
-      return const PurchasesClosedPage(title: AppStrings.refundTitle);
+      return PurchasesClosedPage(title: AppStrings.refundTitle);
     }
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,

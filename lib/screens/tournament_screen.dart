@@ -285,7 +285,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
 }
 
 class _TournamentRoomCard extends StatelessWidget {
-  const _TournamentRoomCard({
+  _TournamentRoomCard({
     required this.room,
     required this.userTier,
     required this.highlighted,
@@ -297,12 +297,12 @@ class _TournamentRoomCard extends StatelessWidget {
     this.onTicketJoin,
     this.onTierTicketJoin,
     this.freeTickets = 0,
-    this.prizeLine = AppStrings.noCashPrizePool,
+    String? prizeLine,
     this.prizeReady = true,
     this.showTicketJoin = false,
     this.tierTicketJoinLabel,
     super.key,
-  });
+  }) : prizeLine = prizeLine ?? AppStrings.noCashPrizePool;
 
   final TournamentModel room;
   final int userTier;

@@ -58,12 +58,12 @@ class SmartWatchSyncScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   AppStrings.watchSyncTitle,
                   style: AppTextStyles.termsTitle,
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   AppStrings.watchSyncSubtitle,
                   style: AppTextStyles.termsSubtitle,
                 ),

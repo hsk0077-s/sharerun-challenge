@@ -131,7 +131,7 @@ class _SrcExitGuardState extends State<SrcExitGuard> {
         final messenger = ScaffoldMessenger.of(context);
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(AppStrings.exitGuardMessage),
             duration: _exitGuardDuration,
           ),

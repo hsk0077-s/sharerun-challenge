@@ -1,3 +1,5 @@
+import '../../l10n/remaining_surface.dart';
+
 abstract final class EconomyConstants {
   static const signupRewardSrv = 100;
   /// Verified 1km runs on different days that set the grade (server-owned).
@@ -35,6 +37,8 @@ abstract final class EconomyConstants {
   static const shoeMileageWarnKm = 400.0;
   static const defaultPreferredRunHour = 19;
 
-  static const diamondRefundPolicy =
-      '구매 후 7일 이내, 100% 미사용 분에 한해 환불 가능';
+  static String get diamondRefundPolicy => RemainingSurface.trNow(
+        'economy_constants.body',
+        '구매 후 7일 이내, 100% 미사용 분에 한해 환불 가능',
+      );
 }

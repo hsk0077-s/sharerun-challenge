@@ -159,7 +159,7 @@ class _MyPageReferralCodeEntryState
                             color: tokens.colors.accent,
                           ),
                         )
-                      : const Text(AppStrings.referralRedeemSubmit),
+                      : Text(AppStrings.referralRedeemSubmit),
                 ),
               ],
             ),

@@ -354,7 +354,7 @@ class _HomeHero extends StatelessWidget {
               left: tokens.spacing.page + 2,
               right: tokens.spacing.page,
               bottom: 30,
-              child: const Text(
+              child: Text(
                 AppStrings.slogan,
                 key: Key('home-slogan'),
                 textAlign: TextAlign.left,

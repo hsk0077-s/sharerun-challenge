@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/src_bottom_nav.dart';
+import '../../l10n/remaining_surface.dart';
 import '../../data/models/activity_model.dart';
 import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/shop/providers/shop_tab_provider.dart';
@@ -208,8 +209,12 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
         if (args == null) {
           return NoTransitionPage<void>(
             key: state.pageKey,
-            child: const _MissingRouteArgsScreen(
-              message: '결제 정보가 없어 PG 화면을 열 수 없습니다.',
+            child: _MissingRouteArgsScreen(
+              message: RemainingSurface.tr(
+                context,
+                'main_shell_routes.body',
+                '결제 정보가 없어 PG 화면을 열 수 없습니다.',
+              ),
             ),
           );
         }
@@ -344,8 +349,12 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
         if (args == null) {
           return NoTransitionPage<void>(
             key: state.pageKey,
-            child: const _MissingRouteArgsScreen(
-              message: '대회 정보가 없어 스폰서 결제를 열 수 없습니다.',
+            child: _MissingRouteArgsScreen(
+              message: RemainingSurface.tr(
+                context,
+                'main_shell_routes.body.2',
+                '대회 정보가 없어 스폰서 결제를 열 수 없습니다.',
+              ),
             ),
           );
         }
@@ -509,7 +518,13 @@ class _MissingRouteArgsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () => context.go(RouteNames.tournament),
-              child: const Text('대회 목록으로'),
+              child: Text(
+                RemainingSurface.tr(
+                  context,
+                  'main_shell_routes.button',
+                  '대회 목록으로',
+                ),
+              ),
             ),
           ],
         ),

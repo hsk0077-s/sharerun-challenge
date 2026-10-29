@@ -62,7 +62,7 @@ class _CreateChallengeRoomScreenState
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.createRoomTitleRequired)),
+        SnackBar(content: Text(AppStrings.createRoomTitleRequired)),
       );
       return;
     }
@@ -216,7 +216,7 @@ class _CreateChallengeRoomScreenState
                       style: storeText(14, c.muted),
                     ),
                     const SizedBox(height: 12),
-                    const StoreSectionLabel(AppStrings.createRoomTitleSection),
+                    StoreSectionLabel(AppStrings.createRoomTitleSection),
                     Text(
                       AppStrings.createRoomTitleHint,
                       style: storeText(13, c.muted),
@@ -241,7 +241,7 @@ class _CreateChallengeRoomScreenState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const StoreSectionLabel(
+                    StoreSectionLabel(
                         AppStrings.createRoomDistanceSection),
                     Text(
                       AppStrings.createRoomDistanceHint,
@@ -260,7 +260,7 @@ class _CreateChallengeRoomScreenState
                       }).toList(),
                     ),
                     const SizedBox(height: 8),
-                    const StoreSectionLabel(
+                    StoreSectionLabel(
                         AppStrings.createRoomEntryFeeSection),
                     Container(
                       padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
@@ -291,7 +291,7 @@ class _CreateChallengeRoomScreenState
                                   text: AppStrings.createRoomFeeWarningRed,
                                   style: storeText(12, c.warning, h: 1.5),
                                 ),
-                                const TextSpan(
+                                TextSpan(
                                   text: AppStrings.createRoomFeeWarningGrey,
                                 ),
                               ],

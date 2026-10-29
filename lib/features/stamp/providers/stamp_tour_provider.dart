@@ -59,7 +59,7 @@ class StampTourState {
       '우리 동네 랜드마크 스탬프 찍기 ($officialVisitedCount/${officialLandmarks.length})';
 
   factory StampTourState.initial() {
-    return const StampTourState(
+    return StampTourState(
       landmarks: SeedStampLandmarkCatalog.seoulDemo,
       walkMissionCompleted: false,
       walkDistanceKm: 0,

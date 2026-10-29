@@ -3,7 +3,7 @@ import 'stamp_landmark.dart';
 
 /// Small official Seoul demo set. Not a worldwide ops-curated catalog.
 abstract final class SeedStampLandmarkCatalog {
-  static const seoulDemo = <StampLandmark>[
+  static List<StampLandmark> get seoulDemo => <StampLandmark>[
     StampLandmark(
       id: 'gangbyeon',
       name: AppStrings.stampTourLandmarkGangbyeon,
@@ -36,12 +36,12 @@ abstract final class SeedStampLandmarkCatalog {
 
 /// Loads official + optional personal/nearby lists. Remote config replaces seed.
 class StampLandmarkCatalog {
-  const StampLandmarkCatalog({
+  StampLandmarkCatalog({
     required this.remote,
     this.nearby = const DisabledNearbyPoiStampLandmarkSource(),
     this.proposals = const DisabledStampProposalSource(),
-    this.seed = SeedStampLandmarkCatalog.seoulDemo,
-  });
+    List<StampLandmark>? seed,
+  }) : seed = seed ?? SeedStampLandmarkCatalog.seoulDemo;
 
   final StampOfficialLandmarkSource remote;
   final NearbyPoiStampLandmarkSource nearby;

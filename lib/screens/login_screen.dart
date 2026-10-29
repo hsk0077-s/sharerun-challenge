@@ -69,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (uid.isEmpty) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.referralRedeemFailed)),
+          SnackBar(content: Text(AppStrings.referralRedeemFailed)),
         );
         return;
       }
@@ -80,12 +80,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .timeout(const Duration(seconds: 12));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.referralRedeemSuccess)),
+        SnackBar(content: Text(AppStrings.referralRedeemSuccess)),
       );
     } on TimeoutException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.referralRedeemFailed)),
+        SnackBar(content: Text(AppStrings.referralRedeemFailed)),
       );
     } catch (e, st) {
       debugPrint('redeemReferralCode: $e\n$st');

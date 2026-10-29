@@ -174,7 +174,7 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
     if (_busy) return;
     if (_proofImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.appealProofRequiredSnack)),
+        SnackBar(content: Text(AppStrings.appealProofRequiredSnack)),
       );
       return;
     }
@@ -196,8 +196,8 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text(AppStrings.appealSubmitSuccessTitle),
-            content: const Text(AppStrings.appealSubmitSuccessBody),
+            title: Text(AppStrings.appealSubmitSuccessTitle),
+            content: Text(AppStrings.appealSubmitSuccessBody),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),

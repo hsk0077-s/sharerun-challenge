@@ -1,20 +1,27 @@
+import 'package:flutter/widgets.dart';
+
+import '../../l10n/commerce_copy.dart';
+
 /// Company won added for this user. VALUE spent is not won.
 String donationMatchContributionLine({
   required String sponsorName,
   required String contributorName,
   required int companyWon,
+  Locale? locale,
 }) {
   final sponsor = sponsorName.trim();
   if (sponsor.isEmpty || companyWon <= 0) return '';
-  final name = contributorName.trim().isEmpty ? '회원' : contributorName.trim();
-  return '$sponsor 명의 ${_grouped(companyWon)}원 · $name 기여';
+  final copy = DonationMatchCopy.of(locale ?? const Locale('ko'));
+  final name = contributorName.trim().isEmpty ? copy.member : contributorName.trim();
+  return copy.line(sponsor, _grouped(companyWon), name);
 }
 
 /// Sum of this month's company matches, shown under the company name.
 String donationMatchSummary(
   List<DonationMatchEntry> entries,
-  String monthKey,
-) {
+  String monthKey, {
+  Locale? locale,
+}) {
   final month = [
     for (final entry in entries)
       if (entry.monthKey == monthKey && entry.companyWon > 0) entry,
@@ -26,6 +33,7 @@ String donationMatchSummary(
     sponsorName: latest.sponsorName,
     contributorName: latest.contributorName,
     companyWon: won,
+    locale: locale,
   );
 }
 

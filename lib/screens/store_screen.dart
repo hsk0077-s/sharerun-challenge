@@ -12,6 +12,8 @@ import '../data/models/shop_item_model.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/accessory_names.dart';
+import '../l10n/commerce_copy.dart';
 import '../l10n/guidance_copy.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
@@ -279,6 +281,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   List<Widget> _recommendedTab(
       ServerShopInventory inventory, ShopTabState shop) {
     final tokens = context.srcTokens;
+    final copy = ShopCopy.of(Localizations.localeOf(context));
     final packs = DiaPackProduct.catalog.where((p) => p.totalDia > 12).toList();
     final featured = packs.length >= 3 ? packs.sublist(0, 3) : packs;
     return [
@@ -320,13 +323,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _tile(
             id: 'record_cpr_ticket',
             icon: Icons.healing_rounded,
-            name: AppStrings.storeItemCpr,
+            name: copy.cpr,
           ),
           const SizedBox(width: 8),
           _tile(
             id: 'record_safe_guard',
             icon: Icons.shield_outlined,
-            name: AppStrings.storeItemSafeGuard,
+            name: copy.safeGuard,
           ),
         ],
       ),
@@ -336,13 +339,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _tile(
             id: 'coach_one_point_ticket',
             icon: Icons.record_voice_over_rounded,
-            name: AppStrings.storeItemCoachOnePoint,
+            name: copy.coach,
           ),
           const SizedBox(width: 8),
           _tile(
             id: 'friend_ghost_pace',
             icon: Icons.directions_run_rounded,
-            name: AppStrings.storeItemFriendGhost,
+            name: copy.friendGhost,
           ),
         ],
       ),
@@ -352,13 +355,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           _tile(
             id: 'extra_entry_ticket',
             icon: Icons.confirmation_number_outlined,
-            name: AppStrings.storeItemExtraEntry,
+            name: copy.extraEntry,
           ),
           const SizedBox(width: 8),
           _tile(
             id: 'crew_cheer_flag',
             icon: Icons.flag_rounded,
-            name: AppStrings.storeItemCrewCheer,
+            name: copy.crewCheer,
           ),
         ],
       ),
@@ -567,25 +570,26 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   /// 아이템 탭: 시안의 글머리별 한 줄 목록.
   List<Widget> _itemsTab(ServerShopInventory inventory) {
+    final shop = ShopCopy.of(Localizations.localeOf(context));
     return [
       const StoreSectionLabel('기록 지키기'),
       _row(
         id: 'record_cpr_ticket',
         icon: Icons.healing_rounded,
-        name: AppStrings.storeItemCpr,
+        name: shop.cpr,
         owned: inventory.cprCount,
       ),
       _row(
         id: 'record_safe_guard',
         icon: Icons.shield_outlined,
-        name: AppStrings.storeItemSafeGuard,
+        name: shop.safeGuard,
         owned: inventory.safeGuardCount,
       ),
       _row(
         id: 'rest_day_ticket',
         icon: Icons.bedtime_outlined,
-        name: AppStrings.storeItemRestDay,
-        sub: AppStrings.storeItemRestDayNote,
+        name: shop.restDay,
+        sub: shop.restDayNote,
         owned: inventory.restDayCount,
         plainLabel: '${_format(_valueCost('rest_day_ticket'))} VALUE',
       ),
@@ -593,34 +597,34 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _row(
         id: 'coach_one_point_ticket',
         icon: Icons.record_voice_over_rounded,
-        name: AppStrings.storeItemCoachOnePoint,
+        name: shop.coach,
         owned: inventory.coachOnePointCount,
       ),
       _row(
         id: 'friend_ghost_pace',
         icon: Icons.directions_run_rounded,
-        name: AppStrings.storeItemFriendGhost,
+        name: shop.friendGhost,
         sub: '10회 묶음 ${_diaCost('friend_ghost_pace_10pack')}',
         owned: inventory.friendGhostCount,
       ),
       _row(
         id: 'crew_cheer_flag',
         icon: Icons.flag_rounded,
-        name: AppStrings.storeItemCrewCheer,
+        name: shop.crewCheer,
         owned: inventory.crewCheerCount,
       ),
       const StoreSectionLabel('대회'),
       _row(
         id: 'extra_entry_ticket',
         icon: Icons.confirmation_number_outlined,
-        name: AppStrings.storeItemExtraEntry,
+        name: shop.extraEntry,
         sub: '3장 묶음 ${_diaCost('extra_entry_ticket_3pack')}',
         owned: inventory.extraEntryCount,
       ),
       StoreItemRow(
         icon: Icons.bolt_rounded,
-        name: '배틀런 패스',
-        sub: '시즌 보상 · 패스+',
+        name: shop.battlePass,
+        sub: shop.battlePassNote,
         plainLabel: '보기',
         onTap: _openBattlePass,
       ),
@@ -628,24 +632,24 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       _row(
         id: 'boost_run',
         icon: Icons.rocket_launch_outlined,
-        name: AppStrings.storeItemBoostRun,
-        sub: AppStrings.storeItemBoostRunNote,
+        name: shop.boostRun,
+        sub: shop.boostRunNote,
         owned: inventory.boostRunCount,
         plainLabel: '${_format(_shareCost('boost_run'))} SHARE',
       ),
       _row(
         id: 'step_incubator',
         icon: Icons.egg_outlined,
-        name: AppStrings.storeItemStepIncubator,
-        sub: AppStrings.storeItemStepIncubatorNote,
+        name: shop.stepIncubator,
+        sub: shop.stepIncubatorNote,
         owned: inventory.stepIncubatorCount,
         plainLabel: '${_format(_shareCost('step_incubator'))} SHARE',
       ),
       _row(
         id: 'donation_match',
         icon: Icons.favorite_border_rounded,
-        name: AppStrings.storeItemDonationMatch,
-        sub: AppStrings.storeItemDonationMatchNote,
+        name: shop.donationMatch,
+        sub: shop.donationMatchNote,
         owned: 0,
         plainLabel: '${_format(_valueCost('donation_match'))} VALUE',
       ),
@@ -677,11 +681,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       builder: (ctx) => AlertDialog(
         backgroundColor: c.surface,
         title: Text(
-          AppStrings.storeValueDetailTitle,
+          ShopCopy.of(Localizations.localeOf(ctx)).valueTitle,
           style: storeText(18, c.ink, w: FontWeight.w900),
         ),
         content: Text(
-          AppStrings.storeValueDetailBody,
+          ShopCopy.of(Localizations.localeOf(ctx)).valueBody,
           style: storeText(14, c.muted, h: 1.5),
         ),
         actions: [
@@ -864,7 +868,7 @@ class _CosmeticsPreviewRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      a.nameKo,
+                      accessoryName(a.id, a.nameKo, Localizations.localeOf(context)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: storeText(13, c.ink, w: FontWeight.w800),

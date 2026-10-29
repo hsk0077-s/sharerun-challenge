@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/features/shop/cosmetics_catalog.dart';
@@ -91,6 +92,13 @@ void main() {
     String? equipped;
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('ko', 'KR'),
+        supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: Scaffold(
           body: ListView(
             children: [

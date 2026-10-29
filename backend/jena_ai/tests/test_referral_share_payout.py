@@ -13,6 +13,7 @@ from app.services.secured_action_service import (
     SecuredActionService,
     _commit_validation_tx,
 )
+from app.services.twin_run import run_signature
 from test_redeem_referral import _MemoryDb, _MemoryTxn, _NOW
 
 _DAY1 = datetime(2026, 10, 1, 3, tzinfo=timezone.utc)
@@ -409,6 +410,142 @@ def test_redeem_after_three_runs_pays_milestones_and_holds_referrer() -> None:
     assert _share(db, "u2") == 60_040
     assert _share(db, "u1") == 20
     assert _payout_count(db, "u1") == 10
+
+
+def _route(stamp: str) -> list[dict]:
+    return [
+        {"latitude": 37.5, "longitude": 127.0, "recordedAt": stamp},
+        {"latitude": 37.501, "longitude": 127.001, "recordedAt": stamp},
+        {"latitude": 37.502, "longitude": 127.002, "recordedAt": stamp},
+    ]
+
+
+def test_a_twin_outing_holds_referee_and_referrer_share() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2)
+    cadence = [170] * 20
+    signature = run_signature(
+        distance_km=1.1, duration_seconds=400, cadence_spm=cadence
+    )
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _route("t"),
+        "deviceId": "phone-r",
+    }
+    service = _service(db)
+    request = ValidateRunRequest(
+        activity_id="run-3",
+        distance_km=1.1,
+        duration_seconds=400,
+        gyro_stability_score=0.5,
+        cadence_spm=cadence,
+        gps_route=_route("t2"),
+        started_at=(_DAY3 + timedelta(seconds=40)).isoformat(),
+        device_id="phone-e",
+    )
+    result = ValidationResult(
+        verified=True,
+        decision="verified",
+        reason="ok",
+        value_token_reward=0,
+        forfeit_deposit=False,
+    )
+    service._persist_validation_tx(
+        _MemoryTxn(),
+        "u2",
+        request,
+        result,
+        db.collection("activities").document("run-3"),
+        db.collection("users").document("u2"),
+        account_created_at=_DAY1,
+        now=_DAY3,
+    )
+
+    assert _share(db, "u2") == 40
+    assert _share(db, "u1") == 20
+    assert _payout_count(db, "u1") == 0
+    for payout_type, amount in (("trial_referee_1", 10_000), ("trial_referee", 40_000)):
+        marker = db.store[f"referralPayouts/u2_{payout_type}"]
+        assert marker["status"] == "held"
+        assert marker["reason"] == "twin_run"
+        assert marker["amount"] == amount
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["status"] == "held"
+    assert referrer["reason"] == "twin_run"
+    assert referrer["amount"] == 30_000
+    assert "users/u1" not in {
+        path.split("/")[1]
+        for path, row in db.store.items()
+        if path.startswith("walletTransactions/referral_")
+        and isinstance(row, dict)
+        and row.get("shareAmount", 0) > 0
+    }
+
+
+def test_a_phone_run_without_gps_is_held_when_the_signature_matches() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2)
+    cadence = [160] * 12
+    signature = run_signature(
+        distance_km=1.1, duration_seconds=400, cadence_spm=cadence
+    )
+    db.store["users/u1"]["economy"]["latestRun"] = {
+        "activityId": "old",
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "deviceId": "phone-r",
+    }
+    service = _service(db)
+    request = ValidateRunRequest(
+        activity_id="run-3",
+        distance_km=1.1,
+        duration_seconds=400,
+        gyro_stability_score=0.5,
+        cadence_spm=cadence,
+        started_at=(_DAY3 + timedelta(seconds=25)).isoformat(),
+        device_id="phone-e",
+    )
+    service._persist_validation_tx(
+        _MemoryTxn(),
+        "u2",
+        request,
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=0,
+            forfeit_deposit=False,
+        ),
+        db.collection("activities").document("run-3"),
+        db.collection("users").document("u2"),
+        account_created_at=_DAY1,
+        now=_DAY3,
+    )
+    assert _share(db, "u2") == 40
+    assert db.store["referralPayouts/u2_trial_referee"]["reason"] == "twin_run"
+    assert db.store["referralPayouts/u2_trial_referrer"]["status"] == "held"
+
+
+def test_missing_trial_device_id_still_blocks_a_known_phone() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2)
+    db.store["users/u1/loginDevices/phone-a"] = {"deviceId": "phone-a"}
+    _persist(
+        _service(db),
+        "u2",
+        "run-3",
+        now=_DAY3,
+        signup_at=_DAY1,
+        device_id="phone-a",
+    )
+    assert _share(db, "u2") == 50_040
+    assert _share(db, "u1") == 20
+    assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
+    assert _payout_count(db, "u1") == 0
+    assert "trialDeviceId" not in db.store["users/u1"]["economy"]
 
 
 def test_validation_wrapper_passes_transaction_before_service() -> None:

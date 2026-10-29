@@ -56,6 +56,7 @@ from app.services.referral_trial_config import (
     read_referral_trial_config,
     referrer_due,
 )
+from app.services.twin_run import describe_run, referral_twin_reason, run_signature
 from app.services.mercy_rule_service import MercyRuleService
 from app.services.run_device_info import device_info_document
 from app.services.play_billing import (
@@ -1353,6 +1354,16 @@ class SecuredActionService:
                 ),
                 config=trial_config,
                 device_id=device_id,
+                device_owner=device_owner,
+                run_view=describe_run(
+                    distance_km=request.distance_km,
+                    duration_seconds=request.duration_seconds,
+                    cadence_spm=self._cadence_series(request),
+                    gps_route=_route_dicts(request.gps_route),
+                    started_at=request.started_at,
+                    device_id=device_id,
+                    now=current,
+                ),
                 now=current,
             )
 
@@ -1477,10 +1488,15 @@ class SecuredActionService:
             else "회원"
         )
 
-        route = [
-            point.model_dump() if hasattr(point, "model_dump") else point.dict()
-            for point in request.gps_route
-        ]
+        route = _route_dicts(request.gps_route)
+        run_started_at = request.started_at or (
+            current - timedelta(seconds=int(request.duration_seconds))
+        ).isoformat()
+        run_sig = run_signature(
+            distance_km=request.distance_km,
+            duration_seconds=request.duration_seconds,
+            cadence_spm=self._cadence_series(request),
+        )
         # Only the stored copy is trimmed; validation above used the full route.
         route = trim_route(route)
         if appeal is not None:
@@ -1504,6 +1520,15 @@ class SecuredActionService:
                 "averagePaceSecondsPerKm": average_pace,
                 "gyroStabilityScore": request.gyro_stability_score,
                 "gpsRoute": route,
+                **(
+                    {}
+                    if appeal is not None
+                    else {
+                        "startedAt": run_started_at,
+                        "runSignature": run_sig,
+                        "deviceId": device_id,
+                    }
+                ),
                 **(
                     {
                         "paceSamples": [
@@ -1734,6 +1759,16 @@ class SecuredActionService:
 
         if result.verified:
             economy_updates["lastVerifiedRunWeek"] = self._economy_service.kst_week_key()
+            if appeal is None:
+                # Latest outing for the referral twin check. The route stays on
+                # the activity (trimmed). The user doc keeps the signals that
+                # still work when that route was empty.
+                economy_updates["latestRun"] = {
+                    "activityId": activity_ref.id,
+                    "startedAt": run_started_at,
+                    "runSignature": run_sig,
+                    "deviceId": device_id,
+                }
 
         if economy_updates:
             user_updates["economy"] = {**economy, **economy_updates}
@@ -2537,6 +2572,8 @@ class SecuredActionService:
             referred_by = ""
         if referred_by == uid:
             referred_by = ""
+        stored_device = economy.get("trialDeviceId")
+        claim_device = stored_device if isinstance(stored_device, str) else ""
         payouts = self._plan_trial_referral_payouts(
             transaction,
             referee_uid=uid,
@@ -2545,13 +2582,17 @@ class SecuredActionService:
             trial_run_count=count,
             distinct_days=distinct,
             config=config,
+            device_id=claim_device,
+            device_owner=self._trial_device_owner(transaction, claim_device),
+            now=datetime.now(timezone.utc),
         )
         credited = sum(
             int(row["amount"])
             for row in payouts
-            if row["payee_uid"] == uid and not row.get("pending")
+            if row["payee_uid"] == uid and not row.get("pending") and not row.get("held")
         )
-        if credited <= 0:
+        held = any(row.get("held") for row in payouts)
+        if credited <= 0 and not held:
             return self._harvest_result(
                 status="already_claimed",
                 reason="Trial completion reward was already claimed.",
@@ -2562,6 +2603,15 @@ class SecuredActionService:
             )
 
         self._write_referral_payouts(transaction, payouts)
+        if credited <= 0:
+            return self._harvest_result(
+                status="held",
+                reason="Trial reward is held: twin_run.",
+                share_credited=0,
+                share_balance=share,
+                diamond_balance=diamonds,
+                value_token_balance=value,
+            )
         return self._harvest_result(
             status="claimed",
             reason=f"Trial completion reward of {credited} SHARE credited.",
@@ -2749,6 +2799,8 @@ class SecuredActionService:
         distinct_days: int = 0,
         config: dict | None = None,
         device_id: str = "",
+        device_owner: str = "",
+        run_view: dict | None = None,
         now: datetime | None = None,
     ) -> list[dict]:
         config = config or read_referral_trial_config(
@@ -2756,6 +2808,15 @@ class SecuredActionService:
         )
         current = now or datetime.now(timezone.utc)
         required = int(config["runs_required"])
+        referrer_runs: list[dict] = []
+        twin_reason = ""
+        if referrer_uid:
+            referrer_runs = self._referrer_run_views(transaction, referrer_uid)
+            twin_reason = _twin_against(
+                run_view,
+                self._referee_run_views(transaction, referee_uid),
+                referrer_runs,
+            )
         payouts: list[dict] = []
         for milestone in milestones_due(trial_run_count, config):
             run = int(milestone["run"])
@@ -2774,6 +2835,9 @@ class SecuredActionService:
             if row is not None:
                 row["title"] = title
                 row["lock_days"] = int(config["referrer_lock_days"])
+                if twin_reason:
+                    row["held"] = True
+                    row["reason"] = twin_reason
                 payouts.append(row)
 
         if not referrer_uid or not referrer_due(trial_run_count, distinct_days, config):
@@ -2790,17 +2854,29 @@ class SecuredActionService:
         referrer_economy = {}
         if referrer_snapshot.exists:
             referrer_economy = (referrer_snapshot.to_dict() or {}).get("economy") or {}
-        same_device = bool(
-            device_id and referrer_economy.get("trialDeviceId") == device_id
+        same_device = self._same_referrer_phone(
+            transaction,
+            device_id=device_id,
+            referrer_uid=referrer_uid,
+            referrer_economy=referrer_economy,
+            device_owner=device_owner,
+            referrer_runs=referrer_runs,
         )
         amount = 0
         bump = False
         pending = False
-        if (
+        held = False
+        payable = (
             referrer_snapshot.exists
             and not same_device
             and self._can_pay_referrer(referrer_economy, config)
-        ):
+        )
+        if twin_reason:
+            # Hold both sides. Same phone still pays 0, and the reason is kept.
+            held = True
+            if payable:
+                amount = int(config["referrer_reward"])
+        elif payable:
             amount = int(config["referrer_reward"])
             bump = True
             pending = True
@@ -2817,12 +2893,81 @@ class SecuredActionService:
                 "marker_ref": marker_ref,
                 "bump_referrer_count": bump,
                 "pending": pending,
+                "held": held,
+                "reason": twin_reason if held else "",
                 "release_at": release_at.isoformat(),
                 "referrer_holds": holds,
                 "lock_days": int(config["referrer_lock_days"]),
             }
         )
         return payouts
+
+    def _activity_run_views(self, transaction, uid: str) -> list[dict]:
+        if not uid:
+            return []
+        snapshots = (
+            self.firebase_service.db.collection("activities")
+            .where("userId", "==", uid)
+            .limit(40)
+            .get(transaction=transaction)
+        )
+        views = []
+        for snapshot in snapshots:
+            data = snapshot.to_dict() or {}
+            if data.get("jenaVerified") is False:
+                continue
+            data["activityId"] = snapshot.id
+            views.append(data)
+        return views
+
+    def _referrer_run_views(self, transaction, referrer_uid: str) -> list[dict]:
+        """Stored outings plus ``economy.latestRun`` when the query misses it."""
+        runs = self._activity_run_views(transaction, referrer_uid)
+        snapshot = (
+            self.firebase_service.db.collection("users")
+            .document(referrer_uid)
+            .get(transaction=transaction)
+        )
+        if not snapshot.exists:
+            return runs
+        latest = ((snapshot.to_dict() or {}).get("economy") or {}).get("latestRun")
+        if isinstance(latest, dict):
+            runs.append(dict(latest))
+        return runs
+
+    def _referee_run_views(self, transaction, referee_uid: str) -> list[dict]:
+        return self._activity_run_views(transaction, referee_uid)
+
+    def _same_referrer_phone(
+        self,
+        transaction,
+        *,
+        device_id: str,
+        referrer_uid: str,
+        referrer_economy: dict,
+        device_owner: str,
+        referrer_runs: list[dict],
+    ) -> bool:
+        """Same handset, including a referrer doc with no ``trialDeviceId``."""
+        if not device_id:
+            return False
+        if referrer_economy.get("trialDeviceId") == device_id:
+            return True
+        if device_owner and device_owner == referrer_uid:
+            return True
+        for run in referrer_runs:
+            if run.get("deviceId") == device_id or run.get("device_id") == device_id:
+                return True
+        if not referrer_uid:
+            return False
+        login = (
+            self.firebase_service.db.collection("users")
+            .document(referrer_uid)
+            .collection("loginDevices")
+            .document(device_id)
+            .get(transaction=transaction)
+        )
+        return bool(login.exists)
 
     @staticmethod
     def _can_pay_referrer(referrer_economy: dict, config: dict) -> bool:
@@ -2866,7 +3011,7 @@ class SecuredActionService:
         # see the earlier credit, or the last absolute balance wins.
         wallets: dict[str, dict] = {}
         for payout in payouts:
-            if payout.get("pending") or payout["amount"] <= 0:
+            if payout.get("pending") or payout.get("held") or payout["amount"] <= 0:
                 continue
             payee_uid = payout["payee_uid"]
             if payee_uid in wallets:
@@ -2881,10 +3026,30 @@ class SecuredActionService:
                 "amount": payout["amount"],
                 "createdAt": SERVER_TIMESTAMP,
             }
-            if payout.get("pending"):
+            if payout.get("held"):
+                marker["status"] = "held"
+                marker["reason"] = payout.get("reason") or "twin_run"
+            elif payout.get("pending"):
                 marker["status"] = "pending"
                 marker["releaseAt"] = payout["release_at"]
             transaction.set(payout["marker_ref"], marker)
+            if payout.get("held"):
+                transaction.set(
+                    self.firebase_service.db.collection("walletTransactions").document(
+                        f"referral_held_{payout['payee_uid']}_{payout['referee_uid']}_{payout['type']}"
+                    ),
+                    {
+                        "uid": payout["payee_uid"],
+                        "type": f"referral_{payout['type']}_held",
+                        "status": "held",
+                        "reason": marker["reason"],
+                        "shareAmount": 0,
+                        "amount": payout["amount"],
+                        "refereeUid": payout["referee_uid"],
+                        "createdAt": SERVER_TIMESTAMP,
+                    },
+                )
+                continue
             if payout.get("pending"):
                 self._write_referrer_hold(transaction, payout)
                 continue
@@ -4854,6 +5019,37 @@ def _commit_invite_code_tx(transaction, service, uid: str, user_ref, code: str) 
     # Module-level so the first argument is the Transaction. Decorating a
     # method puts `self` first, which this helper rejects.
     return service._allocate_invite_code(transaction, uid, user_ref, code)
+
+
+def _route_dicts(points) -> list[dict]:
+    route = []
+    for point in points or []:
+        if hasattr(point, "model_dump"):
+            route.append(point.model_dump())
+        elif hasattr(point, "dict"):
+            route.append(point.dict())
+        elif isinstance(point, dict):
+            route.append(dict(point))
+    return route
+
+
+def _twin_against(run_view: dict | None, referee_runs: list[dict], referrer_runs: list[dict]) -> str:
+    lefts: list[dict] = []
+    if isinstance(run_view, dict):
+        lefts.append(run_view)
+    lefts.extend(run for run in referee_runs if isinstance(run, dict))
+    for left in lefts:
+        left_id = left.get("activityId")
+        for right in referrer_runs:
+            if not isinstance(right, dict):
+                continue
+            right_id = right.get("activityId")
+            if left_id and right_id and left_id == right_id:
+                continue
+            reason = referral_twin_reason(left, right)
+            if reason:
+                return reason
+    return ""
 
 
 def _trial_device_id(raw: object) -> str:

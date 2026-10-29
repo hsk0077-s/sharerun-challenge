@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/api/api_exception.dart';
+import '../../../l10n/commerce_copy.dart';
 import '../../../l10n/guidance_copy.dart';
 import '../../../core/theme/theme.dart';
 import '../../crew/crew_membership.dart';
@@ -50,7 +51,7 @@ class DiaNoticeCard extends StatelessWidget {
           OutlinedButton(
             key: refundButtonKey,
             onPressed: () => DiaRefundSheet.show(context),
-            child: const Text('환불 신청하기'),
+            child: Text(DiaRefundCopy.of(Localizations.localeOf(context)).openButton),
           ),
         ],
       ),
@@ -88,11 +89,11 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
         (_) => ',',
       );
 
-  String _why(DiaPurchase p) => switch (p.reason) {
-        'already_refunded' => p.status == 'refunded' ? '환불이 끝났어요.' : '환불을 신청했어요. 확인 중이에요.',
-        'nothing_left' => '쓰지 않은 유료 DIA가 없어서 환불할 금액이 없어요.',
-        'period_over' => '환불 기간이 지났어요.',
-        _ => '환불할 수 없어요.',
+  String _why(DiaRefundCopy copy, DiaPurchase p) => switch (p.reason) {
+        'already_refunded' => p.status == 'refunded' ? copy.whyDone : copy.whyPending,
+        'nothing_left' => copy.whyNothing,
+        'period_over' => copy.whyPeriod,
+        _ => copy.whyOther,
       };
 
   void _toast(String message) {
@@ -106,24 +107,27 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
 
   Future<void> _refund(DiaPurchase p) async {
     final api = ref.read(crewApiProvider);
+    final copy = DiaRefundCopy.of(Localizations.localeOf(context));
     if (api == null || _busy) return;
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('환불 신청'),
+        title: Text(copy.confirmTitle),
         content: Text(
-          '쓰지 않은 유료 DIA ${p.paidDia}개'
-          '${p.bonusRevoked > 0 ? '와 덤 ${p.bonusRevoked}개' : ''}가 빠지고 '
-          '${_won(p.refundKrw)}원이 환불돼요.'
-          '${p.bonusSpent > 0 ? '\n이미 쓴 덤 ${p.bonusSpent}개는 ${_won(p.bonusSpent * 100)}원을 뺐어요.' : ''}'
-          '\n신청하면 되돌릴 수 없어요.',
+          copy.confirmBody(
+            paidDia: p.paidDia,
+            bonusRevoked: p.bonusRevoked,
+            refundWon: _won(p.refundKrw),
+            bonusSpent: p.bonusSpent,
+            spentWon: _won(p.bonusSpent * 100),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('취소')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(copy.cancel)),
           FilledButton(
             key: DiaRefundSheet.confirmKey,
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('환불 신청'),
+            child: Text(copy.confirmButton),
           ),
         ],
       ),
@@ -134,13 +138,13 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
       final result = await api.requestDiaRefund(p.purchaseId);
       ref.invalidate(diaPurchasesProvider);
       _toast(result.done
-          ? '${_won(result.refundKrw)}원이 환불됐어요.'
-          : '환불을 신청했어요. 담당자가 확인해 환불해 드려요.');
+          ? copy.doneToast(_won(result.refundKrw))
+          : copy.pendingToast);
     } on ApiException catch (error) {
-      _toast(error.statusCode == 409 ? '이미 환불을 신청한 구매예요.' : '환불하지 못했어요. 잠시 뒤 다시 해 주세요.');
+      _toast(error.statusCode == 409 ? copy.already : copy.failed);
       ref.invalidate(diaPurchasesProvider);
     } catch (_) {
-      _toast('환불하지 못했어요. 잠시 뒤 다시 해 주세요.');
+      _toast(copy.failed);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -149,6 +153,7 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
+    final copy = DiaRefundCopy.of(Localizations.localeOf(context));
     final data = ref.watch(diaPurchasesProvider);
     final days = data.asData?.value?.refundDays ?? 7;
     final purchases = data.asData?.value?.purchases ?? const <DiaPurchase>[];
@@ -159,10 +164,10 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           children: [
-            Text('DIA 환불', style: storeText(20, c.ink, w: FontWeight.w900)),
+            Text(copy.title, style: storeText(20, c.ink, w: FontWeight.w900)),
             const SizedBox(height: 4),
             Text(
-              '산 날부터 $days일 안, 쓰지 않은 유료 DIA만 환불돼요.',
+              copy.window(days),
               style: storeText(12, c.muted),
             ),
             const SizedBox(height: 12),
@@ -170,7 +175,7 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
-                  data.isLoading ? '불러오는 중이에요…' : '서버에 연결되면 환불할 수 있어요.',
+                  data.isLoading ? copy.loading : copy.offline,
                   textAlign: TextAlign.center,
                   style: storeText(14, c.muted),
                 ),
@@ -179,7 +184,7 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
-                  '$days일 안에 산 DIA 팩이 없어요.',
+                  copy.empty(days),
                   textAlign: TextAlign.center,
                   style: storeText(14, c.muted),
                 ),
@@ -197,29 +202,29 @@ class _DiaRefundSheetState extends ConsumerState<DiaRefundSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DIA ${p.packDia}개 팩 · ${_won(p.priceKrw)}원',
+                      copy.pack(p.packDia, _won(p.priceKrw)),
                       style: storeText(15, c.ink, w: FontWeight.w800),
                     ),
                     if (p.createdAt != null)
                       Text(
-                        '${p.createdAt!.toLocal().month}월 ${p.createdAt!.toLocal().day}일에 샀어요',
+                        copy.boughtOn(p.createdAt!.toLocal().month, p.createdAt!.toLocal().day),
                         style: storeText(12, c.muted),
                       ),
                     const SizedBox(height: 8),
                     if (p.eligible) ...[
                       Text(
-                        '환불 ${_won(p.refundKrw)}원 · 유료 DIA ${p.paidDia}개'
-                        '${p.bonusRevoked > 0 ? ' + 덤 ${p.bonusRevoked}개 회수' : ''}',
+                        copy.summary(_won(p.refundKrw), p.paidDia) +
+                            (p.bonusRevoked > 0 ? copy.bonusRevoke(p.bonusRevoked) : ''),
                         style: storeText(13, c.ink),
                       ),
                       const SizedBox(height: 8),
                       FilledButton(
                         key: DiaRefundSheet.refundKey(p.purchaseId),
                         onPressed: _busy ? null : () => _refund(p),
-                        child: Text('${_won(p.refundKrw)}원 환불 신청'),
+                        child: Text(copy.requestButton(_won(p.refundKrw))),
                       ),
                     ] else
-                      Text(_why(p), style: storeText(13, c.muted)),
+                      Text(_why(copy, p), style: storeText(13, c.muted)),
                   ],
                 ),
               ),

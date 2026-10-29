@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta, timezone
 
-from app.services.twin_run import is_twin_run, run_signature
+from app.services.twin_run import bare_phone_twin, is_twin_run, referral_twin_reason, run_signature
 
 NOW = datetime(2026, 10, 6, 1, 0, tzinfo=timezone.utc)
 ROUTE = [
@@ -49,3 +49,48 @@ def test_missing_start_time_does_not_match_old_rows() -> None:
     bare = _run()
     del bare["startedAt"]
     assert not is_twin_run(_run(), bare)
+
+
+def test_a_phone_run_without_gps_is_a_twin_on_device_or_signature() -> None:
+    left = _run(gpsRoute=[], deviceId="phone-a")
+    same_phone = _run(
+        gpsRoute=[],
+        deviceId="phone-a",
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert bare_phone_twin(left, same_phone)
+    assert referral_twin_reason(left, same_phone) == "twin_run"
+
+    same_signature = _run(
+        gpsRoute=[],
+        deviceId="phone-b",
+        startedAt=(NOW + timedelta(seconds=30)).isoformat(),
+    )
+    assert bare_phone_twin(left, same_signature)
+
+    different = _run(
+        gpsRoute=[],
+        deviceId="phone-b",
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not bare_phone_twin(left, different)
+    assert referral_twin_reason(left, different) is None
+
+
+def test_two_routes_that_do_not_overlap_stay_on_the_gps_check() -> None:
+    far = [
+        {"latitude": 35.1, "longitude": 129.0},
+        {"latitude": 35.12, "longitude": 129.02},
+        {"latitude": 35.14, "longitude": 129.04},
+    ]
+    left = _run(deviceId="phone-a")
+    right = _run(
+        deviceId="phone-a",
+        gpsRoute=far,
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not bare_phone_twin(left, right)
+    assert not is_twin_run(left, right)

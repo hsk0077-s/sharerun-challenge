@@ -4,6 +4,7 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/features/iap/widgets/dia_notice.dart';
 import 'package:share_run_challenge/l10n/app_localizations.dart';
+import 'package:share_run_challenge/l10n/commerce_copy.dart';
 import 'package:share_run_challenge/l10n/guidance_copy.dart';
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
@@ -24,6 +25,11 @@ void main() {
 
   test('donation, shop funding, and DIA notice exist in every locale', () {
     final missing = missingGuidanceKeys();
+    expect(missing, isEmpty, reason: missing.join('\n'));
+  });
+
+  test('shop items, refund sheet, accessories, and donation match exist in every locale', () {
+    final missing = missingCommerceKeys();
     expect(missing, isEmpty, reason: missing.join('\n'));
   });
 

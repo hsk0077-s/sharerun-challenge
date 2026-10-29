@@ -580,16 +580,9 @@ class DiaNoticeGuidance {
   };
 }
 
-/// Surfaces whose user-facing guidance is still Korean only.
-/// Kept here so the locale test and the debate note stay on the same list.
-const koreanOnlyGuidanceSurfaces = <String>[
-  'DiaRefundSheet',
-  'donationMatchContributionLine',
-  'AppStrings.storeItem*',
-  'AppStrings.storeCosmetics*',
-  'AppStrings.storeValueDetailBody',
-  'Accessory.nameKo',
-];
+/// Shop, refund, accessory, and donation-match copy now live in
+/// `commerce_copy.dart` and `accessory_names.dart` for all 11 locales.
+const koreanOnlyGuidanceSurfaces = <String>[];
 
 List<String> missingGuidanceKeys() {
   final missing = <String>[];

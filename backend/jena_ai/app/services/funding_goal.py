@@ -43,6 +43,19 @@ def resolve_stages(raw: dict | None) -> tuple[int, ...]:
     return tuple(stages)
 
 
+def stages_through_cap(stages: tuple[int, ...], cap_won: int) -> tuple[int, ...]:
+    """Goals the card may show. The last one is the monthly cap.
+
+    A stage list that stops at 300,000 left ``goal_won`` at 0 while the
+    company was still paying up to the real cap. Stages above the cap are
+    dropped so the card does not promise more than the company will pay.
+    """
+    if cap_won <= 0:
+        return stages
+    below = tuple(stage for stage in stages if stage < cap_won)
+    return (*below, cap_won)
+
+
 def progress(total_won: int, stages: tuple[int, ...], cap_won: int) -> dict:
     """The goal the month is working toward and how far along it is.
 
@@ -73,4 +86,5 @@ def summary(db, now: datetime | None = None) -> dict:
         stages = resolve_stages(config.to_dict() if config.exists else None)
     except Exception:
         stages = DEFAULT_STAGES
-    return {"month": month, **progress(total, stages, read_monthly_cap_won(db))}
+    cap_won = read_monthly_cap_won(db)
+    return {"month": month, **progress(total, stages_through_cap(stages, cap_won), cap_won)}

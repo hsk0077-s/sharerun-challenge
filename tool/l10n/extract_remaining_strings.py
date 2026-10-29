@@ -48,6 +48,43 @@ GETTER_DECL = re.compile(
 )
 
 
+_SIMPLE_ESCAPE = {
+    "n": "\n",
+    "r": "\r",
+    "t": "\t",
+    "b": "\b",
+    "f": "\f",
+    "v": "\v",
+    "\\": "\\",
+    "'": "'",
+    '"': '"',
+    "$": "$",
+}
+
+
+def _dart_escape(text: str, j: int) -> tuple[str, int, bool]:
+    """Decode one Dart escape at text[j] == backslash.
+
+    Returns the decoded text, the index after the escape, and whether the
+    source line ended (a backslash before a real newline).
+    """
+    nxt = text[j + 1]
+    if nxt == "\n":
+        return "", j + 2, True
+    if nxt in _SIMPLE_ESCAPE:
+        return _SIMPLE_ESCAPE[nxt], j + 2, False
+    if nxt == "x" and j + 3 < len(text) and re.fullmatch(r"[0-9a-fA-F]{2}", text[j + 2:j + 4]):
+        return chr(int(text[j + 2:j + 4], 16)), j + 4, False
+    if nxt == "u" and j + 2 < len(text) and text[j + 2] == "{":
+        end = text.find("}", j + 3)
+        hexpart = text[j + 3:end] if end != -1 else ""
+        if end != -1 and re.fullmatch(r"[0-9a-fA-F]+", hexpart):
+            return chr(int(hexpart, 16)), end + 1, False
+    if nxt == "u" and j + 5 < len(text) and re.fullmatch(r"[0-9a-fA-F]{4}", text[j + 2:j + 6]):
+        return chr(int(text[j + 2:j + 6], 16)), j + 6, False
+    return text[j:j + 2], j + 2, False
+
+
 def dart_strings(text: str) -> list[tuple[int, str, int]]:
     """Return (line, literal source including quotes-stripped value, start index)."""
     out: list[tuple[int, str, int]] = []
@@ -97,10 +134,10 @@ def dart_strings(text: str) -> list[tuple[int, str, int]]:
                     j += len(quote)
                     break
                 if not raw and text[j] == "\\" and j + 1 < n:
-                    buf.append(text[j + 1])
-                    if text[j + 1] == "\n":
+                    decoded, j, broke = _dart_escape(text, j)
+                    if broke:
                         line += 1
-                    j += 2
+                    buf.append(decoded)
                     continue
                 if text[j] == "\n":
                     line += 1
@@ -259,14 +296,14 @@ def load_localized_korean() -> set[str]:
         text = path.read_text(encoding="utf-8")
         for _line, value, _start in dart_strings(text):
             if HANGUL.search(value):
-                known.add(normalize(value))
+                known.add(value.strip(" "))
     wear = ROOT / "wear_app" / "lib" / "l10n"
     if wear.exists():
         for path in wear.glob("*.dart"):
             text = path.read_text(encoding="utf-8")
             for _line, value, _start in dart_strings(text):
                 if HANGUL.search(value):
-                    known.add(normalize(value))
+                    known.add(value.strip(" "))
     return known
 
 
@@ -325,7 +362,7 @@ def main() -> None:
         for line_no, value, start in found:
             if not HANGUL.search(value):
                 continue
-            cleaned = value.strip()
+            cleaned = value.strip(" ")
             if not cleaned or not HANGUL.search(cleaned):
                 continue
             if is_log(text, start):
@@ -337,7 +374,7 @@ def main() -> None:
             if normalize(cleaned) in PARTICLES or cleaned in PARTICLES:
                 excluded["particles"] += 1
                 continue
-            if normalize(cleaned) in known:
+            if cleaned in known:
                 excluded["already_localized"] += 1
                 continue
             if path.name == "wearable_brand_guide_sheet.dart" and line_no < 160:
@@ -358,7 +395,7 @@ def main() -> None:
             key_base = None
             if name and path.name == "app_strings.dart":
                 key_base = f"app.{name}"
-            norm = normalize(cleaned)
+            norm = cleaned
             if norm not in grouped:
                 key_base = key_base or f"{screen}.{role}"
                 grouped[norm] = {

@@ -651,7 +651,7 @@
     },
     {
       "key": "snail_to_cheetah_book.body.9",
-      "ko": "첫 달리기가 심사되면 티어가 정해지고n옷과 소품을 입힐 수 있어요",
+      "ko": "첫 달리기가 심사되면 티어가 정해지고\n옷과 소품을 입힐 수 있어요",
       "file": "lib/screens/snail_to_cheetah_book_page.dart",
       "screen": "snail_to_cheetah_book",
       "context": "snail_to_cheetah_book 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -3442,7 +3442,7 @@
     },
     {
       "key": "running_crew.button.4",
-      "ko": "자유 가입n누구나 바로 들어와요",
+      "ko": "자유 가입\n누구나 바로 들어와요",
       "file": "lib/screens/running_crew_screen.dart",
       "screen": "running_crew",
       "context": "running_crew 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
@@ -3460,7 +3460,7 @@
     },
     {
       "key": "running_crew.button.5",
-      "ko": "승인 가입n신청을 받아 크루장이 정해요",
+      "ko": "승인 가입\n신청을 받아 크루장이 정해요",
       "file": "lib/screens/running_crew_screen.dart",
       "screen": "running_crew",
       "context": "running_crew 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
@@ -3718,7 +3718,7 @@
     },
     {
       "key": "running_crew.body.8",
-      "ko": "\"${mine.crew.name}\" 크루를 없애요.n${others > 0 ?",
+      "ko": "\"${mine.crew.name}\" 크루를 없애요.\n${others > 0 ?",
       "file": "lib/screens/running_crew_screen.dart",
       "screen": "running_crew",
       "context": "running_crew 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -3741,7 +3741,7 @@
     },
     {
       "key": "running_crew.body.9",
-      "ko": "크루장인 나도 함께 크루에서 나와요.n산 엠블럼도 사라지고 되돌릴 수 없어요.nn",
+      "ko": "크루장인 나도 함께 크루에서 나와요.\n산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n",
       "file": "lib/screens/running_crew_screen.dart",
       "screen": "running_crew",
       "context": "running_crew 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -5891,7 +5891,7 @@
     },
     {
       "key": "subscription_management.body.2",
-      "ko": "무료 기본 러닝 안내n심박·상황에 맞춘 심층 코칭",
+      "ko": "무료 기본 러닝 안내\n심박·상황에 맞춘 심층 코칭",
       "file": "lib/screens/subscription_management_screen.dart",
       "screen": "subscription_management",
       "context": "subscription_management 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -6301,7 +6301,7 @@
     },
     {
       "key": "item_inventory.body.7",
-      "ko": "보유량: ${shop.boostRunCount}n${AppStrings.itemInventoryBoostRunQuantityNote}",
+      "ko": "보유량: ${shop.boostRunCount}\n${AppStrings.itemInventoryBoostRunQuantityNote}",
       "file": "lib/screens/item_inventory_screen.dart",
       "screen": "item_inventory",
       "context": "item_inventory 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -6328,7 +6328,7 @@
     },
     {
       "key": "item_inventory.body.8",
-      "ko": "보유량: ${shop.stepIncubatorCount}n${AppStrings.itemInventoryStepIncubatorQuantityNote}",
+      "ko": "보유량: ${shop.stepIncubatorCount}\n${AppStrings.itemInventoryStepIncubatorQuantityNote}",
       "file": "lib/screens/item_inventory_screen.dart",
       "screen": "item_inventory",
       "context": "item_inventory 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -6355,7 +6355,7 @@
     },
     {
       "key": "item_inventory.body.9",
-      "ko": "추가 보유: ${shop.restDayCount}n${AppStrings.itemInventoryRestDayNote}",
+      "ko": "추가 보유: ${shop.restDayCount}\n${AppStrings.itemInventoryRestDayNote}",
       "file": "lib/screens/item_inventory_screen.dart",
       "screen": "item_inventory",
       "context": "item_inventory 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -8761,7 +8761,7 @@
     },
     {
       "key": "challenge_lobby.body.3",
-      "ko": "$total개 챌린지가n열려 있어요",
+      "ko": "$total개 챌린지가\n열려 있어요",
       "file": "lib/screens/challenge_lobby_screen.dart",
       "screen": "challenge_lobby",
       "context": "challenge_lobby 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -9077,7 +9077,7 @@
     },
     {
       "key": "appeal_center.body.4",
-      "ko": "}${current.title} 기록이 검증 보류 상태예요.n",
+      "ko": "}${current.title} 기록이 검증 보류 상태예요.\n",
       "file": "lib/screens/appeal_center_screen.dart",
       "screen": "appeal_center",
       "context": "appeal_center 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -9100,7 +9100,7 @@
     },
     {
       "key": "appeal_center.body.5",
-      "ko": "이유: ${current.reason}n억울한 경우 아래에서 소명 자료를 제출해 주세요.",
+      "ko": "이유: ${current.reason}\n억울한 경우 아래에서 소명 자료를 제출해 주세요.",
       "file": "lib/screens/appeal_center_screen.dart",
       "screen": "appeal_center",
       "context": "appeal_center 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -9944,7 +9944,7 @@
     },
     {
       "key": "personal_sponsor.body.20",
-      "ko": "${SponsorshipStatusCard.won(e.share)} SHAREn${SponsorshipStatusCard.won(e.won)}원",
+      "ko": "${SponsorshipStatusCard.won(e.share)} SHARE\n${SponsorshipStatusCard.won(e.won)}원",
       "file": "lib/screens/personal_sponsor_screen.dart",
       "screen": "personal_sponsor",
       "context": "personal_sponsor 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -10829,7 +10829,7 @@
     },
     {
       "key": "login_devices.body.7",
-      "ko": "${device.osVersion} · 앱 ${device.appVersion}n마지막으로 연 시각 $when",
+      "ko": "${device.osVersion} · 앱 ${device.appVersion}\n마지막으로 연 시각 $when",
       "file": "lib/screens/login_devices_screen.dart",
       "screen": "login_devices",
       "context": "login_devices 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -11208,7 +11208,7 @@
     },
     {
       "key": "solo_pedometer.dialog.2",
-      "ko": "• 신체 활동: 폰이 센 걸음 수를 읽습니다.n• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어",
+      "ko": "• 신체 활동: 폰이 센 걸음 수를 읽습니다.\n• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어",
       "file": "lib/screens/solo_pedometer_screen.dart",
       "screen": "solo_pedometer",
       "context": "solo_pedometer 화면의 dialog. 대화상자 본문. 짧은 문단. 줄바꿈은 유지합니다.",
@@ -11226,7 +11226,7 @@
     },
     {
       "key": "solo_pedometer.button",
-      "ko": "화면이 꺼져 있을 때의 걸음도 반영합니다.nn걸음 수는 보상 계산에만 쓰이고, 동의하지 않아도 다른 기능은 쓸 수 있어요.",
+      "ko": "화면이 꺼져 있을 때의 걸음도 반영합니다.\n\n걸음 수는 보상 계산에만 쓰이고, 동의하지 않아도 다른 기능은 쓸 수 있어요.",
       "file": "lib/screens/solo_pedometer_screen.dart",
       "screen": "solo_pedometer",
       "context": "solo_pedometer 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
@@ -12381,7 +12381,7 @@
     },
     {
       "key": "challenge_detail.body",
-      "ko": "쉐어런 $title 대회에 같이 도전해요!n#쉐어런 #ShareRun",
+      "ko": "쉐어런 $title 대회에 같이 도전해요!\n#쉐어런 #ShareRun",
       "file": "lib/screens/challenge_detail_screen.dart",
       "screen": "challenge_detail",
       "context": "challenge_detail 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -15957,14 +15957,14 @@
     },
     {
       "key": "login.body.9",
-      "ko": "닉네임 $nicknamenSHARE ${groupedDigits(shareBalance)}",
+      "ko": "닉네임 $nickname\nSHARE ${groupedDigits(shareBalance)}",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "login",
       "context": "login 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
       "placeholders": [
         {
-          "name": "nicknamenSHARE",
-          "format": "$nicknamenSHARE"
+          "name": "nickname",
+          "format": "$nickname"
         },
         {
           "name": "groupedDigits(shareBalance)",
@@ -16011,7 +16011,7 @@
     },
     {
       "key": "app.termsTitle",
-      "ko": "환영합니다!n시작 전 약관 동의가n필요합니다.",
+      "ko": "환영합니다!\n시작 전 약관 동의가\n필요합니다.",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "terms_agreement",
       "context": "terms_agreement 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -16029,7 +16029,7 @@
     },
     {
       "key": "app.termsSubtitle",
-      "ko": "안전하고 공정한 쉐어런 생태계를 위해 필수n항목에 동의해 주세요.",
+      "ko": "안전하고 공정한 쉐어런 생태계를 위해 필수\n항목에 동의해 주세요.",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "terms_agreement",
       "context": "terms_agreement 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -16137,7 +16137,7 @@
     },
     {
       "key": "app.termsOptionalHealth",
-      "ko": "[선택] 건강정보(심박수) 수집 및n이용 동의",
+      "ko": "[선택] 건강정보(심박수) 수집 및\n이용 동의",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "terms_agreement",
       "context": "terms_agreement 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -16173,7 +16173,7 @@
     },
     {
       "key": "app.watchSyncTitle",
-      "ko": "정확한 기록 측정을 위해n스마트워치를 연결해 주세요.",
+      "ko": "정확한 기록 측정을 위해\n스마트워치를 연결해 주세요.",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "smart_watch_sync",
       "context": "smart_watch_sync 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -17652,7 +17652,7 @@
     },
     {
       "key": "app.slogan",
-      "ko": "심장이 뛰는 한,n나눔도 달린다",
+      "ko": "심장이 뛰는 한,\n나눔도 달린다",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "challenge_lobby",
       "context": "challenge_lobby 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -18449,7 +18449,7 @@
     },
     {
       "key": "app.runResultTitle",
-      "ko": "축하합니다!n완주 성공 🎉",
+      "ko": "축하합니다!\n완주 성공 🎉",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "run_result",
       "context": "run_result 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -18949,7 +18949,7 @@
     },
     {
       "key": "app.proToolsCushionWarning",
-      "ko": "쿠션 수명이 80km 남았습니다.n부상 방지를 위해 교체 시기가 다가옵니다.",
+      "ko": "쿠션 수명이 80km 남았습니다.\n부상 방지를 위해 교체 시기가 다가옵니다.",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "pro_tools",
       "context": "pro_tools 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -19543,7 +19543,7 @@
     },
     {
       "key": "app.runningCrewHeadline",
-      "ko": "같이 달릴n크루 찾기",
+      "ko": "같이 달릴\n크루 찾기",
       "file": "lib/core/strings/app_strings.dart",
       "screen": "running_crew",
       "context": "running_crew 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -23467,7 +23467,7 @@
     },
     {
       "key": "crew.crew_emblem.button",
-      "ko": "}이 엠블럼을 살까요?n크루가 평생 가지며 크루원 누구에게나 보여요. 크루를 없애면 함께 사라져요.",
+      "ko": "}이 엠블럼을 살까요?\n크루가 평생 가지며 크루원 누구에게나 보여요. 크루를 없애면 함께 사라져요.",
       "file": "lib/features/crew/crew_emblem.dart",
       "screen": "crew.crew_emblem",
       "context": "crew.crew_emblem 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
@@ -24333,7 +24333,7 @@
     },
     {
       "key": "pedometer.walking_challenge_share.body.6",
-      "ko": "쉐어런 워킹챌린지에서 함께 걷고 SHARE를 모아보세요!n걸을수록 쌓이는 SHARE, 친구와 같이 시작해요.n",
+      "ko": "쉐어런 워킹챌린지에서 함께 걷고 SHARE를 모아보세요!\n걸을수록 쌓이는 SHARE, 친구와 같이 시작해요.\n",
       "file": "lib/features/pedometer/walking_challenge_share.dart",
       "screen": "pedometer.walking_challenge_share",
       "context": "pedometer.walking_challenge_share 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -24405,7 +24405,7 @@
     },
     {
       "key": "pedometer.walking_challenge_share.body.10",
-      "ko": "오늘의 목표 달성! 🎉n쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.n",
+      "ko": "오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n",
       "file": "lib/features/pedometer/walking_challenge_share.dart",
       "screen": "pedometer.walking_challenge_share",
       "context": "pedometer.walking_challenge_share 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -24423,7 +24423,7 @@
     },
     {
       "key": "pedometer.walking_challenge_share.body.11",
-      "ko": "걷고 SHARE 모으고, 내일도 같이 걸어요!n#쉐어런 #워킹챌린지 #오늘의목표달성",
+      "ko": "걷고 SHARE 모으고, 내일도 같이 걸어요!\n#쉐어런 #워킹챌린지 #오늘의목표달성",
       "file": "lib/features/pedometer/walking_challenge_share.dart",
       "screen": "pedometer.walking_challenge_share",
       "context": "pedometer.walking_challenge_share 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -24459,7 +24459,7 @@
     },
     {
       "key": "pedometer.walking_challenge_share.body.13",
-      "ko": "오늘 하루도 열심히 달리셨네요.n고생하셨습니다. 내일 다시 걸어보죠! 🏃‍♂️✨",
+      "ko": "오늘 하루도 열심히 달리셨네요.\n고생하셨습니다. 내일 다시 걸어보죠! 🏃‍♂️✨",
       "file": "lib/features/pedometer/walking_challenge_share.dart",
       "screen": "pedometer.walking_challenge_share",
       "context": "pedometer.walking_challenge_share 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -30106,7 +30106,7 @@
     },
     {
       "key": "launch.intro.body.13",
-      "ko": "지금n달팽이",
+      "ko": "지금\n달팽이",
       "file": "lib/features/launch/intro_screen.dart",
       "screen": "launch.intro",
       "context": "launch.intro 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -30124,7 +30124,7 @@
     },
     {
       "key": "launch.intro.body.14",
-      "ko": "등급을n받으면",
+      "ko": "등급을\n받으면",
       "file": "lib/features/launch/intro_screen.dart",
       "screen": "launch.intro",
       "context": "launch.intro 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -30142,7 +30142,7 @@
     },
     {
       "key": "launch.intro.body.15",
-      "ko": "티어가n오르면",
+      "ko": "티어가\n오르면",
       "file": "lib/features/launch/intro_screen.dart",
       "screen": "launch.intro",
       "context": "launch.intro 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
@@ -31714,7 +31714,7 @@
     },
     {
       "key": "my_page.pace_calculator.body.4",
-      "ko": ")} /kmn예상 완주: $finish (${distance.toStringAsFixed(1)} km)",
+      "ko": ")} /km\n예상 완주: $finish (${distance.toStringAsFixed(1)} km)",
       "file": "lib/features/my_page/widgets/pace_calculator_card.dart",
       "screen": "my_page.pace_calculator",
       "context": "my_page.pace_calculator 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",

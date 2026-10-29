@@ -5,8 +5,10 @@ from datetime import datetime, timedelta, timezone
 from app.services.twin_run import (
     bare_phone_twin,
     is_twin_run,
+    offset_route_twin,
     referral_twin_reason,
     run_signature,
+    same_device_delayed_copy,
     same_device_shifted_route,
 )
 
@@ -127,6 +129,105 @@ def test_same_device_with_a_shifted_route_is_still_a_twin() -> None:
         startedAt=(NOW + timedelta(minutes=4)).isoformat(),
     )
     assert not same_device_shifted_route(left, later)
+    # Same signature inside thirty minutes is still one handset.
+    assert same_device_delayed_copy(left, later)
+    assert referral_twin_reason(left, later) == "twin_run"
+
+
+def _loop(shift_m: float = 0.0) -> list[dict]:
+    """A square about 200m on a side. ``shift_m`` slides it east."""
+    corners = [
+        (0.0, 0.0),
+        (200.0, 0.0),
+        (200.0, 200.0),
+        (0.0, 200.0),
+        (0.0, 0.0),
+    ]
+    points = []
+    for left, right in zip(corners, corners[1:]):
+        for step in range(8):
+            blend = step / 8
+            north = left[0] + (right[0] - left[0]) * blend
+            east = left[1] + (right[1] - left[1]) * blend + shift_m
+            points.append(
+                {
+                    "latitude": 37.5 + north / 111_320.0,
+                    "longitude": 127.0 + east / 88_300.0,
+                }
+            )
+    return points
+
+
+def test_a_shifted_loop_on_two_phones_is_a_twin_when_the_signature_matches() -> None:
+    left = _run(deviceId="phone-a", gpsRoute=_loop())
+    right = _run(
+        deviceId="phone-b",
+        gpsRoute=_loop(150.0),
+        startedAt=(NOW + timedelta(seconds=40)).isoformat(),
+    )
+    assert not is_twin_run(left, right)
+    assert offset_route_twin(left, right)
+    assert referral_twin_reason(left, right) == "twin_run"
+
+
+def test_a_straight_slide_or_a_far_slide_is_not_an_offset_twin() -> None:
+    left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
+    straight = _run(
+        deviceId="phone-b",
+        gpsRoute=[
+            {
+                "latitude": 37.5 + (index * 10.0) / 111_320.0,
+                "longitude": 127.0 + 150.0 / 88_300.0,
+            }
+            for index in range(40)
+        ],
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not offset_route_twin(left, straight)
+    assert referral_twin_reason(left, straight) is None
+
+    loop = _run(deviceId="phone-a", gpsRoute=_loop())
+    far = _run(
+        deviceId="phone-b",
+        gpsRoute=_loop(5_000.0),
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not offset_route_twin(loop, far)
+    changed = _run(
+        deviceId="phone-b",
+        gpsRoute=_loop(150.0),
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not offset_route_twin(loop, changed)
+    assert referral_twin_reason(loop, changed) is None
+
+
+def test_same_phone_delayed_past_three_minutes_holds_only_inside_thirty() -> None:
+    left = _run(deviceId="phone-a", gpsRoute=_loop())
+    delayed = _run(
+        deviceId="phone-a",
+        gpsRoute=_loop(400.0),
+        startedAt=(NOW + timedelta(seconds=181)).isoformat(),
+    )
+    assert not same_device_shifted_route(left, delayed)
+    assert same_device_delayed_copy(left, delayed)
+    assert referral_twin_reason(left, delayed) == "twin_run"
+    too_late = _run(
+        deviceId="phone-a",
+        gpsRoute=_loop(400.0),
+        startedAt=(NOW + timedelta(minutes=31)).isoformat(),
+    )
+    assert not same_device_delayed_copy(left, too_late)
+    assert referral_twin_reason(left, too_late) is None
+    other_workout = _run(
+        deviceId="phone-a",
+        gpsRoute=[_north(i, 25.0) for i in range(30)],
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=181)).isoformat(),
+    )
+    assert not same_device_delayed_copy(left, other_workout)
+    assert referral_twin_reason(left, other_workout) is None
 
 
 def _north(index: int, step_m: float, shift_m: float = 0.0) -> dict:

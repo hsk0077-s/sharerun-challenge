@@ -13,6 +13,7 @@ from app.models.validation_request import ValidationRequest
 from app.services.company_tournament_settlement import (
     beginner_signal_hold,
     gps_spacing_uniform,
+    gps_trace_sparse,
     prize_finish_fields,
 )
 from app.services.grade_assignment import (
@@ -185,12 +186,58 @@ def test_a_beginner_prize_holds_when_the_run_has_no_companion_signal() -> None:
         {"latitude": 37.509, "longitude": 127.004, "recordedAt": "2026-10-05T00:15:00+00:00"},
     ]
     assert gps_spacing_uniform(uneven) is False
-    assert beginner_signal_hold(
-        heart_rates=[],
+    # Six fixes over fifteen minutes is a drawing, even with a cadence list.
+    assert gps_trace_sparse(uneven, 900) is True
+    drawn = _finish(900, cadence_spm=[150, 162, 158], gps_route=uneven)
+    assert drawn["prizeHeld"] is True
+    assert drawn["prizeHoldReason"] == "sparse_gps"
+    # Same drawing with a step total is still too few fixes.
+    with_steps = _finish(
+        900,
         cadence_spm=[150, 162, 158],
-        total_steps=None,
+        total_steps=2200,
         gps_route=uneven,
-    ) is None
-    paid = _finish(900, cadence_spm=[150, 162, 158], gps_route=uneven)
+    )
+    assert with_steps["prizeHoldReason"] == "sparse_gps"
+
+
+def _dense_irregular(count: int = 40) -> list[dict]:
+    """About 1km with uneven gaps. Dense enough to be a live trace."""
+    points = []
+    elapsed = 0
+    for index in range(count):
+        gap = 8 + (index % 5) * 7
+        elapsed += gap
+        points.append(
+            {
+                "latitude": 37.5 + (index * 25.0) / 111_320.0,
+                "longitude": 127.0 + ((index % 3) * 8.0) / 88_300.0,
+                "recordedAt": (_START + timedelta(seconds=elapsed)).isoformat(),
+            }
+        )
+    return points
+
+
+def test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not() -> None:
+    route = _dense_irregular()
+    assert gps_spacing_uniform(route) is False
+    assert gps_trace_sparse(route, 900) is False
+    paid = _finish(
+        900,
+        cadence_spm=[150, 162, 158],
+        total_steps=2200,
+        gps_route=route,
+    )
     assert paid["verifiedFinish"] is True
     assert "prizeHeld" not in paid
+    unbacked = _finish(
+        900,
+        cadence_spm=[150, 162, 158],
+        total_steps=0,
+        gps_route=route,
+    )
+    assert unbacked["prizeHeld"] is True
+    assert unbacked["prizeHoldReason"] == "cadence_unbacked"
+    # An empty pace list still opens the door. Closing it would block the
+    # first real race, and one slow drawing reopens it.
+    assert beginner_entry_block(_user([])) is None

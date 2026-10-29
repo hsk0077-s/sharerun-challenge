@@ -9,6 +9,7 @@ import '../app/router/route_names.dart';
 import '../core/auth/health_data_consent_store.dart';
 import '../core/strings/app_strings.dart';
 import '../l10n/surface_copy.dart';
+import '../l10n/surface_rest.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/widgets/async_value_section.dart';
 import '../core/widgets/currency_badge.dart';
@@ -114,6 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final navigator = Navigator.of(context);
     final messenger = ScaffoldMessenger.of(context);
+    final copy = HomeSurfaceCopy.of(Localizations.localeOf(context));
 
     try {
       final firebaseUser = ref.read(authStateChangesProvider).value;
@@ -167,9 +169,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           return;
         }
         messenger.showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(
-              'Health Connect 권한이 필요합니다. 상단 워치 연동을 먼저 완료해 주세요.',
+              copy.healthNeed,
             ),
           ),
         );
@@ -203,6 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final onboarding = ref.watch(onboardingProvider);
     final showGradeEval = onboarding.currentStep != OnboardingStep.completed;
     final trialDone = onboarding.preliminaryPaceSeconds.length.clamp(0, 3);
+    final copy = HomeSurfaceCopy.of(Localizations.localeOf(context));
 
     return ListView(
       padding: EdgeInsets.all(tokens.spacing.page),
@@ -234,9 +237,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            granted
-                                ? 'Health Connect 권한이 허용되었습니다.'
-                                : 'Health Connect 권한이 거부되었거나 취소되었습니다.',
+                            granted ? copy.healthOk : copy.healthDenied,
                           ),
                         ),
                       );
@@ -246,7 +247,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Health Connect 권한 요청 실패: $error'),
+                          content: Text(
+                            copy.healthFail(error),
+                          ),
                         ),
                       );
                     }
@@ -273,7 +276,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   )
                 : const Icon(Icons.watch_rounded),
             label: Text(
-              _linkingWatch ? '연동 중...' : '워치 연동',
+              _linkingWatch ? copy.linking : copy.linkWatch,
               style: textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: tokens.colors.onPrimary,
@@ -314,7 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SizedBox(width: tokens.spacing.xs),
                     Expanded(
                       child: Text(
-                        '내 지갑',
+                        copy.myWallet,
                         style: textTheme.titleLarge,
                       ),
                     ),
@@ -373,7 +376,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         SizedBox(height: tokens.spacing.xxl),
         _HomeStartButton(onPressed: _onStartRun),
         SizedBox(height: tokens.spacing.xxl),
-        Text('모집 중인 챌린지', style: textTheme.titleLarge),
+        Text(copy.recruiting, style: textTheme.titleLarge),
         SizedBox(height: tokens.spacing.md),
         AsyncValueSection<List<TournamentModel>>(
           asyncValue: challengesAsync,
@@ -385,7 +388,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (activeChallenges.isEmpty) {
               return SrcSurfaceCard(
                 child: Text(
-                  '모집 중인 대회가 아직 없어요.',
+                  copy.recruitingEmpty,
                   style: textTheme.bodyMedium?.copyWith(
                     color: tokens.colors.muted,
                   ),
@@ -419,7 +422,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           },
         ),
         SizedBox(height: tokens.spacing.xl),
-        Text('다이아몬드 잔액', style: textTheme.titleLarge),
+        Text(copy.diamondTitle, style: textTheme.titleLarge),
         SizedBox(height: tokens.spacing.sm),
         SrcSurfaceCard(
           borderColor: tokens.colors.primary.withValues(alpha: 0.45),
@@ -436,7 +439,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'DIA 잔액',
+                      copy.diaBalance,
                       style: textTheme.labelMedium?.copyWith(
                         color: tokens.colors.muted,
                         fontWeight: FontWeight.w600,
@@ -481,6 +484,7 @@ class _ActiveChallengeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
+    final copy = HomeSurfaceCopy.of(Localizations.localeOf(context));
     final locked = room.lockedForTier(userTier);
     final full = room.isFull;
     final highlight = isJoined || (!full && !locked);
@@ -535,9 +539,9 @@ class _ActiveChallengeCard extends StatelessWidget {
             isJoined
                 ? AppStrings.winnerRewardNoConversion
                 : locked
-                    ? '티어 ${room.requiredTier} 대회는 잠겨 있어요'
+                    ? copy.tierLocked(room.requiredTier)
                     : full
-                        ? '정원이 가득 찼어요'
+                        ? copy.roomFull
                         : AppStrings.winnerRewardNoConversion,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

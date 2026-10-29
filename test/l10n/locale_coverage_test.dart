@@ -11,6 +11,7 @@ import 'package:share_run_challenge/l10n/commerce_copy.dart';
 import 'package:share_run_challenge/l10n/guidance_copy.dart';
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/l10n/surface_copy.dart';
+import 'package:share_run_challenge/l10n/surface_rest.dart';
 import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
 import 'package:share_run_challenge/screens/fair_earning_policy_screen.dart';
 
@@ -41,9 +42,15 @@ void main() {
     expect(missing, isEmpty, reason: missing.join('\n'));
   });
 
-  test('fair earning, shop chrome, and grade guide exist in every locale', () {
+  test('fair earning, shop chrome, grade guide, and the remaining surfaces exist in every locale', () {
     final missing = missingSurfaceKeys();
     expect(missing, isEmpty, reason: missing.join('\n'));
+    expect(restSurfaceKeyCount(), 90);
+    expect(HomeSurfaceCopy.of(const Locale('ko')).diamondMine, '내 다이아');
+    expect(HomeSurfaceCopy.of(const Locale('en')).diamondMine, isNot('내 다이아'));
+    expect(animalLabel(const Locale('ko'), 'turtle'), '거북이');
+    expect(animalLabel(const Locale('en'), 'turtle'), 'Turtle');
+    expect(medalLabel(const Locale('ko'), 'bronze'), '브론즈');
     expect(FairEarningCopy.of(const Locale('ko')).screenTitle, '공정한 적립 정책');
     expect(
       FairEarningPolicyScreen.sections.map((block) => block.title),

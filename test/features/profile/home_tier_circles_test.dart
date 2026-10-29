@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
@@ -24,6 +25,13 @@ Future<void> _pump(
         userAngelTierProvider.overrideWith((ref) => angel),
       ],
       child: MaterialApp(
+        locale: const Locale('ko', 'KR'),
+        supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         onGenerateRoute: (settings) {
           opened?.add(settings.name ?? '');
           return MaterialPageRoute<void>(

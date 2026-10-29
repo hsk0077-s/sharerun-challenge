@@ -7,6 +7,7 @@ import '../features/shop/widgets/store_look.dart';
 import '../features/accessories/accessory_catalog.dart';
 import '../features/accessories/try_on_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
+import '../l10n/surface_rest.dart';
 
 /// 달팽이 → 치타 25단계 티어 도감.
 /// 위에는 다섯 친구를 한눈에(완료·현재·다음), 아래에는 25단계 연대기를 둔다.
@@ -391,7 +392,10 @@ class _TierChapterCard extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            medal.labelKo,
+                            medalLabel(
+                              Localizations.localeOf(context),
+                              medal.code,
+                            ),
                             style: AppTextStyles.caption.copyWith(
                               fontSize: 9,
                               fontWeight: FontWeight.w600,

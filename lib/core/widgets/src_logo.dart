@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/remaining_surface.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_shapes.dart';
 
@@ -35,6 +36,11 @@ class SRCLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final path = _isLoginHeader ? markAssetPath : fullAssetPath;
+    final semanticLabel = RemainingSurface.tr(
+      context,
+      'widget.src_logo.accessibility',
+      '쉐어런 로고',
+    );
 
     if (_isLoginHeader && width != null) {
       // 너비만 고정 → 높이는 에셋 비율(368:1024)에 따라 자동 산출.
@@ -45,7 +51,7 @@ class SRCLogo extends StatelessWidget {
           width: width,
           fit: BoxFit.fitWidth,
           filterQuality: FilterQuality.high,
-          semanticLabel: '쉐어런 로고',
+          semanticLabel: semanticLabel,
           errorBuilder: _errorBuilder,
         ),
       );
@@ -57,7 +63,7 @@ class SRCLogo extends StatelessWidget {
       height: height,
       fit: fit,
       filterQuality: FilterQuality.high,
-      semanticLabel: '쉐어런 로고',
+      semanticLabel: semanticLabel,
       errorBuilder: _errorBuilder,
     );
   }

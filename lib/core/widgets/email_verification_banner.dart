@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers/app_providers.dart';
 import '../../app/theme/app_colors.dart';
 import '../../core/config/app_env.dart';
+import '../../l10n/remaining_surface.dart';
 
 class EmailVerificationBanner extends ConsumerStatefulWidget {
   const EmailVerificationBanner({super.key});
@@ -40,15 +41,29 @@ class _EmailVerificationBannerState extends ConsumerState<EmailVerificationBanne
           children: [
             const Icon(Icons.mark_email_unread_rounded, color: AppColors.neonLime),
             const SizedBox(width: 12),
-            const Expanded(
+            Expanded(
               child: Text(
-                '이메일 인증을 완료해 주세요. 결제·대회 참가 전에 필요할 수 있습니다.',
-                style: TextStyle(fontSize: 13),
+                RemainingSurface.tr(
+                  context,
+                  'widget.email_verification_banner.button',
+                  '이메일 인증을 완료해 주세요. 결제·대회 참가 전에 필요할 수 있습니다.',
+                ),
+                style: const TextStyle(fontSize: 13),
               ),
             ),
             TextButton(
               onPressed: _sending ? null : _sendVerificationEmail,
-              child: Text(_sending ? '발송 중...' : '재발송'),
+              child: Text(_sending
+                  ? RemainingSurface.tr(
+                      context,
+                      'widget.email_verification_banner.button.2',
+                      '발송 중...',
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'widget.email_verification_banner.button.3',
+                      '재발송',
+                    )),
             ),
           ],
         ),
@@ -64,14 +79,31 @@ class _EmailVerificationBannerState extends ConsumerState<EmailVerificationBanne
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('인증 메일을 발송했습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'widget.email_verification_banner.toast',
+              '인증 메일을 발송했습니다.',
+            ),
+          ),
+        ),
       );
     } catch (error) {
       if (!mounted) {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('인증 메일 발송 실패: $error')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'widget.email_verification_banner.toast.2',
+              '인증 메일 발송 실패: $error',
+              {'error': error},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

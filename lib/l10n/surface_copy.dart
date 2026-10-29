@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'app_localizations.dart';
+import 'surface_rest.dart';
 
 /// Draft copy for screens that were still Korean only.
 ///
@@ -1313,5 +1314,6 @@ List<String> missingSurfaceKeys() {
       }
     }
   }
+  missing.addAll(missingRestSurfaceKeys(ShareRunLocalizations.supportedLocales));
   return missing;
 }

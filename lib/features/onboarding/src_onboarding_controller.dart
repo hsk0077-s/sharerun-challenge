@@ -15,6 +15,7 @@ import '../../app/router/route_names.dart';
 import '../../core/constants/economy_constants.dart';
 import '../../core/constants/impact_constants.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/surface_rest.dart';
 import '../../data/models/activity_model.dart';
 import '../../data/models/user_model.dart';
 import '../pedometer/kst_calendar.dart';
@@ -153,6 +154,24 @@ class UserTier {
   String get displayNameKo => isSnail ? '달팽이' : '${medal.labelKo} ${animal.labelKo}';
 
   String get displayNameWithEmoji => '${animal.emoji} $koreanName';
+
+  /// Animal name in [locale]. Korean stays [labelKo] / '달팽이'.
+  String animalName(Locale locale) =>
+      animalLabel(locale, isSnail ? 'snail' : animal.code);
+
+  /// Medal name in [locale]. Snail has none.
+  String? medalName(Locale locale) =>
+      isSnail ? null : medalLabel(locale, medal.code);
+
+  /// Same order as [koreanName]: animal then medal. Snail is the animal only.
+  String gradeTitle(Locale locale) {
+    final animalText = animalName(locale);
+    final medalText = medalName(locale);
+    if (medalText == null) return animalText;
+    return '$animalText $medalText';
+  }
+
+  String gradeTitleWithEmoji(Locale locale) => '${animal.emoji} ${gradeTitle(locale)}';
 
   /// 티어 마스코트 그림. 모두 오른쪽을 본다. 메달은 그림에 없고
   /// 화면에서 [TierMedalBadge]로 따로 보여 준다.

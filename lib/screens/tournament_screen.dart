@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/surface_rest.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../core/theme/theme.dart';
 import '../features/shop/widgets/store_look.dart';
@@ -184,7 +185,10 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
           title: '티어 대회',
           note: myAnimal == null
               ? '등급을 받으면 참가할 수 있어요'
-              : '내 등급 ${myAnimal.labelKo}',
+              : myGradeLabel(
+                  Localizations.localeOf(context),
+                  animalLabel(Localizations.localeOf(context), myAnimal.code),
+                ),
         ),
         for (final room in groups.tier) card(room),
       ],

@@ -171,23 +171,51 @@ def _positive_series(values: list | None) -> bool:
     )
 
 
+# A live phone asks for a fix about once a second. A hand drawing of a
+# kilometre uses a handful of corners. Twelve fixes over three minutes is
+# still that drawing. A denser irregular trace is not caught here.
+SPARSE_GPS_MIN_SECONDS = 180
+SPARSE_GPS_MAX_POINTS = 12
+
+
+def gps_trace_sparse(route: list, duration_seconds: int | float) -> bool:
+    """True when a long run has too few fixes to be a live trace."""
+    if not isinstance(duration_seconds, (int, float)) or isinstance(duration_seconds, bool):
+        return False
+    if duration_seconds < SPARSE_GPS_MIN_SECONDS:
+        return False
+    points = _route_samples(route)
+    return 2 <= len(points) < SPARSE_GPS_MAX_POINTS
+
+
 def beginner_signal_hold(
     *,
     heart_rates: list | None,
     cadence_spm: list | None,
     total_steps: int | None,
     gps_route: list | None,
+    duration_seconds: int | float | None = None,
 ) -> str | None:
     """Prize-only hold. Credits stay on the run.
 
     Pace cannot separate a slow run from a slow drawing. A uniform GPS
     trace is a drawing even when fake heart-rate numbers are attached.
-    No steps, cadence, or heart rate, and no route to judge, is the other
-    case. ``None`` means the caller did not send that signal, so older
-    tests that omit it are left alone.
+    A long trace with fewer than twelve fixes is the same drawing after
+    the gaps were nudged so they are no longer even. Cadence on that
+    trace with no step total is typed in, not counted. A finish that
+    sends cadence and no route is not this case. No steps, cadence, or
+    heart rate, and no route to judge, is the other case. ``None`` means the caller did
+    not send that signal, so older tests that omit it are left alone.
+    A dense irregular trace that also sends a step total is not held.
     """
     if isinstance(gps_route, list) and gps_spacing_uniform(gps_route):
         return "uniform_gps"
+    if (
+        isinstance(gps_route, list)
+        and duration_seconds is not None
+        and gps_trace_sparse(gps_route, duration_seconds)
+    ):
+        return "sparse_gps"
     signals_known = (
         heart_rates is not None or cadence_spm is not None or total_steps is not None
     )
@@ -198,6 +226,12 @@ def beginner_signal_hold(
         if isinstance(total_steps, int) and not isinstance(total_steps, bool) and total_steps > 0
         else 0
     )
+    # Cadence with no step total, on a route we can see, was typed in.
+    # A finish that omits the route is left to the other rules. Older
+    # prize tests send cadence and no steps and no trace.
+    route_points = _route_samples(gps_route) if isinstance(gps_route, list) else []
+    if _positive_series(cadence_spm) and steps <= 0 and len(route_points) >= 2:
+        return "cadence_unbacked"
     route_known = isinstance(gps_route, list)
     route_short = not route_known or len(_route_samples(gps_route or [])) < 2
     if (
@@ -260,6 +294,7 @@ def prize_finish_fields(
             cadence_spm=cadence_spm,
             total_steps=total_steps,
             gps_route=gps_route,
+            duration_seconds=duration,
         )
         if prize_tier_id(tournament) == "beginner"
         else None

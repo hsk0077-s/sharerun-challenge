@@ -5,6 +5,7 @@ import '../../../app/providers/app_providers.dart';
 import '../../../app/router/route_names.dart';
 import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
+import '../../../l10n/surface_rest.dart';
 import '../../../data/models/wallet_model.dart';
 import '../../../screens/my_wallet_screen.dart';
 import '../../home/home_cards.dart';
@@ -98,8 +99,9 @@ class MyIdentityRow extends ConsumerWidget {
                 RouteNames.tierBook,
               ),
             ),
-            label: tier.circleLabel,
-            sub: tier.circleSubLabel ?? '등급 심사 전',
+            label: tier.animalName(Localizations.localeOf(context)),
+            sub: tier.medalName(Localizations.localeOf(context)) ??
+                unratedGradeLabel(Localizations.localeOf(context)),
             subColor: tokens.colors.accent,
             onLabelTap: () => HomeUserIdentityHeader.openBook(
               context,

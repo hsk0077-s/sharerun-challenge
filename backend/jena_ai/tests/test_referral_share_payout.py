@@ -710,6 +710,120 @@ def test_no_referrer_run_holds_the_referee_until_a_later_run() -> None:
     assert _share(db, "u1") == 20
 
 
+def _square(shift_m: float = 0.0) -> list[dict]:
+    corners = [(0.0, 0.0), (200.0, 0.0), (200.0, 200.0), (0.0, 200.0), (0.0, 0.0)]
+    points = []
+    for left, right in zip(corners, corners[1:]):
+        for step in range(8):
+            blend = step / 8
+            north = left[0] + (right[0] - left[0]) * blend
+            east = left[1] + (right[1] - left[1]) * blend + shift_m
+            points.append(
+                {
+                    "latitude": 37.5 + north / 111_320.0,
+                    "longitude": 127.0 + east / 88_300.0,
+                    "recordedAt": "t",
+                }
+            )
+    return points
+
+
+def _finish_referral(db, *, device_id: str, route: list[dict], started: datetime, cadence: list[int]):
+    service = _service(db)
+    request = ValidateRunRequest(
+        activity_id="run-3",
+        distance_km=1.1,
+        duration_seconds=400,
+        gyro_stability_score=0.5,
+        cadence_spm=cadence,
+        gps_route=route,
+        started_at=started.isoformat(),
+        device_id=device_id,
+    )
+    service._persist_validation_tx(
+        _MemoryTxn(),
+        "u2",
+        request,
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=0,
+            forfeit_deposit=False,
+        ),
+        db.collection("activities").document("run-3"),
+        db.collection("users").document("u2"),
+        account_created_at=_DAY1,
+        now=_DAY3,
+    )
+
+
+def test_offset_loop_on_two_phones_holds_referee_and_referrer() -> None:
+    """Different devices, same signature, route slid 150m. 40,000 + 30,000 stay held.
+
+    The 10,000 first milestone uses the same ``twin_run`` reason when that
+    run is the copy. This call is the third day, so the new row is 40,000.
+    """
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_run_device="phone-r")
+    cadence = [170] * 20
+    signature = run_signature(distance_km=1.1, duration_seconds=400, cadence_spm=cadence)
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _square(),
+        "deviceId": "phone-r",
+    }
+    _finish_referral(
+        db,
+        device_id="phone-b",
+        route=_square(150.0),
+        started=_DAY3 + timedelta(seconds=40),
+        cadence=cadence,
+    )
+    assert _share(db, "u2") == 40
+    assert _share(db, "u1") == 20
+    referee = db.store["referralPayouts/u2_trial_referee"]
+    assert referee["reason"] == "twin_run"
+    assert referee["amount"] == 40_000
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["status"] == "held"
+    assert referrer["reason"] == "twin_run"
+    assert referrer["amount"] == 30_000
+
+
+def test_same_phone_start_delayed_181s_holds_the_referee() -> None:
+    """3 min 1 s later on one phone. Referrer was already 0. Referee 40,000 is held."""
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_run_device="phone-same")
+    cadence = [170] * 20
+    signature = run_signature(distance_km=1.1, duration_seconds=400, cadence_spm=cadence)
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _square(),
+        "deviceId": "phone-same",
+    }
+    _finish_referral(
+        db,
+        device_id="phone-same",
+        route=_square(400.0),
+        started=_DAY3 + timedelta(seconds=181),
+        cadence=cadence,
+    )
+    assert _share(db, "u2") == 40
+    referee = db.store["referralPayouts/u2_trial_referee"]
+    assert referee["reason"] == "twin_run"
+    assert referee["amount"] == 40_000
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["amount"] == 0
+    assert referrer["reason"] == "twin_run"
+
+
 def test_validation_wrapper_passes_transaction_before_service() -> None:
     from unittest.mock import MagicMock
 

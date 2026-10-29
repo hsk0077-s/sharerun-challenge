@@ -230,7 +230,9 @@ class _OnboardingRunResultScreenState
           ? RunFinishTierBadges(
               // 아직 등급이 없으면(달팽이, 예비 천사) 그 원은 카드에 넣지 않는다.
               animalImage: tier.isSnail ? null : tier.avatarAssetPath,
-              animalLabel: tier.isSnail ? null : tier.circleLabel,
+              animalLabel: tier.isSnail
+                  ? null
+                  : tier.animalName(Localizations.localeOf(context)),
               angelImage:
                   angel == AngelTier.preAngel ? null : angel.avatarAssetPath,
               angelLabel:

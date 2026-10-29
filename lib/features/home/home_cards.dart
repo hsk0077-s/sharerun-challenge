@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_env.dart';
 import '../../core/theme/theme.dart';
 import '../../l10n/guidance_copy.dart';
+import '../../l10n/surface_rest.dart';
 import '../../data/models/wallet_model.dart';
 import '../donation/today_donation.dart';
 
@@ -49,6 +50,7 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final wallet = widget.wallet;
+    final copy = HomeSurfaceCopy.of(Localizations.localeOf(context));
     return SrcSurfaceCard(
       padding: EdgeInsets.all(tokens.spacing.md),
       borderColor: tokens.colors.accent.withValues(alpha: 0.18),
@@ -65,7 +67,7 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
                 SizedBox(width: tokens.spacing.xs),
                 Flexible(
                   child: Text(
-                    '내 다이아',
+                    copy.diamondMine,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.titleSmall?.copyWith(
@@ -102,14 +104,14 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
             SizedBox(height: tokens.spacing.sm),
             if (wallet.hasDiamondSplit) ...[
               _SplitRow(
-                label: '보너스 다이아',
-                badge: '먼저 사용',
+                label: copy.bonusDia,
+                badge: copy.useFirst,
                 value: wallet.freeDiamondBalance,
                 valueKey: HomeDiamondCard.bonusKey,
               ),
               SizedBox(height: tokens.spacing.xs),
               _SplitRow(
-                label: '결제 다이아',
+                label: copy.paidDia,
                 value: wallet.paidDiamondBalance,
                 valueKey: HomeDiamondCard.paidKey,
               ),
@@ -117,9 +119,8 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
             ],
             Text(
               AppEnv.inAppPurchasesEnabled
-                  ? '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.\n'
-                      '환불은 결제 다이아 기준이에요.'
-                  : '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.',
+                  ? copy.bonusRefundNote
+                  : copy.bonusNote,
               style: textTheme.bodySmall?.copyWith(
                 color: tokens.colors.muted,
                 height: 1.45,
@@ -130,7 +131,7 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
               child: TextButton(
                 key: HomeDiamondCard.storeKey,
                 onPressed: widget.onOpenStore,
-                child: const Text('다이아 상점 가기'),
+                child: Text(copy.openDiaShop),
               ),
             ),
           ],

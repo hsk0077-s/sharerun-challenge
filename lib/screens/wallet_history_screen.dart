@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/strings/app_strings.dart';
+import '../l10n/surface_rest.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import '../data/models/wallet_transaction_model.dart';
@@ -67,6 +68,7 @@ class _WalletHistoryScreenState extends ConsumerState<WalletHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final copy = WalletSurfaceCopy.of(Localizations.localeOf(context));
     return Scaffold(
       backgroundColor: AppColors.settingsBackground,
       appBar: AppBar(
@@ -74,7 +76,7 @@ class _WalletHistoryScreenState extends ConsumerState<WalletHistoryScreen> {
         elevation: 0,
         foregroundColor: AppColors.textBlack,
         title: Text(
-          '내 거래 내역',
+          copy.historyTitle,
           style: AppTextStyles.header1.copyWith(fontSize: 20),
         ),
       ),
@@ -82,7 +84,7 @@ class _WalletHistoryScreenState extends ConsumerState<WalletHistoryScreen> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '서버 원장에 기록된 내역이에요. 한 번 기록된 내역은 지워지지 않아요.',
+            copy.historyNote,
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -120,7 +122,7 @@ class _WalletHistoryScreenState extends ConsumerState<WalletHistoryScreen> {
                     : OutlinedButton(
                         key: WalletHistoryScreen.moreButtonKey,
                         onPressed: _load,
-                        child: const Text('더 보기'),
+                        child: Text(copy.more),
                       ),
               ),
           ],
@@ -140,14 +142,16 @@ class _Retry extends StatelessWidget {
     return Column(
       children: [
         Text(
-          '내역을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.',
+          WalletSurfaceCopy.of(Localizations.localeOf(context)).historyError,
           style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
           key: WalletHistoryScreen.retryButtonKey,
           onPressed: onRetry,
-          child: const Text('다시 시도'),
+          child: Text(
+            WalletSurfaceCopy.of(Localizations.localeOf(context)).retry,
+          ),
         ),
       ],
     );

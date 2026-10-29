@@ -10,13 +10,19 @@ empty route is zero. That pair is a twin when the starts are within one
 minute and a supporting signal matches: the same device id, or the same
 signature. Once both sides send a route, a shifted track used to skip the
 device check as well. The same device inside the three-minute window is
-still one outing. The run itself still counts. Missing times do not match,
+still one outing. Waiting just past that window on the same device, with
+the same workout numbers or a slid copy of a turning route, is still one
+outing up to thirty minutes. Two handsets with the same workout numbers
+and a turning route slid between 40m and 2km are one outing inside the
+three-minute window. A straight slide is not: too many real kilometres
+look like that. The run itself still counts. Missing times do not match,
 so older rows are left alone.
 """
 
 from datetime import datetime, timedelta
 import hashlib
 import math
+import statistics
 
 TWIN_WINDOW_SECONDS = 180
 # Near-identical start for a run that has no GPS route. Wider than a few
@@ -25,6 +31,17 @@ TWIN_WINDOW_SECONDS = 180
 BARE_WINDOW_SECONDS = 60
 TWIN_ROUTE_METERS = 40.0
 TWIN_ROUTE_FRACTION = 0.5
+# Same handset, start delayed just past the three-minute window. Thirty
+# minutes catches a few minutes of waiting. A later start is left alone.
+SAME_DEVICE_DELAY_SECONDS = 30 * 60
+# A copied track shifted sideways. Under 40m is already the overlap check.
+# Over 2km is another neighbourhood and is not called a copy.
+OFFSET_MIN_METERS = 40.0
+OFFSET_MAX_METERS = 2000.0
+OFFSET_RESIDUAL_METERS = 25.0
+OFFSET_FRACTION = 0.85
+OFFSET_MIN_TURN_DEGREES = 25.0
+OFFSET_SAMPLES = 12
 TWIN_REASON = "twin_run"
 # Payout is held because the referrer has no run to compare yet.
 # It is not a twin. A later referee run reopens it once a run exists.
@@ -211,12 +228,147 @@ def same_device_shifted_route(left: dict, right: dict) -> bool:
     return bool(left_device) and left_device == right_device
 
 
+def _resample(points: list[tuple[float, float]], count: int) -> list[tuple[float, float]]:
+    if len(points) < 2:
+        return []
+    last = len(points) - 1
+    out = []
+    for index in range(count):
+        at = round(index * last / (count - 1))
+        out.append(points[at])
+    return out
+
+
+def _bearing(a: tuple[float, float], b: tuple[float, float]) -> float | None:
+    if _meters(a, b) < 5.0:
+        return None
+    lat1, lon1 = math.radians(a[0]), math.radians(a[1])
+    lat2, lon2 = math.radians(b[0]), math.radians(b[1])
+    dlon = lon2 - lon1
+    x = math.sin(dlon) * math.cos(lat2)
+    y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(dlon)
+    return math.degrees(math.atan2(x, y)) % 360.0
+
+
+def _max_turn_degrees(points: list[tuple[float, float]]) -> float:
+    """Largest heading change. A straight kilometre stays near zero."""
+    headings = []
+    for left, right in zip(points, points[1:]):
+        heading = _bearing(left, right)
+        if heading is not None:
+            headings.append(heading)
+    if len(headings) < 2:
+        return 0.0
+    largest = 0.0
+    previous = headings[0]
+    for heading in headings[1:]:
+        delta = abs(heading - previous)
+        if delta > 180.0:
+            delta = 360.0 - delta
+        if delta > largest:
+            largest = delta
+        previous = heading
+    return largest
+
+
+def translated_route_copy(left: dict, right: dict) -> bool:
+    """True when one route is the other, slid sideways, and the path turns.
+
+    A straight line slid east matches every other straight kilometre in the
+    city, so those stay out. The shift has to be past the 40m overlap rule
+    and inside 2km. The points after that slide have to sit within 25m.
+    """
+    left_points = _route_points(left)
+    right_points = _route_points(right)
+    if len(left_points) < 6 or len(right_points) < 6:
+        return False
+    left_sample = _resample(left_points, OFFSET_SAMPLES)
+    right_sample = _resample(right_points, OFFSET_SAMPLES)
+    if len(left_sample) != OFFSET_SAMPLES or len(right_sample) != OFFSET_SAMPLES:
+        return False
+    dlat = statistics.median(
+        right_sample[index][0] - left_sample[index][0] for index in range(OFFSET_SAMPLES)
+    )
+    dlng = statistics.median(
+        right_sample[index][1] - left_sample[index][1] for index in range(OFFSET_SAMPLES)
+    )
+    shift = _meters(left_sample[0], (left_sample[0][0] + dlat, left_sample[0][1] + dlng))
+    if shift <= OFFSET_MIN_METERS or shift > OFFSET_MAX_METERS:
+        return False
+    close = 0
+    for point, other in zip(left_sample, right_sample):
+        moved = (point[0] + dlat, point[1] + dlng)
+        if _meters(moved, other) <= OFFSET_RESIDUAL_METERS:
+            close += 1
+    if close / OFFSET_SAMPLES < OFFSET_FRACTION:
+        return False
+    return (
+        _max_turn_degrees(left_sample) >= OFFSET_MIN_TURN_DEGREES
+        or _max_turn_degrees(right_sample) >= OFFSET_MIN_TURN_DEGREES
+    )
+
+
+def _signature_match(left: dict, right: dict) -> bool:
+    left_sig = left.get("runSignature")
+    right_sig = right.get("runSignature")
+    return isinstance(left_sig, str) and bool(left_sig) and left_sig == right_sig
+
+
+def _start_gap_seconds(left: dict, right: dict) -> float | None:
+    started = _started(left)
+    other = _started(right)
+    if started is None or other is None:
+        return None
+    return abs((started - other).total_seconds())
+
+
+def offset_route_twin(left: dict, right: dict) -> bool:
+    """Different handsets, same workout numbers, route copied and slid.
+
+    Same handset is ``same_device_shifted_route`` or
+    ``same_device_delayed_copy``. A straight slide, a slide past 2km, or a
+    different signature stays out.
+    """
+    left_device = _device_id(left)
+    right_device = _device_id(right)
+    if left_device and left_device == right_device:
+        return False
+    gap = _start_gap_seconds(left, right)
+    if gap is None or gap > TWIN_WINDOW_SECONDS:
+        return False
+    if not _signature_match(left, right):
+        return False
+    return translated_route_copy(left, right)
+
+
+def same_device_delayed_copy(left: dict, right: dict) -> bool:
+    """Same handset, start later than three minutes and within thirty.
+
+    The three-minute window is ``same_device_shifted_route``. Waiting three
+    minutes and one second used to skip it. The workout numbers have to
+    match, or the route has to be a slid copy that turns. A different
+    workout on a shared phone is not this.
+    """
+    left_device = _device_id(left)
+    right_device = _device_id(right)
+    if not left_device or left_device != right_device:
+        return False
+    gap = _start_gap_seconds(left, right)
+    if gap is None or gap <= TWIN_WINDOW_SECONDS or gap > SAME_DEVICE_DELAY_SECONDS:
+        return False
+    if _signature_match(left, right):
+        return True
+    return translated_route_copy(left, right)
+
+
 def referral_twin_reason(left: dict, right: dict) -> str | None:
     """``twin_run`` when a referral payout for this pair should be held."""
     if (
         is_twin_run(left, right)
         or bare_phone_twin(left, right)
         or same_device_shifted_route(left, right)
+        or offset_route_twin(left, right)
+        or same_device_delayed_copy(left, right)
     ):
         return TWIN_REASON
     return None

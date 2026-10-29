@@ -268,7 +268,7 @@ void main() {
     final account = _account(poster, MemoryStore());
     expect(
       () => account.pair('482910'),
-      throwsA(isA<PairingRejected>().having((e) => e.message, 'message', contains('3개'))),
+      throwsA(isA<PairingRejected>().having((e) => e.message, 'message', 'watch_limit')),
     );
     expect(account.isPaired, isFalse);
   });

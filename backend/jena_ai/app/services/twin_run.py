@@ -21,6 +21,9 @@ BARE_WINDOW_SECONDS = 60
 TWIN_ROUTE_METERS = 40.0
 TWIN_ROUTE_FRACTION = 0.5
 TWIN_REASON = "twin_run"
+# Payout is held because the referrer has no run to compare yet.
+# It is not a twin. A later referee run reopens it once a run exists.
+REFERRER_RUN_ABSENT = "referrer_run_absent"
 
 
 def run_signature(

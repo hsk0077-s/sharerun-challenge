@@ -167,10 +167,14 @@ class _PairingFaceState extends State<PairingFace> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _message ??
-                      (_busy
+                  _message == null
+                      ? (_busy
                           ? WatchCopy.ofContext(context).checking
-                          : WatchCopy.ofContext(context).pairingHint),
+                          : WatchCopy.ofContext(context).pairingHint)
+                      : WatchCopy.pairingError(
+                          WidgetsBinding.instance.platformDispatcher.locale,
+                          _message!,
+                        ),
                   key: PairingFace.messageKey,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -277,7 +281,10 @@ class RankAlertFace extends StatelessWidget {
     final copy = WatchCopy.ofContext(context);
     return _Face(
         label: copy.rankAlert,
-        big: '$rank',
+        big: WatchCopy.rankPlace(
+          WidgetsBinding.instance.platformDispatcher.locale,
+          rank,
+        ),
         sub: gapPeople > 0 ? copy.aheadOf(gapPeople) : copy.leading,
         icon: Icons.emoji_events_outlined,
       );
@@ -298,7 +305,8 @@ class SummaryFace extends StatelessWidget {
     return _Face(
         label: copy.done,
         big: '${formatKm(session.distanceKm)}km',
-        sub: '${formatPace(session.paceSecondsPerKm)}/km · ${formatMinutes(session.movingTime)}\n'
+        sub: '${formatPace(session.paceSecondsPerKm)}/km · '
+            '${WatchCopy.minutes(WidgetsBinding.instance.platformDispatcher.locale, session.movingTime.inMinutes)}\n'
             '${pendingCount > 0 ? copy.uploadPending(pendingCount) : copy.nothingToUpload}',
         icon: Icons.check_rounded,
         onTap: onDone,

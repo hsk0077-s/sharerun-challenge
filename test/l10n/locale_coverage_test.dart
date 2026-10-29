@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/features/iap/widgets/dia_notice.dart';
+import 'package:share_run_challenge/features/profile/invite_copy.dart';
 import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/features/accessories/accessory_catalog.dart';
 import 'package:share_run_challenge/features/accessories/accessory_names.dart';
@@ -36,6 +39,39 @@ void main() {
   test('shop items, refund sheet, accessories, and donation match exist in every locale', () {
     final missing = missingCommerceKeys();
     expect(missing, isEmpty, reason: missing.join('\n'));
+  });
+
+  test('core phrases and invite copy exist in every locale', () {
+    final missing = [...missingCoreLocaleKeys(), ...missingInviteKeys()];
+    expect(missing, isEmpty, reason: missing.join('\n'));
+  });
+
+  test('watchOS copy files carry the same 11 language codes and pairing errors', () {
+    const codes = ['ko', 'en', 'ja', 'zh', 'es', 'pt', 'de', 'fr', 'vi', 'th', 'id'];
+    const pairing = [
+      'no_server',
+      'need_six_digits',
+      'bad_url',
+      'rate_limited',
+      'watch_limit',
+      'bad_code',
+      'auth_url',
+      'sign_in_failed',
+      'offline',
+    ];
+    for (final path in [
+      'watchos_app/ShareRunWatch/WatchCopy.swift',
+      'ios/ShareRunWatch Watch App/WatchCopy.swift',
+    ]) {
+      final text = File(path).readAsStringSync();
+      for (final code in codes) {
+        expect(text.contains('"$code"'), isTrue, reason: '$path $code');
+      }
+      for (final key in pairing) {
+        expect(text.contains('"$key"'), isTrue, reason: '$path $key');
+      }
+      expect(text.contains('원어민 검수 전'), isTrue, reason: path);
+    }
   });
 
   test('Korean guidance matches the strings the screens already shipped', () {

@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../app/router/route_names.dart';
+import '../../l10n/remaining_surface.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import 'pedometer_step_truth.dart';
 import 'solo_pedometer_foreground.dart';
@@ -15,6 +16,11 @@ import '../../core/notifications/reminder_zone.dart';
 const _goldenChannelId = 'src_walking_golden_hour';
 const _goldenChannelName = '워킹챌린지 코인 줍기';
 const _payload = RouteNames.soloPedometerPath;
+
+String get _goldenChannelDescription => RemainingSurface.trNow(
+      'pedometer.walking_challenge_notification_service.body',
+      '워킹챌린지 아침·점심·저녁 코인 수집 리마인더',
+    );
 
 @pragma('vm:entry-point')
 void walkingChallengeNotificationTapBackground(NotificationResponse response) {
@@ -57,10 +63,10 @@ abstract final class WalkingChallengeNotificationService {
         debugPrint('WalkingChallengeNotificationService perm: $e\n$st');
       }
       await android?.createNotificationChannel(
-        const AndroidNotificationChannel(
+        AndroidNotificationChannel(
           _goldenChannelId,
           _goldenChannelName,
-          description: '워킹챌린지 아침·점심·저녁 코인 수집 리마인더',
+          description: _goldenChannelDescription,
           importance: Importance.high,
         ),
       );
@@ -112,7 +118,11 @@ abstract final class WalkingChallengeNotificationService {
         id: walkingEveningReminderId,
         hour: 20,
         minute: 30,
-        title: '🚨 $name님, 아직 안 주운 SHARE',
+        title: RemainingSurface.trNow(
+          'pedometer.walking_challenge_notification_service.body.2',
+          '🚨 $name님, 아직 안 주운 SHARE',
+          {'name': name},
+        ),
         body: WalkingChallengeNotificationCopy.goldenEveningBody(),
       );
     } catch (e, st) {
@@ -138,15 +148,15 @@ abstract final class WalkingChallengeNotificationService {
     required String body,
   }) async {
     await ensureReminderTimeZone();
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: AndroidNotificationDetails(
         _goldenChannelId,
         _goldenChannelName,
-        channelDescription: '워킹챌린지 아침·점심·저녁 코인 수집 리마인더',
+        channelDescription: _goldenChannelDescription,
         importance: Importance.high,
         priority: Priority.high,
       ),
-      iOS: DarwinNotificationDetails(
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,

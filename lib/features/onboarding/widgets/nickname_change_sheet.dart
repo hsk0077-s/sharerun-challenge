@@ -10,6 +10,7 @@ import '../../../core/navigation/app_route_nav.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../../../screens/in_app_billing_screen.dart';
 import '../../profile/user_profile_notifier.dart';
 import '../../wallet/providers/wallet_provider.dart';
@@ -103,10 +104,18 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
       final messenger = ScaffoldMessenger.maybeOf(context);
       Navigator.of(context).pop(false);
       messenger?.showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            '닉네임이 변경되었습니다. '
-            '(${EconomyConstants.nicknameChangeFeeDia} DIA 차감)',
+            RemainingSurface.tr(
+              context,
+              'onboarding.nickname_change.toast',
+              '닉네임이 변경되었습니다. '
+              '(${EconomyConstants.nicknameChangeFeeDia} DIA 차감)',
+              {
+                'EconomyConstants.nicknameChangeFeeDia':
+                    EconomyConstants.nicknameChangeFeeDia,
+              },
+            ),
           ),
           behavior: SnackBarBehavior.floating,
         ),
@@ -172,12 +181,20 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                       ),
                       const SizedBox(height: 18),
                       Text(
-                        '새로운 질주를 위한 이름을 새기시겠습니까?',
+                        RemainingSurface.tr(
+                          context,
+                          'onboarding.nickname_change.body',
+                          '새로운 질주를 위한 이름을 새기시겠습니까?',
+                        ),
                         style: AppTextStyles.header1.copyWith(fontSize: 20),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        '러너님의 정체성을 정밀 등록합니다.',
+                        RemainingSurface.tr(
+                          context,
+                          'onboarding.nickname_change.body.2',
+                          '러너님의 정체성을 정밀 등록합니다.',
+                        ),
                         style: AppTextStyles.subtitle1.copyWith(
                           fontSize: 13,
                           color: AppColors.textGrey,
@@ -204,7 +221,12 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '보유 $diaBalance DIA  ·  변경 수수료 $fee DIA',
+                                RemainingSurface.tr(
+                                  context,
+                                  'onboarding.nickname_change.body.3',
+                                  '보유 $diaBalance DIA  ·  변경 수수료 $fee DIA',
+                                  {'diaBalance': diaBalance, 'fee': fee},
+                                ),
                                 style: AppTextStyles.caption.copyWith(
                                   color: AppColors.textBlack,
                                   fontWeight: FontWeight.w600,
@@ -300,8 +322,16 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                                 )
                               : Text(
                                   hasEnoughDia
-                                      ? '100 DIA 소모하여 변경하기'
-                                      : '다이아몬드 부족 - 교환소로 이동하기',
+                                      ? RemainingSurface.tr(
+                                          context,
+                                          'onboarding.nickname_change.body.4',
+                                          '100 DIA 소모하여 변경하기',
+                                        )
+                                      : RemainingSurface.tr(
+                                          context,
+                                          'onboarding.nickname_change.body.5',
+                                          '다이아몬드 부족 - 교환소로 이동하기',
+                                        ),
                                   style: AppTextStyles.buttonText.copyWith(
                                     color: hasEnoughDia ? AppColors.nightOnLime : AppColors.textWhite,
                                     fontSize: 15,

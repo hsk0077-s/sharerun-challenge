@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/root_navigator.dart';
 import '../../app/router/route_names.dart';
 import '../../core/theme/app_colors.dart';
+import '../../l10n/remaining_surface.dart';
 import 'kst_calendar.dart';
 import 'pedometer_day_rollover.dart';
 import 'pedometer_health_cap.dart';
@@ -36,7 +37,14 @@ const _smartPushLunchKey = 'src_smart_push_fired_lunch';
 const _smartPushEveningKey = 'src_smart_push_fired_evening';
 const _smartPushEnabledKey = 'walking_challenge_benefit_notif';
 const _smartPushChannelId = 'src_walking_smart_time';
-const _smartPushChannelName = '워킹챌린지 스마트 타임 푸시';
+String get _smartPushChannelName => RemainingSurface.trNow(
+      'pedometer.solo_pedometer_foreground.body',
+      '워킹챌린지 스마트 타임 푸시',
+    );
+String get _smartPushChannelDescription => RemainingSurface.trNow(
+      'pedometer.solo_pedometer_foreground.body.5',
+      '워킹챌린지 아침·점심·저녁 조건부 리마인더',
+    );
 const _smartMorningId = 801;
 const _smartLunchId = 1231;
 const _smartEveningId = 1801;
@@ -230,7 +238,10 @@ class SoloPedometerForegroundHandler extends TaskHandler {
       if (!firedMorning && now.hour >= 8) {
         await _showSmartPush(
           id: _smartMorningId,
-          title: '☀️ 굿모닝! 오늘 걸음을 주워 보세요.',
+          title: RemainingSurface.trNow(
+            'pedometer.solo_pedometer_foreground.body.2',
+            '☀️ 굿모닝! 오늘 걸음을 주워 보세요.',
+          ),
           body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
         );
         firedMorning = true;
@@ -241,7 +252,10 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         if (currentSteps < 1500) {
           await _showSmartPush(
             id: _smartLunchId,
-            title: '🍱 점심 식사 후 가벼운 산책 어떠세요?',
+            title: RemainingSurface.trNow(
+              'pedometer.solo_pedometer_foreground.body.3',
+              '🍱 점심 식사 후 가벼운 산책 어떠세요?',
+            ),
             body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
           );
         }
@@ -253,7 +267,10 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         if (currentSteps < 4500) {
           await _showSmartPush(
             id: _smartEveningId,
-            title: '오늘 걸음은 이렇게 주울 수 있어요',
+            title: RemainingSurface.trNow(
+              'pedometer.solo_pedometer_foreground.body.4',
+              '오늘 걸음은 이렇게 주울 수 있어요',
+            ),
             body: WalkingChallengeNotificationCopy.harvestHint(currentSteps),
           );
         }
@@ -311,10 +328,10 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     final android = _smartPlugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     await android?.createNotificationChannel(
-      const AndroidNotificationChannel(
+      AndroidNotificationChannel(
         _smartPushChannelId,
         _smartPushChannelName,
-        description: '워킹챌린지 아침·점심·저녁 조건부 리마인더',
+        description: _smartPushChannelDescription,
         importance: Importance.high,
       ),
     );
@@ -327,15 +344,15 @@ class SoloPedometerForegroundHandler extends TaskHandler {
     required String body,
   }) async {
     await _ensureSmartPlugin();
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: AndroidNotificationDetails(
         _smartPushChannelId,
         _smartPushChannelName,
-        channelDescription: '워킹챌린지 아침·점심·저녁 조건부 리마인더',
+        channelDescription: _smartPushChannelDescription,
         importance: Importance.high,
         priority: Priority.high,
       ),
-      iOS: DarwinNotificationDetails(
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
@@ -572,9 +589,16 @@ abstract final class SoloPedometerForeground {
   static String titleFor({required double pendingShare}) {
     final pendingCoinsInt = pendingShare.floor();
     if (pendingCoinsInt > 0) {
-      return '$pendingCoinsInt SHARE 대기 중! 🪙';
+      return RemainingSurface.trNow(
+        'pedometer.solo_pedometer_foreground.body.6',
+        '$pendingCoinsInt SHARE 대기 중! 🪙',
+        {'pendingCoinsInt': pendingCoinsInt},
+      );
     }
-    return '오늘 0보 달성! 🪙';
+    return RemainingSurface.trNow(
+      'pedometer.solo_pedometer_foreground.body.7',
+      '오늘 0보 달성! 🪙',
+    );
   }
 
   static String bodyFor({
@@ -582,7 +606,11 @@ abstract final class SoloPedometerForeground {
     int claimedSteps = 0,
     double? pendingShare,
   }) {
-    return '오늘 ${_comma(steps)}보를 걸었습니다. 터치해서 즉시 코인을 주우세요!';
+    return RemainingSurface.trNow(
+      'pedometer.solo_pedometer_foreground.body.8',
+      '오늘 ${_comma(steps)}보를 걸었습니다. 터치해서 즉시 코인을 주우세요!',
+      {'_comma(steps)': _comma(steps)},
+    );
   }
 
   static Future<
@@ -828,7 +856,10 @@ abstract final class SoloPedometerForeground {
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: _channelId,
         channelName: _channelName,
-        channelDescription: '워킹챌린지 걸음 수와 땀방울 진행도를 잠금화면과 상단바에 표시합니다.',
+        channelDescription: RemainingSurface.trNow(
+          'pedometer.solo_pedometer_foreground.body.9',
+          '워킹챌린지 걸음 수와 땀방울 진행도를 잠금화면과 상단바에 표시합니다.',
+        ),
         channelImportance: NotificationChannelImportance.DEFAULT,
         priority: NotificationPriority.DEFAULT,
         visibility: NotificationVisibility.VISIBILITY_PUBLIC,

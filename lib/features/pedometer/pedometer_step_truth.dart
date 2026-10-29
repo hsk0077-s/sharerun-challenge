@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../l10n/remaining_surface.dart';
 import 'pedometer_harvest_ledger.dart';
 
 /// Walking-challenge daily steps and the shade notification must share one
@@ -278,7 +279,10 @@ abstract final class PedometerStepTruth {
 abstract final class WalkingChallengeNotificationCopy {
   static const dailyGoal = 4500;
 
-  static const harvestRule = '(100걸음당 10, 하루 최대 600)';
+  static String get harvestRule => RemainingSurface.trNow(
+        'pedometer.pedometer_step_truth.body',
+        '(100걸음당 10, 하루 최대 600)',
+      );
 
   /// Approximate unharvested SHARE for [dailySteps]. Already-claimed steps
   /// are excluded when [claimedSteps] is known; otherwise this is the
@@ -289,7 +293,15 @@ abstract final class WalkingChallengeNotificationCopy {
       steps: currentSteps,
       claimedSteps: claimedSteps,
     );
-    return '${_comma(currentSteps)}보 · 줍기 가능 약 $approx SHARE $harvestRule';
+    return RemainingSurface.trNow(
+      'pedometer.pedometer_step_truth.body.2',
+      '${_comma(currentSteps)}보 · 줍기 가능 약 $approx SHARE $harvestRule',
+      {
+        '_comma(currentSteps)': _comma(currentSteps),
+        'approx': approx,
+        'harvestRule': harvestRule,
+      },
+    );
   }
 
   static ({String title, String body}) fromDailySteps(
@@ -299,24 +311,48 @@ abstract final class WalkingChallengeNotificationCopy {
     final currentSteps = PedometerStepTruth.clampDaily(dailySteps);
     final body = harvestHint(currentSteps, claimedSteps: claimedSteps);
     if (currentSteps >= dailyGoal) {
-      return (title: '오늘 걸음 이어가는 중 🚶', body: body);
+      return (
+        title: RemainingSurface.trNow(
+          'pedometer.pedometer_step_truth.body.3',
+          '오늘 걸음 이어가는 중 🚶',
+        ),
+        body: body,
+      );
     }
     if (currentSteps >= 1500) {
-      return (title: '숲길 걷는 중 👟', body: body);
+      return (
+        title: RemainingSurface.trNow(
+          'pedometer.pedometer_step_truth.body.4',
+          '숲길 걷는 중 👟',
+        ),
+        body: body,
+      );
     }
-    return (title: '쉐어런 챌린지 대기 중 🎯', body: body);
+    return (
+      title: RemainingSurface.trNow(
+        'pedometer.pedometer_step_truth.body.5',
+        '쉐어런 챌린지 대기 중 🎯',
+      ),
+      body: body,
+    );
   }
 
   /// Morning, lunch, and evening alarms repeat every day at the same clock
   /// time, so they must not freeze a pending total captured when scheduled.
-  static String goldenMorningBody() =>
-      '오늘 걸음은 100걸음당 10 SHARE, 하루 최대 600까지 주울 수 있어요.';
+  static String goldenMorningBody() => RemainingSurface.trNow(
+        'pedometer.pedometer_step_truth.body.6',
+        '오늘 걸음은 100걸음당 10 SHARE, 하루 최대 600까지 주울 수 있어요.',
+      );
 
-  static String goldenLunchBody() =>
-      '아직 안 주운 SHARE가 있으면 걷기 화면에서 주울 수 있어요. 100걸음당 10, 하루 최대 600.';
+  static String goldenLunchBody() => RemainingSurface.trNow(
+        'pedometer.pedometer_step_truth.body.7',
+        '아직 안 주운 SHARE가 있으면 걷기 화면에서 주울 수 있어요. 100걸음당 10, 하루 최대 600.',
+      );
 
-  static String goldenEveningBody() =>
-      '아직 안 주운 SHARE는 자정에 초기화돼요. 이미 지갑에 넣은 잔액은 그대로예요.';
+  static String goldenEveningBody() => RemainingSurface.trNow(
+        'pedometer.pedometer_step_truth.body.8',
+        '아직 안 주운 SHARE는 자정에 초기화돼요. 이미 지갑에 넣은 잔액은 그대로예요.',
+      );
 
   static String _comma(int n) {
     final raw = n.abs().toString();

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
+import '../../l10n/remaining_surface.dart';
 import '../accessories/accessory_catalog.dart';
 import '../accessories/dressed_mascot.dart';
 import '../onboarding/src_onboarding_controller.dart';
@@ -507,8 +508,17 @@ class WalkingHarvestCta extends StatelessWidget {
             ),
             child: Text(
               hasPendingCoins
-                  ? '$pendingCoinsInt SHARE 줍기'
-                  : '코인 쌓이는 중...',
+                  ? RemainingSurface.tr(
+                      context,
+                      'pedometer.walking_look.body',
+                      '$pendingCoinsInt SHARE 줍기',
+                      {'pendingCoinsInt': pendingCoinsInt},
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'pedometer.walking_look.body.2',
+                      '코인 쌓이는 중...',
+                    ),
               style: textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w900,
                 fontSize: 17,

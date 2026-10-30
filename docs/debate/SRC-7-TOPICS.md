@@ -621,6 +621,7 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
    - 10/30: 패스 200 DIA(패스+ 280 DIA **가정**)를 권고했다. 코드는 바꾸지 않았고 최종 선택은 대표 판단이다.
 2. Apple Watch를 맥 또는 Xcode Cloud에서 빌드해, 6번의 최종 체크리스트와 업로드 본문의 `device_id`를 시뮬레이터에서 볼지. 이 리눅스에는 Xcode와 swiftc가 없다.
 3. 골든 7건을 그 그림을 소유하는 PC에서 다시 찍을지. 이 리눅스에서 `--update-goldens`로 덮지 않는 쪽을 권한다. 근거는 아래 16시 골든 절이다.
+   - 10/30: 대표가 노트북에서 다시 찍기로 정했다. 7건의 테스트 파일·테스트 이름과 PowerShell 절차를 `docs/debate/GOLDEN-REGEN-LAPTOP.md`에 적었다. 이 리눅스는 골든 PNG를 바꾸지 않았다.
 
 ## 이번 라운드 테스트
 
@@ -653,5 +654,25 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
 - `wear_app` `flutter test`: **38 passed**.
 - 폰 앱 `flutter test`: **961 passed, 7 failed**. 실패한 7개는 위 골든이다.
 - `swiftc`: 없음. Apple Watch 체크리스트는 실행하지 못했다.
+
+### 10/30 라운드 — 7건의 정확한 파일 위치와 노트북 절차
+
+이 리눅스에서 골든 PNG는 다시 찍지 않았다(`git status`에 `test/**/goldens/*.png` 변경 없음). 대표 결정대로 노트북에서 다시 찍도록 테스트 파일·테스트 이름을 하나씩 확인했다.
+
+| 테스트 파일 | 테스트 이름 | 골든 PNG | diff |
+| --- | --- | --- | --- |
+| `test/core/theme/src_theme_test.dart` | `token showcase golden` | `goldens/src_token_showcase.png` | 0.45% (944px) |
+| `test/screens/home_tokens_test.dart` | `Home START golden` | `goldens/home_screen_tokens.png` | 2.36% (7,762px) |
+| `test/screens/home_tokens_test.dart` | `live Home tab golden` | `goldens/home_dashboard_tokens.png` | 5.88% (19,349px) |
+| `test/screens/lobby_my_tokens_test.dart` | `Lobby golden` | `goldens/lobby_tokens.png` | 0.17% (556px) |
+| `test/screens/lobby_my_tokens_test.dart` | `Tournament list golden` | `goldens/tournament_list_tokens.png` | 29.41% (96,814px) |
+| `test/screens/lobby_my_tokens_test.dart` | `My page golden` | `goldens/my_page_tokens.png` | 24.71% (81,337px) |
+| `test/screens/walking_tokens_test.dart` | `Walking challenge golden` | `goldens/walking_challenge_tokens.png` | 1.44% (4,750px) |
+
+`live Home tab golden`의 5.88%(19,349px)는 15시·16시의 5.73%(18,845px)와 조금 다르다. 같은 7건, 같은 방향(실패)이고 원인은 확인하지 않았다.
+
+이번 라운드에 `test/features/pedometer/walking_challenge_share_test.dart`의 `daily-goal brag card golden`(`goldens/walking_daily_goal_brag.png`)도 같은 `golden` 태그로 돌렸다. 이 8번째 골든은 이 리눅스에서 **통과**한다. 7건과 같은 파일로 묶여 있지 않으니, 노트북에서 재생성할 때 이 파일은 지정하지 않아야 건드리지 않는다.
+
+위 7건을 찍을 정확한 PowerShell 절차(버전 확인, 브랜치 체크아웃, 이 4개 테스트 파일만 `--update-goldens`, 결과 확인, 부산물 정리, 커밋)는 `docs/debate/GOLDEN-REGEN-LAPTOP.md`에 적었다. 코드 변경은 없다. 이 박스에서 돌리며 생긴 빌드 캐시(`build/`, `.dart_tool/`, `GeneratedPluginRegistrant.m`, `analysis_options.yaml`의 플러터 자동 추가 줄)는 되돌리거나 지웠다.
 
 ---

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../features/iap/widgets/purchases_closed_page.dart';
+import '../l10n/remaining_surface.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
@@ -30,7 +31,9 @@ class _SubscriptionManagementScreenState
   @override
   Widget build(BuildContext context) {
     if (!AppEnv.inAppPurchasesEnabled) {
-      return const PurchasesClosedPage(title: '구독');
+      return PurchasesClosedPage(
+        title: RemainingSurface.tr(context, 'subscription_management.body', '구독'),
+      );
     }
     return Scaffold(
       backgroundColor: AppColors.nightBg,
@@ -161,9 +164,13 @@ class _CoachPlusSubscriptionCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              const Text(
-                '무료 기본 러닝 안내\n심박·상황에 맞춘 심층 코칭',
-                style: TextStyle(
+              Text(
+                RemainingSurface.tr(
+                  context,
+                  'subscription_management.body.2',
+                  '무료 기본 러닝 안내\n심박·상황에 맞춘 심층 코칭',
+                ),
+                style: const TextStyle(
                   fontFamily: 'Pretendard',
                   fontSize: 14,
                   fontWeight: FontWeight.w400,

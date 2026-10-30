@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/remaining_surface.dart';
 import '../l10n/surface_rest.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../core/theme/theme.dart';
@@ -104,19 +105,32 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             const StoreTag('TOURNAMENT'),
             const Spacer(),
             Text(
-              '내 티어 $userTier',
+              RemainingSurface.tr(
+                context,
+                'tournament.body',
+                '내 티어 $userTier',
+                {'userTier': userTier},
+              ),
               style: storeText(13, c.primary, w: FontWeight.w900),
             ),
           ],
         ),
         const SizedBox(height: 10),
         Text(
-          '검증된 달리기 1km마다 100원이 기부돼요.',
+          RemainingSurface.tr(
+            context,
+            'tournament.body.2',
+            '검증된 달리기 1km마다 100원이 기부돼요.',
+          ),
           style: storeText(14, c.donation, w: FontWeight.w700, h: 1.4),
         ),
         const SizedBox(height: 4),
         Text(
-          '운영자 이름으로 기부하며 월 한도가 있어요. 기부처는 정해지면 알려 드려요.',
+          RemainingSurface.tr(
+            context,
+            'tournament.body.3',
+            '운영자 이름으로 기부하며 월 한도가 있어요. 기부처는 정해지면 알려 드려요.',
+          ),
           style: storeText(12, c.muted, h: 1.4),
         ),
         const SizedBox(height: 6),
@@ -151,12 +165,20 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
             child: Column(
               children: [
                 Text(
-                  '아직 열린 대회가 없어요',
+                  RemainingSurface.tr(
+                    context,
+                    'tournament.body.4',
+                    '아직 열린 대회가 없어요',
+                  ),
                   style: storeText(16, c.ink, w: FontWeight.w800),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  '새 대회가 열리면 여기에 나타나요.',
+                  RemainingSurface.tr(
+                    context,
+                    'tournament.body.5',
+                    '새 대회가 열리면 여기에 나타나요.',
+                  ),
                   style: storeText(13, c.muted),
                 ),
               ],
@@ -182,9 +204,13 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
     return [
       if (groups.tier.isNotEmpty) ...[
         _SectionHeader(
-          title: '티어 대회',
+          title: RemainingSurface.tr(context, 'tournament.body.6', '티어 대회'),
           note: myAnimal == null
-              ? '등급을 받으면 참가할 수 있어요'
+              ? RemainingSurface.tr(
+                  context,
+                  'tournament.body.7',
+                  '등급을 받으면 참가할 수 있어요',
+                )
               : myGradeLabel(
                   Localizations.localeOf(context),
                   animalLabel(Localizations.localeOf(context), myAnimal.code),
@@ -193,11 +219,22 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         for (final room in groups.tier) card(room),
       ],
       if (groups.free.isNotEmpty) ...[
-        const _SectionHeader(title: '자유 대회', note: '누구나 참가 · 승급 점수 절반'),
+        _SectionHeader(
+          title: RemainingSurface.tr(context, 'tournament.body.8', '자유 대회'),
+          note: RemainingSurface.tr(
+            context,
+            'tournament.body.9',
+            '누구나 참가 · 승급 점수 절반',
+          ),
+        ),
         for (final room in groups.free) card(room),
       ],
       if (groups.other.isNotEmpty) ...[
-        _SectionHeader(title: shown > 1 ? '그 밖의 대회' : '대회'),
+        _SectionHeader(
+          title: shown > 1
+              ? RemainingSurface.tr(context, 'tournament.body.10', '그 밖의 대회')
+              : '대회',
+        ),
         for (final room in groups.other) card(room),
       ],
     ];
@@ -327,15 +364,23 @@ class _TournamentRoomCard extends StatelessWidget {
     final feeText =
         quote?.costLabel(freeTickets) ?? '${room.entryFeeShare} SHARE';
     final joinLabel = locked
-        ? '낮은 등급 대회는 참가할 수 없어요'
+        ? RemainingSurface.tr(
+            context,
+            'tournament.body.11',
+            '낮은 등급 대회는 참가할 수 없어요',
+          )
         : isJoined
-            ? '이미 참가했어요'
+            ? RemainingSurface.tr(context, 'tournament.body.12', '이미 참가했어요')
             : canJoin && (room.isFull || !room.isRecruiting)
                 ? '추가 참가권으로 참가'
                 : room.isFull
                     ? '정원이 가득 찼어요'
                     : !room.isRecruiting
-                        ? '모집이 끝났어요'
+                        ? RemainingSurface.tr(
+                            context,
+                            'tournament.body.13',
+                            '모집이 끝났어요',
+                          )
                         : quote != null
                             ? quote!.shareJoinLabel
                             : '${room.entryFeeShare} SHARE로 참가';
@@ -380,7 +425,15 @@ class _TournamentRoomCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '후원  ${displaySponsorName(room.sponsorName)}',
+            RemainingSurface.tr(
+              context,
+              'tournament.body.14',
+              '후원  ${displaySponsorName(room.sponsorName)}',
+              {
+                'displaySponsorName(room.sponsorName)':
+                    displaySponsorName(room.sponsorName),
+              },
+            ),
             style: storeText(13, c.donation, w: FontWeight.w700),
           ),
           const SizedBox(height: 14),
@@ -388,12 +441,19 @@ class _TournamentRoomCard extends StatelessWidget {
             children: [
               _RoomStat(
                 value: '${room.targetDistanceKm.toStringAsFixed(1)}km',
-                label: '목표 거리',
+                label: RemainingSurface.tr(context, 'tournament.body.15', '목표 거리'),
               ),
               const SizedBox(width: 8),
-              _RoomStat(value: feeText, label: '참가비', highlight: true),
+              _RoomStat(
+                value: feeText,
+                label: RemainingSurface.tr(context, 'tournament.body.16', '참가비'),
+                highlight: true,
+              ),
               const SizedBox(width: 8),
-              _RoomStat(value: room.recruitmentSummary, label: '모집'),
+              _RoomStat(
+                value: room.recruitmentSummary,
+                label: RemainingSurface.tr(context, 'tournament.body.17', '모집'),
+              ),
             ],
           ),
           if (quote?.rulesLabel != null) ...[
@@ -415,14 +475,15 @@ class _TournamentRoomCard extends StatelessWidget {
           ),
           if (showTicketJoin && !isJoined && !locked)
             _RoomLinkLine(
-              label: quote?.ticketJoinLabel ?? '무료 참가권으로 참가',
+              label: quote?.ticketJoinLabel ??
+                  RemainingSurface.tr(context, 'tournament.button', '무료 참가권으로 참가'),
               onTap: onTicketJoin,
             ),
           if (tierTicketJoinLabel != null && !isJoined && !locked)
             _RoomLinkLine(label: tierTicketJoinLabel!, onTap: onTierTicketJoin),
           if (AppEnv.sponsorPaymentsVisible)
             _RoomLinkLine(
-              label: '이 대회 후원하기',
+              label: RemainingSurface.tr(context, 'tournament.body.18', '이 대회 후원하기'),
               icon: Icons.campaign_rounded,
               onTap: onSponsor,
             ),
@@ -530,7 +591,12 @@ class _MyTournamentsLine extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                '내 대회 ($count)',
+                RemainingSurface.tr(
+                  context,
+                  'tournament.body.19',
+                  '내 대회 ($count)',
+                  {'count': count},
+                ),
                 style: storeText(16, c.ink, w: FontWeight.w700),
               ),
             ),

@@ -280,11 +280,24 @@ class _JenaHoldBanner extends StatelessWidget {
                 'appeal_center.body.3',
                 '기록을 불러오는 중이에요',
               ));
+    final dateLabelPrefix =
+        current == null || current.dateLabel.isEmpty ? '' : '${current.dateLabel} ';
     final body = current != null
-        ? '${current.dateLabel.isEmpty ? '' : '${current.dateLabel} '}'
-            '${current.title} 기록이 검증 보류 상태예요.\n'
-            '이유: ${current.reason}\n'
-            '억울한 경우 아래에서 소명 자료를 제출해 주세요.'
+        ? '${RemainingSurface.tr(
+            context,
+            'appeal_center.body.4',
+            '$dateLabelPrefix${current.title} 기록이 검증 보류 상태예요.\n이유: ${current.reason}',
+            {
+              'dateLabelPrefix': dateLabelPrefix,
+              'current.title': current.title,
+              'current.reason': current.reason,
+            },
+          )}\n'
+            '${RemainingSurface.tr(
+              context,
+              'appeal_center.body.5',
+              '억울한 경우 아래에서 소명 자료를 제출해 주세요.',
+            )}'
         : (loaded
             ? RemainingSurface.tr(
                 context,

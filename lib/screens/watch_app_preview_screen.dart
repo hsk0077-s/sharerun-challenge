@@ -159,7 +159,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('취소')),
+              child: Text(RemainingSurface.tr(ctx, 'watch_app_preview.button.4', '취소'))),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
               child: Text(

@@ -660,17 +660,33 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     final api = ref.read(crewApiProvider);
     if (api == null) return;
     final others = mine.members.where((m) => m.role != 'leader').length;
+    final note = RemainingSurface.tr(
+      context,
+      'running_crew.body.10',
+      '크루는 두고 나만 나가고 싶다면 먼저 "크루원 보기"에서 크루장을 넘겨 주세요.',
+    );
+    final disbandMessage = others > 0
+        ? RemainingSurface.tr(
+            context,
+            'running_crew.body.9',
+            '"${mine.crew.name}" 크루를 없애요.\n'
+                '크루원 $others명도 모두 크루에서 나오고, 크루장인 나도 함께 크루에서 나와요.\n'
+                '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
+                '$note',
+            {'mine.crew.name': mine.crew.name, 'others': others, 'note': note},
+          )
+        : RemainingSurface.tr(
+            context,
+            'running_crew.body.49',
+            '"${mine.crew.name}" 크루를 없애요.\n'
+                '크루장인 나도 함께 크루에서 나와요.\n'
+                '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
+                '$note',
+            {'mine.crew.name': mine.crew.name, 'note': note},
+          );
     if (!await _confirm(
       RemainingSurface.tr(context, 'running_crew.body.7', '크루 없애기'),
-      '"${mine.crew.name}" 크루를 없애요.\n'
-          '${others > 0 ? '크루원 $others명도 모두 크루에서 나오고, ' : ''}'
-          '크루장인 나도 함께 크루에서 나와요.\n'
-          '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
-          '${RemainingSurface.tr(
-            context,
-            'running_crew.body.10',
-            '크루는 두고 나만 나가고 싶다면 먼저 "크루원 보기"에서 크루장을 넘겨 주세요.',
-          )}',
+      disbandMessage,
       RemainingSurface.tr(context, 'running_crew.body.7', '크루 없애기'),
     )) {
       return;
@@ -1016,17 +1032,19 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         _CrewActionLine(
                           index: '02',
                           title: RemainingSurface.tr(context, 'running_crew.body.26', '엠블럼 바꾸기'),
-                          subtitle: '틀 ${CrewEmblem.frames.length}가지 · '
-                              '문양 ${CrewEmblem.glyphIds.length}가지 · '
-                              '${RemainingSurface.tr(
-                                context,
-                                'running_crew.body.28',
+                          subtitle: RemainingSurface.tr(
+                            context,
+                            'running_crew.body.27',
+                            '틀 ${CrewEmblem.frames.length}가지 · '
+                                '문양 ${CrewEmblem.glyphIds.length}가지 · '
                                 '색 ${CrewEmblem.paletteColors.length}가지',
-                                {
-                                  'CrewEmblem.paletteColors.length':
-                                      CrewEmblem.paletteColors.length,
-                                },
-                              )}',
+                            {
+                              'CrewEmblem.frames.length': CrewEmblem.frames.length,
+                              'CrewEmblem.glyphIds.length': CrewEmblem.glyphIds.length,
+                              'CrewEmblem.paletteColors.length':
+                                  CrewEmblem.paletteColors.length,
+                            },
+                          ),
                           onTap: _onChangeEmblem,
                         ),
                         if (noCrew) ...[

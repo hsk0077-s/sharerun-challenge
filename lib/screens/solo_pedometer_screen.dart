@@ -364,17 +364,23 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
         title: Text(
           RemainingSurface.tr(dialogContext, 'solo_pedometer.dialog', '걸음 수를 세려면 권한이 필요해요'),
         ),
-        content: const Text(
-          '• 신체 활동: 폰이 센 걸음 수를 읽습니다.\n'
-          '• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어 '
-          '화면이 꺼져 있을 때의 걸음도 반영합니다.\n\n'
-          '걸음 수는 보상 계산에만 쓰이고, 동의하지 않아도 다른 기능은 쓸 수 있어요.',
+        content: Text(
+          RemainingSurface.tr(
+            dialogContext,
+            'solo_pedometer.dialog.2',
+            '• 신체 활동: 폰이 센 걸음 수를 읽습니다.\n'
+                '• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어 '
+                '화면이 꺼져 있을 때의 걸음도 반영합니다.\n\n'
+                '걸음 수는 보상 계산에만 쓰이고, 동의하지 않아도 다른 기능은 쓸 수 있어요.',
+          ),
         ),
         actions: [
           TextButton(
             key: const Key('pedometer-permission-later'),
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('나중에'),
+            child: Text(
+              RemainingSurface.tr(dialogContext, 'solo_pedometer.button', '나중에'),
+            ),
           ),
           FilledButton(
             key: const Key('pedometer-permission-continue'),

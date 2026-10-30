@@ -501,16 +501,20 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('계정 삭제'),
-          content: const Text(
-            '계정이 삭제되고 보유한 SHARE·DIA·VALUE는 사라집니다. '
-            '러닝 기록 등 활동 기록은 30일 안에 삭제되고, 법령에 따라 보관해야 하는 '
-            '결제·거래 기록은 5년간 보관한 뒤 삭제됩니다. '
-            '이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?',
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'my_page.dialog',
+              '계정이 삭제되고 보유한 SHARE·DIA·VALUE는 사라집니다. '
+                  '러닝 기록 등 활동 기록은 30일 안에 삭제되고, 법령에 따라 보관해야 하는 '
+                  '결제·거래 기록은 5년간 보관한 뒤 삭제됩니다. '
+                  '이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?',
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('취소'),
+              child: Text(RemainingSurface.tr(context, 'my_page.button.4', '취소')),
             ),
             FilledButton(
               style: FilledButton.styleFrom(

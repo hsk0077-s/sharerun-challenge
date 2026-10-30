@@ -35249,6 +35249,234 @@
       "vi": "Không thể bắt đầu chạy. Vui lòng kiểm tra dịch vụ định vị.",
       "th": "ไม่สามารถเริ่มการวิ่งได้ กรุณาตรวจสอบบริการตำแหน่ง",
       "id": "Tidak dapat memulai lari. Harap periksa layanan lokasi."
+    },
+    {
+      "key": "my_page.dialog",
+      "ko": "계정이 삭제되고 보유한 SHARE·DIA·VALUE는 사라집니다. 러닝 기록 등 활동 기록은 30일 안에 삭제되고, 법령에 따라 보관해야 하는 결제·거래 기록은 5년간 보관한 뒤 삭제됩니다. 이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?",
+      "file": "lib/screens/my_page_screen.dart",
+      "screen": "my_page",
+      "context": "my_page 화면의 dialog. 대화상자 본문. 짧은 문단. 줄바꿈은 유지합니다.",
+      "placeholders": [],
+      "en": "Your account will be deleted and any SHARE, DIA, and VALUE you hold will be lost. Activity records such as running history will be deleted within 30 days. Payment and transaction records that must be retained by law will be kept for 5 years before deletion. This action cannot be undone. Do you want to continue?",
+      "ja": "アカウントが削除され、保有しているSHARE・DIA・VALUEは消えます。ランニング記録などの活動記録は30日以内に削除され、法令により保管が必要な決済・取引記録は5年間保管後に削除されます。この操作は元に戻せません。続けますか？",
+      "zh-TW": "帳號將被刪除，持有的 SHARE、DIA、VALUE 將會消失。跑步紀錄等活動紀錄將於 30 天內刪除，依法令須保存的付款、交易紀錄將保存 5 年後刪除。此操作無法復原，要繼續嗎？",
+      "es": "Se eliminará tu cuenta y perderás el SHARE, DIA y VALUE que tengas. Los registros de actividad, como el historial de carreras, se eliminarán en 30 días. Los registros de pagos y transacciones que deban conservarse por ley se guardarán durante 5 años antes de eliminarse. Esta acción no se puede revertir. ¿Quieres continuar?",
+      "pt-BR": "Sua conta será excluída e o SHARE, DIA e VALUE que você possui serão perdidos. Registros de atividade, como histórico de corridas, serão excluídos em até 30 dias. Registros de pagamento e transações que devem ser mantidos por lei serão guardados por 5 anos antes da exclusão. Esta ação não pode ser desfeita. Deseja continuar?",
+      "de": "Ihr Konto wird gelöscht und Ihr vorhandenes SHARE, DIA und VALUE geht verloren. Aktivitätsdaten wie der Laufverlauf werden innerhalb von 30 Tagen gelöscht. Zahlungs- und Transaktionsdaten, die gesetzlich aufbewahrt werden müssen, werden 5 Jahre lang gespeichert und danach gelöscht. Dieser Vorgang kann nicht widerrufen werden. Möchten Sie fortfahren?",
+      "fr": "Votre compte sera supprimé et le SHARE, le DIA et le VALUE que vous détenez seront perdus. Les données d'activité telles que l'historique de course seront supprimées dans un délai de 30 jours. Les données de paiement et de transaction devant être conservées par la loi seront conservées pendant 5 ans avant suppression. Cette action est irréversible. Voulez-vous continuer ?",
+      "vi": "Tài khoản của bạn sẽ bị xóa và SHARE, DIA, VALUE bạn đang có sẽ mất. Dữ liệu hoạt động như lịch sử chạy bộ sẽ bị xóa trong vòng 30 ngày. Dữ liệu thanh toán và giao dịch phải lưu giữ theo luật sẽ được lưu trong 5 năm trước khi xóa. Hành động này không thể hoàn tác. Bạn có muốn tiếp tục không?",
+      "th": "บัญชีของคุณจะถูกลบ และ SHARE, DIA, VALUE ที่มีอยู่จะหายไป ข้อมูลกิจกรรม เช่น ประวัติการวิ่ง จะถูกลบภายใน 30 วัน ข้อมูลการชำระเงินและธุรกรรมที่ต้องเก็บตามกฎหมายจะถูกเก็บไว้ 5 ปีก่อนลบ การกระทำนี้ไม่สามารถย้อนกลับได้ ต้องการดำเนินการต่อหรือไม่",
+      "id": "Akun Anda akan dihapus dan SHARE, DIA, serta VALUE yang Anda miliki akan hilang. Catatan aktivitas seperti riwayat lari akan dihapus dalam 30 hari. Catatan pembayaran dan transaksi yang wajib disimpan sesuai hukum akan disimpan selama 5 tahun sebelum dihapus. Tindakan ini tidak dapat dibatalkan. Apakah Anda ingin melanjutkan?"
+    },
+    {
+      "key": "my_page.button.4",
+      "ko": "취소",
+      "file": "lib/screens/my_page_screen.dart",
+      "screen": "my_page",
+      "context": "my_page 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
+      "placeholders": [],
+      "en": "Cancel",
+      "ja": "キャンセル",
+      "zh-TW": "取消",
+      "es": "Cancelar",
+      "pt-BR": "Cancelar",
+      "de": "Abbrechen",
+      "fr": "Annuler",
+      "vi": "Hủy",
+      "th": "ยกเลิก",
+      "id": "Batal"
+    },
+    {
+      "key": "running_crew.body.9",
+      "ko": "\"${mine.crew.name}\" 크루를 없애요.\n크루원 $others명도 모두 크루에서 나오고, 크루장인 나도 함께 크루에서 나와요.\n산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n$note",
+      "file": "lib/screens/running_crew_screen.dart",
+      "screen": "running_crew",
+      "context": "running_crew 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
+      "placeholders": [
+        {
+          "name": "mine.crew.name",
+          "format": "${mine.crew.name}"
+        },
+        {
+          "name": "others",
+          "format": "$others"
+        },
+        {
+          "name": "note",
+          "format": "$note"
+        }
+      ],
+      "en": "Deleting the crew \"${mine.crew.name}\".\nAll $others members will also leave the crew, and I as the leader will leave too.\nAny purchased emblem will also disappear, and this cannot be undone.\n\n$note",
+      "ja": "「${mine.crew.name}」クルーを解散します。\nメンバー$others人も全員クルーから抜け、クルー長である私も一緒に抜けます。\n購入したエンブレムも消え、元に戻せません。\n\n$note",
+      "zh-TW": "即將解散「${mine.crew.name}」Crew。\n$others 位成員也會一起退出 Crew，身為隊長的我也會一起退出。\n已購買的徽章也會消失，且無法復原。\n\n$note",
+      "es": "Vas a eliminar el crew \"${mine.crew.name}\".\nLos $others miembros también saldrán del crew, y yo, como líder, saldré también.\nEl emblema comprado también desaparecerá y no se puede revertir.\n\n$note",
+      "pt-BR": "Você vai excluir o crew \"${mine.crew.name}\".\nOs $others membros também saem do crew, e eu, como líder, também saio.\nO emblema comprado também desaparece, e isso não pode ser desfeito.\n\n$note",
+      "de": "Das Crew „${mine.crew.name}“ wird gelöscht.\nAlle $others Mitglieder verlassen ebenfalls das Crew, und ich als Anführer verlasse es auch.\nDas gekaufte Emblem geht ebenfalls verloren und kann nicht wiederhergestellt werden.\n\n$note",
+      "fr": "Le crew « ${mine.crew.name} » va être supprimé.\nLes $others membres quitteront également le crew, et moi, en tant que chef, le quitterai aussi.\nL'emblème acheté disparaîtra aussi et cela ne peut pas être annulé.\n\n$note",
+      "vi": "Sẽ xóa crew \"${mine.crew.name}\".\n$others thành viên cũng sẽ rời crew, và tôi với vai trò trưởng crew cũng rời theo.\nBiểu tượng đã mua cũng sẽ mất và không thể hoàn tác.\n\n$note",
+      "th": "จะยุบ crew \"${mine.crew.name}\"\nสมาชิกอีก $others คนจะออกจาก crew ด้วย และฉันในฐานะหัวหน้าก็จะออกไปด้วยเช่นกัน\nตราสัญลักษณ์ที่ซื้อไว้ก็จะหายไปและไม่สามารถย้อนกลับได้\n\n$note",
+      "id": "Akan menghapus crew \"${mine.crew.name}\".\n$others anggota lainnya juga akan keluar dari crew, dan saya sebagai ketua juga akan keluar.\nLambang yang sudah dibeli juga akan hilang dan tidak dapat dibatalkan.\n\n$note"
+    },
+    {
+      "key": "running_crew.body.49",
+      "ko": "\"${mine.crew.name}\" 크루를 없애요.\n크루장인 나도 함께 크루에서 나와요.\n산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n$note",
+      "file": "lib/screens/running_crew_screen.dart",
+      "screen": "running_crew",
+      "context": "running_crew 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
+      "placeholders": [
+        {
+          "name": "mine.crew.name",
+          "format": "${mine.crew.name}"
+        },
+        {
+          "name": "note",
+          "format": "$note"
+        }
+      ],
+      "en": "Deleting the crew \"${mine.crew.name}\".\nI as the leader will also leave the crew.\nAny purchased emblem will also disappear, and this cannot be undone.\n\n$note",
+      "ja": "「${mine.crew.name}」クルーを解散します。\nクルー長である私も一緒に抜けます。\n購入したエンブレムも消え、元に戻せません。\n\n$note",
+      "zh-TW": "即將解散「${mine.crew.name}」Crew。\n身為隊長的我也會一起退出。\n已購買的徽章也會消失，且無法復原。\n\n$note",
+      "es": "Vas a eliminar el crew \"${mine.crew.name}\".\nYo, como líder, también saldré del crew.\nEl emblema comprado también desaparecerá y no se puede revertir.\n\n$note",
+      "pt-BR": "Você vai excluir o crew \"${mine.crew.name}\".\nEu, como líder, também saio do crew.\nO emblema comprado também desaparece, e isso não pode ser desfeito.\n\n$note",
+      "de": "Das Crew „${mine.crew.name}“ wird gelöscht.\nIch als Anführer verlasse das Crew ebenfalls.\nDas gekaufte Emblem geht ebenfalls verloren und kann nicht wiederhergestellt werden.\n\n$note",
+      "fr": "Le crew « ${mine.crew.name} » va être supprimé.\nMoi, en tant que chef, je quitterai aussi le crew.\nL'emblème acheté disparaîtra aussi et cela ne peut pas être annulé.\n\n$note",
+      "vi": "Sẽ xóa crew \"${mine.crew.name}\".\nTôi với vai trò trưởng crew cũng sẽ rời crew.\nBiểu tượng đã mua cũng sẽ mất và không thể hoàn tác.\n\n$note",
+      "th": "จะยุบ crew \"${mine.crew.name}\"\nฉันในฐานะหัวหน้าก็จะออกจาก crew ด้วยเช่นกัน\nตราสัญลักษณ์ที่ซื้อไว้ก็จะหายไปและไม่สามารถย้อนกลับได้\n\n$note",
+      "id": "Akan menghapus crew \"${mine.crew.name}\".\nSaya sebagai ketua juga akan keluar dari crew.\nLambang yang sudah dibeli juga akan hilang dan tidak dapat dibatalkan.\n\n$note"
+    },
+    {
+      "key": "running_crew.body.27",
+      "ko": "틀 ${CrewEmblem.frames.length}가지 · 문양 ${CrewEmblem.glyphIds.length}가지 · 색 ${CrewEmblem.paletteColors.length}가지",
+      "file": "lib/screens/running_crew_screen.dart",
+      "screen": "running_crew",
+      "context": "running_crew 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
+      "placeholders": [
+        {
+          "name": "CrewEmblem.frames.length",
+          "format": "${CrewEmblem.frames.length}"
+        },
+        {
+          "name": "CrewEmblem.glyphIds.length",
+          "format": "${CrewEmblem.glyphIds.length}"
+        },
+        {
+          "name": "CrewEmblem.paletteColors.length",
+          "format": "${CrewEmblem.paletteColors.length}"
+        }
+      ],
+      "en": "${CrewEmblem.frames.length} frames · ${CrewEmblem.glyphIds.length} glyphs · ${CrewEmblem.paletteColors.length} colors",
+      "ja": "枠${CrewEmblem.frames.length}種 · 紋章${CrewEmblem.glyphIds.length}種 · 色${CrewEmblem.paletteColors.length}色",
+      "zh-TW": "外框 ${CrewEmblem.frames.length} 種 · 圖紋 ${CrewEmblem.glyphIds.length} 種 · 顏色 ${CrewEmblem.paletteColors.length} 種",
+      "es": "${CrewEmblem.frames.length} marcos · ${CrewEmblem.glyphIds.length} símbolos · ${CrewEmblem.paletteColors.length} colores",
+      "pt-BR": "${CrewEmblem.frames.length} molduras · ${CrewEmblem.glyphIds.length} símbolos · ${CrewEmblem.paletteColors.length} cores",
+      "de": "${CrewEmblem.frames.length} Rahmen · ${CrewEmblem.glyphIds.length} Symbole · ${CrewEmblem.paletteColors.length} Farben",
+      "fr": "${CrewEmblem.frames.length} cadres · ${CrewEmblem.glyphIds.length} symboles · ${CrewEmblem.paletteColors.length} couleurs",
+      "vi": "${CrewEmblem.frames.length} khung · ${CrewEmblem.glyphIds.length} họa tiết · ${CrewEmblem.paletteColors.length} màu",
+      "th": "กรอบ ${CrewEmblem.frames.length} แบบ · ลวดลาย ${CrewEmblem.glyphIds.length} แบบ · สี ${CrewEmblem.paletteColors.length} สี",
+      "id": "${CrewEmblem.frames.length} bingkai · ${CrewEmblem.glyphIds.length} simbol · ${CrewEmblem.paletteColors.length} warna"
+    },
+    {
+      "key": "appeal_center.body.4",
+      "ko": "$dateLabelPrefix${current.title} 기록이 검증 보류 상태예요.\n이유: ${current.reason}",
+      "file": "lib/screens/appeal_center_screen.dart",
+      "screen": "appeal_center",
+      "context": "appeal_center 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
+      "placeholders": [
+        {
+          "name": "dateLabelPrefix",
+          "format": "$dateLabelPrefix"
+        },
+        {
+          "name": "current.title",
+          "format": "${current.title}"
+        },
+        {
+          "name": "current.reason",
+          "format": "${current.reason}"
+        }
+      ],
+      "en": "$dateLabelPrefix${current.title} record is on hold for verification.\nReason: ${current.reason}",
+      "ja": "$dateLabelPrefix${current.title}の記録が検証保留状態です。\n理由: ${current.reason}",
+      "zh-TW": "$dateLabelPrefix${current.title} 紀錄為驗證保留狀態。\n原因：${current.reason}",
+      "es": "El registro $dateLabelPrefix${current.title} está en espera de verificación.\nMotivo: ${current.reason}",
+      "pt-BR": "O registro $dateLabelPrefix${current.title} está em espera de verificação.\nMotivo: ${current.reason}",
+      "de": "Der Eintrag $dateLabelPrefix${current.title} ist zur Überprüfung ausgesetzt.\nGrund: ${current.reason}",
+      "fr": "L'enregistrement $dateLabelPrefix${current.title} est en attente de vérification.\nMotif : ${current.reason}",
+      "vi": "Bản ghi $dateLabelPrefix${current.title} đang ở trạng thái tạm giữ để xác minh.\nLý do: ${current.reason}",
+      "th": "บันทึก $dateLabelPrefix${current.title} อยู่ในสถานะระงับเพื่อตรวจสอบ\nเหตุผล: ${current.reason}",
+      "id": "Catatan $dateLabelPrefix${current.title} sedang ditahan untuk verifikasi.\nAlasan: ${current.reason}"
+    },
+    {
+      "key": "appeal_center.body.5",
+      "ko": "억울한 경우 아래에서 소명 자료를 제출해 주세요.",
+      "file": "lib/screens/appeal_center_screen.dart",
+      "screen": "appeal_center",
+      "context": "appeal_center 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
+      "placeholders": [],
+      "en": "If you believe this is unfair, please submit supporting evidence below.",
+      "ja": "納得できない場合は、下記で異議申立て資料を提出してください。",
+      "zh-TW": "如有異議，請於下方提交申訴資料。",
+      "es": "Si crees que esto es injusto, envía los materiales de apelación a continuación.",
+      "pt-BR": "Se você acha isso injusto, envie o material de contestação abaixo.",
+      "de": "Wenn Sie das für ungerecht halten, reichen Sie unten bitte Belege für Ihren Einspruch ein.",
+      "fr": "Si vous estimez que c'est injuste, veuillez soumettre des pièces justificatives ci-dessous.",
+      "vi": "Nếu bạn thấy không công bằng, vui lòng gửi tài liệu khiếu nại bên dưới.",
+      "th": "หากคิดว่าไม่เป็นธรรม กรุณาส่งเอกสารชี้แจงด้านล่าง",
+      "id": "Jika menurut Anda ini tidak adil, silakan kirim bukti pendukung di bawah ini."
+    },
+    {
+      "key": "solo_pedometer.dialog.2",
+      "ko": "• 신체 활동: 폰이 센 걸음 수를 읽습니다.\n• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어 화면이 꺼져 있을 때의 걸음도 반영합니다.\n\n걸음 수는 보상 계산에만 쓰이고, 동의하지 않아도 다른 기능은 쓸 수 있어요.",
+      "file": "lib/screens/solo_pedometer_screen.dart",
+      "screen": "solo_pedometer",
+      "context": "solo_pedometer 화면의 dialog. 대화상자 본문. 짧은 문단. 줄바꿈은 유지합니다.",
+      "placeholders": [],
+      "en": "• Physical activity: Reads the step count your phone has counted.\n• Health data (steps): Reads step counts recorded in Health Connect so steps taken while the screen is off are also counted.\n\nStep counts are only used to calculate rewards, and you can still use other features even if you don't agree.",
+      "ja": "• 身体活動：端末が測った歩数を読み取ります。\n• ヘルスデータ（歩数）：Health Connectに記録された歩数を読み取り、画面が消えている間の歩数も反映します。\n\n歩数は報酬計算にのみ使われ、同意しなくても他の機能は使えます。",
+      "zh-TW": "• 身體活動：讀取手機偵測到的步數。\n• 健康資料（步數）：讀取 Health Connect 中記錄的步數，連螢幕關閉時的步數也會納入。\n\n步數僅用於計算獎勳，即使不同意，其他功能仍可使用。",
+      "es": "• Actividad física: lee los pasos contados por tu teléfono.\n• Datos de salud (pasos): lee los pasos registrados en Health Connect para incluir también los pasos dados con la pantalla apagada.\n\nLos pasos solo se usan para calcular recompensas, y puedes seguir usando otras funciones aunque no aceptes.",
+      "pt-BR": "• Atividade física: lê os passos contados pelo seu telefone.\n• Dados de saúde (passos): lê os passos registrados no Health Connect para incluir também os passos dados com a tela desligada.\n\nOs passos são usados apenas para calcular recompensas, e você pode continuar usando os outros recursos mesmo sem aceitar.",
+      "de": "• Körperliche Aktivität: Liest die vom Telefon gezählten Schritte.\n• Gesundheitsdaten (Schritte): Liest die in Health Connect erfassten Schritte, damit auch Schritte bei ausgeschaltetem Bildschirm berücksichtigt werden.\n\nSchrittzahlen werden nur zur Berechnung von Belohnungen verwendet, und Sie können andere Funktionen auch ohne Zustimmung weiter nutzen.",
+      "fr": "• Activité physique : lit le nombre de pas comptés par votre téléphone.\n• Données de santé (pas) : lit les pas enregistrés dans Health Connect afin d'inclure aussi les pas effectués écran éteint.\n\nLe nombre de pas n'est utilisé que pour calculer les récompenses, et vous pouvez continuer à utiliser les autres fonctionnalités même sans donner votre accord.",
+      "vi": "• Hoạt động thể chất: đọc số bước điện thoại đã đếm.\n• Dữ liệu sức khỏe (số bước): đọc số bước được ghi trong Health Connect để tính cả số bước khi màn hình tắt.\n\nSố bước chỉ dùng để tính thưởng, và bạn vẫn có thể dùng các tính năng khác dù không đồng ý.",
+      "th": "• กิจกรรมทางกาย: อ่านจำนวนก้าวที่โทรศัพท์นับได้\n• ข้อมูลสุขภาพ (ก้าว): อ่านจำนวนก้าวที่บันทึกใน Health Connect เพื่อรวมก้าวตอนที่หน้าจอดับด้วย\n\nจำนวนก้าวใช้สำหรับคำนวณรางวัลเท่านั้น และคุณยังใช้ฟีเจอร์อื่นได้แม้ไม่ยินยอม",
+      "id": "• Aktivitas fisik: membaca jumlah langkah yang dihitung ponsel.\n• Data kesehatan (langkah): membaca jumlah langkah yang tercatat di Health Connect sehingga langkah saat layar mati juga ikut terhitung.\n\nJumlah langkah hanya digunakan untuk menghitung hadiah, dan Anda tetap dapat menggunakan fitur lain meskipun tidak menyetujui."
+    },
+    {
+      "key": "solo_pedometer.button",
+      "ko": "나중에",
+      "file": "lib/screens/solo_pedometer_screen.dart",
+      "screen": "solo_pedometer",
+      "context": "solo_pedometer 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
+      "placeholders": [],
+      "en": "Later",
+      "ja": "後で",
+      "zh-TW": "稍後",
+      "es": "Más tarde",
+      "pt-BR": "Mais tarde",
+      "de": "Später",
+      "fr": "Plus tard",
+      "vi": "Để sau",
+      "th": "ไว้ทีหลัง",
+      "id": "Nanti"
+    },
+    {
+      "key": "watch_app_preview.button.4",
+      "ko": "취소",
+      "file": "lib/screens/watch_app_preview_screen.dart",
+      "screen": "watch_app_preview",
+      "context": "watch_app_preview 화면의 button. 버튼. 한 줄. 한국어 12자 안팎을 넘기지 마세요.",
+      "placeholders": [],
+      "en": "Cancel",
+      "ja": "キャンセル",
+      "zh-TW": "取消",
+      "es": "Cancelar",
+      "pt-BR": "Cancelar",
+      "de": "Abbrechen",
+      "fr": "Annuler",
+      "vi": "Hủy",
+      "th": "ยกเลิก",
+      "id": "Batal"
     }
   ]
 }

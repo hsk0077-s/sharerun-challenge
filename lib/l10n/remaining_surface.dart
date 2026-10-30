@@ -1930,6 +1930,16 @@ class RemainingSurface {
     'legal.health_data_consent.body',
     'sponsor.sponsor_billboard.body',
     'run.run_tracker_provider.body',
+    'my_page.dialog',
+    'my_page.button.4',
+    'running_crew.body.9',
+    'running_crew.body.49',
+    'running_crew.body.27',
+    'appeal_center.body.4',
+    'appeal_center.body.5',
+    'solo_pedometer.dialog.2',
+    'solo_pedometer.button',
+    'watch_app_preview.button.4',
   ];
 
   static const _en = <String, String>{
@@ -3775,6 +3785,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Must be checked to enable watch sync and heart rate verification.',
     'sponsor.sponsor_billboard.body': '100 KRW is donated for every 1 km of verified running',
     'run.run_tracker_provider.body': 'Unable to start run. Please check location services.',
+    'my_page.dialog': 'Your account will be deleted and any SHARE, DIA, and VALUE you hold will be lost. Activity records such as running history will be deleted within 30 days. Payment and transaction records that must be retained by law will be kept for 5 years before deletion. This action cannot be undone. Do you want to continue?',
+    'my_page.button.4': 'Cancel',
+    'running_crew.body.9': 'Deleting the crew "\${mine.crew.name}".\nAll \$others members will also leave the crew, and I as the leader will leave too.\nAny purchased emblem will also disappear, and this cannot be undone.\n\n\$note',
+    'running_crew.body.49': 'Deleting the crew "\${mine.crew.name}".\nI as the leader will also leave the crew.\nAny purchased emblem will also disappear, and this cannot be undone.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} frames · \${CrewEmblem.glyphIds.length} glyphs · \${CrewEmblem.paletteColors.length} colors',
+    'appeal_center.body.4': '\$dateLabelPrefix\${current.title} record is on hold for verification.\nReason: \${current.reason}',
+    'appeal_center.body.5': 'If you believe this is unfair, please submit supporting evidence below.',
+    'solo_pedometer.dialog.2': '• Physical activity: Reads the step count your phone has counted.\n• Health data (steps): Reads step counts recorded in Health Connect so steps taken while the screen is off are also counted.\n\nStep counts are only used to calculate rewards, and you can still use other features even if you don\'t agree.',
+    'solo_pedometer.button': 'Later',
+    'watch_app_preview.button.4': 'Cancel',
   };
 
   static const _ja = <String, String>{
@@ -5620,6 +5640,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'チェックするとウォッチ連携・心拍検証が有効になります。',
     'sponsor.sponsor_billboard.body': '検証されたランニング1kmごとに100ウォンが寄付されます',
     'run.run_tracker_provider.body': 'ランニングを開始できません。位置情報サービスを確認してください。',
+    'my_page.dialog': 'アカウントが削除され、保有しているSHARE・DIA・VALUEは消えます。ランニング記録などの活動記録は30日以内に削除され、法令により保管が必要な決済・取引記録は5年間保管後に削除されます。この操作は元に戻せません。続けますか？',
+    'my_page.button.4': 'キャンセル',
+    'running_crew.body.9': '「\${mine.crew.name}」クルーを解散します。\nメンバー\$others人も全員クルーから抜け、クルー長である私も一緒に抜けます。\n購入したエンブレムも消え、元に戻せません。\n\n\$note',
+    'running_crew.body.49': '「\${mine.crew.name}」クルーを解散します。\nクルー長である私も一緒に抜けます。\n購入したエンブレムも消え、元に戻せません。\n\n\$note',
+    'running_crew.body.27': '枠\${CrewEmblem.frames.length}種 · 紋章\${CrewEmblem.glyphIds.length}種 · 色\${CrewEmblem.paletteColors.length}色',
+    'appeal_center.body.4': '\$dateLabelPrefix\${current.title}の記録が検証保留状態です。\n理由: \${current.reason}',
+    'appeal_center.body.5': '納得できない場合は、下記で異議申立て資料を提出してください。',
+    'solo_pedometer.dialog.2': '• 身体活動：端末が測った歩数を読み取ります。\n• ヘルスデータ（歩数）：Health Connectに記録された歩数を読み取り、画面が消えている間の歩数も反映します。\n\n歩数は報酬計算にのみ使われ、同意しなくても他の機能は使えます。',
+    'solo_pedometer.button': '後で',
+    'watch_app_preview.button.4': 'キャンセル',
   };
 
   static const _zh = <String, String>{
@@ -7465,6 +7495,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': '勾選後方可啟用手錶連動與心率驗證。',
     'sponsor.sponsor_billboard.body': '每完成 1 公里驗證跑步，即捐贈 100 韓元',
     'run.run_tracker_provider.body': '無法開始跑步。請檢查定位服務。',
+    'my_page.dialog': '帳號將被刪除，持有的 SHARE、DIA、VALUE 將會消失。跑步紀錄等活動紀錄將於 30 天內刪除，依法令須保存的付款、交易紀錄將保存 5 年後刪除。此操作無法復原，要繼續嗎？',
+    'my_page.button.4': '取消',
+    'running_crew.body.9': '即將解散「\${mine.crew.name}」Crew。\n\$others 位成員也會一起退出 Crew，身為隊長的我也會一起退出。\n已購買的徽章也會消失，且無法復原。\n\n\$note',
+    'running_crew.body.49': '即將解散「\${mine.crew.name}」Crew。\n身為隊長的我也會一起退出。\n已購買的徽章也會消失，且無法復原。\n\n\$note',
+    'running_crew.body.27': '外框 \${CrewEmblem.frames.length} 種 · 圖紋 \${CrewEmblem.glyphIds.length} 種 · 顏色 \${CrewEmblem.paletteColors.length} 種',
+    'appeal_center.body.4': '\$dateLabelPrefix\${current.title} 紀錄為驗證保留狀態。\n原因：\${current.reason}',
+    'appeal_center.body.5': '如有異議，請於下方提交申訴資料。',
+    'solo_pedometer.dialog.2': '• 身體活動：讀取手機偵測到的步數。\n• 健康資料（步數）：讀取 Health Connect 中記錄的步數，連螢幕關閉時的步數也會納入。\n\n步數僅用於計算獎勳，即使不同意，其他功能仍可使用。',
+    'solo_pedometer.button': '稍後',
+    'watch_app_preview.button.4': '取消',
   };
 
   static const _es = <String, String>{
@@ -9310,6 +9350,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Debes marcar esta casilla para activar la sincronización con el reloj y la verificación de frecuencia cardíaca.',
     'sponsor.sponsor_billboard.body': 'Se donan 100 KRW por cada 1 km de carrera verificada',
     'run.run_tracker_provider.body': 'No se puede iniciar la carrera. Comprueba los servicios de ubicación.',
+    'my_page.dialog': 'Se eliminará tu cuenta y perderás el SHARE, DIA y VALUE que tengas. Los registros de actividad, como el historial de carreras, se eliminarán en 30 días. Los registros de pagos y transacciones que deban conservarse por ley se guardarán durante 5 años antes de eliminarse. Esta acción no se puede revertir. ¿Quieres continuar?',
+    'my_page.button.4': 'Cancelar',
+    'running_crew.body.9': 'Vas a eliminar el crew "\${mine.crew.name}".\nLos \$others miembros también saldrán del crew, y yo, como líder, saldré también.\nEl emblema comprado también desaparecerá y no se puede revertir.\n\n\$note',
+    'running_crew.body.49': 'Vas a eliminar el crew "\${mine.crew.name}".\nYo, como líder, también saldré del crew.\nEl emblema comprado también desaparecerá y no se puede revertir.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} marcos · \${CrewEmblem.glyphIds.length} símbolos · \${CrewEmblem.paletteColors.length} colores',
+    'appeal_center.body.4': 'El registro \$dateLabelPrefix\${current.title} está en espera de verificación.\nMotivo: \${current.reason}',
+    'appeal_center.body.5': 'Si crees que esto es injusto, envía los materiales de apelación a continuación.',
+    'solo_pedometer.dialog.2': '• Actividad física: lee los pasos contados por tu teléfono.\n• Datos de salud (pasos): lee los pasos registrados en Health Connect para incluir también los pasos dados con la pantalla apagada.\n\nLos pasos solo se usan para calcular recompensas, y puedes seguir usando otras funciones aunque no aceptes.',
+    'solo_pedometer.button': 'Más tarde',
+    'watch_app_preview.button.4': 'Cancelar',
   };
 
   static const _pt = <String, String>{
@@ -11155,6 +11205,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Marque para ativar a sincronização com o relógio e a verificação de frequência cardíaca.',
     'sponsor.sponsor_billboard.body': '100 KRW são doados a cada 1 km de corrida verificada',
     'run.run_tracker_provider.body': 'Não é possível iniciar a corrida. Verifique os serviços de localização.',
+    'my_page.dialog': 'Sua conta será excluída e o SHARE, DIA e VALUE que você possui serão perdidos. Registros de atividade, como histórico de corridas, serão excluídos em até 30 dias. Registros de pagamento e transações que devem ser mantidos por lei serão guardados por 5 anos antes da exclusão. Esta ação não pode ser desfeita. Deseja continuar?',
+    'my_page.button.4': 'Cancelar',
+    'running_crew.body.9': 'Você vai excluir o crew "\${mine.crew.name}".\nOs \$others membros também saem do crew, e eu, como líder, também saio.\nO emblema comprado também desaparece, e isso não pode ser desfeito.\n\n\$note',
+    'running_crew.body.49': 'Você vai excluir o crew "\${mine.crew.name}".\nEu, como líder, também saio do crew.\nO emblema comprado também desaparece, e isso não pode ser desfeito.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} molduras · \${CrewEmblem.glyphIds.length} símbolos · \${CrewEmblem.paletteColors.length} cores',
+    'appeal_center.body.4': 'O registro \$dateLabelPrefix\${current.title} está em espera de verificação.\nMotivo: \${current.reason}',
+    'appeal_center.body.5': 'Se você acha isso injusto, envie o material de contestação abaixo.',
+    'solo_pedometer.dialog.2': '• Atividade física: lê os passos contados pelo seu telefone.\n• Dados de saúde (passos): lê os passos registrados no Health Connect para incluir também os passos dados com a tela desligada.\n\nOs passos são usados apenas para calcular recompensas, e você pode continuar usando os outros recursos mesmo sem aceitar.',
+    'solo_pedometer.button': 'Mais tarde',
+    'watch_app_preview.button.4': 'Cancelar',
   };
 
   static const _de = <String, String>{
@@ -13000,6 +13060,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Muss markiert werden, um Smartwatch-Synchronisierung und Herzfrequenzüberprüfung zu aktivieren.',
     'sponsor.sponsor_billboard.body': 'Für jeden verifizierten Laufkilometer werden 100 KRW gespendet',
     'run.run_tracker_provider.body': 'Lauf kann nicht gestartet werden. Bitte überprüfen Sie die Standortdienste.',
+    'my_page.dialog': 'Ihr Konto wird gelöscht und Ihr vorhandenes SHARE, DIA und VALUE geht verloren. Aktivitätsdaten wie der Laufverlauf werden innerhalb von 30 Tagen gelöscht. Zahlungs- und Transaktionsdaten, die gesetzlich aufbewahrt werden müssen, werden 5 Jahre lang gespeichert und danach gelöscht. Dieser Vorgang kann nicht widerrufen werden. Möchten Sie fortfahren?',
+    'my_page.button.4': 'Abbrechen',
+    'running_crew.body.9': 'Das Crew „\${mine.crew.name}“ wird gelöscht.\nAlle \$others Mitglieder verlassen ebenfalls das Crew, und ich als Anführer verlasse es auch.\nDas gekaufte Emblem geht ebenfalls verloren und kann nicht wiederhergestellt werden.\n\n\$note',
+    'running_crew.body.49': 'Das Crew „\${mine.crew.name}“ wird gelöscht.\nIch als Anführer verlasse das Crew ebenfalls.\nDas gekaufte Emblem geht ebenfalls verloren und kann nicht wiederhergestellt werden.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} Rahmen · \${CrewEmblem.glyphIds.length} Symbole · \${CrewEmblem.paletteColors.length} Farben',
+    'appeal_center.body.4': 'Der Eintrag \$dateLabelPrefix\${current.title} ist zur Überprüfung ausgesetzt.\nGrund: \${current.reason}',
+    'appeal_center.body.5': 'Wenn Sie das für ungerecht halten, reichen Sie unten bitte Belege für Ihren Einspruch ein.',
+    'solo_pedometer.dialog.2': '• Körperliche Aktivität: Liest die vom Telefon gezählten Schritte.\n• Gesundheitsdaten (Schritte): Liest die in Health Connect erfassten Schritte, damit auch Schritte bei ausgeschaltetem Bildschirm berücksichtigt werden.\n\nSchrittzahlen werden nur zur Berechnung von Belohnungen verwendet, und Sie können andere Funktionen auch ohne Zustimmung weiter nutzen.',
+    'solo_pedometer.button': 'Später',
+    'watch_app_preview.button.4': 'Abbrechen',
   };
 
   static const _fr = <String, String>{
@@ -14845,6 +14915,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Cochez pour activer la synchronisation de la montre et la vérification de la fréquence cardiaque.',
     'sponsor.sponsor_billboard.body': '100 KRW sont reversés pour chaque kilomètre de course vérifié',
     'run.run_tracker_provider.body': 'Impossible de démarrer la course. Veuillez vérifier les services de localisation.',
+    'my_page.dialog': 'Votre compte sera supprimé et le SHARE, le DIA et le VALUE que vous détenez seront perdus. Les données d\'activité telles que l\'historique de course seront supprimées dans un délai de 30 jours. Les données de paiement et de transaction devant être conservées par la loi seront conservées pendant 5 ans avant suppression. Cette action est irréversible. Voulez-vous continuer ?',
+    'my_page.button.4': 'Annuler',
+    'running_crew.body.9': 'Le crew « \${mine.crew.name} » va être supprimé.\nLes \$others membres quitteront également le crew, et moi, en tant que chef, le quitterai aussi.\nL\'emblème acheté disparaîtra aussi et cela ne peut pas être annulé.\n\n\$note',
+    'running_crew.body.49': 'Le crew « \${mine.crew.name} » va être supprimé.\nMoi, en tant que chef, je quitterai aussi le crew.\nL\'emblème acheté disparaîtra aussi et cela ne peut pas être annulé.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} cadres · \${CrewEmblem.glyphIds.length} symboles · \${CrewEmblem.paletteColors.length} couleurs',
+    'appeal_center.body.4': 'L\'enregistrement \$dateLabelPrefix\${current.title} est en attente de vérification.\nMotif : \${current.reason}',
+    'appeal_center.body.5': 'Si vous estimez que c\'est injuste, veuillez soumettre des pièces justificatives ci-dessous.',
+    'solo_pedometer.dialog.2': '• Activité physique : lit le nombre de pas comptés par votre téléphone.\n• Données de santé (pas) : lit les pas enregistrés dans Health Connect afin d\'inclure aussi les pas effectués écran éteint.\n\nLe nombre de pas n\'est utilisé que pour calculer les récompenses, et vous pouvez continuer à utiliser les autres fonctionnalités même sans donner votre accord.',
+    'solo_pedometer.button': 'Plus tard',
+    'watch_app_preview.button.4': 'Annuler',
   };
 
   static const _vi = <String, String>{
@@ -16690,6 +16770,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Phải chọn để kích hoạt đồng bộ hóa đồng hồ và xác minh nhịp tim.',
     'sponsor.sponsor_billboard.body': '100 KRW sẽ được quyên góp cho mỗi 1km chạy bộ được xác minh',
     'run.run_tracker_provider.body': 'Không thể bắt đầu chạy. Vui lòng kiểm tra dịch vụ định vị.',
+    'my_page.dialog': 'Tài khoản của bạn sẽ bị xóa và SHARE, DIA, VALUE bạn đang có sẽ mất. Dữ liệu hoạt động như lịch sử chạy bộ sẽ bị xóa trong vòng 30 ngày. Dữ liệu thanh toán và giao dịch phải lưu giữ theo luật sẽ được lưu trong 5 năm trước khi xóa. Hành động này không thể hoàn tác. Bạn có muốn tiếp tục không?',
+    'my_page.button.4': 'Hủy',
+    'running_crew.body.9': 'Sẽ xóa crew "\${mine.crew.name}".\n\$others thành viên cũng sẽ rời crew, và tôi với vai trò trưởng crew cũng rời theo.\nBiểu tượng đã mua cũng sẽ mất và không thể hoàn tác.\n\n\$note',
+    'running_crew.body.49': 'Sẽ xóa crew "\${mine.crew.name}".\nTôi với vai trò trưởng crew cũng sẽ rời crew.\nBiểu tượng đã mua cũng sẽ mất và không thể hoàn tác.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} khung · \${CrewEmblem.glyphIds.length} họa tiết · \${CrewEmblem.paletteColors.length} màu',
+    'appeal_center.body.4': 'Bản ghi \$dateLabelPrefix\${current.title} đang ở trạng thái tạm giữ để xác minh.\nLý do: \${current.reason}',
+    'appeal_center.body.5': 'Nếu bạn thấy không công bằng, vui lòng gửi tài liệu khiếu nại bên dưới.',
+    'solo_pedometer.dialog.2': '• Hoạt động thể chất: đọc số bước điện thoại đã đếm.\n• Dữ liệu sức khỏe (số bước): đọc số bước được ghi trong Health Connect để tính cả số bước khi màn hình tắt.\n\nSố bước chỉ dùng để tính thưởng, và bạn vẫn có thể dùng các tính năng khác dù không đồng ý.',
+    'solo_pedometer.button': 'Để sau',
+    'watch_app_preview.button.4': 'Hủy',
   };
 
   static const _th = <String, String>{
@@ -18535,6 +18625,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'ต้องทำเครื่องหมายเพื่อเปิดใช้งานการซิงค์นาฬิกาและการตรวจสอบอัตราการเต้นของหัวใจ',
     'sponsor.sponsor_billboard.body': 'บริจาค 100 วอนในทุก ๆ 1 กม. ของการวิ่งที่ผ่านการตรวจสอบ',
     'run.run_tracker_provider.body': 'ไม่สามารถเริ่มการวิ่งได้ กรุณาตรวจสอบบริการตำแหน่ง',
+    'my_page.dialog': 'บัญชีของคุณจะถูกลบ และ SHARE, DIA, VALUE ที่มีอยู่จะหายไป ข้อมูลกิจกรรม เช่น ประวัติการวิ่ง จะถูกลบภายใน 30 วัน ข้อมูลการชำระเงินและธุรกรรมที่ต้องเก็บตามกฎหมายจะถูกเก็บไว้ 5 ปีก่อนลบ การกระทำนี้ไม่สามารถย้อนกลับได้ ต้องการดำเนินการต่อหรือไม่',
+    'my_page.button.4': 'ยกเลิก',
+    'running_crew.body.9': 'จะยุบ crew "\${mine.crew.name}"\nสมาชิกอีก \$others คนจะออกจาก crew ด้วย และฉันในฐานะหัวหน้าก็จะออกไปด้วยเช่นกัน\nตราสัญลักษณ์ที่ซื้อไว้ก็จะหายไปและไม่สามารถย้อนกลับได้\n\n\$note',
+    'running_crew.body.49': 'จะยุบ crew "\${mine.crew.name}"\nฉันในฐานะหัวหน้าก็จะออกจาก crew ด้วยเช่นกัน\nตราสัญลักษณ์ที่ซื้อไว้ก็จะหายไปและไม่สามารถย้อนกลับได้\n\n\$note',
+    'running_crew.body.27': 'กรอบ \${CrewEmblem.frames.length} แบบ · ลวดลาย \${CrewEmblem.glyphIds.length} แบบ · สี \${CrewEmblem.paletteColors.length} สี',
+    'appeal_center.body.4': 'บันทึก \$dateLabelPrefix\${current.title} อยู่ในสถานะระงับเพื่อตรวจสอบ\nเหตุผล: \${current.reason}',
+    'appeal_center.body.5': 'หากคิดว่าไม่เป็นธรรม กรุณาส่งเอกสารชี้แจงด้านล่าง',
+    'solo_pedometer.dialog.2': '• กิจกรรมทางกาย: อ่านจำนวนก้าวที่โทรศัพท์นับได้\n• ข้อมูลสุขภาพ (ก้าว): อ่านจำนวนก้าวที่บันทึกใน Health Connect เพื่อรวมก้าวตอนที่หน้าจอดับด้วย\n\nจำนวนก้าวใช้สำหรับคำนวณรางวัลเท่านั้น และคุณยังใช้ฟีเจอร์อื่นได้แม้ไม่ยินยอม',
+    'solo_pedometer.button': 'ไว้ทีหลัง',
+    'watch_app_preview.button.4': 'ยกเลิก',
   };
 
   static const _id = <String, String>{
@@ -20380,6 +20480,16 @@ class RemainingSurface {
     'legal.health_data_consent.body': 'Harus dicentang untuk mengaktifkan sinkronisasi jam tangan dan verifikasi detak jantung.',
     'sponsor.sponsor_billboard.body': '100 KRW didonasikan untuk setiap 1 km lari yang terverifikasi',
     'run.run_tracker_provider.body': 'Tidak dapat memulai lari. Harap periksa layanan lokasi.',
+    'my_page.dialog': 'Akun Anda akan dihapus dan SHARE, DIA, serta VALUE yang Anda miliki akan hilang. Catatan aktivitas seperti riwayat lari akan dihapus dalam 30 hari. Catatan pembayaran dan transaksi yang wajib disimpan sesuai hukum akan disimpan selama 5 tahun sebelum dihapus. Tindakan ini tidak dapat dibatalkan. Apakah Anda ingin melanjutkan?',
+    'my_page.button.4': 'Batal',
+    'running_crew.body.9': 'Akan menghapus crew "\${mine.crew.name}".\n\$others anggota lainnya juga akan keluar dari crew, dan saya sebagai ketua juga akan keluar.\nLambang yang sudah dibeli juga akan hilang dan tidak dapat dibatalkan.\n\n\$note',
+    'running_crew.body.49': 'Akan menghapus crew "\${mine.crew.name}".\nSaya sebagai ketua juga akan keluar dari crew.\nLambang yang sudah dibeli juga akan hilang dan tidak dapat dibatalkan.\n\n\$note',
+    'running_crew.body.27': '\${CrewEmblem.frames.length} bingkai · \${CrewEmblem.glyphIds.length} simbol · \${CrewEmblem.paletteColors.length} warna',
+    'appeal_center.body.4': 'Catatan \$dateLabelPrefix\${current.title} sedang ditahan untuk verifikasi.\nAlasan: \${current.reason}',
+    'appeal_center.body.5': 'Jika menurut Anda ini tidak adil, silakan kirim bukti pendukung di bawah ini.',
+    'solo_pedometer.dialog.2': '• Aktivitas fisik: membaca jumlah langkah yang dihitung ponsel.\n• Data kesehatan (langkah): membaca jumlah langkah yang tercatat di Health Connect sehingga langkah saat layar mati juga ikut terhitung.\n\nJumlah langkah hanya digunakan untuk menghitung hadiah, dan Anda tetap dapat menggunakan fitur lain meskipun tidak menyetujui.',
+    'solo_pedometer.button': 'Nanti',
+    'watch_app_preview.button.4': 'Batal',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

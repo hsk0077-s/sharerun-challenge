@@ -11,6 +11,7 @@ from app.services.twin_run import (
     run_signature,
     same_device_delayed_copy,
     same_device_shifted_route,
+    _time,
 )
 
 NOW = datetime(2026, 10, 6, 1, 0, tzinfo=timezone.utc)
@@ -258,3 +259,17 @@ def test_a_long_route_still_matches_when_samples_are_out_of_phase() -> None:
         startedAt=(NOW + timedelta(seconds=30)).isoformat(),
     )
     assert is_twin_run(left, right)
+
+
+def test_a_start_time_without_a_zone_is_read_as_utc_and_never_raises() -> None:
+    zoneless = {"startedAt": "2026-10-28T10:00:00", "runSignature": "sig", "deviceId": "d1"}
+    aware = {"startedAt": "2026-10-28T10:00:30+00:00", "runSignature": "sig", "deviceId": "d1"}
+    other_zone = {"startedAt": "2026-10-28T19:00:30+09:00", "runSignature": "sig", "deviceId": "d1"}
+    for left, right in ((zoneless, aware), (aware, zoneless), (zoneless, other_zone)):
+        is_twin_run(left, right)
+        bare_phone_twin(left, right)
+        same_device_delayed_copy(left, right)
+    assert _time(zoneless["startedAt"]) == _time(aware["startedAt"]) - timedelta(seconds=30)
+    assert _time("2026-10-28T10:00:00").tzinfo is not None
+    assert _time(datetime(2026, 10, 28, 10, 0, 0)).tzinfo is not None
+    assert _time("not a time") is None

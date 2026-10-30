@@ -19,7 +19,7 @@ look like that. The run itself still counts. Missing times do not match,
 so older rows are left alone.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 import math
 import statistics
@@ -79,15 +79,21 @@ def run_signature(
 
 
 def _time(value: object) -> datetime | None:
+    """An aware UTC time. A value with no zone is read as UTC.
+
+    The run's start time is stored as the client sent it. A zone-less string
+    next to an aware one made the later subtraction raise TypeError.
+    """
     if isinstance(value, datetime):
-        return value if value.tzinfo else value.replace(tzinfo=datetime.now().astimezone().tzinfo)
-    if isinstance(value, str) and value:
+        parsed = value
+    elif isinstance(value, str) and value:
         try:
             parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError:
             return None
-        return parsed
-    return None
+    else:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 def _points(route: object) -> list[tuple[float, float]]:

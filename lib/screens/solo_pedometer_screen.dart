@@ -41,6 +41,7 @@ import '../features/wallet/debug_economy_status.dart';
 import '../features/wallet/debug_local_wallet_store.dart';
 import '../features/wallet/providers/debug_local_share_history_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../l10n/remaining_surface.dart';
 import 'my_wallet_screen.dart';
 
 /// 챌린지 화면 위쪽 글자. 등급 목표를 채우면 막대가 아직 차지 않아도 "달성"이라 말하고,
@@ -53,10 +54,22 @@ String walkingGoalLabel({
   required String Function(int) comma,
   int dailyGoalSteps = 10000,
 }) {
-  if (!complete) return '등급 목표 달성률: $percent%';
+  if (!complete) {
+    return RemainingSurface.trNow(
+      'solo_pedometer.body',
+      '등급 목표 달성률: $percent%',
+      {'percent': percent},
+    );
+  }
   final left = dailyGoalSteps - steps;
-  if (left <= 0) return '등급 목표 달성 · 만보 달성!';
-  return '등급 목표 달성! 만보까지 ${comma(left)}걸음';
+  if (left <= 0) {
+    return RemainingSurface.trNow('solo_pedometer.body.2', '등급 목표 달성 · 만보 달성!');
+  }
+  return RemainingSurface.trNow(
+    'solo_pedometer.body.3',
+    '등급 목표 달성! 만보까지 ${comma(left)}걸음',
+    {'comma(left)': comma(left)},
+  );
 }
 
 class PedometerData {
@@ -348,7 +361,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     final agreed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('걸음 수를 세려면 권한이 필요해요'),
+        title: Text(
+          RemainingSurface.tr(dialogContext, 'solo_pedometer.dialog', '걸음 수를 세려면 권한이 필요해요'),
+        ),
         content: const Text(
           '• 신체 활동: 폰이 센 걸음 수를 읽습니다.\n'
           '• 건강 데이터(걸음): Health Connect에 기록된 걸음 수를 읽어 '
@@ -364,7 +379,9 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           FilledButton(
             key: const Key('pedometer-permission-continue'),
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('계속'),
+            child: Text(
+              RemainingSurface.tr(dialogContext, 'solo_pedometer.button.2', '계속'),
+            ),
           ),
         ],
       ),
@@ -1497,7 +1514,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
 
   Future<void> _onHarvestCoins() async {
     if (_harvestInFlight) {
-      _harvestNotice('SHARE를 줍는 중이에요. 잠시만 기다려 주세요.');
+      _harvestNotice(
+        RemainingSurface.tr(
+          context, 'solo_pedometer.toast', 'SHARE를 줍는 중이에요. 잠시만 기다려 주세요.'),
+      );
       return;
     }
     final pedometerState = ref.read(pedometerStateProvider);
@@ -1512,7 +1532,10 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
       claimedSteps: claimedNow,
     );
     if (toClaim <= 0) {
-      _harvestNotice('아직 주울 SHARE가 없어요. 조금 더 걸어보세요.');
+      _harvestNotice(
+        RemainingSurface.tr(
+          context, 'solo_pedometer.body.4', '아직 주울 SHARE가 없어요. 조금 더 걸어보세요.'),
+      );
       return;
     }
     _harvestInFlight = true;
@@ -1613,8 +1636,14 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
           }
         } else if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('SHARE 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.'),
+            SnackBar(
+              content: Text(
+                RemainingSurface.tr(
+                  context,
+                  'solo_pedometer.toast.2',
+                  'SHARE 줍기에 실패했습니다. 네트워크를 확인한 뒤 다시 시도해 주세요.',
+                ),
+              ),
             ),
           );
         }
@@ -1791,7 +1820,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                       slivers: [
                         SliverToBoxAdapter(
                           child: _WalkingHeroCanvas(
-                            title: '워킹챌린지',
+                            title: RemainingSurface.tr(
+                              context, 'solo_pedometer.body.5', '워킹챌린지'),
                             onBack: _goHomeSafe,
                             onShare: _onShareWalkingChallenge,
                             gauge: _buildHybridProgressGauge(
@@ -1806,7 +1836,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                             km: displayedKm,
                             kcal: displayedSteps * 0.045,
                             pendingShare: pendingCoinsInt.toDouble(),
-                            tierLabel: '[${running.koreanName}] 산책 중',
+                            tierLabel: RemainingSurface.tr(
+                              context,
+                              'solo_pedometer.body.6',
+                              '[${running.koreanName}] 산책 중',
+                              {'running.koreanName': running.koreanName},
+                            ),
                           ),
                         ),
                         SliverPadding(
@@ -1905,7 +1940,8 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '내 누적 SHARE 통장 🏦',
+                  RemainingSurface.tr(
+                    context, 'solo_pedometer.body.7', '내 누적 SHARE 통장 🏦'),
                   style: textTheme.labelMedium?.copyWith(
                     color: tokens.colors.muted,
                     fontWeight: FontWeight.w600,
@@ -1925,7 +1961,16 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                 ),
                 SizedBox(height: tokens.spacing.xxs),
                 Text(
-                  '오늘의 땀방울 : $todayCollectedCoins / ${PedometerHarvestLedger.dailyShareCap} SHARE 🪙',
+                  RemainingSurface.tr(
+                    context,
+                    'solo_pedometer.body.8',
+                    '오늘의 땀방울 : $todayCollectedCoins / ${PedometerHarvestLedger.dailyShareCap} SHARE 🪙',
+                    {
+                      'todayCollectedCoins': todayCollectedCoins,
+                      'PedometerHarvestLedger.dailyShareCap':
+                          PedometerHarvestLedger.dailyShareCap,
+                    },
+                  ),
                   style: textTheme.bodySmall?.copyWith(
                     color: tokens.colors.muted,
                     fontWeight: FontWeight.w700,
@@ -2291,7 +2336,7 @@ class _WalkingHeroCanvas extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '걸음',
+                    RemainingSurface.tr(context, 'solo_pedometer.body.9', '걸음'),
                     textAlign: TextAlign.center,
                     style: textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w700,
@@ -2447,7 +2492,12 @@ class _WalkingHarvestDock extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '줍기 대기 : $pendingCoinsInt SHARE',
+                  RemainingSurface.tr(
+                    context,
+                    'solo_pedometer.body.10',
+                    '줍기 대기 : $pendingCoinsInt SHARE',
+                    {'pendingCoinsInt': pendingCoinsInt},
+                  ),
                   style: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: tokens.colors.donation,
@@ -2503,7 +2553,11 @@ class _BenefitNotifBanner extends StatelessWidget {
           SizedBox(width: tokens.spacing.xs),
           Expanded(
             child: Text(
-              enabled ? '워킹챌린지 혜택 알림 받는 중 🔔' : '혜택 알림이 완전히 꺼져 있습니다 🔕',
+              enabled
+                  ? RemainingSurface.tr(
+                      context, 'solo_pedometer.body.11', '워킹챌린지 혜택 알림 받는 중 🔔')
+                  : RemainingSurface.tr(
+                      context, 'solo_pedometer.body.12', '혜택 알림이 완전히 꺼져 있습니다 🔕'),
               style: textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: enabled ? tokens.colors.ink : tokens.colors.muted,
@@ -2525,7 +2579,9 @@ class _BenefitNotifBanner extends StatelessWidget {
                 ),
               ),
               child: Text(
-                enabled ? '알림 해지' : '알림 받기',
+                enabled
+                    ? RemainingSurface.tr(context, 'solo_pedometer.body.13', '알림 해지')
+                    : RemainingSurface.tr(context, 'solo_pedometer.body.14', '알림 받기'),
                 style: textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.w800,
                   color:
@@ -2558,6 +2614,15 @@ class _WeekJournalCard extends StatelessWidget {
   final ValueChanged<String> onSelect;
 
   static const _labels = ['월', '화', '수', '목', '금', '토', '일'];
+  static const _labelKeys = [
+    'solo_pedometer.body.15',
+    'solo_pedometer.body.16',
+    'solo_pedometer.body.17',
+    'solo_pedometer.body.18',
+    'solo_pedometer.body.19',
+    'solo_pedometer.body.20',
+    'solo_pedometer.body.21',
+  ];
   static const _completeSteps = 5000;
 
   @override
@@ -2595,7 +2660,7 @@ class _WeekJournalCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '이번 주 분석 일지',
+            RemainingSurface.tr(context, 'solo_pedometer.body.22', '이번 주 분석 일지'),
             style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w900,
               color: tokens.colors.ink,
@@ -2617,7 +2682,11 @@ class _WeekJournalCard extends StatelessWidget {
                         dateKey == todayKey ? rawSteps - stepOffset : rawSteps,
                       );
                       return _WeekDayCircle(
-                        label: _labels[i.clamp(0, _labels.length - 1)],
+                        label: RemainingSurface.tr(
+                          context,
+                          _labelKeys[i.clamp(0, _labelKeys.length - 1)],
+                          _labels[i.clamp(0, _labels.length - 1)],
+                        ),
                         day: days[i],
                         selected: dateKey == selectedKey,
                         complete: steps >= _completeSteps,
@@ -2642,8 +2711,22 @@ class _WeekJournalCard extends StatelessWidget {
             ),
             child: Text(
               selected == null
-                  ? '날짜를 선택하면 그날의 걸음 수가 표시됩니다.'
-                  : '${selected.month}월 ${selected.day}일의 누적 걸음수: ${_comma(displaySelectedSteps)}보',
+                  ? RemainingSurface.tr(
+                      context,
+                      'solo_pedometer.body.23',
+                      '날짜를 선택하면 그날의 걸음 수가 표시됩니다.',
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'solo_pedometer.body.24',
+                      '${selected.month}월 ${selected.day}일의 누적 걸음수: ${_comma(displaySelectedSteps)}보',
+                      {
+                        'selected.month': selected.month,
+                        'selected.day': selected.day,
+                        '_comma(displaySelectedSteps)':
+                            _comma(displaySelectedSteps),
+                      },
+                    ),
               style: textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: tokens.colors.ink,

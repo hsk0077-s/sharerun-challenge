@@ -11,6 +11,7 @@ import '../core/widgets/src_gradient_background.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/wallet/hall_of_fame_donate.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 명예의 전당 화면 (Screen 26).
 class HallOfFameScreen extends ConsumerStatefulWidget {
@@ -48,19 +49,29 @@ class _HallOfFameScreenState extends ConsumerState<HallOfFameScreen> {
       final left = result.valueTokenBalance;
       _snack(
         left == null
-            ? '서버 원장에서 $_donateValue VALUE를 기부했습니다.'
-            : '서버 원장에서 $_donateValue VALUE를 기부했습니다. 잔액 $left',
+            ? RemainingSurface.tr(
+                context,
+                'hall_of_fame.body',
+                '서버 원장에서 $_donateValue VALUE를 기부했습니다.',
+                {'_donateValue': _donateValue},
+              )
+            : RemainingSurface.tr(
+                context,
+                'hall_of_fame.body.2',
+                '서버 원장에서 $_donateValue VALUE를 기부했습니다. 잔액 $left',
+                {'_donateValue': _donateValue, 'left': left},
+              ),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
       if (error.statusCode == 400) {
-        _snack('VALUE가 부족합니다.');
+        _snack(RemainingSurface.tr(context, 'hall_of_fame.body.3', 'VALUE가 부족합니다.'));
         return;
       }
-      _snack('기부에 실패했습니다.');
+      _snack(RemainingSurface.tr(context, 'hall_of_fame.body.4', '기부에 실패했습니다.'));
     } catch (_) {
       if (!mounted) return;
-      _snack('기부에 실패했습니다.');
+      _snack(RemainingSurface.tr(context, 'hall_of_fame.body.4', '기부에 실패했습니다.'));
     } finally {
       _donating = false;
       if (mounted) setState(() {});
@@ -218,7 +229,7 @@ class _EmptyLeaderboard extends StatelessWidget {
         ],
       ),
       child: Text(
-        '아직 기록이 없어요',
+        RemainingSurface.tr(context, 'hall_of_fame.body.5', '아직 기록이 없어요'),
         textAlign: TextAlign.center,
         style: AppTextStyles.agreementLabel.copyWith(
           fontSize: 15,

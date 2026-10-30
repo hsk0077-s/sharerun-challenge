@@ -9,6 +9,7 @@ import '../core/theme/app_text_styles.dart';
 import '../data/api/identity_api_client.dart';
 import '../features/auth/existing_account_question.dart';
 import '../features/auth/login_connection_providers.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 설정 > 로그인 연결. 이 계정으로 들어올 수 있는 방법을 보고, 카카오를 붙이고 뗀다.
 /// 구글은 보여 주기만 하고, 카카오와 네이버는 붙이고 뗀다(구글로 로그인한 계정이면 연결됨으로 나온다).
@@ -106,9 +107,21 @@ class _LoginConnectionsScreenState
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('$name 연결 해제'),
+        title: Text(
+          RemainingSurface.tr(
+            context,
+            'login_connections.dialog',
+            '$name 연결 해제',
+            {'name': name},
+          ),
+        ),
         content: Text(
-          '해제하면 이 $name 계정으로는 이 쉐어런 계정에 들어올 수 없어요. 다른 로그인 방법으로는 계속 쓸 수 있어요.',
+          RemainingSurface.tr(
+            context,
+            'login_connections.button',
+            '해제하면 이 $name 계정으로는 이 쉐어런 계정에 들어올 수 없어요. 다른 로그인 방법으로는 계속 쓸 수 있어요.',
+            {'name': name},
+          ),
         ),
         actions: [
           TextButton(
@@ -128,7 +141,14 @@ class _LoginConnectionsScreenState
     try {
       await send();
       if (!mounted) return;
-      _say('$name 연결을 해제했어요.');
+      _say(
+        RemainingSurface.tr(
+          context,
+          'login_connections.body',
+          '$name 연결을 해제했어요.',
+          {'name': name},
+        ),
+      );
       await _load();
     } catch (e) {
       if (mounted) _say(ApiErrorMessage.from(e));
@@ -197,7 +217,11 @@ class _LoginConnectionsScreenState
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '같은 계정으로 여러 방법으로 로그인할 수 있어요. 연결해 두면 어떤 방법으로 들어와도 같은 SHARE와 기록이 보여요. 마지막 로그인 방법은 해제할 수 없어요.',
+            RemainingSurface.tr(
+              context,
+              'login_connections.body.6',
+              '같은 계정으로 여러 방법으로 로그인할 수 있어요. 연결해 두면 어떤 방법으로 들어와도 같은 SHARE와 기록이 보여요. 마지막 로그인 방법은 해제할 수 없어요.',
+            ),
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -210,7 +234,16 @@ class _LoginConnectionsScreenState
             Column(
               children: [
                 Text(_loadError!, style: AppTextStyles.caption),
-                TextButton(onPressed: _load, child: const Text('다시 불러오기')),
+                TextButton(
+                  onPressed: _load,
+                  child: Text(
+                    RemainingSurface.tr(
+                      context,
+                      'login_connections.button.2',
+                      '다시 불러오기',
+                    ),
+                  ),
+                ),
               ],
             )
           else
@@ -225,9 +258,21 @@ class _LoginConnectionsScreenState
                   ListTile(
                     key: LoginConnectionsScreen.googleRowKey,
                     leading: const Icon(Icons.g_mobiledata_rounded, size: 32),
-                    title: const Text('구글'),
+                    title: Text(
+                      RemainingSurface.tr(
+                        context,
+                        'login_connections.body.5',
+                        '구글',
+                      ),
+                    ),
                     subtitle: Text(
-                      googleLinked ? '연결됨' : '연결 안 됨',
+                      googleLinked
+                          ? '연결됨'
+                          : RemainingSurface.tr(
+                              context,
+                              'login_connections.body.7',
+                              '연결 안 됨',
+                            ),
                       style: AppTextStyles.caption,
                     ),
                     trailing: googleLinked
@@ -242,9 +287,21 @@ class _LoginConnectionsScreenState
                   ListTile(
                     key: LoginConnectionsScreen.kakaoRowKey,
                     leading: const Icon(Icons.chat_bubble_rounded),
-                    title: const Text('카카오'),
+                    title: Text(
+                      RemainingSurface.tr(
+                        context,
+                        'login_connections.body.2',
+                        '카카오',
+                      ),
+                    ),
                     subtitle: Text(
-                      kakaoLinked ? '연결됨' : '연결 안 됨',
+                      kakaoLinked
+                          ? '연결됨'
+                          : RemainingSurface.tr(
+                              context,
+                              'login_connections.body.7',
+                              '연결 안 됨',
+                            ),
                       style: AppTextStyles.caption,
                     ),
                     trailing: TextButton(
@@ -252,16 +309,36 @@ class _LoginConnectionsScreenState
                       onPressed: _busy || (kakaoLinked && !_canUnlink)
                           ? null
                           : (kakaoLinked ? _unlinkKakao : _linkKakao),
-                      child: Text(kakaoLinked ? '해제' : '연결하기'),
+                      child: Text(
+                        kakaoLinked
+                            ? '해제'
+                            : RemainingSurface.tr(
+                                context,
+                                'login_connections.button.3',
+                                '연결하기',
+                              ),
+                      ),
                     ),
                   ),
                   const Divider(height: 1, color: AppColors.borderLight),
                   ListTile(
                     key: LoginConnectionsScreen.naverRowKey,
                     leading: const Icon(Icons.north_east_rounded),
-                    title: const Text('네이버'),
+                    title: Text(
+                      RemainingSurface.tr(
+                        context,
+                        'login_connections.body.3',
+                        '네이버',
+                      ),
+                    ),
                     subtitle: Text(
-                      naverLinked ? '연결됨' : '연결 안 됨',
+                      naverLinked
+                          ? '연결됨'
+                          : RemainingSurface.tr(
+                              context,
+                              'login_connections.body.7',
+                              '연결 안 됨',
+                            ),
                       style: AppTextStyles.caption,
                     ),
                     trailing: TextButton(
@@ -269,7 +346,15 @@ class _LoginConnectionsScreenState
                       onPressed: _busy || (naverLinked && !_canUnlink)
                           ? null
                           : (naverLinked ? _unlinkNaver : _linkNaver),
-                      child: Text(naverLinked ? '해제' : '연결하기'),
+                      child: Text(
+                        naverLinked
+                            ? '해제'
+                            : RemainingSurface.tr(
+                                context,
+                                'login_connections.button.3',
+                                '연결하기',
+                              ),
+                      ),
                     ),
                   ),
                   const Divider(height: 1, color: AppColors.borderLight),
@@ -277,9 +362,21 @@ class _LoginConnectionsScreenState
                     ListTile(
                       key: LoginConnectionsScreen.appleRowKey,
                       leading: const Icon(Icons.apple),
-                      title: const Text('애플'),
+                      title: Text(
+                        RemainingSurface.tr(
+                          context,
+                          'login_connections.body.4',
+                          '애플',
+                        ),
+                      ),
                       subtitle: Text(
-                        appleLinked ? '연결됨' : '연결 안 됨',
+                        appleLinked
+                            ? '연결됨'
+                            : RemainingSurface.tr(
+                                context,
+                                'login_connections.body.7',
+                                '연결 안 됨',
+                              ),
                         style: AppTextStyles.caption,
                       ),
                       trailing: TextButton(
@@ -287,14 +384,28 @@ class _LoginConnectionsScreenState
                         onPressed: _busy || (appleLinked && !_canUnlink)
                             ? null
                             : (appleLinked ? _unlinkApple : _linkApple),
-                        child: Text(appleLinked ? '해제' : '연결하기'),
+                        child: Text(
+                          appleLinked
+                              ? '해제'
+                              : RemainingSurface.tr(
+                                  context,
+                                  'login_connections.button.3',
+                                  '연결하기',
+                                ),
+                        ),
                       ),
                     )
                   else
-                    const ListTile(
-                      leading: Icon(Icons.apple),
-                      title: Text('애플'),
-                      trailing: Text('준비 중', style: AppTextStyles.caption),
+                    ListTile(
+                      leading: const Icon(Icons.apple),
+                      title: Text(
+                        RemainingSurface.tr(
+                          context,
+                          'login_connections.body.4',
+                          '애플',
+                        ),
+                      ),
+                      trailing: const Text('준비 중', style: AppTextStyles.caption),
                     ),
                 ],
               ),

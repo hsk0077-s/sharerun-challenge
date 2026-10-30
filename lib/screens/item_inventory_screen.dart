@@ -15,6 +15,7 @@ import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/streak_item_message.dart';
 import '../features/shop/widgets/donation_match_contribution.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 인게임 아이템 보관함 화면 (Screen 20).
 class ItemInventoryScreen extends ConsumerStatefulWidget {
@@ -59,22 +60,45 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
             valueBalance: result.valueTokenBalance,
           );
       final done = result.status == 'already_matched'
-          ? '이미 처리된 매칭입니다. VALUE는 한 번만 차감됩니다.'
-          : '기부 매칭을 기록했습니다.';
+          ? RemainingSurface.tr(
+              context,
+              'item_inventory.toast',
+              '이미 처리된 매칭입니다. VALUE는 한 번만 차감됩니다.',
+            )
+          : RemainingSurface.tr(
+              context,
+              'item_inventory.toast.2',
+              '기부 매칭을 기록했습니다.',
+            );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            streakItemMessage(error, fallback: '기부 매칭을 기록하지 못했습니다.'),
+            streakItemMessage(
+              error,
+              fallback: RemainingSurface.tr(
+                context,
+                'item_inventory.toast.3',
+                '기부 매칭을 기록하지 못했습니다.',
+              ),
+            ),
           ),
         ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('기부 매칭을 기록하지 못했습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'item_inventory.toast.3',
+              '기부 매칭을 기록하지 못했습니다.',
+            ),
+          ),
+        ),
       );
     } finally {
       _useBusy = false;
@@ -93,22 +117,47 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
             diamondBalance: result.diamondBalance,
             valueBalance: result.valueTokenBalance,
           );
-      final done =
-          result.status == 'already_used' ? '이미 처리된 휴식일 지정입니다.' : '$label 완료';
+      final done = result.status == 'already_used'
+          ? RemainingSurface.tr(
+              context,
+              'item_inventory.toast.4',
+              '이미 처리된 휴식일 지정입니다.',
+            )
+          : RemainingSurface.tr(
+              context,
+              'item_inventory.toast.5',
+              '$label 완료',
+              {'label': label},
+            );
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
     } on ApiException catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            streakItemMessage(error, fallback: '휴식일을 지정하지 못했습니다.'),
+            streakItemMessage(
+              error,
+              fallback: RemainingSurface.tr(
+                context,
+                'item_inventory.toast.6',
+                '휴식일을 지정하지 못했습니다.',
+              ),
+            ),
           ),
         ),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('휴식일을 지정하지 못했습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'item_inventory.toast.6',
+              '휴식일을 지정하지 못했습니다.',
+            ),
+          ),
+        ),
       );
     } finally {
       _useBusy = false;
@@ -129,7 +178,16 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
             0;
     if (owned <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$title 보유량이 없습니다. 상점에서 구매해 주세요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'item_inventory.toast.7',
+              '$title 보유량이 없습니다. 상점에서 구매해 주세요.',
+              {'title': title},
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -138,7 +196,16 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
       await ref.read(securedActionApiClientProvider).useShopItem(itemId);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$title 사용 완료')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'item_inventory.toast.8',
+              '$title 사용 완료',
+              {'title': title},
+            ),
+          ),
+        ),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -147,7 +214,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
           content: Text(
             streakItemMessage(
               error,
-              fallback: '$title 보유량이 없습니다. 상점에서 구매해 주세요.',
+              fallback: RemainingSurface.tr(
+                context,
+                'item_inventory.toast.7',
+                '$title 보유량이 없습니다. 상점에서 구매해 주세요.',
+                {'title': title},
+              ),
             ),
           ),
         ),
@@ -155,7 +227,16 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$title 을 사용하지 못했습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'item_inventory.toast.9',
+              '$title 을 사용하지 못했습니다.',
+              {'title': title},
+            ),
+          ),
+        ),
       );
     } finally {
       _useBusy = false;
@@ -215,7 +296,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           ),
                         ),
                         title: AppStrings.itemInventoryCprTitle,
-                        quantity: '보유량: ${shop.cprCount}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body',
+                          '보유량: ${shop.cprCount}',
+                          {'shop.cprCount': shop.cprCount},
+                        ),
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
                           ServerShopInventory.cprId,
@@ -230,7 +316,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.success,
                         ),
                         title: AppStrings.itemInventorySafeGuardTitle,
-                        quantity: '보유량: ${shop.safeGuardCount}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.2',
+                          '보유량: ${shop.safeGuardCount}',
+                          {'shop.safeGuardCount': shop.safeGuardCount},
+                        ),
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
                           ServerShopInventory.safeGuardId,
@@ -245,7 +336,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.tealAccent,
                         ),
                         title: AppStrings.itemInventoryCoachOnePointTitle,
-                        quantity: '보유량: ${shop.coachOnePointCount}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.3',
+                          '보유량: ${shop.coachOnePointCount}',
+                          {'shop.coachOnePointCount': shop.coachOnePointCount},
+                        ),
                         hint: AppStrings.itemInventoryCoachOnePointHint,
                       ),
                       const SizedBox(height: 12),
@@ -256,7 +352,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.progressYellow,
                         ),
                         title: AppStrings.itemInventoryExtraEntryTitle,
-                        quantity: '보유량: ${shop.extraEntryCount}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.4',
+                          '보유량: ${shop.extraEntryCount}',
+                          {'shop.extraEntryCount': shop.extraEntryCount},
+                        ),
                         hint: AppStrings.itemInventoryExtraEntryHint,
                       ),
                       const SizedBox(height: 12),
@@ -267,7 +368,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.ghostPacePurple,
                         ),
                         title: AppStrings.itemInventoryFriendGhostTitle,
-                        quantity: '보유량: ${shop.friendGhostCount}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.5',
+                          '보유량: ${shop.friendGhostCount}',
+                          {'shop.friendGhostCount': shop.friendGhostCount},
+                        ),
                         hint: AppStrings.itemInventoryFriendGhostHint,
                       ),
                       const SizedBox(height: 12),
@@ -278,7 +384,12 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.progressYellow,
                         ),
                         title: AppStrings.itemInventoryCrewCheerTitle,
-                        quantity: '보유량: ${shop.crewCheerCount}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.6',
+                          '보유량: ${shop.crewCheerCount}',
+                          {'shop.crewCheerCount': shop.crewCheerCount},
+                        ),
                         hint: AppStrings.itemInventoryCrewCheerHint,
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
@@ -294,8 +405,16 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.tealAccent,
                         ),
                         title: AppStrings.itemInventoryBoostRunTitle,
-                        quantity:
-                            '보유량: ${shop.boostRunCount}\n${AppStrings.itemInventoryBoostRunQuantityNote}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.7',
+                          '보유량: ${shop.boostRunCount}\n${AppStrings.itemInventoryBoostRunQuantityNote}',
+                          {
+                            'shop.boostRunCount': shop.boostRunCount,
+                            'AppStrings.itemInventoryBoostRunQuantityNote':
+                                AppStrings.itemInventoryBoostRunQuantityNote,
+                          },
+                        ),
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
                           ServerShopInventory.boostRunId,
@@ -310,8 +429,18 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.progressYellow,
                         ),
                         title: AppStrings.itemInventoryStepIncubatorTitle,
-                        quantity:
-                            '보유량: ${shop.stepIncubatorCount}\n${AppStrings.itemInventoryStepIncubatorQuantityNote}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.8',
+                          '보유량: ${shop.stepIncubatorCount}\n${AppStrings.itemInventoryStepIncubatorQuantityNote}',
+                          {
+                            'shop.stepIncubatorCount':
+                                shop.stepIncubatorCount,
+                            'AppStrings.itemInventoryStepIncubatorQuantityNote':
+                                AppStrings
+                                    .itemInventoryStepIncubatorQuantityNote,
+                          },
+                        ),
                         useButtonColor: _useButtonMint,
                         onUse: () => _onUseItem(
                           ServerShopInventory.stepIncubatorId,
@@ -326,8 +455,16 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                           color: AppColors.tealAccent,
                         ),
                         title: AppStrings.itemInventoryRestDayTitle,
-                        quantity:
-                            '추가 보유: ${shop.restDayCount}\n${AppStrings.itemInventoryRestDayNote}',
+                        quantity: RemainingSurface.tr(
+                          context,
+                          'item_inventory.body.9',
+                          '추가 보유: ${shop.restDayCount}\n${AppStrings.itemInventoryRestDayNote}',
+                          {
+                            'shop.restDayCount': shop.restDayCount,
+                            'AppStrings.itemInventoryRestDayNote':
+                                AppStrings.itemInventoryRestDayNote,
+                          },
+                        ),
                         useButtonColor: _useButtonMint,
                         useLabel: AppStrings.itemInventoryRestDayToday,
                         onUse: () => _onUseRestDay(

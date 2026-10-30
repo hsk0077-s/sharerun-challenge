@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
+import '../l10n/remaining_surface.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/src_theme.dart';
 import '../core/theme/app_text_styles.dart';
@@ -98,8 +99,14 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
   static const photoGalleryKey = Key('run-finish-photo-gallery');
   static const tierBadgeSwitchKey = Key('run-finish-tier-badge-switch');
   static const photoCameraKey = Key('run-finish-photo-camera');
-  static const photoCameraLabel = '사진 찍기';
-  static const photoGalleryLabel = '갤러리에서 고르기';
+  static String get photoCameraLabel => RemainingSurface.trNow(
+        'onboarding_run_result.body',
+        '사진 찍기',
+      );
+  static String get photoGalleryLabel => RemainingSurface.trNow(
+        'onboarding_run_result.body.2',
+        '갤러리에서 고르기',
+      );
 
   /// Test hook. Production uses [ImagePicker] and keeps the bytes in memory.
   static Future<Uint8List?> Function(ImageSource source)? debugPickPhoto;
@@ -282,7 +289,15 @@ class _OnboardingRunResultScreenState
       debugPrint('run finish photo: $e\n$st');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('사진을 불러오지 못했어요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'onboarding_run_result.toast',
+              '사진을 불러오지 못했어요.',
+            ),
+          ),
+        ),
       );
     }
   }
@@ -398,7 +413,11 @@ class _OnboardingRunResultScreenState
       await WalkingChallengeShare.openChooser(
         buttonContext,
         text: shareText,
-        subject: '쉐어런 완주 기록',
+        subject: RemainingSurface.tr(
+          buttonContext,
+          'onboarding_run_result.body.3',
+          '쉐어런 완주 기록',
+        ),
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {
@@ -521,7 +540,13 @@ class _OnboardingRunResultScreenState
                             key: OnboardingRunResultScreen.tierBadgeSwitchKey,
                             dense: true,
                             contentPadding: EdgeInsets.zero,
-                            title: const Text('티어·천사 등급 넣기'),
+                            title: Text(
+                              RemainingSurface.tr(
+                                context,
+                                'onboarding_run_result.body.4',
+                                '티어·천사 등급 넣기',
+                              ),
+                            ),
                             value: _showTierBadges,
                             onChanged: (v) =>
                                 setState(() => _showTierBadges = v),
@@ -615,7 +640,11 @@ class _OnboardingRunResultScreenState
                         const SizedBox(height: 8),
                         _ImageShareButton(
                           key: runFinishCardShareKey,
-                          label: '카드 올리기',
+                          label: RemainingSurface.tr(
+                            context,
+                            'onboarding_run_result.body.5',
+                            '카드 올리기',
+                          ),
                           onTap: _sharingImage
                               ? null
                               : () => unawaited(_onCardShare(context)),
@@ -798,7 +827,14 @@ class _RecordCard extends StatelessWidget {
     return _ResultCard(
       child: Column(
         children: [
-          _RecordLine(label: '거리:', value: distance),
+          _RecordLine(
+            label: RemainingSurface.tr(
+              context,
+              'onboarding_run_result.body.6',
+              '거리:',
+            ),
+            value: distance,
+          ),
           const SizedBox(height: 12),
           _RecordLine(
             label: AppStrings.runResultFinalTimeLabel,
@@ -865,7 +901,11 @@ class _RewardCard extends StatelessWidget {
                     style: AppTextStyles.header1.copyWith(fontSize: 36, color: AppColors.nightInk),
                   ),
                   Text(
-                    'VALUE 획득',
+                    RemainingSurface.tr(
+                      context,
+                      'onboarding_run_result.body.7',
+                      'VALUE 획득',
+                    ),
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,

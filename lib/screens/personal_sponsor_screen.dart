@@ -15,6 +15,7 @@ import '../features/donation/sponsorship_records.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
+import '../l10n/remaining_surface.dart';
 import 'hall_of_fame_screen.dart';
 
 enum _SponsorPurpose { prize, donation }
@@ -23,9 +24,12 @@ enum _SponsorPurpose { prize, donation }
 /// A server or network failure is not a DIA shortage.
 String personalSponsorFailureMessage(Object error) {
   if (error is ApiException && error.detail == 'Insufficient Share balance.') {
-    return 'SHARE가 부족합니다.';
+    return RemainingSurface.trNow('personal_sponsor.body', 'SHARE가 부족합니다.');
   }
-  return '후원에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+  return RemainingSurface.trNow(
+    'personal_sponsor.body.2',
+    '후원에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+  );
 }
 
 /// 개인 스폰서십(천사 후원) 화면 (Screen 17).
@@ -125,8 +129,16 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
               const SizedBox(height: 8),
               Text(
                 promoted
-                    ? '날개 배지가 프로필에 장착되었습니다. 명예의 전당에서 천사 후원자를 확인할 수 있어요.'
-                    : '후원이 등록되었습니다. 명예의 전당에서 천사 후원 기록을 확인할 수 있어요.',
+                    ? RemainingSurface.tr(
+                        context,
+                        'personal_sponsor.body.3',
+                        '날개 배지가 프로필에 장착되었습니다. 명예의 전당에서 천사 후원자를 확인할 수 있어요.',
+                      )
+                    : RemainingSurface.tr(
+                        context,
+                        'personal_sponsor.body.4',
+                        '후원이 등록되었습니다. 명예의 전당에서 천사 후원 기록을 확인할 수 있어요.',
+                      ),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.caption.copyWith(height: 1.4),
               ),
@@ -364,8 +376,9 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
     final tier = profile.angelTier;
     final count = profile.safeDonationCount;
     final amount = profile.safeCumulativeDonationAmount;
-    final displayName =
-        SrcOnboardingController.isUnsetNickname(nickname) ? '러너' : nickname;
+    final displayName = SrcOnboardingController.isUnsetNickname(nickname)
+        ? RemainingSurface.tr(context, 'personal_sponsor.body.5', '러너')
+        : nickname;
     final progress = tier.progressToNext(
       donationCount: count,
       cumulativeDonationAmount: amount,
@@ -448,13 +461,30 @@ class _AngelProfileSectionState extends ConsumerState<_AngelProfileSection>
 
   static String _nudgeLabel(AngelTier tier, int count, int amount) {
     final next = tier.next;
-    if (next == null) return '최고 천사 등급입니다';
+    if (next == null) {
+      return RemainingSurface.trNow(
+        'personal_sponsor.body.6',
+        '최고 천사 등급입니다',
+      );
+    }
     final remainCount = (next.minDonationCount - count).clamp(0, 1 << 30);
     if (next.minDonationAmountWon <= 0) {
-      return '다음 [${next.koreanName}] 등급까지 후원 $remainCount회 남음!';
+      return RemainingSurface.trNow(
+        'personal_sponsor.body.7',
+        '다음 [${next.koreanName}] 등급까지 후원 $remainCount회 남음!',
+        {'next.koreanName': next.koreanName, 'remainCount': remainCount},
+      );
     }
     final remainWon = (next.minDonationAmountWon - amount).clamp(0, 1 << 30);
-    return '다음 [${next.koreanName}] 등급까지 후원 $remainCount회(또는 ${AngelTierX.formatWon(remainWon)}) 남음!';
+    return RemainingSurface.trNow(
+      'personal_sponsor.body.8',
+      '다음 [${next.koreanName}] 등급까지 후원 $remainCount회(또는 ${AngelTierX.formatWon(remainWon)}) 남음!',
+      {
+        'next.koreanName': next.koreanName,
+        'remainCount': remainCount,
+        'AngelTierX.formatWon(remainWon)': AngelTierX.formatWon(remainWon),
+      },
+    );
   }
 }
 
@@ -585,7 +615,11 @@ class SponsorshipStatusCard extends ConsumerWidget {
 
   static const cardKey = Key('sponsorship-status');
   static const mineButtonKey = Key('sponsorship-mine-open');
-  static const principleLine = '후원은 운영자 이름으로 기부돼요. 운영자는 전달만 해요.';
+  static String principleLine(BuildContext context) => RemainingSurface.tr(
+        context,
+        'personal_sponsor.body.9',
+        '후원은 운영자 이름으로 기부돼요. 운영자는 전달만 해요.',
+      );
 
   static String won(int v) => v.toString().replaceAllMapped(
         RegExp(r'\B(?=(\d{3})+(?!\d))'),
@@ -599,11 +633,32 @@ class SponsorshipStatusCard extends ConsumerWidget {
     if (summary == null) {
       status = '';
     } else if (summary.sponsorCount == 0) {
-      status = '아직 후원한 분이 없어요.';
+      status = RemainingSurface.tr(
+        context,
+        'personal_sponsor.body.10',
+        '아직 후원한 분이 없어요.',
+      );
     } else if (summary.showAmounts) {
-      status = '이번 달 ${won(summary.monthWon ?? 0)}원 · 누적 ${won(summary.totalWon ?? 0)}원 · 참여 ${summary.sponsorCount}명';
+      status = RemainingSurface.tr(
+        context,
+        'personal_sponsor.body.11',
+        '이번 달 ${won(summary.monthWon ?? 0)}원 · 누적 ${won(summary.totalWon ?? 0)}원 · 참여 ${summary.sponsorCount}명',
+        {
+          'won(summary.monthWon ?? 0)': won(summary.monthWon ?? 0),
+          'won(summary.totalWon ?? 0)': won(summary.totalWon ?? 0),
+          'summary.sponsorCount': summary.sponsorCount,
+        },
+      );
     } else {
-      status = '참여 ${summary.sponsorCount}명 · 금액은 ${summary.minSponsors}명 이상 모이면 보여 드려요.';
+      status = RemainingSurface.tr(
+        context,
+        'personal_sponsor.body.12',
+        '참여 ${summary.sponsorCount}명 · 금액은 ${summary.minSponsors}명 이상 모이면 보여 드려요.',
+        {
+          'summary.sponsorCount': summary.sponsorCount,
+          'summary.minSponsors': summary.minSponsors,
+        },
+      );
     }
     return Container(
       key: cardKey,
@@ -617,10 +672,12 @@ class SponsorshipStatusCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('후원 현황',
+          Text(
+              RemainingSurface.tr(
+                  context, 'personal_sponsor.body.13', '후원 현황'),
               style: AppTextStyles.agreementLabel.copyWith(fontWeight: FontWeight.w700, fontSize: 15)),
           const SizedBox(height: 6),
-          Text(principleLine, style: AppTextStyles.caption),
+          Text(principleLine(context), style: AppTextStyles.caption),
           if (status.isNotEmpty) ...[
             const SizedBox(height: 6),
             Text(status,
@@ -631,7 +688,9 @@ class SponsorshipStatusCard extends ConsumerWidget {
           OutlinedButton(
             key: mineButtonKey,
             onPressed: () => MySponsorshipSheet.show(context),
-            child: const Text('내 후원 내역'),
+            child: Text(
+              RemainingSurface.tr(context, 'personal_sponsor.button', '내 후원 내역'),
+            ),
           ),
         ],
       ),
@@ -664,26 +723,58 @@ class MySponsorshipSheet extends ConsumerWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
           children: [
-            Text('내 후원 내역', style: AppTextStyles.header1.copyWith(fontSize: 20)),
+            Text(
+              RemainingSurface.tr(context, 'personal_sponsor.button', '내 후원 내역'),
+              style: AppTextStyles.header1.copyWith(fontSize: 20),
+            ),
             const SizedBox(height: 4),
-            Text('이 내역은 나만 볼 수 있어요.', style: AppTextStyles.caption),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'personal_sponsor.body.14',
+                '이 내역은 나만 볼 수 있어요.',
+              ),
+              style: AppTextStyles.caption,
+            ),
             const SizedBox(height: 12),
             if (mine == null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
-                  data.isLoading ? '불러오는 중이에요…' : '서버에 연결되면 볼 수 있어요.',
+                  data.isLoading
+                      ? '불러오는 중이에요…'
+                      : RemainingSurface.tr(
+                          context,
+                          'personal_sponsor.body.15',
+                          '서버에 연결되면 볼 수 있어요.',
+                        ),
                   textAlign: TextAlign.center,
                 ),
               )
             else if (mine.entries.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Text('아직 후원한 내역이 없어요.', textAlign: TextAlign.center),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  RemainingSurface.tr(
+                    context,
+                    'personal_sponsor.body.16',
+                    '아직 후원한 내역이 없어요.',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               )
             else ...[
               Text(
-                '기부 후원 ${mine.donationCount}번 · ${SponsorshipStatusCard.won(mine.donationWon)}원',
+                RemainingSurface.tr(
+                  context,
+                  'personal_sponsor.body.17',
+                  '기부 후원 ${mine.donationCount}번 · ${SponsorshipStatusCard.won(mine.donationWon)}원',
+                  {
+                    'mine.donationCount': mine.donationCount,
+                    'SponsorshipStatusCard.won(mine.donationWon)':
+                        SponsorshipStatusCard.won(mine.donationWon),
+                  },
+                ),
                 key: const Key('sponsorship-mine-total'),
                 style: AppTextStyles.agreementLabel.copyWith(fontWeight: FontWeight.w700),
               ),
@@ -691,14 +782,30 @@ class MySponsorshipSheet extends ConsumerWidget {
               for (final e in mine.entries)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(e.isDonation ? '기부 후원' : '상금 후원'),
+                  title: Text(
+                    e.isDonation
+                        ? RemainingSurface.tr(
+                            context, 'personal_sponsor.body.18', '기부 후원')
+                        : RemainingSurface.tr(
+                            context, 'personal_sponsor.body.19', '상금 후원'),
+                  ),
                   subtitle: Text(
                     e.createdAt == null
                         ? ''
                         : '${e.createdAt!.toLocal().year}.${e.createdAt!.toLocal().month}.${e.createdAt!.toLocal().day}',
                   ),
                   trailing: Text(
-                    '${SponsorshipStatusCard.won(e.share)} SHARE\n${SponsorshipStatusCard.won(e.won)}원',
+                    RemainingSurface.tr(
+                      context,
+                      'personal_sponsor.body.20',
+                      '${SponsorshipStatusCard.won(e.share)} SHARE\n${SponsorshipStatusCard.won(e.won)}원',
+                      {
+                        'SponsorshipStatusCard.won(e.share)':
+                            SponsorshipStatusCard.won(e.share),
+                        'SponsorshipStatusCard.won(e.won)':
+                            SponsorshipStatusCard.won(e.won),
+                      },
+                    ),
                     textAlign: TextAlign.right,
                   ),
                 ),

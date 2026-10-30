@@ -9,6 +9,7 @@ import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/watch_link/services/garmin_cloud_oauth_adapter.dart';
+import '../l10n/remaining_surface.dart';
 
 /// src-4 Garmin Connect 클라우드 OAuth 로그인 웹뷰 위젯.
 class ExternalOauthWebview extends ConsumerStatefulWidget {
@@ -165,16 +166,26 @@ class _ExternalOauthWebviewState extends ConsumerState<ExternalOauthWebview> {
 
   String? _validateEmail(String? value) {
     final trimmed = value?.trim() ?? '';
-    if (trimmed.isEmpty) return '이메일 아이디를 입력해 주세요.';
+    if (trimmed.isEmpty) {
+      return RemainingSurface.tr(
+          context, 'external_oauth_webview.body', '이메일 아이디를 입력해 주세요.');
+    }
     if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(trimmed)) {
-      return '올바른 이메일 형식이 아닙니다.';
+      return RemainingSurface.tr(
+          context, 'external_oauth_webview.body.2', '올바른 이메일 형식이 아닙니다.');
     }
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) return '비밀번호를 입력해 주세요.';
-    if (value.length < 4) return '비밀번호가 너무 짧습니다.';
+    if (value == null || value.isEmpty) {
+      return RemainingSurface.tr(
+          context, 'external_oauth_webview.body.3', '비밀번호를 입력해 주세요.');
+    }
+    if (value.length < 4) {
+      return RemainingSurface.tr(
+          context, 'external_oauth_webview.body.4', '비밀번호가 너무 짧습니다.');
+    }
     return null;
   }
 
@@ -205,7 +216,15 @@ class _ExternalOauthWebviewState extends ConsumerState<ExternalOauthWebview> {
       debugPrint('Garmin OAuth mock failed: $error\n$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('연동 중 오류가 발생했습니다. 앱으로 돌아가 다시 시도해 주세요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'external_oauth_webview.toast',
+              '연동 중 오류가 발생했습니다. 앱으로 돌아가 다시 시도해 주세요.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);

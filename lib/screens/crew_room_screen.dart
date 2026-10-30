@@ -6,6 +6,7 @@ import '../core/theme/theme.dart';
 import '../features/crew/crew_emblem.dart';
 import '../features/crew/crew_membership.dart';
 import '../features/shop/widgets/store_look.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 크루 룸. 크루 정보·크루원은 모두 서버 값이다.
 /// 크루끼리 겨루는 대항전은 아직 서버에 없어서 "준비 중"으로 보여 준다.
@@ -38,7 +39,10 @@ class CrewRoomScreen extends ConsumerWidget {
           color: c.ink,
           onPressed: () => AppRouteNav.pop(context),
         ),
-        title: Text('크루 룸', style: storeText(18, c.ink, w: FontWeight.w900)),
+        title: Text(
+          RemainingSurface.tr(context, 'crew_room.button', '크루 룸'),
+          style: storeText(18, c.ink, w: FontWeight.w900),
+        ),
       ),
       body: async.isLoading && mine == null
           ? const Center(child: CircularProgressIndicator())
@@ -46,7 +50,11 @@ class CrewRoomScreen extends ConsumerWidget {
               ? Padding(
                   padding: const EdgeInsets.all(20),
                   child: Text(
-                    '크루에 들어 있어야 크루 룸을 볼 수 있어요. 크루에 들어갔는지, 네트워크가 연결됐는지 확인해 주세요.',
+                    RemainingSurface.tr(
+                      context,
+                      'crew_room.body',
+                      '크루에 들어 있어야 크루 룸을 볼 수 있어요. 크루에 들어갔는지, 네트워크가 연결됐는지 확인해 주세요.',
+                    ),
                     style: storeText(14, c.muted),
                   ),
                 )
@@ -82,7 +90,16 @@ class _Room extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${crew.needsApproval ? '크루장 승인 가입' : '자유 가입'} · 내 역할 ${CrewRoomScreen._roleLabel(mine.role)}',
+                    (crew.needsApproval ? '크루장 승인 가입' : '자유 가입') +
+                        RemainingSurface.tr(
+                          context,
+                          'crew_room.body.2',
+                          ' · 내 역할 ${CrewRoomScreen._roleLabel(mine.role)}',
+                          {
+                            'CrewRoomScreen._roleLabel(mine.role)':
+                                CrewRoomScreen._roleLabel(mine.role),
+                          },
+                        ),
                     style: storeText(12, c.muted),
                   ),
                 ],
@@ -107,7 +124,11 @@ class _Room extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
-            '크루 대항전은 아직 열리지 않았어요. 열리면 여기서 이번 주 진행을 볼 수 있어요.',
+            RemainingSurface.tr(
+              context,
+              'crew_room.body.3',
+              '크루 대항전은 아직 열리지 않았어요. 열리면 여기서 이번 주 진행을 볼 수 있어요.',
+            ),
             style: storeText(13, c.muted),
           ),
         ),

@@ -6,6 +6,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../app/providers/app_providers.dart';
 import '../app/theme/app_colors.dart';
 import '../data/models/payment_intent_status_model.dart';
+import '../l10n/remaining_surface.dart';
 
 class PaymentWebViewArgs {
   const PaymentWebViewArgs({
@@ -75,7 +76,12 @@ class _PaymentWebViewScreenState extends ConsumerState<PaymentWebViewScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(widget.args.title)),
       bottomNavigationBar: _PaymentStatusBar(
-        message: status?.userMessage ?? '결제 상태를 확인하는 중입니다.',
+        message: status?.userMessage ??
+            RemainingSurface.tr(
+              context,
+              'payment_webview.title',
+              '결제 상태를 확인하는 중입니다.',
+            ),
         credited: status?.isCredited ?? false,
         failed: status?.isTerminalFailure ?? false,
         onClose: () => context.pop(false),

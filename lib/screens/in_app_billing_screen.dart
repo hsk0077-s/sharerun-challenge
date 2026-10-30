@@ -8,6 +8,7 @@ import '../core/theme/app_text_styles.dart';
 import '../features/iap/models/coach_plus_product.dart';
 import '../app/router/route_names.dart';
 import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import '../l10n/remaining_surface.dart';
 import 'dia_pack_store_screen.dart';
 import 'share_dia_exchange_screen.dart';
 
@@ -125,15 +126,19 @@ class _DiaExchangeEntry extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.tealAccent, width: 1.6),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'DIA · SHARE로 교환',
-                style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                RemainingSurface.tr(
+                  context,
+                  'in_app_billing.body',
+                  'DIA · SHARE로 교환',
+                ),
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
-              SizedBox(height: 4),
-              Text('1,200 SHARE = 1 DIA · 주간 한도 안에서 교환'),
+              const SizedBox(height: 4),
+              const Text('1,200 SHARE = 1 DIA · 주간 한도 안에서 교환'),
             ],
           ),
         ),
@@ -171,15 +176,21 @@ class _DiaPackStoreEntry extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppColors.tealAccent, width: 1.6),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'DIA 팩',
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
-              SizedBox(height: 4),
-              Text('Play 상품 준비 중 · 결제해도 DIA가 지급되지 않습니다'),
+              const SizedBox(height: 4),
+              Text(
+                RemainingSurface.tr(
+                  context,
+                  'in_app_billing.body.2',
+                  'Play 상품 준비 중 · 결제해도 DIA가 지급되지 않습니다',
+                ),
+              ),
             ],
           ),
         ),

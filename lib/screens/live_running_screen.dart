@@ -27,6 +27,7 @@ import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/friend_ghost_run.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
+import '../l10n/remaining_surface.dart';
 import 'onboarding_run_result_screen.dart';
 
 /// 라이브 러닝 및 고스트 페이스 화면 (Screen 10).
@@ -77,7 +78,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
 
   String get _roomTitle {
     if (widget.roomId != null && _beginnerRoomIds.contains(widget.roomId)) {
-      return '1km 초보 챌린지';
+      return RemainingSurface.tr(context, 'live_running.body', '1km 초보 챌린지');
     }
     return AppStrings.liveRunningRoomTitle;
   }
@@ -237,11 +238,11 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
   Future<void> _initializeMarkers() async {
     try {
       _meIcon ??= await _createCustomMarkerBitmap(
-        '나',
+        RemainingSurface.trNow('live_running.body.2', '나'),
         AppColors.nightLime,
       );
       _ghostIcon ??= await _createCustomMarkerBitmap(
-        '고스트',
+        RemainingSurface.trNow('live_running.body.3', '고스트'),
         const Color(0xFF7E57C2),
       );
       if (!mounted) return;
@@ -403,7 +404,16 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       _validationSession = false;
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('센서 시작 실패: $error')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'live_running.toast',
+              '센서 시작 실패: $error',
+              {'error': error},
+            ),
+          ),
+        ),
       );
     }
   }
@@ -593,7 +603,11 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
               ),
               child: _validating
                   ? _ActionButton(
-                      label: '검증 중',
+                      label: RemainingSurface.tr(
+                        context,
+                        'live_running.body.4',
+                        '검증 중',
+                      ),
                       onTap: () {},
                     )
                   : isRunning

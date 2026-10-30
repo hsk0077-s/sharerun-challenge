@@ -448,6 +448,16 @@ Xcode Cloud가 대신하지 못하는 것: 비행기 모드, 앱을 죽인 뒤�
 
 16시 판정: 미흡. 체크리스트는 위 10칸이 최종본이다. 이 리눅스에서 새로 빌드하거나 시뮬레이터를 연 것은 없다. 맥에서 돌릴지는 대표 판단이다.
 
+### 10/30 라운드
+
+대표가 Apple Watch를 Xcode Cloud에서 빌드하기로 정했다. 이 박스에서 끝낼 수 있는 준비만 했고, 위 10칸 체크리스트는 바꾸지 않았다.
+
+- `ios/ci_scripts/ci_post_clone.sh`를 만들었다. `.metadata`의 flutter revision으로 SDK를 받고 `flutter pub get`을 돌리며, `ios/Podfile`이 있으면 `pod install`을 돌린다. `bash -n`은 통과했다.
+- 가장 큰 사실: 이 저장소에는 `ios/Runner.xcodeproj`, `ios/Runner.xcworkspace`, `ios/Podfile`이 **없다**(`git ls-files ios`, `.metadata`의 `migration.platforms`에 `ios`가 없음). Xcode Cloud 워크플로는 그 파일이 있어야 만들 수 있으므로, 맥에서 먼저 `flutter create`로 iOS 플랫폼 파일을 만들고 커밋해야 한다.
+- 서명 준비 목록: Runner 번들ID `com.sharerun.shareRunChallenge`, Watch 번들ID `com.sharerun.shareRunChallenge.watchkitapp`(코드에는 아직 적용 전, `watchos_app/README-XCODE-SETUP.md`의 계획값). App Group은 코드에 쓰는 곳이 없어 필요 없다. HealthKit과 Background Modes(Runner: location/bluetooth-central/fetch/processing, Watch: workout-processing/location)는 이미 entitlements·Info.plist에 있다. Push Notifications capability는 지금 필요 없다(APNs 등록 코드 없음).
+- 맥·Apple 계정이 필요한 9단계 순서와, 인증서·환경변수 치환처럼 이 환경에서 확인 못한 **확인 필요** 항목은 `docs/watch/XCODE-CLOUD.md`에 적었다.
+- 10칸 체크리스트의 판정은 바뀌지 않는다: 1번·10번(Xcode Cloud 빌드·테스트)은 맥에서 워크플로를 한 번 돌려야 "완료"로 바뀌고, 나머지는 시뮬레이터·실기기에서 손으로 확인해야 한다.
+
 ---
 
 ## 7. 상점 DIA 가격 (문서만)

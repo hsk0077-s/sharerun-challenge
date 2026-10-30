@@ -59,6 +59,7 @@ from app.services.referral_trial_config import (
 from app.services.twin_run import (
     DEVICE_ID_ABSENT,
     REFERRER_RUN_ABSENT,
+    SHARED_DEVICE_HISTORY,
     describe_run,
     referral_twin_reason,
     run_signature,
@@ -2841,6 +2842,20 @@ class SecuredActionService:
                 self._referee_run_views(transaction, referee_uid),
                 referrer_runs,
             )
+            # The GPS twin check is a time window on one pair of runs, so
+            # waiting it out (or changing the workout numbers) clears it.
+            # A device id seen on both accounts at any point is a fact
+            # about the two accounts, not about one run, so it is checked
+            # without a window and does not clear by waiting.
+            if not twin_reason and self._shared_device_history(
+                transaction,
+                referee_uid=referee_uid,
+                referee_ref=referee_ref,
+                referrer_uid=referrer_uid,
+                referee_device_id=device_id,
+                referrer_runs=referrer_runs,
+            ):
+                twin_reason = SHARED_DEVICE_HISTORY
             # Paying now would skip the twin check. Hold until a referrer
             # run exists. The next referee run reopens this reason only.
             if not twin_reason and not referrer_runs:

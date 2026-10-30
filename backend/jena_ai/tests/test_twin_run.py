@@ -170,7 +170,11 @@ def test_a_shifted_loop_on_two_phones_is_a_twin_when_the_signature_matches() -> 
     assert referral_twin_reason(left, right) == "twin_run"
 
 
-def test_a_straight_slide_or_a_far_slide_is_not_an_offset_twin() -> None:
+def test_an_exact_straight_slide_is_now_an_offset_twin() -> None:
+    """A perfectly parallel copy of a straight line, same signature, same
+    three-minute window: close enough to zero residual that it can only be
+    a copy, not two runners who happened to use two nearby straight roads.
+    """
     left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
     straight = _run(
         deviceId="phone-b",
@@ -183,9 +187,79 @@ def test_a_straight_slide_or_a_far_slide_is_not_an_offset_twin() -> None:
         ],
         startedAt=(NOW + timedelta(seconds=20)).isoformat(),
     )
-    assert not offset_route_twin(left, straight)
-    assert referral_twin_reason(left, straight) is None
+    assert offset_route_twin(left, straight)
+    assert referral_twin_reason(left, straight) == "twin_run"
 
+
+def test_a_noisy_straight_slide_stays_out_of_the_tighter_bar() -> None:
+    """Same shift, same signature, same window, but the copy was not exact.
+
+    Independent real GPS traces on two separate straight streets jitter by
+    more than a few metres, so the straight-line bar (15m/95%) is tighter
+    than the turning-route bar (25m/85%) on purpose: shape alone does not
+    prove a copy for a straight line the way it does for a turn.
+    """
+    left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
+    # Index 11 lands on one of the twelve resampled points, so nudging it
+    # past the 15m straight-line bar drops the match below 95%.
+    noisy = _run(
+        deviceId="phone-b",
+        gpsRoute=[
+            {
+                "latitude": 37.5 + (index * 10.0 + (20.0 if index == 11 else 0.0)) / 111_320.0,
+                "longitude": 127.0 + 150.0 / 88_300.0,
+            }
+            for index in range(40)
+        ],
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not offset_route_twin(left, noisy)
+    assert referral_twin_reason(left, noisy) is None
+
+
+def test_different_devices_on_the_same_straight_road_at_a_different_time_is_not_a_twin() -> None:
+    """Two real runners on the same straight road, offset in time: the
+    3-minute window alone keeps them apart even with an exact position
+    match.
+    """
+    left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
+    later = _run(
+        deviceId="phone-b",
+        gpsRoute=[
+            {
+                "latitude": 37.5 + (index * 10.0) / 111_320.0,
+                "longitude": 127.0 + 150.0 / 88_300.0,
+            }
+            for index in range(40)
+        ],
+        startedAt=(NOW + timedelta(minutes=10)).isoformat(),
+    )
+    assert not offset_route_twin(left, later)
+    assert referral_twin_reason(left, later) is None
+
+
+def test_different_devices_on_the_same_straight_road_with_a_different_pace_is_not_a_twin() -> None:
+    """Two real runners on the same straight road within the window, but
+    their own duration/cadence differ, so the signature does not match.
+    """
+    left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
+    other_pace = _run(
+        deviceId="phone-b",
+        gpsRoute=[
+            {
+                "latitude": 37.5 + (index * 10.0) / 111_320.0,
+                "longitude": 127.0 + 150.0 / 88_300.0,
+            }
+            for index in range(40)
+        ],
+        runSignature="other",
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert not offset_route_twin(left, other_pace)
+    assert referral_twin_reason(left, other_pace) is None
+
+
+def test_a_far_slide_is_not_an_offset_twin() -> None:
     loop = _run(deviceId="phone-a", gpsRoute=_loop())
     far = _run(
         deviceId="phone-b",

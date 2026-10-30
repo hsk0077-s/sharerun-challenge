@@ -11,12 +11,16 @@ minute and a supporting signal matches: the same device id, or the same
 signature. Once both sides send a route, a shifted track used to skip the
 device check as well. The same device inside the three-minute window is
 still one outing. Waiting just past that window on the same device, with
-the same workout numbers or a slid copy of a turning route, is still one
-outing up to thirty minutes. Two handsets with the same workout numbers
-and a turning route slid between 40m and 2km are one outing inside the
-three-minute window. A straight slide is not: too many real kilometres
-look like that. The run itself still counts. Missing times do not match,
-so older rows are left alone.
+the same workout numbers or a slid copy of the route, is still one outing
+up to thirty minutes. Two handsets with the same workout numbers and a
+route slid between 40m and 2km are one outing inside the three-minute
+window. A route that turns only needs a 25m/85% positional match after the
+slide, because the turning shape is already distinctive. A straight route
+is not distinctive by shape — too many real kilometres look like that —
+so a straight slide needs a 15m/95% match, close to GPS noise, before it
+counts as the same copy rather than two people on two nearby straight
+streets. The run itself still counts. Missing times do not match, so
+older rows are left alone.
 """
 
 from datetime import datetime, timedelta
@@ -42,6 +46,14 @@ OFFSET_RESIDUAL_METERS = 25.0
 OFFSET_FRACTION = 0.85
 OFFSET_MIN_TURN_DEGREES = 25.0
 OFFSET_SAMPLES = 12
+# A turning route is unique by shape, so a 25m residual on 85% of the
+# samples is already strong evidence of a copy. A straight route is common
+# shape-wise (any street looks like it), so a straight slide needs a much
+# tighter positional match before it counts as the same copy rather than
+# two people on two nearby straight roads. 15m/95% is close to GPS noise,
+# which a real independent phone trace on a parallel street would not hit.
+STRAIGHT_OFFSET_RESIDUAL_METERS = 15.0
+STRAIGHT_OFFSET_FRACTION = 0.95
 TWIN_REASON = "twin_run"
 # Payout is held because the referrer has no run to compare yet.
 # It is not a twin. A later referee run reopens it once a run exists.
@@ -49,6 +61,12 @@ REFERRER_RUN_ABSENT = "referrer_run_absent"
 # Neither account has a device id to compare. A later referee run reopens
 # it once either side has one. It is not a twin.
 DEVICE_ID_ABSENT = "device_id_absent"
+# The referee and referrer accounts share a device id somewhere in their
+# history — not just inside the GPS twin window. Waiting out the window or
+# changing the workout numbers does not clear this; the device overlap is
+# a fact about the two accounts, not about one run. Stays held like
+# ``twin_run``; nothing reopens it automatically.
+SHARED_DEVICE_HISTORY = "shared_device_history"
 
 
 def run_signature(
@@ -272,11 +290,15 @@ def _max_turn_degrees(points: list[tuple[float, float]]) -> float:
 
 
 def translated_route_copy(left: dict, right: dict) -> bool:
-    """True when one route is the other, slid sideways, and the path turns.
+    """True when one route is the other, slid sideways by one fixed offset.
 
-    A straight line slid east matches every other straight kilometre in the
-    city, so those stay out. The shift has to be past the 40m overlap rule
-    and inside 2km. The points after that slide have to sit within 25m.
+    The shift has to be past the 40m overlap rule and inside 2km. A route
+    that turns is a distinctive enough shape that a 25m/85% positional match
+    after the slide is already a copy. A straight route is not distinctive
+    by shape (any straight street matches), so the same slide only counts
+    as a copy when the positional match is much tighter (15m/95%) — close
+    to GPS noise, not the spacing of two different people on two different
+    straight streets.
     """
     left_points = _route_points(left)
     right_points = _route_points(right)
@@ -295,17 +317,18 @@ def translated_route_copy(left: dict, right: dict) -> bool:
     shift = _meters(left_sample[0], (left_sample[0][0] + dlat, left_sample[0][1] + dlng))
     if shift <= OFFSET_MIN_METERS or shift > OFFSET_MAX_METERS:
         return False
-    close = 0
-    for point, other in zip(left_sample, right_sample):
-        moved = (point[0] + dlat, point[1] + dlng)
-        if _meters(moved, other) <= OFFSET_RESIDUAL_METERS:
-            close += 1
-    if close / OFFSET_SAMPLES < OFFSET_FRACTION:
-        return False
-    return (
+    turning = (
         _max_turn_degrees(left_sample) >= OFFSET_MIN_TURN_DEGREES
         or _max_turn_degrees(right_sample) >= OFFSET_MIN_TURN_DEGREES
     )
+    residual_limit = OFFSET_RESIDUAL_METERS if turning else STRAIGHT_OFFSET_RESIDUAL_METERS
+    required_fraction = OFFSET_FRACTION if turning else STRAIGHT_OFFSET_FRACTION
+    close = 0
+    for point, other in zip(left_sample, right_sample):
+        moved = (point[0] + dlat, point[1] + dlng)
+        if _meters(moved, other) <= residual_limit:
+            close += 1
+    return close / OFFSET_SAMPLES >= required_fraction
 
 
 def _signature_match(left: dict, right: dict) -> bool:
@@ -326,8 +349,9 @@ def offset_route_twin(left: dict, right: dict) -> bool:
     """Different handsets, same workout numbers, route copied and slid.
 
     Same handset is ``same_device_shifted_route`` or
-    ``same_device_delayed_copy``. A straight slide, a slide past 2km, or a
-    different signature stays out.
+    ``same_device_delayed_copy``. A slide past 2km or 40m, or a different
+    signature, stays out. A straight slide still needs the tighter
+    positional match in ``translated_route_copy`` to count.
     """
     left_device = _device_id(left)
     right_device = _device_id(right)
@@ -346,8 +370,9 @@ def same_device_delayed_copy(left: dict, right: dict) -> bool:
 
     The three-minute window is ``same_device_shifted_route``. Waiting three
     minutes and one second used to skip it. The workout numbers have to
-    match, or the route has to be a slid copy that turns. A different
-    workout on a shared phone is not this.
+    match, or the route has to be a slid copy (turning or straight, each
+    against its own positional bar). A different workout on a shared phone
+    is not this.
     """
     left_device = _device_id(left)
     right_device = _device_id(right)

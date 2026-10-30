@@ -3062,6 +3062,72 @@ class SecuredActionService:
         )
         return len(list(rows)) > 0
 
+    def _shared_device_history(
+        self,
+        transaction,
+        *,
+        referee_uid: str,
+        referee_ref,
+        referrer_uid: str,
+        referee_device_id: str,
+        referrer_runs: list[dict],
+    ) -> bool:
+        """True when a device id from the referee's *stored* history also
+        shows up anywhere in the referrer's stored history.
+
+        The run being judged right now is already compared to the referrer
+        by ``_same_referrer_phone`` and ``_pair_has_device_id``, which zero
+        the referrer reward without holding the referee. Folding
+        ``referee_device_id`` in here too would turn every one of those
+        known-phone zeros into a held twin, so this only looks at devices
+        the referee used *before* the current run (past activities, the
+        stored ``trialDeviceId``, login devices) against the referrer's
+        same three sources. A match here is a fact about the two accounts
+        that a later run or a changed workout cannot clear.
+        """
+        referee_devices = self._stored_device_ids(
+            transaction,
+            uid=referee_uid,
+            ref=referee_ref,
+            runs=self._referee_run_views(transaction, referee_uid),
+        )
+        if not referee_devices:
+            return False
+        referrer_ref = self.firebase_service.db.collection("users").document(
+            referrer_uid
+        )
+        referrer_devices = self._stored_device_ids(
+            transaction, uid=referrer_uid, ref=referrer_ref, runs=referrer_runs
+        )
+        return bool(referee_devices & referrer_devices)
+
+    def _stored_device_ids(
+        self, transaction, *, uid: str, ref, runs: list[dict]
+    ) -> set[str]:
+        device_ids: set[str] = set()
+        snapshot = ref.get(transaction=transaction)
+        if snapshot.exists:
+            economy = (snapshot.to_dict() or {}).get("economy") or {}
+            if self._economy_has_device(economy):
+                device_ids.add(economy["trialDeviceId"].strip())
+        for run in runs:
+            if not isinstance(run, dict):
+                continue
+            for key in ("deviceId", "device_id"):
+                value = run.get(key)
+                if isinstance(value, str) and value.strip():
+                    device_ids.add(value.strip())
+        if uid:
+            rows = (
+                self.firebase_service.db.collection("users")
+                .document(uid)
+                .collection("loginDevices")
+                .get(transaction=transaction)
+            )
+            for row in rows:
+                device_ids.add(row.id)
+        return device_ids
+
     def _same_referrer_phone(
         self,
         transaction,

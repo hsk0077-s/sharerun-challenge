@@ -709,6 +709,39 @@ def test_no_referrer_run_holds_the_referee_until_a_later_run() -> None:
     assert _share(db, "u1") == 20
 
 
+def test_a_device_shared_in_past_history_holds_the_referral_without_a_gps_twin() -> None:
+    """The run being judged uses a new device, so the GPS twin check and the
+    single-device ``_same_referrer_phone`` check both miss it. An older
+    referee run on a device the referrer's account has also used is still a
+    fact about the two accounts, so the milestone and the referrer reward
+    are held as ``shared_device_history`` instead of paid.
+    """
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_device="shared-phone")
+    db.store["activities/u2-old"] = {
+        "userId": "u2",
+        "jenaVerified": True,
+        "startedAt": "2026-09-15T00:00:00+00:00",
+        "deviceId": "shared-phone",
+    }
+    _persist(
+        _service(db),
+        "u2",
+        "run-3",
+        now=_DAY3,
+        signup_at=_DAY1,
+        device_id="phone-new",
+    )
+    assert _share(db, "u2") == 40
+    referee = db.store["referralPayouts/u2_trial_referee"]
+    assert referee["reason"] == "shared_device_history"
+    assert referee["amount"] == 40_000
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["status"] == "held"
+    assert referrer["reason"] == "shared_device_history"
+    assert referrer["amount"] == 30_000
+
+
 def _square(shift_m: float = 0.0) -> list[dict]:
     corners = [(0.0, 0.0), (200.0, 0.0), (200.0, 200.0), (0.0, 200.0), (0.0, 0.0)]
     points = []

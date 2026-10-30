@@ -195,6 +195,15 @@
 
 16시 판정: 부분. 위 90키는 11로케일에 있고 누락 테스트는 0이다. 원어민 검수 전이고, 약관 폴백과 나머지 화면은 한국어다.
 
+### 10/30 라운드 — 원어민 검수 필요 기록
+
+이번 라운드는 `lib/` 화면의 번역 연결 작업을 하지 않았다. 그 작업은 PR #351이 맡는다. 아래는 이미 들어간 문구가 기계 초벌이라는 사실만 코드에서 확인해 적는다. 코드는 바꾸지 않았다.
+
+- **원어민 검수 필요(출시 전).** `lib/l10n/surface_rest.dart`. 이 파일 머리말이 이미 "Sentences are a first pass. Do not put them on an ad landing page before a native review."라고 적는다. `restLanguageOrder`의 11개 중 `ko`(원문)를 뺀 10개 로케일 — en-US, ja-JP, zh-TW, es-ES, pt-BR, de-DE, fr-FR, vi-VN, th-TH, id-ID — 의 90키(홈 카드, 설정 범주, 지갑·거래 내역, 동물 6, 메달 5, 등급 보조 문구)가 대상이다. `missingSurfaceKeys()`는 빈 칸만 잡고, 문장의 뜻이 맞는지는 보지 않는다.
+- 같은 머리말("Do not use them on an ad landing page before a native review.")이 `lib/l10n/surface_copy.dart`에도 있다(공정 적립 화면, 상점 크롬, 등급 안내 화면). 이 파일의 정확한 키 수는 이번 라운드에서 세지 않았다.
+- 그 밖의 로케일 파일(`commerce_copy.dart`, `guidance_copy.dart`, `guide_chrome.dart`, `accessory_names.dart`)은 머리말에 같은 문장이 없다. 검수가 끝났다는 뜻인지, 머리말을 안 적었을 뿐인지는 이번 라운드에서 확인하지 못했다. 확인 안 된 파일은 **가정**하지 않는다.
+- 이 기록은 `docs/debate/SRC-7-TOPICS.md`(이 문서) 한 곳에만 남긴다. 번역 자체를 고치거나 lib/ 코드를 바꾸지 않았다.
+
 ---
 
 ## 3. 3회 예선 폐지
@@ -259,6 +268,10 @@
 - 점이 12개 이상이고 간격이 고르지 않으며 케이던스와 걸음수가 있으면 완주다. 테스트 `test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not`.
 
 16시 판정: 부분. 점이 적은 그림과 걸음 없는 케이던스는 초급 상금만 보류한다. 빈 표본 입구는 그대로다. 점을 채우고 걸음수를 붙인 불규칙 그림은 상금을 받는다.
+
+### 10/30 라운드
+
+이번 라운드는 이 절의 코드를 바꾸지 않았다. 남은 "부분"의 두 칸(빈 표본 입구, 걸음 없는 케이던스의 상금 보류)은 이번 작업 범위에서 다시 다루지 말라고 지정된 항목(페이스 샘플 없는 초보 참가, 촘촘한 가짜 경로)과 같은 자리다. 16시 "안" 비교표가 이미 빈 입구를 열어 두는 이유(오탐이 높고 진성 러너의 첫 대회를 막는다)를 적어 뒀고, 이번 라운드가 그 판단을 다시 열 근거를 새로 찾지 못했다. 코드·문서·테스트 변경 없음.
 
 ---
 
@@ -326,6 +339,17 @@
 남은 구멍: 직선으로 민 GPS, 2km 밖, 서명을 바꾼 뒤 31분을 기다리는 같은 폰. 그 폰의 피추천인 50,000 SHARE는 그대로 나갈 수 있다. 추천인 30,000 SHARE는 같은 폰이면 이미 0이다. 3회/14일 규칙은 유지한다.
 
 16시 판정: 부분. 꺾인 복사와 30분 안의 같은 폰 서명은 막는다. 직선·원거리·31분 뒤는 솔직히 남는다.
+
+### 10/30 라운드 — 크래시 수정, 직선 슬라이드, 기기 히스토리
+
+16시 이후 커밋이 직선 슬라이드 판정(`translated_route_copy`에 25m/85%보다 좁은 15m/95% 기준)과, `secured_action_service.py`의 `_shared_device_history` 호출을 twin_run.py에 추가했다. 그런데 `_shared_device_history` 메서드 본체가 코드에 없었다. 호출부만 있고 구현이 없어서, 추천인 보상을 계산하는 모든 경로(`_plan_trial_referral_payouts`)가 `AttributeError`로 죽는다. `backend/jena_ai/tests/test_referral_share_payout.py`의 9개 테스트가 전부 이 에러로 실패하는 것을 이번 라운드에 확인했다.
+
+- `_shared_device_history`와 `_stored_device_ids`를 구현했다(`secured_action_service.py`). 비교 대상은 두 계정의 **저장된** 기기 id뿐이다: `trialDeviceId`, 과거 런의 `deviceId`/`device_id`, `loginDevices` 전체. 지금 심사 중인 런의 `device_id`는 이 집합에 넣지 않았다 — 넣으면 기존 `_same_referrer_phone`이 이미 "같은 폰, 추천인 0원, 피추천인은 보류 없이 지급"으로 처리하던 케이스(예: `test_missing_trial_device_id_still_blocks_a_known_phone`)가 전부 `shared_device_history`로 피추천인까지 보류되어 버린다. 교집합이 있으면 `shared_device_history`로 양쪽을 보류한다. 대기로 풀리지 않는다.
+- 새 테스트 `test_a_device_shared_in_past_history_holds_the_referral_without_a_gps_twin`을 추가했다. 지금 런의 기기(`phone-new`)는 추천인과 다르지만, 피추천인의 **예전** 런이 추천인과 같은 기기(`shared-phone`)를 쓴 적이 있으면 GPS 쌍둥이 검사도, 단일 기기 검사도 놓치는 그 경우를 `shared_device_history`로 잡는다.
+- `python3 -m pytest`(`backend/jena_ai`): 전체 **853 passed** (크래시 수정 전 9개 실패, 수정 후 0개). 명령은 이 보고 맨 아래 "이번 라운드 테스트"에 있다.
+- 남는 구멍은 그대로다. 기기 id가 **지금 심사 중인 런에만** 있고 두 계정의 과거 기록 어디에도 없으면(로그인 기기 문서도 없이 바로 그 런만 보낸 경우) 31분 뒤 서명 변경은 여전히 열려 있을 수 있다. 직선 슬라이드는 2km를 넘기면 그대로 통과한다(16시와 같음). 3회/14일 규칙은 유지한다.
+
+16시 이후 라운드가 twin_run.py에 적은 "직선 슬라이드도 잡는다"는 설명과 기기 히스토리 검사는 코드에는 있었지만 이 크래시 때문에 커밋 시점부터 실제로는 전혀 작동하지 않았다. 이번 수정으로 작동한다.
 
 ---
 
@@ -619,9 +643,12 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
 
 1. 레전드 스킨을 120 DIA로 내릴지, 패스를 200 또는 280 DIA로 올릴지. 7번의 비교표가 그 차액 **가정**이다. 1.0은 DIA 팩을 팔지 않으므로 상점이 닫힌 동안 매출 차이는 0이다. 코드 가격은 16시에도 바꾸지 않았다.
    - 10/30: 패스 200 DIA(패스+ 280 DIA **가정**)를 권고했다. 코드는 바꾸지 않았고 최종 선택은 대표 판단이다.
+   - **10/30 18:32 대표 확정: B안.** 레전드 스킨 200~280 DIA 유지, 시즌 패스 120→200 DIA, 패스+ 200→280 DIA. 다음 회차에 앱·서버 가격과 테스트에 반영한다.
 2. Apple Watch를 맥 또는 Xcode Cloud에서 빌드해, 6번의 최종 체크리스트와 업로드 본문의 `device_id`를 시뮬레이터에서 볼지. 이 리눅스에는 Xcode와 swiftc가 없다.
 3. 골든 7건을 그 그림을 소유하는 PC에서 다시 찍을지. 이 리눅스에서 `--update-goldens`로 덮지 않는 쪽을 권한다. 근거는 아래 16시 골든 절이다.
    - 10/30: 대표가 노트북에서 다시 찍기로 정했다. 7건의 테스트 파일·테스트 이름과 PowerShell 절차를 `docs/debate/GOLDEN-REGEN-LAPTOP.md`에 적었다. 이 리눅스는 골든 PNG를 바꾸지 않았다.
+4. (10/30 추가) 2번 절 `lib/l10n/surface_rest.dart`의 90키(en/ja/zh/es/pt/de/fr/vi/th/id, 10개 로케일)와 `surface_copy.dart`를 원어민에게 검수받을지, 어느 언어를 외주할지. 이 박스는 번역 품질을 판단하지 못한다. 검수 전에는 광고 랜딩으로 쓰지 않는다.
+5. (10/30 추가) 설정 화면 약관 폴백 HTML(`SettingsLegalWebViewScreen`)을 11개 언어로 번역할지, 법무 검토를 어느 범위까지 받을지. 지금은 제목만 11로케일이고 본문은 한국어다. 이 박스는 법률 문장을 판단하지 못한다.
 
 ## 이번 라운드 테스트
 

@@ -85,14 +85,14 @@ class ShopItemModel {
       id: 'battle_run_pass',
       title: '배틀런 챌린지 패스',
       description: '시즌 1 프레임과 배지. 유료 DIA로만 살 수 있습니다.',
-      diamondCost: 120,
+      diamondCost: 200,
       iconName: 'emoji_events',
     ),
     ShopItemModel(
       id: 'battle_run_pass_plus',
       title: '배틀런 패스+',
       description: '패스 보상에 프레임, 스킨, 배지를 더합니다. 패스가 있으면 차액만 냅니다.',
-      diamondCost: 200,
+      diamondCost: 280,
       iconName: 'emoji_events',
     ),
     ShopItemModel(

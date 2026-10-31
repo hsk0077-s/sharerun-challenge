@@ -41,8 +41,8 @@ void main() {
     final costs = {
       for (final item in ShopItemModel.catalog) item.id: item.diamondCost,
     };
-    expect(costs[battlePassItemId], 120);
-    expect(costs[battlePassPlusItemId], 200);
+    expect(costs[battlePassItemId], 200);
+    expect(costs[battlePassPlusItemId], 280);
     expect(requestPricedShopItemIds, contains(battlePassItemId));
     expect(requestPricedShopItemIds, contains(battlePassPlusItemId));
   });
@@ -81,8 +81,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.battlePassNone), findsOneWidget);
-    expect(find.text('배틀런 패스 · 120 DIA'), findsOneWidget);
-    expect(find.text('패스+ · 200 DIA'), findsOneWidget);
+    expect(find.text('배틀런 패스 · 200 DIA'), findsOneWidget);
+    expect(find.text('패스+ · 280 DIA'), findsOneWidget);
     expect(find.text(AppStrings.battlePassCosmeticNote), findsOneWidget);
     expect(find.text('100 SHARE'), findsNothing);
     expect(find.text('3 다이아몬드'), findsNothing);
@@ -170,8 +170,8 @@ Widget _screen(ServerShopInventory inventory) {
           .overrideWith((ref) => Stream.value(inventory)),
       shopCatalogProvider.overrideWith(
         (ref) async => const {
-          battlePassItemId: 120,
-          battlePassPlusItemId: 200,
+          battlePassItemId: 200,
+          battlePassPlusItemId: 280,
         },
       ),
     ],

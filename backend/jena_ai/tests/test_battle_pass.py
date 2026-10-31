@@ -65,11 +65,11 @@ def _pass_doc(db: _MemoryDb) -> dict:
 
 
 def test_prices_default_and_a_bad_override_keeps_the_code_price() -> None:
-    assert resolve_item_prices(None)[PASS] == 120
-    assert resolve_item_prices(None)[PLUS] == 200
+    assert resolve_item_prices(None)[PASS] == 200
+    assert resolve_item_prices(None)[PLUS] == 280
     overridden = resolve_item_prices({PASS: 0, PLUS: True})
-    assert overridden[PASS] == 120
-    assert overridden[PLUS] == 200
+    assert overridden[PASS] == 200
+    assert overridden[PLUS] == 280
     applied = resolve_item_prices({PASS: 90, PLUS: 180})
     assert applied[PASS] == 90
     assert applied[PLUS] == 180
@@ -90,12 +90,12 @@ def test_pass_spends_paid_dia_only_and_replay_is_free() -> None:
     result = _buy(db, PASS, "req-pass-01")
 
     assert result.status == "purchased"
-    assert result.diamond_balance == 380
+    assert result.diamond_balance == 300
     assert result.share_balance == 40_000
     assert result.value_token_balance == 9
     wallet = db.store["users/u1"]["wallet"]
     assert wallet["freeDiamondBalance"] == 300
-    assert wallet["paidDiamondBalance"] == 80
+    assert wallet["paidDiamondBalance"] == 0
     doc = _pass_doc(db)
     assert doc["quantity"] == 1
     assert doc["seasonId"] == "season_1"
@@ -103,15 +103,15 @@ def test_pass_spends_paid_dia_only_and_replay_is_free() -> None:
     assert doc["rewards"] == reward_rows("pass")
     row = _ledger(db)[0]
     assert row["type"] == "shop_purchase"
-    assert row["diamondAmount"] == -120
+    assert row["diamondAmount"] == -200
     assert row["diamondFreeAmount"] == 0
-    assert row["diamondPaidAmount"] == -120
+    assert row["diamondPaidAmount"] == -200
     assert row["itemId"] == PASS
     assert row["tier"] == "pass"
 
     again = _buy(db, PASS, "req-pass-01")
     assert again.status == "already_purchased"
-    assert wallet["paidDiamondBalance"] == 80
+    assert wallet["paidDiamondBalance"] == 0
     assert len(_ledger(db)) == 1
     assert _pass_doc(db)["tier"] == "pass"
 
@@ -147,7 +147,7 @@ def test_a_second_request_cannot_buy_the_same_season_again() -> None:
     with pytest.raises(HTTPException) as exc:
         _buy(db, PASS, "req-pass-02")
     assert exc.value.detail == ALREADY_OWNED
-    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 80
+    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 0
     assert len(_ledger(db)) == 1
 
 
@@ -158,23 +158,23 @@ def test_plus_grants_extra_cosmetics_and_upgrade_charges_the_difference() -> Non
     direct = _MemoryDb()
     direct.store["users/u1"] = _wallet(diamond=400, free=0, paid=400)
     bought = _buy(direct, PLUS, "req-plus-01")
-    assert bought.diamond_balance == 200
+    assert bought.diamond_balance == 120
     assert _pass_doc(direct)["tier"] == "plus"
     assert _pass_doc(direct)["rewards"] == reward_rows("plus")
-    assert _ledger(direct)[0]["diamondAmount"] == -200
-    assert _ledger(direct)[0]["diamondPaidAmount"] == -200
+    assert _ledger(direct)[0]["diamondAmount"] == -280
+    assert _ledger(direct)[0]["diamondPaidAmount"] == -280
     assert _ledger(direct)[0]["diamondFreeAmount"] == 0
 
     _buy(db, PASS, "req-pass-01")
     upgraded = _buy(db, PLUS, "req-plus-02")
     assert upgraded.status == "purchased"
-    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 200
+    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 120
     assert db.store["users/u1"]["wallet"]["freeDiamondBalance"] == 0
     assert _pass_doc(db)["tier"] == "plus"
     assert _pass_doc(db)["quantity"] == 1
     assert _pass_doc(db)["rewards"] == reward_rows("plus")
     amounts = [row["diamondAmount"] for row in _ledger(db)]
-    assert amounts == [-120, -80]
+    assert amounts == [-200, -80]
 
     with pytest.raises(HTTPException) as exc:
         _buy(db, PLUS, "req-plus-03")
@@ -182,7 +182,7 @@ def test_plus_grants_extra_cosmetics_and_upgrade_charges_the_difference() -> Non
     with pytest.raises(HTTPException) as again:
         _buy(db, PASS, "req-pass-03")
     assert again.value.detail == ALREADY_OWNED
-    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 200
+    assert db.store["users/u1"]["wallet"]["paidDiamondBalance"] == 120
     assert len(_ledger(db)) == 2
 
 

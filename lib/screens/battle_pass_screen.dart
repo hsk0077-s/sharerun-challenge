@@ -111,8 +111,8 @@ class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
         ref.watch(serverShopInventoryProvider).asData?.value.battlePass ??
             const BattlePassGrant();
     final diamond = ref.watch(walletProvider).diamondBalance;
-    final passCost = _dia(battlePassItemId, 120);
-    final plusCost = _dia(battlePassPlusItemId, 200);
+    final passCost = _dia(battlePassItemId, 200);
+    final plusCost = _dia(battlePassPlusItemId, 280);
     final upgrade = plusCost > passCost ? plusCost - passCost : plusCost;
     final status = grant.ownsPlus
         ? AppStrings.battlePassPlusOwned

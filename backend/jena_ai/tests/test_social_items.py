@@ -103,7 +103,7 @@ def test_catalog_uses_the_config_price() -> None:
     assert prices[PACK] == 30
     assert prices[FLAG] == 11
     assert prices["ghost_pace_match"] == 8
-    assert prices["battle_run_pass"] == 120
+    assert prices["battle_run_pass"] == 200
 
 
 def test_ghost_purchase_spends_free_dia_first_and_replay_is_free() -> None:

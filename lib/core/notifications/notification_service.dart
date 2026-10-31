@@ -32,7 +32,7 @@ class NotificationService {
       }
 
       const initSettings = InitializationSettings(
-        android: AndroidInitializationSettings('@drawable/ic_stat_sharerun'),
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(
           requestAlertPermission: true,
           requestBadgePermission: true,

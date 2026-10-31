@@ -1,5 +1,27 @@
 import Foundation
 
+struct WatchRoutePoint: Codable, Equatable {
+    let latitude: Double
+    let longitude: Double
+    let recordedAt: String
+
+    func toJson() -> [String: Any] {
+        ["latitude": latitude, "longitude": longitude, "recordedAt": recordedAt]
+    }
+}
+
+struct WatchPaceSample: Codable, Equatable {
+    let secondsPerKm: Int
+    let recordedAt: String
+
+    func toJson() -> [String: Any] {
+        // PaceSamplePayload.secondsPerKm is 0...7200. A slower sample would
+        // 422 the whole run, and the queue treats 422 as final.
+        let pace = min(7200, max(0, secondsPerKm))
+        return ["secondsPerKm": pace, "recordedAt": recordedAt]
+    }
+}
+
 struct WatchPendingRun: Codable, Identifiable, Equatable {
     let activityId: String
     let distanceKm: Double
@@ -8,27 +30,70 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
     let startedAtIso: String
     let endedAtIso: String
     let totalSteps: Int
+    let gpsRoute: [WatchRoutePoint]
+    let paceSamples: [WatchPaceSample]
 
     var id: String { activityId }
 
-    func toValidateRunBody() -> [String: Any] {
+    init(
+        activityId: String,
+        distanceKm: Double,
+        durationSeconds: Int,
+        heartRates: [Int],
+        startedAtIso: String,
+        endedAtIso: String,
+        totalSteps: Int,
+        gpsRoute: [WatchRoutePoint] = [],
+        paceSamples: [WatchPaceSample] = []
+    ) {
+        self.activityId = activityId
+        self.distanceKm = distanceKm
+        self.durationSeconds = durationSeconds
+        self.heartRates = heartRates
+        self.startedAtIso = startedAtIso
+        self.endedAtIso = endedAtIso
+        self.totalSteps = totalSteps
+        self.gpsRoute = gpsRoute
+        self.paceSamples = paceSamples
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        activityId = try container.decode(String.self, forKey: .activityId)
+        distanceKm = try container.decode(Double.self, forKey: .distanceKm)
+        durationSeconds = try container.decode(Int.self, forKey: .durationSeconds)
+        heartRates = try container.decode([Int].self, forKey: .heartRates)
+        startedAtIso = try container.decode(String.self, forKey: .startedAtIso)
+        endedAtIso = try container.decode(String.self, forKey: .endedAtIso)
+        totalSteps = try container.decode(Int.self, forKey: .totalSteps)
+        gpsRoute = try container.decodeIfPresent([WatchRoutePoint].self, forKey: .gpsRoute) ?? []
+        paceSamples = try container.decodeIfPresent([WatchPaceSample].self, forKey: .paceSamples) ?? []
+    }
+
+    func toValidateRunBody(deviceId: String? = nil) -> [String: Any] {
         var body: [String: Any] = [
             "activity_id": activityId,
-            "distance_km": Double(String(format: "%.3f", distanceKm)) ?? distanceKm,
+            "distance_km": (distanceKm * 1000).rounded() / 1000,
             "duration_seconds": durationSeconds,
             "heart_rates": Array(heartRates.prefix(50000)),
             "cadence_spm": [Int](),
             "gyro_stability_score": 0.5,
-            "gps_route": [[String: Any]](),
-            "source": "watch",
+            "gps_route": gpsRoute.suffix(400).map { $0.toJson() },
+            "pace_samples": paceSamples.suffix(2000).map { $0.toJson() },
+            "started_at": startedAtIso,
+            "ended_at": endedAtIso,
             "device_info": [
                 "watch_used": true,
-                "platform": "watchos",
                 "heart_rate_used": !heartRates.isEmpty
             ]
         ]
         if totalSteps > 0 {
             body["total_steps"] = totalSteps
+        }
+        // Same field as ValidateRunRequest.device_id. Empty is omitted so a
+        // missing id is not stored as a blank string.
+        if let deviceId, !deviceId.isEmpty {
+            body["device_id"] = deviceId
         }
         return body
     }
@@ -39,10 +104,12 @@ struct WatchPendingSteps: Codable, Equatable {
     let steps: Int
 
     func toDailyStepsBody() -> [String: Any] {
+        // DailyStepsRequest.source is only health_connect or sensor.
+        // steps is 1...30000. A larger total is a 422, which this queue drops.
         [
             "day_key": dayKey,
-            "steps": steps,
-            "source": "watch"
+            "steps": min(30_000, steps),
+            "source": "sensor"
         ]
     }
 }
@@ -57,8 +124,18 @@ final class WatchSyncQueue: ObservableObject {
     private let storageKey = "sharerun.watchos.sync_queue.v1"
     private let stepsStorageKey = "sharerun.watchos.pending_steps.v1"
     private let defaults = UserDefaults.standard
+    private var flushGate = WatchFlushGate()
 
     var pendingCount: Int { runs.count }
+
+    /// False when a flush is already in progress. Wear OS calls this `tryBeginFlush`.
+    func tryBeginFlush() -> Bool {
+        flushGate.tryBegin()
+    }
+
+    func endFlush() {
+        flushGate.end()
+    }
 
     init() {
         load()
@@ -90,11 +167,13 @@ final class WatchSyncQueue: ObservableObject {
     /// Uploads queued runs (`POST /actions/runs/validate`) and daily steps (`POST /actions/daily-steps`).
     func flush(using account: WatchAccountManager) async {
         guard account.isPaired else { return }
+        guard tryBeginFlush() else { return }
+        defer { endFlush() }
 
         for run in runs {
             guard let (status, _) = await account.postSigned(
                 path: "/actions/runs/validate",
-                payload: run.toValidateRunBody()
+                payload: run.toValidateRunBody(deviceId: account.deviceId())
             ) else {
                 break
             }

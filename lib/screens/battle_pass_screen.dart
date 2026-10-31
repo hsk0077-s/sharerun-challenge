@@ -5,6 +5,7 @@ import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/shop_catalog_copy.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
@@ -97,11 +98,12 @@ class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
     final passCost = _dia(battlePassItemId, 120);
     final plusCost = _dia(battlePassPlusItemId, 200);
     final upgrade = plusCost > passCost ? plusCost - passCost : plusCost;
+    final pass = ShopCatalogCopy.of(Localizations.localeOf(context));
     final status = grant.ownsPlus
-        ? AppStrings.battlePassPlusOwned
+        ? pass.pass('plusOwned')
         : grant.ownsPass
-            ? AppStrings.battlePassOwned
-            : AppStrings.battlePassNone;
+            ? pass.pass('owned')
+            : pass.pass('none');
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
@@ -188,7 +190,7 @@ class _BattlePassHeader extends StatelessWidget {
             ),
           ),
           Text(
-            AppStrings.battlePassTitle,
+            ShopCatalogCopy.of(Localizations.localeOf(context)).pass('title'),
             style: AppTextStyles.header1.copyWith(fontSize: 17),
             textAlign: TextAlign.center,
           ),
@@ -263,8 +265,8 @@ class _StatusCard extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 6),
-          const Text(
-            AppStrings.battlePassCosmeticNote,
+          Text(
+            ShopCatalogCopy.of(Localizations.localeOf(context)).pass('cosmeticNote'),
             style: const TextStyle(
               fontFamily: 'Pretendard',
               fontSize: 12,
@@ -360,8 +362,8 @@ class _RewardRow extends StatelessWidget {
           ),
           Text(
             reward.plusOnly
-                ? AppStrings.battlePassPremiumReward
-                : AppStrings.battlePassFreeReward,
+                ? ShopCatalogCopy.of(Localizations.localeOf(context)).pass('premiumReward')
+                : ShopCatalogCopy.of(Localizations.localeOf(context)).pass('freeReward'),
             style: AppTextStyles.caption.copyWith(
               fontSize: 11,
               fontWeight: FontWeight.w600,

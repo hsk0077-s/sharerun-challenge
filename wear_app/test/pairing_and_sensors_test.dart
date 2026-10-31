@@ -80,6 +80,11 @@ Future<void> _tapDigits(WidgetTester tester, String digits) async {
 }
 
 void main() {
+  setUp(() {
+    TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher.localeTestValue =
+        const Locale('ko');
+  });
+
   testWidgets('the keypad fills six digits and submits them', (tester) async {
     String? submitted;
     await tester.pumpWidget(MaterialApp(

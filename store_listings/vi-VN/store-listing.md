@@ -30,6 +30,7 @@ ShareRun ("Chừng nào trái tim còn đập, sự sẻ chia vẫn tiếp tục
 ■ Chống Gian Lận Jena AI & Quỹ Thiện Nguyện
 • Jena AI kiểm증 dữ liệu GPS, guồng chân (cadence), con quay hồi chuyển và nhịp tim để loại bỏ hành vi dùng xe hoặc máy lắc bước chân.
 • Mỗi km chạy bộ hợp lệ đóng góp tương đương 100 KRW (trong hạn mức hàng tháng của đơn vị vận hành) vào quỹ thiện nguyện.
+• Đây là ngân sách tháng của đơn vị vận hành cho toàn cầu, không phải tiền quyên góp của người dùng. Chi cho một tổ chức đăng ký tại Hàn Quốc, không có biên lai khấu trừ thuế.
 
 [Lưu Ý Quan Trọng]
 ※ SHARE, DIA và VALUE là điểm ảo chỉ dùng trong ứng dụng, không có giá trị tiền mặt và không thể quy đổi hay chuyển nhượng.

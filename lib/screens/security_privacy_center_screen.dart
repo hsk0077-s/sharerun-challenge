@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart';
+import '../l10n/surface_copy.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/privacy/ai_learning_tile.dart';
 import '../features/privacy/payment_auth_tile.dart';
@@ -58,8 +59,10 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                 _CenterTile(
                   tileKey: policyTileKey,
                   icon: Icons.verified_outlined,
-                  title: '공정한 적립 정책',
-                  subtitle: '검증 기준 · 하루 한도 · 기부 규칙',
+                  title: FairEarningCopy.of(Localizations.localeOf(context))
+                      .menuTitle,
+                  subtitle: FairEarningCopy.of(Localizations.localeOf(context))
+                      .menuSubtitle,
                   onTap: () => AppRouteNav.push<void>(
                     context,
                     RouteNames.fairEarningPolicy,

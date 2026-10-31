@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
@@ -11,6 +12,7 @@ import 'package:share_run_challenge/features/accessories/accessory_catalog.dart'
 import 'package:share_run_challenge/features/accessories/accessory_inventory.dart';
 import 'package:share_run_challenge/features/crew/crew_membership.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/features/shop/widgets/accessory_shop_grid.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 
@@ -70,6 +72,13 @@ Future<_FakeApi> _open(
         accessoryInventoryProvider.overrideWith((ref) => Stream.value(inventory)),
       ],
       child: MaterialApp(
+        locale: const Locale('ko', 'KR'),
+        supportedLocales: ShareRunLocalizations.supportedLocales,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         theme: SrcTheme.night,
         home: Builder(
           builder: (context) => Scaffold(
@@ -99,7 +108,15 @@ void main() {
     await tester.tap(find.byKey(AccessoryDetailSheet.buyKey));
     await tester.pumpAndSettle();
     expect(api.calls, isEmpty);
-    expect(find.textContaining('보너스 DIA가 있으면 먼저'), findsOneWidget);
+    final code = Localizations.localeOf(
+      tester.element(find.byKey(AccessoryDetailSheet.buyConfirmKey)),
+    ).languageCode;
+    expect(
+      find.textContaining(
+        code == 'ko' ? '보너스 DIA가 있으면 먼저' : 'Bonus DIA is spent first',
+      ),
+      findsOneWidget,
+    );
     await tester.tap(find.byKey(AccessoryDetailSheet.buyConfirmKey));
     await tester.pumpAndSettle();
     expect(api.calls, ['buy:P004']);

@@ -16,6 +16,7 @@ those rows.
 from copy import deepcopy
 from datetime import datetime, timezone
 import logging
+from math import asin, cos, radians, sin, sqrt
 
 from fastapi import HTTPException
 from google.cloud import firestore
@@ -44,6 +45,7 @@ from app.services.donation_cap import (
     read_monthly_cap_won,
     won_within_cap,
 )
+from app.services.grade_assignment import TURTLE_FAST_PACE_SEC, run_pace_sec_per_km
 from app.services.promotion_points import award_tournament_results
 from app.services.streak_protection import kst_month_key
 from app.services.wallet_funding import move_currency
@@ -82,6 +84,196 @@ class _Payout:
         self.valid_through = 0
 
 
+def _signal_meters(a: tuple[float, float], b: tuple[float, float]) -> float:
+    lat1, lon1 = radians(a[0]), radians(a[1])
+    lat2, lon2 = radians(b[0]), radians(b[1])
+    h = (
+        sin((lat2 - lat1) / 2) ** 2
+        + cos(lat1) * cos(lat2) * sin((lon2 - lon1) / 2) ** 2
+    )
+    return 2 * 6371000.0 * asin(sqrt(min(1.0, h)))
+
+
+def _route_samples(route: list) -> list[tuple[float, float, datetime | None]]:
+    points = []
+    for raw in route:
+        point = raw
+        if hasattr(raw, "model_dump"):
+            point = raw.model_dump()
+        elif hasattr(raw, "dict"):
+            point = raw.dict()
+        if not isinstance(point, dict):
+            continue
+        lat = point.get("latitude", point.get("lat"))
+        lng = point.get("longitude", point.get("lng"))
+        if isinstance(lat, bool) or isinstance(lng, bool):
+            continue
+        if not isinstance(lat, (int, float)) or not isinstance(lng, (int, float)):
+            continue
+        stamp = point.get("recordedAt", point.get("recorded_at"))
+        moment = None
+        if isinstance(stamp, datetime):
+            moment = stamp if stamp.tzinfo else stamp.replace(tzinfo=timezone.utc)
+        elif isinstance(stamp, str) and stamp:
+            try:
+                parsed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+            except ValueError:
+                parsed = None
+            if parsed is not None and parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            moment = parsed
+        points.append((float(lat), float(lng), moment))
+    return points
+
+
+def _span_ratio(values: list[float]) -> float | None:
+    if len(values) < 5:
+        return None
+    ordered = sorted(values)
+    mid = ordered[len(ordered) // 2]
+    if mid <= 0:
+        return None
+    return (ordered[-1] - ordered[0]) / mid
+
+
+def gps_spacing_uniform(route: list) -> bool:
+    """True when consecutive GPS gaps are too even to be a recorded run.
+
+    A hand-drawn kilometre spaces points by the same metres and the same
+    seconds. A phone trace jitters. Five or more gaps, and both the
+    distance and the time span stay inside 5% of the median.
+    """
+    points = _route_samples(route)
+    distances: list[float] = []
+    gaps: list[float] = []
+    for left, right in zip(points, points[1:]):
+        distance = _signal_meters((left[0], left[1]), (right[0], right[1]))
+        if distance < 1.0:
+            continue
+        distances.append(distance)
+        if left[2] is not None and right[2] is not None:
+            gap = abs((right[2] - left[2]).total_seconds())
+            if gap > 0:
+                gaps.append(gap)
+    distance_ratio = _span_ratio(distances)
+    gap_ratio = _span_ratio(gaps)
+    if distance_ratio is None or gap_ratio is None:
+        return False
+    return distance_ratio <= 0.05 and gap_ratio <= 0.05
+
+
+def _positive_series(values: list | None) -> bool:
+    if not isinstance(values, list):
+        return False
+    return any(
+        isinstance(value, int) and not isinstance(value, bool) and value > 0
+        for value in values
+    )
+
+
+# A live phone asks for a fix about once a second. A hand drawing of a
+# kilometre uses a handful of corners. Twelve fixes over three minutes is
+# still that drawing. A denser irregular trace is not caught here.
+SPARSE_GPS_MIN_SECONDS = 180
+SPARSE_GPS_MAX_POINTS = 12
+
+
+def gps_trace_sparse(route: list, duration_seconds: int | float) -> bool:
+    """True when a long run has too few fixes to be a live trace."""
+    if not isinstance(duration_seconds, (int, float)) or isinstance(duration_seconds, bool):
+        return False
+    if duration_seconds < SPARSE_GPS_MIN_SECONDS:
+        return False
+    points = _route_samples(route)
+    return 2 <= len(points) < SPARSE_GPS_MAX_POINTS
+
+
+def repeated_vector_trace(route: list | None) -> bool:
+    """True when a dense trace repeats a handful of the same steps.
+
+    A live GPS fix does not repeat the same 1m step eight times. A
+    drawing that adds points and a step count still does. A noisy trace,
+    including a first race, stays out.
+    """
+    points = _route_samples(route or [])
+    if len(points) < 16:
+        return False
+    vectors: list[tuple[int, int]] = []
+    for left, right in zip(points, points[1:]):
+        north_m = (right[0] - left[0]) * 111_320.0
+        east_m = (right[1] - left[1]) * 88_300.0
+        north = int(round(north_m))
+        east = int(round(east_m))
+        if north == 0 and east == 0:
+            continue
+        vectors.append((north, east))
+    if len(vectors) < 12:
+        return False
+    counts: dict[tuple[int, int], int] = {}
+    for vector in vectors:
+        counts[vector] = counts.get(vector, 0) + 1
+    return len(counts) <= 6 and max(counts.values()) >= 8
+
+
+def beginner_signal_hold(
+    *,
+    heart_rates: list | None,
+    cadence_spm: list | None,
+    total_steps: int | None,
+    gps_route: list | None,
+    duration_seconds: int | float | None = None,
+) -> str | None:
+    """Prize-only hold. Credits stay on the run.
+
+    Pace cannot separate a slow run from a slow drawing. A uniform GPS
+    trace is a drawing even when fake heart-rate numbers are attached.
+    A long trace with fewer than twelve fixes is the same drawing after
+    the gaps were nudged so they are no longer even. Cadence on that
+    trace with no step total is typed in, not counted. A finish that
+    sends cadence and no route is not this case. No steps, cadence, or
+    heart rate, and no route to judge, is the other case. ``None`` means the caller did
+    not send that signal, so older tests that omit it are left alone.
+    A dense trace that repeats the same few steps is held even with a
+    step total. A noisy live trace is not.
+    """
+    if isinstance(gps_route, list) and gps_spacing_uniform(gps_route):
+        return "uniform_gps"
+    if (
+        isinstance(gps_route, list)
+        and duration_seconds is not None
+        and gps_trace_sparse(gps_route, duration_seconds)
+    ):
+        return "sparse_gps"
+    signals_known = (
+        heart_rates is not None or cadence_spm is not None or total_steps is not None
+    )
+    if not signals_known:
+        return None
+    steps = (
+        total_steps
+        if isinstance(total_steps, int) and not isinstance(total_steps, bool) and total_steps > 0
+        else 0
+    )
+    # Cadence with no step total, on a route we can see, was typed in.
+    # A finish that omits the route is left to the other rules. Older
+    # prize tests send cadence and no steps and no trace.
+    route_points = _route_samples(gps_route) if isinstance(gps_route, list) else []
+    if _positive_series(cadence_spm) and steps <= 0 and len(route_points) >= 2:
+        return "cadence_unbacked"
+    if steps > 0 and isinstance(gps_route, list) and repeated_vector_trace(gps_route):
+        return "repeated_trace"
+    route_known = isinstance(gps_route, list)
+    route_short = not route_known or len(_route_samples(gps_route or [])) < 2
+    if (
+        route_short
+        and steps <= 0
+        and not _positive_series(heart_rates)
+        and not _positive_series(cadence_spm)
+    ):
+        return "missing_run_signal"
+    return None
+
+
 def prize_finish_fields(
     tournament: dict,
     participant: dict,
@@ -89,6 +281,10 @@ def prize_finish_fields(
     distance_km: float,
     duration_seconds: int | float,
     activity_id: str,
+    heart_rates: list | None = None,
+    cadence_spm: list | None = None,
+    total_steps: int | None = None,
+    gps_route: list | None = None,
 ) -> dict | None:
     """Best verified finish for a prize race. Slower repeats are ignored."""
     if prize_tier_id(tournament) is None or tournament.get("prizeSettled") is True:
@@ -100,6 +296,50 @@ def prize_finish_fields(
     target = _number(tournament.get("targetDistanceKm")) or 0
     if target > 0 and distance + 1e-9 < target:
         return None
+    # Beginner prize entry only saw the stored median. The finish pace is
+    # checked here: faster than turtle master (450 sec/km) does not take the
+    # prize. A legal finish already on the row is left as it is.
+    pace = run_pace_sec_per_km(distance, duration)
+    if (
+        prize_tier_id(tournament) == "beginner"
+        and pace is not None
+        and pace < TURTLE_FAST_PACE_SEC
+    ):
+        if participant.get("verifiedFinish") is True:
+            return None
+        return {
+            "verifiedFinish": False,
+            "prizeHeld": True,
+            "prizeHoldReason": "pace_too_fast",
+            "distanceKm": distance,
+            "durationSeconds": duration,
+            "finishActivityId": activity_id,
+        }
+    # Slower than the turtle line can still be a drawing. Hold the beginner
+    # prize only. Mid and above keep the pace they already passed. The run's
+    # SHARE and VALUE are credited on the validation path.
+    signal = (
+        beginner_signal_hold(
+            heart_rates=heart_rates,
+            cadence_spm=cadence_spm,
+            total_steps=total_steps,
+            gps_route=gps_route,
+            duration_seconds=duration,
+        )
+        if prize_tier_id(tournament) == "beginner"
+        else None
+    )
+    if signal is not None:
+        if participant.get("verifiedFinish") is True:
+            return None
+        return {
+            "verifiedFinish": False,
+            "prizeHeld": True,
+            "prizeHoldReason": signal,
+            "distanceKm": distance,
+            "durationSeconds": duration,
+            "finishActivityId": activity_id,
+        }
     if participant.get("verifiedFinish") is True:
         previous = _number(participant.get("durationSeconds"))
         if previous is not None and duration >= previous:
@@ -629,7 +869,7 @@ def _apply_payout(
                 "companyWon": payout.donation_krw,
                 "monthKey": month,
                 "sponsorName": "SRC",
-                "donationTarget": "UNICEF",
+                "donationTarget": "GLOBAL_RELIEF_PARTNER",
                 "receiptIssued": False,
                 "fundedByEntryFees": False,
                 "createdAt": SERVER_TIMESTAMP,

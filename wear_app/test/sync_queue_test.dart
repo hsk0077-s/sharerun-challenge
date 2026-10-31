@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_wear/core/sync_queue.dart';
+import 'package:share_run_wear/core/watch_platform.dart';
 
 PendingRun _run(String id) => PendingRun(
       activityId: id,
@@ -52,12 +53,61 @@ void main() {
       'gps_route',
     ]));
     expect(body['device_id'], 'watch-1');
+    expect(body['gps_route'], isEmpty);
+    expect(body['pace_samples'], isEmpty);
     expect((body['device_info']! as Map)['watch_used'], isTrue);
     expect(const PendingSteps(dayKey: '2026-10-25', steps: 8000).toBody(), {
       'day_key': '2026-10-25',
       'steps': 8000,
       'source': 'sensor',
     });
+  });
+
+  test('a measured route and pace are not sent empty', () {
+    final run = buildPendingRun(
+      activityId: 'a',
+      distanceKm: 1.2,
+      movingTime: const Duration(minutes: 6),
+      heartRates: const [150],
+      startedAt: DateTime.utc(2026, 10, 25, 9),
+      endedAt: DateTime.utc(2026, 10, 25, 9, 6),
+      gpsRoute: const [
+        GpsFix(latitude: 37.5, longitude: 127.0, recordedAt: '2026-10-25T09:00:00Z'),
+        GpsFix(latitude: 37.51, longitude: 127.01, recordedAt: '2026-10-25T09:06:00Z'),
+      ],
+      paceSamples: const [
+        {'secondsPerKm': 300, 'recordedAt': '2026-10-25T09:03:00Z'},
+      ],
+    );
+    final body = run!.toValidateRunBody();
+    expect(body['gps_route'], hasLength(2));
+    expect((body['gps_route'] as List).first, containsPair('latitude', 37.5));
+    expect(body['pace_samples'], [
+      {'secondsPerKm': 300, 'recordedAt': '2026-10-25T09:03:00Z'},
+    ]);
+    final queue = SyncQueue()..add(run);
+    final again = SyncQueue.decode(queue.encode());
+    expect(again.runs.single.gpsRoute, hasLength(2));
+    expect(again.runs.single.paceSamples.single['secondsPerKm'], 300);
+  });
+
+  test('a pace above the server maximum is clamped, not sent raw', () {
+    final run = buildPendingRun(
+      activityId: 'slow',
+      distanceKm: 0.05,
+      movingTime: const Duration(minutes: 8),
+      heartRates: const [90],
+      startedAt: DateTime.utc(2026, 10, 25, 9),
+      endedAt: DateTime.utc(2026, 10, 25, 9, 8),
+      paceSamples: const [
+        {'secondsPerKm': 9600, 'recordedAt': '2026-10-25T09:08:00Z'},
+        {'secondsPerKm': -3, 'recordedAt': '2026-10-25T09:08:01Z'},
+      ],
+    );
+    expect(run!.toValidateRunBody()['pace_samples'], [
+      {'secondsPerKm': 7200, 'recordedAt': '2026-10-25T09:08:00Z'},
+      {'secondsPerKm': 0, 'recordedAt': '2026-10-25T09:08:01Z'},
+    ]);
   });
 
   test('a run with no distance or time is not queued', () {

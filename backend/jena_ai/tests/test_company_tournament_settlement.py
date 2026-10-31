@@ -410,6 +410,7 @@ def test_verified_prize_finish_keeps_the_faster_time() -> None:
             distance_km=distance,
             duration_seconds=duration,
             gyro_stability_score=0.9,
+            cadence_spm=[160, 164, 158],
             tournament_id="race",
         )
         result = ValidationResult(
@@ -428,22 +429,27 @@ def test_verified_prize_finish_keeps_the_faster_time() -> None:
             db.collection("users").document("u1"),
         )
 
-    persist("slow", 2, 500)
-    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 500
-    persist("slower", 2, 700)
-    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 500
+    persist("slow", 2, 1200)
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 1200
+    persist("slower", 2, 1600)
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 1200
     assert db.store["tournaments/race/participants/u1"]["finishActivityId"] == "slow"
     persist("short", 0.5, 100)
     assert db.store["tournaments/race/participants/u1"]["distanceKm"] == 2
-    persist("fast", 2, 400)
-    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 400
+    # 2km in 900s is 450 sec/km, the turtle line. It still counts.
+    persist("fast", 2, 900)
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 900
+    assert db.store["tournaments/race/participants/u1"]["verifiedFinish"] is True
+    # 2km in 800s is 400 sec/km, faster than the beginner line. The prize stays.
+    persist("too-fast", 2, 800)
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 900
     assert db.store["tournaments/race/participants/u1"]["verifiedFinish"] is True
     persist("cheat", 2, 50, verified=False)
-    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 400
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 900
 
     db.store["tournaments/race"]["prizeSettled"] = True
     persist("late", 2, 10)
-    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 400
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 900
 
     other = _MemoryDb()
     other.store["users/u1"] = _wallet()
@@ -471,6 +477,128 @@ def test_verified_prize_finish_keeps_the_faster_time() -> None:
         other.collection("users").document("u1"),
     )
     assert "verifiedFinish" not in other.store["tournaments/plain/participants/u1"]
+
+
+def test_uniform_gps_holds_beginner_prize_and_keeps_value() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _wallet()
+    db.store["tournaments/race"] = {
+        "prizeTier": "beginner",
+        "targetDistanceKm": 1,
+        "status": "active",
+    }
+    db.store["tournaments/race/participants/u1"] = {"uid": "u1", "status": "joined"}
+    start = datetime(2026, 10, 5, tzinfo=timezone.utc)
+    points = [
+        {
+            "latitude": 37.5 + (index * 100.0 / 111_320.0),
+            "longitude": 127.0,
+            "recordedAt": (start + timedelta(seconds=90 * index)).isoformat(),
+        }
+        for index in range(11)
+    ]
+    SecuredActionService(firebase_service=SimpleNamespace(db=db))._persist_validation_tx(
+        _MemoryTxn(),
+        "u1",
+        ValidateRunRequest(
+            activity_id="drawn",
+            distance_km=1.0,
+            duration_seconds=900,
+            gyro_stability_score=0.4,
+            heart_rates=[120, 140, 160],
+            cadence_spm=[160, 164, 158],
+            total_steps=1400,
+            gps_route=points,
+            tournament_id="race",
+        ),
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=10,
+            forfeit_deposit=False,
+        ),
+        db.collection("activities").document("drawn"),
+        db.collection("users").document("u1"),
+    )
+    row = db.store["tournaments/race/participants/u1"]
+    assert row["prizeHeld"] is True
+    assert row["prizeHoldReason"] == "uniform_gps"
+    assert row["verifiedFinish"] is False
+    assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 15
+    assert _settle(db).paid_dia == 0
+
+
+def test_beginner_prize_finish_holds_a_pace_faster_than_450() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _wallet()
+    db.store["tournaments/race"] = {
+        "prizeTier": "beginner",
+        "targetDistanceKm": 1,
+        "status": "active",
+    }
+    db.store["tournaments/race/participants/u1"] = {"uid": "u1", "status": "joined"}
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    request = ValidateRunRequest(
+        activity_id="sandbag",
+        distance_km=2,
+        duration_seconds=800,
+        gyro_stability_score=0.9,
+        tournament_id="race",
+    )
+    service._persist_validation_tx(
+        _MemoryTxn(),
+        "u1",
+        request,
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=10,
+            forfeit_deposit=False,
+        ),
+        db.collection("activities").document("sandbag"),
+        db.collection("users").document("u1"),
+    )
+    row = db.store["tournaments/race/participants/u1"]
+    assert row["verifiedFinish"] is False
+    assert row["prizeHeld"] is True
+    assert row["prizeHoldReason"] == "pace_too_fast"
+    # 800s / 2km = 400 sec/km, faster than 450.
+
+    settled = _settle(db)
+    assert settled.paid_dia == 0
+    assert db.store["users/u1"]["wallet"]["freeDiamondBalance"] == 10
+
+    mid = _MemoryDb()
+    mid.store["users/u1"] = _wallet()
+    mid.store["tournaments/mid"] = {
+        "prizeTier": "mid",
+        "targetDistanceKm": 1,
+        "status": "active",
+    }
+    mid.store["tournaments/mid/participants/u1"] = {"uid": "u1", "status": "joined"}
+    SecuredActionService(firebase_service=SimpleNamespace(db=mid))._persist_validation_tx(
+        _MemoryTxn(),
+        "u1",
+        ValidateRunRequest(
+            activity_id="mid-fast",
+            distance_km=2,
+            duration_seconds=400,
+            gyro_stability_score=0.9,
+            tournament_id="mid",
+        ),
+        ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=10,
+            forfeit_deposit=False,
+        ),
+        mid.collection("activities").document("mid-fast"),
+        mid.collection("users").document("u1"),
+    )
+    assert mid.store["tournaments/mid/participants/u1"]["verifiedFinish"] is True
 
 
 def _claim_race(days: int, runs: int, *, identity: bool = True):
@@ -1002,3 +1130,72 @@ def test_ungraded_finisher_gets_no_promotion_doc() -> None:
     _settle(db)
 
     assert not [path for path in db.store if path.startswith("promotionLedger/")]
+
+
+def _live_prize_route() -> list[dict]:
+    points = []
+    lat = 37.5
+    lng = 127.0
+    for index in range(36):
+        lat += (17 + (index * 3 % 11)) / 111_320.0
+        lng += ((index * 5 % 13) - 6) / 88_300.0
+        points.append(
+            {
+                "latitude": lat,
+                "longitude": lng,
+                "recordedAt": f"2026-10-05T00:{index // 60:02d}:{index % 60:02d}+00:00",
+            }
+        )
+    return points
+
+
+def test_beginner_finish_with_a_hidden_fast_sample_is_not_a_prize_finish() -> None:
+    db = _MemoryDb()
+    user = _wallet()
+    user["gradeRank"] = 1
+    user["gradeCode"] = "turtle_bronze"
+    user["economy"] = {
+        "paceSamples": [
+            {"day": "2026-10-01", "activityId": "walk", "paceSec": 600},
+        ]
+    }
+    db.store["users/u1"] = user
+    db.store["tournaments/race"] = {
+        "prizeTier": "beginner",
+        "targetDistanceKm": 1,
+        "status": "active",
+    }
+    db.store["tournaments/race/participants/u1"] = {"uid": "u1", "status": "joined"}
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+
+    def persist(activity_id: str, duration: int, *, live: bool = False) -> None:
+        request = ValidateRunRequest(
+            activity_id=activity_id,
+            distance_km=1,
+            duration_seconds=duration,
+            gyro_stability_score=0.9,
+            tournament_id="race",
+            total_steps=1400 if live else None,
+            cadence_spm=[150, 160, 155] if live else [],
+            gps_route=_live_prize_route() if live else [],
+        )
+        service._persist_validation_tx(
+            _MemoryTxn(),
+            "u1",
+            request,
+            ValidationResult(
+                verified=True,
+                decision="verified",
+                reason="ok",
+                value_token_reward=10,
+                forfeit_deposit=False,
+            ),
+            db.collection("activities").document(activity_id),
+            db.collection("users").document("u1"),
+        )
+
+    persist("sprint", 300)
+    assert "durationSeconds" not in db.store["tournaments/race/participants/u1"]
+    persist("walk", 600, live=True)
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 600
+    assert db.store["tournaments/race/participants/u1"]["verifiedFinish"] is True

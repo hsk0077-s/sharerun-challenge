@@ -11,24 +11,30 @@ struct WatchPendingRun: Codable, Identifiable, Equatable {
 
     var id: String { activityId }
 
-    func toValidateRunBody() -> [String: Any] {
+    func toValidateRunBody(deviceId: String? = nil) -> [String: Any] {
         var body: [String: Any] = [
             "activity_id": activityId,
-            "distance_km": Double(String(format: "%.3f", distanceKm)) ?? distanceKm,
+            "distance_km": (distanceKm * 1000).rounded() / 1000,
             "duration_seconds": durationSeconds,
             "heart_rates": Array(heartRates.prefix(50000)),
             "cadence_spm": [Int](),
             "gyro_stability_score": 0.5,
             "gps_route": [[String: Any]](),
-            "source": "watch",
+            "pace_samples": [[String: Any]](),
+            "started_at": startedAtIso,
+            "ended_at": endedAtIso,
             "device_info": [
                 "watch_used": true,
-                "platform": "watchos",
                 "heart_rate_used": !heartRates.isEmpty
             ]
         ]
         if totalSteps > 0 {
             body["total_steps"] = totalSteps
+        }
+        // Same field as ValidateRunRequest.device_id. Empty is omitted so a
+        // missing id is not stored as a blank string.
+        if let deviceId, !deviceId.isEmpty {
+            body["device_id"] = deviceId
         }
         return body
     }
@@ -41,8 +47,8 @@ struct WatchPendingSteps: Codable, Equatable {
     func toDailyStepsBody() -> [String: Any] {
         [
             "day_key": dayKey,
-            "steps": steps,
-            "source": "watch"
+            "steps": min(30_000, steps),
+            "source": "sensor"
         ]
     }
 }
@@ -57,8 +63,18 @@ final class WatchSyncQueue: ObservableObject {
     private let storageKey = "sharerun.watchos.sync_queue.v1"
     private let stepsStorageKey = "sharerun.watchos.pending_steps.v1"
     private let defaults = UserDefaults.standard
+    private var flushGate = WatchFlushGate()
 
     var pendingCount: Int { runs.count }
+
+    /// False when a flush is already in progress. Wear OS calls this `tryBeginFlush`.
+    func tryBeginFlush() -> Bool {
+        flushGate.tryBegin()
+    }
+
+    func endFlush() {
+        flushGate.end()
+    }
 
     init() {
         load()
@@ -90,11 +106,13 @@ final class WatchSyncQueue: ObservableObject {
     /// Uploads queued runs (`POST /actions/runs/validate`) and daily steps (`POST /actions/daily-steps`).
     func flush(using account: WatchAccountManager) async {
         guard account.isPaired else { return }
+        guard tryBeginFlush() else { return }
+        defer { endFlush() }
 
         for run in runs {
             guard let (status, _) = await account.postSigned(
                 path: "/actions/runs/validate",
-                payload: run.toValidateRunBody()
+                payload: run.toValidateRunBody(deviceId: account.deviceId())
             ) else {
                 break
             }

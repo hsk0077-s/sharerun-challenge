@@ -31,6 +31,9 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var startedAt: Date?
     private var lastLocation: CLLocation?
     private var heartRateSamples: [Int] = []
+    private var routePoints: [WatchRoutePoint] = []
+    private var paceSamples: [WatchPaceSample] = []
+    private var lastPaceKm: Double = 0
     private var currentActivityId: String = ""
 
     var paceSecondsPerKm: Int {
@@ -73,6 +76,9 @@ final class WorkoutManager: NSObject, ObservableObject {
         totalSteps = 0
         cadenceSpm = 0
         heartRateSamples.removeAll()
+        routePoints.removeAll()
+        paceSamples.removeAll()
+        lastPaceKm = 0
         lastLocation = nil
         startedAt = Date()
         currentActivityId = "watchos-\(Int(Date().timeIntervalSince1970 * 1000))"
@@ -155,7 +161,9 @@ final class WorkoutManager: NSObject, ObservableObject {
                 heartRates: heartRateSamples,
                 startedAtIso: iso.string(from: start),
                 endedAtIso: iso.string(from: end),
-                totalSteps: totalSteps
+                totalSteps: totalSteps,
+                gpsRoute: routePoints,
+                paceSamples: paceSamples
             )
             queue.enqueueRun(pending)
             if totalSteps > 0 {
@@ -188,6 +196,19 @@ final class WorkoutManager: NSObject, ObservableObject {
     private func stopTicker() {
         timer?.invalidate()
         timer = nil
+    }
+
+    private func notePace() {
+        guard distanceKm + 0.000_001 >= lastPaceKm + 0.05 else { return }
+        let pace = paceSecondsPerKm
+        guard pace > 0 else { return }
+        lastPaceKm = distanceKm
+        paceSamples.append(
+            WatchPaceSample(
+                secondsPerKm: pace,
+                recordedAt: ISO8601DateFormatter().string(from: Date())
+            )
+        )
     }
 
     private static func kstDayKey(for date: Date) -> String {
@@ -264,7 +285,18 @@ extension WorkoutManager: CLLocationManagerDelegate {
                     let delta = loc.distance(from: prev)
                     if delta > 0.5 && delta < 100 {
                         self.distanceKm += delta / 1000.0
+                        self.notePace()
                     }
+                }
+                self.routePoints.append(
+                    WatchRoutePoint(
+                        latitude: loc.coordinate.latitude,
+                        longitude: loc.coordinate.longitude,
+                        recordedAt: ISO8601DateFormatter().string(from: loc.timestamp)
+                    )
+                )
+                if self.routePoints.count > 400 {
+                    self.routePoints.removeFirst(self.routePoints.count - 400)
                 }
                 self.lastLocation = loc
             }

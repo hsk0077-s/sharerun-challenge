@@ -13,6 +13,7 @@ final class WatchAccountManager: ObservableObject {
     private let defaults = UserDefaults.standard
     private let refreshKey = "sharerun.watch.refresh_token"
     private let nicknameKey = "sharerun.watch.nickname"
+    private let deviceKey = "sharerun.watch.device_id"
 
     private var refreshToken: String?
     private var idToken: String?
@@ -36,6 +37,18 @@ final class WatchAccountManager: ObservableObject {
         self.isPaired = !(self.refreshToken ?? "").isEmpty
     }
 
+    /// Stable id for `POST /auth/watch-pair` and `ValidateRunRequest.device_id`.
+    /// Unpair keeps it so the same watch does not look like a new handset.
+    func deviceId() -> String {
+        if let saved = defaults.string(forKey: deviceKey),
+           saved.range(of: #"^[A-Za-z0-9_-]{8,64}$"#, options: .regularExpression) != nil {
+            return saved
+        }
+        let fresh = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        defaults.set(fresh, forKey: deviceKey)
+        return fresh
+    }
+
     func applyCompanionCredentials(refreshToken: String, nickname: String) {
         self.refreshToken = refreshToken
         self.nickname = nickname
@@ -57,13 +70,13 @@ final class WatchAccountManager: ObservableObject {
     /// Exchanges 6-digit code from phone (`POST /actions/watch-pairing/code`) via `POST /auth/watch-pair`.
     func pair(withCode code: String) async -> String? {
         guard isConfigured else {
-            let msg = "서버 설정이 없는 빌드예요."
+            let msg = "no_server"
             errorMessage = msg
             return msg
         }
         let trimmed = code.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.range(of: #"^\d{6}$"#, options: .regularExpression) != nil else {
-            let msg = "숫자 6자리를 입력해 주세요."
+            let msg = "need_six_digits"
             errorMessage = msg
             return msg
         }
@@ -73,20 +86,27 @@ final class WatchAccountManager: ObservableObject {
         defer { isBusy = false }
 
         guard let pairUrl = URL(string: "\(jenaBaseUrl)/auth/watch-pair") else {
-            return "잘못된 서버 주소예요."
+            return "bad_url"
         }
 
         do {
-            let (status, body) = try await postJson(url: pairUrl, payload: ["code": trimmed])
+            let (status, body) = try await postJson(
+                url: pairUrl,
+                payload: [
+                    "code": trimmed,
+                    "device_id": deviceId(),
+                    "device_label": "Apple Watch",
+                ]
+            )
             if status == 429 {
-                let msg = "잠시 뒤에 다시 해 주세요."
+                let msg = "rate_limited"
                 errorMessage = msg
                 return msg
             }
             guard (200..<300).contains(status),
                   let customToken = body["custom_token"] as? String,
                   !customToken.isEmpty else {
-                let msg = "코드가 맞지 않거나 만료됐어요."
+                let msg = "bad_code"
                 errorMessage = msg
                 return msg
             }
@@ -94,7 +114,7 @@ final class WatchAccountManager: ObservableObject {
             guard let authUrl = URL(
                 string: "https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=\(firebaseApiKey)"
             ) else {
-                return "Firebase 인증 주소 오류"
+                return "auth_url"
             }
 
             let (authStatus, authBody) = try await postJson(
@@ -104,7 +124,7 @@ final class WatchAccountManager: ObservableObject {
             guard (200..<300).contains(authStatus),
                   let refresh = authBody["refreshToken"] as? String,
                   let token = authBody["idToken"] as? String else {
-                let msg = "로그인을 마치지 못했어요. 다시 시도해 주세요."
+                let msg = "sign_in_failed"
                 errorMessage = msg
                 return msg
             }
@@ -120,7 +140,7 @@ final class WatchAccountManager: ObservableObject {
             defaults.set(self.nickname, forKey: nicknameKey)
             return nil
         } catch {
-            let msg = "연결할 수 없어요. 인터넷을 확인해 주세요."
+            let msg = "offline"
             errorMessage = msg
             return msg
         }

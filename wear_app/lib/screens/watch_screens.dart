@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/run_session.dart';
+import '../l10n/watch_copy.dart';
 
 const _bg = Color(0xFF0B0F0C);
 const _lime = Color(0xFFD4FF4A);
@@ -74,9 +75,9 @@ class StartFace extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
         onLongPress: onLongPress,
         child: _Face(
-          label: linkedName == null ? '시작' : (linkedName!.isEmpty ? '연결됨' : linkedName!),
+          label: linkedName == null ? WatchCopy.ofContext(context).start : (linkedName!.isEmpty ? WatchCopy.ofContext(context).linked : linkedName!),
           big: '${targetKm.toStringAsFixed(0)}km',
-          sub: '탭해서 시작',
+          sub: WatchCopy.ofContext(context).tapToStart,
           icon: Icons.play_arrow_rounded,
           onTap: onStart,
         ),
@@ -166,7 +167,14 @@ class _PairingFaceState extends State<PairingFace> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _message ?? (_busy ? '확인하는 중' : '휴대폰 앱의 6자리'),
+                  _message == null
+                      ? (_busy
+                          ? WatchCopy.ofContext(context).checking
+                          : WatchCopy.ofContext(context).pairingHint)
+                      : WatchCopy.pairingError(
+                          WidgetsBinding.instance.platformDispatcher.locale,
+                          _message!,
+                        ),
                   key: PairingFace.messageKey,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -205,7 +213,7 @@ class _PairingFaceState extends State<PairingFace> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _key(PairingFace.skipKey, '나중에', _busy ? null : widget.onSkip),
+                    _key(PairingFace.skipKey, WatchCopy.ofContext(context).later, _busy ? null : widget.onSkip),
                     const SizedBox(width: 3),
                     _key(PairingFace.digitKey(0), '0', () => _press('0')),
                     const SizedBox(width: 3),
@@ -232,7 +240,7 @@ class RunningFace extends StatelessWidget {
   Widget build(BuildContext context) {
     final hr = session.lastHeartRate;
     return _Face(
-      label: '달리는 중',
+      label: WatchCopy.ofContext(context).running,
       big: formatPace(session.paceSecondsPerKm),
       sub: '${hr > 0 ? '♥ $hr' : '♥ --'}  ·  ${formatKm(session.distanceKm)}km',
       icon: Icons.directions_run,
@@ -252,9 +260,9 @@ class PausedFace extends StatelessWidget {
   Widget build(BuildContext context) => GestureDetector(
         onLongPress: onFinish,
         child: _Face(
-          label: '일시정지',
-          big: '일시정지',
-          sub: '탭해서 다시 시작\n길게 눌러 끝내기',
+          label: WatchCopy.ofContext(context).paused,
+          big: WatchCopy.ofContext(context).paused,
+          sub: WatchCopy.ofContext(context).pauseHint,
           icon: Icons.pause_rounded,
           onTap: onResume,
         ),
@@ -269,12 +277,18 @@ class RankAlertFace extends StatelessWidget {
   final int gapPeople;
 
   @override
-  Widget build(BuildContext context) => _Face(
-        label: '대회 알림',
-        big: '$rank위!',
-        sub: gapPeople > 0 ? '대회 $gapPeople명 앞서요' : '선두예요',
+  Widget build(BuildContext context) {
+    final copy = WatchCopy.ofContext(context);
+    return _Face(
+        label: copy.rankAlert,
+        big: WatchCopy.rankPlace(
+          WidgetsBinding.instance.platformDispatcher.locale,
+          rank,
+        ),
+        sub: gapPeople > 0 ? copy.aheadOf(gapPeople) : copy.leading,
         icon: Icons.emoji_events_outlined,
       );
+  }
 }
 
 /// ⑤ 완주 요약 + 동기화 대기 상태.
@@ -286,12 +300,16 @@ class SummaryFace extends StatelessWidget {
   final VoidCallback onDone;
 
   @override
-  Widget build(BuildContext context) => _Face(
-        label: '끝',
+  Widget build(BuildContext context) {
+    final copy = WatchCopy.ofContext(context);
+    return _Face(
+        label: copy.done,
         big: '${formatKm(session.distanceKm)}km',
-        sub: '${formatPace(session.paceSecondsPerKm)}/km · ${formatMinutes(session.movingTime)}\n'
-            '${pendingCount > 0 ? '휴대폰 연결 시 올려요 ($pendingCount)' : '올릴 기록 없음'}',
+        sub: '${formatPace(session.paceSecondsPerKm)}/km · '
+            '${WatchCopy.minutes(WidgetsBinding.instance.platformDispatcher.locale, session.movingTime.inMinutes)}\n'
+            '${pendingCount > 0 ? copy.uploadPending(pendingCount) : copy.nothingToUpload}',
         icon: Icons.check_rounded,
         onTap: onDone,
       );
+  }
 }

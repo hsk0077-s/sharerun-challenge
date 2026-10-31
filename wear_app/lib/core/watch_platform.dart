@@ -1,5 +1,23 @@
 import 'package:flutter/services.dart';
 
+class GpsFix {
+  const GpsFix({
+    required this.latitude,
+    required this.longitude,
+    required this.recordedAt,
+  });
+
+  final double latitude;
+  final double longitude;
+  final String recordedAt;
+
+  Map<String, Object> toJson() => {
+        'latitude': latitude,
+        'longitude': longitude,
+        'recordedAt': recordedAt,
+      };
+}
+
 /// 센서가 한 번 읽어 준 값. 없는 값은 0이다(만들어 내지 않는다).
 class SensorSnapshot {
   const SensorSnapshot({
@@ -7,19 +25,36 @@ class SensorSnapshot {
     this.steps = 0,
     this.distanceKm = 0,
     this.hasGps = false,
+    this.route = const [],
   });
 
   final int heartRate;
   final int steps;
   final double distanceKm;
   final bool hasGps;
+  final List<GpsFix> route;
 
   factory SensorSnapshot.fromMap(Map<Object?, Object?> map) => SensorSnapshot(
         heartRate: (map['heartRate'] as num?)?.toInt() ?? 0,
         steps: (map['steps'] as num?)?.toInt() ?? 0,
         distanceKm: (map['distanceKm'] as num?)?.toDouble() ?? 0,
         hasGps: map['hasGps'] == true,
+        route: _route(map['route']),
       );
+
+  static List<GpsFix> _route(Object? raw) {
+    if (raw is! List) return const [];
+    final fixes = <GpsFix>[];
+    for (final item in raw) {
+      if (item is! Map) continue;
+      final lat = (item['latitude'] as num?)?.toDouble();
+      final lng = (item['longitude'] as num?)?.toDouble();
+      final at = item['recordedAt'] as String?;
+      if (lat == null || lng == null || at == null || at.isEmpty) continue;
+      fixes.add(GpsFix(latitude: lat, longitude: lng, recordedAt: at));
+    }
+    return fixes;
+  }
 }
 
 /// 심박·걸음·GPS를 모으는 쪽. 실제 구현은 안드로이드(Kotlin), 시험에서는 가짜.

@@ -181,6 +181,18 @@ class RunningValidationService:
             if phone is not None:
                 return phone
 
+        # Phone-only already rejected vehicle speed. A watch heart-rate
+        # series used to skip that check, so a fast GPS segment with a
+        # plausible pulse was verified. The 25 km/h rule applies either way.
+        # A slow trace under that speed is still a run.
+        if heart_rate_samples > 0 and self._vehicle_like_speed(gps_route):
+            return self._rejected(
+                decision="rejected_unknown",
+                reason_code="vehicle_speed",
+                reason="GPS 구간 속도가 차량 이동에 가깝습니다.",
+                forfeit_deposit=False,
+            )
+
         if heart_rate_samples > 0:
             reason = "러닝 케이던스(120~210 SPM)와 심박 곡선을 확인했습니다."
         else:

@@ -39,6 +39,7 @@ object WatchTracker : SensorEventListener, LocationListener {
     private var distanceMeters = 0.0
     private var lastLocation: Location? = null
     private var hasGps = false
+    private val route = mutableListOf<Map<String, Any>>()
 
     val isActive: Boolean
         @Synchronized get() = active
@@ -54,6 +55,7 @@ object WatchTracker : SensorEventListener, LocationListener {
         distanceMeters = 0.0
         lastLocation = null
         hasGps = false
+        route.clear()
 
         val power = app.getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "sharerun:tracking").apply {
@@ -104,6 +106,7 @@ object WatchTracker : SensorEventListener, LocationListener {
         "steps" to steps,
         "distanceKm" to distanceMeters / 1000.0,
         "hasGps" to hasGps,
+        "route" to route.toList(),
     )
 
     @Synchronized
@@ -130,17 +133,33 @@ object WatchTracker : SensorEventListener, LocationListener {
         if (!location.hasAccuracy() || location.accuracy > MAX_ACCURACY_METERS) return
         hasGps = true
         val previous = lastLocation
-        lastLocation = location
-        if (previous == null) return
+        if (previous == null) {
+            lastLocation = location
+            remember(location)
+            return
+        }
         val meters = previous.distanceTo(location)
         val seconds = (location.elapsedRealtimeNanos - previous.elapsedRealtimeNanos) / 1e9
         if (meters < MIN_STEP_METERS || seconds <= 0.0) {
             // 제자리: 기준점은 옮기지 않아 천천히 걷는 거리가 쌓이게 한다.
-            lastLocation = previous
             return
         }
         if (meters / seconds > MAX_SPEED_METERS_PER_SECOND) return
+        lastLocation = location
+        remember(location)
         distanceMeters += meters
+    }
+
+    private fun remember(location: Location) {
+        if (route.size >= 400) return
+        val stamp = java.time.Instant.ofEpochMilli(location.time).toString()
+        route.add(
+            mapOf(
+                "latitude" to location.latitude,
+                "longitude" to location.longitude,
+                "recordedAt" to stamp,
+            ),
+        )
     }
 
     @Deprecated("Required on API < 29")

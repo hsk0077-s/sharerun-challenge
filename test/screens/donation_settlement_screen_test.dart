@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/features/donation/donation_settlement.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
 
 Widget _app(DonationSettlementLoader loader) {
   return ProviderScope(
     overrides: [donationSettlementLoaderProvider.overrideWithValue(loader)],
-    child: const MaterialApp(home: DonationSettlementScreen()),
+    child: const MaterialApp(
+      locale: Locale('ko', 'KR'),
+      supportedLocales: ShareRunLocalizations.supportedLocales,
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: DonationSettlementScreen(),
+    ),
   );
 }
 
@@ -63,7 +74,7 @@ void main() {
     expect(find.text(DonationSettlementScreen.intro), findsOneWidget);
     expect(find.text('12,500원'), findsOneWidget);
     expect(find.text('480,000원'), findsOneWidget);
-    expect(find.text('이번 달 한도 1,000,000원'), findsOneWidget);
+    expect(find.text('이번 달 4,800 / 10,000 km · 48%'), findsOneWidget);
     expect(find.text(DonationSettlementScreen.capReachedLine), findsNothing);
   });
 
@@ -93,9 +104,10 @@ void main() {
     await tester.pumpAndSettle();
 
     final text = _allText(tester).join('\n');
-    for (final banned in ['UNICEF', '유니세프', '영수증', '세금', '공제', '완벽', '내 이름으로']) {
+    for (final banned in ['UNICEF', '유니세프', '완벽', '내 이름으로']) {
       expect(text.contains(banned), isFalse, reason: banned);
     }
+    expect(text, contains(DonationSettlementScreen.disclaimer));
     expect(text, contains('운영자·스폰서'));
   });
 

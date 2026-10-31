@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/config/app_env.dart';
 import '../../core/theme/theme.dart';
+import '../../l10n/guidance_copy.dart';
+import '../../l10n/surface_rest.dart';
 import '../../data/models/wallet_model.dart';
 import '../donation/today_donation.dart';
 
@@ -48,6 +50,7 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final wallet = widget.wallet;
+    final copy = HomeSurfaceCopy.of(Localizations.localeOf(context));
     return SrcSurfaceCard(
       padding: EdgeInsets.all(tokens.spacing.md),
       borderColor: tokens.colors.accent.withValues(alpha: 0.18),
@@ -64,7 +67,7 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
                 SizedBox(width: tokens.spacing.xs),
                 Flexible(
                   child: Text(
-                    '내 다이아',
+                    copy.diamondMine,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.titleSmall?.copyWith(
@@ -101,14 +104,14 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
             SizedBox(height: tokens.spacing.sm),
             if (wallet.hasDiamondSplit) ...[
               _SplitRow(
-                label: '보너스 다이아',
-                badge: '먼저 사용',
+                label: copy.bonusDia,
+                badge: copy.useFirst,
                 value: wallet.freeDiamondBalance,
                 valueKey: HomeDiamondCard.bonusKey,
               ),
               SizedBox(height: tokens.spacing.xs),
               _SplitRow(
-                label: '결제 다이아',
+                label: copy.paidDia,
                 value: wallet.paidDiamondBalance,
                 valueKey: HomeDiamondCard.paidKey,
               ),
@@ -116,9 +119,8 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
             ],
             Text(
               AppEnv.inAppPurchasesEnabled
-                  ? '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.\n'
-                      '환불은 결제 다이아 기준이에요.'
-                  : '보너스 다이아는 대회 상금으로 받으며 먼저 사용돼요.',
+                  ? copy.bonusRefundNote
+                  : copy.bonusNote,
               style: textTheme.bodySmall?.copyWith(
                 color: tokens.colors.muted,
                 height: 1.45,
@@ -129,7 +131,7 @@ class _HomeDiamondCardState extends State<HomeDiamondCard> {
               child: TextButton(
                 key: HomeDiamondCard.storeKey,
                 onPressed: widget.onOpenStore,
-                child: const Text('다이아 상점 가기'),
+                child: Text(copy.openDiaShop),
               ),
             ),
           ],
@@ -203,13 +205,15 @@ class HomeDonationCard extends ConsumerWidget {
 
   static const rule = '검증된 모든 달리기, 1km마다 운영자·스폰서 이름으로 100원을 기부해요.';
   static const budget = '운영자의 월 기부 예산 안에서 진행돼요.';
-  static const capReachedLine = '이번 달 기부 목표 달성!';
+  static const capReachedLine =
+      '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     final today = ref.watch(todayDonationProvider);
+    final copy = DonationGuidance.of(Localizations.localeOf(context));
     return SrcSurfaceCard(
       padding: EdgeInsets.all(tokens.spacing.md),
       color: tokens.colors.donation.withValues(alpha: 0.08),
@@ -223,7 +227,7 @@ class HomeDonationCard extends ConsumerWidget {
               SizedBox(width: tokens.spacing.xs),
               Expanded(
                 child: Text(
-                  '오늘 나의 기부 기여',
+                  copy.homeTitle,
                   style: textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: tokens.colors.ink,
@@ -233,7 +237,7 @@ class HomeDonationCard extends ConsumerWidget {
               TextButton(
                 key: HomeDonationCard.detailKey,
                 onPressed: onOpenSettlement,
-                child: const Text('기부 내역 ›'),
+                child: Text(copy.homeDetail),
               ),
             ],
           ),
@@ -243,8 +247,8 @@ class HomeDonationCard extends ConsumerWidget {
               children: [
                 Text(
                   data.todayWon > 0
-                      ? '${groupedNumber(data.todayWon)}원'
-                      : '오늘은 아직 기여가 없어요',
+                      ? '${groupedNumber(data.todayWon)}${copy.currencySuffix}'
+                      : copy.homeEmpty,
                   key: HomeDonationCard.amountKey,
                   style: (data.todayWon > 0
                           ? textTheme.headlineSmall
@@ -257,7 +261,7 @@ class HomeDonationCard extends ConsumerWidget {
                 if (data.capReached) ...[
                   SizedBox(height: tokens.spacing.xxs),
                   Text(
-                    HomeDonationCard.capReachedLine,
+                    copy.capReachedHome,
                     key: HomeDonationCard.capKey,
                     style: textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -279,7 +283,7 @@ class HomeDonationCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '기부 정보를 불러오지 못했어요.',
+                    copy.homeFail,
                     style: textTheme.bodySmall?.copyWith(
                       color: tokens.colors.muted,
                     ),
@@ -288,14 +292,14 @@ class HomeDonationCard extends ConsumerWidget {
                 TextButton(
                   key: HomeDonationCard.retryKey,
                   onPressed: () => ref.invalidate(todayDonationProvider),
-                  child: const Text('다시 시도'),
+                  child: Text(copy.retry),
                 ),
               ],
             ),
           ),
           SizedBox(height: tokens.spacing.xs),
           Text(
-            '${HomeDonationCard.rule}\n${HomeDonationCard.budget}',
+            '${copy.rule}\n${copy.budget}',
             style: textTheme.bodySmall?.copyWith(
               color: tokens.colors.muted,
               height: 1.45,

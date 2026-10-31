@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
+import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/screens/preliminary_eval_screen.dart';
 
 ProviderScope _scope(Widget child, {bool healthConsent = false}) {
@@ -26,6 +28,13 @@ void main() {
     await tester.pumpWidget(
       _scope(
         MaterialApp(
+          locale: const Locale('ko', 'KR'),
+          supportedLocales: ShareRunLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           routes: {
             RouteNames.home: (_) => const Scaffold(body: Text('home-shell')),
           },

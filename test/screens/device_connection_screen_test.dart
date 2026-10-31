@@ -11,6 +11,7 @@ import 'package:share_run_challenge/data/repositories/user_repository.dart';
 import 'dart:async';
 import 'package:share_run_challenge/features/run_tracking/services/ble_heart_rate_service.dart';
 import 'package:share_run_challenge/features/run_tracking/services/health_data_service.dart';
+import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/screens/device_connection_screen.dart';
 import 'package:share_run_challenge/screens/wearable_brand_guide_sheet.dart';
 
@@ -266,7 +267,10 @@ void main() {
       expect(find.byKey(WearableBrandGuide.stepKey(i)), findsOneWidget);
     }
     expect(find.byKey(WearableBrandGuide.stepKey(4)), findsNothing);
-    expect(find.text(AppStrings.wearableGuideCtaAndroid), findsOneWidget);
+    expect(
+      find.text(GuideChrome.of(tester.platformDispatcher.locale).ctaAndroid),
+      findsOneWidget,
+    );
   });
 
   test('every brand has exactly three steps', () {

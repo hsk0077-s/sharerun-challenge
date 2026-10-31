@@ -144,29 +144,29 @@ class WatchAccount {
   /// 6자리 코드를 계정으로 바꾼다. 성공하면 [isPaired]가 true.
   Future<void> pair(String code) async {
     if (!configured) {
-      throw const PairingUnavailable('서버 설정이 없는 빌드예요.');
+      throw const PairingUnavailable('no_server');
     }
     if (!RegExp(r'^\d{6}$').hasMatch(code)) {
-      throw const PairingRejected('숫자 6자리를 입력해 주세요.');
+      throw const PairingRejected('need_six_digits');
     }
     final HttpReply paired;
     try {
       paired = await _poster.post(
         Uri.parse('$_baseUrl/auth/watch-pair'),
-        {'code': code, 'device_id': await deviceId(), 'device_label': 'Wear OS 워치'},
+        {'code': code, 'device_id': await deviceId(), 'device_label': 'Wear OS'},
       );
     } catch (_) {
-      throw const PairingUnavailable('연결할 수 없어요. 인터넷을 확인해 주세요.');
+      throw const PairingUnavailable('offline');
     }
     if (paired.status == 429) {
-      throw const PairingRejected('잠시 뒤에 다시 해 주세요.');
+      throw const PairingRejected('rate_limited');
     }
     if (paired.status == 409) {
-      throw const PairingRejected('연결된 워치가 이미 3개예요. 휴대폰에서 하나를 해제해 주세요.');
+      throw const PairingRejected('watch_limit');
     }
     final custom = paired.body['custom_token'];
     if (!paired.ok || custom is! String || custom.isEmpty) {
-      throw const PairingRejected('코드가 맞지 않거나 만료됐어요.');
+      throw const PairingRejected('bad_code');
     }
     final HttpReply signedIn;
     try {
@@ -177,12 +177,12 @@ class WatchAccount {
         {'token': custom, 'returnSecureToken': true},
       );
     } catch (_) {
-      throw const PairingUnavailable('연결할 수 없어요. 인터넷을 확인해 주세요.');
+      throw const PairingUnavailable('offline');
     }
     final refresh = signedIn.body['refreshToken'];
     final idToken = signedIn.body['idToken'];
     if (!signedIn.ok || refresh is! String || idToken is! String) {
-      throw const PairingUnavailable('로그인을 마치지 못했어요. 다시 시도해 주세요.');
+      throw const PairingUnavailable('sign_in_failed');
     }
     _remember(idToken, signedIn.body['expiresIn']);
     _refreshToken = refresh;

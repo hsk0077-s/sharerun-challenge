@@ -711,6 +711,40 @@ def test_final_direct_ticket_seat_cap_is_15_percent() -> None:
     assert unqualified.value.status_code == 403
 
 
+def test_beginner_prize_refuses_a_higher_animal_and_a_fast_median() -> None:
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user(gradeRank=8, gradeCode="beagle_gold")
+    db.store["users/u1/companyPrizeRace/state"] = {"beginnerFreeUsed": 2}
+    db.store["tournaments/race"] = _prize_room("beginner")
+    with pytest.raises(HTTPException) as higher:
+        _join(db, "u1", "race")
+    assert higher.value.status_code == 403
+    assert higher.value.detail == "pace_too_fast"
+
+    sandbag = _prize_user(gradeRank=1, gradeCode="turtle_bronze", gradeSource="signup_floor")
+    sandbag["economy"] = {
+        "paceSamples": [{"day": "2026-10-01", "activityId": "a", "paceSec": 300}]
+    }
+    db.store["users/u2"] = sandbag
+    db.store["tournaments/race2"] = _prize_room("beginner")
+    with pytest.raises(HTTPException) as fast:
+        _join(db, "u2", "race2")
+    assert fast.value.detail == "pace_too_fast"
+
+    spread = _prize_user(gradeRank=1, gradeCode="turtle_bronze", gradeSource="signup_floor")
+    spread["economy"] = {
+        "paceSamples": [
+            {"day": "2026-10-01", "activityId": "slow", "paceSec": 600},
+            {"day": "2026-10-02", "activityId": "sprint", "paceSec": 300},
+        ]
+    }
+    db.store["users/u3"] = spread
+    db.store["tournaments/race3"] = _prize_room("beginner")
+    with pytest.raises(HTTPException) as hidden:
+        _join(db, "u3", "race3")
+    assert hidden.value.detail == "sandbag_pace"
+
+
 def test_tier_ticket_rejects_a_later_edition() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _prize_user()

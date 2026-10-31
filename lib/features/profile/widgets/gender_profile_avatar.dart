@@ -154,6 +154,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
         : nickname;
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
+    final locale = Localizations.localeOf(context);
 
     return LayoutBuilder(builder: (context, constraints) {
       final size = circleSize(constraints.maxWidth);
@@ -168,8 +169,8 @@ class HomeUserIdentityHeader extends ConsumerWidget {
               TierCircleBadge(
                 key: const Key('home-tier-animal'),
                 imagePath: tier.avatarAssetPath,
-                label: tier.circleLabel,
-                subLabel: tier.circleSubLabel,
+                label: tier.animalName(locale),
+                subLabel: tier.medalName(locale),
                 borderColor: AppColors.tealAccent,
                 showLabel: false,
                 size: size,

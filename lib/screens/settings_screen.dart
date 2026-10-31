@@ -23,6 +23,9 @@ import '../core/notifications/reminder_preferences.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import 'device_connection_screen.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/legal_fallback.dart';
+import '../l10n/surface_copy.dart';
+import '../l10n/surface_rest.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
@@ -115,11 +118,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _reauthLocationAndHealth() async {
     if (_permissionBusy) return;
+    final copy = SettingsSurfaceCopy.of(Localizations.localeOf(context));
     setState(() => _permissionBusy = true);
     try {
       final locationEnabled = await Geolocator.isLocationServiceEnabled();
       if (!locationEnabled) {
-        _showSnack('위치 서비스가 꺼져 있습니다. 시스템 설정에서 활성화해 주세요.');
+        _showSnack(copy.locationOff);
         await openAppSettings();
         return;
       }
@@ -129,7 +133,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         location = await Geolocator.requestPermission();
       }
       if (location == LocationPermission.deniedForever) {
-        _showSnack('위치 권한이 거부되었습니다. 설정에서 허용해 주세요.');
+        _showSnack(copy.locationDenied);
         await openAppSettings();
         return;
       }
@@ -143,7 +147,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (permissionResult.granted &&
           (location == LocationPermission.always ||
               location == LocationPermission.whileInUse)) {
-        _showSnack('위치 및 건강 데이터 권한이 확인되었습니다.');
+        _showSnack(copy.permOk);
         return;
       }
 
@@ -155,23 +159,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text('권한 재인증'),
+            title: Text(copy.permDialogTitle),
             content: Text(
-              label == null
-                  ? '일부 권한이 부족합니다. 시스템 설정에서 위치·건강 데이터 권한을 허용해 주세요.'
-                  : '$label 권한이 필요합니다. 설정에서 허용해 주세요.',
+              label == null ? copy.permShort : copy.permNeed(label),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('닫기'),
+                child: Text(copy.close),
               ),
               FilledButton(
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.tealAccent,
                 ),
                 onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('설정 열기'),
+                child: Text(copy.openSettings),
               ),
             ],
           );
@@ -241,6 +243,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _signOut() async {
+    final copy = SettingsSurfaceCopy.of(Localizations.localeOf(context));
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -248,19 +251,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('로그아웃'),
-          content: const Text('현재 세션을 종료하고 로그인 화면으로 이동합니다.'),
+          title: Text(copy.logoutTitle),
+          content: Text(copy.logoutBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('취소'),
+              child: Text(copy.cancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.tealAccent,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('로그아웃'),
+              child: Text(copy.logoutTitle),
             ),
           ],
         );
@@ -286,6 +289,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _withdrawAccount() async {
+    final copy = SettingsSurfaceCopy.of(Localizations.localeOf(context));
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -293,28 +297,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('계정 삭제'),
+          title: Text(copy.deleteTitle),
           content: SingleChildScrollView(
             child: Text(
-              '계정을 삭제하면 아래와 같이 처리되며 되돌릴 수 없습니다.\n\n'
-              '• 보유한 SHARE·DIA·VALUE가 모두 사라지고, 현금으로 돌려받지 않습니다.\n'
-              '• 러닝 기록 등 활동 기록은 30일 안에 삭제됩니다. 법령에 따라 보관해야 하는 결제·거래 기록은 5년간 보관한 뒤 삭제돼요.\n'
-              '${AppEnv.inAppPurchasesEnabled ? '• Coach+ 구독은 자동으로 해지되지 않습니다. Google Play 스토어의 구독 메뉴에서 직접 해지해 주세요.\n' : ''}'
-              '• 크루장이라면 먼저 크루장을 다른 크루원에게 넘겨 주세요.\n\n'
-              '정말 삭제하시겠습니까?',
+              copy.deleteBody(purchases: AppEnv.inAppPurchasesEnabled),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('취소'),
+              child: Text(copy.cancel),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.error,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('삭제하기'),
+              child: Text(copy.deleteConfirm),
             ),
           ],
         );
@@ -334,7 +333,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await ref.read(localAuthStoreProvider).clear();
       ref.read(persistedAuthSessionProvider.notifier).replace(null);
       if (!mounted) return;
-      _showSnack('계정이 삭제되었습니다.');
+      _showSnack(
+        SettingsSurfaceCopy.of(Localizations.localeOf(context)).accountDeleted,
+      );
       navigateToLoginScreen();
     } catch (error) {
       _showSnack(FirebaseAuthMessages.from(error));
@@ -356,8 +357,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final authUser = ref.watch(authStateChangesProvider).value;
     final nickname = ref.watch(userNicknameProvider);
     final tier = ref.watch(activeUserTierStructProvider);
-    final displayNick =
-        SrcOnboardingController.isUnsetNickname(nickname) ? '미설정' : nickname;
+    final copy = SettingsSurfaceCopy.of(Localizations.localeOf(context));
+    final displayNick = SrcOnboardingController.isUnsetNickname(nickname)
+        ? copy.unsetNick
+        : nickname;
 
     void goBack() {
       if (context.canPop()) {
@@ -383,7 +386,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 IconButton(
                   key: const Key('settings-back'),
                   onPressed: goBack,
-                  tooltip: '뒤로',
+                  tooltip: copy.back,
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                   icon: const Icon(
@@ -401,18 +404,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 4),
             _SettingsCategoryCard(
-              title: '계정 프로필 관리',
+              title: copy.catAccount,
               children: [
                 ListTile(
                   title: Text(
-                    '닉네임 변경 (수수료 ${EconomyConstants.nicknameChangeFeeDia} DIA)',
+                    copy.nickTitle(EconomyConstants.nicknameChangeFeeDia),
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    '현재 · $displayNick',
+                    copy.nickNow(displayNick),
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -425,14 +428,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ListTile(
                   key: const Key('login-connections-settings'),
                   title: Text(
-                    '로그인 연결',
+                    copy.login,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  subtitle: const Text(
-                    '구글·카카오를 한 계정으로',
+                  subtitle: Text(
+                    copy.loginSub,
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -448,7 +451,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     size: 40,
                   ),
                   title: Text(
-                    '현재 내 동물 티어 확인',
+                    copy.animalRow,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -468,19 +471,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 18),
             _SettingsCategoryCard(
-              title: '알림 및 서비스 제어',
+              title: copy.catAlerts,
               children: [
                 SwitchListTile.adaptive(
                   key: const Key('settings-walking-reminders'),
                   title: Text(
-                    '걷기 알림 (아침·점심·저녁)',
+                    copy.walkTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    '정해진 시각에 걷기를 알려 줘요. 끄면 이 알림은 오지 않아요.',
+                    copy.walkSub,
                     style: AppTextStyles.caption,
                   ),
                   value: _remindersEnabled,
@@ -489,14 +492,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(height: 1, color: AppColors.nightLine),
                 SwitchListTile.adaptive(
                   title: Text(
-                    '푸시 알림 수신 설정',
+                    copy.pushTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    '재화 실시간 획득 · 크루 긴급 공지',
+                    copy.pushSub,
                     style: AppTextStyles.caption,
                   ),
                   value: _pushEnabled,
@@ -537,14 +540,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   builder: (context, visible, _) => SwitchListTile.adaptive(
                     key: const Key('mini-bot-visible-switch'),
                     title: Text(
-                      '달팽이봇 버튼 보이기',
+                      copy.botTitle,
                       style: AppTextStyles.agreementLabel.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    subtitle: const Text(
-                      '홈과 대회 화면에 달팽이 버튼을 보여요. 끌어서 옮길 수 있어요.',
+                    subtitle: Text(
+                      copy.botSub,
                       style: AppTextStyles.caption,
                     ),
                     value: visible,
@@ -564,7 +567,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                     subtitle: Text(
-                      '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
+                      copy.coachSub,
                       style: AppTextStyles.caption,
                     ),
                     trailing: const Icon(Icons.arrow_forward_rounded),
@@ -574,14 +577,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(
-                    '위치 및 건강 데이터 권한 재인증',
+                    copy.permTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    'LBS 동의 · 스마트워치 연동 권한',
+                    copy.permSub,
                     style: AppTextStyles.caption,
                   ),
                   trailing: _permissionBusy
@@ -607,7 +610,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    '위치 · 알림 · 배터리 최적화',
+                    copy.checkSub,
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -620,19 +623,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 18),
             _SettingsCategoryCard(
-              title: '러너 전문 기능',
+              title: copy.catRunner,
               children: [
                 ListTile(
                   key: const Key('settings-watch-connection'),
                   title: Text(
-                    '스마트워치 · 워치 앱 연결',
+                    copy.watchTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    '건강 데이터 연동, 워치 앱 6자리 연결 코드',
+                    copy.watchSub,
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -663,19 +666,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 18),
             _SettingsCategoryCard(
-              title: '보안·프라이버시',
+              title: copy.catSecurity,
               children: [
                 ListTile(
                   key: const Key('security-center-settings'),
                   title: Text(
-                    '보안·프라이버시 센터',
+                    copy.securityCenter,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    '공정한 적립 정책 · 기록 소명',
+                    FairEarningCopy.of(Localizations.localeOf(context))
+                        .settingsSubtitle,
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -688,18 +692,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 18),
             _SettingsCategoryCard(
-              title: '약관 및 계정 지원',
+              title: copy.catLegal,
               children: [
                 ListTile(
                   key: const Key('intro-replay-settings'),
                   title: Text(
-                    '소개 다시 보기',
+                    copy.introTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  subtitle: Text('쉐어런 첫 소개 3장', style: AppTextStyles.caption),
+                  subtitle: Text(copy.introSub, style: AppTextStyles.caption),
                   trailing: const Icon(
                     Icons.arrow_forward_rounded,
                     color: AppColors.textGreyLight,
@@ -710,7 +714,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ListTile(
                   key: const Key('terms-of-service-settings'),
                   title: Text(
-                    '서비스 이용약관',
+                    copy.termsTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -729,14 +733,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(
-                    '서비스 이용약관 및 개인정보 처리방침',
+                    copy.privacyTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    '개인정보 처리방침 전문 · 위치·건강정보 안내',
+                    copy.privacySub,
                     style: AppTextStyles.caption,
                   ),
                   trailing: const Icon(
@@ -763,14 +767,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(
-                    '로그아웃',
+                    copy.logoutTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   subtitle: Text(
-                    'Google / Apple Auth 세션 종료',
+                    copy.logoutSub,
                     style: AppTextStyles.caption,
                   ),
                   onTap: authUser == null ? null : _signOut,
@@ -778,7 +782,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(
-                    '계정 삭제',
+                    copy.deleteTitle,
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -786,7 +790,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   subtitle: Text(
-                    '계정·캐시 비활성화 (되돌릴 수 없음)',
+                    copy.deleteSub,
                     style: AppTextStyles.caption,
                   ),
                   onTap: authUser == null ? null : _withdrawAccount,
@@ -850,7 +854,8 @@ class _TierBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = (tier ?? UserTier.unratedFallback).displayNameWithEmoji;
+    final label = (tier ?? UserTier.unratedFallback)
+        .gradeTitleWithEmoji(Localizations.localeOf(context));
     final tint = tier?.medal.medalColor ?? AppColors.tealAccent;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -885,39 +890,7 @@ class _SettingsLegalWebViewScreenState
   late final WebViewController _controller;
   var _loading = true;
 
-  static const _html = '''
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', sans-serif;
-         margin: 20px; color: #E8EFE6; background: #070B09; line-height: 1.55; }
-  h1 { font-size: 20px; margin: 0 0 12px; }
-  h2 { font-size: 16px; margin: 22px 0 8px; color: #D4FF4A; }
-  p { font-size: 14px; margin: 0 0 10px; color: #93A299; }
-  .note { background: #101813; padding: 12px 14px; border-radius: 12px;
-          font-size: 13px; color: #D4FF4A; }
-</style>
-</head>
-<body>
-  <h1>서비스 이용약관 및 개인정보 처리방침</h1>
-  <h2>${LegalConstants.termsOfServiceTitle}</h2>
-  <p>${LegalConstants.termsOfServiceSummary}</p>
-  <h2>${LegalConstants.privacyPolicyTitle}</h2>
-  <p>${LegalConstants.privacyPolicySummary}</p>
-  <h2>위치기반서비스(LBS) 약관</h2>
-  <p>러닝 검증·크루 맵·스탬프 투어를 위해 위치정보를 수집·이용합니다.
-     동의 철회 시 위치 기반 기능이 제한될 수 있습니다.</p>
-  <h2>${LegalConstants.healthDataConsentTitle}</h2>
-  <p>${LegalConstants.healthDataConsentSummary}</p>
-  <div class="note">${LegalConstants.ephemeralSensorPolicy}</div>
-  <h2>${LegalConstants.healthDisclaimerTitle}</h2>
-  <p>${LegalConstants.healthDisclaimer}</p>
-</body>
-</html>
-''';
+  String _fallbackHtml() => legalFallbackHtml(Localizations.localeOf(context));
 
   @override
   void initState() {
@@ -933,7 +906,7 @@ class _SettingsLegalWebViewScreenState
           // instead of an empty error page.
           onWebResourceError: (error) {
             if (error.isForMainFrame ?? true) {
-              _controller.loadHtmlString(_html);
+              _controller.loadHtmlString(_fallbackHtml());
             }
           },
         ),
@@ -950,7 +923,7 @@ class _SettingsLegalWebViewScreenState
         foregroundColor: AppColors.textBlack,
         elevation: 0,
         title: Text(
-          '약관 · 개인정보',
+          SettingsSurfaceCopy.of(Localizations.localeOf(context)).legalChrome,
           style: AppTextStyles.header1.copyWith(fontSize: 18),
         ),
       ),

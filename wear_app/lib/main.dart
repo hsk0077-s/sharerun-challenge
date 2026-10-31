@@ -126,6 +126,7 @@ class _RunFlowState extends State<RunFlow> {
       if (!mounted) return;
       setState(() {
         // 일시정지 중에 늘어난 거리는 기준만 옮기고 버린다.
+        _session.replaceRoute(snap.route);
         _session.addDistance(snap.distanceKm - _lastKm);
         _lastKm = snap.distanceKm;
         if (snap.heartRate > 0) _session.addHeartRate(snap.heartRate);
@@ -155,6 +156,8 @@ class _RunFlowState extends State<RunFlow> {
       startedAt: _session.startedAt!,
       endedAt: _session.endedAt!,
       totalSteps: _session.steps,
+      gpsRoute: _session.route,
+      paceSamples: _session.paceSamples,
     );
     if (run != null) {
       _queue.add(run);

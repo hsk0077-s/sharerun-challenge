@@ -32,6 +32,7 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 ■ Jena AI Anti-Cheat & Charity Impact Pool
 • Jena AI cross-checks GPS, cadence, motion sensors, and heart rate to block vehicles and step-shakers so only real effort counts.
 • Verified runs contribute 100 KRW equivalent per km (within the operator's monthly donation cap) to the operator & sponsor charity pool.
+• One worldwide monthly budget, paid by the operator, is settled to a single charity registered in Korea. It is not your donation and no tax-deduction receipt is issued.
 
 [Important Disclosures]
 ※ SHARE, DIA, and VALUE are virtual in-app points with no monetary value and cannot be cashed out, transferred, or traded.

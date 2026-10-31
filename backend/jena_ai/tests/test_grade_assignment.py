@@ -10,6 +10,7 @@ from app.services.grade_assignment import (
     assignment_from_runs,
     grade_for_pace,
     median_pace,
+    sandbag_pace,
 )
 from app.services.secured_action_service import SecuredActionService
 from test_redeem_referral import _MemoryDb, _MemoryTxn
@@ -104,27 +105,27 @@ def _user(db: _MemoryDb) -> dict:
     return db.store["users/u1"]
 
 
-def test_third_distinct_day_run_sets_the_grade_from_the_median_once() -> None:
+def test_first_verified_run_starts_at_turtle_bronze_and_steps_once() -> None:
     db = _MemoryDb()
     _seed(db)
 
     _persist(db, "a1", 0, seconds=600)
+    assert _user(db)["gradeRank"] == 1
+    assert _user(db)["gradeCode"] == "turtle_bronze"
+    assert _user(db)["gradeSource"] == "signup_floor"
+
     _persist(db, "a2", 1, seconds=330)
-    assert "gradeRank" not in _user(db)
     _persist(db, "a3", 2, seconds=340)
-
     user = _user(db)
-    assert user["gradeCode"] == "wolf_silver"
-    assert user["gradeRank"] == 12
+    assert user["gradeRank"] == 2
+    assert user["gradeSource"] == "pace_step"
     record = db.store["gradeAssignments/u1"]
-    assert record["type"] == "initial_grade"
-    assert record["medianPaceSec"] == 340
-    assert [row["activityId"] for row in record["runs"]] == ["a1", "a2", "a3"]
+    assert record["source"] == "signup_floor"
+    assert record["gradeRank"] == 1
 
-    _persist(db, "a3", 2, seconds=340)
     _persist(db, "a4", 3, seconds=200)
-    assert _user(db)["gradeRank"] == 12
-    assert db.store["gradeAssignments/u1"] == record
+    assert _user(db)["gradeRank"] == 3
+    assert db.store["gradeAssignments/u1"]["gradeRank"] == 1
 
 
 def test_same_day_second_run_counts_as_one() -> None:
@@ -135,7 +136,7 @@ def test_same_day_second_run_counts_as_one() -> None:
     _persist(db, "a2", 0)
     _persist(db, "a3", 1)
 
-    assert "gradeRank" not in _user(db)
+    assert _user(db)["gradeRank"] == 2
     assert len(_user(db)["economy"]["gradeRuns"]) == 2
 
 
@@ -202,8 +203,27 @@ def test_backfill_dry_run_writes_nothing_then_real_run_is_repeatable() -> None:
     assert again["written"] == 0 and again["planned"] == 0
 
 
-def test_tier_animals_are_beagle_and_zebra() -> None:
-    from app.services.grade_assignment import grade_for_pace
+def test_adjacent_animal_seam_drops_one_rank_as_pace_slows() -> None:
+    fast = grade_for_pace(449)
+    slow = grade_for_pace(450)
+    assert fast == ("beagle_bronze", 6)
+    assert slow == ("turtle_master", 5)
+    previous = 25
+    for pace in range(0, 900):
+        rank = grade_for_pace(pace)[1]
+        assert rank <= previous
+        previous = rank
 
+
+def test_sandbag_pace_needs_a_fast_sample_far_from_the_median() -> None:
+    assert sandbag_pace([600]) is False
+    assert sandbag_pace([600, 540]) is False
+    assert sandbag_pace([600, 300]) is True
+    assert sandbag_pace([600], 300) is True
+    assert sandbag_pace([600, 540], 520) is False
+
+
+def test_tier_animals_cover_the_ladder() -> None:
     codes = {grade_for_pace(pace)[0].split("_")[0] for pace in range(150, 700, 5)}
     assert codes == {"turtle", "beagle", "wolf", "zebra", "cheetah"}
+

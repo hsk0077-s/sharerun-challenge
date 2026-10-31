@@ -9,6 +9,7 @@ import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/surface_rest.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
@@ -154,7 +155,7 @@ class MyWalletScreen extends ConsumerWidget {
               const WalletInventorySection(),
               const SizedBox(height: 20),
               Text(
-                '최근 내역',
+                WalletSurfaceCopy.of(Localizations.localeOf(context)).recent,
                 style: storeText(18, c.ink, w: FontWeight.w900),
               ),
               const SizedBox(height: 4),
@@ -312,7 +313,7 @@ class _ShareCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '걷고 뛰면 쌓여요. 상점에서 쓸 수 있어요.',
+            WalletSurfaceCopy.of(Localizations.localeOf(context)).shareHint,
             style: storeText(14, c.muted),
           ),
           const SizedBox(height: 14),
@@ -346,7 +347,7 @@ class _ShareCard extends StatelessWidget {
           const SizedBox(height: 16),
           StorePillButton(
             key: const Key('wallet-use-share'),
-            label: '상점에서 쓰기',
+            label: WalletSurfaceCopy.of(Localizations.localeOf(context)).useStore,
             icon: Icons.shopping_bag_outlined,
             onPressed: onUse,
           ),

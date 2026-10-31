@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/strings/app_strings.dart';
+import '../../../l10n/commerce_copy.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../cosmetics_catalog.dart';
@@ -29,16 +29,17 @@ class CosmeticsShopSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shop = ShopCopy.of(Localizations.localeOf(context));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          AppStrings.storeCosmeticsTitle,
+          shop.cosmeticsTitle,
           style: AppTextStyles.header1.copyWith(fontSize: 18),
         ),
         const SizedBox(height: 6),
         Text(
-          AppStrings.storeCosmeticsNote,
+          shop.cosmeticsNote,
           style: AppTextStyles.caption.copyWith(fontSize: 12, height: 1.4),
         ),
         const SizedBox(height: 12),
@@ -94,6 +95,7 @@ class _CosmeticRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final shop = ShopCopy.of(Localizations.localeOf(context));
     final accent = cosmeticAccentColor(item.accent);
     return Material(
       color: AppColors.surfaceWhite,
@@ -109,7 +111,7 @@ class _CosmeticRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.name,
+                    shop.cosmeticName(item.id, item.name),
                     style: AppTextStyles.agreementLabel.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
@@ -117,7 +119,7 @@ class _CosmeticRow extends StatelessWidget {
                   ),
                   if (item.limited)
                     Text(
-                      '${AppStrings.storeCosmeticLimited} · ${item.season}',
+                      '${shop.cosmeticLimited} · ${item.season}',
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.progressYellow,
                         fontWeight: FontWeight.w700,
@@ -125,7 +127,7 @@ class _CosmeticRow extends StatelessWidget {
                     ),
                   Text(
                     owned
-                        ? AppStrings.storeCosmeticOwned
+                        ? shop.cosmeticOwned
                         : '${item.price} DIA',
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.tealAccent,
@@ -213,19 +215,18 @@ class _Action extends StatelessWidget {
       );
     }
     if (owned) {
+      final shop = ShopCopy.of(Localizations.localeOf(context));
       return TextButton(
         key: Key('cosmetic-equip-${item.id}'),
         onPressed: () => onEquip(!equipped),
         child: Text(
-          equipped
-              ? AppStrings.storeCosmeticUnequip
-              : AppStrings.storeCosmeticEquip,
+          equipped ? shop.cosmeticUnequip : shop.cosmeticEquip,
         ),
       );
     }
     if (!onSale) {
       return Text(
-        AppStrings.storeCosmeticSeasonEnded,
+        ShopCopy.of(Localizations.localeOf(context)).cosmeticSeasonEnded,
         style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
       );
     }

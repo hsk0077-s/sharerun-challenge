@@ -122,7 +122,8 @@ def test_verified_run_appends_company_won_and_leaves_the_wallet() -> None:
     assert db.store["users/u1"]["wallet"]["shareBalance"] == 40
 
     second = _persist(db, "act-2", 12.5)
-    assert second.company_donation_won == 1250
+    assert second.company_donation_won == 760
+    assert db.store["activities/act-2"]["donationHonorOnlyKm"] > 0
     assert len(_donations(db)) == 2
     assert db.store["users/u1"]["wallet"]["shareBalance"] == 40
     assert db.store["users/u1"]["wallet"]["diamondBalance"] == 7

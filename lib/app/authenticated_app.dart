@@ -20,6 +20,8 @@ import '../features/pedometer/daily_metrics_account.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
+import '../l10n/app_locale.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/remaining_surface.dart';
 import '../screens/solo_pedometer_screen.dart';
 import 'router/dashboard_router.dart';
@@ -143,7 +145,10 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
         title: '쉐어런',
         // 앱 전체가 검정 바탕 + 라임 테마다.
         theme: SrcTheme.night,
-        supportedLocales: const [Locale('ko'), Locale('en')],
+        locale: ref.watch(appLocaleProvider),
+        supportedLocales: ShareRunLocalizations.supportedLocales,
+        localeResolutionCallback: (device, supported) =>
+            resolveAppLocale(device, supported),
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,

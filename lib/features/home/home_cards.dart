@@ -204,7 +204,7 @@ class HomeDonationCard extends ConsumerWidget {
   static const retryKey = Key('home-donation-retry');
 
   static const rule = '검증된 모든 달리기, 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.';
-  static const budget = '운영자의 월 기부 예산 안에서 진행돼요.';
+  static const budget = '운영자의 월 기부 예산 안에서 진행될 예정이에요.';
   static const capReachedLine =
       '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
 

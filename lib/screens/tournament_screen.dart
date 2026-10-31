@@ -120,7 +120,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
           RemainingSurface.tr(
             context,
             'tournament.body.2',
-            '검증된 달리기 1km마다 100원이 기부돼요.',
+            '검증된 달리기 1km마다 100원을 기부할 예정이에요.',
           ),
           style: storeText(14, c.donation, w: FontWeight.w700, h: 1.4),
         ),

@@ -24,7 +24,7 @@ class DonationSettlementScreen extends ConsumerStatefulWidget {
       '이번 달 운영자 기부 예산을 모두 사용했어요 · 넘는 거리는 기록으로 남아요';
   static String get disclaimer => RemainingSurface.trNow(
         'donation_settlement.body',
-        '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 냅니다. '
+        '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 기부할 예정입니다. '
             '이용자의 기부금이 아니며 세금 공제 영수증이 발급되지 않습니다.',
       );
 

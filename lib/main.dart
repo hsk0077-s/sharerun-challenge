@@ -18,6 +18,7 @@ import 'core/notifications/notification_service.dart';
 import 'data/firebase/firebase_bootstrap.dart';
 import 'features/iap/widgets/iap_lifecycle_host.dart';
 import 'core/crash/client_error_reporter.dart';
+import 'l10n/app_locale.dart';
 import 'features/launch/intro_store.dart';
 import 'features/pedometer/kst_calendar.dart';
 import 'features/pedometer/solo_pedometer_foreground.dart';
@@ -94,8 +95,11 @@ Future<Widget> _buildApp() async {
     app = DebugTestWalletGrantHost(child: app);
   }
 
+  final savedLocale = await loadSavedAppLocale();
+
   return ProviderScope(
     overrides: [
+      initialAppLocaleProvider.overrideWithValue(savedLocale),
       if (bootstrap.session != null)
         persistedAuthSessionProvider.overrideWith(() {
           final notifier = PersistedAuthSessionNotifier();

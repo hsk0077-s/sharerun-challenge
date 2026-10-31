@@ -308,7 +308,7 @@ const _chapters = <_ChapterSpec>[
     unlockRank: 0,
     title: '달팽이 (Unrated)',
     subtitle: '등급 배정 전 임시 등급',
-    paceGuide: '검증 달리기 3회 전 · 서브 티어 없음',
+    paceGuide: '등급 배정 전 · 첫 인증 1km에 거북이 브론즈 · 서브 티어 없음',
     animal: TierAnimal.snail,
     isSnail: true,
     titleKey: 'snail_to_cheetah_book.body.10',

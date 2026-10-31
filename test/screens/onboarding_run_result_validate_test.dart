@@ -75,7 +75,7 @@ void main() {
       ),
     );
 
-    expect(find.text('이번 달리기로 운영자가 200원을 기부해요'), findsWidgets);
+    expect(find.text('이번 달리기로 운영자가 200원을 기부할 예정이에요'), findsWidgets);
     expect(find.textContaining('240원'), findsNothing);
     expect(find.textContaining('내 이름으로'), findsNothing);
   });
@@ -117,7 +117,7 @@ void main() {
     expect(result.companyDonationWon, 350);
     expect(result.donationCounted, isTrue);
     expect(runFinishDonationLine(result.companyDonationWon),
-        '이번 달리기로 운영자가 350원을 기부해요');
+        '이번 달리기로 운영자가 350원을 기부할 예정이에요');
 
     final skipped = JenaValidationResult.fromJson({
       'verified': false,

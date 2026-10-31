@@ -42,7 +42,7 @@ class _SponsorBillboardState extends ConsumerState<SponsorBillboard>
         RemainingSurface.tr(
           context,
           'sponsor.sponsor_billboard.body',
-          '검증된 달리기 1km마다 100원이 기부돼요',
+          '검증된 달리기 1km마다 100원을 기부할 예정이에요',
         );
 
     return Container(

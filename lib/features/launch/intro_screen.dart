@@ -110,9 +110,9 @@ class _IntroScreenState extends State<IntroScreen> {
                     _IntroPage(
                       title: '한 걸음이 나눔이 된다',
                       body:
-                          '검증된 모든 달리기, 1km마다 운영자가 100원을 기부해요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
+                          '검증된 모든 달리기, 1km마다 운영자가 100원을 기부할 예정이에요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
                       note:
-                          '운영자의 월 기부 예산 안에서 진행돼요. 예산을 다 쓴 달은 넘는 거리가 기록으로 남아요.',
+                          '운영자의 월 기부 예산 안에서 진행될 예정이에요. 예산을 다 쓴 달은 넘는 거리가 기록으로 남아요.',
                       graphic: _DonationGraphic(),
                     ),
                     _IntroPage(

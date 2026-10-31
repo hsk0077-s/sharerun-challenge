@@ -130,7 +130,7 @@ void main() {
     expect(runFinishDonationLine(0), isNull);
     expect(
       runFinishDonationLine(3200),
-      '이번 달리기로 운영자가 3,200원을 기부해요',
+      '이번 달리기로 운영자가 3,200원을 기부할 예정이에요',
     );
     expect(
       runFinishDonationSkippedLine(''),
@@ -146,7 +146,7 @@ void main() {
     );
     expect(
       runFinishShareText(distanceKm: '2.40', time: '12:00', donationWon: 200),
-      '이번 달리기로 운영자가 200원을 기부해요. 쉐어런 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
+      '이번 달리기로 운영자가 200원을 기부할 예정이에요. 쉐어런 앱에서 2.40km를 달렸어요. ⏱ 기록: 12:00',
     );
     expect(
       runFinishShareText(distanceKm: '2.40', time: '12:00'),
@@ -195,7 +195,7 @@ void main() {
       ),
     );
 
-    expect(find.text('이번 달리기로 운영자가 3,200원을 기부해요'), findsOneWidget);
+    expect(find.text('이번 달리기로 운영자가 3,200원을 기부할 예정이에요'), findsOneWidget);
     expect(find.textContaining('초대'), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -601,7 +601,7 @@ void main() {
     expect(find.text('28:15'), findsOneWidget);
     expect(find.text("5'23\""), findsOneWidget);
     expect(find.text('/km'), findsOneWidget);
-    expect(find.text('이번 달리기로 운영자가 3,200원을 기부해요'), findsOneWidget);
+    expect(find.text('이번 달리기로 운영자가 3,200원을 기부할 예정이에요'), findsOneWidget);
     expect(find.text(RunFinishShareCard.headline), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

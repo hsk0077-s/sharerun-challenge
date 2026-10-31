@@ -243,7 +243,7 @@ class _OnboardingRunResultScreenState
               angelImage:
                   angel == AngelTier.preAngel ? null : angel.avatarAssetPath,
               angelLabel:
-                  angel == AngelTier.preAngel ? null : angel.circleLabel,
+                  angel == AngelTier.preAngel ? null : angel.circleLabelFor(context),
               angelEmoji: angel.emoji,
             )
           : null,

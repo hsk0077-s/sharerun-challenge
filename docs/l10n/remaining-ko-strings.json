@@ -765,7 +765,8 @@
       "fr": "Avant le placement · Tortue Bronze au premier 1 km vérifié · Pas de sous-rang",
       "vi": "Trước khi xếp hạng · Rùa Đồng ở 1km xác thực đầu tiên · Không có hạng phụ",
       "th": "ก่อนจัดระดับ · เต่าบรอนซ์เมื่อวิ่งยืนยัน 1 กม. ครั้งแรก · ไม่มีเทียร์ย่อย",
-      "id": "Sebelum penempatan · Kura-kura Perunggu di 1 km terverifikasi pertama · Tanpa sub-tier"
+      "id": "Sebelum penempatan · Kura-kura Perunggu di 1 km terverifikasi pertama · Tanpa sub-tier",
+      "native_review": "pending"
     },
     {
       "key": "snail_to_cheetah_book.body.13",
@@ -29736,7 +29737,8 @@
       "fr": "Faites vérifier votre premier 1 km et démarrez en Tortue Bronze",
       "vi": "Xác thực 1km đầu tiên và bạn bắt đầu ở Rùa Đồng",
       "th": "ยืนยัน 1 กม. แรก แล้วเริ่มที่เต่าบรอนซ์",
-      "id": "Verifikasi 1 km pertamamu dan kamu mulai sebagai Kura-kura Perunggu"
+      "id": "Verifikasi 1 km pertamamu dan kamu mulai sebagai Kura-kura Perunggu",
+      "native_review": "pending"
     },
     {
       "key": "launch.intro.body.13",
@@ -35566,7 +35568,8 @@
       "fr": "Langue",
       "vi": "Ngôn ngữ",
       "th": "ภาษา",
-      "id": "Bahasa"
+      "id": "Bahasa",
+      "native_review": "pending"
     },
     {
       "key": "settings_lang.follow",
@@ -35584,7 +35587,8 @@
       "fr": "Suivre le réglage du téléphone",
       "vi": "Theo cài đặt của điện thoại",
       "th": "ใช้ตามการตั้งค่าของเครื่อง",
-      "id": "Ikuti pengaturan ponsel"
+      "id": "Ikuti pengaturan ponsel",
+      "native_review": "pending"
     },
     {
       "key": "settings_lang.sheet",
@@ -35602,7 +35606,8 @@
       "fr": "Choisir la langue",
       "vi": "Chọn ngôn ngữ",
       "th": "เลือกภาษา",
-      "id": "Pilih bahasa"
+      "id": "Pilih bahasa",
+      "native_review": "pending"
     },
     {
       "key": "settings_tier.unrated",
@@ -35620,7 +35625,8 @@
       "fr": "Pas encore de niveau · Départ en Tortue Bronze après votre premier 1 km vérifié",
       "vi": "Chưa có hạng · Bắt đầu ở Rùa Đồng sau 1km đầu tiên được xác thực",
       "th": "ยังไม่มีระดับ · เริ่มที่เต่าบรอนซ์หลังวิ่งที่ยืนยันแล้ว 1 กม. ครั้งแรก",
-      "id": "Belum ada tingkat · Mulai sebagai Kura-kura Perunggu setelah 1 km terverifikasi pertama"
+      "id": "Belum ada tingkat · Mulai sebagai Kura-kura Perunggu setelah 1 km terverifikasi pertama",
+      "native_review": "pending"
     },
     {
       "key": "settings.title",
@@ -35638,7 +35644,8 @@
       "fr": "Réglages",
       "vi": "Cài đặt",
       "th": "การตั้งค่า",
-      "id": "Pengaturan"
+      "id": "Pengaturan",
+      "native_review": "pending"
     },
     {
       "key": "common.tournament",
@@ -35656,7 +35663,8 @@
       "fr": "Tournois",
       "vi": "Giải đấu",
       "th": "ทัวร์นาเมนต์",
-      "id": "Turnamen"
+      "id": "Turnamen",
+      "native_review": "pending"
     },
     {
       "key": "profile.my_watch.connect",
@@ -35674,7 +35682,121 @@
       "fr": "Connecter",
       "vi": "Kết nối",
       "th": "เชื่อมต่อ",
-      "id": "Hubungkan"
+      "id": "Hubungkan",
+      "native_review": "pending"
+    },
+    {
+      "key": "common.preparing",
+      "ko": "준비 중",
+      "file": "lib/core/strings/app_strings.dart",
+      "screen": "common",
+      "context": "common 화면. 짧게.",
+      "placeholders": [],
+      "en": "Coming soon",
+      "ja": "準備中",
+      "zh-TW": "準備中",
+      "es": "Próximamente",
+      "pt-BR": "Em breve",
+      "de": "In Vorbereitung",
+      "fr": "Bientôt disponible",
+      "vi": "Sắp ra mắt",
+      "th": "เร็วๆ นี้",
+      "id": "Segera hadir",
+      "native_review": "pending"
+    },
+    {
+      "key": "angel_tier.pre_short",
+      "ko": "예비 천사",
+      "file": "lib/features/onboarding/src_onboarding_controller.dart",
+      "screen": "angel_tier",
+      "context": "angel_tier 화면. 짧게.",
+      "placeholders": [],
+      "en": "Pre-Angel",
+      "ja": "見習い天使",
+      "zh-TW": "預備天使",
+      "es": "Pre-Ángel",
+      "pt-BR": "Pré-Anjo",
+      "de": "Pre-Angel",
+      "fr": "Pré-ange",
+      "vi": "Thiên thần dự bị",
+      "th": "นางฟ้าฝึกหัด",
+      "id": "Pra-Malaikat",
+      "native_review": "pending"
+    },
+    {
+      "key": "running_crew.card_open",
+      "ko": "${crew.memberCount}/${crew.maxMembers}명 · 자유 가입",
+      "file": "lib/screens/running_crew_screen.dart",
+      "screen": "running_crew",
+      "context": "running_crew 화면. 짧게.",
+      "placeholders": [
+        {
+          "name": "crew.memberCount",
+          "format": "${crew.memberCount}"
+        },
+        {
+          "name": "crew.maxMembers",
+          "format": "${crew.maxMembers}"
+        }
+      ],
+      "en": "${crew.memberCount}/${crew.maxMembers} members · Open join",
+      "ja": "${crew.memberCount}/${crew.maxMembers}人 · 自由参加",
+      "zh-TW": "${crew.memberCount}/${crew.maxMembers} 人 · 自由加入",
+      "es": "${crew.memberCount}/${crew.maxMembers} miembros · Unión libre",
+      "pt-BR": "${crew.memberCount}/${crew.maxMembers} membros · Entrada livre",
+      "de": "${crew.memberCount}/${crew.maxMembers} Mitglieder · Offener Beitritt",
+      "fr": "${crew.memberCount}/${crew.maxMembers} membres · Adhésion libre",
+      "vi": "${crew.memberCount}/${crew.maxMembers} thành viên · Tham gia tự do",
+      "th": "${crew.memberCount}/${crew.maxMembers} คน · เข้าร่วมได้อิสระ",
+      "id": "${crew.memberCount}/${crew.maxMembers} anggota · Gabung bebas",
+      "native_review": "pending"
+    },
+    {
+      "key": "running_crew.card_approval",
+      "ko": "${crew.memberCount}/${crew.maxMembers}명 · 승인 가입",
+      "file": "lib/screens/running_crew_screen.dart",
+      "screen": "running_crew",
+      "context": "running_crew 화면. 짧게.",
+      "placeholders": [
+        {
+          "name": "crew.memberCount",
+          "format": "${crew.memberCount}"
+        },
+        {
+          "name": "crew.maxMembers",
+          "format": "${crew.maxMembers}"
+        }
+      ],
+      "en": "${crew.memberCount}/${crew.maxMembers} members · Approval required",
+      "ja": "${crew.memberCount}/${crew.maxMembers}人 · 承認制",
+      "zh-TW": "${crew.memberCount}/${crew.maxMembers} 人 · 需審核",
+      "es": "${crew.memberCount}/${crew.maxMembers} miembros · Con aprobación",
+      "pt-BR": "${crew.memberCount}/${crew.maxMembers} membros · Com aprovação",
+      "de": "${crew.memberCount}/${crew.maxMembers} Mitglieder · Beitritt mit Genehmigung",
+      "fr": "${crew.memberCount}/${crew.maxMembers} membres · Sur approbation",
+      "vi": "${crew.memberCount}/${crew.maxMembers} thành viên · Cần duyệt",
+      "th": "${crew.memberCount}/${crew.maxMembers} คน · ต้องได้รับอนุมัติ",
+      "id": "${crew.memberCount}/${crew.maxMembers} anggota · Perlu persetujuan",
+      "native_review": "pending"
+    },
+    {
+      "key": "profile.my_dashboard_sections.wallet",
+      "ko": "내 지갑",
+      "file": "lib/features/profile/widgets/my_dashboard_sections.dart",
+      "screen": "profile",
+      "context": "profile 화면의 버튼. 짧게.",
+      "placeholders": [],
+      "en": "My wallet",
+      "ja": "マイウォレット",
+      "zh-TW": "我的錢包",
+      "es": "Mi billetera",
+      "pt-BR": "Minha carteira",
+      "de": "Meine Wallet",
+      "fr": "Mon portefeuille",
+      "vi": "Ví của tôi",
+      "th": "กระเป๋าของฉัน",
+      "id": "Dompet saya",
+      "native_review": "pending"
     }
   ]
 }

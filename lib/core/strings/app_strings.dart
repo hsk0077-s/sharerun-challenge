@@ -336,7 +336,7 @@ abstract final class AppStrings {
   static String runResultValueReward(int tokens) =>
       RemainingSurface.trNow('app.runResultValueReward', '서버 확인 노력 보상 +\$tokens VALUE', {'tokens': tokens});
   static String get runResultUnconfirmed => RemainingSurface.trNow('app.runResultUnconfirmed', '서버에서 확인된 기록이 없습니다.');
-  static const runResultDonatePending = '준비 중';
+  static String get runResultDonatePending => RemainingSurface.trNow('common.preparing', '준비 중');
   static String get runResultDonate => RemainingSurface.trNow('app.runResultDonate', '❤️ 이번 달리기 기부 기여 보기');
   static String get runResultShare => RemainingSurface.trNow('app.runResultShare', '🔗 기록 SNS 공유하기');
 
@@ -368,7 +368,7 @@ abstract final class AppStrings {
   static const storeValueBalance = '5,200';
   static const storeFundingTitle =
       '🌍 땀방울로 만드는 기적,\n기부 펀딩';
-  static const storeFundingPreparing = '준비 중';
+  static String get storeFundingPreparing => RemainingSurface.trNow('common.preparing', '준비 중');
   static const storeFundingPreparingNote =
       '아직 열리지 않았어요. 열리면 이번 달 모인 기부금이 여기에 보여요.';
   static const storeFundingMonthLabel = '이번 달 모인 기부금';
@@ -427,7 +427,7 @@ abstract final class AppStrings {
   static String get brandSponsorScreenTitle => RemainingSurface.trNow('app.brandSponsorScreenTitle', '브랜드 스폰서 챌린지');
   static String get lobbySponsorRoomTitle => RemainingSurface.trNow('app.brandSponsorScreenTitle', '브랜드 스폰서 챌린지');
   static String get lobbySponsorRoomSub => RemainingSurface.trNow('app.lobbySponsorRoomSub', '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.');
-  static const lobbySponsorPreparing = '준비 중';
+  static String get lobbySponsorPreparing => RemainingSurface.trNow('common.preparing', '준비 중');
   static String get brandSponsorTicker => RemainingSurface.trNow('app.brandSponsorTicker', '✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨');
   static String get brandSponsorChallengeTitle => RemainingSurface.trNow('app.brandSponsorChallengeTitle', 'Nike 주말 5km 특별 챌린지');
   static String get brandSponsorEntryFee => RemainingSurface.trNow('app.brandSponsorEntryFee', '참가비: 0 SHARE (스폰서 100% 대납)');

@@ -20,6 +20,7 @@ import '../../data/models/activity_model.dart';
 import '../../data/models/user_model.dart';
 import '../pedometer/kst_calendar.dart';
 import '../wallet/providers/wallet_provider.dart';
+import '../../l10n/remaining_surface.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 요구사항 1 — 25단계 하이브리드 티어 (동물군 × 메달 등급)
@@ -335,6 +336,40 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => '세라핌',
       };
 
+  /// Name for the language the screen shows. Korean when [context] is Korean
+  /// or the language has no entry.
+  String localizedName([BuildContext? context]) => RemainingSurface.tr(
+        context,
+        switch (this) {
+          AngelTier.preAngel => 'onboarding.src_onboarding_controller.body',
+          AngelTier.cupid => 'onboarding.src_onboarding_controller.body.2',
+          AngelTier.guardian => 'onboarding.src_onboarding_controller.body.3',
+          AngelTier.archangel => 'onboarding.src_onboarding_controller.body.4',
+          AngelTier.cherubim => 'onboarding.src_onboarding_controller.body.5',
+          AngelTier.seraphim => 'onboarding.src_onboarding_controller.body.6',
+        },
+        koreanName,
+      );
+
+  /// Short name under a circle. Pre-angel drops the English in brackets.
+  String circleName([BuildContext? context]) => this == AngelTier.preAngel
+      ? RemainingSurface.tr(context, 'angel_tier.pre_short', '예비 천사')
+      : localizedName(context);
+
+  /// Requirement line, in the screen's language.
+  String requirementFor([BuildContext? context]) => RemainingSurface.tr(
+        context,
+        'onboarding.src_onboarding_controller.body.${index + 7}',
+        requirementLabel,
+      );
+
+  /// Perk line, in the screen's language.
+  String rewardFor([BuildContext? context]) => RemainingSurface.tr(
+        context,
+        'onboarding.src_onboarding_controller.body.${index + 13}',
+        rewardLabel,
+      );
+
   String get englishName => switch (this) {
         AngelTier.preAngel => 'Pre-Angel',
         AngelTier.cupid => 'Cupid',
@@ -485,16 +520,40 @@ extension AngelTierX on AngelTier {
   String nextGapLabel({
     required int donationCount,
     required int cumulativeDonationAmount,
+    BuildContext? context,
   }) {
     final n = next;
-    if (n == null) return '최고 천사 등급입니다';
+    if (n == null) {
+      return RemainingSurface.tr(
+        context,
+        'personal_sponsor.body.6',
+        '최고 천사 등급입니다',
+      );
+    }
     final remainCount = (n.minDonationCount - donationCount).clamp(0, 1 << 30);
     if (n.minDonationAmountWon <= 0) {
-      return '${n.koreanName}까지 후원 $remainCount회';
+      return RemainingSurface.tr(
+        context,
+        'onboarding.src_onboarding_controller.body.19',
+        '\${n.koreanName}까지 후원 \$remainCount회',
+        {
+          'n.koreanName': n.localizedName(context),
+          'remainCount': remainCount,
+        },
+      );
     }
     final remainWon =
         (n.minDonationAmountWon - cumulativeDonationAmount).clamp(0, 1 << 30);
-    return '${n.koreanName}까지 $remainCount회 또는 ${formatWon(remainWon)}';
+    return RemainingSurface.tr(
+      context,
+      'onboarding.src_onboarding_controller.body.20',
+      '\${n.koreanName}까지 \$remainCount회 또는 \${formatWon(remainWon)}',
+      {
+        'n.koreanName': n.localizedName(context),
+        'remainCount': remainCount,
+        'formatWon(remainWon)': formatWon(remainWon),
+      },
+    );
   }
 
   static String formatWon(int won) {

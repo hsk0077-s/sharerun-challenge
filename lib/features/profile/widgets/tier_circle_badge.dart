@@ -129,4 +129,7 @@ extension TierCircleLabels on UserTier {
 extension AngelCircleLabels on AngelTier {
   /// 원 아래에 쓰는 짧은 이름. 예비 천사는 괄호 영문을 뺀다.
   String get circleLabel => this == AngelTier.preAngel ? '예비 천사' : koreanName;
+
+  /// Same label in the screen's language.
+  String circleLabelFor(BuildContext? context) => circleName(context);
 }

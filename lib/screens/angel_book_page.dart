@@ -87,7 +87,7 @@ class AngelBookPage extends ConsumerWidget {
             borderRadius: BorderRadius.circular(18),
           ),
           title: Text(
-            '${tier.emoji} ${tier.koreanName}',
+            '${tier.emoji} ${tier.localizedName(context)}',
             style: AppTextStyles.header1.copyWith(fontSize: 18),
           ),
           content: Column(
@@ -107,7 +107,7 @@ class AngelBookPage extends ConsumerWidget {
                   context,
                   'angel_book.body.3',
                   '요건  ·  ${tier.requirementLabel}',
-                  {'tier.requirementLabel': tier.requirementLabel},
+                  {'tier.requirementLabel': tier.requirementFor(context)},
                 ),
                 style: AppTextStyles.agreementLabel.copyWith(fontSize: 13),
               ),
@@ -117,7 +117,7 @@ class AngelBookPage extends ConsumerWidget {
                   context,
                   'angel_book.body.4',
                   '특전  ·  ${tier.rewardLabel}',
-                  {'tier.rewardLabel': tier.rewardLabel},
+                  {'tier.rewardLabel': tier.rewardFor(context)},
                 ),
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontSize: 13,
@@ -170,7 +170,7 @@ class _AngelAchievementDash extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${tier.emoji} ${tier.koreanName}',
+                  '${tier.emoji} ${tier.localizedName(context)}',
                   style: AppTextStyles.header1.copyWith(fontSize: 18),
                 ),
                 Text(
@@ -276,7 +276,7 @@ class _AngelChapterCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${tier.emoji} ${tier.koreanName}',
+                '${tier.emoji} ${tier.localizedName(context)}',
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -288,7 +288,7 @@ class _AngelChapterCard extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                tier.requirementLabel,
+                tier.requirementFor(context),
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,

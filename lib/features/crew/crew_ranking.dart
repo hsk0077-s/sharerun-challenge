@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'crew_membership.dart';
+import '../../l10n/remaining_surface.dart';
+import 'package:flutter/widgets.dart' show BuildContext;
 
 /// 순위표의 한 줄. 서버가 계산한 값이다.
 @immutable
@@ -83,15 +85,35 @@ class CrewRanking {
   }
 
   /// 내 크루 한 줄 설명. 순위에 못 오른 이유도 말해 준다.
-  String get myLine {
+  String get myLine => myLineFor(null);
+
+  /// Same line in the language of [context] (the current language when null).
+  String myLineFor(BuildContext? context) {
     final rank = mine;
     if (rank != null) {
-      return '이번 달 ${rank.rank}위 · 1인 평균 ${rank.averageKm.toStringAsFixed(1)}km';
+      return RemainingSurface.tr(
+        context,
+        'crew.crew_ranking.body',
+        '이번 달 \${rank.rank}위 · 1인 평균 \${rank.averageKm.toStringAsFixed(1)}km',
+        {
+          'rank.rank': rank.rank,
+          'rank.averageKm.toStringAsFixed(1)': rank.averageKm.toStringAsFixed(1),
+        },
+      );
     }
     if (!myEligible) {
-      return '크루원이 $minMembers명 이상이면 순위에 올라요. (지금 $myMemberCount명)';
+      return RemainingSurface.tr(
+        context,
+        'crew.crew_ranking.body.2',
+        '크루원이 \$minMembers명 이상이면 순위에 올라요. (지금 \$myMemberCount명)',
+        {'minMembers': minMembers, 'myMemberCount': myMemberCount},
+      );
     }
-    return '이번 달에 달리면 순위에 올라요.';
+    return RemainingSurface.tr(
+      context,
+      'crew.crew_ranking.body.3',
+      '이번 달에 달리면 순위에 올라요.',
+    );
   }
 }
 

@@ -1403,7 +1403,7 @@ class _CrewRankLine extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(ranking.myLine, style: storeText(14, c.ink, w: FontWeight.w800)),
+            Text(ranking.myLineFor(context), style: storeText(14, c.ink, w: FontWeight.w800)),
             if (ranking.bestRank > 0) ...[
               const SizedBox(height: 4),
               Text(
@@ -1689,8 +1689,25 @@ class _RemoteCrewList extends ConsumerWidget {
                           style: storeText(15, c.ink, w: FontWeight.w800),
                         ),
                         Text(
-                          '${crew.memberCount}/${crew.maxMembers}명'
-                          '${crew.needsApproval ? ' · 승인 가입' : ' · 자유 가입'}',
+                          crew.needsApproval
+                              ? RemainingSurface.tr(
+                                  context,
+                                  'running_crew.card_approval',
+                                  '\${crew.memberCount}/\${crew.maxMembers}명 · 승인 가입',
+                                  {
+                                    'crew.memberCount': crew.memberCount,
+                                    'crew.maxMembers': crew.maxMembers,
+                                  },
+                                )
+                              : RemainingSurface.tr(
+                                  context,
+                                  'running_crew.card_open',
+                                  '\${crew.memberCount}/\${crew.maxMembers}명 · 자유 가입',
+                                  {
+                                    'crew.memberCount': crew.memberCount,
+                                    'crew.maxMembers': crew.maxMembers,
+                                  },
+                                ),
                           style: storeText(12, c.muted),
                         ),
                       ],

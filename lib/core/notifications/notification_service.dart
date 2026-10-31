@@ -1,3 +1,4 @@
+import 'dart:ui' show Color;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -139,6 +140,7 @@ class NotificationService {
         _channelId,
         copy.channelName,
         channelDescription: copy.channelDescription,
+        color: const Color(0xFFD4FF4A),
         importance: Importance.high,
         priority: Priority.high,
       ),

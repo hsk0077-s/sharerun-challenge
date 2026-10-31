@@ -1,8 +1,30 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/strings/app_strings.dart';
+import 'package:share_run_challenge/data/local/mock_demo_data.dart';
 import 'package:share_run_challenge/features/mini_bot/mini_bot_intent.dart';
+import 'package:share_run_challenge/l10n/remaining_surface.dart';
 
 /// 기부처(수혜 단체)는 아직 정해지지 않았다(결정: 정해질 때까지 화면에 이름을 쓰지 않는다).
+/// 유니세프한국위원회가 명칭·로고 사용을 불허했다(2026-10-31 회신). 다른 공익
+/// 단체 이름도 수혜처로 확정되지 않았으니 같은 이유로 화면에 쓰지 않는다.
+const _forbiddenBeneficiaryNames = <String>[
+  '유니세프',
+  'UNICEF',
+  '사랑의열매',
+  '굿네이버스',
+  '적십자',
+  '월드비전',
+  '세이브더칠드런',
+  '해피빈',
+  '같이가치',
+];
+
+/// mini_bot_intent.dart의 사용자 입력 단어 인식(`text.contains('유니세프')`)과
+/// 짝지어진 카탈로그 항목이다. 화면에 그려지지 않고 트리거 매칭에만 쓰이므로
+/// 제외 대상에 넣는다(위치만 보고 그대로 둔다).
+const _wordRecognitionCatalogKey = 'mini_bot.mini_bot_intent.body.76';
+
 void main() {
   test('screens that name no beneficiary stay that way', () {
     final texts = <String>[
@@ -17,8 +39,40 @@ void main() {
       MiniBotCopy.donate,
     ];
     for (final text in texts) {
-      expect(text, isNot(contains('유니세프')), reason: text);
-      expect(text, isNot(contains('UNICEF')), reason: text);
+      for (final name in _forbiddenBeneficiaryNames) {
+        expect(text, isNot(contains(name)), reason: text);
+      }
+    }
+  });
+
+  test('the demo tournament data names no beneficiary', () {
+    final texts = <String>[];
+    for (final tournament in MockDemoData.tournaments()) {
+      texts
+        ..add(tournament.title)
+        ..add(tournament.sponsorName)
+        ..addAll(tournament.sponsorBillboardMessages);
+    }
+    for (final text in texts) {
+      for (final name in _forbiddenBeneficiaryNames) {
+        expect(text, isNot(contains(name)), reason: text);
+      }
+    }
+  });
+
+  test('the remaining-surface translation table names no beneficiary', () {
+    for (final key in RemainingSurface.keys) {
+      if (key == _wordRecognitionCatalogKey) continue;
+      for (final languageCode in RemainingSurface.appLanguageOf.values) {
+        final text = RemainingSurface.text(Locale(languageCode), key);
+        for (final name in _forbiddenBeneficiaryNames) {
+          expect(
+            text,
+            isNot(contains(name)),
+            reason: '$key ($languageCode): $text',
+          );
+        }
+      }
     }
   });
 

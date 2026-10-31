@@ -109,7 +109,7 @@ abstract final class MockDemoData {
       TournamentModel.fromJson(
         id: 'mock-tournament-rookie',
         json: {
-          'title': RemainingSurface.trNow('mock_demo_data.body.4', '루키 3K 유니세프 런'),
+          'title': RemainingSurface.trNow('mock_demo_data.body.4', '루키 3K 기부 런'),
           'targetDistanceKm': 3,
           'entryFeeShare': 100,
           'winnerRewardValue': 500,
@@ -119,11 +119,11 @@ abstract final class MockDemoData {
           'participantCount': 4,
           'requiredTier': 1,
           'status': 'recruiting',
-          'sponsorName': RemainingSurface.trNow('mock_demo_data.body.5', '유니세프 파트너'),
+          'sponsorName': RemainingSurface.trNow('mock_demo_data.body.5', '기부 캠페인'),
           'sponsorBillboardMessages': [
             RemainingSurface.trNow(
               'mock_demo_data.body.6',
-              '🏃 유니세프 파트너: 오늘도 3K 완주에 도전하세요!',
+              '🏃 기부 캠페인: 오늘도 3K 완주에 도전하세요!',
             ),
             RemainingSurface.trNow(
               'mock_demo_data.body.7',

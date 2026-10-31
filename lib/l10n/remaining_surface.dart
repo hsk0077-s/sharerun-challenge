@@ -1948,6 +1948,9 @@ class RemainingSurface {
     'settings_lang.follow',
     'settings_lang.sheet',
     'settings_tier.unrated',
+    'settings.title',
+    'common.tournament',
+    'profile.my_watch.connect',
   ];
 
   static const _en = <String, String>{
@@ -3811,6 +3814,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Follow phone setting',
     'settings_lang.sheet': 'Choose language',
     'settings_tier.unrated': 'No grade yet · Start as Turtle Bronze after your first verified 1 km',
+    'settings.title': 'Settings',
+    'common.tournament': 'Tournaments',
+    'profile.my_watch.connect': 'Connect',
   };
 
   static const _ja = <String, String>{
@@ -5674,6 +5680,9 @@ class RemainingSurface {
     'settings_lang.follow': '端末の設定に合わせる',
     'settings_lang.sheet': '言語を選択',
     'settings_tier.unrated': '等級なし · 初回の認証1km後にカメ・ブロンズで開始',
+    'settings.title': '設定',
+    'common.tournament': '大会',
+    'profile.my_watch.connect': '接続する',
   };
 
   static const _zh = <String, String>{
@@ -7537,6 +7546,9 @@ class RemainingSurface {
     'settings_lang.follow': '跟隨裝置設定',
     'settings_lang.sheet': '選擇語言',
     'settings_tier.unrated': '尚無等級 · 首次認證 1km 後從烏龜銅級開始',
+    'settings.title': '設定',
+    'common.tournament': '大賽',
+    'profile.my_watch.connect': '連線',
   };
 
   static const _es = <String, String>{
@@ -9400,6 +9412,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Seguir el ajuste del teléfono',
     'settings_lang.sheet': 'Elegir idioma',
     'settings_tier.unrated': 'Sin nivel · Empiezas como Tortuga Bronce tras tu primer 1 km verificado',
+    'settings.title': 'Ajustes',
+    'common.tournament': 'Torneos',
+    'profile.my_watch.connect': 'Conectar',
   };
 
   static const _pt = <String, String>{
@@ -11263,6 +11278,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Seguir a configuração do celular',
     'settings_lang.sheet': 'Escolher idioma',
     'settings_tier.unrated': 'Sem nível · Você começa como Tartaruga Bronze após o primeiro 1 km verificado',
+    'settings.title': 'Configurações',
+    'common.tournament': 'Torneios',
+    'profile.my_watch.connect': 'Conectar',
   };
 
   static const _de = <String, String>{
@@ -13126,6 +13144,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Geräteeinstellung verwenden',
     'settings_lang.sheet': 'Sprache wählen',
     'settings_tier.unrated': 'Noch keine Stufe · Start als Schildkröte Bronze nach dem ersten verifizierten 1 km',
+    'settings.title': 'Einstellungen',
+    'common.tournament': 'Turniere',
+    'profile.my_watch.connect': 'Verbinden',
   };
 
   static const _fr = <String, String>{
@@ -14989,6 +15010,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Suivre le réglage du téléphone',
     'settings_lang.sheet': 'Choisir la langue',
     'settings_tier.unrated': 'Pas encore de niveau · Départ en Tortue Bronze après votre premier 1 km vérifié',
+    'settings.title': 'Réglages',
+    'common.tournament': 'Tournois',
+    'profile.my_watch.connect': 'Connecter',
   };
 
   static const _vi = <String, String>{
@@ -16852,6 +16876,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Theo cài đặt của điện thoại',
     'settings_lang.sheet': 'Chọn ngôn ngữ',
     'settings_tier.unrated': 'Chưa có hạng · Bắt đầu ở Rùa Đồng sau 1km đầu tiên được xác thực',
+    'settings.title': 'Cài đặt',
+    'common.tournament': 'Giải đấu',
+    'profile.my_watch.connect': 'Kết nối',
   };
 
   static const _th = <String, String>{
@@ -18715,6 +18742,9 @@ class RemainingSurface {
     'settings_lang.follow': 'ใช้ตามการตั้งค่าของเครื่อง',
     'settings_lang.sheet': 'เลือกภาษา',
     'settings_tier.unrated': 'ยังไม่มีระดับ · เริ่มที่เต่าบรอนซ์หลังวิ่งที่ยืนยันแล้ว 1 กม. ครั้งแรก',
+    'settings.title': 'การตั้งค่า',
+    'common.tournament': 'ทัวร์นาเมนต์',
+    'profile.my_watch.connect': 'เชื่อมต่อ',
   };
 
   static const _id = <String, String>{
@@ -20578,6 +20608,9 @@ class RemainingSurface {
     'settings_lang.follow': 'Ikuti pengaturan ponsel',
     'settings_lang.sheet': 'Pilih bahasa',
     'settings_tier.unrated': 'Belum ada tingkat · Mulai sebagai Kura-kura Perunggu setelah 1 km terverifikasi pertama',
+    'settings.title': 'Pengaturan',
+    'common.tournament': 'Turnamen',
+    'profile.my_watch.connect': 'Hubungkan',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

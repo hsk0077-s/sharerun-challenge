@@ -6,6 +6,7 @@ import '../../accessories/accessory_catalog.dart';
 import '../../accessories/dressed_mascot.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../village_scene.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 마이 탭 맨 위 마을 풍경. 하늘, 겹친 언덕, 굽이치는 길, 나무, 깃발을 그린다.
 /// 가운데에 내 티어 동물, 양옆에 나머지 동물 친구들이 선다.
@@ -153,7 +154,7 @@ class MyVillageHero extends StatelessWidget {
                     IconButton(
                       key: const Key('my-page-settings'),
                       onPressed: onSettings,
-                      tooltip: AppStrings.myPageSettings,
+                      tooltip: RemainingSurface.tr(context, 'settings.title', '설정'),
                       icon: Icon(
                         Icons.settings_outlined,
                         color: fg,

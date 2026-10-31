@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'intro_store.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 첫 설치 때 한 번 나오는 소개 3장. 설정의 "소개 다시 보기"에서도 연다([replay]).
 /// 말하는 것은 이미 정해진 규칙뿐이고, 숫자는 모두 서버 기준과 같다.
@@ -90,7 +91,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       TextButton(
                         key: IntroScreen.skipKey,
                         onPressed: _finish,
-                        child: const Text('건너뛰기'),
+                        child: Text('건너뛰기'),
                       ),
                   ],
                 ),
@@ -99,25 +100,25 @@ class _IntroScreenState extends State<IntroScreen> {
                 child: PageView(
                   controller: _controller,
                   onPageChanged: (index) => setState(() => _page = index),
-                  children: const [
+                  children: [
                     _IntroPage(
-                      title: '걸으면 SHARE가 쌓여요',
-                      body: '100걸음마다 10 SHARE를 받아요. 모은 SHARE로 대회에 참가할 수 있어요.',
+                      title: RemainingSurface.tr(context, 'launch.intro.body', '걸으면 SHARE가 쌓여요'),
+                      body: RemainingSurface.tr(context, 'launch.intro.body.4', '100걸음마다 10 SHARE를 받아요. 모은 SHARE로 대회에 참가할 수 있어요.'),
                       note:
-                          'SHARE는 현금으로 바꿀 수 없는 활동 보상이고, 하루에 받을 수 있는 양에 한도가 있어요.',
+                          RemainingSurface.tr(context, 'launch.intro.body.5', 'SHARE는 현금으로 바꿀 수 없는 활동 보상이고, 하루에 받을 수 있는 양에 한도가 있어요.'),
                       graphic: _ShareGraphic(),
                     ),
                     _IntroPage(
-                      title: '한 걸음이 나눔이 된다',
+                      title: RemainingSurface.tr(context, 'launch.intro.body.2', '한 걸음이 나눔이 된다'),
                       body:
-                          '검증된 모든 달리기, 1km마다 운영자가 100원을 기부할 예정이에요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.',
+                          RemainingSurface.tr(context, 'launch.intro.body.6', '검증된 모든 달리기, 1km마다 운영자가 100원을 기부할 예정이에요. 내가 보탠 만큼은 앱에서 확인할 수 있어요.'),
                       note:
-                          '운영자의 월 기부 예산 안에서 진행될 예정이에요. 예산을 다 쓴 달은 넘는 거리가 기록으로 남아요.',
+                          RemainingSurface.tr(context, 'launch.intro.body.7', '운영자의 월 기부 예산 안에서 진행될 예정이에요. 예산을 다 쓴 달은 넘는 거리가 기록으로 남아요.'),
                       graphic: _DonationGraphic(),
                     ),
                     _IntroPage(
-                      title: '내 기록은 어느 폰에서나 그대로예요',
-                      body: '걷기·달리기 기록은 서버에 저장돼요. 폰을 바꿔도 로그인하면 이어져요.',
+                      title: RemainingSurface.tr(context, 'launch.intro.body.3', '내 기록은 어느 폰에서나 그대로예요'),
+                      body: RemainingSurface.tr(context, 'launch.intro.body.8', '걷기·달리기 기록은 서버에 저장돼요. 폰을 바꿔도 로그인하면 이어져요.'),
                       note: null,
                       graphic: _SnailGraphic(),
                     ),
@@ -165,7 +166,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     else ...[
                       _PrimaryButton(
                         key: IntroScreen.startKey,
-                        label: '시작하기',
+                        label: RemainingSurface.tr(context, 'launch.intro.button', '시작하기'),
                         color: AppColors.angelGold,
                         textColor: AppColors.nightOnLime,
                         onPressed: _finish,
@@ -173,7 +174,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       TextButton(
                         key: IntroScreen.loginKey,
                         onPressed: _finish,
-                        child: const Text('이미 계정이 있어요 · 로그인'),
+                        child: Text(RemainingSurface.tr(context, 'launch.intro.button.2', '이미 계정이 있어요 · 로그인')),
                       ),
                     ],
                   ],
@@ -339,13 +340,13 @@ class _ShareGraphic extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        const _Card(
+        _Card(
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('100걸음',
+                Text(RemainingSurface.tr(context, 'launch.intro.body.9', '100걸음'),
                     style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
@@ -387,9 +388,9 @@ class _DonationGraphic extends StatelessWidget {
                 color: AppColors.angelGold.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                child: Text('+100원',
+                child: Text(RemainingSurface.tr(context, 'launch.intro.body.10', '+100원'),
                     style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 12,
@@ -414,7 +415,7 @@ class _DonationGraphic extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        const _Card(
+        _Card(
           child: Row(
             children: [
               Icon(Icons.volunteer_activism_outlined,
@@ -422,7 +423,7 @@ class _DonationGraphic extends StatelessWidget {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '회사(운영자) 자금으로 기부 예정 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인',
+                  RemainingSurface.tr(context, 'launch.intro.body.11', '회사(운영자) 자금으로 기부 예정 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인'),
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       height: 1.4,
@@ -488,9 +489,9 @@ class _SnailGraphic extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        const _Card(
+        _Card(
           child: Text(
-            '아직 순위가 없어서 살짝 시무룩해요… 같이 달려 볼래요?',
+            RemainingSurface.tr(context, 'launch.intro.body.12', '아직 순위가 없어서 살짝 시무룩해요… 같이 달려 볼래요?'),
             style: TextStyle(
                 fontWeight: FontWeight.w700,
                 height: 1.4,
@@ -500,11 +501,11 @@ class _SnailGraphic extends StatelessWidget {
         const SizedBox(height: 14),
         Row(
           children: [
-            step('지금\n달팽이'),
+            step(RemainingSurface.tr(context, 'launch.intro.body.13', '지금\n달팽이')),
             const Icon(Icons.chevron_right, color: AppColors.textGreyLight),
-            step('등급을\n받으면', unknown: true),
+            step(RemainingSurface.tr(context, 'launch.intro.body.14', '등급을\n받으면'), unknown: true),
             const Icon(Icons.chevron_right, color: AppColors.textGreyLight),
-            step('티어가\n오르면', unknown: true),
+            step(RemainingSurface.tr(context, 'launch.intro.body.15', '티어가\n오르면'), unknown: true),
           ],
         ),
       ],

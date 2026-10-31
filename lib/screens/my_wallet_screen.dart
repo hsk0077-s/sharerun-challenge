@@ -21,6 +21,7 @@ import '../features/wallet/widgets/wallet_sync_note.dart';
 import 'in_app_billing_screen.dart';
 import 'settings_screen.dart';
 import 'wallet_history_screen.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 나의 지갑 — 마이페이지 헤더 + 홈 지갑 카드 + 거래 카드 DS.
 class MyWalletScreen extends ConsumerWidget {
@@ -90,7 +91,7 @@ class MyWalletScreen extends ConsumerWidget {
                   ),
                   IconButton(
                     onPressed: () => _openSettings(context),
-                    tooltip: AppStrings.myPageSettings,
+                    tooltip: RemainingSurface.tr(context, 'settings.title', '설정'),
                     icon: Icon(
                       Icons.settings_outlined,
                       size: 22,

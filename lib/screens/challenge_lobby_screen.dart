@@ -18,6 +18,7 @@ import 'create_challenge_room_screen.dart';
 import 'my_tournaments_screen.dart';
 import 'tournament_screen.dart';
 import '../l10n/remaining_surface.dart';
+import '../l10n/app_localizations.dart';
 
 /// 다자간 챌린지 실시간 로비 화면 (Screen 7).
 class ChallengeLobbyScreen extends ConsumerStatefulWidget {
@@ -294,8 +295,8 @@ class _ChallengeLobbyScreenState extends ConsumerState<ChallengeLobbyScreen> {
                     fontWeight: FontWeight.w900,
                   ),
                   tabs: [
-                    const Tab(text: '챌린지'),
-                    const Tab(text: '대회'),
+                    Tab(text: ShareRunLocalizations.of(context).navChallenge),
+                    Tab(text: RemainingSurface.tr(context, 'common.tournament', '대회')),
                     Tab(
                       text: RemainingSurface.tr(
                         context,

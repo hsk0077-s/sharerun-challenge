@@ -12,6 +12,7 @@ import '../../pedometer/pedometer_harvest_ledger.dart';
 import '../../pedometer/pedometer_health_cap.dart';
 import '../../home/home_cards.dart';
 import '../my_page_activity_stats.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 지갑 카드 내부 일일 5km 땀방울 게이지.
 class DailyCapGauge extends StatelessWidget {
@@ -31,7 +32,7 @@ class DailyCapGauge extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          '오늘 모은 땀방울 ${km.toStringAsFixed(1)}km / ${cap.toStringAsFixed(1)}km ($percent%)',
+          RemainingSurface.tr(context, 'profile.retention_widgets.body', '오늘 모은 땀방울 \${km.toStringAsFixed(1)}km / \${cap.toStringAsFixed(1)}km (\$percent%)', {'km.toStringAsFixed(1)': km.toStringAsFixed(1), 'cap.toStringAsFixed(1)': cap.toStringAsFixed(1), 'percent': percent}),
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: tokens.colors.accent,
@@ -222,14 +223,14 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '오늘 걸음',
+              RemainingSurface.tr(context, 'profile.retention_widgets.body.2', '오늘 걸음'),
               style: textTheme.bodySmall?.copyWith(color: tokens.colors.muted),
             ),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
-                '${groupedNumber(numbers.steps)} 걸음',
+                RemainingSurface.tr(context, 'profile.retention_widgets.body.3', '\${groupedNumber(numbers.steps)} 걸음', {'groupedNumber(numbers.steps)': groupedNumber(numbers.steps)}),
                 key: SoloQuickStartBanner.stepsKey,
                 style: textTheme.displaySmall?.copyWith(
                   color: tokens.colors.ink,
@@ -242,8 +243,8 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
             const SizedBox(height: 4),
             Text(
               otherPhoneAhead
-                  ? '다른 폰에서 이미 SHARE가 반영됐어요'
-                  : '100걸음 → 10 SHARE · 하루 최대 600',
+                  ? RemainingSurface.tr(context, 'profile.retention_widgets.body.4', '다른 폰에서 이미 SHARE가 반영됐어요')
+                  : RemainingSurface.tr(context, 'profile.retention_widgets.body.5', '100걸음 → 10 SHARE · 하루 최대 600'),
               key: SoloQuickStartBanner.otherPhoneKey,
               style: textTheme.bodySmall?.copyWith(
                 color: tokens.colors.accent,
@@ -265,21 +266,21 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
               children: [
                 Expanded(
                   child: _HeroChip(
-                    label: '오늘 거리 ${km.toStringAsFixed(1)} km',
+                    label: RemainingSurface.tr(context, 'profile.retention_widgets.body.6', '오늘 거리 \${km.toStringAsFixed(1)} km', {'km.toStringAsFixed(1)': km.toStringAsFixed(1)}),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _HeroChip(
                     key: SoloQuickStartBanner.receivedKey,
-                    label: '받은 SHARE ${numbers.receivedShare}',
+                    label: RemainingSurface.tr(context, 'profile.retention_widgets.body.7', '받은 SHARE \${numbers.receivedShare}', {'numbers.receivedShare': numbers.receivedShare}),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _HeroChip(
                     key: SoloQuickStartBanner.pendingKey,
-                    label: '줍기 대기 ${numbers.pendingShare}',
+                    label: RemainingSurface.tr(context, 'profile.retention_widgets.body.8', '줍기 대기 \${numbers.pendingShare}', {'numbers.pendingShare': numbers.pendingShare}),
                     highlight: canCollect,
                   ),
                 ),
@@ -297,7 +298,7 @@ class _SoloQuickStartBannerState extends ConsumerState<SoloQuickStartBanner> {
                   shape: const StadiumBorder(),
                 ),
                 child: Text(
-                  canCollect ? '${numbers.pendingShare} SHARE 줍기' : '걷기 챌린지 보기',
+                  canCollect ? RemainingSurface.tr(context, 'profile.retention_widgets.body.9', '\${numbers.pendingShare} SHARE 줍기', {'numbers.pendingShare': numbers.pendingShare}) : RemainingSurface.tr(context, 'profile.retention_widgets.body.10', '걷기 챌린지 보기'),
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
@@ -372,7 +373,7 @@ class DailyStreakCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '🔥 $streak일째 불꽃 유지 중!',
+            RemainingSurface.tr(context, 'profile.retention_widgets.body.11', '🔥 \$streak일째 불꽃 유지 중!', {'streak': streak}),
             style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w800,
               color: tokens.colors.warning,
@@ -380,7 +381,7 @@ class DailyStreakCard extends ConsumerWidget {
           ),
           SizedBox(height: tokens.spacing.xxs + 2),
           Text(
-            '7일 연속 실천 완료 시 10 다이아몬드(DIA) 보너스 획득! 💎',
+            RemainingSurface.tr(context, 'profile.retention_widgets.body.12', '7일 연속 실천 완료 시 10 다이아몬드(DIA) 보너스 획득! 💎'),
             style: textTheme.bodySmall?.copyWith(
               fontSize: 12,
               height: 1.4,

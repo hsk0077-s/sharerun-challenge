@@ -10,8 +10,8 @@ import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/run_tracking/utils/run_start_preflight.dart';
 
 /// 등급 배정 안내. 횟수와 등급은 모두 서버가 정한 값이다.
-/// 1km 이상 검증 달리기를 서로 다른 날 3번 마치면 서버가 세 기록의
-/// 중간 페이스로 등급을 한 번 배정한다. 이 화면은 기록을 만들지 않는다.
+/// 첫 인증 1km에 거북이 브론즈로 시작하고, 인증된 날마다 서버가 한 단계씩
+/// 올린다. 이 화면은 기록을 만들지 않는다.
 ///
 /// 가입 직후에는 앱이 `GoRouter` 없이 열려 있어서 여기서 달리기를 시작할 수 없다.
 /// 그때는 "홈으로 가기"로 정상 홈에 보내고, 홈의 달리기 버튼으로 시작하게 한다.

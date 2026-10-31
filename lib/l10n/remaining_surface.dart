@@ -1944,6 +1944,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2',
     'solo_pedometer.button',
     'watch_app_preview.button.4',
+    'settings_lang.title',
+    'settings_lang.follow',
+    'settings_lang.sheet',
+    'settings_tier.unrated',
   ];
 
   static const _en = <String, String>{
@@ -1969,7 +1973,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Go for a Run',
     'snail_to_cheetah_book.body.10': 'Snail (Unrated)',
     'snail_to_cheetah_book.body.11': 'Temporary tier before assignment',
-    'snail_to_cheetah_book.body.12': 'Before 3 verified runs · No sub-tier',
+    'snail_to_cheetah_book.body.12': 'Before placement · Turtle Bronze at first verified 1 km · No sub-tier',
     'snail_to_cheetah_book.body.13': 'Brisk walking and basic stamina building stage',
     'snail_to_cheetah_book.body.14': 'Average pace 7\'30" or slower',
     'snail_to_cheetah_book.body.15': 'Running beginners who enjoy light jogging',
@@ -3803,6 +3807,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Physical activity: Reads the step count your phone has counted.\n• Health data (steps): Reads step counts recorded in Health Connect so steps taken while the screen is off are also counted.\n\nStep counts are only used to calculate rewards, and you can still use other features even if you don\'t agree.',
     'solo_pedometer.button': 'Later',
     'watch_app_preview.button.4': 'Cancel',
+    'settings_lang.title': 'Language',
+    'settings_lang.follow': 'Follow phone setting',
+    'settings_lang.sheet': 'Choose language',
+    'settings_tier.unrated': 'No grade yet · Start as Turtle Bronze after your first verified 1 km',
   };
 
   static const _ja = <String, String>{
@@ -3828,7 +3836,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': '走りに行く',
     'snail_to_cheetah_book.body.10': 'カタツムリ (Unrated)',
     'snail_to_cheetah_book.body.11': 'ランク割り当て前の暫定ランク',
-    'snail_to_cheetah_book.body.12': '検証ラン3回前・サブティアなし',
+    'snail_to_cheetah_book.body.12': '配置前・初回の認証1kmでカメ・ブロンズ・サブティアなし',
     'snail_to_cheetah_book.body.13': '早歩きおよび基礎体力づくりの段階',
     'snail_to_cheetah_book.body.14': '平均ペース7分30秒以上',
     'snail_to_cheetah_book.body.15': '軽いジョギングを楽しむランニング初心者',
@@ -5662,6 +5670,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• 身体活動：端末が測った歩数を読み取ります。\n• ヘルスデータ（歩数）：Health Connectに記録された歩数を読み取り、画面が消えている間の歩数も反映します。\n\n歩数は報酬計算にのみ使われ、同意しなくても他の機能は使えます。',
     'solo_pedometer.button': '後で',
     'watch_app_preview.button.4': 'キャンセル',
+    'settings_lang.title': '言語',
+    'settings_lang.follow': '端末の設定に合わせる',
+    'settings_lang.sheet': '言語を選択',
+    'settings_tier.unrated': '等級なし · 初回の認証1km後にカメ・ブロンズで開始',
   };
 
   static const _zh = <String, String>{
@@ -5687,7 +5699,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': '去跑步',
     'snail_to_cheetah_book.body.10': '蝸牛 (Unrated)',
     'snail_to_cheetah_book.body.11': '評級分配前的臨時階級',
-    'snail_to_cheetah_book.body.12': '完成3次驗證跑步前 · 無子階級',
+    'snail_to_cheetah_book.body.12': '定級前 · 首次認證 1km 為烏龜銅級 · 無子階級',
     'snail_to_cheetah_book.body.13': '快走及基礎體能培養階段',
     'snail_to_cheetah_book.body.14': '平均配速 7 分 30 秒以上',
     'snail_to_cheetah_book.body.15': '享受輕鬆慢跑的跑步初學者',
@@ -7521,6 +7533,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• 身體活動：讀取手機偵測到的步數。\n• 健康資料（步數）：讀取 Health Connect 中記錄的步數，連螢幕關閉時的步數也會納入。\n\n步數僅用於計算獎勳，即使不同意，其他功能仍可使用。',
     'solo_pedometer.button': '稍後',
     'watch_app_preview.button.4': '取消',
+    'settings_lang.title': '語言',
+    'settings_lang.follow': '跟隨裝置設定',
+    'settings_lang.sheet': '選擇語言',
+    'settings_tier.unrated': '尚無等級 · 首次認證 1km 後從烏龜銅級開始',
   };
 
   static const _es = <String, String>{
@@ -7546,7 +7562,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Ir a correr',
     'snail_to_cheetah_book.body.10': 'Caracol (Unrated)',
     'snail_to_cheetah_book.body.11': 'Nivel provisional antes de la asignación',
-    'snail_to_cheetah_book.body.12': 'Antes de 3 carreras verificadas · Sin subnivel',
+    'snail_to_cheetah_book.body.12': 'Antes de la asignación · Tortuga Bronce al primer 1 km verificado · Sin subnivel',
     'snail_to_cheetah_book.body.13': 'Fase de caminata rápida y desarrollo de condición física básica',
     'snail_to_cheetah_book.body.14': 'Ritmo medio de 7\'30" o superior',
     'snail_to_cheetah_book.body.15': 'Principiantes que disfrutan de un trote ligero',
@@ -9380,6 +9396,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Actividad física: lee los pasos contados por tu teléfono.\n• Datos de salud (pasos): lee los pasos registrados en Health Connect para incluir también los pasos dados con la pantalla apagada.\n\nLos pasos solo se usan para calcular recompensas, y puedes seguir usando otras funciones aunque no aceptes.',
     'solo_pedometer.button': 'Más tarde',
     'watch_app_preview.button.4': 'Cancelar',
+    'settings_lang.title': 'Idioma',
+    'settings_lang.follow': 'Seguir el ajuste del teléfono',
+    'settings_lang.sheet': 'Elegir idioma',
+    'settings_tier.unrated': 'Sin nivel · Empiezas como Tortuga Bronce tras tu primer 1 km verificado',
   };
 
   static const _pt = <String, String>{
@@ -9405,7 +9425,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Ir correr',
     'snail_to_cheetah_book.body.10': 'Caracol (Unrated)',
     'snail_to_cheetah_book.body.11': 'Nível provisório antes da atribuição',
-    'snail_to_cheetah_book.body.12': 'Antes de 3 corridas verificadas · Sem subnível',
+    'snail_to_cheetah_book.body.12': 'Antes da definição · Tartaruga Bronze no primeiro 1 km verificado · Sem subnível',
     'snail_to_cheetah_book.body.13': 'Fase de caminhada rápida e desenvolvimento de condicionamento básico',
     'snail_to_cheetah_book.body.14': 'Ritmo médio de 7\'30" ou mais',
     'snail_to_cheetah_book.body.15': 'Iniciantes na corrida que gostam de um trote leve',
@@ -11239,6 +11259,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Atividade física: lê os passos contados pelo seu telefone.\n• Dados de saúde (passos): lê os passos registrados no Health Connect para incluir também os passos dados com a tela desligada.\n\nOs passos são usados apenas para calcular recompensas, e você pode continuar usando os outros recursos mesmo sem aceitar.',
     'solo_pedometer.button': 'Mais tarde',
     'watch_app_preview.button.4': 'Cancelar',
+    'settings_lang.title': 'Idioma',
+    'settings_lang.follow': 'Seguir a configuração do celular',
+    'settings_lang.sheet': 'Escolher idioma',
+    'settings_tier.unrated': 'Sem nível · Você começa como Tartaruga Bronze após o primeiro 1 km verificado',
   };
 
   static const _de = <String, String>{
@@ -11264,7 +11288,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Jetzt laufen',
     'snail_to_cheetah_book.body.10': 'Schnecke (Unrated)',
     'snail_to_cheetah_book.body.11': 'Vorläufiger Rang vor der Zuweisung',
-    'snail_to_cheetah_book.body.12': 'Vor 3 verifizierten Läufen · Kein Sub-Rang',
+    'snail_to_cheetah_book.body.12': 'Vor der Einstufung · Schildkröte Bronze beim ersten verifizierten 1 km · Kein Sub-Rang',
     'snail_to_cheetah_book.body.13': 'Phase für zügiges Gehen und Aufbau der Grundausdauer',
     'snail_to_cheetah_book.body.14': 'Durchschnittliche Pace 7\'30" oder langsamer',
     'snail_to_cheetah_book.body.15': 'Laufanfänger, die leichtes Joggen genießen',
@@ -13098,6 +13122,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Körperliche Aktivität: Liest die vom Telefon gezählten Schritte.\n• Gesundheitsdaten (Schritte): Liest die in Health Connect erfassten Schritte, damit auch Schritte bei ausgeschaltetem Bildschirm berücksichtigt werden.\n\nSchrittzahlen werden nur zur Berechnung von Belohnungen verwendet, und Sie können andere Funktionen auch ohne Zustimmung weiter nutzen.',
     'solo_pedometer.button': 'Später',
     'watch_app_preview.button.4': 'Abbrechen',
+    'settings_lang.title': 'Sprache',
+    'settings_lang.follow': 'Geräteeinstellung verwenden',
+    'settings_lang.sheet': 'Sprache wählen',
+    'settings_tier.unrated': 'Noch keine Stufe · Start als Schildkröte Bronze nach dem ersten verifizierten 1 km',
   };
 
   static const _fr = <String, String>{
@@ -13123,7 +13151,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Aller courir',
     'snail_to_cheetah_book.body.10': 'Escargot (Unrated)',
     'snail_to_cheetah_book.body.11': 'Rang provisoire avant attribution',
-    'snail_to_cheetah_book.body.12': 'Avant 3 courses vérifiées · Pas de sous-rang',
+    'snail_to_cheetah_book.body.12': 'Avant le placement · Tortue Bronze au premier 1 km vérifié · Pas de sous-rang',
     'snail_to_cheetah_book.body.13': 'Étape de marche rapide et de développement de l\'endurance de base',
     'snail_to_cheetah_book.body.14': 'Allure moyenne de 7\'30" ou plus',
     'snail_to_cheetah_book.body.15': 'Débutants appréciant un jogging léger',
@@ -14957,6 +14985,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Activité physique : lit le nombre de pas comptés par votre téléphone.\n• Données de santé (pas) : lit les pas enregistrés dans Health Connect afin d\'inclure aussi les pas effectués écran éteint.\n\nLe nombre de pas n\'est utilisé que pour calculer les récompenses, et vous pouvez continuer à utiliser les autres fonctionnalités même sans donner votre accord.',
     'solo_pedometer.button': 'Plus tard',
     'watch_app_preview.button.4': 'Annuler',
+    'settings_lang.title': 'Langue',
+    'settings_lang.follow': 'Suivre le réglage du téléphone',
+    'settings_lang.sheet': 'Choisir la langue',
+    'settings_tier.unrated': 'Pas encore de niveau · Départ en Tortue Bronze après votre premier 1 km vérifié',
   };
 
   static const _vi = <String, String>{
@@ -14982,7 +15014,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Bắt đầu chạy',
     'snail_to_cheetah_book.body.10': 'Ốc sên (Unrated)',
     'snail_to_cheetah_book.body.11': 'Hạng tạm thời trước khi phân hạng',
-    'snail_to_cheetah_book.body.12': 'Trước 3 lần chạy xác thực · Không có hạng phụ',
+    'snail_to_cheetah_book.body.12': 'Trước khi xếp hạng · Rùa Đồng ở 1km xác thực đầu tiên · Không có hạng phụ',
     'snail_to_cheetah_book.body.13': 'Giai đoạn đi bộ nhanh và rèn luyện thể lực cơ bản',
     'snail_to_cheetah_book.body.14': 'Pace trung bình 7 phút 30 giây trở lên',
     'snail_to_cheetah_book.body.15': 'Người mới bắt đầu chạy bộ thích chạy chậm nhẹ nhàng',
@@ -16816,6 +16848,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Hoạt động thể chất: đọc số bước điện thoại đã đếm.\n• Dữ liệu sức khỏe (số bước): đọc số bước được ghi trong Health Connect để tính cả số bước khi màn hình tắt.\n\nSố bước chỉ dùng để tính thưởng, và bạn vẫn có thể dùng các tính năng khác dù không đồng ý.',
     'solo_pedometer.button': 'Để sau',
     'watch_app_preview.button.4': 'Hủy',
+    'settings_lang.title': 'Ngôn ngữ',
+    'settings_lang.follow': 'Theo cài đặt của điện thoại',
+    'settings_lang.sheet': 'Chọn ngôn ngữ',
+    'settings_tier.unrated': 'Chưa có hạng · Bắt đầu ở Rùa Đồng sau 1km đầu tiên được xác thực',
   };
 
   static const _th = <String, String>{
@@ -16841,7 +16877,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'ไปวิ่งกันเลย',
     'snail_to_cheetah_book.body.10': 'หอยทาก (Unrated)',
     'snail_to_cheetah_book.body.11': 'ระดับชั่วคราวก่อนการจัดอันดับ',
-    'snail_to_cheetah_book.body.12': 'ก่อนวิ่งยืนยันผล 3 ครั้ง · ไม่มีเทียร์ย่อย',
+    'snail_to_cheetah_book.body.12': 'ก่อนจัดระดับ · เต่าบรอนซ์เมื่อวิ่งยืนยัน 1 กม. ครั้งแรก · ไม่มีเทียร์ย่อย',
     'snail_to_cheetah_book.body.13': 'ขั้นเดินเร็วและสร้างสมรรถภาพทางกายขั้นพื้นฐาน',
     'snail_to_cheetah_book.body.14': 'เพซเฉลี่ย 7 นาที 30 วินาทีขึ้นไป',
     'snail_to_cheetah_book.body.15': 'ผู้เริ่มต้นวิ่งที่เพลิดเพลินกับการจ็อกกิ้งเบาๆ',
@@ -18675,6 +18711,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• กิจกรรมทางกาย: อ่านจำนวนก้าวที่โทรศัพท์นับได้\n• ข้อมูลสุขภาพ (ก้าว): อ่านจำนวนก้าวที่บันทึกใน Health Connect เพื่อรวมก้าวตอนที่หน้าจอดับด้วย\n\nจำนวนก้าวใช้สำหรับคำนวณรางวัลเท่านั้น และคุณยังใช้ฟีเจอร์อื่นได้แม้ไม่ยินยอม',
     'solo_pedometer.button': 'ไว้ทีหลัง',
     'watch_app_preview.button.4': 'ยกเลิก',
+    'settings_lang.title': 'ภาษา',
+    'settings_lang.follow': 'ใช้ตามการตั้งค่าของเครื่อง',
+    'settings_lang.sheet': 'เลือกภาษา',
+    'settings_tier.unrated': 'ยังไม่มีระดับ · เริ่มที่เต่าบรอนซ์หลังวิ่งที่ยืนยันแล้ว 1 กม. ครั้งแรก',
   };
 
   static const _id = <String, String>{
@@ -18700,7 +18740,7 @@ class RemainingSurface {
     'snail_to_cheetah_book.button': 'Mulai Berlari',
     'snail_to_cheetah_book.body.10': 'Siput (Unrated)',
     'snail_to_cheetah_book.body.11': 'Tier sementara sebelum penetapan',
-    'snail_to_cheetah_book.body.12': 'Sebelum 3 lari terverifikasi · Tanpa sub-tier',
+    'snail_to_cheetah_book.body.12': 'Sebelum penempatan · Kura-kura Perunggu di 1 km terverifikasi pertama · Tanpa sub-tier',
     'snail_to_cheetah_book.body.13': 'Tahap jalan cepat dan pembentukan stamina dasar',
     'snail_to_cheetah_book.body.14': 'Pace rata-rata 7 menit 30 detik atau lebih',
     'snail_to_cheetah_book.body.15': 'Pemula lari yang menikmati jogging santai',
@@ -20534,6 +20574,10 @@ class RemainingSurface {
     'solo_pedometer.dialog.2': '• Aktivitas fisik: membaca jumlah langkah yang dihitung ponsel.\n• Data kesehatan (langkah): membaca jumlah langkah yang tercatat di Health Connect sehingga langkah saat layar mati juga ikut terhitung.\n\nJumlah langkah hanya digunakan untuk menghitung hadiah, dan Anda tetap dapat menggunakan fitur lain meskipun tidak menyetujui.',
     'solo_pedometer.button': 'Nanti',
     'watch_app_preview.button.4': 'Batal',
+    'settings_lang.title': 'Bahasa',
+    'settings_lang.follow': 'Ikuti pengaturan ponsel',
+    'settings_lang.sheet': 'Pilih bahasa',
+    'settings_tier.unrated': 'Belum ada tingkat · Mulai sebagai Kura-kura Perunggu setelah 1 km terverifikasi pertama',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

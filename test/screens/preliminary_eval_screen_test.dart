@@ -134,4 +134,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('건강정보 동의 필요'), findsOneWidget);
   });
+
+  testWidgets('shows no 0/3 progress bar: the grade starts at the first 1 km',
+      (tester) async {
+    await tester.pumpWidget(
+      _scope(
+        MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
+          home: const PreliminaryEvalScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('/3'), findsNothing);
+    expect(find.textContaining('3회'), findsNothing);
+    expect(find.textContaining('첫 인증 1km'), findsWidgets);
+  });
 }

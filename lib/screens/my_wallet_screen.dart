@@ -5,14 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/config/app_env.dart';
-import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../l10n/surface_rest.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
-import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/widgets/store_look.dart';
 import '../data/models/wallet_transaction_model.dart';
@@ -21,7 +19,6 @@ import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/wallet_inventory_section.dart';
 import '../features/wallet/widgets/wallet_sync_note.dart';
 import 'in_app_billing_screen.dart';
-import 'preliminary_eval_screen.dart';
 import 'settings_screen.dart';
 import 'wallet_history_screen.dart';
 
@@ -50,9 +47,6 @@ class MyWalletScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = context.srcTokens.colors;
-    final onboarding = ref.watch(onboardingProvider);
-    final gradeDone = onboarding.preliminaryPaceSeconds.length
-        .clamp(0, EconomyConstants.trialRunsRequired);
     final walletState = ref.watch(walletProvider);
     final share = walletState.shareBalance;
     final diamond = walletState.diamondBalance;
@@ -114,9 +108,6 @@ class MyWalletScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               _ShareCard(
                 share: share,
-                gradeCompleted: gradeDone,
-                gradeTotal: EconomyConstants.trialRunsRequired,
-                onGradeTap: () => _openGradeEval(context),
                 onCharge: () => _openChargePicker(context),
                 onUse: () => _openStore(context, ref),
               ),
@@ -250,47 +241,23 @@ class MyWalletScreen extends ConsumerWidget {
     DashboardTabNavigation.go(context, DashboardTabNavigation.shop);
   }
 
-  void _openGradeEval(BuildContext context) {
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      try {
-        context.pushNamed(RouteNames.preliminaryEvalName);
-        return;
-      } catch (_) {
-        context.push(RouteNames.preliminaryRuns);
-        return;
-      }
-    }
-    AppRouteNav.push<void>(
-      context,
-      RouteNames.preliminaryEval,
-      materialBuilder: (_) => const PreliminaryEvalScreen(),
-    );
-  }
 }
 
 /// SHARE 큰 카드. 라임 빛이 도는 바탕에 큰 숫자와 알약 버튼.
 class _ShareCard extends StatelessWidget {
   const _ShareCard({
     required this.share,
-    required this.gradeCompleted,
-    required this.gradeTotal,
-    required this.onGradeTap,
     required this.onCharge,
     required this.onUse,
   });
 
   final int share;
-  final int gradeCompleted;
-  final int gradeTotal;
-  final VoidCallback onGradeTap;
   final VoidCallback onCharge;
   final VoidCallback onUse;
 
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
-    final progress = (gradeCompleted / gradeTotal).clamp(0.0, 1.0);
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -315,34 +282,6 @@ class _ShareCard extends StatelessWidget {
           Text(
             WalletSurfaceCopy.of(Localizations.localeOf(context)).shareHint,
             style: storeText(14, c.muted),
-          ),
-          const SizedBox(height: 14),
-          InkWell(
-            onTap: onGradeTap,
-            borderRadius: BorderRadius.circular(6),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 3,
-                    color: c.outline,
-                    child: FractionallySizedBox(
-                      widthFactor: progress,
-                      alignment: Alignment.centerLeft,
-                      child: Container(color: c.primary),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    AppStrings.myWalletGradeProgress(
-                        gradeCompleted, gradeTotal),
-                    style: storeText(12, c.muted, w: FontWeight.w700),
-                  ),
-                ],
-              ),
-            ),
           ),
           const SizedBox(height: 16),
           StorePillButton(

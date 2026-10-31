@@ -41,21 +41,25 @@ import 'router/route_names.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../data/models/activity_model.dart';
 import '../core/theme/src_theme.dart';
+import '../l10n/app_locale.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/remaining_surface.dart';
 
-class ShareRunChallengeApp extends StatelessWidget {
+class ShareRunChallengeApp extends ConsumerWidget {
   const ShareRunChallengeApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '쉐어런',
       theme: SrcTheme.night,
       darkTheme: SrcTheme.night,
       themeMode: ThemeMode.dark,
+      locale: ref.watch(appLocaleProvider),
       supportedLocales: ShareRunLocalizations.supportedLocales,
+      localeResolutionCallback: (device, supported) =>
+          resolveAppLocale(device, supported),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

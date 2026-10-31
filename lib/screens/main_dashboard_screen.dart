@@ -4,14 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
 import '../app/router/route_names.dart';
-import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../features/home/home_cards.dart';
-import '../features/home/home_wallet_card.dart';
 import '../features/mini_bot/mini_bot_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/nickname_setup_sheet.dart';
@@ -21,7 +19,6 @@ import '../features/stamp/providers/stamp_tour_enabled_provider.dart';
 import 'donation_settlement_screen.dart';
 import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
-import 'preliminary_eval_screen.dart';
 import 'stamp_tour_screen.dart';
 import '../core/config/app_env.dart';
 import '../l10n/remaining_surface.dart';
@@ -82,14 +79,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     );
   }
 
-  void _onOpenPreliminaryEval() {
-    _pushSoloRoute(
-      name: RouteNames.preliminaryEvalName,
-      path: RouteNames.preliminaryRuns,
-      materialBuilder: (_) => const PreliminaryEvalScreen(),
-    );
-  }
-
   void _onOpenSoloQuickStart() {
     if (_openingSolo) return;
     _openingSolo = true;
@@ -101,28 +90,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     Future<void>.delayed(const Duration(milliseconds: 400), () {
       if (mounted) _openingSolo = false;
     });
-  }
-
-  void _pushSoloRoute({
-    required String name,
-    required String path,
-    required WidgetBuilder materialBuilder,
-  }) {
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      try {
-        context.pushNamed(name);
-        return;
-      } catch (_) {
-        context.push(path);
-        return;
-      }
-    }
-    AppRouteNav.push<void>(
-      context,
-      path,
-      materialBuilder: materialBuilder,
-    );
   }
 
   void _onOpenNotificationCenter() {
@@ -160,10 +127,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
         });
       }
     });
-    final onboarding = ref.watch(onboardingProvider);
-    final onboardingDone = onboarding.currentStep == OnboardingStep.completed;
-    final trialDone = onboarding.preliminaryPaceSeconds.length
-        .clamp(0, EconomyConstants.trialRunsRequired);
     final nicknameUnset = ref.watch(needsNicknameSetupProvider);
     final nickname = ref.watch(userNicknameProvider);
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
@@ -210,13 +173,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                           SoloQuickStartBanner(
                             onTap: _onOpenSoloQuickStart,
                           ),
-                          if (!onboardingDone) ...[
-                            SizedBox(height: tokens.spacing.sm),
-                            HomeGradeEvalBanner(
-                              completedCount: trialDone,
-                              onTap: _onOpenPreliminaryEval,
-                            ),
-                          ],
                           SizedBox(height: tokens.spacing.sm),
                           HomeDonationCard(
                             onOpenSettlement: _onOpenDonationSettlement,

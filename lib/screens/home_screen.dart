@@ -204,7 +204,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final joinedIds = ref.watch(effectiveJoinedTournamentIdsProvider);
     final onboarding = ref.watch(onboardingProvider);
     final showGradeEval = onboarding.currentStep != OnboardingStep.completed;
-    final trialDone = onboarding.preliminaryPaceSeconds.length.clamp(0, 3);
     final copy = HomeSurfaceCopy.of(Localizations.localeOf(context));
 
     return ListView(
@@ -290,8 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onPressed: () => context.pushNamed(RouteNames.preliminaryEvalName),
             icon: const Icon(Icons.emoji_events_outlined),
             label: Text(
-              GradeGuide.of(Localizations.localeOf(context))
-                  .homeEntry(trialDone, 3),
+              GradeGuide.of(Localizations.localeOf(context)).homeEntry,
               style:
                   textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
             ),

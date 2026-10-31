@@ -22,7 +22,7 @@ import 'pedometer_step_truth.dart';
 
 const _channelId = 'src_walking_coin_pickup';
 const _channelName = '워킹챌린지 코인 줍기';
-const _iconMeta = 'mipmap/ic_launcher';
+const _iconMeta = 'drawable/ic_stat_sharerun';
 const _targetKmKey = 'solo_pedo_target_km';
 const _healthBaseKey = 'solo_pedo_health_base';
 const _stepsKey = 'solo_pedo_steps';
@@ -321,7 +321,7 @@ class SoloPedometerForegroundHandler extends TaskHandler {
   Future<void> _ensureSmartPlugin() async {
     if (_smartPluginReady) return;
     const initSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings('@drawable/ic_stat_sharerun'),
       iOS: DarwinInitializationSettings(),
     );
     await _smartPlugin.initialize(initSettings);

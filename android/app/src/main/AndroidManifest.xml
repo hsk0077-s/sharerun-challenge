@@ -210,6 +210,14 @@
             android:name="mipmap/ic_launcher"
             android:resource="@mipmap/ic_launcher" />
 
+        <!-- Status-bar icon: white heart on a transparent background. -->
+        <meta-data
+            android:name="drawable/ic_stat_sharerun"
+            android:resource="@drawable/ic_stat_sharerun" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_sharerun" />
+
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
             android:exported="false"

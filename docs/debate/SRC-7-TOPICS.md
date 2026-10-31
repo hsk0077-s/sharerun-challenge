@@ -6,8 +6,8 @@
 | --- | --- | --- |
 | 1 캐시카우 | 완료 | 1·2·3% 표와 출시일 미끄럼 결론은 그대로다. 이번 라운드는 매출 식을 다시 열지 않았다. |
 | 2 11개국 홍보 | 부분 | 문구 초벌은 늘었지만 원어민 검수 전이다. 나라별 워치 점유는 출처가 없는 칸이 **가정**으로 남는다. |
-| 3 즉시 진입 | 부분 | 150–449초/km 입구와 고른 GPS 보류는 그대로다. 점이 적은 그림과 걸음 없는 케이던스는 초급 상금만 보류한다. 빈 표본 입구와, 점이 많고 걸음수도 있는 불규칙 그림은 그대로 열린다. |
-| 4 추천 | 부분 | 꺾인 경로를 40m–2km 밀어 복사한 쌍과, 같은 폰에서 3분 1초–30분 늦춘 같은 서명은 `twin_run`이다. 직선으로 민 쌍, 2km 밖, 31분 뒤는 남는다. 3회/14일 규칙은 유지한다. |
+| 3 즉시 진입 | 부분 | 150–449초/km 입구와 고른 GPS 보류는 그대로다. 점이 적은 그림과 걸음 없는 케이던스는 초급 상금만 보류한다. 10/31: 걸음 수를 넣은 촘촘·불규칙 그림도 GPS 간격이 시계를 무시하는 패턴 + 걸음수/거리 비율이 비정상일 때 `gps_stride_mismatch`로 상금만 보류한다. 빈 표본 입구는 그대로 열린다(4호 레드팀도 첫 참가는 막지 말라고 한다). |
+| 4 추천 | 부분 | 10/31: 4호 레드팀 원칙대로 거리 상한(2km)과 30분 창을 없애 직선 평행이동과 31분 뒤 서명 변경도 `twin_run`/`shared_device_history`로 보류한다. 3회/14일 규칙은 유지한다. 남는 구멍은 아래 10/31 절 참고. |
 | 5 기부 상한 | 완료 | 게이지와 미끄럼 절차, `currentMonthNetRevenueWon`은 15시와 같다. 나라별 풀은 하나다. |
 | 6 워치 전략 | 미흡 | Wear OS 업로드는 이 환경에서 확인했다. Apple Watch는 소스와 체크리스트만 있고 맥 빌드가 없다. |
 | 7 상점 가격 | 대표 판단 필요 | 레전드를 120 DIA로 내릴지, 패스를 200 또는 280 DIA로 올릴지는 표만 있다. 코드 가격은 바꾸지 않았다. |
@@ -265,13 +265,28 @@
 
 - 3분 이상이고 점이 2개 이상 12개 미만이면 `sparse_gps`. 케이던스와 걸음수를 붙여도 보류다.
 - 경로 점이 둘 이상이고 케이던스 숫자가 있는데 걸음수가 없으면 `cadence_unbacked`. 경로를 아예 안 보내는 완주는 이 보류가 아니다. 폰은 케이던스와 걸음수를 같이 보내고, 워치는 케이던스 목록을 비우고 걸음수를 보낸다. 상금 검사는 그 원본을 본다.
-- 점이 12개 이상이고 간격이 고르지 않으며 케이던스와 걸음수가 있으면 완주다. 테스트 `test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not`.
+- 점이 12개 이상이고 간격이 고르지 않으며 케이던스와 걸음수가 있으면 완주다. 10/30까지는 이것이 전부였다. 10/31 라운드가 아래에서 바꾼다.
 
 16시 판정: 부분. 점이 적은 그림과 걸음 없는 케이던스는 초급 상금만 보류한다. 빈 표본 입구는 그대로다. 점을 채우고 걸음수를 붙인 불규칙 그림은 상금을 받는다.
 
 ### 10/30 라운드
 
 이번 라운드는 이 절의 코드를 바꾸지 않았다. 남은 "부분"의 두 칸(빈 표본 입구, 걸음 없는 케이던스의 상금 보류)은 이번 작업 범위에서 다시 다루지 말라고 지정된 항목(페이스 샘플 없는 초보 참가, 촘촘한 가짜 경로)과 같은 자리다. 16시 "안" 비교표가 이미 빈 입구를 열어 두는 이유(오탐이 높고 진성 러너의 첫 대회를 막는다)를 적어 뒀고, 이번 라운드가 그 판단을 다시 열 근거를 새로 찾지 못했다. 코드·문서·테스트 변경 없음.
+
+### 10/31 라운드 — 4호 레드팀 원칙 반영 (`docs/debate/inputs/2026-10-30-gpt4-abuse-redteam.md`)
+
+레드팀 결론의 원칙: 직선성(또는 GPS 모양) 하나만으로 막지 말고, 걸음수·속도 균일성과 결합한 위험 점수로 상금만 보류한다. 계정 정지가 아니라 보상 보류다.
+
+**페이스 샘플 없는 초보 대회 참가 (확인, 코드 안 바꿈).** `beginner_entry_block`은 저장된 `paceSamples`가 비면 페이스를 보지 않고 입구를 연다. 테스트로 다시 확인했다: `test_join_tournament_tx.py::test_beginner_prize_entry_allows_a_brand_new_account_with_no_pace_history`는 `_prize_user()`(경제 필드도 등급도 없는 새 계정)가 초급 대회에 그냥 들어가는 것을 본다(`result.status == "joined"`). 이것은 뚫린 구멍이 아니라 16시 "안" 비교표가 이미 고른 설계다: 레드팀 원칙 4번의 뒷절반("첫 사용자 참가는 막지 않음")도 같은 결론이다. 이번 라운드는 이 입구를 바꾸지 않았다. 레드팀 원칙 4번의 앞절반("페이스 샘플 없으면 GPS 좌표로 서버 재계산")은 입구가 아니라 완주 판정에 해당하는데, 완주 판정은 이미 이번 런의 실제 거리·시간으로 `pace_too_fast`를 다시 보고, GPS도 다른 신호도 없는 완주는 `missing_run_signal`로 상금만 보류한다. GPS 좌표에서 독립적으로 거리를 재계산해 클라이언트가 보낸 `distance_km`와 대조하는 코드는 이번 라운드에 추가하지 않았다. 확인 못 한 추가 작업으로 남긴다.
+
+**걸음 수 넣은 촘촘·불규칙 가짜 경로 (뚫림 확인 → 보완).** `test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not`로 확인하니 걸음수 2,200을 붙인 촘촘·불규칙 경로가 실제로 상금을 받았다(뚫려 있었다). 레드팀 원칙대로 신호 하나만으로 막지 않고 두 가지를 모두 결합했을 때만 `company_tournament_settlement.py`의 `beginner_signal_hold`가 `gps_stride_mismatch`로 보류한다:
+
+1. `_gps_step_decoupled_from_time`: 연속한 점 사이 거리가 거의 고정값인데(비율 20% 이하) 그 사이 시간 간격은 들쭉날쭉하다(비율 20% 초과). 시계를 무시하고 점을 일정하게 전진시키는 스크립트의 흔적이다.
+2. `_steps_per_km_suspicious`: 걸음수를 거리로 나누면 km당 2,000보를 넘는다. 1보에 0.5m도 안 된다는 뜻으로, 실제로 이동하지 않고 제자리에서 걸음만 센 쪽에 가깝다.
+
+두 조건 중 하나만 있으면 보류하지 않는다. 오탐 확인: 같은 촘촘·불규칙 경로에 걸음수를 1,300(출/km 1,300, 정상 범위)으로 두면 그대로 지급한다(`test_dense_irregular_gps_with_a_plausible_step_count_still_pays`). 거꾸로 걸음수는 그대로 2,200이어도 GPS의 점 간 거리가 정상적으로 들쭉날쭉하면(진짜 트레이스처럼) 그대로 지급한다(`test_dense_genuinely_variable_gps_with_a_suspicious_step_count_still_pays`). 테스트 `test_dense_irregular_gps_with_an_implausible_step_count_now_holds`가 뚫렸던 사례를 보류로 바꾼 것을 확인한다. 적립(SHARE/VALUE)은 그대로 남고, 초급 상금만 보류다.
+
+10/31 판정: 부분. 빈 표본 입구는 레드팀도 동의한 설계라 그대로 열려 있다. 걸음 수를 넣은 촘촘·불규칙 경로는 이제 보류된다. GPS 기반 거리 재계산은 하지 않았다.
 
 ---
 
@@ -350,6 +365,20 @@
 - 남는 구멍은 그대로다. 기기 id가 **지금 심사 중인 런에만** 있고 두 계정의 과거 기록 어디에도 없으면(로그인 기기 문서도 없이 바로 그 런만 보낸 경우) 31분 뒤 서명 변경은 여전히 열려 있을 수 있다. 직선 슬라이드는 2km를 넘기면 그대로 통과한다(16시와 같음). 3회/14일 규칙은 유지한다.
 
 16시 이후 라운드가 twin_run.py에 적은 "직선 슬라이드도 잡는다"는 설명과 기기 히스토리 검사는 코드에는 있었지만 이 크래시 때문에 커밋 시점부터 실제로는 전혀 작동하지 않았다. 이번 수정으로 작동한다.
+
+### 10/31 라운드 — 4호 레드팀 원칙 반영: 거리 상한 폐지, 기기 관계로 30분 창 대체
+
+4호 레드팀 결론(`docs/debate/inputs/2026-10-30-gpt4-abuse-redteam.md`)의 원칙 두 가지를 이 절에 적용했다. 그 입력 파일 자체는 ChatGPT 공유 페이지를 그대로 받아 저장한 것이라 본문이 사람이 읽을 문장이 아니라 페이지의 내부 JSON 한 줄이다. 원칙은 대표님 지시문에 옮겨 적힌 네 줄을 기준으로 삼았다.
+
+**(a) 직선 평행 이동 GPS 쌍, 80,000 SHARE.** 16시·10/30 모두 "직선으로 민 쌍, 2km 밖... 남는다"고 적었다. 테스트로 다시 확인하니 실제로 뚫려 있었다(`offset_route_twin`의 `OFFSET_MAX_METERS = 2000.0`이 2km를 넘는 슬라이드를 통과시켰다). 레드팀 원칙 3번("2km 거리 자체는 기준 아님")대로 이 상한을 **없앴다**. 남는 조건(정확한 서명 일치, 3분 창, 꺾인 경로는 25m/85%·직선은 15m/95% 위치 일치)은 그대로라 두 사람이 우연히 똑같은 거리·시간·케이던스 10버킷을 3분 안에 만들 가능성은 거리와 무관하게 똑같이 낮다. 테스트 `test_a_far_slide_with_a_matching_signature_is_still_an_offset_twin`, `test_a_far_straight_slide_with_a_matching_signature_is_an_offset_twin`이 5km 슬라이드도 이제 `twin_run`인 것을 본다. 오탐 확인: 같은 길을 다른 시각·다른 기기로, 다른 페이스로 달린 정상 사용자는 시간 창(3분)과 서명이 다르면 그대로 통과한다(`test_same_road_different_time_and_device_is_not_a_twin`, `test_same_road_different_device_and_day_pays_in_full`).
+
+**(b) 같은 폰, 31분 뒤 서명 변경, 추천 50,000 SHARE.** `same_device_delayed_copy`는 30분이 지나면(31분째) 서명이 같아도 통과시키는 고정 시간 창이었다. 레드팀 원칙 1번("30분 고정 창 대신 기기·계정 장기 관계 기반 보류")대로, 지금 심사 중인 런의 `device_id`가 추천인의 알려진 기기(`trialDeviceId`, 과거 런, 로그인 기기)와 같으면 `_same_referrer_phone`이 이미 추천인 몫을 0으로 두던 것에 더해 **피추천인 몫도 `shared_device_history`로 같이 보류**한다. 창도 서명 일치도 필요 없다. 10/30 라운드는 이 변경을 일부러 하지 않았다("기존 `_same_referrer_phone`이 처리하던 케이스가 전부 `shared_device_history`로 피추천인까지 보류되어 버린다"는 문구가 위에 있다) — 이번 라운드는 그 트레이드오프를 받아들이기로 정책을 바꾼 것이다: 같은 폰을 공유하는 두 계정은(가족이 폰을 같이 쓰는 경우를 포함해) 이제 피추천인 몫도 보류되어 수동 확인을 기다린다. 계정 정지가 아니라 보상 보류이므로, 억울한 경우는 걸려도 나중에 풀 수 있는 자리다. 테스트 `test_same_phone_31_minutes_later_with_a_changed_signature_still_holds_the_referee`가 뚫렸던 사례(31분, 다른 서명)를 보류로 바꾼 것을 확인한다. `test_same_device_blocks_a_second_trial_and_referrer_reward`와 `test_missing_trial_device_id_still_blocks_a_known_phone`도 이제 피추천인 몫이 보류되는 것으로 기대값을 바꿨다.
+
+**관리자 화면·이의 제기 노출 확인.** 지시받은 대로 보류 사유 코드가 관리자 화면에 보이는지 확인했다 — **보이지 않았다**. `admin/src/components/dashboard/Referrals.tsx`의 추천인 화면은 금액과 생성 시각만 보여주고 `status`/`reason`은 모델에도 없었다(`ReferralPayoutMarker`에 그 두 필드가 없었다). 이번 라운드에 백엔드 모델(`app/models/admin_api.py`)과 `admin_referral_service.py`, 프런트(`jenaApi.ts`, `Referrals.tsx`)에 `status`/`reason`을 추가해 보이게 했다. 반면 대회 상금 보류 사유(`pace_too_fast`, `uniform_gps`, `gps_stride_mismatch` 등)는 관리자 화면 어디에도, 앱의 "이의 제기"(소명) 화면에도 노출되지 않는다 — 소명 화면은 런 검증 판정(`jenaDecision`/`jenaReason`)만 보여주고, 대회 참가 문서의 `prizeHoldReason`은 읽지 않는다. 이번 라운드는 그 화면을 새로 만들지 않았다. 대표 판단이 필요한 항목에 추가했다.
+
+이번 라운드가 배포로 바꾸지 않은 것: 3회/14일 규칙, 추천인 10명 상한, SHARE 금액 상수. `backend/jena_ai` 전체 테스트는 아래 "이번 라운드 테스트"에 있다.
+
+16시 이후 커밋이 적어 둔 "직선·원거리·31분 뒤는 솔직히 남는다"는 더 이상 맞지 않는다. 10/31 판정: 부분. 남는 구멍: 기기 id가 두 계정 모두 **전혀** 없을 때(그 경우는 `device_id_absent`로 이미 보류), 그리고 두 계정이 정말로 기기를 한 번도 공유한 적 없이 순전히 우연으로 같은 서명을 만든 경우(수학적으로 가능성은 두지만 막을 방법이 없다)는 그대로 남는다.
 
 ---
 
@@ -650,6 +679,7 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
    - **10/30 21:58 대표 확정: 노트북 재생성 폐기, 이 리눅스로 통일.** 노트북에서 돌렸을 때 8번째 골든(`daily-goal brag card golden`, 노트북에서는 실패·이 리눅스에서는 통과)이 깨져서 노트북 기준을 채택하지 않았다. 10/31 라운드에 해결했다. 아래 "10/31 라운드 — 골든 8건을 이 리눅스로 통일" 참고.
 4. (10/30 추가) 2번 절 `lib/l10n/surface_rest.dart`의 90키(en/ja/zh/es/pt/de/fr/vi/th/id, 10개 로케일)와 `surface_copy.dart`를 원어민에게 검수받을지, 어느 언어를 외주할지. 이 박스는 번역 품질을 판단하지 못한다. 검수 전에는 광고 랜딩으로 쓰지 않는다.
 5. (10/30 추가) 설정 화면 약관 폴백 HTML(`SettingsLegalWebViewScreen`)을 11개 언어로 번역할지, 법무 검토를 어느 범위까지 받을지. 지금은 제목만 11로케일이고 본문은 한국어다. 이 박스는 법률 문장을 판단하지 못한다.
+6. (10/31 추가) 대회 상금 보류 사유(`pace_too_fast`, `uniform_gps`, `sparse_gps`, `cadence_unbacked`, `missing_run_signal`, `gps_stride_mismatch`)를 관리자 화면이나 앱의 소명 화면에 보여줄지. 지금은 둘 다 그 사유를 읽지 않는다. 추천인 보류 사유는 이번 라운드에 관리자 화면에 추가했지만, 상금 보류 사유는 새 화면이 필요해 범위 밖으로 남겼다.
 
 ## 이번 라운드 테스트
 
@@ -722,5 +752,28 @@ test/screens/goldens/walking_challenge_tokens.png
 ```
 
 테스트를 돌리며 생긴 `test/screens/failures/walking_challenge_tokens_*.png`(저장소에 이미 커밋돼 있던 4개)는 실패 재현 단계에서 일시적으로 바뀐 뒤 `git checkout`으로 원래 내용으로 되돌렸다. 그 밖의 `failures/` 이미지, `build/`, `.dart_tool/`, `.flutter-plugins-dependencies`는 캐시·미추적 파일이라 지웠다. `docs/debate/GOLDEN-REGEN-LAPTOP.md`에도 이 라운드의 이유와 결과를 적었다. 코드 변경은 없다.
+
+### 10/31 라운드 — 어뷰징 구멍 4개, 테스트로 먼저 확인
+
+10/30 t1이 중간에 끊긴 뒤라, 먼저 10/30 커밋(`15ec8fc`)과 그 크래시 수정이 실제로 작동하는지부터 전체 테스트로 확인했다(853 passed, 10/30 보고와 일치). 그다음 지시받은 네 패턴을 하나씩 테스트로 먼저 재현했다:
+
+| 패턴 | 재현 결과 | 조치 |
+| --- | --- | --- |
+| (a) 직선 평행 이동 GPS 쌍, 80,000 SHARE | 뚫림 확인 (`OFFSET_MAX_METERS=2000`이 2km 밖을 통과시킴) | 거리 상한 삭제. 4번 절 10/31 참고 |
+| (b) 같은 폰 31분 뒤 서명 변경, 추천 50,000 SHARE | 뚫림 확인 (`SAME_DEVICE_DELAY_SECONDS=1800` 밖은 통과) | 기기 관계 기반 보류로 대체. 4번 절 10/31 참고 |
+| (c) 페이스 샘플 없는 초보 대회 참가 | 열려 있음 — 확인했으나 설계대로임 | 코드 안 바꿈. 3번 절 10/31 참고 |
+| (d) 걸음 수 넣은 촘촘·불규칙 가짜 경로 초보 상금 | 뚫림 확인 (`test_dense_irregular_gps_with_steps_still_pays...`가 실제로 지급을 봄) | `gps_stride_mismatch` 결합 신호 추가. 3번 절 10/31 참고 |
+
+바꾼 파일: `twin_run.py`, `secured_action_service.py`, `company_tournament_settlement.py`, `app/models/admin_api.py`, `app/services/admin_referral_service.py`. 테스트: `test_twin_run.py`, `test_referral_share_payout.py`, `test_slow_gps_pace_band.py`, `test_join_tournament_tx.py`, `test_admin_referrals.py`. `admin/src/lib/jenaApi.ts`, `admin/src/components/dashboard/Referrals.tsx`(보류 사유 노출)도 바꿨다.
+
+`python3 -m pytest`(`backend/jena_ai`): 전체 **860 passed** (10/30의 853 + 이번 라운드 신규/수정 테스트 7개). 명령:
+
+```
+/tmp/venv/bin/python3 -m pytest
+```
+
+(이 박스의 시스템 `python3`에는 fastapi/pydantic이 없어 `/tmp/venv`를 썼다. 가상환경 선택 자체는 이번 라운드가 바꾼 것이 아니라 이 박스의 기존 설정이다.)
+
+`admin/`은 Flutter가 아닌 React/TS라 `flutter analyze`는 적용되지 않는다. `node_modules`가 이 박스에 설치돼 있지 않아 `tsc -b`를 돌리지 못했다 — 바꾼 두 파일(`jenaApi.ts`, `Referrals.tsx`)은 기존 타입에 필드를 더하고 그 필드를 읽기만 하는 작은 변경이라 손으로 확인했지만, 타입 검사는 **확인 못 함**으로 남긴다. Flutter `lib/`은 이번 라운드에 건드리지 않았다.
 
 ---

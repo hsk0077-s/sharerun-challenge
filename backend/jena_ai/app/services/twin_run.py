@@ -13,14 +13,16 @@ device check as well. The same device inside the three-minute window is
 still one outing. Waiting just past that window on the same device, with
 the same workout numbers or a slid copy of the route, is still one outing
 up to thirty minutes. Two handsets with the same workout numbers and a
-route slid between 40m and 2km are one outing inside the three-minute
-window. A route that turns only needs a 25m/85% positional match after the
-slide, because the turning shape is already distinctive. A straight route
-is not distinctive by shape — too many real kilometres look like that —
-so a straight slide needs a 15m/95% match, close to GPS noise, before it
-counts as the same copy rather than two people on two nearby straight
-streets. The run itself still counts. Missing times do not match, so
-older rows are left alone.
+route slid past 40m are one outing inside the three-minute window,
+however far the slide moved it — the kilometre count of a shift is not
+the signal, the exact signature plus the congruent shape is. A route that
+turns only needs a 25m/85% positional match after the slide, because the
+turning shape is already distinctive. A straight route is not distinctive
+by shape — too many real kilometres look like that — so a straight slide
+needs a 15m/95% match, close to GPS noise, before it counts as the same
+copy rather than two people on two nearby straight streets. The run
+itself still counts. Missing times do not match, so older rows are left
+alone.
 """
 
 from datetime import datetime, timedelta
@@ -39,9 +41,13 @@ TWIN_ROUTE_FRACTION = 0.5
 # minutes catches a few minutes of waiting. A later start is left alone.
 SAME_DEVICE_DELAY_SECONDS = 30 * 60
 # A copied track shifted sideways. Under 40m is already the overlap check.
-# Over 2km is another neighbourhood and is not called a copy.
+# There is no upper bound: the kilometre count of the shift is not the
+# signal. Two phones an exact signature (0.01km / 1s / ten cadence
+# buckets) and a congruent translated shape apart inside the three-minute
+# window is already the evidence, however far the copy was moved. A larger
+# shift does not make that coincidence more plausible, so it is not given
+# a pass.
 OFFSET_MIN_METERS = 40.0
-OFFSET_MAX_METERS = 2000.0
 OFFSET_RESIDUAL_METERS = 25.0
 OFFSET_FRACTION = 0.85
 OFFSET_MIN_TURN_DEGREES = 25.0
@@ -292,8 +298,10 @@ def _max_turn_degrees(points: list[tuple[float, float]]) -> float:
 def translated_route_copy(left: dict, right: dict) -> bool:
     """True when one route is the other, slid sideways by one fixed offset.
 
-    The shift has to be past the 40m overlap rule and inside 2km. A route
-    that turns is a distinctive enough shape that a 25m/85% positional match
+    The shift has to be past the 40m overlap rule. There is no upper bound
+    on the shift: how many kilometres the copy was moved is not the
+    signal, so it is not checked. A route that turns is a distinctive
+    enough shape that a 25m/85% positional match
     after the slide is already a copy. A straight route is not distinctive
     by shape (any straight street matches), so the same slide only counts
     as a copy when the positional match is much tighter (15m/95%) — close
@@ -315,7 +323,7 @@ def translated_route_copy(left: dict, right: dict) -> bool:
         right_sample[index][1] - left_sample[index][1] for index in range(OFFSET_SAMPLES)
     )
     shift = _meters(left_sample[0], (left_sample[0][0] + dlat, left_sample[0][1] + dlng))
-    if shift <= OFFSET_MIN_METERS or shift > OFFSET_MAX_METERS:
+    if shift <= OFFSET_MIN_METERS:
         return False
     turning = (
         _max_turn_degrees(left_sample) >= OFFSET_MIN_TURN_DEGREES
@@ -349,9 +357,10 @@ def offset_route_twin(left: dict, right: dict) -> bool:
     """Different handsets, same workout numbers, route copied and slid.
 
     Same handset is ``same_device_shifted_route`` or
-    ``same_device_delayed_copy``. A slide past 2km or 40m, or a different
+    ``same_device_delayed_copy``. A slide under 40m, or a different
     signature, stays out. A straight slide still needs the tighter
-    positional match in ``translated_route_copy`` to count.
+    positional match in ``translated_route_copy`` to count. There is no
+    upper bound on how far the slide moved.
     """
     left_device = _device_id(left)
     right_device = _device_id(right)

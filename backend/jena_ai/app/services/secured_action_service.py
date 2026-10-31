@@ -2856,6 +2856,23 @@ class SecuredActionService:
                 referrer_runs=referrer_runs,
             ):
                 twin_reason = SHARED_DEVICE_HISTORY
+            # A fixed delay window (``same_device_delayed_copy`` tops out at
+            # thirty minutes) is a time check on one pair of runs, so waiting
+            # past it, or changing the workout numbers so the signature does
+            # not match, used to clear it even though the handset is the
+            # referrer's own. The device relationship does not expire at
+            # thirty minutes: if this run's device id is the referrer's
+            # known phone, that is held the same way as shared history,
+            # with no window and no signature required.
+            if not twin_reason and device_id and self._same_referrer_phone(
+                transaction,
+                device_id=device_id,
+                referrer_uid=referrer_uid,
+                referrer_economy=self._referrer_economy(transaction, referrer_uid),
+                device_owner=device_owner,
+                referrer_runs=referrer_runs,
+            ):
+                twin_reason = SHARED_DEVICE_HISTORY
             # Paying now would skip the twin check. Hold until a referrer
             # run exists. The next referee run reopens this reason only.
             if not twin_reason and not referrer_runs:
@@ -2906,9 +2923,7 @@ class SecuredActionService:
             referrer_uid
         )
         referrer_snapshot = referrer_ref.get(transaction=transaction)
-        referrer_economy = {}
-        if referrer_snapshot.exists:
-            referrer_economy = (referrer_snapshot.to_dict() or {}).get("economy") or {}
+        referrer_economy = self._referrer_economy(transaction, referrer_uid)
         same_device = self._same_referrer_phone(
             transaction,
             device_id=device_id,
@@ -2992,6 +3007,18 @@ class SecuredActionService:
 
     def _referee_run_views(self, transaction, referee_uid: str) -> list[dict]:
         return self._activity_run_views(transaction, referee_uid)
+
+    def _referrer_economy(self, transaction, referrer_uid: str) -> dict:
+        if not referrer_uid:
+            return {}
+        snapshot = (
+            self.firebase_service.db.collection("users")
+            .document(referrer_uid)
+            .get(transaction=transaction)
+        )
+        if not snapshot.exists:
+            return {}
+        return (snapshot.to_dict() or {}).get("economy") or {}
 
     def _pair_has_device_id(
         self,

@@ -114,6 +114,8 @@ def _marker(data: dict) -> ReferralPayoutMarker:
         amount=_count(data.get("amount")),
         createdAt=_iso(data.get("createdAt")),
         payeeUid=_text(data.get("payeeUid")),
+        status=_text(data.get("status")),
+        reason=_text(data.get("reason")),
     )
 
 

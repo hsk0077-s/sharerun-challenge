@@ -259,14 +259,22 @@ def test_different_devices_on_the_same_straight_road_with_a_different_pace_is_no
     assert referral_twin_reason(left, other_pace) is None
 
 
-def test_a_far_slide_is_not_an_offset_twin() -> None:
+def test_a_far_slide_with_a_matching_signature_is_still_an_offset_twin() -> None:
+    """The kilometre count of the shift is not the signal any more.
+
+    A congruent copy 5km away, inside the three-minute window, with the
+    exact same signature, is the same coincidence as a copy 150m away: the
+    distance moved does not make it more likely to be two independent
+    runners. Only a changed signature stays out.
+    """
     loop = _run(deviceId="phone-a", gpsRoute=_loop())
     far = _run(
         deviceId="phone-b",
         gpsRoute=_loop(5_000.0),
         startedAt=(NOW + timedelta(seconds=20)).isoformat(),
     )
-    assert not offset_route_twin(loop, far)
+    assert offset_route_twin(loop, far)
+    assert referral_twin_reason(loop, far) == "twin_run"
     changed = _run(
         deviceId="phone-b",
         gpsRoute=_loop(150.0),
@@ -275,6 +283,42 @@ def test_a_far_slide_is_not_an_offset_twin() -> None:
     )
     assert not offset_route_twin(loop, changed)
     assert referral_twin_reason(loop, changed) is None
+
+
+def test_a_far_straight_slide_with_a_matching_signature_is_an_offset_twin() -> None:
+    """A straight route slid 5km, past the old 2km ceiling, with the exact
+    signature and the tight 15m/95% straight-line match, inside the
+    three-minute window. The distance in kilometres is not checked."""
+    left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
+    far_straight = _run(
+        deviceId="phone-b",
+        gpsRoute=[
+            {
+                "latitude": 37.5 + (index * 10.0) / 111_320.0,
+                "longitude": 127.0 + 5_000.0 / 88_300.0,
+            }
+            for index in range(40)
+        ],
+        startedAt=(NOW + timedelta(seconds=20)).isoformat(),
+    )
+    assert offset_route_twin(left, far_straight)
+    assert referral_twin_reason(left, far_straight) == "twin_run"
+
+
+def test_same_road_different_time_and_device_is_not_a_twin() -> None:
+    """A real false-positive guard: two runners on the same straight road,
+    different devices, hours apart with their own distinct pace. Nothing
+    about removing the distance ceiling should catch this — the time
+    window and the signature still have to match."""
+    left = _run(deviceId="phone-a", gpsRoute=[_north(i, 10.0) for i in range(40)])
+    later_same_road = _run(
+        deviceId="phone-b",
+        gpsRoute=[_north(i, 10.0) for i in range(40)],
+        runSignature="a-different-runners-pace",
+        startedAt=(NOW + timedelta(hours=2)).isoformat(),
+    )
+    assert not offset_route_twin(left, later_same_road)
+    assert referral_twin_reason(left, later_same_road) is None
 
 
 def test_same_phone_delayed_past_three_minutes_holds_only_inside_thirty() -> None:

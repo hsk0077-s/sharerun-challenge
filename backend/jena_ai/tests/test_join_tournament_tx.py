@@ -732,6 +732,24 @@ def test_beginner_prize_refuses_a_higher_animal_and_a_fast_median() -> None:
     assert fast.value.detail == "pace_too_fast"
 
 
+def test_beginner_prize_entry_allows_a_brand_new_account_with_no_pace_history() -> None:
+    """A real first-time runner has no ``paceSamples`` and no ``gradeRank``
+    yet. ``beginner_entry_block`` treats an empty sample the same as a
+    missing grade: it does not block. Closing this would turn away every
+    account's first beginner race; the finish-side checks (``pace_too_fast``
+    on this run's own pace, ``missing_run_signal`` when the finish has
+    neither a route nor cadence/steps/heart rate) are what catch an abused
+    finish, not the entry gate. 2026-10-31 round: confirmed still open by
+    design, not a hole introduced this round.
+    """
+    db = _MemoryDb()
+    db.store["users/u1"] = _prize_user()
+    db.store["users/u1/companyPrizeRace/state"] = {"beginnerFreeUsed": 2}
+    db.store["tournaments/race"] = _prize_room("beginner")
+    result = _join(db, "u1", "race")
+    assert result.status == "joined"
+
+
 def test_tier_ticket_rejects_a_later_edition() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _prize_user()

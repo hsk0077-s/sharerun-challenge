@@ -188,6 +188,51 @@ def gps_trace_sparse(route: list, duration_seconds: int | float) -> bool:
     return 2 <= len(points) < SPARSE_GPS_MAX_POINTS
 
 
+# Neither signal alone is held: a straight-looking gap pattern happens on a
+# real road, and a short stride happens to a real shuffling walker. Both at
+# once, on a dense trace, is a programmatic route: a script that advances
+# the position by close to the same step every fix regardless of the clock,
+# with a step count typed in afterwards that does not match the ground
+# actually covered.
+GPS_STEP_UNIFORM_RATIO = 0.2
+GPS_GAP_IRREGULAR_RATIO = 0.2
+GPS_STEP_MISMATCH_MIN_POINTS = 20
+STEPS_PER_KM_SUSPICIOUS = 2_000
+
+
+def _steps_per_km_suspicious(distance_km: float, total_steps: int) -> bool:
+    """True when the claimed step count implies well under half a metre a
+    step for the whole distance -- shuffling in place, not covering ground."""
+    if distance_km <= 0 or total_steps <= 0:
+        return False
+    return (total_steps / distance_km) > STEPS_PER_KM_SUSPICIOUS
+
+
+def _gps_step_decoupled_from_time(route: list) -> bool:
+    """True when consecutive fixes advance by near the same distance while
+    the time between them swings widely. Real motion covers more ground
+    over a longer gap; a position that ignores the clock does not."""
+    points = _route_samples(route)
+    if len(points) < GPS_STEP_MISMATCH_MIN_POINTS:
+        return False
+    distances: list[float] = []
+    gaps: list[float] = []
+    for left, right in zip(points, points[1:]):
+        distance = _signal_meters((left[0], left[1]), (right[0], right[1]))
+        if distance < 1.0:
+            continue
+        distances.append(distance)
+        if left[2] is not None and right[2] is not None:
+            gap = abs((right[2] - left[2]).total_seconds())
+            if gap > 0:
+                gaps.append(gap)
+    distance_ratio = _span_ratio(distances)
+    gap_ratio = _span_ratio(gaps)
+    if distance_ratio is None or gap_ratio is None:
+        return False
+    return distance_ratio <= GPS_STEP_UNIFORM_RATIO and gap_ratio > GPS_GAP_IRREGULAR_RATIO
+
+
 def beginner_signal_hold(
     *,
     heart_rates: list | None,
@@ -195,6 +240,7 @@ def beginner_signal_hold(
     total_steps: int | None,
     gps_route: list | None,
     duration_seconds: int | float | None = None,
+    distance_km: float | None = None,
 ) -> str | None:
     """Prize-only hold. Credits stay on the run.
 
@@ -206,7 +252,10 @@ def beginner_signal_hold(
     sends cadence and no route is not this case. No steps, cadence, or
     heart rate, and no route to judge, is the other case. ``None`` means the caller did
     not send that signal, so older tests that omit it are left alone.
-    A dense irregular trace that also sends a step total is not held.
+    A dense irregular trace that also sends a step total is not held on
+    the shape alone, but a dense trace whose position ignores the clock
+    *and* whose step count implies an implausible stride is -- neither
+    signal blocks by itself.
     """
     if isinstance(gps_route, list) and gps_spacing_uniform(gps_route):
         return "uniform_gps"
@@ -232,6 +281,15 @@ def beginner_signal_hold(
     route_points = _route_samples(gps_route) if isinstance(gps_route, list) else []
     if _positive_series(cadence_spm) and steps <= 0 and len(route_points) >= 2:
         return "cadence_unbacked"
+    if (
+        isinstance(gps_route, list)
+        and steps > 0
+        and isinstance(distance_km, (int, float))
+        and not isinstance(distance_km, bool)
+        and _steps_per_km_suspicious(float(distance_km), steps)
+        and _gps_step_decoupled_from_time(gps_route)
+    ):
+        return "gps_stride_mismatch"
     route_known = isinstance(gps_route, list)
     route_short = not route_known or len(_route_samples(gps_route or [])) < 2
     if (
@@ -295,6 +353,7 @@ def prize_finish_fields(
             total_steps=total_steps,
             gps_route=gps_route,
             duration_seconds=duration,
+            distance_km=distance,
         )
         if prize_tier_id(tournament) == "beginner"
         else None

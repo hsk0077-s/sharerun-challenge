@@ -22,6 +22,8 @@ class ReferralPayoutMarker(BaseModel):
     amount: int
     createdAt: str | None
     payeeUid: str | None
+    status: str | None
+    reason: str | None
 
 
 class ReferralPayouts(BaseModel):

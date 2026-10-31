@@ -333,6 +333,10 @@ def test_same_device_blocks_a_second_trial_and_referrer_reward() -> None:
     assert db.store["users/u3"]["economy"].get("trialRunCount", 0) == 0
     assert _share(db, "u3") == 40
 
+    # Running on the referrer's own registered phone is a device/account
+    # relationship, not a one-run time window: it is held the same way
+    # ``shared_device_history`` holds a past overlap, with no 30-minute
+    # expiry and no need for the workout numbers to match.
     shared = _MemoryDb()
     _seed_pair(shared, trial_run_count=2, referrer_device="phone-b")
     _persist(
@@ -343,9 +347,15 @@ def test_same_device_blocks_a_second_trial_and_referrer_reward() -> None:
         signup_at=_DAY1,
         device_id="phone-b",
     )
-    assert _share(shared, "u2") == 50_040
+    assert _share(shared, "u2") == 40
     assert _share(shared, "u1") == 20
+    referee = shared.store["referralPayouts/u2_trial_referee"]
+    assert referee["reason"] == "shared_device_history"
+    assert referee["amount"] == 40_000
     assert shared.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
+    assert shared.store["referralPayouts/u2_trial_referrer"]["reason"] == (
+        "shared_device_history"
+    )
     assert "walletTransactions/trial_referrer_hold_u1_u2" not in shared.store
     assert _payout_count(shared, "u1") == 0
 
@@ -566,9 +576,15 @@ def test_missing_trial_device_id_still_blocks_a_known_phone() -> None:
         signup_at=_DAY1,
         device_id="phone-a",
     )
-    assert _share(db, "u2") == 50_040
+    # A login-device match is the referrer's known phone too, so the
+    # referee's milestone is held alongside the referrer's zeroed amount.
+    assert _share(db, "u2") == 40
     assert _share(db, "u1") == 20
-    assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
+    referee = db.store["referralPayouts/u2_trial_referee"]
+    assert referee["reason"] == "shared_device_history"
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["amount"] == 0
+    assert referrer["reason"] == "shared_device_history"
     assert _payout_count(db, "u1") == 0
     assert "trialDeviceId" not in db.store["users/u1"]["economy"]
 
@@ -854,6 +870,76 @@ def test_same_phone_start_delayed_181s_holds_the_referee() -> None:
     referrer = db.store["referralPayouts/u2_trial_referrer"]
     assert referrer["amount"] == 0
     assert referrer["reason"] == "twin_run"
+
+
+def test_same_phone_31_minutes_later_with_a_changed_signature_still_holds_the_referee() -> None:
+    """Past the old 30-minute GPS window, with different workout numbers
+    and a route that is not a translated copy of the referrer's, the GPS
+    checks miss this pair entirely. The phone is still the referrer's own,
+    so the device relationship (not a time window) holds the referee's
+    milestone too, the same way ``shared_device_history`` holds a past
+    overlap.
+    """
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_run_device="phone-same")
+    cadence = [170] * 20
+    signature = run_signature(distance_km=1.1, duration_seconds=400, cadence_spm=cadence)
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _square(),
+        "deviceId": "phone-same",
+    }
+    _finish_referral(
+        db,
+        device_id="phone-same",
+        route=[
+            {"latitude": 37.6, "longitude": 127.3, "recordedAt": "t"},
+            {"latitude": 37.601, "longitude": 127.301, "recordedAt": "t"},
+        ],
+        started=_DAY3 + timedelta(minutes=31),
+        cadence=[150] * 20,
+    )
+    assert _share(db, "u2") == 40
+    referee = db.store["referralPayouts/u2_trial_referee"]
+    assert referee["reason"] == "shared_device_history"
+    assert referee["amount"] == 40_000
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["amount"] == 0
+    assert referrer["reason"] == "shared_device_history"
+
+
+def test_same_road_different_device_and_day_pays_in_full() -> None:
+    """A real false-positive guard: the referee runs the same street the
+    referrer ran weeks earlier, on a different phone, at a different pace.
+    Neither the GPS-twin check (time window) nor the device-relationship
+    check should hold this pair.
+    """
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_run_device="phone-r")
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": "2026-08-01T00:00:00+00:00",
+        "runSignature": "a-completely-different-pace",
+        "gpsRoute": _square(),
+        "deviceId": "phone-r",
+    }
+    _finish_referral(
+        db,
+        device_id="phone-e",
+        route=_square(),
+        started=_DAY3,
+        cadence=[190] * 20,
+    )
+    assert _share(db, "u2") == 50_040
+    assert _share(db, "u1") == 20
+    assert db.store["referralPayouts/u2_trial_referee"].get("status") != "held"
+    referrer = db.store["referralPayouts/u2_trial_referrer"]
+    assert referrer["status"] == "pending"
+    assert referrer["amount"] == 30_000
 
 
 def test_validation_wrapper_passes_transaction_before_service() -> None:

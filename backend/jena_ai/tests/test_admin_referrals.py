@@ -168,9 +168,11 @@ def test_referrals_shape_and_payout_markers() -> None:
                 "payeeUid": "b",
             },
             "referralPayouts/b_trial_referrer": {
-                "amount": 3000,
+                "amount": 0,
                 "createdAt": "2024-05-03T00:00:00+00:00",
                 "payeeUid": "a",
+                "status": "held",
+                "reason": "twin_run",
             },
         }
     )
@@ -193,9 +195,13 @@ def test_referrals_shape_and_payout_markers() -> None:
         "amount": 1000,
         "createdAt": "2024-05-01T00:00:00+00:00",
         "payeeUid": "b",
+        "status": None,
+        "reason": None,
     }
     assert by_uid["b"]["payouts"]["trial_referee"]["amount"] == 5000
-    assert by_uid["b"]["payouts"]["trial_referrer"]["amount"] == 3000
+    assert by_uid["b"]["payouts"]["trial_referrer"]["amount"] == 0
+    assert by_uid["b"]["payouts"]["trial_referrer"]["status"] == "held"
+    assert by_uid["b"]["payouts"]["trial_referrer"]["reason"] == "twin_run"
     assert by_uid["c"]["referralCode"] is None
     assert by_uid["c"]["referredBy"] is None
     assert by_uid["c"]["referredByUid"] == "b"

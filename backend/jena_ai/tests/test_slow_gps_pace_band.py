@@ -218,18 +218,25 @@ def _dense_irregular(count: int = 40) -> list[dict]:
     return points
 
 
-def test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not() -> None:
+def test_dense_irregular_gps_with_an_implausible_step_count_now_holds() -> None:
+    """The gap pattern alone used to be enough to pay this: dense, uneven
+    timestamps, a step total. The position still advances by almost the
+    same step every fix no matter how the gap was nudged, and 2,200 steps
+    for 1km is well under half a metre a stride. Neither signal alone
+    blocks (see the two false-positive cases below); together they do.
+    """
     route = _dense_irregular()
     assert gps_spacing_uniform(route) is False
     assert gps_trace_sparse(route, 900) is False
-    paid = _finish(
+    held = _finish(
         900,
         cadence_spm=[150, 162, 158],
         total_steps=2200,
         gps_route=route,
     )
-    assert paid["verifiedFinish"] is True
-    assert "prizeHeld" not in paid
+    assert held["prizeHeld"] is True
+    assert held["prizeHoldReason"] == "gps_stride_mismatch"
+    assert held["verifiedFinish"] is False
     unbacked = _finish(
         900,
         cadence_spm=[150, 162, 158],
@@ -241,3 +248,55 @@ def test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not
     # An empty pace list still opens the door. Closing it would block the
     # first real race, and one slow drawing reopens it.
     assert beginner_entry_block(_user([])) is None
+
+
+def test_dense_irregular_gps_with_a_plausible_step_count_still_pays() -> None:
+    """False positive guard: the same gap-nudged trace, but the step count
+    is an ordinary stride for the distance (1,300/km). The geometric
+    signal alone is not enough to hold the prize.
+    """
+    route = _dense_irregular()
+    paid = _finish(
+        900,
+        cadence_spm=[150, 162, 158],
+        total_steps=1300,
+        gps_route=route,
+    )
+    assert paid["verifiedFinish"] is True
+    assert "prizeHeld" not in paid
+
+
+def _dense_genuinely_variable(count: int = 40) -> list[dict]:
+    """About 1km, both the gaps and the stride length vary -- a real
+    phone trace, not a position that was advanced by a fixed step."""
+    points = []
+    elapsed = 0.0
+    for index in range(count):
+        time_gap = 8 + (index % 5) * 7
+        elapsed += time_gap
+        stride = 15.0 + (index % 7) * 6.0
+        points.append(
+            {
+                "latitude": 37.5 + (index * stride) / 111_320.0,
+                "longitude": 127.0,
+                "recordedAt": (_START + timedelta(seconds=elapsed)).isoformat(),
+            }
+        )
+    return points
+
+
+def test_dense_genuinely_variable_gps_with_a_suspicious_step_count_still_pays() -> None:
+    """False positive guard: the step count alone is the same implausible
+    2,200/km, but the GPS stride length itself varies a normal amount, so
+    the geometric half of the signal does not fire.
+    """
+    route = _dense_genuinely_variable()
+    assert gps_spacing_uniform(route) is False
+    paid = _finish(
+        900,
+        cadence_spm=[150, 162, 158],
+        total_steps=2200,
+        gps_route=route,
+    )
+    assert paid["verifiedFinish"] is True
+    assert "prizeHeld" not in paid

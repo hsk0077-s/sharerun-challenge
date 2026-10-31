@@ -13,6 +13,7 @@ import 'package:share_run_challenge/features/pedometer/walking_look.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../support/golden_helper.dart';
+import '../support/ko_localization.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -45,6 +46,9 @@ Widget _scopedWalking() {
       ),
     ],
     child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       debugShowCheckedModeBanner: false,
       theme: SrcTheme.light,
       home: const SoloPedometerScreen(),
@@ -185,6 +189,9 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: Scaffold(
           body: SrcSurfaceCard(

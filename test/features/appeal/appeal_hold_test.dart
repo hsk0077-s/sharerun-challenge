@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/data/models/activity_model.dart';
 import 'package:share_run_challenge/features/appeal/appeal_hold.dart';
 import 'package:share_run_challenge/screens/appeal_center_screen.dart';
+import '../../support/ko_localization.dart';
 
 ActivityModel _run(
   String id, {
@@ -32,7 +33,10 @@ Widget _screen(List<ActivityModel> runs, {String? activityId}) {
     overrides: [
       recentActivitiesProvider.overrideWith((ref) => Stream.value(runs)),
     ],
-    child: MaterialApp(home: AppealCenterScreen(activityId: activityId)),
+    child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,home: AppealCenterScreen(activityId: activityId)),
   );
 }
 

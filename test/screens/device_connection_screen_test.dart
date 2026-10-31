@@ -14,6 +14,7 @@ import 'package:share_run_challenge/features/run_tracking/services/health_data_s
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/screens/device_connection_screen.dart';
 import 'package:share_run_challenge/screens/wearable_brand_guide_sheet.dart';
+import '../support/ko_localization.dart';
 
 class _FakeUser implements User {
   @override
@@ -88,6 +89,9 @@ Future<void> _pump(
       healthDataServiceProvider.overrideWithValue(health),
     ],
     child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.light,
       home: const DeviceConnectionScreen(),
       routes: {
@@ -132,6 +136,9 @@ void main() {
         healthDataServiceProvider.overrideWithValue(_FakeHealth()),
       ],
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: Builder(
           builder: (context) => Scaffold(
@@ -179,6 +186,9 @@ void main() {
         healthDataServiceProvider.overrideWithValue(health),
       ],
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         routes: {
           RouteNames.preliminaryEval: (_) =>
@@ -268,7 +278,7 @@ void main() {
     }
     expect(find.byKey(WearableBrandGuide.stepKey(4)), findsNothing);
     expect(
-      find.text(GuideChrome.of(tester.platformDispatcher.locale).ctaAndroid),
+      find.text(GuideChrome.of(koTestLocale).ctaAndroid),
       findsOneWidget,
     );
   });
@@ -358,6 +368,9 @@ void main() {
         bleHeartRateServiceProvider.overrideWithValue(bleService),
       ],
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const DeviceConnectionScreen(),
       ),

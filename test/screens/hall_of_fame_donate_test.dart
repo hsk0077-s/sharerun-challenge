@@ -14,6 +14,7 @@ import 'package:share_run_challenge/features/wallet/hall_of_fame_donate.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/hall_of_fame_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 class _SpyWallet extends WalletNotifier {
   @override
@@ -67,6 +68,9 @@ Widget _screen() {
       }),
     ],
     child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.light,
       home: const HallOfFameScreen(),
     ),

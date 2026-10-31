@@ -6,13 +6,13 @@ def test_mercy_rule_partial_achievement() -> None:
         diamond_deposit=10,
         target_distance_km=5.0,
         distance_achieved_km=3.0,
-        charity_target="UNICEF",
+        charity_target="GLOBAL_RELIEF_PARTNER",
     )
 
     assert settlement.achievement_rate == 0.6
     assert settlement.forfeited_diamonds == 4
     assert settlement.returned_diamonds == 6
-    assert settlement.charity_target == "UNICEF"
+    assert settlement.charity_target == "GLOBAL_RELIEF_PARTNER"
 
 
 def test_mercy_rule_zero_deposit() -> None:
@@ -20,7 +20,7 @@ def test_mercy_rule_zero_deposit() -> None:
         diamond_deposit=0,
         target_distance_km=5.0,
         distance_achieved_km=1.0,
-        charity_target="UNICEF",
+        charity_target="GLOBAL_RELIEF_PARTNER",
     )
 
     assert settlement.forfeited_diamonds == 0

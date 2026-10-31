@@ -16,8 +16,8 @@ ShareRun ("Chừng nào trái tim còn đập, sự sẻ chia vẫn tiếp tục
 ■ Đếm Bước Chân Mỗi Ngày (100 Bước = 10 SHARE)
 • Xem số bước chân ngay trên thanh thông báo và nhận 10 SHARE cho mỗi 100 bước hợp lệ (tối đa 6.000 bước / 600 SHARE cơ bản mỗi ngày) để tham gia giải đấu trong ứng dụng.
 
-■ 5 Hạng Động Vật: Từ Ốc Sên Đến Báo Gấm
-• Hoàn thành 3 buổi chạy hợp lệ vào các ngày khác nhau để được xếp hạng công bằng (Ốc Sên, Rùa, Thỏ, Ngựa, Báo Gấm với 25 bậc nhỏ) và tranh tài ở cự ly 1K, 3K, 5K, 10K.
+■ 5 Hạng Động Vật: Từ Rùa Đến Báo Săn
+• Bắt đầu ở hạng Rùa Đồng ngay từ buổi chạy hợp lệ 1 km đầu tiên, rồi lên một bậc cho mỗi ngày có buổi chạy hợp lệ (Rùa, Beagle, Sói, Ngựa vằn, Báo săn với 25 bậc nhỏ) và tranh tài ở cự ly 1K, 3K, 5K, 10K.
 
 ■ Câu Lạc Bộ Chạy Bộ (Crew) & Huấn Luyện Viên Giọng Nói
 • Lập Crew cùng bạn bè để chinh phục bảng xếp hạng tổng km hàng tuần và hàng tháng.
@@ -28,9 +28,9 @@ ShareRun ("Chừng nào trái tim còn đập, sự sẻ chia vẫn tiếp tục
 • Kết nối trực tiếp cảm biến nhịp tim Bluetooth (BLE 0x180D) giúp truyền BPM thời gian thực không độ trễ từ tính năng Phát nhịp tim trên Garmin/Xiaomi hoặc đai ngực Polar, Coospo, Magene.
 
 ■ Chống Gian Lận Jena AI & Quỹ Thiện Nguyện
-• Jena AI kiểm증 dữ liệu GPS, guồng chân (cadence), con quay hồi chuyển và nhịp tim để loại bỏ hành vi dùng xe hoặc máy lắc bước chân.
-• Mỗi km chạy bộ hợp lệ đóng góp tương đương 100 KRW (trong hạn mức hàng tháng của đơn vị vận hành) vào quỹ thiện nguyện.
-• Đây là ngân sách tháng của đơn vị vận hành cho toàn cầu, không phải tiền quyên góp của người dùng. Chi cho một tổ chức đăng ký tại Hàn Quốc, không có biên lai khấu trừ thuế.
+• Jena AI kiểm chứng dữ liệu GPS, guồng chân (cadence), con quay hồi chuyển và nhịp tim để loại bỏ hành vi dùng xe hoặc máy lắc bước chân.
+• Đơn vị vận hành dự kiến quyên góp 100 KRW từ ngân sách công ty cho mỗi km chạy hợp lệ (tối đa 10 km mỗi người mỗi ngày, tổng hạn mức 1.000.000 KRW mỗi tháng).
+• Đơn vị nhận đang được trao đổi và sẽ được thông báo trong ứng dụng. Đây là ngân sách của đơn vị vận hành, không phải tiền quyên góp của người dùng, không có biên lai khấu trừ thuế.
 
 [Lưu Ý Quan Trọng]
 ※ SHARE, DIA và VALUE là điểm ảo chỉ dùng trong ứng dụng, không có giá trị tiền mặt và không thể quy đổi hay chuyển nhượng.

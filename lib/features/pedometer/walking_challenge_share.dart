@@ -46,8 +46,9 @@ abstract final class WalkingChallengeShare {
   /// Kakao text templates reject bodies longer than this.
   static const kakaoTextLimit = 200;
 
-  static String get promoText => '쉐어런 워킹챌린지에서 함께 걷고 SHARE를 모아보세요!\n'
-      '걸을수록 쌓이는 SHARE, 친구와 같이 시작해요.\n'
+  static String get promoText =>
+      '${RemainingSurface.trNow('pedometer.walking_challenge_share.promo_line1', '쉐어런 워킹챌린지에서 함께 걷고 SHARE를 모아보세요!')}\n'
+      '${RemainingSurface.trNow('pedometer.walking_challenge_share.promo_line2', '걸을수록 쌓이는 SHARE, 친구와 같이 시작해요.')}\n'
       '${RemainingSurface.trNow('pedometer.walking_challenge_share.body.7', '#쉐어런 #워킹챌린지 #ShareRun')}';
 
   static const dailyGoalBragKey = Key('walking-daily-goal-brag');
@@ -60,10 +61,9 @@ abstract final class WalkingChallengeShare {
         '쉐어런 오늘의 목표 달성',
       );
 
-  static const dailyGoalBragText = '오늘의 목표 달성! 🎉\n'
-      '쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n'
-      '걷고 SHARE 모으고, 내일도 같이 걸어요!\n'
-      '#쉐어런 #워킹챌린지 #오늘의목표달성';
+  static String get dailyGoalBragText =>
+      '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_text', '오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n걷고 SHARE 모으고, 내일도 같이 걸어요!')}\n'
+      '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_tags', '#쉐어런 #워킹챌린지 #오늘의목표달성')}';
 
   /// Test hook. Production always uses [SharePlus.instance].
   @visibleForTesting

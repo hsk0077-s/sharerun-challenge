@@ -16,8 +16,8 @@ ShareRun ("Selama jantung berdetak, berbagi terus berlari") adalah aplikasi tant
 ■ Pedometer Harian (100 Langkah = 10 SHARE)
 • Pantau langkah harian dari bilah notifikasi dan kumpulkan 10 SHARE setiap 100 langkah terverifikasi (batas dasar 6.000 langkah / 600 SHARE per hari) untuk mengikuti tantangan di dalam aplikasi.
 
-■ 5 Tingkat Hewan: Dari Siput hingga Cheetah
-• Selesaikan 3 lari terverifikasi di hari berbeda untuk mendapatkan peringkat (Siput, Kura-kura, Kelinci, Kuda, Cheetah dalam 25 sub-tier) dan ikuti tantangan 1K, 3K, 5K, hingga 10K.
+■ 5 Tingkat Hewan: Dari Kura-kura hingga Cheetah
+• Mulai sebagai Kura-kura Perunggu dari lari terverifikasi 1 km pertama, lalu naik satu tingkat setiap hari kamu menyelesaikan lari terverifikasi (Kura-kura, Beagle, Serigala, Zebra, Cheetah dalam 25 sub-tier) dan ikuti tantangan 1K, 3K, 5K, hingga 10K.
 
 ■ Komunitas Lari (Crew) & Pelatih Suara
 • Bentuk Crew bersama teman dan kejar peringkat total jarak mingguan serta bulanan.
@@ -29,8 +29,8 @@ ShareRun ("Selama jantung berdetak, berbagi terus berlari") adalah aplikasi tant
 
 ■ Anti-Curang Jena AI & Dana Amal
 • Jena AI memeriksa GPS, kadens, giroskop, dan detak jantung untuk mencegah kecurangan kendaraan atau alat pengocok langkah.
-• Setiap 1 km lari terverifikasi menyumbangkan setara 100 KRW (dalam batas bulanan penyelenggara) ke dana donasi penyelenggara dan sponsor.
-• Satu anggaran bulanan penyelenggara untuk seluruh dunia, bukan donasi pengguna. Disalurkan ke satu lembaga terdaftar di Korea, tanpa bukti potong pajak.
+• Penyelenggara berencana menyumbangkan 100 KRW dari dana perusahaan untuk setiap 1 km lari terverifikasi (maks. 10 km per orang per hari, dengan batas global 1.000.000 KRW per bulan).
+• Penerima masih dalam pembicaraan dan akan diumumkan di aplikasi. Ini anggaran penyelenggara, bukan donasi pengguna, tanpa bukti potong pajak.
 
 [Pemberitahuan Penting]
 ※ SHARE, DIA, dan VALUE adalah poin virtual khusus di dalam aplikasi tanpa nilai uang tunai dan tidak dapat diuangkan atau dipindahtangankan.

@@ -422,7 +422,7 @@ class _DonationGraphic extends StatelessWidget {
               SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  '운영자 이름으로 기부돼요 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인',
+                  '회사(운영자) 자금으로 기부 예정 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인',
                   style: TextStyle(
                       fontWeight: FontWeight.w700,
                       height: 1.4,

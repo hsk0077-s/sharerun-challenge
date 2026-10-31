@@ -301,7 +301,7 @@ abstract final class AppStrings {
   static String get challengeDetailEntryFee => RemainingSurface.trNow('app.dashboardChallenge2Sub', '참가비: 1,200 SHARE');
   static const challengeDetailGoldBadge = '골드';
   static String get challengeDetailPrize => noCashPrizePool;
-  static String get challengeDetailDonation => RemainingSurface.trNow('app.challengeDetailDonation', '기부: 운영자·스폰서 이름으로');
+  static String get challengeDetailDonation => RemainingSurface.trNow('app.challengeDetailDonation', '기부: 회사(운영자) 자금으로 기부 예정');
   static String get challengeDetailDistance => RemainingSurface.trNow('app.challengeDetailDistance', '거리: 3km');
   static String get challengeDetailDonationTarget => RemainingSurface.trNow('app.challengeDetailDonationTarget', '기부처: 정해지면 알려 드려요');
   static String get challengeDetailValueTip => RemainingSurface.trNow('app.challengeDetailValueTip', '검증 완주 보상은 참가비를 VALUE로 바꾸지 않습니다.');
@@ -337,7 +337,7 @@ abstract final class AppStrings {
       RemainingSurface.trNow('app.runResultValueReward', '서버 확인 노력 보상 +\$tokens VALUE', {'tokens': tokens});
   static String get runResultUnconfirmed => RemainingSurface.trNow('app.runResultUnconfirmed', '서버에서 확인된 기록이 없습니다.');
   static const runResultDonatePending = '준비 중';
-  static String get runResultDonate => RemainingSurface.trNow('app.runResultDonate', '❤️ 기부처에 내 이름으로 기부하기');
+  static String get runResultDonate => RemainingSurface.trNow('app.runResultDonate', '❤️ 이번 달리기 기부 기여 보기');
   static String get runResultShare => RemainingSurface.trNow('app.runResultShare', '🔗 기록 SNS 공유하기');
 
   // ── My Page (Screen 12) ───────────────────────────────────────────

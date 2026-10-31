@@ -108,7 +108,8 @@ void main() {
       expect(text.contains(banned), isFalse, reason: banned);
     }
     expect(text, contains(DonationSettlementScreen.disclaimer));
-    expect(text, contains('운영자·스폰서'));
+    expect(text, contains('회사(운영자) 자금'));
+    expect(text, isNot(contains('스폰서')));
   });
 
   testWidgets('a failed load can be retried', (tester) async {

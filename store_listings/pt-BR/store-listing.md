@@ -16,8 +16,8 @@ ShareRun ("Enquanto o coração bater, a solidariedade continua correndo") é o 
 ■ Pedômetro Diário (100 Passos = 10 SHARE)
 • Acompanhe seus passos na barra de notificações e receba 10 SHARE a cada 100 passos verificados (limite base de 6.000 passos / 600 SHARE por dia) para entrar em desafios no app.
 
-■ 5 Níveis de Animais: Do Caracol ao Guepardo
-• Complete 3 corridas verificadas em dias diferentes para receber seu nível (Caracol, Tartaruga, Coelho, Cavalo e Guepardo, com 25 subníveis) e dispute desafios justos de 1K, 3K, 5K e 10K.
+■ 5 Níveis de Animais: Da Tartaruga ao Guepardo
+• Comece como Tartaruga Bronze com sua primeira corrida verificada de 1 km e suba um nível a cada dia com corrida verificada (Tartaruga, Beagle, Lobo, Zebra, Guepardo, com 25 subníveis) e dispute desafios justos de 1K, 3K, 5K e 10K.
 
 ■ Equipes de Corrida (Crews) e Coach por Voz
 • Monte seu Crew com amigos e suba no ranking mensal de quilometragem.
@@ -29,8 +29,8 @@ ShareRun ("Enquanto o coração bater, a solidariedade continua correndo") é o 
 
 ■ Sistema Antifraude Jena AI e Impacto Social
 • Jena AI valida GPS, cadência, giroscópio e frequência cardíaca para garantir corridas 100% autênticas.
-• Cada km verificado soma o equivalente a 100 KRW (dentro do teto mensal da operadora) ao fundo filantrópico da plataforma e patrocinadores.
-• É um orçamento mensal da operadora para o mundo todo, não uma doação do usuário. Vai para uma entidade registrada na Coreia e não gera recibo dedutível.
+• A operadora pretende doar 100 KRW com recursos da empresa a cada km verificado (até 10 km por pessoa por dia, com teto mensal global de 1.000.000 KRW).
+• O destinatário ainda está em negociação e será divulgado no app. É um orçamento da operadora, não uma doação do usuário, e não gera recibo dedutível.
 
 [Avisos Importantes]
 ※ SHARE, DIA e VALUE são moedas virtuais restritas ao app, sem valor monetário e não conversíveis em dinheiro.

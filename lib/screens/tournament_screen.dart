@@ -129,7 +129,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
           RemainingSurface.tr(
             context,
             'tournament.body.3',
-            '운영자 이름으로 기부하며 월 한도가 있어요. 기부처는 정해지면 알려 드려요.',
+            '회사(운영자) 자금으로 기부할 예정이며 월 한도가 있어요. 기부처는 협의 중이고 정해지면 알려 드려요.',
           ),
           style: storeText(12, c.muted, h: 1.4),
         ),

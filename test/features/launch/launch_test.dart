@@ -54,7 +54,7 @@ void main() {
     await tester.tap(find.byKey(IntroScreen.nextKey));
     await tester.pumpAndSettle();
     expect(find.text('한 걸음이 나눔이 된다'), findsWidgets);
-    expect(find.text('운영자 이름으로 기부돼요 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인'),
+    expect(find.text('회사(운영자) 자금으로 기부 예정 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인'),
         findsOneWidget);
 
     await tester.tap(find.byKey(IntroScreen.nextKey));

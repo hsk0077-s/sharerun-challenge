@@ -39,7 +39,7 @@ class SponsorPaymentOptionSelector extends StatelessWidget {
           ),
         ),
         RadioListTile<SponsorPaymentOption>(
-          value: SponsorPaymentOption.winnerNamedUnicefDonation,
+          value: SponsorPaymentOption.winnerNamedCharityDonation,
           groupValue: value,
           activeColor: AppColors.neonLime,
           onChanged: _handleChanged,

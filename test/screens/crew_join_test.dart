@@ -13,6 +13,7 @@ import 'package:share_run_challenge/features/wallet/providers/wallet_provider.da
 import 'package:share_run_challenge/screens/crew_room_screen.dart';
 import 'package:share_run_challenge/screens/running_crew_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 class _SeededWallet extends WalletNotifier {
   @override
@@ -203,6 +204,9 @@ Future<void> _pump(WidgetTester tester, _FakeApi api) async {
         crewApiProvider.overrideWithValue(api),
       ],
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const RunningCrewScreen(),
       ),

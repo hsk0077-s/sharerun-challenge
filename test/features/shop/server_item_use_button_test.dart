@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/features/shop/providers/server_shop_inventory_provider.dart';
 import 'package:share_run_challenge/features/shop/widgets/server_item_use_button.dart';
+import '../../support/ko_localization.dart';
 
 void main() {
   testWidgets('use button shows the server quantity and does not spend at 0',
@@ -17,6 +18,9 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(
             body: Column(
               children: [
@@ -56,6 +60,9 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(
             body: ServerItemUseButton(
               itemId: ServerShopInventory.cprId,
@@ -90,6 +97,9 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(
             body: ServerItemUseButton(
               itemId: ServerShopInventory.cprId,
@@ -122,6 +132,9 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(
             body: ServerItemUseButton(
               itemId: ServerShopInventory.cprId,

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/pedometer/walking_look.dart';
+import '../../support/ko_localization.dart';
 
 Offset _poseTranslation(WidgetTester tester) {
   final transform = tester.widget<Transform>(
@@ -20,6 +21,9 @@ Future<void> _pumpMascot(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.light,
       builder: disableAnimations
           ? (context, child) {
@@ -76,6 +80,9 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const Scaffold(
           body: WalkingHarvestCta(
@@ -97,6 +104,9 @@ void main() {
   testWidgets('WalkingMascot does not tint a square color band', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const Scaffold(
           body: WalkingMascot(
@@ -128,6 +138,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: StatefulBuilder(
           builder: (context, setState) {
@@ -232,6 +245,9 @@ void main() {
     var pickupNonce = 0;
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: StatefulBuilder(
           builder: (context, setState) {

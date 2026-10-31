@@ -5,6 +5,7 @@ import 'package:share_run_challenge/data/api/secured_action_api_client.dart';
 import 'package:share_run_challenge/features/crew/crew_membership.dart';
 import 'package:share_run_challenge/features/donation/sponsorship_records.dart';
 import 'package:share_run_challenge/screens/personal_sponsor_screen.dart';
+import '../../support/ko_localization.dart';
 
 class _FakeApi extends Fake implements SecuredActionApiClient {
   _FakeApi({required this.summary, this.mine = const MySponsorship()});
@@ -28,6 +29,9 @@ Future<void> _pump(WidgetTester tester, _FakeApi? api) async {
     ProviderScope(
       overrides: [crewApiProvider.overrideWithValue(api)],
       child: const MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         home: Scaffold(body: SingleChildScrollView(child: SponsorshipStatusCard())),
       ),
     ),

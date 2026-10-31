@@ -14,6 +14,7 @@ import 'package:share_run_challenge/features/shop/shop_request_ids.dart';
 import 'package:share_run_challenge/features/shop/streak_item_message.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/battle_pass_screen.dart';
+import '../../support/ko_localization.dart';
 
 void main() {
   test('a legacy quantity is a pass and rewards stay server ids', () {
@@ -176,6 +177,9 @@ Widget _screen(ServerShopInventory inventory) {
       ),
     ],
     child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.light,
       home: const BattlePassScreen(),
     ),

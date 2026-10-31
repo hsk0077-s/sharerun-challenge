@@ -14,6 +14,7 @@ import 'package:share_run_challenge/features/profile/widgets/retention_widgets.d
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -77,6 +78,9 @@ void main() {
             ),
           ],
           child: MaterialApp(
+            locale: koTestLocale,
+            supportedLocales: koTestSupportedLocales,
+            localizationsDelegates: koTestDelegates,
             debugShowCheckedModeBanner: false,
             theme: SrcTheme.light,
             home: const SoloPedometerScreen(),
@@ -127,6 +131,9 @@ void main() {
             pedometerStateProvider.overrideWith(_Steps2950.new),
           ],
           child: MaterialApp(
+            locale: koTestLocale,
+            supportedLocales: koTestSupportedLocales,
+            localizationsDelegates: koTestDelegates,
             debugShowCheckedModeBanner: false,
             theme: SrcTheme.light,
             home: Scaffold(

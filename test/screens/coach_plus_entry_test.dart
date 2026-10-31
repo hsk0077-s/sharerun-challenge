@@ -13,6 +13,7 @@ import 'package:share_run_challenge/data/repositories/purchase_repository.dart';
 import 'package:share_run_challenge/data/repositories/wallet_repository.dart';
 import 'package:share_run_challenge/features/iap/providers/iap_providers.dart';
 import 'package:share_run_challenge/features/iap/services/iap_purchase_controller.dart';
+import '../support/ko_localization.dart';
 
 class _FakeIap implements InAppPurchase {
   @override
@@ -49,6 +50,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const SubscriptionManagementScreen(),
         ),
@@ -87,6 +91,9 @@ void main() {
           iapPurchaseControllerProvider.overrideWithValue(controller)
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const SubscriptionManagementScreen(),
         ),
@@ -115,6 +122,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const StoreScreen(),
         ),

@@ -7,6 +7,7 @@ import 'package:share_run_challenge/features/jena_validation/models/jena_validat
 import 'package:share_run_challenge/features/run_result/run_finish_share_card.dart';
 import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -143,6 +144,9 @@ Future<void> _pump(WidgetTester tester, Widget home) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: home,
       ),

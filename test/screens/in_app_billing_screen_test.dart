@@ -4,12 +4,16 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/iap/models/share_iap_product.dart';
 import 'package:share_run_challenge/screens/in_app_billing_screen.dart';
+import '../support/ko_localization.dart';
 
 void main() {
   testWidgets('dia exchange hides SHARE won packs and DIA packs',
       (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const InAppBillingScreen(highlightAmountWon: 50000),
       ),

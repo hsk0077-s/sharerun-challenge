@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/widgets/google_signin_button.dart';
+import '../../support/ko_localization.dart';
 
 void main() {
   test('the official G logo paths read cleanly inside the 48x48 sheet', () {
@@ -33,6 +34,9 @@ void main() {
     var taps = 0;
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         home: Scaffold(
           body: SizedBox(
             width: 324,
@@ -67,6 +71,9 @@ void main() {
     Future<Size> sizeAt(double width) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(
             body: Align(
               alignment: Alignment.topLeft,

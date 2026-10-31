@@ -10,6 +10,7 @@ import 'package:share_run_challenge/features/wallet/debug_local_wallet_store.dar
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 const _wallet = WalletModel(
   shareBalance: 970000,
@@ -57,6 +58,9 @@ void main() {
           activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const SoloPedometerScreen(),
         ),

@@ -6,6 +6,7 @@ import 'package:share_run_challenge/core/strings/app_strings.dart';
 import 'package:share_run_challenge/data/api/identity_api_client.dart';
 import 'package:share_run_challenge/features/auth/login_connection_providers.dart';
 import 'package:share_run_challenge/screens/login_connections_screen.dart';
+import '../../support/ko_localization.dart';
 
 class _FakeIdentityApi implements IdentityApiClient {
   _FakeIdentityApi(this.providers);
@@ -110,7 +111,10 @@ Future<void> _pump(
           () async => 'naver-token-12345',
         ),
       ],
-      child: const MaterialApp(home: LoginConnectionsScreen()),
+      child: const MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,home: LoginConnectionsScreen()),
     ),
   );
   await tester.pumpAndSettle();

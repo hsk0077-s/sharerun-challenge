@@ -5,6 +5,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/api/identity_api_client.dart';
 import 'package:share_run_challenge/features/auth/login_connection_providers.dart';
 import 'package:share_run_challenge/screens/watch_app_preview_screen.dart';
+import '../support/ko_localization.dart';
 
 class _PairingApi implements IdentityApiClient {
   _PairingApi({this.fail = false});
@@ -51,6 +52,9 @@ Future<void> _pump(WidgetTester tester, _PairingApi api) async {
   await tester.pumpWidget(ProviderScope(
     overrides: [identityApiClientProvider.overrideWithValue(api)],
     child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.night,
       home: const WatchAppPreviewScreen(),
     ),

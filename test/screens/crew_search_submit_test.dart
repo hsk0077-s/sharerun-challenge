@@ -13,6 +13,7 @@ import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/running_crew_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -72,6 +73,9 @@ Future<void> _pumpCrewTab(
   await tester.pumpWidget(
     _scope(
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: PopScope(
           canPop: false,
@@ -83,6 +87,9 @@ Future<void> _pumpCrewTab(
             }
           },
           child: MaterialApp.router(
+            locale: koTestLocale,
+            supportedLocales: koTestSupportedLocales,
+            localizationsDelegates: koTestDelegates,
             debugShowCheckedModeBanner: false,
             theme: SrcTheme.light,
             routerConfig: router,
@@ -160,6 +167,9 @@ void main() {
     await tester.pumpWidget(
       _scope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const RunningCrewScreen(),
         ),
@@ -177,6 +187,9 @@ void main() {
     await tester.pumpWidget(
       _scope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const RunningCrewScreen(),
         ),
@@ -210,6 +223,9 @@ void main() {
     await tester.pumpWidget(
       _scope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const RunningCrewScreen(),
         ),
@@ -237,6 +253,9 @@ void main() {
     await tester.pumpWidget(
       _scope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const RunningCrewScreen(),
         ),

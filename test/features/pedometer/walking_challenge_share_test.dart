@@ -16,6 +16,7 @@ import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../support/golden_helper.dart';
+import '../../support/ko_localization.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -123,6 +124,9 @@ void main() {
           activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const SoloPedometerScreen(),
         ),
@@ -175,6 +179,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const Scaffold(
           body: Padding(
@@ -212,6 +219,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         debugShowCheckedModeBanner: false,
         theme: SrcTheme.light,
         home: const Scaffold(
@@ -256,6 +266,9 @@ void main() {
           activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const SoloPedometerScreen(),
         ),
@@ -295,6 +308,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const OnboardingRunResultScreen(
             distanceKm: 8.35,
@@ -346,6 +362,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const ChallengeDetailScreen(),
         ),
@@ -569,6 +588,9 @@ void main() {
           activeUserTierProvider.overrideWith((ref) => Stream<int>.value(0)),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const SoloPedometerScreen(),
         ),
@@ -614,6 +636,9 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const Scaffold(
           body: Padding(
@@ -668,6 +693,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const OnboardingRunResultScreen(
             distanceKm: 8.35,
@@ -729,6 +757,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const OnboardingRunResultScreen(
             distanceKm: 8.35,
@@ -764,6 +795,9 @@ Future<void> _pumpShareChooser(
 }) {
   return tester.pumpWidget(
     MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       home: Scaffold(
         body: Builder(
           builder: (context) {

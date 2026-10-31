@@ -11,6 +11,7 @@ import 'package:share_run_challenge/features/pedometer/account_daily_steps_provi
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/solo_pedometer_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 const _wallet = WalletModel(
   shareBalance: 90000,
@@ -41,6 +42,9 @@ Widget _walking() {
       accountDailyStepsProvider.overrideWith((ref, dayKey) => Stream.value(0)),
     ],
     child: MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       debugShowCheckedModeBanner: false,
       theme: SrcTheme.light,
       home: const SoloPedometerScreen(),

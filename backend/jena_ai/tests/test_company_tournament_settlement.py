@@ -1130,3 +1130,72 @@ def test_ungraded_finisher_gets_no_promotion_doc() -> None:
     _settle(db)
 
     assert not [path for path in db.store if path.startswith("promotionLedger/")]
+
+
+def _live_prize_route() -> list[dict]:
+    points = []
+    lat = 37.5
+    lng = 127.0
+    for index in range(36):
+        lat += (17 + (index * 3 % 11)) / 111_320.0
+        lng += ((index * 5 % 13) - 6) / 88_300.0
+        points.append(
+            {
+                "latitude": lat,
+                "longitude": lng,
+                "recordedAt": f"2026-10-05T00:{index // 60:02d}:{index % 60:02d}+00:00",
+            }
+        )
+    return points
+
+
+def test_beginner_finish_with_a_hidden_fast_sample_is_not_a_prize_finish() -> None:
+    db = _MemoryDb()
+    user = _wallet()
+    user["gradeRank"] = 1
+    user["gradeCode"] = "turtle_bronze"
+    user["economy"] = {
+        "paceSamples": [
+            {"day": "2026-10-01", "activityId": "walk", "paceSec": 600},
+        ]
+    }
+    db.store["users/u1"] = user
+    db.store["tournaments/race"] = {
+        "prizeTier": "beginner",
+        "targetDistanceKm": 1,
+        "status": "active",
+    }
+    db.store["tournaments/race/participants/u1"] = {"uid": "u1", "status": "joined"}
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+
+    def persist(activity_id: str, duration: int, *, live: bool = False) -> None:
+        request = ValidateRunRequest(
+            activity_id=activity_id,
+            distance_km=1,
+            duration_seconds=duration,
+            gyro_stability_score=0.9,
+            tournament_id="race",
+            total_steps=1400 if live else None,
+            cadence_spm=[150, 160, 155] if live else [],
+            gps_route=_live_prize_route() if live else [],
+        )
+        service._persist_validation_tx(
+            _MemoryTxn(),
+            "u1",
+            request,
+            ValidationResult(
+                verified=True,
+                decision="verified",
+                reason="ok",
+                value_token_reward=10,
+                forfeit_deposit=False,
+            ),
+            db.collection("activities").document(activity_id),
+            db.collection("users").document("u1"),
+        )
+
+    persist("sprint", 300)
+    assert "durationSeconds" not in db.store["tournaments/race/participants/u1"]
+    persist("walk", 600, live=True)
+    assert db.store["tournaments/race/participants/u1"]["durationSeconds"] == 600
+    assert db.store["tournaments/race/participants/u1"]["verifiedFinish"] is True

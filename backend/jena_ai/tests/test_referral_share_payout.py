@@ -6,7 +6,8 @@ from types import SimpleNamespace
 import pytest
 from fastapi import HTTPException
 
-from app.models.secured_actions import ValidateRunRequest
+from app.models.secured_actions import RoutePointPayload, ValidateRunRequest
+from app.services.twin_run import run_signature
 from app.models.validation_result import ValidationResult
 from app.services.economy_service import EconomyService
 from app.services.secured_action_service import (
@@ -823,6 +824,102 @@ def test_same_phone_start_delayed_181s_holds_the_referee() -> None:
     assert referrer["reason"] == "twin_run"
 
 
+def _east_line(shift_m: float = 0.0) -> list[dict]:
+    return [
+        {
+            "latitude": 37.5 + (index * 10.0) / 111_320.0,
+            "longitude": 127.0 + shift_m / 88_300.0,
+            "recordedAt": "t",
+        }
+        for index in range(40)
+    ]
+
+
+def test_a_straight_slide_waits_seven_days_then_pays_unless_rejected() -> None:
+    """Same signature, straight route pushed 150m. Not an immediate twin.
+
+    The pair is 40,000 + 30,000 SHARE. It sits on the review queue and
+    pays after seven days. A rejection keeps it.
+    """
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_run_device="phone-r")
+    cadence = [170] * 20
+    signature = run_signature(distance_km=1.1, duration_seconds=400, cadence_spm=cadence)
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _east_line(),
+        "deviceId": "phone-r",
+    }
+    _finish_referral(
+        db,
+        device_id="phone-b",
+        route=_east_line(150.0),
+        started=_DAY3 + timedelta(seconds=30),
+        cadence=cadence,
+    )
+    assert _share(db, "u2") == 40
+    assert _share(db, "u1") == 20
+    assert db.store["referralPayouts/u2_trial_referee"]["reason"] == "copy_review"
+    assert db.store["referralPayouts/u2_trial_referee"]["detail"] == "straight_slide"
+    assert db.store["referralReviews/u2_u2_trial_referee"]["status"] == "pending"
+    assert db.store["referralReviews/u1_u2_trial_referrer"]["detail"] == "straight_slide"
+    service = _service(db)
+    assert service.release_due_copy_reviews(_DAY3 + timedelta(days=6)) == 0
+    assert _share(db, "u2") == 40
+    db.store["referralReviews/u1_u2_trial_referrer"]["status"] = "rejected"
+    assert service.release_due_copy_reviews(_DAY3 + timedelta(days=7, minutes=1)) == 2
+    assert _share(db, "u2") == 50_040
+    assert _share(db, "u1") == 20
+
+
+def test_a_late_signature_change_is_reviewed_and_a_different_route_is_paid() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=2, referrer_run_device="phone-same")
+    cadence = [170] * 20
+    signature = run_signature(distance_km=1.1, duration_seconds=400, cadence_spm=cadence)
+    db.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _square(),
+        "deviceId": "phone-same",
+    }
+    _finish_referral(
+        db,
+        device_id="phone-same",
+        route=_square(200.0),
+        started=_DAY3 + timedelta(minutes=31),
+        cadence=[90] * 20,
+    )
+    assert _share(db, "u2") == 40
+    assert db.store["referralPayouts/u2_trial_referee"]["detail"] == "late_signature"
+    assert db.store["referralPayouts/u2_trial_referrer"]["amount"] == 0
+
+    other = _MemoryDb()
+    _seed_pair(other, trial_run_count=2, referrer_run_device="phone-same")
+    other.store["activities/referrer-outing"] = {
+        "userId": "u1",
+        "jenaVerified": True,
+        "startedAt": _DAY3.isoformat(),
+        "runSignature": signature,
+        "gpsRoute": _square(),
+        "deviceId": "phone-same",
+    }
+    _finish_referral(
+        other,
+        device_id="phone-same",
+        route=_east_line(),
+        started=_DAY3 + timedelta(minutes=31),
+        cadence=[90] * 20,
+    )
+    assert _share(other, "u2") == 50_040
+    assert "referralReviews/u2_u2_trial_referee" not in other.store
+
+
 def test_validation_wrapper_passes_transaction_before_service() -> None:
     from unittest.mock import MagicMock
 
@@ -848,3 +945,59 @@ def test_validation_wrapper_passes_transaction_before_service() -> None:
         account_created_at=None,
         now=None,
     )
+
+
+def test_a_twin_of_the_referrer_does_not_count_toward_the_trial() -> None:
+    db = _MemoryDb()
+    _seed_pair(db, trial_run_count=0)
+    started = "2026-10-01T03:00:00+00:00"
+    route = [
+        {"latitude": 37.5, "longitude": 127.0},
+        {"latitude": 37.501, "longitude": 127.001},
+    ]
+    db.store["activities/referrer-run"] = {
+        "userId": "u1",
+        "startedAt": started,
+        "runSignature": run_signature(
+            distance_km=1.1, duration_seconds=400, cadence_spm=[]
+        ),
+        "gpsRoute": route,
+    }
+    service = _service(db)
+    points = [
+        RoutePointPayload(latitude=37.5, longitude=127.0, recordedAt=started),
+        RoutePointPayload(latitude=37.501, longitude=127.001, recordedAt=started),
+    ]
+
+    def persist(activity_id: str, started_at: str) -> None:
+        request = ValidateRunRequest(
+            activity_id=activity_id,
+            distance_km=1.1,
+            duration_seconds=400,
+            gyro_stability_score=0.5,
+            started_at=started_at,
+            gps_route=points,
+        )
+        result = ValidationResult(
+            verified=True,
+            decision="verified",
+            reason="ok",
+            value_token_reward=0,
+            forfeit_deposit=False,
+        )
+        service._persist_validation_tx(
+            _MemoryTxn(),
+            "u2",
+            request,
+            result,
+            db.collection("activities").document(activity_id),
+            db.collection("users").document("u2"),
+            account_created_at=_DAY1,
+            now=_DAY1,
+        )
+
+    persist("twin", started)
+    assert db.store["users/u2"]["economy"]["trialRunCount"] == 1
+    assert db.store["referralPayouts/u2_trial_referee_1"]["reason"] == "twin_run"
+    assert _share(db, "u2") == 40
+    assert db.store["activities/twin"]["runSignature"] == db.store["activities/referrer-run"]["runSignature"]

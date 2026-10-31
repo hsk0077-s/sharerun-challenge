@@ -10,6 +10,7 @@ from app.services.grade_assignment import (
     assignment_from_runs,
     grade_for_pace,
     median_pace,
+    sandbag_pace,
 )
 from app.services.secured_action_service import SecuredActionService
 from test_redeem_referral import _MemoryDb, _MemoryTxn
@@ -212,6 +213,14 @@ def test_adjacent_animal_seam_drops_one_rank_as_pace_slows() -> None:
         rank = grade_for_pace(pace)[1]
         assert rank <= previous
         previous = rank
+
+
+def test_sandbag_pace_needs_a_fast_sample_far_from_the_median() -> None:
+    assert sandbag_pace([600]) is False
+    assert sandbag_pace([600, 540]) is False
+    assert sandbag_pace([600, 300]) is True
+    assert sandbag_pace([600], 300) is True
+    assert sandbag_pace([600, 540], 520) is False
 
 
 def test_tier_animals_cover_the_ladder() -> None:

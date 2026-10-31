@@ -201,6 +201,26 @@ def test_a_beginner_prize_holds_when_the_run_has_no_companion_signal() -> None:
     assert with_steps["prizeHoldReason"] == "sparse_gps"
 
 
+def _live_trace(count: int = 40) -> list[dict]:
+    """About 1km. Each step is a different length, so it is not a drawing."""
+    points = []
+    elapsed = 0
+    lat = 37.5
+    lng = 127.0
+    for index in range(count):
+        elapsed += 11 + (index * 5 % 9)
+        lat += (18 + (index * 3 % 11)) / 111_320.0
+        lng += ((index * 7 % 17) - 8) / 88_300.0
+        points.append(
+            {
+                "latitude": lat,
+                "longitude": lng,
+                "recordedAt": (_START + timedelta(seconds=elapsed)).isoformat(),
+            }
+        )
+    return points
+
+
 def _dense_irregular(count: int = 40) -> list[dict]:
     """About 1km with uneven gaps. Dense enough to be a live trace."""
     points = []
@@ -228,8 +248,20 @@ def test_dense_irregular_gps_with_steps_still_pays_and_unbacked_cadence_does_not
         total_steps=2200,
         gps_route=route,
     )
-    assert paid["verifiedFinish"] is True
-    assert "prizeHeld" not in paid
+    assert paid["prizeHeld"] is True
+    assert paid["prizeHoldReason"] == "repeated_trace"
+    assert paid["verifiedFinish"] is False
+    # A first race with an empty pace list and a noisy live trace still
+    # finishes. Closing the door on an empty list would block that runner.
+    assert beginner_entry_block(_user([])) is None
+    live = _finish(
+        900,
+        cadence_spm=[150, 162, 158],
+        total_steps=1400,
+        gps_route=_live_trace(),
+    )
+    assert live["verifiedFinish"] is True
+    assert "prizeHeld" not in live
     unbacked = _finish(
         900,
         cadence_spm=[150, 162, 158],

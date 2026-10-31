@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/route_names.dart';
 import '../../../core/navigation/app_route_nav.dart';
 import '../../../core/strings/app_strings.dart';
+import '../../../l10n/shop_catalog_copy.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/item_inventory_screen.dart';
@@ -95,7 +96,7 @@ class WalletInventorySection extends ConsumerWidget {
               ? '배틀런 패스+'
               : serverShopItemTitle(ServerShopInventory.battlePassId) ?? '',
           count: shop.battlePassCount,
-          note: AppStrings.battlePassInventoryNote,
+          note: ShopCatalogCopy.of(Localizations.localeOf(context)).pass('inventoryNote'),
         ),
     ];
 

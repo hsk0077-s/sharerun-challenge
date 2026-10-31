@@ -1,4 +1,7 @@
+import 'package:flutter/widgets.dart';
+
 import '../onboarding/src_onboarding_controller.dart';
+import 'accessory_names.dart';
 
 /// 캐릭터를 꾸미는 소품·스킨 46종. 디자인팀 납품 세트(2026-10-14)를 옮긴 것이다.
 /// 그림은 모두 1024 판 전체 크기라서 위치 계산 없이 순서대로 겹치기만 하면 된다.
@@ -88,6 +91,12 @@ class Accessory {
 
   static String _path(String folder, String file, TierAnimal animal) =>
       'assets/images/accessories/$folder/$file-${animal.code}.webp';
+
+  /// Locale name. Korean stays [nameKo] so older callers keep working.
+  String displayName(Locale locale) {
+    if (locale.languageCode == 'ko') return nameKo;
+    return accessoryDisplayName(id, locale.languageCode) ?? nameKo;
+  }
 
   /// 화면에 보여 줄 값 문구. 가격이 없으면 비운다.
   String get priceLabel {

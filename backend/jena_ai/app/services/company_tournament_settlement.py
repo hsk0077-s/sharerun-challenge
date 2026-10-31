@@ -188,6 +188,33 @@ def gps_trace_sparse(route: list, duration_seconds: int | float) -> bool:
     return 2 <= len(points) < SPARSE_GPS_MAX_POINTS
 
 
+def repeated_vector_trace(route: list | None) -> bool:
+    """True when a dense trace repeats a handful of the same steps.
+
+    A live GPS fix does not repeat the same 1m step eight times. A
+    drawing that adds points and a step count still does. A noisy trace,
+    including a first race, stays out.
+    """
+    points = _route_samples(route or [])
+    if len(points) < 16:
+        return False
+    vectors: list[tuple[int, int]] = []
+    for left, right in zip(points, points[1:]):
+        north_m = (right[0] - left[0]) * 111_320.0
+        east_m = (right[1] - left[1]) * 88_300.0
+        north = int(round(north_m))
+        east = int(round(east_m))
+        if north == 0 and east == 0:
+            continue
+        vectors.append((north, east))
+    if len(vectors) < 12:
+        return False
+    counts: dict[tuple[int, int], int] = {}
+    for vector in vectors:
+        counts[vector] = counts.get(vector, 0) + 1
+    return len(counts) <= 6 and max(counts.values()) >= 8
+
+
 def beginner_signal_hold(
     *,
     heart_rates: list | None,
@@ -206,7 +233,8 @@ def beginner_signal_hold(
     sends cadence and no route is not this case. No steps, cadence, or
     heart rate, and no route to judge, is the other case. ``None`` means the caller did
     not send that signal, so older tests that omit it are left alone.
-    A dense irregular trace that also sends a step total is not held.
+    A dense trace that repeats the same few steps is held even with a
+    step total. A noisy live trace is not.
     """
     if isinstance(gps_route, list) and gps_spacing_uniform(gps_route):
         return "uniform_gps"
@@ -232,6 +260,8 @@ def beginner_signal_hold(
     route_points = _route_samples(gps_route) if isinstance(gps_route, list) else []
     if _positive_series(cadence_spm) and steps <= 0 and len(route_points) >= 2:
         return "cadence_unbacked"
+    if steps > 0 and isinstance(gps_route, list) and repeated_vector_trace(gps_route):
+        return "repeated_trace"
     route_known = isinstance(gps_route, list)
     route_short = not route_known or len(_route_samples(gps_route or [])) < 2
     if (

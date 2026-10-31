@@ -4,12 +4,14 @@ from datetime import datetime, timedelta, timezone
 
 from app.services.twin_run import (
     bare_phone_twin,
+    copy_review_detail,
     is_twin_run,
     offset_route_twin,
     referral_twin_reason,
     run_signature,
     same_device_delayed_copy,
     same_device_shifted_route,
+    _time,
 )
 
 NOW = datetime(2026, 10, 6, 1, 0, tzinfo=timezone.utc)
@@ -185,6 +187,7 @@ def test_a_straight_slide_or_a_far_slide_is_not_an_offset_twin() -> None:
     )
     assert not offset_route_twin(left, straight)
     assert referral_twin_reason(left, straight) is None
+    assert copy_review_detail(left, straight) == "straight_slide"
 
     loop = _run(deviceId="phone-a", gpsRoute=_loop())
     far = _run(
@@ -193,6 +196,7 @@ def test_a_straight_slide_or_a_far_slide_is_not_an_offset_twin() -> None:
         startedAt=(NOW + timedelta(seconds=20)).isoformat(),
     )
     assert not offset_route_twin(loop, far)
+    assert copy_review_detail(loop, far) == "far_slide"
     changed = _run(
         deviceId="phone-b",
         gpsRoute=_loop(150.0),
@@ -220,6 +224,15 @@ def test_same_phone_delayed_past_three_minutes_holds_only_inside_thirty() -> Non
     )
     assert not same_device_delayed_copy(left, too_late)
     assert referral_twin_reason(left, too_late) is None
+    assert copy_review_detail(left, too_late) is None
+    changed_late = _run(
+        deviceId="phone-a",
+        gpsRoute=_loop(400.0),
+        runSignature="other-signature",
+        startedAt=(NOW + timedelta(minutes=31)).isoformat(),
+    )
+    assert referral_twin_reason(left, changed_late) is None
+    assert copy_review_detail(left, changed_late) == "late_signature"
     other_workout = _run(
         deviceId="phone-a",
         gpsRoute=[_north(i, 25.0) for i in range(30)],
@@ -228,6 +241,7 @@ def test_same_phone_delayed_past_three_minutes_holds_only_inside_thirty() -> Non
     )
     assert not same_device_delayed_copy(left, other_workout)
     assert referral_twin_reason(left, other_workout) is None
+    assert copy_review_detail(left, other_workout) is None
 
 
 def _north(index: int, step_m: float, shift_m: float = 0.0) -> dict:
@@ -245,3 +259,17 @@ def test_a_long_route_still_matches_when_samples_are_out_of_phase() -> None:
         startedAt=(NOW + timedelta(seconds=30)).isoformat(),
     )
     assert is_twin_run(left, right)
+
+
+def test_a_start_time_without_a_zone_is_read_as_utc_and_never_raises() -> None:
+    zoneless = {"startedAt": "2026-10-28T10:00:00", "runSignature": "sig", "deviceId": "d1"}
+    aware = {"startedAt": "2026-10-28T10:00:30+00:00", "runSignature": "sig", "deviceId": "d1"}
+    other_zone = {"startedAt": "2026-10-28T19:00:30+09:00", "runSignature": "sig", "deviceId": "d1"}
+    for left, right in ((zoneless, aware), (aware, zoneless), (zoneless, other_zone)):
+        is_twin_run(left, right)
+        bare_phone_twin(left, right)
+        same_device_delayed_copy(left, right)
+    assert _time(zoneless["startedAt"]) == _time(aware["startedAt"]) - timedelta(seconds=30)
+    assert _time("2026-10-28T10:00:00").tzinfo is not None
+    assert _time(datetime(2026, 10, 28, 10, 0, 0)).tzinfo is not None
+    assert _time("not a time") is None

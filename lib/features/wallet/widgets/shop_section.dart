@@ -127,12 +127,12 @@ class _ShopItemCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.title,
+                  item.titleFor(Localizations.localeOf(context)),
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  item.description,
+                  item.descriptionFor(Localizations.localeOf(context)),
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,

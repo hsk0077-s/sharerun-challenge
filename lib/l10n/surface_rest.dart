@@ -1,9 +1,10 @@
 import 'package:flutter/widgets.dart';
 
-/// Draft copy for home cards, settings categories, the wallet, and grade animals.
+/// Home cards, settings categories, the wallet, and grade animals.
 ///
-/// Sentences are a first pass. Do not put them on an ad landing page before
-/// a native review. Product numbers stay in the code that already owns them.
+/// The 90 keys were rewritten as product copy a native reader can use.
+/// Country watch-share figures in the debate note are still assumptions.
+/// Product numbers stay in the code that already owns them.
 const restLanguageOrder = <String>[
   'ko',
   'en',
@@ -24,13 +25,13 @@ const homeSurfaceRows = <String, List<String>>{
     'Link a watch',
     'ウォッチ連携',
     '連結手錶',
-    'Vincular reloj',
+    'Vincular un reloj',
     'Vincular relógio',
     'Uhr verbinden',
     'Lier la montre',
     'Liên kết đồng hồ',
     'เชื่อมนาฬิกา',
-    'Hubungkan jam',
+    'Hubungkan jam tangan',
   ],
   'linking': [
     '연동 중...',
@@ -40,7 +41,7 @@ const homeSurfaceRows = <String, List<String>>{
     'Vinculando...',
     'Vinculando...',
     'Verbinden...',
-    'Liaison...',
+    'Connexion...',
     'Đang liên kết...',
     'กำลังเชื่อม...',
     'Menghubungkan...',
@@ -52,7 +53,7 @@ const homeSurfaceRows = <String, List<String>>{
     '我的錢包',
     'Mi cartera',
     'Minha carteira',
-    'Mein Wallet',
+    'Mein Geldbeutel',
     'Mon portefeuille',
     'Ví của tôi',
     'กระเป๋าของฉัน',
@@ -78,7 +79,7 @@ const homeSurfaceRows = <String, List<String>>{
     '還沒有招募中的賽事。',
     'Todavía no hay una carrera abierta.',
     'Ainda não há uma prova aberta.',
-    'Noch kein Rennen ist offen.',
+    'Noch ist kein Rennen offen.',
     'Aucune course n’est ouverte.',
     'Chưa có giải nào đang mở.',
     'ยังไม่มีการแข่งขันที่เปิดรับ',

@@ -50,10 +50,10 @@ def test_the_card_still_has_a_goal_after_the_old_last_stage() -> None:
     db = _MemoryDb()
     db.store["donationMonthTotals/2026-10"] = {"totalWon": 300_000}
     out = fg.summary(db, datetime(2026, 10, 20, 3, tzinfo=timezone.utc))
-    assert out["goal_won"] == 1_000_000
+    assert out["goal_won"] == 500_000
     assert out["cap_won"] == 1_000_000
     assert out["cap_reached"] is False
-    assert out["stage_count"] == 3
+    assert out["stage_count"] == 4
 
     db.store["donationMonthTotals/2026-10"] = {"totalWon": 1_000_000}
     done = fg.summary(db, datetime(2026, 10, 20, 3, tzinfo=timezone.utc))
@@ -73,3 +73,6 @@ def test_a_stage_above_the_cap_is_replaced_by_the_cap() -> None:
 def test_without_any_data_the_card_starts_at_the_first_goal() -> None:
     out = fg.summary(_MemoryDb(), datetime(2026, 10, 1, tzinfo=timezone.utc))
     assert (out["total_won"], out["goal_won"], out["cap_won"]) == (0, 100_000, 1_000_000)
+    assert fg.DEFAULT_STAGES == (100_000, 300_000, 500_000, 1_000_000)
+    assert fg.progress(400_000, fg.DEFAULT_STAGES, 1_000_000)["goal_won"] == 500_000
+    assert fg.progress(1_000_000, fg.DEFAULT_STAGES, 1_000_000)["goal_won"] == 0

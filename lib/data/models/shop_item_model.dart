@@ -1,3 +1,7 @@
+import 'package:flutter/widgets.dart';
+
+import '../../l10n/shop_catalog_copy.dart';
+
 class ShopItemModel {
   const ShopItemModel({
     required this.id,
@@ -16,6 +20,16 @@ class ShopItemModel {
   final int shareCost;
   final int valueCost;
   final String iconName;
+
+  String titleFor(Locale locale) {
+    final copy = ShopCatalogCopy.of(locale).title(id);
+    return copy.isEmpty ? title : copy;
+  }
+
+  String descriptionFor(Locale locale) {
+    final copy = ShopCatalogCopy.of(locale).description(id);
+    return copy.isEmpty ? description : copy;
+  }
 
   static const catalog = <ShopItemModel>[
     ShopItemModel(

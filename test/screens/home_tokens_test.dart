@@ -12,6 +12,7 @@ import 'package:share_run_challenge/data/models/wallet_model.dart';
 import 'package:share_run_challenge/features/donation/today_donation.dart';
 import 'package:share_run_challenge/features/home/home_cards.dart';
 import 'package:share_run_challenge/l10n/app_localizations.dart';
+import 'package:share_run_challenge/l10n/guidance_copy.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/profile/widgets/retention_widgets.dart';
 import 'package:share_run_challenge/features/stamp/providers/stamp_tour_enabled_provider.dart';
@@ -166,7 +167,9 @@ void main() {
 
     expect(find.byKey(const Key('home-greeting')), findsOneWidget);
     expect(find.byKey(HomeDonationCard.amountKey), findsOneWidget);
-    expect(find.text('300원'), findsOneWidget);
+    final amountContext = tester.element(find.byKey(HomeDonationCard.amountKey));
+    final suffix = DonationGuidance.of(Localizations.localeOf(amountContext)).currencySuffix;
+    expect(find.text('300$suffix'), findsOneWidget);
     expect(find.textContaining('현금 상금 없음'), findsOneWidget);
     expect(find.text('대회 상세 보기'), findsNWidgets(2));
     expect(find.text('걷기 챌린지 보기'), findsOneWidget);

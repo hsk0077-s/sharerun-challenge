@@ -19,7 +19,7 @@ look like that. The run itself still counts. Missing times do not match,
 so older rows are left alone.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 import math
 import statistics
@@ -35,14 +35,21 @@ TWIN_ROUTE_FRACTION = 0.5
 # minutes catches a few minutes of waiting. A later start is left alone.
 SAME_DEVICE_DELAY_SECONDS = 30 * 60
 # A copied track shifted sideways. Under 40m is already the overlap check.
-# Over 2km is another neighbourhood and is not called a copy.
+# Over 2km is not a confirmed copy. A farther slide can still be reviewed.
 OFFSET_MIN_METERS = 40.0
 OFFSET_MAX_METERS = 2000.0
+# Straight slides and slides past 2km are uncertain, so they wait seven
+# days on the review queue instead of being called a twin outright.
+REVIEW_MAX_METERS = 50_000.0
+# Same phone, signature changed, route still a copy. Thirty minutes is the
+# confirmed window. This one runs out to three hours.
+LATE_COPY_SECONDS = 3 * 60 * 60
 OFFSET_RESIDUAL_METERS = 25.0
 OFFSET_FRACTION = 0.85
 OFFSET_MIN_TURN_DEGREES = 25.0
 OFFSET_SAMPLES = 12
 TWIN_REASON = "twin_run"
+COPY_REVIEW = "copy_review"
 # Payout is held because the referrer has no run to compare yet.
 # It is not a twin. A later referee run reopens it once a run exists.
 REFERRER_RUN_ABSENT = "referrer_run_absent"
@@ -72,15 +79,21 @@ def run_signature(
 
 
 def _time(value: object) -> datetime | None:
+    """An aware UTC time. A value with no zone is read as UTC.
+
+    The run's start time is stored as the client sent it. A zone-less string
+    next to an aware one made the later subtraction raise TypeError.
+    """
     if isinstance(value, datetime):
-        return value if value.tzinfo else value.replace(tzinfo=datetime.now().astimezone().tzinfo)
-    if isinstance(value, str) and value:
+        parsed = value
+    elif isinstance(value, str) and value:
         try:
             parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
         except ValueError:
             return None
-        return parsed
-    return None
+    else:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
 
 
 def _points(route: object) -> list[tuple[float, float]]:
@@ -271,21 +284,20 @@ def _max_turn_degrees(points: list[tuple[float, float]]) -> float:
     return largest
 
 
-def translated_route_copy(left: dict, right: dict) -> bool:
-    """True when one route is the other, slid sideways, and the path turns.
+def _translation(left: dict, right: dict, *, max_meters: float) -> tuple[float, bool] | None:
+    """Shift in metres, and whether the path turns, when one route is a slide.
 
-    A straight line slid east matches every other straight kilometre in the
-    city, so those stay out. The shift has to be past the 40m overlap rule
-    and inside 2km. The points after that slide have to sit within 25m.
+    ``None`` when the points do not sit back down within 25m. A straight
+    kilometre is included. The caller decides which shifts count.
     """
     left_points = _route_points(left)
     right_points = _route_points(right)
     if len(left_points) < 6 or len(right_points) < 6:
-        return False
+        return None
     left_sample = _resample(left_points, OFFSET_SAMPLES)
     right_sample = _resample(right_points, OFFSET_SAMPLES)
     if len(left_sample) != OFFSET_SAMPLES or len(right_sample) != OFFSET_SAMPLES:
-        return False
+        return None
     dlat = statistics.median(
         right_sample[index][0] - left_sample[index][0] for index in range(OFFSET_SAMPLES)
     )
@@ -293,19 +305,32 @@ def translated_route_copy(left: dict, right: dict) -> bool:
         right_sample[index][1] - left_sample[index][1] for index in range(OFFSET_SAMPLES)
     )
     shift = _meters(left_sample[0], (left_sample[0][0] + dlat, left_sample[0][1] + dlng))
-    if shift <= OFFSET_MIN_METERS or shift > OFFSET_MAX_METERS:
-        return False
+    if shift <= OFFSET_MIN_METERS or shift > max_meters:
+        return None
     close = 0
     for point, other in zip(left_sample, right_sample):
         moved = (point[0] + dlat, point[1] + dlng)
         if _meters(moved, other) <= OFFSET_RESIDUAL_METERS:
             close += 1
     if close / OFFSET_SAMPLES < OFFSET_FRACTION:
-        return False
-    return (
+        return None
+    turns = (
         _max_turn_degrees(left_sample) >= OFFSET_MIN_TURN_DEGREES
         or _max_turn_degrees(right_sample) >= OFFSET_MIN_TURN_DEGREES
     )
+    return shift, turns
+
+
+def translated_route_copy(left: dict, right: dict) -> bool:
+    """True when one route is the other, slid sideways, and the path turns.
+
+    A straight line slid east matches every other straight kilometre in the
+    city, so those stay out of the confirmed twin. The shift has to be past
+    the 40m overlap rule and inside 2km. The points after that slide have
+    to sit within 25m.
+    """
+    found = _translation(left, right, max_meters=OFFSET_MAX_METERS)
+    return found is not None and found[1]
 
 
 def _signature_match(left: dict, right: dict) -> bool:
@@ -371,4 +396,40 @@ def referral_twin_reason(left: dict, right: dict) -> str | None:
         or same_device_delayed_copy(left, right)
     ):
         return TWIN_REASON
+    return None
+
+
+def copy_review_detail(left: dict, right: dict) -> str | None:
+    """Uncertain copy. Confirmed twins stay on ``referral_twin_reason``.
+
+    ``straight_slide`` is the same signature and start window as a twin,
+    but the path does not turn. ``far_slide`` is that pair pushed past 2km.
+    ``late_signature`` is the same phone 31 minutes to 3 hours later, with
+    a changed signature and a route that is still the earlier one slid.
+    A different workout on a shared phone is not this.
+    """
+    if referral_twin_reason(left, right):
+        return None
+    gap = _start_gap_seconds(left, right)
+    if gap is None:
+        return None
+    same = bool(_device_id(left)) and _device_id(left) == _device_id(right)
+    if same:
+        if gap <= SAME_DEVICE_DELAY_SECONDS or gap > LATE_COPY_SECONDS:
+            return None
+        if _signature_match(left, right):
+            return None
+        if _translation(left, right, max_meters=REVIEW_MAX_METERS) is None:
+            return None
+        return "late_signature"
+    if gap > TWIN_WINDOW_SECONDS or not _signature_match(left, right):
+        return None
+    found = _translation(left, right, max_meters=REVIEW_MAX_METERS)
+    if found is None:
+        return None
+    shift, turns = found
+    if shift > OFFSET_MAX_METERS:
+        return "far_slide"
+    if not turns:
+        return "straight_slide"
     return None

@@ -158,7 +158,7 @@ class SnailFaq {
     return {for (var i = 0; i < text.length - 1; i++) text.substring(i, i + 2)};
   }
 
-  /// 띄어쓰기와 기호를 빼고 소문자로 바꾼다. "쉐어 런"과 "쉐어런"을 같게 본다.
+  /// 띄어쓰기와 기호를 빼고 소문자로 바꾼다. 띄어 쓴 "쉐어런"과 붙여 쓴 "쉐어런"을 같게 본다.
   static String _normalize(String text) {
     return text
         .toLowerCase()

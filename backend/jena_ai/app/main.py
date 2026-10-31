@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import FastAPI, HTTPException, status
@@ -10,6 +11,9 @@ from app.routers.identity_router import router as identity_router
 from app.routers.ops_router import router as ops_router
 from app.routers.payment_router import router as payment_router
 from app.routers.secured_action_router import router as secured_action_router
+
+_log = logging.getLogger(__name__)
+_warned_no_pg_secret = False
 
 # The interactive docs list every route. Show them only on a developer machine.
 _docs = config.is_local_dev_mode()
@@ -36,15 +40,17 @@ def health() -> dict[str, str]:
 
 
 @app.get("/health/ready")
-def health_ready() -> dict[str, str]:
+def health_ready() -> dict[str, object]:
+    global _warned_no_pg_secret
     if config.is_local_dev_mode():
         return {"status": "ready", "mode": "local"}
 
-    missing_env = [
-        name
-        for name in ("PG_WEBHOOK_SECRET", "OPS_ADMIN_SECRET")
-        if not os.getenv(name)
-    ]
+    # The PG webhook secret is required only while payments are on. With
+    # payments off it is a warning, so a 1.0 deploy without it stays ready.
+    required = ["OPS_ADMIN_SECRET"]
+    if config.payments_enabled():
+        required.append("PG_WEBHOOK_SECRET")
+    missing_env = [name for name in required if not os.getenv(name)]
     if missing_env:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -53,6 +59,18 @@ def health_ready() -> dict[str, str]:
                 "missing_env": missing_env,
             },
         )
+
+    warnings: list[str] = []
+    if not config.payments_enabled() and not os.getenv("PG_WEBHOOK_SECRET"):
+        warnings.append("PG_WEBHOOK_SECRET")
+        if not _warned_no_pg_secret:
+            _warned_no_pg_secret = True
+            _log.warning(
+                "PG_WEBHOOK_SECRET is not set and PAYMENTS_ENABLED is off. "
+                "Payments stay off. Set both before turning payments on."
+            )
+    if warnings:
+        return {"status": "ready", "warnings": warnings}
     return {"status": "ready"}
 
 

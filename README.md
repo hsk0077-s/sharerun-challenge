@@ -369,7 +369,8 @@ on the live service.
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
-| `PG_WEBHOOK_SECRET` | yes | HMAC key for `POST /payments/webhook` |
+| `PAYMENTS_ENABLED` | no | Set `true` only when payments go live. Off (default): `/health/ready` does not require `PG_WEBHOOK_SECRET` and only warns |
+| `PG_WEBHOOK_SECRET` | when `PAYMENTS_ENABLED=true` | HMAC key for `POST /payments/webhook` |
 | `OPS_ADMIN_SECRET` | yes | Header `X-Ops-Admin-Secret` for BEP refund ops |
 
 Cloud Run uses Application Default Credentials. Grant the service account

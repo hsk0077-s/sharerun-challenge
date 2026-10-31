@@ -17,8 +17,8 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 • Check your real-time step count right from the notification bar.
 • Collect 10 SHARE for every 100 verified steps (up to 6,000 steps / 600 SHARE daily base cap) to enter challenges and unlock in-app items.
 
-■ 5 Animal Tiers: From Snail to Cheetah
-• Complete 3 verified runs on different days to receive your fair tier placement (Snail, Turtle, Rabbit, Horse, Cheetah across 25 sub-tiers).
+■ 5 Animal Tiers: From Turtle to Cheetah
+• Start at Turtle Bronze with your first verified 1 km run, then move up one step for each day you complete a verified run (Turtle, Beagle, Wolf, Zebra, Cheetah across 25 sub-tiers).
 • Compete in 1K, 3K, 5K, and 10K challenges against runners of similar pace and climb the seasonal leaderboard.
 
 ■ Running Crews & Voice Coach + SnailBot
@@ -29,10 +29,10 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 • Works with Apple Health and Google Health Connect (Galaxy Watch, Apple Watch, Garmin, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
 • Supports direct Bluetooth Low Energy (BLE 0x180D) Heart Rate sensors—stream live BPM with zero delay from Garmin/Xiaomi HR Broadcast or Polar, Wahoo, Coospo, and Magene straps.
 
-■ Jena AI Anti-Cheat & Charity Impact Pool
+■ Jena AI Anti-Cheat & Planned Charity Giving
 • Jena AI cross-checks GPS, cadence, motion sensors, and heart rate to block vehicles and step-shakers so only real effort counts.
-• Verified runs contribute 100 KRW equivalent per km (within the operator's monthly donation cap) to the operator & sponsor charity pool.
-• One worldwide monthly budget, paid by the operator, is settled to a single charity registered in Korea. It is not your donation and no tax-deduction receipt is issued.
+• The operator plans to donate 100 KRW from company funds for every verified km (up to 10 km per person per day, within a worldwide cap of 1,000,000 KRW per month).
+• The recipient is still being arranged and will be announced in the app. This is the operator's budget, not your donation, and no tax-deduction receipt is issued.
 
 [Important Disclosures]
 ※ SHARE, DIA, and VALUE are virtual in-app points with no monetary value and cannot be cashed out, transferred, or traded.
@@ -49,6 +49,6 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 [v1.0.0 Launch Release]
 • Outdoor GPS run tracking with start/finish privacy masking
 • Daily pedometer (100 steps = 10 SHARE, up to 600 SHARE/day base cap)
-• Jena AI anti-cheat verification & 5 Animal Tiers (Snail to Cheetah)
+• Jena AI anti-cheat verification & 5 Animal Tiers (Turtle to Cheetah)
 • Wearable connection guide (Health Connect / Apple Health) & direct BLE Heart Rate sensor (0x180D) support
 ```

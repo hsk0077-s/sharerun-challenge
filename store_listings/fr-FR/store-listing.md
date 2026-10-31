@@ -16,8 +16,8 @@ ShareRun (« Tant que votre cœur bat, le partage court aussi ») est l'applicat
 ■ Podomètre Quotidien (100 Pas = 10 SHARE)
 • Consultez vos pas dans la barre de notification et gagnez 10 SHARE tous les 100 pas vérifiés (jusqu'à 6 000 pas / 600 SHARE par jour) pour participer aux défis dans l'application.
 
-■ 5 Ligues Animales : De l'Escargot au Guépard
-• Terminez 3 courses vérifiées sur des jours différents pour obtenir votre niveau (Escargot, Tortue, Lapin, Cheval, Guépard sur 25 paliers) et participez à des courses équitables de 1 km à 10 km.
+■ 5 Ligues Animales : De la Tortue au Guépard
+• Démarrez en Tortue Bronze dès votre premier kilomètre vérifié, puis montez d'un palier chaque jour où vous terminez une course vérifiée (Tortue, Beagle, Loup, Zèbre, Guépard sur 25 paliers) et participez à des courses équitables de 1 km à 10 km.
 
 ■ Crews de Running & Coach Vocal
 • Formez un Crew avec vos amis pour grimper au classement mensuel.
@@ -29,8 +29,8 @@ ShareRun (« Tant que votre cœur bat, le partage court aussi ») est l'applicat
 
 ■ Anti-Triche Jena AI & Cagnotte Solidaire
 • Jena AI analyse le GPS, la cadence, le gyroscope et le rythme cardiaque pour garantir des courses authentiques.
-• Chaque kilomètre vérifié ajoute l'équivalent de 100 KRW (dans la limite mensuelle de l'opérateur) à la cagnotte caritative de l'opérateur.
-• Budget mensuel unique de l'opérateur pour le monde entier, pas un don de l'utilisateur. Versé à un organisme enregistré en Corée, sans reçu fiscal.
+• L'opérateur prévoit de donner 100 KRW de ses fonds propres pour chaque kilomètre vérifié (jusqu'à 10 km par personne et par jour, dans la limite mensuelle globale de 1 000 000 KRW).
+• Le bénéficiaire est en cours de discussion et sera annoncé dans l'application. C'est un budget de l'opérateur, pas un don de l'utilisateur, sans reçu fiscal.
 
 [Mentions Importantes]
 ※ SHARE, DIA et VALUE sont des points virtuels sans valeur monétaire, non échangeables contre de l'argent.

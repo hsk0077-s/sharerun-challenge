@@ -16,11 +16,11 @@ ShareRun („Solange dein Herz schlägt, läuft das Teilen weiter“) ist die fa
 ■ Täglicher Schrittzähler (100 Schritte = 10 SHARE)
 • Sieh deine Schritte direkt in der Benachrichtigungsleiste und sammle 10 SHARE pro 100 verifizierte Schritte (bis zu 6.000 Schritte / 600 SHARE Tageslimit) für Challenges und In-App-Items.
 
-■ 5 Tier-Ligen: Von der Schnecke bis zum Geparden
-• Absolviere 3 verifizierte Läufe an verschiedenen Tagen für deine Einstufung (Schnecke, Schildkröte, Hase, Pferd, Gepard in 25 Unterstufen) und miss dich über 1 km, 3 km, 5 km und 10 km.
+■ 5 Tier-Ligen: Von der Schildkröte bis zum Geparden
+• Starte mit deinem ersten verifizierten 1-km-Lauf als Schildkröte Bronze und steige an jedem Tag mit verifiziertem Lauf eine Stufe auf (Schildkröte, Beagle, Wolf, Zebra, Gepard in 25 Unterstufen) und miss dich über 1 km, 3 km, 5 km und 10 km.
 
 ■ Lauf-Crews & Sprachcoach
-•/Gründe eine Crew mit Freunden und kämpft gemeinsam um die Wochen- und Monatsrangliste.
+• Gründe eine Crew mit Freunden und kämpft gemeinsam um die Wochen- und Monatsrangliste.
 • Der Sprachcoach informiert dich unterwegs über Distanz und Pace.
 
 ■ Smartwatches, Health Connect & Direkte BLE-Herzfrequenz (0x180D)
@@ -29,8 +29,8 @@ ShareRun („Solange dein Herz schlägt, läuft das Teilen weiter“) ist die fa
 
 ■ Jena AI Anti-Cheat & Spenden-Matching
 • Jena AI prüft GPS, Schrittfrequenz, Gyroskop und Puls, um Fahrzeuge und Manipulationsgeräte auszuschließen.
-• Jeder verifizierte Laufkilometer trägt im Rahmen des monatlichen Betreiberlimits den Gegenwert von 100 KRW zum Spendenpool bei.
-• Ein weltweites Monatsbudget des Betreibers, kein Spendenbeitrag der Nutzer. Auszahlung an eine in Korea registrierte Stelle, ohne Steuerquittung.
+• Für jeden verifizierten Laufkilometer will der Betreiber 100 KRW aus Firmenmitteln spenden (bis zu 10 km pro Person und Tag, insgesamt höchstens 1.000.000 KRW pro Monat).
+• Der Empfänger wird noch abgestimmt und in der App bekanntgegeben. Es ist ein Budget des Betreibers, keine Spende der Nutzer, ohne Steuerquittung.
 
 [Wichtige Hinweise]
 ※ SHARE, DIA und VALUE sind rein virtuelle In-App-Punkte ohne Geldwert und können weder ausgezahlt noch übertragen werden.

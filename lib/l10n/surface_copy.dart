@@ -91,7 +91,7 @@ class FairEarningCopy {
           'VALUE는 환전할 수 없어요.',
         ]),
         FairBlock('기부', [
-          '검증된 달리기 1km마다 100원을 운영자·스폰서 이름으로 기부해요.',
+          '검증된 달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.',
           '운영자 기부에는 한 달 한도가 있어요. 한도가 차면 '
               '"이번 달 운영자 기부 예산을 모두 사용했어요"로 알려 드려요.',
         ]),
@@ -140,7 +140,7 @@ class FairEarningCopy {
           'VALUE cannot be cashed out.',
         ]),
         FairBlock('Donation', [
-          'Each verified 1 km donates 100 KRW in the operator’s and sponsor’s name.',
+          'For each verified 1 km, 100 KRW is planned to be donated from company (operator) funds.',
           'The operator’s donation has a monthly cap. When it is full, the app says the month’s operator donation budget is used up.',
         ]),
         FairBlock('If a record looks wrong', [
@@ -186,7 +186,7 @@ class FairEarningCopy {
           'VALUEは換金できません。',
         ]),
         FairBlock('寄付', [
-          '検証された1kmごとに100ウォンを運営者とスポンサーの名義で寄付します。',
+          '検証された1kmごとに、会社（運営者）の資金から100ウォンを寄付する予定です。',
           '運営者の寄付には月の上限があります。上限に達すると、その月の運営者寄付予算を使い切ったと知らせます。',
         ]),
         FairBlock('記録に納得できないとき', [
@@ -232,7 +232,7 @@ class FairEarningCopy {
           'VALUE 不能換成現金。',
         ]),
         FairBlock('捐款', [
-          '每 1 公里通過驗證的跑步，以營運方和贊助方的名義捐出 100 韓元。',
+          '每 1 公里通過驗證的跑步，預計以公司（營運方）資金捐出 100 韓元。',
           '營運方捐款有每月上限。額滿時會告知本月營運方捐款預算已用完。',
         ]),
         FairBlock('若紀錄看起來不對', [
@@ -279,7 +279,7 @@ class FairEarningCopy {
           'VALUE no se puede cobrar en dinero.',
         ]),
         FairBlock('Donación', [
-          'Cada 1 km verificado dona 100 KRW a nombre del operador y del patrocinador.',
+          'Por cada 1 km verificado se prevé donar 100 KRW con fondos de la empresa (operador).',
           'La donación del operador tiene un tope mensual. Al llenarse, la app avisa de que el presupuesto del mes se agotó.',
         ]),
         FairBlock('Si un registro no cuadra', [
@@ -325,7 +325,7 @@ class FairEarningCopy {
           'VALUE não pode ser sacado.',
         ]),
         FairBlock('Doação', [
-          'Cada 1 km verificado doa 100 KRW em nome do operador e do patrocinador.',
+          'A cada 1 km verificado, prevê-se doar 100 KRW com recursos da empresa (operadora).',
           'A doação do operador tem um teto mensal. Quando enche, o app avisa que o orçamento do mês acabou.',
         ]),
         FairBlock('Se um registro parecer errado', [
@@ -371,7 +371,7 @@ class FairEarningCopy {
           'VALUE kann nicht ausgezahlt werden.',
         ]),
         FairBlock('Spende', [
-          'Jeder geprüfte Kilometer spendet 100 KRW im Namen von Betreiber und Sponsor.',
+          'Für jeden geprüften Kilometer sind 100 KRW Spende aus Mitteln des Unternehmens (Betreiber) geplant.',
           'Die Spende des Betreibers hat eine Monatsgrenze. Ist sie voll, sagt die App, dass das Budget des Monats aufgebraucht ist.',
         ]),
         FairBlock('Wenn eine Aufzeichnung nicht stimmt', [
@@ -418,7 +418,7 @@ class FairEarningCopy {
           'VALUE ne peut pas être encaissé.',
         ]),
         FairBlock('Don', [
-          'Chaque kilomètre vérifié donne 100 KRW au nom de l’opérateur et du sponsor.',
+          'Pour chaque kilomètre vérifié, un don de 100 KRW est prévu sur les fonds de l’entreprise (opérateur).',
           'Le don de l’opérateur a un plafond mensuel. Une fois plein, l’app dit que le budget du mois est épuisé.',
         ]),
         FairBlock('Si un enregistrement semble faux', [
@@ -464,7 +464,7 @@ class FairEarningCopy {
           'VALUE không rút thành tiền.',
         ]),
         FairBlock('Quyên góp', [
-          'Mỗi 1 km đã xác minh quyên góp 100 KRW dưới tên đơn vị vận hành và nhà tài trợ.',
+          'Mỗi 1 km đã xác minh, dự kiến quyên góp 100 KRW từ ngân sách công ty (đơn vị vận hành).',
           'Khoản quyên góp của đơn vị vận hành có trần mỗi tháng. Khi đầy, ứng dụng báo ngân sách tháng đã hết.',
         ]),
         FairBlock('Nếu bản ghi có vẻ sai', [
@@ -510,7 +510,7 @@ class FairEarningCopy {
           'VALUE แลกเป็นเงินไม่ได้',
         ]),
         FairBlock('การบริจาค', [
-          'ทุก 1 กม. ที่ตรวจแล้วบริจาค 100 วอนในนามผู้ให้บริการและสปอนเซอร์',
+          'ทุก 1 กม. ที่ตรวจแล้ว วางแผนบริจาค 100 วอนจากเงินของบริษัท (ผู้ให้บริการ)',
           'การบริจาคของผู้ให้บริการมีเพดานรายเดือน เมื่อเต็ม แอปจะบอกว่างบเดือนนี้ใช้หมดแล้ว',
         ]),
         FairBlock('ถ้าบันทึกดูไม่ตรง', [
@@ -556,7 +556,7 @@ class FairEarningCopy {
           'VALUE tidak dapat dicairkan.',
         ]),
         FairBlock('Donasi', [
-          'Setiap 1 km terverifikasi mendonasikan 100 KRW atas nama operator dan sponsor.',
+          'Setiap 1 km terverifikasi direncanakan mendonasikan 100 KRW dari dana perusahaan (penyelenggara).',
           'Donasi operator punya batas bulanan. Saat penuh, aplikasi memberi tahu bahwa anggaran bulan ini habis.',
         ]),
         FairBlock('Jika catatan terasa salah', [

@@ -17,8 +17,8 @@ ShareRun ("Mientras lata tu corazón, la solidaridad sigue corriendo") es la app
 • Consulta tus pasos diarios desde la barra de notificaciones.
 • Gana 10 SHARE por cada 100 pasos verificados (hasta 6.000 pasos / 600 SHARE diarios de base) para unirte a retos y desbloquear artículos en la app.
 
-■ 5 Niveles de Animales: De Caracol a Guepardo
-• Completa 3 carreras verificadas en días distintos para obtener tu clasificación (Caracol, Tortuga, Conejo, Caballo, Guepardo en 25 subniveles) y compite en retos de 1K, 3K, 5K y 10K.
+■ 5 Niveles de Animales: De Tortuga a Guepardo
+• Empieza como Tortuga Bronce con tu primera carrera verificada de 1 km y sube un nivel por cada día con una carrera verificada (Tortuga, Beagle, Lobo, Cebra, Guepardo en 25 subniveles) y compite en retos de 1K, 3K, 5K y 10K.
 
 ■ Clubs de Running (Crews) y Entrenador de Voz
 • Crea o únete a un Crew con amigos y suma kilómetros en el ranking semanal y mensual.
@@ -30,8 +30,8 @@ ShareRun ("Mientras lata tu corazón, la solidaridad sigue corriendo") es la app
 
 ■ Verificación Jena AI Antitrampas y Fondo Solidario
 • Jena AI analiza GPS, cadencia, giroscopio y pulso para filtrar vehículos o dispositivos fraudulentos.
-• Cada km de carrera verificada aporta el equivalente a 100 KRW (dentro del límite mensual del operador) al fondo benéfico del operador y patrocinadores.
-• Es un presupuesto mensual del operador para todo el mundo, no un donativo del usuario. Se entrega a una sola entidad registrada en Corea y no hay recibo deducible.
+• La empresa (operador) planea donar 100 KRW de sus fondos por cada km verificado (hasta 10 km por persona al día, con un tope mensual global de 1.000.000 KRW).
+• El destinatario aún se está acordando y se anunciará en la app. Es un presupuesto del operador, no un donativo del usuario, y no hay recibo deducible.
 
 [Avisos Importantes]
 ※ SHARE, DIA y VALUE son puntos virtuales exclusivos de la app sin valor monetario; no se pueden canjear por dinero ni transferir.

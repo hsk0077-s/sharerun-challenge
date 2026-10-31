@@ -78,7 +78,7 @@ def test_mercy_refund_keeps_paid_dia_paid() -> None:
         "diamondDeposit": 10,
         "diamondPaidDeposit": 6,
         "diamondFreeDeposit": 4,
-        "selectedCharity": "UNICEF",
+        "selectedCharity": "GLOBAL_RELIEF_PARTNER",
     }
     service = _service(db)
     request = SettleTournamentFailureRequest(
@@ -121,7 +121,7 @@ def test_forfeited_deposit_is_not_a_positive_ledger_credit() -> None:
         "uid": "u1",
         "status": "joined",
         "diamondDeposit": 10,
-        "selectedCharity": "UNICEF",
+        "selectedCharity": "GLOBAL_RELIEF_PARTNER",
     }
     service = _service(db)
 

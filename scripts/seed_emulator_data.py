@@ -25,8 +25,8 @@ now = datetime.now(timezone.utc)
 
 def seed() -> None:
     tournaments = {
-        "rookie-3k-unicef": {
-            "title": "루키 3K 유니세프 런",
+        "rookie-3k-donation": {
+            "title": "루키 3K 기부 런",
             "targetDistanceKm": 3,
             "entryFeeShare": 100,
             "winnerRewardValue": 500,
@@ -36,7 +36,7 @@ def seed() -> None:
             "participantCount": 0,
             "requiredTier": 1,
             "status": "recruiting",
-            "sponsorName": "유니세프 파트너",
+            "sponsorName": "기부 캠페인",
             "createdAt": now,
         },
         "neon-5k-sprint": {

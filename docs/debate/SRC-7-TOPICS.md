@@ -647,6 +647,7 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
 2. Apple Watch를 맥 또는 Xcode Cloud에서 빌드해, 6번의 최종 체크리스트와 업로드 본문의 `device_id`를 시뮬레이터에서 볼지. 이 리눅스에는 Xcode와 swiftc가 없다.
 3. 골든 7건을 그 그림을 소유하는 PC에서 다시 찍을지. 이 리눅스에서 `--update-goldens`로 덮지 않는 쪽을 권한다. 근거는 아래 16시 골든 절이다.
    - 10/30: 대표가 노트북에서 다시 찍기로 정했다. 7건의 테스트 파일·테스트 이름과 PowerShell 절차를 `docs/debate/GOLDEN-REGEN-LAPTOP.md`에 적었다. 이 리눅스는 골든 PNG를 바꾸지 않았다.
+   - **10/30 21:58 대표 확정: 노트북 재생성 폐기, 이 리눅스로 통일.** 노트북에서 돌렸을 때 8번째 골든(`daily-goal brag card golden`, 노트북에서는 실패·이 리눅스에서는 통과)이 깨져서 노트북 기준을 채택하지 않았다. 10/31 라운드에 해결했다. 아래 "10/31 라운드 — 골든 8건을 이 리눅스로 통일" 참고.
 4. (10/30 추가) 2번 절 `lib/l10n/surface_rest.dart`의 90키(en/ja/zh/es/pt/de/fr/vi/th/id, 10개 로케일)와 `surface_copy.dart`를 원어민에게 검수받을지, 어느 언어를 외주할지. 이 박스는 번역 품질을 판단하지 못한다. 검수 전에는 광고 랜딩으로 쓰지 않는다.
 5. (10/30 추가) 설정 화면 약관 폴백 HTML(`SettingsLegalWebViewScreen`)을 11개 언어로 번역할지, 법무 검토를 어느 범위까지 받을지. 지금은 제목만 11로케일이고 본문은 한국어다. 이 박스는 법률 문장을 판단하지 못한다.
 
@@ -701,5 +702,25 @@ P015는 티어 보상, 가격 없음, 표에서 뺐다. P047은 `ready`가 거�
 이번 라운드에 `test/features/pedometer/walking_challenge_share_test.dart`의 `daily-goal brag card golden`(`goldens/walking_daily_goal_brag.png`)도 같은 `golden` 태그로 돌렸다. 이 8번째 골든은 이 리눅스에서 **통과**한다. 7건과 같은 파일로 묶여 있지 않으니, 노트북에서 재생성할 때 이 파일은 지정하지 않아야 건드리지 않는다.
 
 위 7건을 찍을 정확한 PowerShell 절차(버전 확인, 브랜치 체크아웃, 이 4개 테스트 파일만 `--update-goldens`, 결과 확인, 부산물 정리, 커밋)는 `docs/debate/GOLDEN-REGEN-LAPTOP.md`에 적었다. 코드 변경은 없다. 이 박스에서 돌리며 생긴 빌드 캐시(`build/`, `.dart_tool/`, `GeneratedPluginRegistrant.m`, `analysis_options.yaml`의 플러터 자동 추가 줄)는 되돌리거나 지웠다.
+
+### 10/31 라운드 — 골든 8건을 이 리눅스로 통일
+
+노트북 재생성은 채택되지 않았다. 노트북에서 위 7건을 `--update-goldens`로 돌렸을 때, 그동안 이 리눅스에서는 통과하던 8번째 골든(`test/features/pedometer/walking_challenge_share_test.dart`의 `daily-goal brag card golden`)이 노트북에서 깨졌다. 7건은 노트북 기준이 맞고 8번째는 리눅스 기준이 맞는, 즉 어느 한 PC로도 8건을 전부 맞출 수 없는 상태였다. 대표님이 10/30 21:58에 이 사실을 보고 노트북 재생성을 접고 이 리눅스 박스를 8건 전부의 기준으로 통일하기로 확정했다.
+
+절차: `--update-goldens`를 켜기 전에 먼저 그대로 돌려 **1 passed, 7 failed**(8번째만 통과)인 것을 확인했다. 15시·16시·10/30과 같은 7건, 같은 실패 이름이었다. 그다음 `--tags golden`으로 4개 파일(`test/core/theme/src_theme_test.dart`, `test/screens/home_tokens_test.dart`, `test/screens/lobby_my_tokens_test.dart`, `test/screens/walking_tokens_test.dart`)과 8번째가 든 `test/features/pedometer/walking_challenge_share_test.dart`를 같이 `--update-goldens`로 돌렸다. 다시 `--update-goldens` 없이 재실행해 **8 passed**를 확인했다.
+
+`git status`에서 바뀐 파일은 정확히 아래 7개 PNG였다. 8번째 골든(`walking_daily_goal_brag.png`)은 이미 이 리눅스 그림과 같아서 바뀌지 않았다.
+
+```
+test/core/theme/goldens/src_token_showcase.png
+test/screens/goldens/home_screen_tokens.png
+test/screens/goldens/home_dashboard_tokens.png
+test/screens/goldens/lobby_tokens.png
+test/screens/goldens/tournament_list_tokens.png
+test/screens/goldens/my_page_tokens.png
+test/screens/goldens/walking_challenge_tokens.png
+```
+
+테스트를 돌리며 생긴 `test/screens/failures/walking_challenge_tokens_*.png`(저장소에 이미 커밋돼 있던 4개)는 실패 재현 단계에서 일시적으로 바뀐 뒤 `git checkout`으로 원래 내용으로 되돌렸다. 그 밖의 `failures/` 이미지, `build/`, `.dart_tool/`, `.flutter-plugins-dependencies`는 캐시·미추적 파일이라 지웠다. `docs/debate/GOLDEN-REGEN-LAPTOP.md`에도 이 라운드의 이유와 결과를 적었다. 코드 변경은 없다.
 
 ---

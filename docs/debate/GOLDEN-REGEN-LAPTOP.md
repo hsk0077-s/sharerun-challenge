@@ -1,8 +1,26 @@
-# 골든 7건 재생성 — 대표님 Windows 노트북 전용
+# 골든 7건 재생성 — 대표님 Windows 노트북 전용 (10/31 폐기, 아래 참고)
 
-이 문서는 대표님 노트북(원래 골든을 찍은 PC)의 PowerShell에서 그대로 따라 할 절차다. 이 리눅스 박스에서는 골든 PNG를 찍지 않았다(`git status`에 `test/**/goldens/*.png` 변경 없음). 근거는 `docs/debate/SRC-7-TOPICS.md`의 "16시 — 골든 7건은 Flutter 환경 차이다"다.
+이 문서는 대표님 노트북(원래 골든을 찍은 PC)의 PowerShell에서 그대로 따라 할 절차였다. 이 리눅스 박스에서는 골든 PNG를 찍지 않았다(`git status`에 `test/**/goldens/*.png` 변경 없음). 근거는 `docs/debate/SRC-7-TOPICS.md`의 "16시 — 골든 7건은 Flutter 환경 차이다"다.
 
-## 0. 범위 — 정확히 이 7건만
+## 10/31 라운드 — 노트북 재생성 폐기, 이 리눅스로 통일
+
+노트북에서 위 7건을 `--update-goldens`로 돌렸을 때, 이 문서가 "건드리지 말 것"으로 지정한 8번째 골든(`test/features/pedometer/walking_challenge_share_test.dart`의 `daily-goal brag card golden`)이 노트북 환경에서 실패했다. 이 8번째는 이 리눅스에서는 통과하던 것이었다. 즉 두 PC 중 어느 쪽을 기준으로 둬도 다른 쪽에서 최소 1건은 깨진다. 대표님이 10/30 21:58에 노트북 재생성을 접고 이 리눅스 박스를 기준으로 8건(7건 + 8번째)을 통일하기로 확정했다.
+
+절차: `--tags golden` 대상 4개 파일(`test/core/theme/src_theme_test.dart`, `test/screens/home_tokens_test.dart`, `test/screens/lobby_my_tokens_test.dart`, `test/screens/walking_tokens_test.dart`) + 8번째가 든 `test/features/pedometer/walking_challenge_share_test.dart`를 이 리눅스에서 `--update-goldens`로 같이 돌렸다. 재실행에서 8개 전부 통과했다. `git status`에서 바뀐 파일은 정확히 아래 7개 PNG다 — 8번째 골든(`walking_daily_goal_brag.png`)은 이미 이 리눅스 그림과 같아서 바뀌지 않았다.
+
+```
+test/core/theme/goldens/src_token_showcase.png
+test/screens/goldens/home_screen_tokens.png
+test/screens/goldens/home_dashboard_tokens.png
+test/screens/goldens/lobby_tokens.png
+test/screens/goldens/tournament_list_tokens.png
+test/screens/goldens/my_page_tokens.png
+test/screens/goldens/walking_challenge_tokens.png
+```
+
+이제부터 골든은 이 리눅스 박스 기준이다. 아래 1~7번 절차(노트북 PowerShell)는 더 이상 쓰지 않는다. 기록으로만 남긴다.
+
+## 0. 범위 — 정확히 이 7건만 (폐기된 노트북 절차, 기록용)
 
 2026-10-29(15시·16시)와 2026-10-30 이 리눅스 박스에서 같은 7건이 실패했다. 테스트 파일은 4개, 테스트는 7개, PNG는 7개다.
 

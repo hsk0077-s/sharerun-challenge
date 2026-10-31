@@ -48,6 +48,16 @@ def is_local_dev_mode() -> bool:
     return os.getenv("LOCAL_DEV_MODE", "").lower() in {"1", "true", "yes"}
 
 
+def payments_enabled() -> bool:
+    """True only when PAYMENTS_ENABLED is explicitly on.
+
+    Version 1.0 takes no payment-provider payments, so the PG webhook secret is
+    not needed. Turn this on together with the payment provider; readiness then
+    requires ``PG_WEBHOOK_SECRET`` again.
+    """
+    return os.getenv("PAYMENTS_ENABLED", "").strip().lower() in {"1", "true", "yes"}
+
+
 def test_wallet_grant_uids() -> frozenset[str]:
     from app.constants.economy_constants import TEST_WALLET_GRANT_UIDS
 

@@ -21,7 +21,7 @@ if ($RequireReady) {
     try {
         $readyResponse = Invoke-RestMethod -Uri $readyUrl -Method Get
     } catch {
-        throw "Readiness check failed at $readyUrl. Ensure PG_WEBHOOK_SECRET and OPS_ADMIN_SECRET are set."
+        throw "Readiness check failed at $readyUrl. Ensure OPS_ADMIN_SECRET is set (and PG_WEBHOOK_SECRET when PAYMENTS_ENABLED=true)."
     }
 
     if ($readyResponse.status -ne "ready") {

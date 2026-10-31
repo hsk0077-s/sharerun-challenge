@@ -152,5 +152,7 @@ void main() {
     expect(find.textContaining('/3'), findsNothing);
     expect(find.textContaining('3회'), findsNothing);
     expect(find.textContaining('첫 인증 1km'), findsWidgets);
+    // 한 화면에서 "인증"으로 통일했다.
+    expect(find.textContaining('검증'), findsNothing);
   });
 }

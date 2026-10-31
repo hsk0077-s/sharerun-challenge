@@ -1095,7 +1095,7 @@ const gradeGuideRows = <String, List<String>>{
     'Tingkat',
   ],
   'intro': [
-    '첫 검증 1km를 마치면 거북이 브론즈로 시작합니다. '
+    '첫 인증 1km를 마치면 거북이 브론즈로 시작합니다. '
         '그 다음은 기록이 쌓인 날마다 한 칸씩만 움직입니다.',
     'Your first verified 1 km starts you at turtle bronze. '
         'After that you move one step on each day that adds a record.',

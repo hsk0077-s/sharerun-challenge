@@ -491,7 +491,7 @@ class _SnailGraphic extends StatelessWidget {
         const SizedBox(height: 8),
         _Card(
           child: Text(
-            RemainingSurface.tr(context, 'launch.intro.body.12', '아직 순위가 없어서 살짝 시무룩해요… 같이 달려 볼래요?'),
+            RemainingSurface.tr(context, 'launch.intro.body.12', '첫 1km를 인증하면 거북이 브론즈로 시작해요'),
             style: TextStyle(
                 fontWeight: FontWeight.w700,
                 height: 1.4,

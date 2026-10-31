@@ -67,6 +67,9 @@ void main() {
     expect(find.byKey(IntroScreen.skipKey), findsNothing);
     expect(find.byKey(IntroScreen.startKey), findsOneWidget);
     expect(find.byKey(IntroScreen.loginKey), findsOneWidget);
+    // 달팽이는 그대로, 말풍선은 새 규칙을 말한다.
+    expect(find.text('첫 1km를 인증하면 거북이 브론즈로 시작해요'), findsOneWidget);
+    expect(find.textContaining('시무룩'), findsNothing);
 
     await tester.tap(find.byKey(IntroScreen.startKey));
     await tester.pumpAndSettle();

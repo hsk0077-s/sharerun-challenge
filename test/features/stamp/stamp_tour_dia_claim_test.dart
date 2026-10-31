@@ -39,7 +39,7 @@ ProviderContainer _container() {
       ),
       walletProvider.overrideWith(_SeededWalletNotifier.new),
       stampLandmarkCatalogProvider.overrideWith(
-        (ref) => const StampLandmarkCatalog(
+        (ref) => StampLandmarkCatalog(
           remote: MemoryOfficialLandmarkSource([]),
         ),
       ),

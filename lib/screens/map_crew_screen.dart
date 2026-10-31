@@ -9,6 +9,7 @@ import '../app/theme/app_colors.dart';
 import '../features/map_crew/widgets/crew_member_ranking_board.dart';
 import '../features/map_crew/widgets/safe_map_panel.dart';
 import '../data/models/diamond_box_model.dart';
+import '../l10n/remaining_surface.dart';
 
 class MapCrewScreen extends ConsumerStatefulWidget {
   const MapCrewScreen({super.key});
@@ -36,14 +37,19 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
-        Text('지도 & 크루', style: Theme.of(context).textTheme.headlineSmall),
+        Text(
+          RemainingSurface.tr(context, 'map_crew.body', '지도 & 크루'),
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
         const SizedBox(height: 8),
         Align(
           alignment: Alignment.centerRight,
           child: TextButton.icon(
             onPressed: () => _mapPanelKey.currentState?.retry(),
             icon: const Icon(Icons.my_location_rounded),
-            label: const Text('내 위치 새로고침'),
+            label: Text(
+              RemainingSurface.tr(context, 'map_crew.button', '내 위치 새로고침'),
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -73,7 +79,10 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
         const SizedBox(height: 24),
         CrewMemberRankingBoard(members: crewMembers),
         const SizedBox(height: 24),
-        Text('크루 종합 랭킹', style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          RemainingSurface.tr(context, 'map_crew.body.2', '크루 종합 랭킹'),
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 12),
         for (var index = 0; index < crews.length; index++)
           Card(
@@ -85,15 +94,30 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
                 child: Text('${index + 1}'),
               ),
               title: Text(crews[index].name),
-              subtitle: Text('${crews[index].memberCount}명'),
+              subtitle: Text(
+                RemainingSurface.tr(
+                  context,
+                  'map_crew.body.3',
+                  '${crews[index].memberCount}명',
+                  {'crews[index].memberCount': crews[index].memberCount},
+                ),
+              ),
               trailing: Text('${crews[index].totalValue} VALUE'),
             ),
           ),
         if (crews.isEmpty)
-          const Card(
+          Card(
             child: ListTile(
-              title: Text('아직 크루 순위가 없어요'),
-              subtitle: Text('크루 순위가 쌓이면 여기에 나타나요.'),
+              title: Text(
+                RemainingSurface.tr(context, 'map_crew.body.4', '아직 크루 순위가 없어요'),
+              ),
+              subtitle: Text(
+                RemainingSurface.tr(
+                  context,
+                  'map_crew.body.5',
+                  '크루 순위가 쌓이면 여기에 나타나요.',
+                ),
+              ),
             ),
           ),
       ],
@@ -146,7 +170,14 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
     final position = currentPosition;
     final distance = _selectedDistanceMeters();
     if (position == null || distance == null || distance > collectRadiusMeters) {
-      _showSnack('${collectRadiusMeters.round()}m 안으로 가까이 가야 받을 수 있어요.');
+      _showSnack(
+        RemainingSurface.tr(
+          context,
+          'map_crew.body.6',
+          '${collectRadiusMeters.round()}m 안으로 가까이 가야 받을 수 있어요.',
+          {'collectRadiusMeters.round()': collectRadiusMeters.round()},
+        ),
+      );
       return;
     }
 
@@ -160,7 +191,14 @@ class _MapCrewScreenState extends ConsumerState<MapCrewScreen> {
         return;
       }
       setState(() => selectedBox = null);
-      _showSnack('+${box.rewardDiamond} DIA를 받았어요.');
+      _showSnack(
+        RemainingSurface.tr(
+          context,
+          'map_crew.body.7',
+          '+${box.rewardDiamond} DIA를 받았어요.',
+          {'box.rewardDiamond': box.rewardDiamond},
+        ),
+      );
     } catch (error) {
       _showSnack(ApiErrorMessage.from(error));
     }
@@ -193,7 +231,15 @@ class _DiamondCollectCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final distanceLabel = distanceMeters == null
         ? '--'
-        : '${distanceMeters!.toStringAsFixed(0)}m 떨어져 있어요';
+        : RemainingSurface.tr(
+            context,
+            'map_crew.body.8',
+            '${distanceMeters!.toStringAsFixed(0)}m 떨어져 있어요',
+            {
+              'distanceMeters!.toStringAsFixed(0)':
+                  distanceMeters!.toStringAsFixed(0),
+            },
+          );
 
     return Container(
       padding: const EdgeInsets.all(18),
@@ -212,7 +258,19 @@ class _DiamondCollectCard extends StatelessWidget {
           FilledButton.icon(
             onPressed: canCollect ? onCollect : null,
             icon: const Icon(Icons.diamond_rounded),
-            label: Text(canCollect ? '다이아 상자 받기' : '더 가까이 가 주세요'),
+            label: Text(
+              canCollect
+                  ? RemainingSurface.tr(
+                      context,
+                      'map_crew.button.2',
+                      '다이아 상자 받기',
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'map_crew.button.3',
+                      '더 가까이 가 주세요',
+                    ),
+            ),
           ),
         ],
       ),

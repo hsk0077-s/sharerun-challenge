@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../l10n/remaining_surface.dart';
 
 class AsyncValueSection<T> extends StatelessWidget {
   const AsyncValueSection({
@@ -36,7 +37,12 @@ class AsyncValueSection<T> extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              '데이터를 불러오지 못했습니다: $error',
+              RemainingSurface.tr(
+                context,
+                'widget.async_value_section.body',
+                '데이터를 불러오지 못했습니다: $error',
+                {'error': error},
+              ),
               style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),

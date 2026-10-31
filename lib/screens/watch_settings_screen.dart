@@ -9,6 +9,7 @@ import '../../app/theme/app_colors.dart';
 import '../../core/api/api_exception.dart';
 import '../../data/models/user_model.dart';
 import '../../features/legal/widgets/health_data_consent_card.dart';
+import '../../l10n/remaining_surface.dart';
 
 // TODO(delete?): UI가 DeviceConnectionScreen으로 통합되었습니다.
 // 라우트 전환 검증 후 이 파일 삭제 가능 여부를 확인해 주세요.
@@ -33,13 +34,17 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            '투트랙 연동 방식',
+            RemainingSurface.tr(context, 'watch_settings.title', '투트랙 연동 방식'),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
-          const Text(
-            '브랜드별 연동 경로를 분리해 데이터 신뢰도와 법률 방어를 강화합니다.',
-            style: TextStyle(color: AppColors.textSecondary),
+          Text(
+            RemainingSurface.tr(
+              context,
+              'watch_settings.body',
+              '브랜드별 연동 경로를 분리해 데이터 신뢰도와 법률 방어를 강화합니다.',
+            ),
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
           if (!hasHealthConsent) ...[
             const SizedBox(height: 20),
@@ -52,13 +57,27 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
             FilledButton.icon(
               onPressed: () => context.push(RouteNames.healthDataConsent),
               icon: const Icon(Icons.monitor_heart_outlined),
-              label: const Text('건강정보 동의하고 연동 시작'),
+              label: Text(
+                RemainingSurface.tr(
+                  context,
+                  'watch_settings.button',
+                  '건강정보 동의하고 연동 시작',
+                ),
+              ),
             ),
           ],
           const SizedBox(height: 24),
           _TrackSection(
-            title: 'Track A · API 연동',
-            subtitle: 'Garmin / Coros / Suunto — 브랜드 클라우드 OAuth',
+            title: RemainingSurface.tr(
+              context,
+              'watch_settings.body.2',
+              'Track A · API 연동',
+            ),
+            subtitle: RemainingSurface.tr(
+              context,
+              'watch_settings.body.3',
+              'Garmin / Coros / Suunto — 브랜드 클라우드 OAuth',
+            ),
             accent: AppColors.electricBlue,
             options: const [
               WatchType.garmin,
@@ -77,7 +96,11 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
           ),
           const SizedBox(height: 20),
           _TrackSection(
-            title: 'Track B · OS 직접 연동',
+            title: RemainingSurface.tr(
+              context,
+              'watch_settings.body.4',
+              'Track B · OS 직접 연동',
+            ),
             subtitle: 'Apple Watch / Galaxy Watch — HealthKit · Health Connect',
             accent: AppColors.neonLime,
             options: const [
@@ -105,7 +128,9 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
                       context: context,
                       hasHealthConsent: true,
                     ),
-            child: const Text('연동 해제'),
+            child: Text(
+              RemainingSurface.tr(context, 'watch_settings.body.5', '연동 해제'),
+            ),
           ),
           const SizedBox(height: 16),
           Container(
@@ -116,7 +141,11 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
             ),
             child: Text(
               watchType == WatchType.none
-                  ? '현재 연동된 워치가 없습니다.'
+                  ? RemainingSurface.tr(
+                      context,
+                      'watch_settings.body.6',
+                      '현재 연동된 워치가 없습니다.',
+                    )
                   : '현재 연동: ${watchType.displayLabel} '
                       '(${watchType.isApiTrack ? 'API Track' : 'OS Direct Track'})',
               style: const TextStyle(color: AppColors.textSecondary),
@@ -153,12 +182,17 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
         return;
       }
       if (!permissionResult.granted) {
-        final label = permissionResult.missingPermissionLabel ?? '필수';
+        final label = permissionResult.missingPermissionLabel ??
+            RemainingSurface.tr(context, 'watch_settings.toast', '필수');
         if (permissionResult.openedHealthConnectInstall) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                'Health Connect 설치 후 다시 시도해 주세요.',
+                RemainingSurface.tr(
+                  context,
+                  'watch_settings.toast.2',
+                  'Health Connect 설치 후 다시 시도해 주세요.',
+                ),
               ),
             ),
           );
@@ -166,9 +200,16 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$label 권한이 필요합니다.'),
+            content: Text(
+              RemainingSurface.tr(
+                context,
+                'watch_settings.toast.3',
+                '$label 권한이 필요합니다.',
+                {'label': label},
+              ),
+            ),
             action: SnackBarAction(
-              label: '설정',
+              label: RemainingSurface.tr(context, 'watch_settings.toast.4', '설정'),
               onPressed: openAppSettings,
             ),
           ),
@@ -235,9 +276,13 @@ class _TrackSection extends StatelessWidget {
           Text(subtitle, style: const TextStyle(color: AppColors.textSecondary)),
           if (!enabled) ...[
             const SizedBox(height: 8),
-            const Text(
-              '건강정보 동의 후 선택할 수 있습니다.',
-              style: TextStyle(color: AppColors.dangerRed, fontSize: 13),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'watch_settings.body.8',
+                '건강정보 동의 후 선택할 수 있습니다.',
+              ),
+              style: const TextStyle(color: AppColors.dangerRed, fontSize: 13),
             ),
           ],
           const SizedBox(height: 14),
@@ -263,8 +308,16 @@ class _TrackSection extends StatelessWidget {
                 title: Text(type.displayLabel),
                 subtitle: Text(
                   type.isApiTrack
-                      ? '브랜드 API · OAuth'
-                      : 'OS Health 데이터 직접 읽기',
+                      ? RemainingSurface.tr(
+                          context,
+                          'watch_settings.body.9',
+                          '브랜드 API · OAuth',
+                        )
+                      : RemainingSurface.tr(
+                          context,
+                          'watch_settings.body.10',
+                          'OS Health 데이터 직접 읽기',
+                        ),
                 ),
                 onTap: enabled ? () => onSelect(type) : null,
               ),

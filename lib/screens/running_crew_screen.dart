@@ -21,6 +21,7 @@ import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/src_wallet_payment_system.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
+import '../l10n/remaining_surface.dart';
 import 'crew_manager_screen.dart';
 import 'crew_room_screen.dart';
 import 'hall_of_fame_screen.dart';
@@ -79,8 +80,14 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('크루 만들기'),
-        content: const Text('서버가 50 DIA 또는 30,000 SHARE 중 선택한 금액만 차감합니다.'),
+        title: Text(RemainingSurface.tr(context, 'running_crew.button', '크루 만들기')),
+        content: Text(
+          RemainingSurface.tr(
+            context,
+            'running_crew.button.2',
+            '서버가 50 DIA 또는 30,000 SHARE 중 선택한 금액만 차감합니다.',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, 'dia'),
@@ -122,7 +129,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         // 재화는 서버만 차감한다. 기기 안에서 차감하는 길은 데모 모드에만 둔다.
         if (!AppEnv.useLocalMockData) {
           if (mounted) setState(() => _isSubmitting = false);
-          _toast('로그인한 뒤에 다시 시도해 주세요.');
+          _toast(RemainingSurface.tr(context, 'running_crew.toast', '로그인한 뒤에 다시 시도해 주세요.'));
           return;
         }
         final wallet = ref.read(walletProvider);
@@ -159,8 +166,18 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       if (!mounted) return;
       _toast(
         paidWithDia
-            ? '새 크루 창설 완료 (−$_createCrewDiaCost DIA)'
-            : '새 크루 창설 완료 (−$_createCrewShareCost SHARE)',
+            ? RemainingSurface.tr(
+                context,
+                'running_crew.toast.2',
+                '새 크루 창설 완료 (−$_createCrewDiaCost DIA)',
+                {'_createCrewDiaCost': _createCrewDiaCost},
+              )
+            : RemainingSurface.tr(
+                context,
+                'running_crew.toast.3',
+                '새 크루 창설 완료 (−$_createCrewShareCost SHARE)',
+                {'_createCrewShareCost': _createCrewShareCost},
+              ),
       );
       await AppRouteNav.push<void>(
         context,
@@ -181,7 +198,10 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       await ShareInsufficientDialog.promptAndMaybeOpenBilling(context);
     } catch (error) {
       if (!mounted) return;
-      _toast('크루 창설 실패: $error');
+      _toast(
+        RemainingSurface.tr(
+          context, 'running_crew.toast.4', '크루 창설 실패: $error', {'error': error}),
+      );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
@@ -214,13 +234,22 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     }
     setState(() => _searchQuery = result.trim());
     _toast(
-      result.trim().isEmpty ? '전체 랭킹을 표시합니다.' : '"$result" 검색 결과를 표시합니다.',
+      result.trim().isEmpty
+          ? RemainingSurface.tr(context, 'running_crew.toast.5', '전체 랭킹을 표시합니다.')
+          : RemainingSurface.tr(
+              context,
+              'running_crew.toast.6',
+              '"$result" 검색 결과를 표시합니다.',
+              {'result': result},
+            ),
     );
   }
 
   void _onEnterRoom({required bool hasCrew}) {
     if (!hasCrew) {
-      _toast('크루에 들어가면 크루 룸을 볼 수 있어요.');
+      _toast(
+        RemainingSurface.tr(context, 'running_crew.toast.7', '크루에 들어가면 크루 룸을 볼 수 있어요.'),
+      );
       return;
     }
     AppRouteNav.push<void>(
@@ -263,7 +292,14 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (!mounted) return;
     if (status != null && status.cooldownSeconds > 0) {
       final days = (status.cooldownSeconds / 86400).ceil();
-      _toast('엠블럼은 자주 바꿀 수 없어요. 약 $days일 뒤에 다시 바꿀 수 있어요.');
+      _toast(
+        RemainingSurface.tr(
+          context,
+          'running_crew.toast.8',
+          '엠블럼은 자주 바꿀 수 없어요. 약 $days일 뒤에 다시 바꿀 수 있어요.',
+          {'days': days},
+        ),
+      );
       return;
     }
     final picked = await CrewEmblemPicker.show(
@@ -283,13 +319,19 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                 return await api.crewEmblemStatus();
               } on ApiException catch (error) {
                 _toast(switch (error.statusCode) {
-                  400 => 'DIA가 부족해요.',
-                  403 => '유료 엠블럼은 크루장만 살 수 있어요.',
-                  409 => '이미 크루가 가진 엠블럼이에요.',
-                  _ => '엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.',
+                  400 => RemainingSurface.trNow('running_crew.toast.9', 'DIA가 부족해요.'),
+                  403 => RemainingSurface.trNow(
+                      'running_crew.toast.10', '유료 엠블럼은 크루장만 살 수 있어요.'),
+                  409 => RemainingSurface.trNow(
+                      'running_crew.toast.11', '이미 크루가 가진 엠블럼이에요.'),
+                  _ => RemainingSurface.trNow(
+                      'running_crew.toast.12', '엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.'),
                 });
               } catch (_) {
-                _toast('엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.');
+                _toast(
+                  RemainingSurface.trNow(
+                    'running_crew.toast.12', '엠블럼을 사지 못했어요. 잠시 뒤 다시 해 주세요.'),
+                );
               }
               return null;
             },
@@ -303,20 +345,31 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       } on ApiException catch (error) {
         if (!mounted) return;
         if (error.statusCode == 429) {
-          _toast('엠블럼은 자주 바꿀 수 없어요. 잠시 뒤에 다시 바꿔 주세요.');
+          _toast(
+            RemainingSurface.tr(
+              context, 'running_crew.toast.13', '엠블럼은 자주 바꿀 수 없어요. 잠시 뒤에 다시 바꿔 주세요.'),
+          );
           return;
         }
         if (error.statusCode == 403) {
-          _toast('아직 쓸 수 없는 테두리나 엠블럼이에요.');
+          _toast(
+            RemainingSurface.tr(context, 'running_crew.toast.14', '아직 쓸 수 없는 테두리나 엠블럼이에요.'),
+          );
           return;
         }
         if (error.statusCode != 404) {
-          _toast('엠블럼을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+          _toast(
+            RemainingSurface.tr(
+              context, 'running_crew.toast.15', '엠블럼을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'),
+          );
           return;
         }
       } catch (_) {
         if (!mounted) return;
-        _toast('엠블럼을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+        _toast(
+          RemainingSurface.tr(
+            context, 'running_crew.toast.15', '엠블럼을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'),
+        );
         return;
       }
     }
@@ -325,8 +378,9 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (!mounted) return;
     _toast(
       useRemote && !savedOnServer
-          ? '이 폰에만 저장했어요. 서버에 크루가 생기면 함께 저장돼요.'
-          : '크루 엠블럼을 바꿨어요.',
+          ? RemainingSurface.tr(
+              context, 'running_crew.toast.16', '이 폰에만 저장했어요. 서버에 크루가 생기면 함께 저장돼요.')
+          : RemainingSurface.tr(context, 'running_crew.toast.17', '크루 엠블럼을 바꿨어요.'),
     );
   }
 
@@ -361,11 +415,25 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (api == null) return;
     final ask = crew.needsApproval;
     if (!await _confirm(
-      ask ? '가입 신청' : '크루 가입',
       ask
-          ? '"${crew.name}" 크루는 크루장이 승인해야 들어갈 수 있어요. 신청할까요?'
-          : '"${crew.name}" 크루에 가입할까요?',
-      ask ? '신청' : '가입',
+          ? RemainingSurface.tr(context, 'running_crew.body', '가입 신청')
+          : RemainingSurface.tr(context, 'running_crew.body.2', '크루 가입'),
+      ask
+          ? RemainingSurface.tr(
+              context,
+              'running_crew.body.3',
+              '"${crew.name}" 크루는 크루장이 승인해야 들어갈 수 있어요. 신청할까요?',
+              {'crew.name': crew.name},
+            )
+          : RemainingSurface.tr(
+              context,
+              'running_crew.body.4',
+              '"${crew.name}" 크루에 가입할까요?',
+              {'crew.name': crew.name},
+            ),
+      ask
+          ? RemainingSurface.tr(context, 'running_crew.body.5', '신청')
+          : RemainingSurface.tr(context, 'running_crew.toast.18', '가입'),
     )) {
       return;
     }
@@ -375,20 +443,36 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       if (!mounted) return;
       _toast(
         status == 'joined'
-            ? '"${crew.name}" 크루에 가입했어요.'
-            : '가입을 신청했어요. 승인되면 크루원이 돼요.',
+            ? RemainingSurface.tr(
+                context,
+                'running_crew.toast.19',
+                '"${crew.name}" 크루에 가입했어요.',
+                {'crew.name': crew.name},
+              )
+            : RemainingSurface.tr(
+                context, 'running_crew.toast.20', '가입을 신청했어요. 승인되면 크루원이 돼요.'),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(
         switch (error.statusCode) {
-          409 => '이미 다른 크루에 있거나 신청해 둔 곳이 있거나 인원이 가득 찼어요.',
-          403 => '이 크루에는 들어갈 수 없어요.',
-          _ => '가입하지 못했어요. 잠시 뒤 다시 해 주세요.',
+          409 => RemainingSurface.tr(
+              context,
+              'running_crew.toast.21',
+              '이미 다른 크루에 있거나 신청해 둔 곳이 있거나 인원이 가득 찼어요.',
+            ),
+          403 => RemainingSurface.tr(context, 'running_crew.toast.22', '이 크루에는 들어갈 수 없어요.'),
+          _ => RemainingSurface.tr(
+              context, 'running_crew.toast.23', '가입하지 못했어요. 잠시 뒤 다시 해 주세요.'),
         },
       );
     } catch (_) {
-      if (mounted) _toast('가입하지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(
+            context, 'running_crew.toast.23', '가입하지 못했어요. 잠시 뒤 다시 해 주세요.'),
+        );
+      }
     }
   }
 
@@ -398,9 +482,15 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     try {
       await api.cancelCrewRequest();
       _refreshCrews();
-      if (mounted) _toast('가입 신청을 거뒀어요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(context, 'running_crew.toast.24', '가입 신청을 거뒀어요.'));
+      }
     } catch (_) {
-      if (mounted) _toast('거두지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(context, 'running_crew.toast.25', '거두지 못했어요. 잠시 뒤 다시 해 주세요.'),
+        );
+      }
     }
   }
 
@@ -410,17 +500,23 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     final mode = await showDialog<String>(
       context: context,
       builder: (ctx) => SimpleDialog(
-        title: const Text('가입 방식'),
+        title: Text(RemainingSurface.tr(context, 'running_crew.button.3', '가입 방식')),
         children: [
           SimpleDialogOption(
             key: const Key('crew-mode-open'),
             onPressed: () => Navigator.pop(ctx, 'open'),
-            child: const Text('자유 가입\n누구나 바로 들어와요'),
+            child: Text(
+              RemainingSurface.tr(
+                context, 'running_crew.button.4', '자유 가입\n누구나 바로 들어와요'),
+            ),
           ),
           SimpleDialogOption(
             key: const Key('crew-mode-approval'),
             onPressed: () => Navigator.pop(ctx, 'approval'),
-            child: const Text('승인 가입\n신청을 받아 크루장이 정해요'),
+            child: Text(
+              RemainingSurface.tr(
+                context, 'running_crew.button.5', '승인 가입\n신청을 받아 크루장이 정해요'),
+            ),
           ),
         ],
       ),
@@ -430,7 +526,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
       await api.setCrewJoinMode(mode);
       _refreshCrews();
       if (mounted) {
-        _toast(mode == 'open' ? '자유 가입으로 바꿨어요.' : '승인 가입으로 바꿨어요.');
+        _toast(
+          mode == 'open'
+              ? RemainingSurface.tr(context, 'running_crew.toast.26', '자유 가입으로 바꿨어요.')
+              : RemainingSurface.tr(context, 'running_crew.toast.27', '승인 가입으로 바꿨어요.'),
+        );
       }
     } catch (_) {
       if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
@@ -444,9 +544,9 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     final name = await showDialog<String>(
       context: context,
       builder: (_) => _CrewNameDialog(
-        title: '크루 이름 바꾸기',
+        title: RemainingSurface.tr(context, 'running_crew.dialog', '크루 이름 바꾸기'),
         initial: mine.crew.name,
-        okLabel: '다음',
+        okLabel: RemainingSurface.tr(context, 'running_crew.dialog.2', '다음'),
         note: cost == 0 ? '처음 한 번은 무료예요.' : '이름을 바꿀 때마다 $cost DIA가 들어요.',
       ),
     );
@@ -454,7 +554,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (cost > 0 &&
         !await _confirm(
           '이름 바꾸기',
-          '"$name"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
+          RemainingSurface.tr(
+            context,
+            'running_crew.body.6',
+            '"$name"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
+            {'name': name, 'cost': cost},
+          ),
           '$cost DIA 내고 바꾸기',
         )) {
       return;
@@ -465,7 +570,16 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         ref.read(walletProvider.notifier).applyWalletSnapshot(diamondBalance: balance);
       }
       _refreshCrews();
-      if (mounted) _toast('크루 이름을 "$name"(으)로 바꿨어요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(
+            context,
+            'running_crew.toast.28',
+            '크루 이름을 "$name"(으)로 바꿨어요.',
+            {'name': name},
+          ),
+        );
+      }
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
@@ -485,7 +599,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     try {
       requests = await api.crewJoinRequests();
     } catch (_) {
-      if (mounted) _toast('신청 목록을 불러오지 못했어요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(context, 'running_crew.toast.29', '신청 목록을 불러오지 못했어요.'),
+        );
+      }
       return;
     }
     if (!mounted) return;
@@ -505,17 +623,32 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
             if (ctx.mounted) Navigator.of(ctx).pop();
             if (mounted) {
               _toast(approve
-                  ? '${request.nickname}님을 받았어요.'
-                  : '${request.nickname}님의 신청을 거절했어요.');
+                  ? RemainingSurface.trNow(
+                      'running_crew.toast.30',
+                      '${request.nickname}님을 받았어요.',
+                      {'request.nickname': request.nickname},
+                    )
+                  : RemainingSurface.trNow(
+                      'running_crew.toast.31',
+                      '${request.nickname}님의 신청을 거절했어요.',
+                      {'request.nickname': request.nickname},
+                    ));
             }
           } on ApiException catch (error) {
             if (mounted) {
               _toast(error.statusCode == 409
-                  ? '이미 다른 크루에 있거나 인원이 가득 찼어요.'
-                  : '처리하지 못했어요. 잠시 뒤 다시 해 주세요.');
+                  ? RemainingSurface.trNow(
+                      'running_crew.toast.32', '이미 다른 크루에 있거나 인원이 가득 찼어요.')
+                  : RemainingSurface.trNow(
+                      'running_crew.toast.33', '처리하지 못했어요. 잠시 뒤 다시 해 주세요.'));
             }
           } catch (_) {
-            if (mounted) _toast('처리하지 못했어요. 잠시 뒤 다시 해 주세요.');
+            if (mounted) {
+              _toast(
+                RemainingSurface.trNow(
+                  'running_crew.toast.33', '처리하지 못했어요. 잠시 뒤 다시 해 주세요.'),
+              );
+            }
           }
         },
       ),
@@ -527,23 +660,49 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     final api = ref.read(crewApiProvider);
     if (api == null) return;
     final others = mine.members.where((m) => m.role != 'leader').length;
+    final note = RemainingSurface.tr(
+      context,
+      'running_crew.body.10',
+      '크루는 두고 나만 나가고 싶다면 먼저 "크루원 보기"에서 크루장을 넘겨 주세요.',
+    );
+    final disbandMessage = others > 0
+        ? RemainingSurface.tr(
+            context,
+            'running_crew.body.9',
+            '"${mine.crew.name}" 크루를 없애요.\n'
+                '크루원 $others명도 모두 크루에서 나오고, 크루장인 나도 함께 크루에서 나와요.\n'
+                '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
+                '$note',
+            {'mine.crew.name': mine.crew.name, 'others': others, 'note': note},
+          )
+        : RemainingSurface.tr(
+            context,
+            'running_crew.body.49',
+            '"${mine.crew.name}" 크루를 없애요.\n'
+                '크루장인 나도 함께 크루에서 나와요.\n'
+                '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
+                '$note',
+            {'mine.crew.name': mine.crew.name, 'note': note},
+          );
     if (!await _confirm(
-      '크루 없애기',
-      '"${mine.crew.name}" 크루를 없애요.\n'
-          '${others > 0 ? '크루원 $others명도 모두 크루에서 나오고, ' : ''}'
-          '크루장인 나도 함께 크루에서 나와요.\n'
-          '산 엠블럼도 사라지고 되돌릴 수 없어요.\n\n'
-          '크루는 두고 나만 나가고 싶다면 먼저 "크루원 보기"에서 크루장을 넘겨 주세요.',
-      '크루 없애기',
+      RemainingSurface.tr(context, 'running_crew.body.7', '크루 없애기'),
+      disbandMessage,
+      RemainingSurface.tr(context, 'running_crew.body.7', '크루 없애기'),
     )) {
       return;
     }
     try {
       await api.disbandCrew();
       _refreshCrews();
-      if (mounted) _toast('크루를 없앴어요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(context, 'running_crew.toast.34', '크루를 없앴어요.'));
+      }
     } catch (_) {
-      if (mounted) _toast('없애지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(context, 'running_crew.toast.35', '없애지 못했어요. 잠시 뒤 다시 해 주세요.'),
+        );
+      }
     }
   }
 
@@ -551,25 +710,37 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     final api = ref.read(crewApiProvider);
     if (api == null) return;
     if (!await _confirm(
-      '크루 나가기',
-      '"${mine.crew.name}" 크루에서 나갈까요? 다시 가입할 수 있어요.',
-      '나가기',
+      RemainingSurface.tr(context, 'running_crew.toast.36', '크루 나가기'),
+      RemainingSurface.tr(
+        context,
+        'running_crew.toast.37',
+        '"${mine.crew.name}" 크루에서 나갈까요? 다시 가입할 수 있어요.',
+        {'mine.crew.name': mine.crew.name},
+      ),
+      RemainingSurface.tr(context, 'running_crew.toast.38', '나가기'),
     )) {
       return;
     }
     try {
       await api.leaveCrew();
       _refreshCrews();
-      if (mounted) _toast('크루에서 나왔어요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(context, 'running_crew.toast.39', '크루에서 나왔어요.'));
+      }
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(
         error.statusCode == 400
-            ? '크루장은 나갈 수 없어요.'
-            : '나가지 못했어요. 잠시 뒤 다시 해 주세요.',
+            ? RemainingSurface.tr(context, 'running_crew.toast.40', '크루장은 나갈 수 없어요.')
+            : RemainingSurface.tr(
+                context, 'running_crew.toast.41', '나가지 못했어요. 잠시 뒤 다시 해 주세요.'),
       );
     } catch (_) {
-      if (mounted) _toast('나가지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(context, 'running_crew.toast.41', '나가지 못했어요. 잠시 뒤 다시 해 주세요.'),
+        );
+      }
     }
   }
 
@@ -583,7 +754,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (reason == null) return;
     final api = ref.read(crewApiProvider);
     if (api == null) {
-      _toast('지금은 신고할 수 없어요.');
+      _toast(RemainingSurface.trNow('running_crew.toast.42', '지금은 신고할 수 없어요.'));
       return;
     }
     try {
@@ -592,9 +763,17 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         targetId: targetId,
         reason: reason,
       );
-      if (mounted) _toast('신고했어요. 운영자가 확인할게요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(context, 'running_crew.toast.43', '신고했어요. 운영자가 확인할게요.'),
+        );
+      }
     } catch (_) {
-      if (mounted) _toast('신고하지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(
+          RemainingSurface.tr(context, 'running_crew.toast.44', '신고하지 못했어요. 잠시 뒤 다시 해 주세요.'),
+        );
+      }
     }
   }
 
@@ -636,9 +815,13 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
             ? null
             : (member) async {
                 if (!await _confirm(
-                  '크루장 넘기기',
-                  '${member.nickname}님에게 크루장을 넘길까요? 나는 부크루장이 되고, 원하면 그 뒤에 크루에서 나갈 수 있어요.',
-                  '넘기기',
+                  RemainingSurface.trNow('running_crew.toast.45', '크루장 넘기기'),
+                  RemainingSurface.trNow(
+                    'running_crew.body.11',
+                    '${member.nickname}님에게 크루장을 넘길까요? 나는 부크루장이 되고, 원하면 그 뒤에 크루에서 나갈 수 있어요.',
+                    {'member.nickname': member.nickname},
+                  ),
+                  RemainingSurface.trNow('running_crew.body.12', '넘기기'),
                 )) {
                   return;
                 }
@@ -646,9 +829,22 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                   await api.transferCrew(member.uid);
                   _refreshCrews();
                   if (ctx.mounted) Navigator.of(ctx).pop();
-                  if (mounted) _toast('${member.nickname}님이 새 크루장이에요.');
+                  if (mounted) {
+                    _toast(
+                      RemainingSurface.trNow(
+                        'running_crew.toast.46',
+                        '${member.nickname}님이 새 크루장이에요.',
+                        {'member.nickname': member.nickname},
+                      ),
+                    );
+                  }
                 } catch (_) {
-                  if (mounted) _toast('넘기지 못했어요. 잠시 뒤 다시 해 주세요.');
+                  if (mounted) {
+                    _toast(
+                      RemainingSurface.trNow(
+                        'running_crew.toast.47', '넘기지 못했어요. 잠시 뒤 다시 해 주세요.'),
+                    );
+                  }
                 }
               },
         onRole: api == null || !mine.isLeader
@@ -661,7 +857,11 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                   if (mounted) {
                     _toast(
                       role == 'sub'
-                          ? '${member.nickname}님을 부크루장으로 했어요.'
+                          ? RemainingSurface.trNow(
+                              'running_crew.toast.48',
+                              '${member.nickname}님을 부크루장으로 했어요.',
+                              {'member.nickname': member.nickname},
+                            )
                           : '${member.nickname}님을 크루원으로 돌렸어요.',
                     );
                   }
@@ -735,14 +935,16 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                                 value: mine == null
                                     ? '-'
                                     : '${mine.crew.memberCount}/${mine.crew.maxMembers}',
-                                label: '크루원',
+                                label: RemainingSurface.tr(
+                                    context, 'running_crew.body.13', '크루원'),
                               ),
                               const SizedBox(width: 10),
                               _CrewStat(
                                 value: mine == null
                                     ? '-'
                                     : '${_format(mine.crew.totalDistanceKm.round())}km',
-                                label: '누적 거리',
+                                label: RemainingSurface.tr(
+                                    context, 'running_crew.body.14', '누적 거리'),
                               ),
                             ],
                           ),
@@ -751,64 +953,98 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         if (!noCrew)
                           _CrewActionLine(
                             index: '01',
-                            title: '크루 관리',
-                            subtitle: '공지 · 크루원 · 혜택 선물',
+                            title: RemainingSurface.tr(context, 'running_crew.body.15', '크루 관리'),
+                            subtitle: RemainingSurface.tr(
+                                context, 'running_crew.body.16', '공지 · 크루원 · 혜택 선물'),
                             onTap: _onOpenCrewManager,
                           ),
                         if (mine != null)
                           _CrewActionLine(
                             index: '··',
-                            title: '크루원 보기',
-                            subtitle: '${mine.crew.memberCount}명 · 내 역할 ${_roleLabel(mine.role)}',
+                            title: RemainingSurface.tr(
+                                context, 'running_crew.body.17', '크루원 보기'),
+                            subtitle: RemainingSurface.tr(
+                              context,
+                              'running_crew.body.18',
+                              '${mine.crew.memberCount}명 · 내 역할 ${_roleLabel(mine.role)}',
+                              {
+                                'mine.crew.memberCount': mine.crew.memberCount,
+                                '_roleLabel(mine.role)': _roleLabel(mine.role),
+                              },
+                            ),
                             onTap: () => _onShowMembers(mine),
                           ),
                         if (mine != null && mine.isManager)
                           _CrewActionLine(
                             index: '··',
                             title: mine.pendingRequests > 0
-                                ? '가입 신청 ${mine.pendingRequests}건'
-                                : '가입 신청',
-                            subtitle: '받을지 정해요',
+                                ? RemainingSurface.tr(
+                                    context,
+                                    'running_crew.body.19',
+                                    '가입 신청 ${mine.pendingRequests}건',
+                                    {'mine.pendingRequests': mine.pendingRequests},
+                                  )
+                                : RemainingSurface.tr(context, 'running_crew.body', '가입 신청'),
+                            subtitle: RemainingSurface.tr(
+                                context, 'running_crew.body.20', '받을지 정해요'),
                             onTap: _onShowRequests,
                           ),
                         if (mine != null && mine.isLeader)
                           _CrewActionLine(
                             index: '··',
-                            title: '크루 이름 바꾸기',
+                            title: RemainingSurface.tr(
+                                context, 'running_crew.dialog', '크루 이름 바꾸기'),
                             subtitle: mine.crew.renameCostDia == 0
-                                ? '처음 한 번은 무료'
+                                ? RemainingSurface.tr(
+                                    context, 'running_crew.body.21', '처음 한 번은 무료')
                                 : '${mine.crew.renameCostDia} DIA',
                             onTap: () => _onRename(mine),
                           ),
                         if (mine != null && mine.isLeader)
                           _CrewActionLine(
                             index: '··',
-                            title: '가입 방식',
+                            title: RemainingSurface.tr(
+                                context, 'running_crew.button.3', '가입 방식'),
                             subtitle: mine.crew.needsApproval
-                                ? '지금은 승인 가입'
-                                : '지금은 자유 가입',
+                                ? RemainingSurface.tr(
+                                    context, 'running_crew.body.22', '지금은 승인 가입')
+                                : RemainingSurface.tr(
+                                    context, 'running_crew.body.23', '지금은 자유 가입'),
                             onTap: () => _onChooseJoinMode(mine),
                           ),
                         if (mine != null && mine.isLeader)
                           _CrewActionLine(
                             index: '··',
-                            title: '크루 없애기',
-                            subtitle: '크루원과 함께 모두 나와요',
+                            title: RemainingSurface.tr(context, 'running_crew.body.7', '크루 없애기'),
+                            subtitle: RemainingSurface.tr(
+                                context, 'running_crew.body.24', '크루원과 함께 모두 나와요'),
                             onTap: () => _onDisband(mine),
                           ),
                         if (mine != null && mine.canLeave)
                           _CrewActionLine(
                             index: '··',
-                            title: '크루 나가기',
-                            subtitle: '다시 가입할 수 있어요',
+                            title: RemainingSurface.tr(
+                                context, 'running_crew.toast.36', '크루 나가기'),
+                            subtitle: RemainingSurface.tr(
+                                context, 'running_crew.body.25', '다시 가입할 수 있어요'),
                             onTap: () => _onLeave(mine),
                           ),
                         _CrewActionLine(
                           index: '02',
-                          title: '엠블럼 바꾸기',
-                          subtitle: '틀 ${CrewEmblem.frames.length}가지 · '
-                              '문양 ${CrewEmblem.glyphIds.length}가지 · '
-                              '색 ${CrewEmblem.paletteColors.length}가지',
+                          title: RemainingSurface.tr(context, 'running_crew.body.26', '엠블럼 바꾸기'),
+                          subtitle: RemainingSurface.tr(
+                            context,
+                            'running_crew.body.27',
+                            '틀 ${CrewEmblem.frames.length}가지 · '
+                                '문양 ${CrewEmblem.glyphIds.length}가지 · '
+                                '색 ${CrewEmblem.paletteColors.length}가지',
+                            {
+                              'CrewEmblem.frames.length': CrewEmblem.frames.length,
+                              'CrewEmblem.glyphIds.length': CrewEmblem.glyphIds.length,
+                              'CrewEmblem.paletteColors.length':
+                                  CrewEmblem.paletteColors.length,
+                            },
+                          ),
                           onTap: _onChangeEmblem,
                         ),
                         if (noCrew) ...[
@@ -820,14 +1056,21 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                           ),
                         ],
                         const SizedBox(height: 24),
-                        const StoreSectionLabel('다른 크루 찾기'),
+                        StoreSectionLabel(
+                          RemainingSurface.tr(context, 'running_crew.body.29', '다른 크루 찾기'),
+                        ),
                         _CrewSearchPill(onTap: _onSearch),
                         if (api != null) ...[
                           if (searching)
                             Padding(
                               padding: const EdgeInsets.only(top: 10),
                               child: Text(
-                                '검색: "$_searchQuery"',
+                                RemainingSurface.tr(
+                                  context,
+                                  'running_crew.body.30',
+                                  '검색: "$_searchQuery"',
+                                  {'_searchQuery': _searchQuery},
+                                ),
                                 style: storeText(12, c.muted),
                               ),
                             ),
@@ -845,13 +1088,19 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                         ] else if (searching) ...[
                           const SizedBox(height: 10),
                           Text(
-                            '검색: "$_searchQuery"',
+                            RemainingSurface.tr(
+                              context,
+                              'running_crew.body.30',
+                              '검색: "$_searchQuery"',
+                              {'_searchQuery': _searchQuery},
+                            ),
                             style: storeText(12, c.muted),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20),
                             child: Text(
-                              '검색 결과가 없습니다.',
+                              RemainingSurface.tr(
+                                  context, 'running_crew.body.31', '검색 결과가 없습니다.'),
                               textAlign: TextAlign.center,
                               style: storeText(14, c.muted),
                             ),
@@ -865,7 +1114,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                           ),
                         const SizedBox(height: 6),
                         Text(
-                          '보유 SHARE ${_format(wallet.shareBalance)}',
+                          RemainingSurface.tr(
+                            context,
+                            'running_crew.body.32',
+                            '보유 SHARE ${_format(wallet.shareBalance)}',
+                            {'_format(wallet.shareBalance)': _format(wallet.shareBalance)},
+                          ),
                           textAlign: TextAlign.center,
                           style: storeText(12, c.muted),
                         ),
@@ -904,9 +1158,9 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
   }
 
   String _roleLabel(String role) => switch (role) {
-        'leader' => '크루장',
-        'sub' => '부크루장',
-        _ => '크루원',
+        'leader' => RemainingSurface.tr(context, 'running_crew.body.33', '크루장'),
+        'sub' => RemainingSurface.tr(context, 'running_crew.body.34', '부크루장'),
+        _ => RemainingSurface.tr(context, 'running_crew.body.13', '크루원'),
       };
 
   String _format(int amount) {
@@ -952,24 +1206,24 @@ class _CrewSearchDialogState extends State<_CrewSearchDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('크루 검색'),
+      title: Text(RemainingSurface.tr(context, 'running_crew.hint', '크루 검색')),
       content: TextField(
         controller: _controller,
         autofocus: true,
-        decoration: const InputDecoration(
-          hintText: '크루 이름 입력',
-          border: OutlineInputBorder(),
+        decoration: InputDecoration(
+          hintText: RemainingSurface.tr(context, 'running_crew.hint.2', '크루 이름 입력'),
+          border: const OutlineInputBorder(),
         ),
         onSubmitted: _close,
       ),
       actions: [
         TextButton(
           onPressed: () => _close(''),
-          child: const Text('초기화'),
+          child: Text(RemainingSurface.tr(context, 'running_crew.hint.3', '초기화')),
         ),
         FilledButton(
           onPressed: () => _close(_controller.text),
-          child: const Text('검색'),
+          child: Text(RemainingSurface.tr(context, 'running_crew.button.6', '검색')),
         ),
       ],
     );
@@ -1055,7 +1309,7 @@ class _CrewPhotoHeader extends StatelessWidget {
                             size: 18, color: c.warning),
                         const SizedBox(width: 6),
                         Text(
-                          '명예의 전당',
+                          RemainingSurface.tr(context, 'running_crew.body.35', '명예의 전당'),
                           style: storeText(13, c.warning, w: FontWeight.w800),
                         ),
                       ],
@@ -1153,13 +1407,22 @@ class _CrewRankLine extends StatelessWidget {
             if (ranking.bestRank > 0) ...[
               const SizedBox(height: 4),
               Text(
-                '역대 최고 ${ranking.bestRank}위',
+                RemainingSurface.tr(
+                  context,
+                  'running_crew.body.36',
+                  '역대 최고 ${ranking.bestRank}위',
+                  {'ranking.bestRank': ranking.bestRank},
+                ),
                 style: storeText(12, c.muted, w: FontWeight.w700),
               ),
             ],
             const SizedBox(height: 4),
             Text(
-              '순위는 이번 달 크루 거리 ÷ 크루원 수예요. 달이 끝나면 확정돼요.',
+              RemainingSurface.tr(
+                context,
+                'running_crew.body.37',
+                '순위는 이번 달 크루 거리 ÷ 크루원 수예요. 달이 끝나면 확정돼요.',
+              ),
               style: storeText(11, c.muted),
             ),
           ],
@@ -1282,7 +1545,10 @@ class _CrewSearchPill extends StatelessWidget {
           children: [
             Icon(Icons.search_rounded, color: c.muted, size: 22),
             const SizedBox(width: 10),
-            Text('크루 이름 검색', style: storeText(16, c.muted)),
+            Text(
+              RemainingSurface.tr(context, 'running_crew.body.38', '크루 이름 검색'),
+              style: storeText(16, c.muted),
+            ),
           ],
         ),
       ),
@@ -1321,12 +1587,13 @@ class _CreateCrewTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '크루 만들기',
+                    RemainingSurface.tr(context, 'running_crew.button', '크루 만들기'),
                     style: storeText(18, c.ink, w: FontWeight.w900),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '50 DIA 또는 30,000 SHARE',
+                    RemainingSurface.tr(
+                        context, 'running_crew.body.39', '50 DIA 또는 30,000 SHARE'),
                     style: storeText(14, c.muted),
                   ),
                 ],
@@ -1384,7 +1651,9 @@ class _RemoteCrewList extends ConsumerWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Text(
-          query.isEmpty ? '아직 만들어진 크루가 없어요.' : '검색 결과가 없습니다.',
+          query.isEmpty
+              ? RemainingSurface.tr(context, 'running_crew.body.40', '아직 만들어진 크루가 없어요.')
+              : RemainingSurface.tr(context, 'running_crew.body.31', '검색 결과가 없습니다.'),
           textAlign: TextAlign.center,
           style: storeText(14, c.muted),
         ),
@@ -1430,7 +1699,7 @@ class _RemoteCrewList extends ConsumerWidget {
                   if (onReport != null)
                     IconButton(
                       key: reportKey(crew.id),
-                      tooltip: '신고',
+                      tooltip: RemainingSurface.tr(context, 'running_crew.button.7', '신고'),
                       icon: Icon(Icons.flag_outlined, size: 20, color: c.muted),
                       onPressed: () => onReport!(crew),
                     ),
@@ -1439,7 +1708,9 @@ class _RemoteCrewList extends ConsumerWidget {
                       OutlinedButton(
                         key: joinKey(crew.id),
                         onPressed: onCancel,
-                        child: const Text('신청 취소'),
+                        child: Text(
+                          RemainingSurface.tr(context, 'running_crew.button.8', '신청 취소'),
+                        ),
                       )
                     else
                       FilledButton(
@@ -1451,12 +1722,14 @@ class _RemoteCrewList extends ConsumerWidget {
                             : () => onJoin(crew),
                         child: Text(
                           crew.rejected
-                              ? '가입 불가'
+                              ? RemainingSurface.tr(context, 'running_crew.body.41', '가입 불가')
                               : crew.isFull
-                                  ? '가득 참'
+                                  ? RemainingSurface.tr(context, 'running_crew.body.42', '가득 참')
                                   : crew.needsApproval
-                                      ? '가입 신청'
-                                      : '가입',
+                                      ? RemainingSurface.tr(
+                                          context, 'running_crew.body', '가입 신청')
+                                      : RemainingSurface.tr(
+                                          context, 'running_crew.toast.18', '가입'),
                         ),
                       ),
                 ],
@@ -1501,9 +1774,9 @@ class _CrewMembersSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
     String label(String role) => switch (role) {
-          'leader' => '크루장',
-          'sub' => '부크루장',
-          _ => '크루원',
+          'leader' => RemainingSurface.tr(context, 'running_crew.body.33', '크루장'),
+          'sub' => RemainingSurface.tr(context, 'running_crew.body.34', '부크루장'),
+          _ => RemainingSurface.tr(context, 'running_crew.body.13', '크루원'),
         };
     return SafeArea(
       child: ConstrainedBox(
@@ -1515,7 +1788,15 @@ class _CrewMembersSheet extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           children: [
             Text(
-              '${mine.crew.name} · ${mine.members.length}명',
+              RemainingSurface.tr(
+                context,
+                'running_crew.body.43',
+                '${mine.crew.name} · ${mine.members.length}명',
+                {
+                  'mine.crew.name': mine.crew.name,
+                  'mine.members.length': mine.members.length,
+                },
+              ),
               style: storeText(20, c.ink, w: FontWeight.w900),
             ),
             const SizedBox(height: 12),
@@ -1550,13 +1831,20 @@ class _CrewMembersSheet extends StatelessWidget {
                               key: roleKey(m.uid),
                               value: 'role',
                               child: Text(
-                                  m.role == 'sub' ? '부크루장 해제' : '부크루장으로'),
+                                m.role == 'sub'
+                                    ? RemainingSurface.tr(
+                                        context, 'running_crew.body.44', '부크루장 해제')
+                                    : RemainingSurface.tr(
+                                        context, 'running_crew.body.45', '부크루장으로'),
+                              ),
                             ),
                           if (m.role != 'leader' && onTransfer != null)
                             PopupMenuItem(
                               key: transferKey(m.uid),
                               value: 'transfer',
-                              child: const Text('크루장 넘기기'),
+                              child: Text(
+                                RemainingSurface.tr(context, 'running_crew.toast.45', '크루장 넘기기'),
+                              ),
                             ),
                           if (m.role != 'leader' && _canKick(m))
                             PopupMenuItem(
@@ -1568,7 +1856,9 @@ class _CrewMembersSheet extends StatelessWidget {
                             PopupMenuItem(
                               key: reportKey(m.uid),
                               value: 'report',
-                              child: const Text('신고하기'),
+                              child: Text(
+                                RemainingSurface.tr(context, 'running_crew.body.46', '신고하기'),
+                              ),
                             ),
                         ],
                       ),
@@ -1603,14 +1893,24 @@ class _CrewRequestsSheet extends StatelessWidget {
           shrinkWrap: true,
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
           children: [
-            Text('가입 신청 ${requests.length}건',
-                style: storeText(20, c.ink, w: FontWeight.w900)),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'running_crew.body.47',
+                '가입 신청 ${requests.length}건',
+                {'requests.length': requests.length},
+              ),
+              style: storeText(20, c.ink, w: FontWeight.w900),
+            ),
             const SizedBox(height: 12),
             if (requests.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Text('기다리는 신청이 없어요.',
-                    textAlign: TextAlign.center, style: storeText(14, c.muted)),
+                child: Text(
+                  RemainingSurface.tr(context, 'running_crew.body.48', '기다리는 신청이 없어요.'),
+                  textAlign: TextAlign.center,
+                  style: storeText(14, c.muted),
+                ),
               ),
             for (final r in requests)
               ListTile(
@@ -1623,12 +1923,12 @@ class _CrewRequestsSheet extends StatelessWidget {
                     TextButton(
                       key: rejectKey(r.uid),
                       onPressed: () => onDecide(r, false),
-                      child: const Text('거절'),
+                      child: Text(RemainingSurface.tr(context, 'running_crew.button.9', '거절')),
                     ),
                     FilledButton(
                       key: approveKey(r.uid),
                       onPressed: () => onDecide(r, true),
-                      child: const Text('받기'),
+                      child: Text(RemainingSurface.tr(context, 'running_crew.button.10', '받기')),
                     ),
                   ],
                 ),
@@ -1699,9 +1999,9 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
         controller: _controller,
         autofocus: true,
         maxLength: 20,
-        decoration: const InputDecoration(
-          hintText: '2~20자로 지어 주세요',
-          border: OutlineInputBorder(),
+        decoration: InputDecoration(
+          hintText: RemainingSurface.tr(context, 'running_crew.hint.4', '2~20자로 지어 주세요'),
+          border: const OutlineInputBorder(),
         ),
         onChanged: (_) => setState(() {}),
         onSubmitted: (_) => _valid ? _close(_name) : null,
@@ -1713,7 +2013,11 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
         FilledButton(
           key: _CrewNameDialog.okKey,
           onPressed: _valid ? () => _close(_name) : null,
-          child: Text(widget.okLabel),
+          child: Text(
+            widget.okLabel == '다음'
+                ? RemainingSurface.tr(context, 'running_crew.dialog.2', '다음')
+                : widget.okLabel,
+          ),
         ),
       ],
     );

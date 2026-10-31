@@ -17,6 +17,7 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../data/models/wallet_transaction_model.dart';
 import '../features/profile/user_profile_notifier.dart';
+import '../l10n/remaining_surface.dart';
 import 'appeal_center_screen.dart';
 import 'solo_pedometer_screen.dart';
 
@@ -524,7 +525,7 @@ class _PaymentHistoryTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 AppStrings.notificationPaymentReceipt,
                 style: TextStyle(
                   color: AppColors.tealAccent,
@@ -600,5 +601,9 @@ String _formatWalletTxDate(DateTime date) {
 }
 
 String _formatNotificationDay(DateTime date) {
-  return '${date.month}월 ${date.day}일';
+  return RemainingSurface.trNow(
+    'notification_center.body',
+    '${date.month}월 ${date.day}일',
+    {'date.month': date.month, 'date.day': date.day},
+  );
 }

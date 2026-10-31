@@ -8,6 +8,7 @@ import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/screens/preliminary_eval_screen.dart';
+import '../support/ko_localization.dart';
 
 ProviderScope _scope(Widget child, {bool healthConsent = false}) {
   final profile = UserModel.dashboardDefault(uid: 'u1')
@@ -71,7 +72,10 @@ void main() {
         ),
       ],
     );
-    await tester.pumpWidget(_scope(MaterialApp.router(routerConfig: router)));
+    await tester.pumpWidget(_scope(MaterialApp.router(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,routerConfig: router)));
     await tester.pumpAndSettle();
 
     final handled = await tester.binding.handlePopRoute();
@@ -86,6 +90,9 @@ void main() {
     await tester.pumpWidget(
       _scope(
         MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           routes: {
             RouteNames.home: (_) => const Scaffold(body: Text('home-shell')),
           },
@@ -112,7 +119,10 @@ void main() {
       ],
     );
     await tester.pumpWidget(
-      _scope(MaterialApp.router(routerConfig: router)),
+      _scope(MaterialApp.router(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,routerConfig: router)),
     );
     await tester.pumpAndSettle();
 
@@ -123,5 +133,26 @@ void main() {
     await tester.tap(find.byKey(PreliminaryEvalScreen.startRunKey));
     await tester.pumpAndSettle();
     expect(find.text('건강정보 동의 필요'), findsOneWidget);
+  });
+
+  testWidgets('shows no 0/3 progress bar: the grade starts at the first 1 km',
+      (tester) async {
+    await tester.pumpWidget(
+      _scope(
+        MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
+          home: const PreliminaryEvalScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('/3'), findsNothing);
+    expect(find.textContaining('3회'), findsNothing);
+    expect(find.textContaining('첫 인증 1km'), findsWidgets);
+    // 한 화면에서 "인증"으로 통일했다.
+    expect(find.textContaining('검증'), findsNothing);
   });
 }

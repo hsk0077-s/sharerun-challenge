@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/widgets/apple_login_button.dart';
+import '../../support/ko_localization.dart';
 
 void main() {
   testWidgets('it is a black button with a white logo and text',
@@ -8,6 +9,9 @@ void main() {
     var taps = 0;
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         home: Scaffold(
           body: SizedBox(
             width: 324,

@@ -5,6 +5,8 @@ import 'package:share_run_challenge/app/providers/app_providers.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/api/identity_api_client.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
+
+import '../../support/ko_localization.dart';
 import 'package:share_run_challenge/features/profile/widgets/my_watch_card.dart';
 
 Future<void> _pump(
@@ -22,6 +24,9 @@ Future<void> _pump(
         connectedWatchAppsProvider.overrideWith((ref) async => apps),
       ],
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.night,
         home: const Scaffold(body: MyWatchCard()),
       ),

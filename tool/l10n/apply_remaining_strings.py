@@ -34,8 +34,82 @@ APP_LANGUAGE = {
 }
 
 
+# Fixed Dart source for RemainingSurface's lookup API. Emitted verbatim
+# into every generated file; only the per-key tables above/below it change.
+STATIC_API_BLOCK = r"""  /// Locale the app currently renders in. Kept in sync by the widget
+  /// tree (see lib/app/app.dart) for callers without a BuildContext.
+  static Locale currentLocale = const Locale('ko', 'KR');
+
+  /// Returns [ko] (with [args] substituted) for the Korean locale or
+  /// when [key] has no translation for the resolved language.
+  static String tr(
+    BuildContext? context,
+    String key,
+    String ko, [
+    Map<String, Object?> args = const {},
+  ]) {
+    final locale = context == null
+        ? currentLocale
+        : (Localizations.maybeLocaleOf(context) ?? currentLocale);
+    return _resolve(locale, key, ko, args);
+  }
+
+  /// Context-free variant of [tr] for models/services/constants, using
+  /// [currentLocale].
+  static String trNow(
+    String key,
+    String ko, [
+    Map<String, Object?> args = const {},
+  ]) {
+    return _resolve(currentLocale, key, ko, args);
+  }
+
+  static String _resolve(
+    Locale locale,
+    String key,
+    String ko,
+    Map<String, Object?> args,
+  ) {
+    if (locale.languageCode != 'ko') {
+      final translated = _byLanguage[locale.languageCode]?[key];
+      if (translated != null) return _applyArgs(translated, args);
+    }
+    return _applyArgs(ko, args);
+  }
+
+  static final _simpleArgName = RegExp(r'^[A-Za-z_][A-Za-z0-9_]*$');
+
+  /// Substitutes `${name}` and, for simple identifiers, bare `$name`
+  /// tokens -- matching the 'format' tokens in
+  /// docs/l10n/remaining-ko-strings.json.
+  static String _applyArgs(String value, Map<String, Object?> args) {
+    if (args.isEmpty) return value;
+    var result = value;
+    for (final entry in args.entries) {
+      final text = '${entry.value}';
+      result = result.replaceAll('\${${entry.key}}', text);
+      if (_simpleArgName.hasMatch(entry.key)) {
+        result = result.replaceAllMapped(
+          RegExp('\\\$${entry.key}(?![A-Za-z0-9_])'),
+          (_) => text,
+        );
+      }
+    }
+    return result;
+  }"""
+
+
 def dart_string(value: str) -> str:
-    return "'" + value.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "") + "'"
+    # Dollar signs must stay literal. Dart single quotes interpolate `$`.
+    escaped = (
+        value.replace("\\", "\\\\")
+        .replace("'", "\\'")
+        .replace("\r", "\\r")
+        .replace("\n", "\\n")
+        .replace("\t", "\\t")
+        .replace("$", "\\$")
+    )
+    return "'" + escaped + "'"
 
 
 def placeholder_tokens(item: dict) -> list[str]:
@@ -98,6 +172,10 @@ def emit(payload: dict) -> str:
         "    final table = _byLanguage[locale.languageCode] ?? _byLanguage['en'];",
         "    return table?[key] ?? key;",
         "  }",
+        "",
+    ]
+    lines += STATIC_API_BLOCK.splitlines()
+    lines += [
         "",
         "  static const keys = <String>[",
     ]

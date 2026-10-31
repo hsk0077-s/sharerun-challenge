@@ -132,12 +132,12 @@ class _TermsAgreementScreenState extends ConsumerState<TermsAgreementScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     AppStrings.termsTitle,
                     style: AppTextStyles.termsTitle,
                   ),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     AppStrings.termsSubtitle,
                     style: AppTextStyles.termsSubtitle,
                   ),
@@ -178,7 +178,7 @@ class _TermsAgreementScreenState extends ConsumerState<TermsAgreementScreen> {
                                 onPressed: () => unawaited(
                                   LegalLinks.openTermsOfService(),
                                 ),
-                                child: const Text(
+                                child: Text(
                                   '${LegalConstants.termsOfServiceLinkLabel} >',
                                   style: AppTextStyles.link,
                                 ),
@@ -208,7 +208,7 @@ class _TermsAgreementScreenState extends ConsumerState<TermsAgreementScreen> {
                                 ),
                                 onPressed: () =>
                                     unawaited(LegalLinks.openPrivacyPolicy()),
-                                child: const Text(
+                                child: Text(
                                   '${LegalConstants.privacyPolicyLinkLabel} >',
                                   style: AppTextStyles.link,
                                 ),

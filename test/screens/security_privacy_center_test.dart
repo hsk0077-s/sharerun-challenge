@@ -8,6 +8,7 @@ import 'package:share_run_challenge/l10n/app_localizations.dart';
 import 'package:share_run_challenge/features/privacy/ai_learning_tile.dart';
 import 'package:share_run_challenge/screens/fair_earning_policy_screen.dart';
 import 'package:share_run_challenge/screens/security_privacy_center_screen.dart';
+import '../support/ko_localization.dart';
 
 void main() {
   testWidgets('AI switch shows the server value and saves server-first',
@@ -25,6 +26,9 @@ void main() {
           }),
         ],
         child: const MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(body: AiLearningTile()),
         ),
       ),
@@ -52,7 +56,10 @@ void main() {
             (bool next) => reply.future,
           ),
         ],
-        child: const MaterialApp(home: Scaffold(body: AiLearningTile())),
+        child: const MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,home: Scaffold(body: AiLearningTile())),
       ),
     );
     await tester.pumpAndSettle();
@@ -81,6 +88,9 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           home: Scaffold(body: AiLearningTile()),
         ),
       ),

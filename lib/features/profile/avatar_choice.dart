@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// Cosmetic Home-header avatar. Independent of walking-mascot / pay-to-win.
 @immutable
 class AvatarChoice {
@@ -80,11 +82,14 @@ class AvatarPreset {
 
 /// Extra Home-header characters beyond male/female. Cosmetic only.
 abstract final class AvatarPresets {
-  static const male = AvatarPreset(
-    id: AvatarChoice.maleId,
-    label: '남성',
-    asset: 'assets/images/characters/avatar_gender_male.png',
-  );
+  static AvatarPreset get male => AvatarPreset(
+        id: AvatarChoice.maleId,
+        label: RemainingSurface.trNow(
+          'profile.avatar_choice.body',
+          '남성',
+        ),
+        asset: 'assets/images/characters/avatar_gender_male.png',
+      );
   static const female = AvatarPreset(
     id: AvatarChoice.femaleId,
     label: '여성',
@@ -122,7 +127,7 @@ abstract final class AvatarPresets {
   );
 
   /// 고르기 화면에 보여 주는 목록. 동물(달팽이 포함)은 티어 캐릭터라 여기서 고르게 하지 않는다.
-  static const all = <AvatarPreset>[male, female];
+  static List<AvatarPreset> get all => <AvatarPreset>[male, female];
 
   /// 예전에 동물을 골라 둔 사람의 사진이 깨지지 않게 [byId]는 이 목록까지 찾는다.
   static const _legacy = <AvatarPreset>[

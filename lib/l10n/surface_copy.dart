@@ -91,7 +91,7 @@ class FairEarningCopy {
           'VALUE는 환전할 수 없어요.',
         ]),
         FairBlock('기부', [
-          '검증된 달리기 1km마다 100원을 운영자·스폰서 이름으로 기부해요.',
+          '검증된 달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.',
           '운영자 기부에는 한 달 한도가 있어요. 한도가 차면 '
               '"이번 달 운영자 기부 예산을 모두 사용했어요"로 알려 드려요.',
         ]),
@@ -140,7 +140,7 @@ class FairEarningCopy {
           'VALUE cannot be cashed out.',
         ]),
         FairBlock('Donation', [
-          'Each verified 1 km donates 100 KRW in the operator’s and sponsor’s name.',
+          'For each verified 1 km, 100 KRW is planned to be donated from company (operator) funds.',
           'The operator’s donation has a monthly cap. When it is full, the app says the month’s operator donation budget is used up.',
         ]),
         FairBlock('If a record looks wrong', [
@@ -186,7 +186,7 @@ class FairEarningCopy {
           'VALUEは換金できません。',
         ]),
         FairBlock('寄付', [
-          '検証された1kmごとに100ウォンを運営者とスポンサーの名義で寄付します。',
+          '検証された1kmごとに、会社（運営者）の資金から100ウォンを寄付する予定です。',
           '運営者の寄付には月の上限があります。上限に達すると、その月の運営者寄付予算を使い切ったと知らせます。',
         ]),
         FairBlock('記録に納得できないとき', [
@@ -232,7 +232,7 @@ class FairEarningCopy {
           'VALUE 不能換成現金。',
         ]),
         FairBlock('捐款', [
-          '每 1 公里通過驗證的跑步，以營運方和贊助方的名義捐出 100 韓元。',
+          '每 1 公里通過驗證的跑步，預計以公司（營運方）資金捐出 100 韓元。',
           '營運方捐款有每月上限。額滿時會告知本月營運方捐款預算已用完。',
         ]),
         FairBlock('若紀錄看起來不對', [
@@ -279,7 +279,7 @@ class FairEarningCopy {
           'VALUE no se puede cobrar en dinero.',
         ]),
         FairBlock('Donación', [
-          'Cada 1 km verificado dona 100 KRW a nombre del operador y del patrocinador.',
+          'Por cada 1 km verificado se prevé donar 100 KRW con fondos de la empresa (operador).',
           'La donación del operador tiene un tope mensual. Al llenarse, la app avisa de que el presupuesto del mes se agotó.',
         ]),
         FairBlock('Si un registro no cuadra', [
@@ -325,7 +325,7 @@ class FairEarningCopy {
           'VALUE não pode ser sacado.',
         ]),
         FairBlock('Doação', [
-          'Cada 1 km verificado doa 100 KRW em nome do operador e do patrocinador.',
+          'A cada 1 km verificado, prevê-se doar 100 KRW com recursos da empresa (operadora).',
           'A doação do operador tem um teto mensal. Quando enche, o app avisa que o orçamento do mês acabou.',
         ]),
         FairBlock('Se um registro parecer errado', [
@@ -371,7 +371,7 @@ class FairEarningCopy {
           'VALUE kann nicht ausgezahlt werden.',
         ]),
         FairBlock('Spende', [
-          'Jeder geprüfte Kilometer spendet 100 KRW im Namen von Betreiber und Sponsor.',
+          'Für jeden geprüften Kilometer sind 100 KRW Spende aus Mitteln des Unternehmens (Betreiber) geplant.',
           'Die Spende des Betreibers hat eine Monatsgrenze. Ist sie voll, sagt die App, dass das Budget des Monats aufgebraucht ist.',
         ]),
         FairBlock('Wenn eine Aufzeichnung nicht stimmt', [
@@ -418,7 +418,7 @@ class FairEarningCopy {
           'VALUE ne peut pas être encaissé.',
         ]),
         FairBlock('Don', [
-          'Chaque kilomètre vérifié donne 100 KRW au nom de l’opérateur et du sponsor.',
+          'Pour chaque kilomètre vérifié, un don de 100 KRW est prévu sur les fonds de l’entreprise (opérateur).',
           'Le don de l’opérateur a un plafond mensuel. Une fois plein, l’app dit que le budget du mois est épuisé.',
         ]),
         FairBlock('Si un enregistrement semble faux', [
@@ -464,7 +464,7 @@ class FairEarningCopy {
           'VALUE không rút thành tiền.',
         ]),
         FairBlock('Quyên góp', [
-          'Mỗi 1 km đã xác minh quyên góp 100 KRW dưới tên đơn vị vận hành và nhà tài trợ.',
+          'Mỗi 1 km đã xác minh, dự kiến quyên góp 100 KRW từ ngân sách công ty (đơn vị vận hành).',
           'Khoản quyên góp của đơn vị vận hành có trần mỗi tháng. Khi đầy, ứng dụng báo ngân sách tháng đã hết.',
         ]),
         FairBlock('Nếu bản ghi có vẻ sai', [
@@ -510,7 +510,7 @@ class FairEarningCopy {
           'VALUE แลกเป็นเงินไม่ได้',
         ]),
         FairBlock('การบริจาค', [
-          'ทุก 1 กม. ที่ตรวจแล้วบริจาค 100 วอนในนามผู้ให้บริการและสปอนเซอร์',
+          'ทุก 1 กม. ที่ตรวจแล้ว วางแผนบริจาค 100 วอนจากเงินของบริษัท (ผู้ให้บริการ)',
           'การบริจาคของผู้ให้บริการมีเพดานรายเดือน เมื่อเต็ม แอปจะบอกว่างบเดือนนี้ใช้หมดแล้ว',
         ]),
         FairBlock('ถ้าบันทึกดูไม่ตรง', [
@@ -556,7 +556,7 @@ class FairEarningCopy {
           'VALUE tidak dapat dicairkan.',
         ]),
         FairBlock('Donasi', [
-          'Setiap 1 km terverifikasi mendonasikan 100 KRW atas nama operator dan sponsor.',
+          'Setiap 1 km terverifikasi direncanakan mendonasikan 100 KRW dari dana perusahaan (penyelenggara).',
           'Donasi operator punya batas bulanan. Saat penuh, aplikasi memberi tahu bahwa anggaran bulan ini habis.',
         ]),
         FairBlock('Jika catatan terasa salah', [
@@ -1095,7 +1095,7 @@ const gradeGuideRows = <String, List<String>>{
     'Tingkat',
   ],
   'intro': [
-    '첫 검증 1km를 마치면 거북이 브론즈로 시작합니다. '
+    '첫 인증 1km를 마치면 거북이 브론즈로 시작합니다. '
         '그 다음은 기록이 쌓인 날마다 한 칸씩만 움직입니다.',
     'Your first verified 1 km starts you at turtle bronze. '
         'After that you move one step on each day that adds a record.',
@@ -1117,17 +1117,17 @@ const gradeGuideRows = <String, List<String>>{
         'Setelah itu kamu naik satu tingkat pada setiap hari yang menambah catatan.',
   ],
   'progress': [
-    '진행 상황: {done}/{total}회 완료',
-    'Progress: {done}/{total} done',
-    '進行: {done}/{total}回完了',
-    '進度：已完成 {done}/{total} 次',
-    'Progreso: {done}/{total} hechos',
-    'Progresso: {done}/{total} feitos',
-    'Stand: {done}/{total} geschafft',
-    'Avancement : {done}/{total} faits',
-    'Tiến độ: {done}/{total} lần',
-    'ความคืบหน้า: {done}/{total} ครั้ง',
-    'Progres: {done}/{total} selesai',
+    '아직 등급이 없어요. 첫 인증 1km를 달리면 시작해요',
+    'No grade yet. It starts after your first verified 1 km',
+    'まだグレードはありません。初回の認証1kmを走ると始まります',
+    '尚無等級。完成首次認證 1km 後開始',
+    'Aún sin grado. Empieza tras tu primer 1 km verificado',
+    'Ainda sem grau. Começa após o primeiro 1 km verificado',
+    'Noch keine Stufe. Sie beginnt nach dem ersten verifizierten 1 km',
+    'Pas encore de grade. Il démarre après votre premier 1 km vérifié',
+    'Chưa có hạng. Hạng bắt đầu sau 1km đầu tiên được xác thực',
+    'ยังไม่มีระดับ จะเริ่มหลังวิ่งที่ยืนยันแล้ว 1 กม. ครั้งแรก',
+    'Belum ada tingkat. Dimulai setelah 1 km terverifikasi pertama',
   ],
   'assigned': [
     '배정된 등급: {name}',
@@ -1143,17 +1143,17 @@ const gradeGuideRows = <String, List<String>>{
     'Tingkat yang ditetapkan: {name}',
   ],
   'sameDay': [
-    '같은 날 달린 기록은 한 번으로 세요. 기록이 서버에서 확인된 뒤에 횟수가 올라가요.',
-    'Runs on the same day count as one. The count rises after the server confirms the record.',
-    '同じ日の走りは1回です。サーバーが記録を確認してから回数が増えます。',
-    '同一天的跑步算一次。次數會在伺服器確認紀錄後增加。',
-    'Las carreras del mismo día cuentan como una. El número sube cuando el servidor confirma el registro.',
-    'Corridas no mesmo dia contam como uma. A contagem sobe depois que o servidor confirma o registro.',
-    'Läufe am selben Tag zählen als einer. Die Zahl steigt, wenn der Server den Eintrag bestätigt.',
-    'Les courses du même jour comptent pour une. Le nombre monte quand le serveur confirme l’enregistrement.',
-    'Các lần chạy trong cùng một ngày tính là một. Số lần tăng sau khi máy chủ xác nhận bản ghi.',
-    'การวิ่งในวันเดียวกันนับเป็นครั้งเดียว จำนวนจะเพิ่มหลังเซิร์ฟเวอร์ยืนยันบันทึก',
-    'Lari di hari yang sama dihitung satu kali. Angkanya naik setelah server mengonfirmasi catatan.',
+    '기록은 서버에서 확인된 뒤에 반영돼요. 같은 날 달린 기록은 하루로 세요.',
+    'Records count after the server confirms them. Runs on the same day count as one day.',
+    '記録はサーバーが確認してから反映されます。同じ日の走りは1日として数えます。',
+    '紀錄在伺服器確認後才會計入。同一天的跑步算一天。',
+    'Los registros cuentan cuando el servidor los confirma. Las carreras del mismo día cuentan como un día.',
+    'Os registros contam depois que o servidor os confirma. Corridas no mesmo dia contam como um dia.',
+    'Einträge zählen, sobald der Server sie bestätigt hat. Läufe am selben Tag zählen als ein Tag.',
+    'Les enregistrements comptent une fois confirmés par le serveur. Les courses du même jour comptent pour un jour.',
+    'Bản ghi được tính sau khi máy chủ xác nhận. Các lần chạy trong cùng một ngày tính là một ngày.',
+    'บันทึกจะนับหลังเซิร์ฟเวอร์ยืนยัน การวิ่งในวันเดียวกันนับเป็นหนึ่งวัน',
+    'Catatan dihitung setelah server mengonfirmasi. Lari di hari yang sama dihitung satu hari.',
   ],
   'skipNote': [
     '등급은 홈에서 달리면서 정해져요. 지금 건너뛰어도 괜찮아요.',
@@ -1195,17 +1195,17 @@ const gradeGuideRows = <String, List<String>>{
     'Ke Beranda',
   ],
   'homeEntry': [
-    '등급 배정 ({done}/{total}회)',
-    'Grade ({done}/{total})',
-    'グレード ({done}/{total}回)',
-    '等級（{done}/{total} 次）',
-    'Grado ({done}/{total})',
-    'Grau ({done}/{total})',
-    'Stufe ({done}/{total})',
-    'Grade ({done}/{total})',
-    'Hạng ({done}/{total})',
-    'ระดับ ({done}/{total})',
-    'Tingkat ({done}/{total})',
+    '등급 안내',
+    'About grades',
+    'グレードの案内',
+    '等級說明',
+    'Sobre los grados',
+    'Sobre os graus',
+    'Infos zu Stufen',
+    'À propos des grades',
+    'Giới thiệu về hạng',
+    'เกี่ยวกับระดับ',
+    'Tentang tingkat',
   ],
 };
 
@@ -1230,13 +1230,11 @@ class GradeGuide {
   String get startRun => _at('startRun');
   String get goHome => _at('goHome');
 
-  String progress(int done, int total) =>
-      _fill(_at('progress'), {'done': '$done', 'total': '$total'});
+  String get progress => _at('progress');
 
   String assigned(String name) => _fill(_at('assigned'), {'name': name});
 
-  String homeEntry(int done, int total) =>
-      _fill(_at('homeEntry'), {'done': '$done', 'total': '$total'});
+  String get homeEntry => _at('homeEntry');
 }
 
 /// Empty when fair-earning, shop chrome, and grade guide exist in all 11 locales.

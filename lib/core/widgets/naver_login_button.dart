@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// 네이버가 배포한 공식 "네이버 로그인" 버튼 이미지(한글, 초록색, 가운데 정렬형)를 그대로 쓴다.
 /// 공식 이미지는 가로 368, 세로 48(논리 픽셀)이다. 모양과 색, 글자를 바꾸지 않고 자리에
 /// 맞게 같은 비율로만 줄인다. 가장 큰 크기(368)보다는 키우지 않는다.
@@ -33,24 +35,28 @@ class NaverLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fixed = maxWidth;
-    if (fixed != null) return _button(fixed);
+    if (fixed != null) return _button(context, fixed);
     return LayoutBuilder(
       builder: (context, constraints) {
         final available = constraints.maxWidth.isFinite
             ? constraints.maxWidth
             : officialWidth;
-        return _button(available);
+        return _button(context, available);
       },
     );
   }
 
-  Widget _button(double available) {
+  Widget _button(BuildContext context, double available) {
     final width = widthFor(available);
     return Center(
       child: Semantics(
         button: true,
         enabled: !busy,
-        label: '네이버 로그인',
+        label: RemainingSurface.tr(
+          context,
+          'widget.naver_login_button.accessibility',
+          '네이버 로그인',
+        ),
         excludeSemantics: true,
         child: Opacity(
           opacity: busy ? 0.6 : 1,

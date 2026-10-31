@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/economy_constants.dart';
 import '../../../data/models/economy_state_model.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class EconomyStatusCard extends StatelessWidget {
   const EconomyStatusCard({
@@ -27,7 +28,11 @@ class EconomyStatusCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '온보딩 & 땀방울 현황',
+            RemainingSurface.tr(
+              context,
+              'wallet.economy_status.body',
+              '온보딩 & 땀방울 현황',
+            ),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
@@ -35,23 +40,49 @@ class EconomyStatusCard extends StatelessWidget {
             icon: Icons.card_giftcard_rounded,
             label: '신규 가입 보상',
             value: economy.signupRewardClaimed
-                ? '${EconomyConstants.signupRewardSrv} SRV 지급 완료'
-                : '가입 후 ${EconomyConstants.signupRewardSrv} SRV 대기',
+                ? RemainingSurface.tr(
+                    context,
+                    'wallet.economy_status.body.2',
+                    '${EconomyConstants.signupRewardSrv} SRV 지급 완료',
+                    {'EconomyConstants.signupRewardSrv': EconomyConstants.signupRewardSrv},
+                  )
+                : RemainingSurface.tr(
+                    context,
+                    'wallet.economy_status.body.3',
+                    '가입 후 ${EconomyConstants.signupRewardSrv} SRV 대기',
+                    {'EconomyConstants.signupRewardSrv': EconomyConstants.signupRewardSrv},
+                  ),
             done: economy.signupRewardClaimed,
           ),
           const SizedBox(height: 12),
           _ProgressRow(
             icon: Icons.directions_run_rounded,
-            label: '예비 러닝',
-            detail:
-                '${economy.trialRunCount}/${EconomyConstants.referralTrialRunsRequired}회 · 완료 시 50,000 SHARE · 1.1km 이상 달리면 안전해요',
+            label: RemainingSurface.tr(
+              context,
+              'wallet.economy_status.body.4',
+              '예비 러닝',
+            ),
+            detail: RemainingSurface.tr(
+              context,
+              'wallet.economy_status.body.5',
+              '${economy.trialRunCount}/${EconomyConstants.referralTrialRunsRequired}회 · 완료 시 50,000 SHARE · 1.1km 이상 달리면 안전해요',
+              {
+                'economy.trialRunCount': economy.trialRunCount,
+                'EconomyConstants.referralTrialRunsRequired':
+                    EconomyConstants.referralTrialRunsRequired,
+              },
+            ),
             progress: economy.trialProgress,
             color: AppColors.electricBlue,
           ),
           const SizedBox(height: 12),
           _ProgressRow(
             icon: Icons.bolt_rounded,
-            label: '일일 땀방울 한도',
+            label: RemainingSurface.tr(
+              context,
+              'wallet.economy_status.body.6',
+              '일일 땀방울 한도',
+            ),
             detail:
                 '${daily.earnedKm.toStringAsFixed(1)}/${EconomyConstants.dailyCapKm}km · ${daily.earnedSrvTokens}/${EconomyConstants.dailyCapSrvTokens} SRV',
             progress: daily.tokenProgress,
@@ -61,8 +92,16 @@ class EconomyStatusCard extends StatelessWidget {
           _ProgressRow(
             icon: Icons.people_alt_rounded,
             label: '추천인 보상 (지연 지급)',
-            detail:
-                '${economy.referralPayoutCount}/${EconomyConstants.maxReferralPayouts}명 · 지인 3회 완료 시 30,000 SHARE',
+            detail: RemainingSurface.tr(
+              context,
+              'wallet.economy_status.body.7',
+              '${economy.referralPayoutCount}/${EconomyConstants.maxReferralPayouts}명 · 지인 3회 완료 시 30,000 SHARE',
+              {
+                'economy.referralPayoutCount': economy.referralPayoutCount,
+                'EconomyConstants.maxReferralPayouts':
+                    EconomyConstants.maxReferralPayouts,
+              },
+            ),
             progress: economy.referralProgress,
             color: Colors.purpleAccent,
           ),

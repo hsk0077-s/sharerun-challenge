@@ -4,14 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 
 import '../app/router/route_names.dart';
-import '../core/constants/economy_constants.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
 import '../features/home/home_cards.dart';
-import '../features/home/home_wallet_card.dart';
 import '../features/mini_bot/mini_bot_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/nickname_setup_sheet.dart';
@@ -21,9 +19,9 @@ import '../features/stamp/providers/stamp_tour_enabled_provider.dart';
 import 'donation_settlement_screen.dart';
 import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
-import 'preliminary_eval_screen.dart';
 import 'stamp_tour_screen.dart';
 import '../core/config/app_env.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 메인 대시보드 화면 (Screen 5). 검정 바탕 + 라임 포인트 새 디자인.
 class MainDashboardScreen extends ConsumerStatefulWidget {
@@ -81,14 +79,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     );
   }
 
-  void _onOpenPreliminaryEval() {
-    _pushSoloRoute(
-      name: RouteNames.preliminaryEvalName,
-      path: RouteNames.preliminaryRuns,
-      materialBuilder: (_) => const PreliminaryEvalScreen(),
-    );
-  }
-
   void _onOpenSoloQuickStart() {
     if (_openingSolo) return;
     _openingSolo = true;
@@ -100,28 +90,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
     Future<void>.delayed(const Duration(milliseconds: 400), () {
       if (mounted) _openingSolo = false;
     });
-  }
-
-  void _pushSoloRoute({
-    required String name,
-    required String path,
-    required WidgetBuilder materialBuilder,
-  }) {
-    final router = GoRouter.maybeOf(context);
-    if (router != null) {
-      try {
-        context.pushNamed(name);
-        return;
-      } catch (_) {
-        context.push(path);
-        return;
-      }
-    }
-    AppRouteNav.push<void>(
-      context,
-      path,
-      materialBuilder: materialBuilder,
-    );
   }
 
   void _onOpenNotificationCenter() {
@@ -159,10 +127,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
         });
       }
     });
-    final onboarding = ref.watch(onboardingProvider);
-    final onboardingDone = onboarding.currentStep == OnboardingStep.completed;
-    final trialDone = onboarding.preliminaryPaceSeconds.length
-        .clamp(0, EconomyConstants.trialRunsRequired);
     final nicknameUnset = ref.watch(needsNicknameSetupProvider);
     final nickname = ref.watch(userNicknameProvider);
     final embedNav = DashboardTabNavigation.useEmbeddedBottomNav(context);
@@ -209,13 +173,6 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                           SoloQuickStartBanner(
                             onTap: _onOpenSoloQuickStart,
                           ),
-                          if (!onboardingDone) ...[
-                            SizedBox(height: tokens.spacing.sm),
-                            HomeGradeEvalBanner(
-                              completedCount: trialDone,
-                              onTap: _onOpenPreliminaryEval,
-                            ),
-                          ],
                           SizedBox(height: tokens.spacing.sm),
                           HomeDonationCard(
                             onOpenSettlement: _onOpenDonationSettlement,
@@ -231,7 +188,15 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                           ),
                           SizedBox(height: tokens.spacing.xxs),
                           Text(
-                            '상품은 다이아예요 · ${AppStrings.noCashPrizePool}',
+                            RemainingSurface.tr(
+                              context,
+                              'main_dashboard.body',
+                              '상품은 다이아예요 · ${AppStrings.noCashPrizePool}',
+                              {
+                                'AppStrings.noCashPrizePool':
+                                    AppStrings.noCashPrizePool,
+                              },
+                            ),
                             style: textTheme.bodySmall?.copyWith(
                               color: tokens.colors.muted,
                             ),
@@ -354,7 +319,7 @@ class _HomeHero extends StatelessWidget {
               left: tokens.spacing.page + 2,
               right: tokens.spacing.page,
               bottom: 30,
-              child: const Text(
+              child: Text(
                 AppStrings.slogan,
                 key: Key('home-slogan'),
                 textAlign: TextAlign.left,
@@ -432,9 +397,13 @@ class _Greeting extends StatelessWidget {
   final String? nickname;
 
   static String _hello(int hour) {
-    if (hour < 11) return '좋은 아침이에요';
-    if (hour < 18) return '좋은 오후예요';
-    return '좋은 저녁이에요';
+    if (hour < 11) {
+      return RemainingSurface.trNow('main_dashboard.body.2', '좋은 아침이에요');
+    }
+    if (hour < 18) {
+      return RemainingSurface.trNow('main_dashboard.body.3', '좋은 오후예요');
+    }
+    return RemainingSurface.trNow('main_dashboard.body.4', '좋은 저녁이에요');
   }
 
   @override
@@ -442,7 +411,15 @@ class _Greeting extends StatelessWidget {
     final tokens = context.srcTokens;
     final text = nickname == null
         ? _hello(DateTime.now().hour)
-        : '${_hello(DateTime.now().hour)}, $nickname님';
+        : RemainingSurface.tr(
+            context,
+            'main_dashboard.body.5',
+            '${_hello(DateTime.now().hour)}, $nickname님',
+            {
+              '_hello(DateTime.now().hour)': _hello(DateTime.now().hour),
+              'nickname': nickname,
+            },
+          );
     return Text(
       text,
       key: const Key('home-greeting'),

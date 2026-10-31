@@ -118,7 +118,7 @@ def test_catalog_uses_the_config_price() -> None:
     assert prices[COACH] == 7
     assert prices[ENTRY] == 10
     assert prices[PACK] == 20
-    assert prices["battle_run_pass"] == 120
+    assert prices["battle_run_pass"] == 200
 
 
 def test_coach_purchase_spends_free_dia_first_and_replay_is_free() -> None:

@@ -8,6 +8,7 @@ import '../models/user_model.dart';
 import '../models/wallet_model.dart';
 import '../models/economy_state_model.dart';
 import '../models/wallet_transaction_model.dart';
+import '../../l10n/remaining_surface.dart';
 /// Static read-only demo data for UI-only local runs (USE_LOCAL_MOCK_DATA=true).
 abstract final class MockDemoData {
   static const mockUid = 'local-mock-user';
@@ -28,7 +29,7 @@ abstract final class MockDemoData {
       sensitiveDataConsent: false,
       termsAccepted: true,
       pushNotificationsEnabled: false,
-      nickname: '달리기부자45',
+      nickname: RemainingSurface.trNow('mock_demo_data.body', '달리기부자45'),
       preliminaryRunsCount: 3,
       dailyDistance: 3.5,
       activityStreakCount: 3,
@@ -94,9 +95,12 @@ abstract final class MockDemoData {
   }
 
   static SponsorLiveBuffModel activeSponsorBuff() {
-    return const SponsorLiveBuffModel(
-      sponsorName: '김민수',
-      message: '현재 김민수님이 당신의 완주를 후원하고 있습니다',
+    return SponsorLiveBuffModel(
+      sponsorName: RemainingSurface.trNow('mock_demo_data.body.2', '김민수'),
+      message: RemainingSurface.trNow(
+        'mock_demo_data.body.3',
+        '현재 김민수님이 당신의 완주를 후원하고 있습니다',
+      ),
     );
   }
 
@@ -105,7 +109,7 @@ abstract final class MockDemoData {
       TournamentModel.fromJson(
         id: 'mock-tournament-rookie',
         json: {
-          'title': '루키 3K 유니세프 런',
+          'title': RemainingSurface.trNow('mock_demo_data.body.4', '루키 3K 기부 런'),
           'targetDistanceKm': 3,
           'entryFeeShare': 100,
           'winnerRewardValue': 500,
@@ -115,18 +119,27 @@ abstract final class MockDemoData {
           'participantCount': 4,
           'requiredTier': 1,
           'status': 'recruiting',
-          'sponsorName': '유니세프 파트너',
+          'sponsorName': RemainingSurface.trNow('mock_demo_data.body.5', '기부 캠페인'),
           'sponsorBillboardMessages': [
-            '🏃 유니세프 파트너: 오늘도 3K 완주에 도전하세요!',
-            '💚 러너 여러분의 발걸음이 아이들에게 전달됩니다',
-            '🎯 참가비의 일부가 기부 풀로 적립됩니다',
+            RemainingSurface.trNow(
+              'mock_demo_data.body.6',
+              '🏃 기부 캠페인: 오늘도 3K 완주에 도전하세요!',
+            ),
+            RemainingSurface.trNow(
+              'mock_demo_data.body.7',
+              '💚 러너 여러분의 발걸음이 아이들에게 전달됩니다',
+            ),
+            RemainingSurface.trNow(
+              'mock_demo_data.body.8',
+              '🎯 참가비의 일부가 기부 풀로 적립됩니다',
+            ),
           ],
         },
       ),
       TournamentModel.fromJson(
         id: 'mock-tournament-sprint',
         json: {
-          'title': '네온 5K 스프린트',
+          'title': RemainingSurface.trNow('mock_demo_data.body.9', '네온 5K 스프린트'),
           'targetDistanceKm': 5,
           'entryFeeShare': 200,
           'winnerRewardValue': 800,
@@ -138,9 +151,18 @@ abstract final class MockDemoData {
           'status': 'active',
           'sponsorName': '쉐어런 스폰서',
           'sponsorBillboardMessages': [
-            '⚡ 네온 5K 스프린트 — 쉐어런 스폰서가 응원합니다!',
-            '🔥 완주 시 밸류 토큰 적립 보너스 이벤트 진행 중',
-            '🏆 크루원과 함께 페이스를 맞춰 보세요',
+            RemainingSurface.trNow(
+              'mock_demo_data.body.10',
+              '⚡ 네온 5K 스프린트 — 쉐어런 스폰서가 응원합니다!',
+            ),
+            RemainingSurface.trNow(
+              'mock_demo_data.body.11',
+              '🔥 완주 시 밸류 토큰 적립 보너스 이벤트 진행 중',
+            ),
+            RemainingSurface.trNow(
+              'mock_demo_data.body.12',
+              '🏆 크루원과 함께 페이스를 맞춰 보세요',
+            ),
           ],
         },
       ),
@@ -152,7 +174,7 @@ abstract final class MockDemoData {
       DiamondBoxModel.fromJson(
         id: 'mock-box-park',
         json: {
-          'title': '공원 입구 다이아',
+          'title': RemainingSurface.trNow('mock_demo_data.body.13', '공원 입구 다이아'),
           'latitude': 37.5665,
           'longitude': 126.9780,
           'rewardDiamond': 3,
@@ -263,7 +285,7 @@ abstract final class MockDemoData {
       CrewMemberRankingModel.fromJson(
         id: 'member-1',
         json: {
-          'name': '민지',
+          'name': RemainingSurface.trNow('mock_demo_data.body.14', '민지'),
           'attendanceRate': 96,
           'averagePaceSecondsPerKm': 298,
           'weeklyDistanceKm': 42.5,
@@ -272,7 +294,7 @@ abstract final class MockDemoData {
       CrewMemberRankingModel.fromJson(
         id: 'member-2',
         json: {
-          'name': '준호',
+          'name': RemainingSurface.trNow('mock_demo_data.body.15', '준호'),
           'attendanceRate': 88,
           'averagePaceSecondsPerKm': 315,
           'weeklyDistanceKm': 36.0,
@@ -281,7 +303,7 @@ abstract final class MockDemoData {
       CrewMemberRankingModel.fromJson(
         id: 'member-3',
         json: {
-          'name': '서연',
+          'name': RemainingSurface.trNow('mock_demo_data.body.16', '서연'),
           'attendanceRate': 92,
           'averagePaceSecondsPerKm': 332,
           'weeklyDistanceKm': 28.4,
@@ -290,7 +312,7 @@ abstract final class MockDemoData {
       CrewMemberRankingModel.fromJson(
         id: 'member-4',
         json: {
-          'name': '태윤',
+          'name': RemainingSurface.trNow('mock_demo_data.body.17', '태윤'),
           'attendanceRate': 74,
           'averagePaceSecondsPerKm': 348,
           'weeklyDistanceKm': 18.2,
@@ -304,7 +326,7 @@ abstract final class MockDemoData {
       CrewRankingModel.fromJson(
         id: 'mock-crew-neon',
         json: {
-          'name': '네온 러너스',
+          'name': RemainingSurface.trNow('mock_demo_data.body.18', '네온 러너스'),
           'totalValue': 3200,
           'memberCount': 12,
         },

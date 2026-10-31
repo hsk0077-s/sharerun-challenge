@@ -13,8 +13,13 @@ import 'package:share_run_challenge/features/launch/launch_splash.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/ko_localization.dart';
+
 Widget _intro({required VoidCallback onFinished, bool replay = false}) {
   return MaterialApp(
+    locale: koTestLocale,
+    supportedLocales: koTestSupportedLocales,
+    localizationsDelegates: koTestDelegates,
     home: IntroScreen(onFinished: onFinished, replay: replay),
   );
 }
@@ -54,7 +59,7 @@ void main() {
     await tester.tap(find.byKey(IntroScreen.nextKey));
     await tester.pumpAndSettle();
     expect(find.text('한 걸음이 나눔이 된다'), findsWidgets);
-    expect(find.text('운영자 이름으로 기부돼요 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인'),
+    expect(find.text('회사(운영자) 자금으로 기부 예정 · 내가 내는 돈은 없어요 · 내 기여는 앱에서 확인'),
         findsOneWidget);
 
     await tester.tap(find.byKey(IntroScreen.nextKey));
@@ -62,6 +67,9 @@ void main() {
     expect(find.byKey(IntroScreen.skipKey), findsNothing);
     expect(find.byKey(IntroScreen.startKey), findsOneWidget);
     expect(find.byKey(IntroScreen.loginKey), findsOneWidget);
+    // 달팽이는 그대로, 말풍선은 새 규칙을 말한다.
+    expect(find.text('첫 1km를 인증하면 거북이 브론즈로 시작해요'), findsOneWidget);
+    expect(find.textContaining('시무룩'), findsNothing);
 
     await tester.tap(find.byKey(IntroScreen.startKey));
     await tester.pumpAndSettle();
@@ -203,6 +211,9 @@ void main() {
   testWidgets('first run shows the photo splash, then the intro', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         home: FirstRunSplash(
           duration: const Duration(milliseconds: 300),
           child: IntroScreen(onFinished: () {}),

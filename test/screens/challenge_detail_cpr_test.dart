@@ -5,6 +5,7 @@ import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/shop/providers/server_shop_inventory_provider.dart';
 import 'package:share_run_challenge/screens/challenge_detail_screen.dart';
+import '../support/ko_localization.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,9 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const ChallengeDetailScreen(
             roomId: RouteNames.beginner1kmRoomId,

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/theme.dart';
+import '../../l10n/remaining_surface.dart';
 import '../shop/widgets/store_look.dart';
 
 /// 마이 탭 맨 위 마을 배경. 그림은 `assets/images/villages/` 에 `village-<이름>.jpg` 로 넣고,
@@ -51,6 +52,27 @@ const _knownVillages = <String, String>{
   'aurora-lake': '오로라 호수',
   'sky-island': '하늘섬',
 };
+
+/// Keys into [RemainingSurface] for the names above and [defaultVillageScene].
+/// A village without a known key (e.g. a newly dropped-in asset using the
+/// generic "마을 N" name) keeps rendering its Korean [VillageScene.nameKo].
+const _villageNameKeys = <String, String>{
+  'default': 'profile.village_scene.body',
+  'spring-park': 'profile.village_scene.body.2',
+  'seaside': 'profile.village_scene.body.3',
+  'night-city': 'profile.village_scene.body.4',
+  'snow-village': 'profile.village_scene.body.5',
+  'autumn-forest': 'profile.village_scene.body.6',
+  'festival': 'profile.village_scene.body.7',
+  'aurora-lake': 'profile.village_scene.body.8',
+  'sky-island': 'profile.village_scene.body.9',
+};
+
+String villageSceneDisplayName(BuildContext context, VillageScene scene) {
+  final key = _villageNameKeys[scene.id];
+  if (key == null) return scene.nameKo;
+  return RemainingSurface.tr(context, key, scene.nameKo);
+}
 
 bool _isImage(String key) => _imageExtensions.any(key.toLowerCase().endsWith);
 
@@ -208,12 +230,27 @@ class VillagePicker extends ConsumerWidget {
             const SizedBox(height: 16),
             const StoreTag('VILLAGE'),
             const SizedBox(height: 6),
-            Text('마을 고르기', style: storeText(24, c.ink, w: FontWeight.w900)),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'profile.village_scene.body.11',
+                '마을 고르기',
+              ),
+              style: storeText(24, c.ink, w: FontWeight.w900),
+            ),
             const SizedBox(height: 4),
             Text(
               scenes.length > 1
-                  ? '마이 화면 맨 위 배경이 바뀌어요.'
-                  : '아직 고를 수 있는 마을이 기본 하나뿐이에요.',
+                  ? RemainingSurface.tr(
+                      context,
+                      'profile.village_scene.body.12',
+                      '마이 화면 맨 위 배경이 바뀌어요.',
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'profile.village_scene.body.13',
+                      '아직 고를 수 있는 마을이 기본 하나뿐이에요.',
+                    ),
               style: storeText(13, c.muted),
             ),
             const SizedBox(height: 14),
@@ -292,7 +329,7 @@ class _SceneTile extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              scene.nameKo,
+              villageSceneDisplayName(context, scene),
               style: storeText(
                 14,
                 selected ? c.primary : c.ink,

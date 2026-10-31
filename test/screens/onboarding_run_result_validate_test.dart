@@ -7,6 +7,7 @@ import 'package:share_run_challenge/features/jena_validation/models/jena_validat
 import 'package:share_run_challenge/features/run_result/run_finish_share_card.dart';
 import 'package:share_run_challenge/screens/onboarding_run_result_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -74,7 +75,7 @@ void main() {
       ),
     );
 
-    expect(find.text('이번 달리기로 운영자가 200원을 기부해요'), findsWidgets);
+    expect(find.text('이번 달리기로 운영자가 200원을 기부할 예정이에요'), findsWidgets);
     expect(find.textContaining('240원'), findsNothing);
     expect(find.textContaining('내 이름으로'), findsNothing);
   });
@@ -116,7 +117,7 @@ void main() {
     expect(result.companyDonationWon, 350);
     expect(result.donationCounted, isTrue);
     expect(runFinishDonationLine(result.companyDonationWon),
-        '이번 달리기로 운영자가 350원을 기부해요');
+        '이번 달리기로 운영자가 350원을 기부할 예정이에요');
 
     final skipped = JenaValidationResult.fromJson({
       'verified': false,
@@ -143,6 +144,9 @@ Future<void> _pump(WidgetTester tester, Widget home) async {
   await tester.pumpWidget(
     ProviderScope(
       child: MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: home,
       ),

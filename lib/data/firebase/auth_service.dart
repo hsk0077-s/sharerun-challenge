@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/config/app_env.dart';
+import '../../l10n/remaining_surface.dart';
 
 class AuthCancelledException implements Exception {
   const AuthCancelledException();
@@ -106,7 +107,12 @@ class AuthService {
         );
         final token = credential.identityToken;
         if (token == null || token.isEmpty) {
-          throw Exception('애플 로그인 토큰을 가져오지 못했습니다.');
+          throw Exception(
+            RemainingSurface.trNow(
+              'auth_service.body',
+              '애플 로그인 토큰을 가져오지 못했습니다.',
+            ),
+          );
         }
         return token;
       }
@@ -116,7 +122,12 @@ class AuthService {
       final credential = await _firebaseAuth.signInWithProvider(provider);
       final token = await credential.user?.getIdToken();
       if (token == null || token.isEmpty) {
-        throw Exception('애플 로그인 토큰을 가져오지 못했습니다.');
+        throw Exception(
+          RemainingSurface.trNow(
+            'auth_service.body',
+            '애플 로그인 토큰을 가져오지 못했습니다.',
+          ),
+        );
       }
       return token;
     } on SignInWithAppleAuthorizationException catch (e) {
@@ -146,7 +157,9 @@ class AuthService {
   Future<void> sendEmailVerification() async {
     final user = _firebaseAuth.currentUser;
     if (user == null) {
-      throw StateError('로그인된 계정이 없습니다.');
+      throw StateError(
+        RemainingSurface.trNow('auth_service.body.2', '로그인된 계정이 없습니다.'),
+      );
     }
     await user.sendEmailVerification();
   }
@@ -154,7 +167,9 @@ class AuthService {
   Future<void> deleteAccount() async {
     final user = _firebaseAuth.currentUser;
     if (user == null) {
-      throw StateError('로그인된 계정이 없습니다.');
+      throw StateError(
+        RemainingSurface.trNow('auth_service.body.2', '로그인된 계정이 없습니다.'),
+      );
     }
     await user.delete();
   }
@@ -174,7 +189,9 @@ class AuthService {
     final credential = await _firebaseAuth.signInAnonymously();
     final user = credential.user;
     if (user == null) {
-      throw StateError('게스트 로그인에 실패했습니다.');
+      throw StateError(
+        RemainingSurface.trNow('auth_service.body.3', '게스트 로그인에 실패했습니다.'),
+      );
     }
     return user;
   }

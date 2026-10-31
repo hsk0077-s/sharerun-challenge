@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/mini_bot/mini_bot_sheet.dart';
 import '../../features/profile/providers/practice_streak_provider.dart';
+import '../../l10n/remaining_surface.dart';
 import '../theme/app_colors.dart';
 import 'email_verification_banner.dart';
 import 'src_dashboard_bottom_nav.dart';
@@ -28,7 +29,15 @@ class SrcBottomNav extends ConsumerWidget {
       if (!next.diaRewardPending) return;
       if (prev?.diaRewardPending == true) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('+10 Dia 획득!')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'widget.src_bottom_nav.toast',
+              '+10 Dia 획득!',
+            ),
+          ),
+        ),
       );
       ref.read(practiceStreakProvider.notifier).consumeDiaReward();
     });

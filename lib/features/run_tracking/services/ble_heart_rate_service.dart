@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../../../l10n/remaining_surface.dart';
+
 /// Bluetooth SIG Heart Rate Service (0x180D) & Heart Rate Measurement (0x2A37).
 const kBleHeartRateServiceUuid = '0000180d-0000-1000-8000-00805f9b34fb';
 const kBleHeartRateMeasurementUuid = '00002a37-0000-1000-8000-00805f9b34fb';
@@ -411,14 +413,21 @@ class BleHeartRateService {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: '이 기기에서는 블루투스 심박 스캔을 지원하지 않습니다.',
+          errorMessage: RemainingSurface.trNow(
+            'run_tracking.ble_heart_rate_service.body.2',
+            '이 기기에서는 블루투스 심박 스캔을 지원하지 않습니다.',
+          ),
         ),
       );
     } on PlatformException catch (e) {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: e.message ?? '블루투스 권한 또는 상태를 확인해 주세요.',
+          errorMessage: e.message ??
+              RemainingSurface.trNow(
+                'run_tracking.ble_heart_rate_service.body.3',
+                '블루투스 권한 또는 상태를 확인해 주세요.',
+              ),
         ),
       );
     } catch (e) {
@@ -460,14 +469,21 @@ class BleHeartRateService {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: '이 기기에서는 블루투스 심박 연결을 지원하지 않습니다.',
+          errorMessage: RemainingSurface.trNow(
+            'run_tracking.ble_heart_rate_service.body.4',
+            '이 기기에서는 블루투스 심박 연결을 지원하지 않습니다.',
+          ),
         ),
       );
     } on PlatformException catch (e) {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: e.message ?? '센서 연결에 실패했습니다.',
+          errorMessage: e.message ??
+              RemainingSurface.trNow(
+                'run_tracking.ble_heart_rate_service.body.5',
+                '센서 연결에 실패했습니다.',
+              ),
         ),
       );
     } catch (e) {

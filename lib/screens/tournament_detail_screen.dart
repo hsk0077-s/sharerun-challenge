@@ -8,6 +8,7 @@ import '../features/tournaments/utils/sponsor_display.dart';
 import '../app/theme/app_colors.dart';
 import '../core/strings/app_strings.dart';
 import '../core/widgets/async_value_section.dart';
+import '../l10n/remaining_surface.dart';
 import '../data/models/tournament_model.dart';
 import '../data/models/tournament_participation_model.dart';
 import '../data/models/user_model.dart';
@@ -69,14 +70,24 @@ class TournamentDetailScreen extends ConsumerWidget {
     ref.watch(signupFreeTicketGrantProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('대회 상세')),
+      appBar: AppBar(
+        title: Text(
+          RemainingSurface.tr(context, 'tournament_detail.title', '대회 상세'),
+        ),
+      ),
       body: AsyncValueSection<TournamentModel?>(
         asyncValue: tournamentAsync,
         dataBuilder: (context, room) {
           if (room == null) {
-            return const Padding(
-              padding: EdgeInsets.all(20),
-              child: Text('대회를 찾을 수 없습니다.'),
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                RemainingSurface.tr(
+                  context,
+                  'tournament_detail.body',
+                  '대회를 찾을 수 없습니다.',
+                ),
+              ),
             );
           }
 
@@ -131,10 +142,19 @@ class TournamentDetailScreen extends ConsumerWidget {
                   icon: const Icon(Icons.how_to_reg_rounded),
                   label: Text(
                     withTicket
-                        ? '추가 참가권으로 참가'
+                        ? RemainingSurface.tr(
+                            context,
+                            'tournament_detail.body.2',
+                            '추가 참가권으로 참가',
+                          )
                         : quote != null
                             ? quote.shareJoinLabel
-                            : '${room.entryFeeShare} SHARE로 참가',
+                            : RemainingSurface.tr(
+                                context,
+                                'tournament_detail.body.3',
+                                '${room.entryFeeShare} SHARE로 참가',
+                                {'room.entryFeeShare': room.entryFeeShare},
+                              ),
                   ),
                 ),
               if (canJoin && ticketChoice) ...[
@@ -170,22 +190,58 @@ class TournamentDetailScreen extends ConsumerWidget {
               if (canJoin && quote != null && !quote.ready)
                 Text(quote.shareJoinLabel)
               else if (authUser == null)
-                const Text('로그인 후 참가할 수 있습니다.')
+                Text(
+                  RemainingSurface.tr(
+                    context,
+                    'tournament_detail.body.4',
+                    '로그인 후 참가할 수 있습니다.',
+                  ),
+                )
               else if (room.lockedForTier(userTier))
-                const Text('현재 티어에서는 참가할 수 없습니다.')
+                Text(
+                  RemainingSurface.tr(
+                    context,
+                    'tournament_detail.body.5',
+                    '현재 티어에서는 참가할 수 없습니다.',
+                  ),
+                )
               else if (room.isFull)
-                const Text('정원이 가득 찼습니다.')
+                Text(
+                  RemainingSurface.tr(
+                    context,
+                    'tournament_detail.body.6',
+                    '정원이 가득 찼습니다.',
+                  ),
+                )
               else if (!room.isRecruiting)
-                const Text('모집이 종료된 대회입니다.')
+                Text(
+                  RemainingSurface.tr(
+                    context,
+                    'tournament_detail.body.7',
+                    '모집이 종료된 대회입니다.',
+                  ),
+                )
               else if (isJoined)
-                const Text('이미 참가한 대회입니다.'),
+                Text(
+                  RemainingSurface.tr(
+                    context,
+                    'tournament_detail.button',
+                    '이미 참가한 대회입니다.',
+                  ),
+                ),
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: () => context.go(
                   '${RouteNames.tournament}?tournamentId=${room.id}',
                 ),
                 icon: const Icon(Icons.list_rounded),
-                label: const Text('대회 목록에서 보기'),
+                label: Text(
+                  RemainingSurface.tr(
+                    context,
+                    'tournament_detail.button.2',
+                    '대회 목록에서 보기',
+                  ),
+                ),
               ),
             ],
           );
@@ -242,7 +298,13 @@ class _JoinedTournamentDetail extends StatelessWidget {
               profile: profile,
             ),
             icon: const Icon(Icons.directions_run_rounded),
-            label: const Text('러닝 시작하기'),
+            label: Text(
+              RemainingSurface.tr(
+                context,
+                'tournament_detail.button.3',
+                '러닝 시작하기',
+              ),
+            ),
           ),
           if (AppEnv.sponsorPaymentsVisible) ...[
             const SizedBox(height: 12),
@@ -255,7 +317,13 @@ class _JoinedTournamentDetail extends StatelessWidget {
                 ),
               ),
               icon: const Icon(Icons.campaign_rounded),
-              label: const Text('스폰서 후원하기'),
+              label: Text(
+                RemainingSurface.tr(
+                  context,
+                  'tournament_detail.body.8',
+                  '스폰서 후원하기',
+                ),
+              ),
             ),
           ],
         ],
@@ -294,15 +362,52 @@ class _TournamentInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('후원: ${displaySponsorName(room.sponsorName)}'),
+          Text(
+            RemainingSurface.tr(
+              context,
+              'tournament_detail.body.9',
+              '후원: ${displaySponsorName(room.sponsorName)}',
+              {
+                'displaySponsorName(room.sponsorName)':
+                    displaySponsorName(room.sponsorName),
+              },
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('상태: ${_statusKo(room.status)}'),
+          Text(
+            RemainingSurface.tr(
+              context,
+              'tournament_detail.body.10',
+              '상태: ${_statusKo(room.status)}',
+              {'_statusKo(room.status)': _statusKo(room.status)},
+            ),
+          ),
           const SizedBox(height: 8),
-          Text('목표 거리: ${room.targetDistanceKm.toStringAsFixed(1)} km'),
+          Text(
+            RemainingSurface.tr(
+              context,
+              'tournament_detail.body.11',
+              '목표 거리: ${room.targetDistanceKm.toStringAsFixed(1)} km',
+              {
+                'room.targetDistanceKm.toStringAsFixed(1)':
+                    room.targetDistanceKm.toStringAsFixed(1),
+              },
+            ),
+          ),
           const SizedBox(height: 8),
           Text(feeText == null
-              ? '참가비: $entryFeeShare SHARE'
-              : '참가비: $feeText'),
+              ? RemainingSurface.tr(
+                  context,
+                  'tournament_detail.body.12',
+                  '참가비: $entryFeeShare SHARE',
+                  {'entryFeeShare': entryFeeShare},
+                )
+              : RemainingSurface.tr(
+                  context,
+                  'tournament_detail.body.13',
+                  '참가비: $feeText',
+                  {'feeText': feeText},
+                )),
           if (rulesText != null) ...[
             const SizedBox(height: 8),
             Text(rulesText!),
@@ -311,13 +416,24 @@ class _TournamentInfoCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               participantStatus == 'refunded'
-                  ? '모집 인원이 차지 않아 참가비를 돌려드렸어요.'
+                  ? RemainingSurface.tr(
+                      context,
+                      'tournament_detail.body.14',
+                      '모집 인원이 차지 않아 참가비를 돌려드렸어요.',
+                    )
                   : '참가 상태: ${participantStatus == 'joined' ? '참가 중' : participantStatus}',
             ),
           ],
           if (joinedAt != null) ...[
             const SizedBox(height: 8),
-            Text('참가일: ${_formatDate(joinedAt!)}'),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'tournament_detail.body.16',
+                '참가일: ${_formatDate(joinedAt!)}',
+                {'_formatDate(joinedAt!)': _formatDate(joinedAt!)},
+              ),
+            ),
           ],
           if (ticketRewardLabel != null) ...[
             const SizedBox(height: 8),
@@ -340,9 +456,14 @@ class _TournamentInfoCard extends StatelessWidget {
 }
 
 String _statusKo(TournamentStatus status) => switch (status) {
-      TournamentStatus.recruiting => '모집 중',
-      TournamentStatus.active => '진행 중',
-      TournamentStatus.cancelled => '취소됨',
-      TournamentStatus.cancelledBepNotMet => '인원 미달로 취소됨',
-      TournamentStatus.completed => '종료',
+      TournamentStatus.recruiting =>
+        RemainingSurface.trNow('tournament_detail.body.17', '모집 중'),
+      TournamentStatus.active =>
+        RemainingSurface.trNow('tournament_detail.body.18', '진행 중'),
+      TournamentStatus.cancelled =>
+        RemainingSurface.trNow('tournament_detail.body.19', '취소됨'),
+      TournamentStatus.cancelledBepNotMet =>
+        RemainingSurface.trNow('tournament_detail.body.20', '인원 미달로 취소됨'),
+      TournamentStatus.completed =>
+        RemainingSurface.trNow('tournament_detail.body.21', '종료'),
     };

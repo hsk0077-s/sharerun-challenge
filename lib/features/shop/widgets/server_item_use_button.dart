@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
 import '../../../core/api/api_exception.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../providers/server_shop_inventory_provider.dart';
 import '../streak_item_message.dart';
 
@@ -57,8 +58,18 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
     final text = showBuyHint
         ? '${widget.label} · ${widget.emptyHint}'
         : cap == null
-            ? '${widget.label} · 보유 $count'
-            : '${widget.label} · 보유 $shown/$cap';
+            ? RemainingSurface.tr(
+                context,
+                'shop.server_item_use_button.body',
+                '${widget.label} · 보유 $count',
+                {'widget.label': widget.label, 'count': count},
+              )
+            : RemainingSurface.tr(
+                context,
+                'shop.server_item_use_button.button',
+                '${widget.label} · 보유 $shown/$cap',
+                {'widget.label': widget.label, 'shown': shown, 'cap': cap},
+              );
     final blocked = atCap || showBuyHint;
     return Align(
       alignment: widget.alignment,
@@ -75,7 +86,16 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
     if (widget.maxUses != null && _used >= widget.maxUses!) return;
     if (count <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${widget.label} 보유량이 없습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'shop.server_item_use_button.toast',
+              '${widget.label} 보유량이 없습니다.',
+              {'widget.label': widget.label},
+            ),
+          ),
+        ),
       );
       return;
     }
@@ -87,7 +107,16 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
       if (!mounted) return;
       if (widget.maxUses != null) setState(() => _used += 1);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${widget.label} 사용 완료')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'shop.server_item_use_button.toast.2',
+              '${widget.label} 사용 완료',
+              {'widget.label': widget.label},
+            ),
+          ),
+        ),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -96,7 +125,12 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
           content: Text(
             streakItemMessage(
               error,
-              fallback: '${widget.label} 보유량이 없습니다.',
+              fallback: RemainingSurface.tr(
+                context,
+                'shop.server_item_use_button.toast',
+                '${widget.label} 보유량이 없습니다.',
+                {'widget.label': widget.label},
+              ),
             ),
           ),
         ),
@@ -104,7 +138,16 @@ class _ServerItemUseButtonState extends ConsumerState<ServerItemUseButton> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${widget.label} 을 사용하지 못했습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'shop.server_item_use_button.toast.3',
+              '${widget.label} 을 사용하지 못했습니다.',
+              {'widget.label': widget.label},
+            ),
+          ),
+        ),
       );
     } finally {
       _busy = false;

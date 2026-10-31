@@ -5,6 +5,7 @@ import '../app/providers/app_providers.dart';
 import '../app/theme/app_colors.dart';
 import '../core/constants/legal_constants.dart';
 import '../features/legal/widgets/health_data_consent_card.dart';
+import '../l10n/remaining_surface.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -30,15 +31,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              '쉐어런에 오신 걸 환영해요',
+              RemainingSurface.tr(context, 'onboarding.body', '쉐어런에 오신 걸 환영해요'),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '서비스 이용 전 필수 약관에 동의해 주세요.',
-              style: TextStyle(color: AppColors.textSecondary),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'onboarding.body.2',
+                '서비스 이용 전 필수 약관에 동의해 주세요.',
+              ),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 24),
             _LegalCard(
@@ -64,9 +69,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             const SizedBox(height: 28),
             const Divider(color: Colors.white24),
             const SizedBox(height: 16),
-            const Text(
-              '아래는 일반 약관과 분리된 선택 동의입니다.',
-              style: TextStyle(color: AppColors.textSecondary),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'onboarding.body.3',
+                '아래는 일반 약관과 분리된 선택 동의입니다.',
+              ),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
             HealthDataConsentCard(
@@ -78,7 +87,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: _canContinue && !_submitting ? _completeOnboarding : null,
-                child: Text(_submitting ? '저장 중...' : '동의하고 시작하기'),
+                child: Text(
+                  _submitting
+                      ? RemainingSurface.tr(context, 'onboarding.button', '저장 중...')
+                      : RemainingSurface.tr(
+                          context, 'onboarding.button.2', '동의하고 시작하기'),
+                ),
               ),
             ),
           ],
@@ -119,7 +133,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('온보딩 저장 실패: $error')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'onboarding.toast',
+              '온보딩 저장 실패: $error',
+              {'error': error},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -163,7 +186,9 @@ class _LegalCard extends StatelessWidget {
             contentPadding: EdgeInsets.zero,
             value: value,
             onChanged: (checked) => onChanged(checked ?? false),
-            title: const Text('동의합니다'),
+            title: Text(
+              RemainingSurface.tr(context, 'onboarding.body.4', '동의합니다'),
+            ),
             controlAffinity: ListTileControlAffinity.leading,
           ),
         ],

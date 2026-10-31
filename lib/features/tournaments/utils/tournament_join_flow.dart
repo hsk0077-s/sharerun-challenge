@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../app/providers/app_providers.dart';
 import '../../../core/auth/email_verification_guard.dart';
 import '../../../data/models/tournament_model.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../../wallet/debug_local_wallet_store.dart';
 import '../../wallet/providers/debug_local_share_history_provider.dart';
 import '../../wallet/providers/wallet_provider.dart';
@@ -66,7 +67,11 @@ Future<bool> joinTournamentWithPreflight({
   final authUser =
       readSafe(() => container.read(authStateChangesProvider).value);
   if (authUser == null) {
-    snack('로그인 후 챌린지에 참가할 수 있습니다.');
+    snack(RemainingSurface.tr(
+      context,
+      'tournaments.tournament_join_flow.body',
+      '로그인 후 챌린지에 참가할 수 있습니다.',
+    ));
     return false;
   }
   final verified = await ensureEmailVerified(

@@ -9,6 +9,7 @@ import '../../../data/models/activity_model.dart';
 import '../../../screens/appeal_center_screen.dart';
 import '../../pedometer/kst_calendar.dart';
 import '../my_page_activity_stats.dart';
+import '../../../l10n/remaining_surface.dart';
 
 void openAppealCenter(
   BuildContext context, {
@@ -54,7 +55,7 @@ class ActivityListCard extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            '러닝 로그',
+            RemainingSurface.tr(context, 'profile.activity_list.body', '러닝 로그'),
             style: textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w800,
               color: tokens.colors.ink,
@@ -65,7 +66,7 @@ class ActivityListCard extends ConsumerWidget {
             Padding(
               padding: EdgeInsets.only(bottom: tokens.spacing.xxs + 2),
               child: Text(
-                '최근 러닝 기록이 없습니다',
+                RemainingSurface.tr(context, 'profile.activity_list.body.2', '최근 러닝 기록이 없습니다'),
                 style: textTheme.bodySmall?.copyWith(
                   color: tokens.colors.muted,
                 ),
@@ -110,7 +111,7 @@ class _ActivityLogTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      date.isEmpty ? '기록' : date,
+                      date.isEmpty ? RemainingSurface.tr(context, 'profile.activity_list.body.3', '기록') : date,
                       style: textTheme.bodySmall?.copyWith(
                         fontSize: 12,
                         color: tokens.colors.muted,
@@ -188,7 +189,7 @@ class _WalkLogTile extends StatelessWidget {
                 ),
                 SizedBox(height: tokens.spacing.xxs / 2),
                 Text(
-                  '걷기',
+                  RemainingSurface.tr(context, 'profile.activity_list.body.4', '걷기'),
                   style: textTheme.bodySmall?.copyWith(fontSize: 12),
                 ),
               ],
@@ -229,7 +230,7 @@ class _JenaHoldBadge extends StatelessWidget {
             vertical: 5,
           ),
           child: Text(
-            '⚠️ 기록 보류 - 소명하기 〉',
+            RemainingSurface.tr(context, 'profile.activity_list.body.5', '⚠️ 기록 보류 - 소명하기 〉'),
             style: textTheme.labelSmall?.copyWith(
               fontSize: 11,
               fontWeight: FontWeight.w700,

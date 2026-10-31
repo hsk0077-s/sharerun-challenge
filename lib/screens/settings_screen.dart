@@ -23,6 +23,9 @@ import '../core/notifications/reminder_preferences.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import 'device_connection_screen.dart';
 import '../core/strings/app_strings.dart';
+import '../l10n/app_locale.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/remaining_surface.dart';
 import '../l10n/legal_fallback.dart';
 import '../l10n/surface_copy.dart';
 import '../l10n/surface_rest.dart';
@@ -399,7 +402,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
             Text(
-              AppStrings.myPageSettings,
+              RemainingSurface.tr(context, 'settings.title', '설정'),
               style: storeText(36, AppColors.nightInk, w: FontWeight.w900),
             ),
             const SizedBox(height: 4),
@@ -443,6 +446,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: AppColors.textGreyLight,
                   ),
                   onTap: _openLoginConnections,
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  key: const Key('language-settings'),
+                  title: Text(
+                    RemainingSurface.tr(context, 'settings_lang.title', '언어'),
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    _languageLabel(context, ref.watch(appLocaleProvider)),
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
+                  onTap: () => showLanguageSheet(context),
                 ),
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
@@ -854,8 +877,14 @@ class _TierBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = (tier ?? UserTier.unratedFallback)
-        .gradeTitleWithEmoji(Localizations.localeOf(context));
+    final unrated = tier == null || tier!.isUnrated;
+    final label = unrated
+        ? RemainingSurface.tr(
+            context,
+            'settings_tier.unrated',
+            '등급 없음 · 첫 인증 1km 후 거북이 브론즈로 시작',
+          )
+        : tier!.gradeTitleWithEmoji(Localizations.localeOf(context));
     final tint = tier?.medal.medalColor ?? AppColors.tealAccent;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -938,4 +967,79 @@ class _SettingsLegalWebViewScreenState
       ),
     );
   }
+}
+
+String _languageLabel(BuildContext context, Locale? chosen) {
+  if (chosen == null) {
+    return RemainingSurface.tr(
+      context,
+      'settings_lang.follow',
+      '기기 설정 따르기',
+    );
+  }
+  for (final c in appLocaleChoices) {
+    if (c.code == chosen.languageCode) return c.name;
+  }
+  return chosen.languageCode;
+}
+
+/// Bottom sheet to pick the app language (or follow the phone).
+Future<void> showLanguageSheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    builder: (sheetContext) => Consumer(
+      builder: (context, ref, _) {
+        final chosen = ref.watch(appLocaleProvider);
+        Widget row(String? code, String name) {
+          final selected = chosen?.languageCode == code;
+          return ListTile(
+            key: Key('language-option-${code ?? 'system'}'),
+            title: Text(name),
+            trailing: selected ? const Icon(Icons.check_rounded) : null,
+            onTap: () async {
+              final locale = code == null
+                  ? null
+                  : resolveAppLocale(
+                      Locale(code),
+                      ShareRunLocalizations.supportedLocales,
+                    );
+              await ref.read(appLocaleProvider.notifier).choose(locale);
+              if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+            },
+          );
+        }
+
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    RemainingSurface.tr(
+                      context,
+                      'settings_lang.sheet',
+                      '언어 선택',
+                    ),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                row(
+                  null,
+                  RemainingSurface.tr(
+                    context,
+                    'settings_lang.follow',
+                    '기기 설정 따르기',
+                  ),
+                ),
+                for (final c in appLocaleChoices) row(c.code, c.name),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }

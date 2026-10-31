@@ -110,7 +110,7 @@ Tournament Firestore seed:
 
 ```json
 tournaments/{tournamentId}: {
-  "title": "루키 3K 유니세프 런",
+  "title": "루키 3K 기부 런",
   "targetDistanceKm": 3,
   "entryFeeShare": 100,
   "winnerRewardValue": 500,
@@ -120,7 +120,7 @@ tournaments/{tournamentId}: {
   "participantCount": 0,
   "requiredTier": 1,
   "status": "recruiting",
-  "sponsorName": "유니세프 파트너",
+  "sponsorName": "기부 캠페인",
   "createdAt": "<server timestamp>"
 }
 ```

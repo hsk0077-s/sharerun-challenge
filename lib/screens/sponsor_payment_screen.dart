@@ -10,6 +10,7 @@ import '../core/constants/payment_constants.dart';
 import '../core/auth/email_verification_guard.dart';
 import '../data/models/sponsor_model.dart';
 import '../features/payment/widgets/sponsor_payment_option_selector.dart';
+import '../l10n/remaining_surface.dart';
 import 'payment_webview_screen.dart';
 
 class SponsorPaymentArgs {
@@ -42,10 +43,14 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
   @override
   Widget build(BuildContext context) {
     if (!AppEnv.inAppPurchasesEnabled) {
-      return const PurchasesClosedPage(title: '대회 후원');
+      return PurchasesClosedPage(
+        title: RemainingSurface.tr(context, 'sponsor_payment.title', '대회 후원'),
+      );
     }
     return Scaffold(
-      appBar: AppBar(title: const Text('대회 후원')),
+      appBar: AppBar(
+        title: Text(RemainingSurface.tr(context, 'sponsor_payment.title', '대회 후원')),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -61,9 +66,9 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
           const SizedBox(height: 18),
           DropdownButtonFormField<int>(
             value: amountShare,
-            decoration: const InputDecoration(
-              labelText: '후원 금액',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: RemainingSurface.tr(context, 'sponsor_payment.hint', '후원 금액'),
+              border: const OutlineInputBorder(),
             ),
             items: PaymentConstants.sponsorAmountOptionsShare
                 .map(
@@ -88,7 +93,11 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.campaign_rounded),
-            label: Text(creating ? '결제 준비 중...' : '결제 진행하기'),
+            label: Text(
+              creating
+                  ? RemainingSurface.tr(context, 'sponsor_payment.body', '결제 준비 중...')
+                  : RemainingSurface.tr(context, 'sponsor_payment.body.2', '결제 진행하기'),
+            ),
           ),
         ],
       ),
@@ -131,14 +140,22 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
       final credited = await context.push<bool>(
         RouteNames.paymentWebView,
         extra: PaymentWebViewArgs(
-          title: '후원 결제',
+          title: RemainingSurface.tr(context, 'sponsor_payment.body.3', '후원 결제'),
           paymentUrl: intent.pgUrl,
           paymentIntentId: intent.id,
         ),
       );
       if (credited == true && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('스폰서 결제가 대회에 반영되었습니다.')),
+          SnackBar(
+            content: Text(
+              RemainingSurface.tr(
+                context,
+                'sponsor_payment.toast',
+                '스폰서 결제가 대회에 반영되었습니다.',
+              ),
+            ),
+          ),
         );
         context.pop();
       }
@@ -147,7 +164,16 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('후원 결제에 실패했어요: $error')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'sponsor_payment.toast.2',
+              '후원 결제에 실패했어요: $error',
+              {'error': error},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

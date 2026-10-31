@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/theme/theme.dart';
 import '../l10n/guidance_copy.dart';
+import '../l10n/remaining_surface.dart';
 import '../features/donation/donation_settlement.dart';
 import '../features/profile/my_page_activity_stats.dart';
 import '../features/shop/providers/donation_match_provider.dart';
 import '../features/shop/widgets/store_look.dart';
 
-/// 기부 정산. 기부는 운영자·스폰서가 하고, 앱은 내 기여를 보여 준다.
+/// 기부 정산. 기부는 회사(운영자) 자금으로 할 예정이고, 앱은 내 기여를 보여 준다.
 /// 기부처(수혜 단체)는 정해지기 전이라 쓰지 않는다.
 class DonationSettlementScreen extends ConsumerStatefulWidget {
   const DonationSettlementScreen({super.key});
@@ -18,12 +19,14 @@ class DonationSettlementScreen extends ConsumerStatefulWidget {
   static const monthKey = Key('donation-settlement-month');
   static const capKey = Key('donation-settlement-cap');
 
-  static const intro = '달리기 1km마다 100원을 운영자·스폰서 이름으로 기부해요.';
+  static const intro = '달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.';
   static const capReachedLine =
       '이번 달 운영자 기부 예산을 모두 사용했어요 · 넘는 거리는 기록으로 남아요';
-  static const disclaimer =
-      '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 냅니다. '
-      '이용자의 기부금이 아니며 세금 공제 영수증이 발급되지 않습니다.';
+  static String get disclaimer => RemainingSurface.trNow(
+        'donation_settlement.body',
+        '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 기부할 예정입니다. '
+            '이용자의 기부금이 아니며 세금 공제 영수증이 발급되지 않습니다.',
+      );
 
   @override
   ConsumerState<DonationSettlementScreen> createState() =>

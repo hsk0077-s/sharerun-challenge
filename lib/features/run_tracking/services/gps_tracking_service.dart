@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
 
+import '../../../l10n/remaining_surface.dart';
+
 /// GPS 권한 및 1초 주기 실시간 위치 스트림.
 class GpsTrackingService {
   Future<GpsPermissionResult> resolvePermission() async {
@@ -43,9 +45,12 @@ class GpsTrackingService {
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: 0,
         intervalDuration: const Duration(seconds: 1),
-        foregroundNotificationConfig: const ForegroundNotificationConfig(
+        foregroundNotificationConfig: ForegroundNotificationConfig(
           notificationTitle: '쉐어런',
-          notificationText: '실시간 러닝 GPS 추적 중',
+          notificationText: RemainingSurface.trNow(
+            'run_tracking.gps_tracking_service.body',
+            '실시간 러닝 GPS 추적 중',
+          ),
           enableWakeLock: true,
         ),
       );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// 구글 로그인 버튼. 구글 공식 규격을 그대로 따른다.
 /// 흰 배경, 1px 회색 테두리(#747775), 알약 모양, 높이 40, 글자색 #1F1F1F(Roboto 14 Medium),
 /// 왼쪽에 20px 공식 4색 G 로고. 글자는 구글이 현지화해서 쓰는 한국어 문구를 쓴다.
@@ -7,12 +9,12 @@ class GoogleSignInButton extends StatelessWidget {
   const GoogleSignInButton({
     super.key,
     required this.onPressed,
-    this.label = defaultLabel,
+    this.label,
     this.fullWidth = false,
   });
 
   final VoidCallback onPressed;
-  final String label;
+  final String? label;
 
   /// 자리 너비를 꽉 채운다(구글 규격의 최대 너비 400까지). 아니면 내용만큼만 차지한다.
   final bool fullWidth;
@@ -29,9 +31,15 @@ class GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedLabel = label ??
+        RemainingSurface.tr(
+          context,
+          'widget.google_signin_button.button',
+          defaultLabel,
+        );
     final button = Semantics(
       button: true,
-      label: label,
+      label: resolvedLabel,
       excludeSemantics: true,
       child: Material(
         key: buttonKey,
@@ -59,7 +67,7 @@ class GoogleSignInButton extends StatelessWidget {
                   const SizedBox(width: 10),
                   Flexible(
                     child: Text(
-                      label,
+                      resolvedLabel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -155,7 +163,13 @@ Path parseSvgPath(String data) {
 
   while (i < tokens.length) {
     if (isCmd(tokens[i])) cmd = tokens[i++];
-    final c = cmd ?? (throw const FormatException('SVG 경로 명령이 없습니다.'));
+    final c = cmd ??
+        (throw FormatException(
+          RemainingSurface.trNow(
+            'widget.google_signin_button.body',
+            'SVG 경로 명령이 없습니다.',
+          ),
+        ));
     final rel = c == c.toLowerCase();
     switch (c.toLowerCase()) {
       case 'm':

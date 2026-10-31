@@ -27,6 +27,7 @@ import '../features/my_page/widgets/shoe_mileage_tracker.dart';
 import '../features/shop/cosmetics_catalog.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/reward/view/winner_honor_popup.dart';
+import '../l10n/remaining_surface.dart';
 
 class MyPageScreen extends ConsumerStatefulWidget {
   const MyPageScreen({super.key});
@@ -67,8 +68,12 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     final tokens = context.srcTokens;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text(
-          '✅ 민감정보 수집 동의가 완료되었습니다. 이제 러닝을 시작할 수 있습니다!',
+        content: Text(
+          RemainingSurface.tr(
+            context,
+            'my_page.toast',
+            '✅ 민감정보 수집 동의가 완료되었습니다. 이제 러닝을 시작할 수 있습니다!',
+          ),
         ),
         backgroundColor: tokens.colors.ink,
         behavior: SnackBarBehavior.floating,
@@ -141,7 +146,11 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       ),
                     ),
                     child: Text(
-                      '이용약관과 별도 · 선택 동의',
+                      RemainingSurface.tr(
+                        context,
+                        'my_page.body',
+                        '이용약관과 별도 · 선택 동의',
+                      ),
                       style: textTheme.labelSmall?.copyWith(
                         color: sheetTokens.colors.muted,
                         fontSize: 12,
@@ -266,7 +275,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         ),
         SizedBox(height: tokens.spacing.md),
         _SectionCard(
-          title: '러닝 캘린더',
+          title: RemainingSurface.tr(context, 'my_page.body.2', '러닝 캘린더'),
           child: Wrap(
             spacing: tokens.spacing.xs,
             runSpacing: tokens.spacing.xs,
@@ -298,13 +307,17 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
         ),
         const SizedBox(height: 12),
         _SectionCard(
-          title: '스마트워치 연동',
+          title: RemainingSurface.tr(context, 'my_page.body.3', '스마트워치 연동'),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 watchType == WatchType.none
-                    ? '연동된 워치 없음'
+                    ? RemainingSurface.tr(
+                        context,
+                        'my_page.body.4',
+                        '연동된 워치 없음',
+                      )
                     : '${watchType.displayLabel} · '
                         '${watchType.isApiTrack ? 'API Track' : 'OS Direct Track'}',
                 style: const TextStyle(fontWeight: FontWeight.w600),
@@ -313,7 +326,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
               FilledButton.icon(
                 onPressed: () => context.push(RouteNames.watchSettings),
                 icon: const Icon(Icons.watch_rounded),
-                label: const Text('투트랙 연동 설정 열기'),
+                label: Text(
+                  RemainingSurface.tr(
+                    context,
+                    'my_page.button',
+                    '투트랙 연동 설정 열기',
+                  ),
+                ),
               ),
             ],
           ),
@@ -323,7 +342,13 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           OutlinedButton.icon(
             onPressed: _previewWinnerPopup,
             icon: const Icon(Icons.celebration_rounded),
-            label: const Text('우승자 명예 팝업 미리보기 (Mock)'),
+            label: Text(
+              RemainingSurface.tr(
+                context,
+                'my_page.button.2',
+                '우승자 명예 팝업 미리보기 (Mock)',
+              ),
+            ),
           ),
         ],
         const SizedBox(height: 12),
@@ -340,8 +365,10 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                     uid: authUser.uid,
                     enabled: value,
                   ),
-          title: const Text('푸시 알림'),
-          subtitle: const Text('대회, 보상, 기부 알림'),
+          title: Text(RemainingSurface.tr(context, 'my_page.body.5', '푸시 알림')),
+          subtitle: Text(
+            RemainingSurface.tr(context, 'my_page.button.3', '대회, 보상, 기부 알림'),
+          ),
         ),
         if (authUser != null) ...[
           const SizedBox(height: 12),
@@ -369,9 +396,15 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
     await WinnerHonorPopup.show(
       context: context,
       rewardValueToken: 800,
-      onDonateHalf: () => _showSnack('Mock: 50% 기부 선택'),
-      onDonateAll: () => _showSnack('Mock: 100% 기부 선택'),
-      onClaimAll: () => _showSnack('Mock: 전액 수령 선택'),
+      onDonateHalf: () => _showSnack(
+        RemainingSurface.tr(context, 'my_page.body.6', 'Mock: 50% 기부 선택'),
+      ),
+      onDonateAll: () => _showSnack(
+        RemainingSurface.tr(context, 'my_page.body.7', 'Mock: 100% 기부 선택'),
+      ),
+      onClaimAll: () => _showSnack(
+        RemainingSurface.tr(context, 'my_page.body.8', 'Mock: 전액 수령 선택'),
+      ),
     );
   }
 
@@ -468,23 +501,29 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('계정 삭제'),
-          content: const Text(
-            '계정이 삭제되고 보유한 SHARE·DIA·VALUE는 사라집니다. '
-            '러닝 기록 등 활동 기록은 30일 안에 삭제되고, 법령에 따라 보관해야 하는 '
-            '결제·거래 기록은 5년간 보관한 뒤 삭제됩니다. '
-            '이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?',
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'my_page.dialog',
+              '계정이 삭제되고 보유한 SHARE·DIA·VALUE는 사라집니다. '
+                  '러닝 기록 등 활동 기록은 30일 안에 삭제되고, 법령에 따라 보관해야 하는 '
+                  '결제·거래 기록은 5년간 보관한 뒤 삭제됩니다. '
+                  '이 작업은 되돌릴 수 없습니다. 계속하시겠습니까?',
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('취소'),
+              child: Text(RemainingSurface.tr(context, 'my_page.button.4', '취소')),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor: context.srcTokens.colors.danger,
               ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('삭제'),
+              child: Text(
+                RemainingSurface.tr(context, 'my_page.button.5', '삭제'),
+              ),
             ),
           ],
         );
@@ -588,7 +627,11 @@ class _HealthDataConsentSection extends StatelessWidget {
                 ),
               ),
               child: Text(
-                '✅ 건강 데이터 연동 및 동의 완료',
+                RemainingSurface.tr(
+                  context,
+                  'my_page.body.9',
+                  '✅ 건강 데이터 연동 및 동의 완료',
+                ),
                 style: textTheme.titleSmall?.copyWith(
                   color: tokens.colors.primary,
                   fontWeight: FontWeight.w800,
@@ -644,7 +687,11 @@ class _HealthDataConsentSection extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                 ),
                 child: Text(
-                  '[약관 전문 보기]',
+                  RemainingSurface.tr(
+                    context,
+                    'my_page.button.6',
+                    '[약관 전문 보기]',
+                  ),
                   style: textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     decoration: TextDecoration.underline,

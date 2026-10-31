@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/api/api_exception.dart';
 import '../core/theme/theme.dart';
+import '../l10n/remaining_surface.dart';
 import '../data/api/identity_api_client.dart';
 import '../features/auth/login_connection_providers.dart';
 import '../features/shop/widgets/store_look.dart';
@@ -21,13 +22,38 @@ class WatchAppPreviewScreen extends ConsumerStatefulWidget {
   static const revokeButtonKey = Key('watch-revoke-button');
   static const revokeDoneKey = Key('watch-revoke-done');
 
-  static const platforms = <({String name, String note, bool first})>[
-    (name: '갤럭시 워치', note: '가장 먼저 만들어요', first: true),
-    (name: '안드로이드 워치 (Wear OS)', note: '갤럭시 워치 다음', first: false),
-    (name: '스마트 밴드 (샤오미 등)', note: '그다음 순서로 검토해요', first: false),
-    (name: '가민', note: '그다음 순서로 검토해요', first: false),
-    (name: '애플 워치', note: '그다음 순서로 검토해요', first: false),
-  ];
+  static List<({String name, String note, bool first})> get platforms => [
+        (
+          name: RemainingSurface.trNow('watch_app_preview.body', '갤럭시 워치'),
+          note: RemainingSurface.trNow('watch_app_preview.body.2', '가장 먼저 만들어요'),
+          first: true,
+        ),
+        (
+          name: RemainingSurface.trNow(
+              'watch_app_preview.body.3', '안드로이드 워치 (Wear OS)'),
+          note: RemainingSurface.trNow('watch_app_preview.body.4', '갤럭시 워치 다음'),
+          first: false,
+        ),
+        (
+          name: RemainingSurface.trNow(
+              'watch_app_preview.body.5', '스마트 밴드 (샤오미 등)'),
+          note: RemainingSurface.trNow(
+              'watch_app_preview.body.6', '그다음 순서로 검토해요'),
+          first: false,
+        ),
+        (
+          name: RemainingSurface.trNow('watch_app_preview.body.7', '가민'),
+          note: RemainingSurface.trNow(
+              'watch_app_preview.body.6', '그다음 순서로 검토해요'),
+          first: false,
+        ),
+        (
+          name: RemainingSurface.trNow('watch_app_preview.body.8', '애플 워치'),
+          note: RemainingSurface.trNow(
+              'watch_app_preview.body.6', '그다음 순서로 검토해요'),
+          first: false,
+        ),
+      ];
 
   @override
   ConsumerState<WatchAppPreviewScreen> createState() =>
@@ -120,17 +146,25 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('연결된 워치를 모두 해제할까요?'),
-        content: const Text(
-          '이 계정에 연결한 워치가 모두 로그아웃돼요. 워치에 남은 기록은 다시 연결하기 전까지 올라가지 않아요. 휴대폰 로그인은 그대로예요.',
+        title: Text(
+          RemainingSurface.tr(ctx, 'watch_app_preview.dialog', '연결된 워치를 모두 해제할까요?'),
+        ),
+        content: Text(
+          RemainingSurface.tr(
+            ctx,
+            'watch_app_preview.button',
+            '이 계정에 연결한 워치가 모두 로그아웃돼요. 워치에 남은 기록은 다시 연결하기 전까지 올라가지 않아요. 휴대폰 로그인은 그대로예요.',
+          ),
         ),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('취소')),
+              child: Text(RemainingSurface.tr(ctx, 'watch_app_preview.button.4', '취소'))),
           TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('모두 해제')),
+              child: Text(
+                RemainingSurface.tr(ctx, 'watch_app_preview.button.2', '모두 해제'),
+              )),
         ],
       ),
     );
@@ -165,7 +199,10 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
       appBar: AppBar(
         backgroundColor: c.canvas,
         elevation: 0,
-        title: Text('워치 전용 앱', style: storeText(18, c.ink, w: FontWeight.w800)),
+        title: Text(
+          RemainingSurface.tr(context, 'watch_app_preview.button.3', '워치 전용 앱'),
+          style: storeText(18, c.ink, w: FontWeight.w800),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new_rounded, color: c.ink),
           onPressed: () => context.canPop() ? context.pop() : null,
@@ -177,7 +214,11 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
           Text(
             '손목에서 바로 뛸 수 있는 쉐어런 워치 앱을 준비하고 있어요. '
             '워치 앱이 설치된 시계에서 아래 연결 코드를 입력하면 연결돼요. '
-            '아래 시계 화면은 시안이에요.',
+            '${RemainingSurface.tr(
+              context,
+              'watch_app_preview.body.9',
+              '아래 시계 화면은 시안이에요.',
+            )}',
             key: const Key('watch-preview-intro'),
             style: storeText(13, c.muted, h: 1.5),
           ),
@@ -189,7 +230,9 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
             const SizedBox(height: 8),
           ],
           const SizedBox(height: 16),
-          const StoreSectionLabel('갤럭시 워치 화면 시안'),
+          StoreSectionLabel(
+            RemainingSurface.tr(context, 'watch_app_preview.body.10', '갤럭시 워치 화면 시안'),
+          ),
           const SizedBox(height: 10),
           const _WatchFaceCarousel(),
         ],
@@ -208,10 +251,17 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('워치 연결', style: storeText(14, c.ink, w: FontWeight.w800)),
+          Text(
+            RemainingSurface.tr(context, 'watch_app_preview.body.11', '워치 연결'),
+            style: storeText(14, c.ink, w: FontWeight.w800),
+          ),
           const SizedBox(height: 4),
           Text(
-            '워치 앱에서 아래 6자리 숫자를 입력하면 이 계정으로 연결돼요. 코드는 5분 동안, 한 번만 쓸 수 있어요. 워치는 한 대만 연결돼서, 다른 워치를 연결하면 이전 워치는 해제돼요.',
+            RemainingSurface.tr(
+              context,
+              'watch_app_preview.body.12',
+              '워치 앱에서 아래 6자리 숫자를 입력하면 이 계정으로 연결돼요. 코드는 5분 동안, 한 번만 쓸 수 있어요. 워치는 한 대만 연결돼서, 다른 워치를 연결하면 이전 워치는 해제돼요.',
+            ),
             style: storeText(12, c.muted, h: 1.5),
           ),
           const SizedBox(height: 12),
@@ -225,7 +275,12 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
             ),
             Center(
               child: Text(
-                '남은 시간 $_countdown',
+                RemainingSurface.tr(
+                  context,
+                  'watch_app_preview.body.13',
+                  '남은 시간 $_countdown',
+                  {'_countdown': _countdown},
+                ),
                 style: storeText(12, c.muted, w: FontWeight.w700),
               ),
             ),
@@ -244,13 +299,26 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
             child: FilledButton(
               key: WatchAppPreviewScreen.pairingButtonKey,
               onPressed: _busy ? null : _requestCode,
-              child: Text(_code == null ? '6자리 연결 코드 받기' : '새 코드 받기'),
+              child: Text(
+                _code == null
+                    ? RemainingSurface.tr(
+                        context, 'watch_app_preview.button.5', '6자리 연결 코드 받기')
+                    : RemainingSurface.tr(
+                        context, 'watch_app_preview.button.6', '새 코드 받기'),
+              ),
             ),
           ),
           if (_watches.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text('연결된 워치 ${_watches.length}/3',
-                style: storeText(12, c.ink, w: FontWeight.w800)),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'watch_app_preview.button.7',
+                '연결된 워치 ${_watches.length}/3',
+                {'_watches.length': _watches.length},
+              ),
+              style: storeText(12, c.ink, w: FontWeight.w800),
+            ),
             for (final watch in _watches)
               Row(
                 key: Key('watch-row-${watch.id}'),
@@ -271,12 +339,19 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
             child: TextButton(
               key: WatchAppPreviewScreen.revokeButtonKey,
               onPressed: _busy ? null : _revokeAll,
-              child: const Text('연결된 워치 모두 해제'),
+              child: Text(
+                RemainingSurface.tr(
+                    context, 'watch_app_preview.button.8', '연결된 워치 모두 해제'),
+              ),
             ),
           ),
           if (_revoked)
             Text(
-              '연결된 워치를 모두 해제했어요.',
+              RemainingSurface.tr(
+                context,
+                'watch_app_preview.button.9',
+                '연결된 워치를 모두 해제했어요.',
+              ),
               key: WatchAppPreviewScreen.revokeDoneKey,
               style: storeText(12, c.muted),
             ),
@@ -321,8 +396,10 @@ class _PlatformRow extends StatelessWidget {
               border: Border.all(color: c.muted),
               borderRadius: BorderRadius.circular(99),
             ),
-            child:
-                Text('예정', style: storeText(12, c.muted, w: FontWeight.w800)),
+            child: Text(
+              RemainingSurface.tr(context, 'watch_app_preview.body.14', '예정'),
+              style: storeText(12, c.muted, w: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -338,13 +415,29 @@ class _WatchFaceData {
   final IconData icon;
 }
 
-const _watchFaces = [
-  _WatchFaceData('시작', '3km', '탭해서 시작', Icons.play_arrow_rounded),
-  _WatchFaceData('달리는 중', '5:42', '♥ 148  ·  1.8km', Icons.directions_run),
-  _WatchFaceData('일시정지', '일시정지', '탭해서 다시 시작', Icons.pause_rounded),
-  _WatchFaceData('대회 알림', '1위!', '대회 2명 앞서요', Icons.emoji_events_outlined),
-  _WatchFaceData('끝', '3.00km', '5:38/km · 17분', Icons.check_rounded),
-];
+List<_WatchFaceData> get _watchFaces => [
+      const _WatchFaceData('시작', '3km', '탭해서 시작', Icons.play_arrow_rounded),
+      const _WatchFaceData(
+          '달리는 중', '5:42', '♥ 148  ·  1.8km', Icons.directions_run),
+      _WatchFaceData(
+        '일시정지',
+        '일시정지',
+        RemainingSurface.trNow('watch_app_preview.body.15', '탭해서 다시 시작'),
+        Icons.pause_rounded,
+      ),
+      _WatchFaceData(
+        '대회 알림',
+        RemainingSurface.trNow('watch_app_preview.body.16', '1위!'),
+        RemainingSurface.trNow('watch_app_preview.body.17', '대회 2명 앞서요'),
+        Icons.emoji_events_outlined,
+      ),
+      _WatchFaceData(
+        '끝',
+        '3.00km',
+        RemainingSurface.trNow('watch_app_preview.body.18', '5:38/km · 17분'),
+        Icons.check_rounded,
+      ),
+    ];
 
 /// 시계 화면 시안을 크게 한 장씩 넘겨 본다. 실제 워치 앱의 화면 순서와 같다.
 class _WatchFaceCarousel extends StatefulWidget {
@@ -397,7 +490,11 @@ class _WatchFaceCarouselState extends State<_WatchFaceCarousel> {
         ),
         const SizedBox(height: 8),
         Text(
-          '시안입니다. 실제 시계 화면과 조금 다를 수 있어요.',
+          RemainingSurface.tr(
+            context,
+            'watch_app_preview.body.19',
+            '시안입니다. 실제 시계 화면과 조금 다를 수 있어요.',
+          ),
           style: storeText(11, c.muted),
         ),
       ],

@@ -15,6 +15,7 @@ import '../core/strings/app_strings.dart';
 import '../l10n/accessory_names.dart';
 import '../l10n/commerce_copy.dart';
 import '../l10n/guidance_copy.dart';
+import '../l10n/remaining_surface.dart';
 import '../l10n/surface_copy.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
@@ -229,7 +230,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  static String _won(int value) => '${_groupDigits(value)}원';
+  static String _won(int value) => RemainingSurface.trNow(
+        'store.body',
+        '${_groupDigits(value)}원',
+        {'_groupDigits(value)': _groupDigits(value)},
+      );
 
   static String _groupDigits(int value) => value.toString().replaceAllMapped(
         RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
@@ -912,7 +917,7 @@ class _CompanyFundingCard extends ConsumerWidget {
       if (i > 0 && (s.length - i) % 3 == 0) out.write(',');
       out.write(s[i]);
     }
-    return '$out원';
+    return RemainingSurface.trNow('store.body.2', '$out원', {'out': out});
   }
 
   @override

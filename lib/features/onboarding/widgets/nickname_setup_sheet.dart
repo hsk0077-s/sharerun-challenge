@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../l10n/remaining_surface.dart';
 import '../src_onboarding_controller.dart';
 
 /// 최초 로그인 시 강제 표시되는 닉네임 설정 바텀시트.
@@ -100,12 +101,20 @@ class _NicknameSetupSheetState extends ConsumerState<NicknameSetupSheet> {
             ),
             const SizedBox(height: 20),
             Text(
-              '닉네임 및 캐릭터 가동',
+              RemainingSurface.tr(
+                context,
+                'onboarding.nickname_setup.body',
+                '닉네임 및 캐릭터 가동',
+              ),
               style: AppTextStyles.header1.copyWith(fontSize: 22),
             ),
             const SizedBox(height: 8),
             Text(
-              '홈에 표시될 닉네임을 정하면, 예선 등급에 맞는 대두 캐릭터가 함께 깨어납니다.',
+              RemainingSurface.tr(
+                context,
+                'onboarding.nickname_setup.body.2',
+                '홈에 표시될 닉네임을 정하면, 예선 등급에 맞는 대두 캐릭터가 함께 깨어납니다.',
+              ),
               style: AppTextStyles.subtitle1.copyWith(fontSize: 14),
             ),
             const SizedBox(height: 22),
@@ -117,7 +126,11 @@ class _NicknameSetupSheetState extends ConsumerState<NicknameSetupSheet> {
               style: AppTextStyles.inputText,
               decoration: InputDecoration(
                 counterText: '$compactLen/12',
-                hintText: '한글·영문·숫자 2~12자',
+                hintText: RemainingSurface.tr(
+                  context,
+                  'onboarding.nickname_setup.hint',
+                  '한글·영문·숫자 2~12자',
+                ),
                 hintStyle: AppTextStyles.inputHint,
                 filled: true,
                 fillColor: AppColors.agreementBoxFill,
@@ -172,7 +185,11 @@ class _NicknameSetupSheetState extends ConsumerState<NicknameSetupSheet> {
                         ),
                       )
                     : Text(
-                        '설정 완료',
+                        RemainingSurface.tr(
+                          context,
+                          'onboarding.nickname_setup.body.3',
+                          '설정 완료',
+                        ),
                         style: AppTextStyles.buttonText.copyWith(
                           color: AppColors.nightOnLime,
                         ),

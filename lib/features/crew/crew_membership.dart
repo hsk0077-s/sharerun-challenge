@@ -177,7 +177,11 @@ final crewApiProvider = Provider<SecuredActionApiClient?>((ref) {
 });
 
 /// 내 크루. 크루가 없거나 서버에 닿지 못하면 null.
-final myCrewProvider = FutureProvider.autoDispose<MyCrew?>((ref) async {
+///
+/// autoDispose가 아니다. 탭을 닫을 때마다 지우면 다시 열 때 빈 화면에서 시작해
+/// 이름과 엠블럼이 깜빡이며 바뀐다. 지난 값을 그대로 두고 뒤에서 새로 받는다.
+/// 계정이 바뀌면 [crewApiProvider]가 바뀌어 다시 받는다.
+final myCrewProvider = FutureProvider<MyCrew?>((ref) async {
   final api = ref.watch(crewApiProvider);
   if (api == null) return null;
   try {

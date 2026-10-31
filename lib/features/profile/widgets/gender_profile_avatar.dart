@@ -321,7 +321,7 @@ class _GenderCustomizeSheet extends ConsumerWidget {
                     return;
                   }
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(AppStrings.avatarGalleryFailed),
                     ),
                   );

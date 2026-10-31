@@ -10,6 +10,7 @@ import '../data/models/share_to_dia_view.dart';
 import 'dia_pack_store_screen.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/share_to_dia_actions.dart';
+import '../l10n/remaining_surface.dart';
 
 /// SHARE → DIA. Reached from the wallet charge DIA option.
 class ShareDiaExchangeScreen extends ConsumerStatefulWidget {
@@ -75,7 +76,16 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
         _exchanging = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${result.rateSharePerDia} SHARE = 1 DIA 교환이 반영되었습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'share_dia_exchange.toast',
+              '${result.rateSharePerDia} SHARE = 1 DIA 교환이 반영되었습니다.',
+              {'result.rateSharePerDia': result.rateSharePerDia},
+            ),
+          ),
+        ),
       );
     } on ApiException catch (error) {
       if (!mounted) return;
@@ -100,7 +110,9 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
       backgroundColor: AppColors.bgGradientEnd,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('SHARE → DIA 교환'),
+        title: Text(
+          RemainingSurface.tr(context, 'share_dia_exchange.button', 'SHARE → DIA 교환'),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => AppRouteNav.pop(context),
@@ -121,12 +133,39 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
                         ),
                   ),
                   const SizedBox(height: 8),
-                  Text('이번 주 남은 한도 ${quote.remainingDia} / ${quote.weeklyCapDia} DIA'),
+                  Text(
+                    RemainingSurface.tr(
+                      context,
+                      'share_dia_exchange.body',
+                      '이번 주 남은 한도 ${quote.remainingDia} / ${quote.weeklyCapDia} DIA',
+                      {
+                        'quote.remainingDia': quote.remainingDia,
+                        'quote.weeklyCapDia': quote.weeklyCapDia,
+                      },
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('${quote.unitDia} DIA 단위 · 교환 가능 SHARE ${quote.spendableShare}'),
+                  Text(
+                    RemainingSurface.tr(
+                      context,
+                      'share_dia_exchange.body.2',
+                      '${quote.unitDia} DIA 단위 · 교환 가능 SHARE ${quote.spendableShare}',
+                      {
+                        'quote.unitDia': quote.unitDia,
+                        'quote.spendableShare': quote.spendableShare,
+                      },
+                    ),
+                  ),
                   if (quote.lockedShare > 0) ...[
                     const SizedBox(height: 4),
-                    Text('추천 보상 잠금 ${quote.lockedShare} SHARE'),
+                    Text(
+                      RemainingSurface.tr(
+                        context,
+                        'share_dia_exchange.body.3',
+                        '추천 보상 잠금 ${quote.lockedShare} SHARE',
+                        {'quote.lockedShare': quote.lockedShare},
+                      ),
+                    ),
                   ],
                   if (quote.lockReason != null && quote.lockReason!.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -164,13 +203,22 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
                         RouteNames.diaPackStore,
                         materialBuilder: (_) => const DiaPackStoreScreen(),
                       ),
-                      child: const Text('DIA 팩 · 준비 중'),
+                      child: Text(
+                        RemainingSurface.tr(
+                          context, 'share_dia_exchange.button.2', 'DIA 팩 · 준비 중'),
+                      ),
                     ),
                     const SizedBox(height: 8),
                   ],
                   FilledButton(
                     onPressed: locked || _exchanging ? null : _exchange,
-                    child: Text(_exchanging ? '교환 중...' : '교환'),
+                    child: Text(
+                      _exchanging
+                          ? RemainingSurface.tr(
+                              context, 'share_dia_exchange.button.3', '교환 중...')
+                          : RemainingSurface.tr(
+                              context, 'share_dia_exchange.button.4', '교환'),
+                    ),
                   ),
                 ],
               ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// 카카오가 배포한 공식 "카카오 로그인" 버튼 이미지를 그대로 쓴다. 직접 그린 모양이나 색을
 /// 쓰지 않는다. 공식 이미지는 높이가 46으로 같고 너비만 네 가지(112, 224, 336, 448)라서,
 /// 자리 너비에 맞춰 비율을 지켜 늘이거나 줄였을 때 높이가 공식 높이(46)에 가장 가까워지는
@@ -66,25 +68,29 @@ class KakaoLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fixed = maxWidth;
-    if (fixed != null) return _button(fixed);
+    if (fixed != null) return _button(context, fixed);
     return LayoutBuilder(
       builder: (context, constraints) {
         final available = constraints.maxWidth.isFinite
             ? constraints.maxWidth
             : _variants.last.$2;
-        return _button(available);
+        return _button(context, available);
       },
     );
   }
 
-  Widget _button(double available) {
+  Widget _button(BuildContext context, double available) {
     final variant = variantFor(available);
     final width = widthFor(available);
     return Center(
       child: Semantics(
         button: true,
         enabled: !busy,
-        label: '카카오 로그인',
+        label: RemainingSurface.tr(
+          context,
+          'widget.kakao_login_button.accessibility',
+          '카카오 로그인',
+        ),
         excludeSemantics: true,
         child: Opacity(
           opacity: busy ? 0.6 : 1,

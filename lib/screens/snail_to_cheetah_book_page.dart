@@ -7,6 +7,7 @@ import '../features/shop/widgets/store_look.dart';
 import '../features/accessories/accessory_catalog.dart';
 import '../features/accessories/try_on_sheet.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
+import '../l10n/remaining_surface.dart';
 import '../l10n/surface_rest.dart';
 
 /// 달팽이 → 치타 25단계 티어 도감.
@@ -43,12 +44,13 @@ class SnailToCheetahBookPage extends ConsumerWidget {
               ],
             ),
             Text(
-              '티어 도감',
+              RemainingSurface.tr(context, 'snail_to_cheetah_book.body', '티어 도감'),
               style: storeText(36, c.ink, w: FontWeight.w900),
             ),
             const SizedBox(height: 6),
             Text(
-              '달릴수록 새로운 친구를 만나요',
+              RemainingSurface.tr(
+                context, 'snail_to_cheetah_book.body.2', '달릴수록 새로운 친구를 만나요'),
               style: storeText(14, c.muted),
             ),
             const SizedBox(height: 16),
@@ -75,12 +77,16 @@ class SnailToCheetahBookPage extends ConsumerWidget {
             ),
             const SizedBox(height: 22),
             Text(
-              '25단계 연대기',
+              RemainingSurface.tr(context, 'snail_to_cheetah_book.body.3', '25단계 연대기'),
               style: storeText(18, c.ink, w: FontWeight.w900),
             ),
             const SizedBox(height: 4),
             Text(
-              '달팽이부터 치타까지 모든 등급을 열람할 수 있어요. 카드를 누르면 액세서리를 입혀 볼 수 있어요.',
+              RemainingSurface.tr(
+                context,
+                'snail_to_cheetah_book.body.4',
+                '달팽이부터 치타까지 모든 등급을 열람할 수 있어요. 카드를 누르면 액세서리를 입혀 볼 수 있어요.',
+              ),
               style: storeText(13, c.muted, h: 1.5),
             ),
             const SizedBox(height: 14),
@@ -113,9 +119,10 @@ class _BookGridCard extends StatelessWidget {
     final c = context.srcTokens.colors;
     final current = state == _BookState.current;
     final label = switch (state) {
-      _BookState.done => '완료',
-      _BookState.current => '현재',
-      _BookState.next => '도전',
+      _BookState.done => RemainingSurface.tr(context, 'snail_to_cheetah_book.body.5', '완료'),
+      _BookState.current =>
+        RemainingSurface.tr(context, 'snail_to_cheetah_book.body.6', '현재'),
+      _BookState.next => RemainingSurface.tr(context, 'snail_to_cheetah_book.body.7', '도전'),
     };
     final path = UserTier(
       animal: chapter.animal,
@@ -127,7 +134,7 @@ class _BookGridCard extends StatelessWidget {
       onTap: () => TryOnSheet.show(
         context,
         animal: chapter.animal,
-        title: chapter.title,
+        title: chapter.titleText(context),
       ),
       child: Ink(
         padding: const EdgeInsets.all(10),
@@ -167,7 +174,7 @@ class _BookGridCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              chapter.title,
+              chapter.titleText(context),
               style: storeText(14, c.ink, w: FontWeight.w800),
             ),
             const SizedBox(height: 2),
@@ -232,19 +239,23 @@ class _UnratedGuide extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            '아직 티어가 없어요',
+            RemainingSurface.tr(context, 'snail_to_cheetah_book.body.8', '아직 티어가 없어요'),
             style: storeText(18, c.ink, w: FontWeight.w900),
           ),
           const SizedBox(height: 6),
           Text(
-            '첫 달리기가 심사되면 티어가 정해지고\n옷과 소품을 입힐 수 있어요',
+            RemainingSurface.tr(
+              context,
+              'snail_to_cheetah_book.body.9',
+              '첫 달리기가 심사되면 티어가 정해지고\n옷과 소품을 입힐 수 있어요',
+            ),
             textAlign: TextAlign.center,
             style: storeText(14, c.muted, h: 1.5),
           ),
           const SizedBox(height: 16),
           StorePillButton(
             key: const Key('tier-book-go-run'),
-            label: '달리러 가기',
+            label: RemainingSurface.tr(context, 'snail_to_cheetah_book.button', '달리러 가기'),
             icon: Icons.directions_run_rounded,
             onPressed: () => DashboardTabNavigation.go(
               context,
@@ -265,6 +276,9 @@ class _ChapterSpec {
     required this.paceGuide,
     required this.animal,
     this.isSnail = false,
+    this.titleKey,
+    this.subtitleKey,
+    this.paceGuideKey,
   });
 
   final int unlockRank;
@@ -273,6 +287,20 @@ class _ChapterSpec {
   final String paceGuide;
   final TierAnimal animal;
   final bool isSnail;
+  final String? titleKey;
+  final String? subtitleKey;
+  final String? paceGuideKey;
+
+  String titleText(BuildContext context) =>
+      titleKey == null ? title : RemainingSurface.tr(context, titleKey!, title);
+
+  String subtitleText(BuildContext context) => subtitleKey == null
+      ? subtitle
+      : RemainingSurface.tr(context, subtitleKey!, subtitle);
+
+  String paceGuideText(BuildContext context) => paceGuideKey == null
+      ? paceGuide
+      : RemainingSurface.tr(context, paceGuideKey!, paceGuide);
 }
 
 const _chapters = <_ChapterSpec>[
@@ -280,9 +308,12 @@ const _chapters = <_ChapterSpec>[
     unlockRank: 0,
     title: '달팽이 (Unrated)',
     subtitle: '등급 배정 전 임시 등급',
-    paceGuide: '검증 달리기 3회 전 · 서브 티어 없음',
+    paceGuide: '등급 배정 전 · 첫 인증 1km에 거북이 브론즈 · 서브 티어 없음',
     animal: TierAnimal.snail,
     isSnail: true,
+    titleKey: 'snail_to_cheetah_book.body.10',
+    subtitleKey: 'snail_to_cheetah_book.body.11',
+    paceGuideKey: 'snail_to_cheetah_book.body.12',
   ),
   _ChapterSpec(
     unlockRank: 1,
@@ -290,6 +321,8 @@ const _chapters = <_ChapterSpec>[
     subtitle: '빠른 걸음 및 기초 체력 형성 단계',
     paceGuide: '평균 페이스 7분 30초 이상',
     animal: TierAnimal.turtle,
+    subtitleKey: 'snail_to_cheetah_book.body.13',
+    paceGuideKey: 'snail_to_cheetah_book.body.14',
   ),
   _ChapterSpec(
     unlockRank: 2,
@@ -297,6 +330,8 @@ const _chapters = <_ChapterSpec>[
     subtitle: '가벼운 조깅을 즐기는 러닝 입문자',
     paceGuide: '평균 페이스 6분 00초 ~ 7분 29초',
     animal: TierAnimal.beagle,
+    subtitleKey: 'snail_to_cheetah_book.body.15',
+    paceGuideKey: 'snail_to_cheetah_book.body.16',
   ),
   _ChapterSpec(
     unlockRank: 3,
@@ -304,6 +339,8 @@ const _chapters = <_ChapterSpec>[
     subtitle: '일반 동호인 / 표준 그룹',
     paceGuide: '평균 페이스 5분 00초 ~ 5분 59초',
     animal: TierAnimal.wolf,
+    subtitleKey: 'snail_to_cheetah_book.body.17',
+    paceGuideKey: 'snail_to_cheetah_book.body.18',
   ),
   _ChapterSpec(
     unlockRank: 4,
@@ -311,6 +348,8 @@ const _chapters = <_ChapterSpec>[
     subtitle: '러닝 숙련자 수준',
     paceGuide: '평균 페이스 4분 00초 ~ 4분 59초',
     animal: TierAnimal.zebra,
+    subtitleKey: 'snail_to_cheetah_book.body.19',
+    paceGuideKey: 'snail_to_cheetah_book.body.20',
   ),
   _ChapterSpec(
     unlockRank: 5,
@@ -318,6 +357,8 @@ const _chapters = <_ChapterSpec>[
     subtitle: '아마추어 최상위권 수준',
     paceGuide: '평균 페이스 4분 00초 미만',
     animal: TierAnimal.cheetah,
+    subtitleKey: 'snail_to_cheetah_book.body.21',
+    paceGuideKey: 'snail_to_cheetah_book.body.22',
   ),
 ];
 
@@ -347,7 +388,7 @@ class _TierChapterCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      chapter.title,
+                      chapter.titleText(context),
                       style: AppTextStyles.agreementLabel.copyWith(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -355,7 +396,7 @@ class _TierChapterCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      chapter.paceGuide,
+                      chapter.paceGuideText(context),
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.tealAccent,
                         fontWeight: FontWeight.w700,
@@ -364,7 +405,7 @@ class _TierChapterCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      chapter.subtitle,
+                      chapter.subtitleText(context),
                       style: AppTextStyles.caption.copyWith(
                         color: AppColors.textGrey,
                         fontSize: 11,
@@ -422,7 +463,7 @@ class _TierChapterCard extends StatelessWidget {
         onTap: () => TryOnSheet.show(
           context,
           animal: chapter.animal,
-          title: chapter.title,
+          title: chapter.titleText(context),
         ),
         child: card,
       ),

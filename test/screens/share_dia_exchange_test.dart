@@ -7,6 +7,7 @@ import 'package:share_run_challenge/features/wallet/providers/wallet_provider.da
 import 'package:share_run_challenge/features/wallet/share_to_dia_actions.dart';
 import 'package:share_run_challenge/screens/share_dia_exchange_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../support/ko_localization.dart';
 
 class _SpyWallet extends WalletNotifier {
   @override
@@ -54,6 +55,9 @@ void main() {
           }),
         ],
         child: MaterialApp(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           home: const ShareDiaExchangeScreen(),
         ),

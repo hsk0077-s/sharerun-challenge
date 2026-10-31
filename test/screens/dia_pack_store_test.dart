@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/core/config/app_env.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/screens/dia_pack_store_screen.dart';
+import '../support/ko_localization.dart';
 
 void main() {
   testWidgets('DIA packs show bonus labels and do not sell', (tester) async {
@@ -15,6 +16,9 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         theme: SrcTheme.light,
         home: const DiaPackStoreScreen(),
       ),

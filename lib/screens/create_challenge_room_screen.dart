@@ -16,6 +16,7 @@ import '../features/shop/widgets/store_look.dart';
 import '../features/wallet/providers/wallet_provider.dart';
 import '../features/wallet/widgets/share_insufficient_dialog.dart';
 import '../features/tournaments/utils/sponsor_display.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 유저 주도 챌린지 방 개설 화면 (Screen 8).
 class CreateChallengeRoomScreen extends ConsumerStatefulWidget {
@@ -62,7 +63,7 @@ class _CreateChallengeRoomScreenState
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.createRoomTitleRequired)),
+        SnackBar(content: Text(AppStrings.createRoomTitleRequired)),
       );
       return;
     }
@@ -127,7 +128,16 @@ class _CreateChallengeRoomScreenState
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"$title" 대회가 열렸어요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'create_challenge_room.toast',
+              '"$title" 대회가 열렸어요.',
+              {'title': title},
+            ),
+          ),
+        ),
       );
       AppRouteNav.pop(context);
     } on InsufficientShareException {
@@ -141,7 +151,16 @@ class _CreateChallengeRoomScreenState
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('대회 열기에 실패했어요: $error')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'create_challenge_room.toast.2',
+              '대회 열기에 실패했어요: $error',
+              {'error': error},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
@@ -216,7 +235,7 @@ class _CreateChallengeRoomScreenState
                       style: storeText(14, c.muted),
                     ),
                     const SizedBox(height: 12),
-                    const StoreSectionLabel(AppStrings.createRoomTitleSection),
+                    StoreSectionLabel(AppStrings.createRoomTitleSection),
                     Text(
                       AppStrings.createRoomTitleHint,
                       style: storeText(13, c.muted),
@@ -241,7 +260,7 @@ class _CreateChallengeRoomScreenState
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const StoreSectionLabel(
+                    StoreSectionLabel(
                         AppStrings.createRoomDistanceSection),
                     Text(
                       AppStrings.createRoomDistanceHint,
@@ -260,7 +279,7 @@ class _CreateChallengeRoomScreenState
                       }).toList(),
                     ),
                     const SizedBox(height: 8),
-                    const StoreSectionLabel(
+                    StoreSectionLabel(
                         AppStrings.createRoomEntryFeeSection),
                     Container(
                       padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
@@ -291,7 +310,7 @@ class _CreateChallengeRoomScreenState
                                   text: AppStrings.createRoomFeeWarningRed,
                                   style: storeText(12, c.warning, h: 1.5),
                                 ),
-                                const TextSpan(
+                                TextSpan(
                                   text: AppStrings.createRoomFeeWarningGrey,
                                 ),
                               ],

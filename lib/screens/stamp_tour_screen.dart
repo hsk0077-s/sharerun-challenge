@@ -12,6 +12,7 @@ import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../features/home/providers/home_provider.dart';
 import '../features/stamp/providers/stamp_tour_provider.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 스탬프 투어 & 일일 미션 화면 (Screen 23).
 class StampTourScreen extends ConsumerStatefulWidget {
@@ -79,10 +80,20 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
           snippet: landmark.isVisited
               ? (landmark.awardsOfficialDia
                   ? '${AppStrings.stampTourVisitComplete} · ${AppStrings.stampTourOfficialDiaPending}'
-                  : '${AppStrings.stampTourStampCollected} (개인)')
+                  : RemainingSurface.tr(
+                      context,
+                      'stamp_tour.body',
+                      '${AppStrings.stampTourStampCollected} (개인)',
+                      {
+                        'AppStrings.stampTourStampCollected':
+                            AppStrings.stampTourStampCollected,
+                      },
+                    ))
               : (landmark.isPersonalStamp
-                  ? '개인 스탬프 · 반경 50m'
-                  : '공식 랜드마크 · 반경 50m'),
+                  ? RemainingSurface.tr(
+                      context, 'stamp_tour.body.2', '개인 스탬프 · 반경 50m')
+                  : RemainingSurface.tr(
+                      context, 'stamp_tour.body.3', '공식 랜드마크 · 반경 50m')),
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(
           landmark.isVisited
@@ -103,9 +114,9 @@ class _StampTourScreenState extends ConsumerState<StampTourScreen> {
     }
     final fallback = tour.landmarks.isNotEmpty
         ? tour.landmarks.first
-        : const StampLandmark(
+        : StampLandmark(
             id: 'fallback',
-            name: '서울',
+            name: RemainingSurface.tr(context, 'stamp_tour.body.4', '서울'),
             latitude: 37.5665,
             longitude: 126.9780,
             isVisited: false,
@@ -439,7 +450,7 @@ class _MissionCard extends StatelessWidget {
                   Text(
                     officialDiaPending
                         ? AppStrings.stampTourOfficialDiaPending
-                        : '획득 완료',
+                        : RemainingSurface.tr(context, 'stamp_tour.body.5', '획득 완료'),
                     style: const TextStyle(
                       fontFamily: 'Pretendard',
                       fontSize: 13,

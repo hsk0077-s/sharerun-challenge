@@ -12,6 +12,7 @@ import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/jena_validation/verification_reason.dart';
 import '../features/reward/view/winner_honor_popup.dart';
 import '../features/run_tracking/models/route_point.dart';
+import '../l10n/remaining_surface.dart';
 
 class RunResultArgs {
   const RunResultArgs({
@@ -53,13 +54,15 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
         result.verified && result.valueTokenReward > 0 && !rewardProcessed;
     final color = result.verified ? AppColors.neonLime : AppColors.dangerRed;
     final headline = result.verified
-        ? '검증된 러닝'
+        ? RemainingSurface.tr(context, 'run_result.title', '검증된 러닝')
         : result.decision == JenaDecision.pending
-            ? '인정되지 않은 기록'
-            : '검증되지 않은 기록';
+            ? RemainingSurface.tr(context, 'run_result.title.2', '인정되지 않은 기록')
+            : RemainingSurface.tr(context, 'run_result.title.3', '검증되지 않은 기록');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('러닝 결과')),
+      appBar: AppBar(
+        title: Text(RemainingSurface.tr(context, 'run_result.title.4', '러닝 결과')),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
@@ -84,8 +87,22 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                   const SizedBox(height: 16),
                   Text(verificationUserMessage(result)),
                   const SizedBox(height: 16),
-                  Text('판정: ${result.decision.name}'),
-                  Text('VALUE 보상: ${result.valueTokenReward}'),
+                  Text(
+                    RemainingSurface.tr(
+                      context,
+                      'run_result.body',
+                      '판정: ${result.decision.name}',
+                      {'result.decision.name': result.decision.name},
+                    ),
+                  ),
+                  Text(
+                    RemainingSurface.tr(
+                      context,
+                      'run_result.body.2',
+                      'VALUE 보상: ${result.valueTokenReward}',
+                      {'result.valueTokenReward': result.valueTokenReward},
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -151,14 +168,20 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                       )
                     : const Icon(Icons.workspace_premium_rounded),
                 label: Text(
-                  processingReward ? '보상을 처리하는 중...' : '우승 상금 선택하기',
+                  processingReward
+                      ? RemainingSurface.tr(
+                          context, 'run_result.button', '보상을 처리하는 중...')
+                      : RemainingSurface.tr(
+                          context, 'run_result.button.2', '우승 상금 선택하기'),
                 ),
               ),
               const SizedBox(height: 12),
             ],
             FilledButton(
               onPressed: () => context.go(RouteNames.home),
-              child: const Text('홈으로 돌아가기'),
+              child: Text(
+                RemainingSurface.tr(context, 'run_result.button.3', '홈으로 돌아가기'),
+              ),
             ),
           ],
         ),
@@ -178,7 +201,9 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
 
   Future<void> _processReward(WinnerRewardAction action) async {
     if (ref.read(authStateChangesProvider).value == null) {
-      _showSnack('로그인이 필요합니다.');
+      _showSnack(
+        RemainingSurface.tr(context, 'run_result.body.3', '로그인이 필요합니다.'),
+      );
       return;
     }
 
@@ -192,12 +217,25 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
         return;
       }
       setState(() => rewardProcessed = true);
-      _showSnack('우승 보상 처리가 완료되었습니다.');
+      _showSnack(
+        RemainingSurface.tr(
+          context,
+          'run_result.body.4',
+          '우승 보상 처리가 완료되었습니다.',
+        ),
+      );
     } catch (error) {
       if (!mounted) {
         return;
       }
-      _showSnack('우승 보상 처리 실패: ${ApiErrorMessage.from(error)}');
+      _showSnack(
+        RemainingSurface.tr(
+          context,
+          'run_result.body.5',
+          '우승 보상 처리 실패: ${ApiErrorMessage.from(error)}',
+          {'ApiErrorMessage.from(error)': ApiErrorMessage.from(error)},
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => processingReward = false);

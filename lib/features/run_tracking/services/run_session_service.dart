@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:geolocator/geolocator.dart';
 
+import '../../../l10n/remaining_surface.dart';
 import '../models/activity_packet.dart';
 import '../models/route_point.dart';
 import '../models/run_telemetry.dart';
@@ -281,11 +282,19 @@ class GpsPermissionException implements Exception {
 
   @override
   String toString() => switch (result) {
-        GpsPermissionResult.serviceDisabled => '위치 서비스가 꺼져 있습니다.',
-        GpsPermissionResult.deniedForever =>
-          '위치 권한이 영구 거부되었습니다. 설정에서 허용해 주세요.',
+        GpsPermissionResult.serviceDisabled => RemainingSurface.trNow(
+            'run_tracking.run_session_service.body',
+            '위치 서비스가 꺼져 있습니다.',
+          ),
+        GpsPermissionResult.deniedForever => RemainingSurface.trNow(
+            'run_tracking.run_session_service.body.2',
+            '위치 권한이 영구 거부되었습니다. 설정에서 허용해 주세요.',
+          ),
         GpsPermissionResult.denied => '위치 권한이 필요합니다.',
-        GpsPermissionResult.granted => '위치 권한이 허용되었습니다.',
+        GpsPermissionResult.granted => RemainingSurface.trNow(
+            'run_tracking.run_session_service.body.3',
+            '위치 권한이 허용되었습니다.',
+          ),
       };
 }
 

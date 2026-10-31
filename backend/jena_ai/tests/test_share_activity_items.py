@@ -113,7 +113,7 @@ def test_catalog_share_price_is_not_a_diamond_price() -> None:
     assert rows[INCUBATOR]["diamondCost"] == 0
     assert rows["record_cpr_ticket"]["diamondCost"] == 12
     assert rows["record_cpr_ticket"]["shareCost"] == 0
-    assert rows["battle_run_pass"]["diamondCost"] == 120
+    assert rows["battle_run_pass"]["diamondCost"] == 200
 
 
 def test_purchase_spends_share_once_and_leaves_dia_and_value() -> None:

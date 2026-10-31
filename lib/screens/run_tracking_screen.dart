@@ -17,6 +17,7 @@ import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
+import '../l10n/remaining_surface.dart';
 import 'run_result_screen.dart';
 
 class RunTrackingScreen extends ConsumerStatefulWidget {
@@ -54,7 +55,9 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
     return Theme(
       data: SrcTheme.night,
       child: Scaffold(
-      appBar: AppBar(title: const Text('달리기 기록')),
+      appBar: AppBar(
+        title: Text(RemainingSurface.tr(context, 'run_tracking.title', '달리기 기록')),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -88,7 +91,15 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '자이로 안정도 ${telemetry.gyroStabilityScore.toStringAsFixed(2)}',
+                    RemainingSurface.tr(
+                      context,
+                      'run_tracking.body.3',
+                      '자이로 안정도 ${telemetry.gyroStabilityScore.toStringAsFixed(2)}',
+                      {
+                        'telemetry.gyroStabilityScore.toStringAsFixed(2)':
+                            telemetry.gyroStabilityScore.toStringAsFixed(2),
+                      },
+                    ),
                   ),
                   if (startError != null) ...[
                     const SizedBox(height: 16),
@@ -116,10 +127,13 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
                   : const Icon(Icons.verified_rounded),
               label: Text(
                 starting
-                    ? '센서를 시작하는 중...'
+                    ? RemainingSurface.tr(
+                        context, 'run_tracking.body.4', '센서를 시작하는 중...')
                     : validating
-                        ? '러닝 검증 중...'
-                        : '러닝 끝내고 검증하기',
+                        ? RemainingSurface.tr(
+                            context, 'run_tracking.body.5', '러닝 검증 중...')
+                        : RemainingSurface.tr(
+                            context, 'run_tracking.body.6', '러닝 끝내고 검증하기'),
               ),
             ),
           ],
@@ -139,7 +153,10 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
 
       if (profile?.healthDataConsent != true) {
         throw StateError(
-          'MyPage에서 [선택] 민감정보 수집 동의 후 러닝 검증을 시작할 수 있습니다.',
+          RemainingSurface.trNow(
+            'run_tracking.body.7',
+            'MyPage에서 [선택] 민감정보 수집 동의 후 러닝 검증을 시작할 수 있습니다.',
+          ),
         );
       }
 
@@ -171,7 +188,12 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
       setState(() {
         starting = false;
         sessionStarted = false;
-        startError = '센서를 시작하지 못했어요: $error';
+        startError = RemainingSurface.tr(
+          context,
+          'run_tracking.body.8',
+          '센서를 시작하지 못했어요: $error',
+          {'error': error},
+        );
       });
     }
   }
@@ -235,7 +257,16 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('러닝 검증에 실패했어요: ${ApiErrorMessage.from(error)}')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'run_tracking.toast',
+              '러닝 검증에 실패했어요: ${ApiErrorMessage.from(error)}',
+              {'ApiErrorMessage.from(error)': ApiErrorMessage.from(error)},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

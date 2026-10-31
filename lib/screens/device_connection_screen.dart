@@ -17,6 +17,7 @@ import '../core/theme/app_text_styles.dart';
 import '../core/widgets/src_gradient_background.dart';
 import '../core/widgets/src_sync_button.dart';
 import '../data/models/user_model.dart';
+import '../l10n/remaining_surface.dart';
 import 'garmin_auth_screen.dart';
 import 'health_data_consent_screen.dart';
 import 'wearable_brand_guide_sheet.dart';
@@ -111,7 +112,11 @@ class _DeviceConnectionScreenState
                     if (defaultTargetPlatform == TargetPlatform.iOS) ...[
                       _NativeHealthConnectTile(
                         label: AppStrings.watchSyncApple,
-                        caption: '(Apple Watch 전 기종 지원)',
+                        caption: RemainingSurface.tr(
+                          context,
+                          'device_connection.body',
+                          '(Apple Watch 전 기종 지원)',
+                        ),
                         leading: const AppleHealthIcon(),
                         enabled: !_busy && authUser != null,
                         onPressed: () => _connectNativeHealth(
@@ -162,7 +167,13 @@ class _DeviceConnectionScreenState
                     OutlinedButton(
                       key: const Key('watch-app-preview-entry'),
                       onPressed: () => context.push(RouteNames.watchAppPreview),
-                      child: const Text('워치 앱 연결 코드 · 연결된 워치'),
+                      child: Text(
+                        RemainingSurface.tr(
+                          context,
+                          'device_connection.button',
+                          '워치 앱 연결 코드 · 연결된 워치',
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 28),
                     Text(
@@ -214,7 +225,16 @@ class _DeviceConnectionScreenState
     } catch (e) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('등급 배정 화면 이동 실패: $e')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.toast',
+              '등급 배정 화면 이동 실패: $e',
+              {'e': e},
+            ),
+          ),
+        ),
       );
     }
   }
@@ -247,7 +267,16 @@ class _DeviceConnectionScreenState
     } catch (e) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('건너뛰기 실패: $e')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.toast.2',
+              '건너뛰기 실패: $e',
+              {'e': e},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -300,7 +329,14 @@ class _DeviceConnectionScreenState
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${watchType.displayLabel} 연동이 완료되었습니다!'),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.toast.3',
+              '${watchType.displayLabel} 연동이 완료되었습니다!',
+              {'watchType.displayLabel': watchType.displayLabel},
+            ),
+          ),
           backgroundColor: AppColors.primaryMint,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -350,10 +386,22 @@ class _DeviceConnectionScreenState
 
       if (!result.granted) {
         final message = result.openedInstall
-            ? 'Health Connect 설치 화면을 열었어요. 설치 후 다시 연결해 주세요.'
+            ? RemainingSurface.tr(
+                context,
+                'device_connection.body.2',
+                'Health Connect 설치 화면을 열었어요. 설치 후 다시 연결해 주세요.',
+              )
             : result.installLaunchFailed
-                ? 'Health Connect를 열 수 없어요. Play 스토어에서 설치해 주세요.'
-                : '권한이 거부되었습니다.';
+                ? RemainingSurface.tr(
+                    context,
+                    'device_connection.toast.4',
+                    'Health Connect를 열 수 없어요. Play 스토어에서 설치해 주세요.',
+                  )
+                : RemainingSurface.tr(
+                    context,
+                    'device_connection.toast.5',
+                    '권한이 거부되었습니다.',
+                  );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message)),
         );
@@ -377,7 +425,13 @@ class _DeviceConnectionScreenState
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Google Health Connect 연동이 완료되었습니다!'),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.toast.6',
+              'Google Health Connect 연동이 완료되었습니다!',
+            ),
+          ),
           backgroundColor: AppColors.primaryMint,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -394,7 +448,15 @@ class _DeviceConnectionScreenState
       debugPrint('Google Health Connect error: $e');
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('기기가 호환되지 않거나 연동 중 오류가 발생했습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.toast.7',
+              '기기가 호환되지 않거나 연동 중 오류가 발생했습니다.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -410,7 +472,7 @@ class _DeviceConnectionScreenState
             borderRadius: BorderRadius.circular(12),
           ),
           title: const Text('Health Connect'),
-          content: const Text(AppStrings.healthConnectNoSamplesTip),
+          content: Text(AppStrings.healthConnectNoSamplesTip),
           actions: [
             TextButton(
               key: const Key('health-connect-tip-ok'),
@@ -432,10 +494,16 @@ class _DeviceConnectionScreenState
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: const Text('연동 불가'),
-          content: const Text(
-            '고객님의 스마트워치 OS 버전이 낮거나 호환되지 않아 연동할 수 없습니다. '
-            '워치를 최신 버전(watchOS 8+, Wear OS 3.0+)으로 업데이트해 주세요.',
+          title: Text(
+            RemainingSurface.tr(context, 'device_connection.dialog', '연동 불가'),
+          ),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.dialog.2',
+              '고객님의 스마트워치 OS 버전이 낮거나 호환되지 않아 연동할 수 없습니다. '
+                  '워치를 최신 버전(watchOS 8+, Wear OS 3.0+)으로 업데이트해 주세요.',
+            ),
           ),
           actions: [
             TextButton(
@@ -469,7 +537,16 @@ class _DeviceConnectionScreenState
       } catch (e) {
         if (!mounted || !context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Garmin 연동 화면을 열 수 없습니다: $e')),
+          SnackBar(
+            content: Text(
+              RemainingSurface.tr(
+                context,
+                'device_connection.toast.8',
+                'Garmin 연동 화면을 열 수 없습니다: $e',
+                {'e': e},
+              ),
+            ),
+          ),
         );
       }
     }
@@ -484,8 +561,20 @@ class _DeviceConnectionScreenState
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          title: const Text('권한 설정 필요'),
-          content: const Text('정확한 측정을 위해 권한 설정이 필요합니다.'),
+          title: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.button.2',
+              '권한 설정 필요',
+            ),
+          ),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.button.3',
+              '정확한 측정을 위해 권한 설정이 필요합니다.',
+            ),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
@@ -552,7 +641,16 @@ class _DeviceConnectionScreenState
           );
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${watchType.displayLabel} 연동 설정이 저장되었습니다.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'device_connection.toast.9',
+              '${watchType.displayLabel} 연동 설정이 저장되었습니다.',
+              {'watchType.displayLabel': watchType.displayLabel},
+            ),
+          ),
+        ),
       );
     } catch (error) {
       if (!mounted || !context.mounted) return;
@@ -825,7 +923,17 @@ class _BleHeartRateSection extends ConsumerWidget {
                 child: Text(
                   snap.lastBpm != null
                       ? '♥ ${snap.lastBpm} BPM'
-                      : (snap.isConnected ? '♥ 연결됨' : '미연결'),
+                      : (snap.isConnected
+                          ? RemainingSurface.tr(
+                              context,
+                              'device_connection.body.3',
+                              '♥ 연결됨',
+                            )
+                          : RemainingSurface.tr(
+                              context,
+                              'device_connection.body.4',
+                              '미연결',
+                            )),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -881,7 +989,12 @@ class _BleHeartRateSection extends ConsumerWidget {
           if (snap.deviceName != null && snap.isConnected) ...[
             const SizedBox(height: 10),
             Text(
-              '연결된 센서: ${snap.deviceName}',
+              RemainingSurface.tr(
+                context,
+                'device_connection.body.5',
+                '연결된 센서: ${snap.deviceName}',
+                {'snap.deviceName': snap.deviceName},
+              ),
               key: const Key('ble-hr-connected-device'),
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.textBlack,
@@ -931,7 +1044,7 @@ class _BleHeartRateSection extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                         ),
                         onPressed: () => service.connect(device),
-                        child: const Text(
+                        child: Text(
                           AppStrings.bleHrConnectButton,
                           style: TextStyle(
                             fontSize: 12,
@@ -974,7 +1087,7 @@ class _BleHeartRateSection extends ConsumerWidget {
                     onPressed: () => service.disconnect(),
                     icon:
                         const Icon(Icons.bluetooth_disabled_rounded, size: 18),
-                    label: const Text(AppStrings.bleHrDisconnectButton),
+                    label: Text(AppStrings.bleHrDisconnectButton),
                   ),
                 ),
             ],

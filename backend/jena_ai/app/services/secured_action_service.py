@@ -1577,6 +1577,15 @@ class SecuredActionService:
                     }
                 ),
                 **(
+                    {}
+                    if appeal is not None
+                    else {
+                        "startedAt": run_started_at,
+                        "runSignature": run_sig,
+                        "deviceId": device_id,
+                    }
+                ),
+                **(
                     {
                         "paceSamples": [
                             sample.model_dump()
@@ -1917,11 +1926,11 @@ class SecuredActionService:
         },
         "battle_run_pass": {
             "title": "배틀런 챌린지 패스",
-            "diamondCost": 120,
+            "diamondCost": 200,
         },
         "battle_run_pass_plus": {
             "title": "배틀런 패스+",
-            "diamondCost": 200,
+            "diamondCost": 280,
         },
         "boost_run": {
             "title": "부스트 런",

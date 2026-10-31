@@ -135,7 +135,7 @@ class _StatsProgressCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            children: const [
+            children: [
               Expanded(
                   child: _StatColumn(
                 label: AppStrings.levelTestStatDistance,

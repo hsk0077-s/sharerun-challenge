@@ -7,6 +7,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
 import '../data/repositories/auth_repository.dart';
 import '../features/privacy/login_devices.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 로그인된 기기 목록과 "모든 기기에서 로그아웃".
 class LoginDevicesScreen extends ConsumerStatefulWidget {
@@ -27,10 +28,16 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('모든 기기에서 로그아웃'),
-        content: const Text(
-          '이 폰을 포함해 로그인된 모든 기기에서 로그아웃돼요. '
-          '다른 기기는 잠시 뒤 로그인 화면으로 돌아가요. 계속할까요?',
+        title: Text(
+          RemainingSurface.tr(ctx, 'login_devices.dialog', '모든 기기에서 로그아웃'),
+        ),
+        content: Text(
+          RemainingSurface.tr(
+            ctx,
+            'login_devices.button',
+            '이 폰을 포함해 로그인된 모든 기기에서 로그아웃돼요. '
+                '다른 기기는 잠시 뒤 로그인 화면으로 돌아가요. 계속할까요?',
+          ),
         ),
         actions: [
           TextButton(
@@ -57,7 +64,15 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
       if (!mounted) return;
       setState(() => _working = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃하지 못했어요. 잠시 후 다시 시도해 주세요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'login_devices.toast',
+              '로그아웃하지 못했어요. 잠시 후 다시 시도해 주세요.',
+            ),
+          ),
+        ),
       );
     }
   }
@@ -80,22 +95,36 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '이 계정으로 앱을 연 기기예요. 기기 이름과 마지막으로 연 시각만 저장하고, '
-            '위치나 IP 주소는 저장하지 않아요.',
+            RemainingSurface.tr(
+              context,
+              'login_devices.body',
+              '이 계정으로 앱을 연 기기예요. 기기 이름과 마지막으로 연 시각만 저장하고, '
+                  '위치나 IP 주소는 저장하지 않아요.',
+            ),
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 6),
           Text(
-            '앱 데이터를 지우거나 다시 설치하면 같은 폰이 한 줄 더 보일 수 있어요.',
+            RemainingSurface.tr(
+              context,
+              'login_devices.body.2',
+              '앱 데이터를 지우거나 다시 설치하면 같은 폰이 한 줄 더 보일 수 있어요.',
+            ),
             key: LoginDevicesScreen.noteKey,
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
           devices.when(
             data: (rows) => rows.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: Text('아직 기록된 기기가 없어요.'),
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Text(
+                      RemainingSurface.tr(
+                        context,
+                        'login_devices.body.3',
+                        '아직 기록된 기기가 없어요.',
+                      ),
+                    ),
                   )
                 : Column(
                     children: [for (final row in rows) _DeviceTile(row)],
@@ -122,7 +151,13 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('모든 기기에서 로그아웃'),
+                : Text(
+                    RemainingSurface.tr(
+                      context,
+                      'login_devices.dialog',
+                      '모든 기기에서 로그아웃',
+                    ),
+                  ),
           ),
         ],
       ),
@@ -144,20 +179,41 @@ class _DeviceTile extends StatelessWidget {
             '${seen.day.toString().padLeft(2, '0')} '
             '${seen.hour.toString().padLeft(2, '0')}:'
             '${seen.minute.toString().padLeft(2, '0')}';
-    final name = device.model.isEmpty ? '알 수 없는 기기' : device.model;
+    final name = device.model.isEmpty
+        ? RemainingSurface.tr(context, 'login_devices.body.4', '알 수 없는 기기')
+        : device.model;
     return Card(
       color: AppColors.surfaceWhite,
       child: ListTile(
         leading: const Icon(Icons.smartphone, color: AppColors.tealAccent),
         title: Text(
           device.current
-              ? '$name (이 기기)'
+              ? RemainingSurface.tr(
+                  context,
+                  'login_devices.body.5',
+                  '$name (이 기기)',
+                  {'name': name},
+                )
               : device.isNew()
-                  ? '$name · 새 기기'
+                  ? RemainingSurface.tr(
+                      context,
+                      'login_devices.body.6',
+                      '$name · 새 기기',
+                      {'name': name},
+                    )
                   : name,
         ),
         subtitle: Text(
-          '${device.osVersion} · 앱 ${device.appVersion}\n마지막으로 연 시각 $when',
+          RemainingSurface.tr(
+            context,
+            'login_devices.body.7',
+            '${device.osVersion} · 앱 ${device.appVersion}\n마지막으로 연 시각 $when',
+            {
+              'device.osVersion': device.osVersion,
+              'device.appVersion': device.appVersion,
+              'when': when,
+            },
+          ),
           style: AppTextStyles.caption,
         ),
         isThreeLine: true,

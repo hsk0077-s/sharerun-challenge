@@ -16,6 +16,7 @@ import '../core/widgets/src_sync_button.dart';
 import '../data/models/user_model.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/run_tracking/services/health_data_service.dart';
+import '../l10n/remaining_surface.dart';
 import 'external_oauth_webview.dart';
 
 /// src-3 스마트워치 네이티브 연동 가이드.
@@ -143,7 +144,11 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'Garmin Connect 연동 완료',
+                            RemainingSurface.tr(
+                              context,
+                              'watch_connection.body',
+                              'Garmin Connect 연동 완료',
+                            ),
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.tealAccent,
                               fontWeight: FontWeight.w600,
@@ -224,7 +229,14 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('${watchType.displayLabel} 연동이 완료되었습니다.'),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'watch_connection.toast',
+              '${watchType.displayLabel} 연동이 완료되었습니다.',
+              {'watchType.displayLabel': watchType.displayLabel},
+            ),
+          ),
           backgroundColor: AppColors.tealAccent,
           behavior: SnackBarBehavior.floating,
         ),
@@ -236,7 +248,15 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
       debugPrint('Native watch auth error: $error\n$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('연동 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'watch_connection.toast.2',
+              '연동 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -252,8 +272,16 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
       SnackBar(
         content: Text(
           openedInstall
-              ? 'Health Connect 설치 화면으로 이동했습니다. 설치 후 다시 연동해 주세요.'
-              : '권한이 거부되었습니다. 설정에서 건강 데이터 접근을 허용해 주세요.',
+              ? RemainingSurface.tr(
+                  context,
+                  'watch_connection.toast.3',
+                  'Health Connect 설치 화면으로 이동했습니다. 설치 후 다시 연동해 주세요.',
+                )
+              : RemainingSurface.tr(
+                  context,
+                  'watch_connection.toast.4',
+                  '권한이 거부되었습니다. 설정에서 건강 데이터 접근을 허용해 주세요.',
+                ),
         ),
       ),
     );
@@ -283,7 +311,15 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
       } catch (_) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('외부 기기 연동 화면을 열 수 없습니다.')),
+          SnackBar(
+            content: Text(
+              RemainingSurface.tr(
+                context,
+                'watch_connection.toast.5',
+                '외부 기기 연동 화면을 열 수 없습니다.',
+              ),
+            ),
+          ),
         );
       }
     }
@@ -303,7 +339,16 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
       debugPrint('Watch link complete failed: $error\n$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('온보딩 상태 갱신에 실패했습니다. $error')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'watch_connection.toast.6',
+              '온보딩 상태 갱신에 실패했습니다. $error',
+              {'error': error},
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -365,7 +410,13 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('알림 허용하고 계속'),
+                  child: Text(
+                    RemainingSurface.tr(
+                      sheetContext,
+                      'watch_connection.button',
+                      '알림 허용하고 계속',
+                    ),
+                  ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(sheetContext).pop(false),

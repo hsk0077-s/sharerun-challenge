@@ -24,10 +24,11 @@ class TournamentRepository {
     required int distanceKm,
     required int entryFeeShare,
     required String createdByUid,
-    String donationTarget = operatorSponsorName,
+    String? donationTarget,
     int? minParticipantsBep,
     int? maxParticipants,
   }) async {
+    final sponsorName = donationTarget ?? operatorSponsorName;
     final bep = minParticipantsBep ?? defaultBepForDistance(distanceKm);
     final capacity = maxParticipants ?? (bep * 2).clamp(20, 400);
     final doc = _firestoreService.collection(FirestorePaths.tournaments).doc();
@@ -43,7 +44,7 @@ class TournamentRepository {
       participantCount: 1,
       requiredTier: 1,
       status: TournamentStatus.recruiting,
-      sponsorName: donationTarget,
+      sponsorName: sponsorName,
       sponsorBillboardMessages: const [],
     );
 

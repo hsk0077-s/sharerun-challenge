@@ -22,6 +22,8 @@ import 'package:share_run_challenge/features/shop/providers/shop_tab_provider.da
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/ko_localization.dart';
+
 class _SeededWalletNotifier extends WalletNotifier {
   @override
   WalletState build() => WalletState.fromModel(
@@ -857,6 +859,9 @@ void main() {
           authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
         ],
         child: MaterialApp.router(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
           theme: SrcTheme.light,
           routerConfig: router,
         ),

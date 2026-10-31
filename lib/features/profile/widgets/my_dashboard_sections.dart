@@ -19,6 +19,7 @@ import '../user_profile_notifier.dart';
 import 'gender_profile_avatar.dart';
 import 'retention_widgets.dart';
 import 'tier_circle_badge.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 마이 탭: 티어 동물 · 나 · 천사 원 세 개. 가운데 내 사진이 가장 크다.
 /// 눌렀을 때 가는 곳은 홈에 있을 때와 같다(도감, 프로필 꾸미기, 닉네임).
@@ -113,7 +114,7 @@ class MyIdentityRow extends ConsumerWidget {
             key: const Key('my-user-circle'),
             circle: GenderProfileAvatar(size: 112),
             label: displayName,
-            sub: '프로필 꾸미기',
+            sub: RemainingSurface.tr(context, 'profile.my_dashboard_sections.body', '프로필 꾸미기'),
             labelColor: angel.goldNickname ? tokens.colors.donation : null,
             onLabelTap: () {
               if (unset) {
@@ -136,7 +137,7 @@ class MyIdentityRow extends ConsumerWidget {
               ),
             ),
             label: angel.circleLabel,
-            sub: '천사 도감',
+            sub: RemainingSurface.tr(context, 'angel_book.title', '천사 도감'),
             subColor: tokens.colors.donation,
             onLabelTap: () => HomeUserIdentityHeader.openBook(
               context,
@@ -399,7 +400,7 @@ class MyQuickSection extends ConsumerWidget {
             const SizedBox(width: 8),
             tile(
               Icons.settings_outlined,
-              '설정',
+              RemainingSurface.tr(context, 'settings.title', '설정'),
               tokens.colors.muted,
               onSettings,
               key: const Key('my-tile-settings'),

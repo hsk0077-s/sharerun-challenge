@@ -23,6 +23,7 @@ import '../data/api/identity_api_client.dart';
 import '../data/repositories/auth_repository.dart';
 import '../features/auth/existing_account_question.dart';
 import '../features/auth/login_connection_providers.dart';
+import '../l10n/remaining_surface.dart';
 
 enum _LinkStep { linked, pickAgain, stopped }
 
@@ -69,7 +70,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (uid.isEmpty) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.referralRedeemFailed)),
+          SnackBar(content: Text(AppStrings.referralRedeemFailed)),
         );
         return;
       }
@@ -80,12 +81,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           .timeout(const Duration(seconds: 12));
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.referralRedeemSuccess)),
+        SnackBar(content: Text(AppStrings.referralRedeemSuccess)),
       );
     } on TimeoutException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.referralRedeemFailed)),
+        SnackBar(content: Text(AppStrings.referralRedeemFailed)),
       );
     } catch (e, st) {
       debugPrint('redeemReferralCode: $e\n$st');
@@ -119,7 +120,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$failureMessage${ApiErrorMessage.from(e)}')),
+        SnackBar(content: Text('$failureMessage ${ApiErrorMessage.from(e)}')),
       );
     } finally {
       if (mounted) setState(() => _socialBusy = false);
@@ -129,32 +130,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _onGoogle() => _startProvider(
         provider: 'google',
         providerName: '구글',
-        successMessage: '구글 로그인에 성공했습니다!',
-        failureMessage: '로그인 실패: ',
+        successMessage: RemainingSurface.tr(
+            context, 'login.body', '구글 로그인에 성공했습니다!'),
+        failureMessage: RemainingSurface.tr(
+            context, 'login.body.2', '로그인 실패:'),
         askToken: () => ref.read(googleIdTokenProvider)(),
       );
 
   Future<void> _onApple() => _startProvider(
         provider: 'apple',
         providerName: '애플',
-        successMessage: '애플 로그인에 성공했습니다!',
-        failureMessage: '애플 로그인 실패: ',
+        successMessage: RemainingSurface.tr(
+            context, 'login.body.3', '애플 로그인에 성공했습니다!'),
+        failureMessage: RemainingSurface.tr(
+            context, 'login.body.4', '애플 로그인 실패:'),
         askToken: () => ref.read(appleIdTokenProvider)(),
       );
 
   Future<void> _onNaver() => _startProvider(
         provider: 'naver',
         providerName: '네이버',
-        successMessage: '네이버 로그인에 성공했습니다!',
-        failureMessage: '네이버 로그인 실패: ',
+        successMessage: RemainingSurface.tr(
+            context, 'login.body.5', '네이버 로그인에 성공했습니다!'),
+        failureMessage: RemainingSurface.tr(
+            context, 'login.body.6', '네이버 로그인 실패:'),
         askToken: () => ref.read(naverAccessTokenProvider)(),
       );
 
   Future<void> _onKakao() => _startProvider(
         provider: 'kakao',
         providerName: '카카오',
-        successMessage: '카카오 로그인에 성공했습니다!',
-        failureMessage: '카카오 로그인 실패: ',
+        successMessage: RemainingSurface.tr(
+            context, 'login.body.7', '카카오 로그인에 성공했습니다!'),
+        failureMessage: RemainingSurface.tr(
+            context, 'login.body.8', '카카오 로그인 실패:'),
         askToken: () => ref.read(kakaoAccessTokenProvider)(),
       );
 
@@ -481,8 +490,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               onPressed: () => setState(
                                 () => _referralFieldVisible = true,
                               ),
-                              child: const Text(
-                                '초대 코드가 있으신가요?',
+                              child: Text(
+                                RemainingSurface.tr(
+                                    context, 'login.button', '초대 코드가 있으신가요?'),
                                 style: AppTextStyles.link,
                               ),
                             ),

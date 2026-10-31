@@ -168,7 +168,7 @@ void main() {
     expect(find.text(AppStrings.myWalletInventoryEmpty), findsOneWidget);
   });
 
-  testWidgets('My Wallet shows real grade zero and no demo receipts',
+  testWidgets('My Wallet shows no grade-count line and no demo receipts',
       (tester) async {
     tester.view.physicalSize = const Size(390, 1200);
     tester.view.devicePixelRatio = 1.0;
@@ -181,24 +181,18 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(
-      find.text(
-        AppStrings.myWalletGradeProgress(
-          0,
-          EconomyConstants.trialRunsRequired,
+    // Grade placement no longer counts to 3: no progress line on the wallet.
+    for (final n in [0, 3]) {
+      expect(
+        find.text(
+          AppStrings.myWalletGradeProgress(
+            n,
+            EconomyConstants.trialRunsRequired,
+          ),
         ),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.text(
-        AppStrings.myWalletGradeProgress(
-          3,
-          EconomyConstants.trialRunsRequired,
-        ),
-      ),
-      findsNothing,
-    );
+        findsNothing,
+      );
+    }
     expect(find.text(AppStrings.notificationPaymentEmpty), findsOneWidget);
     expect(find.text('+500 SHARE'), findsNothing);
     expect(find.text('-100 VALUE'), findsNothing);

@@ -8,6 +8,7 @@ import '../core/theme/theme.dart';
 import '../core/widgets/async_value_section.dart';
 import '../features/challenge/widgets/challenge_look.dart';
 import '../data/models/tournament_participation_model.dart';
+import '../l10n/remaining_surface.dart';
 
 class MyTournamentsScreen extends ConsumerWidget {
   const MyTournamentsScreen({super.key});
@@ -30,13 +31,17 @@ class MyTournamentsScreen extends ConsumerWidget {
       children: [
         if (!inTabs) ...[
           Text(
-            '내 대회',
+            RemainingSurface.tr(context, 'my_tournaments.body', '내 대회'),
             style: textTheme.headlineSmall?.copyWith(color: tokens.colors.ink),
           ),
           SizedBox(height: tokens.spacing.xs),
         ],
         Text(
-          '참가한 대회와 참가 상태를 확인하세요.',
+          RemainingSurface.tr(
+            context,
+            'my_tournaments.body.2',
+            '참가한 대회와 참가 상태를 확인하세요.',
+          ),
           style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
         ),
         AsyncValueSection<List<TournamentParticipationModel>>(
@@ -48,7 +53,11 @@ class MyTournamentsScreen extends ConsumerWidget {
                 child: SrcSurfaceCard(
                   padding: EdgeInsets.all(tokens.spacing.md + 2),
                   child: Text(
-                    '아직 참가한 대회가 없습니다.',
+                    RemainingSurface.tr(
+                      context,
+                      'my_tournaments.body.3',
+                      '아직 참가한 대회가 없습니다.',
+                    ),
                     style: textTheme.bodyMedium?.copyWith(
                       color: tokens.colors.muted,
                     ),
@@ -67,11 +76,23 @@ class MyTournamentsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (active.isNotEmpty) ...[
-                  const ChallengeSectionLabel('참가 중'),
+                  ChallengeSectionLabel(
+                    RemainingSurface.tr(
+                      context,
+                      'my_tournaments.body.4',
+                      '참가 중',
+                    ),
+                  ),
                   for (final p in active) _row(context, p),
                 ],
                 if (past.isNotEmpty) ...[
-                  const ChallengeSectionLabel('지난 대회'),
+                  ChallengeSectionLabel(
+                    RemainingSurface.tr(
+                      context,
+                      'my_tournaments.body.5',
+                      '지난 대회',
+                    ),
+                  ),
                   for (final p in past) _row(context, p),
                 ],
               ],
@@ -124,8 +145,17 @@ class MyTournamentsScreen extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '참가비 ${p.entryFeeShare} SHARE · '
-                    '${p.tournament.recruitmentSummary}',
+                    RemainingSurface.tr(
+                      context,
+                      'my_tournaments.body.6',
+                      '참가비 ${p.entryFeeShare} SHARE · '
+                          '${p.tournament.recruitmentSummary}',
+                      {
+                        'p.entryFeeShare': p.entryFeeShare,
+                        'p.tournament.recruitmentSummary':
+                            p.tournament.recruitmentSummary,
+                      },
+                    ),
                     style: textTheme.bodySmall?.copyWith(
                       color: tokens.colors.muted,
                     ),
@@ -134,7 +164,17 @@ class MyTournamentsScreen extends ConsumerWidget {
               ),
             ),
             Text(
-              p.isRefunded ? '환불됨' : '참가 중',
+              p.isRefunded
+                  ? RemainingSurface.tr(
+                      context,
+                      'my_tournaments.body.7',
+                      '환불됨',
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'my_tournaments.body.4',
+                      '참가 중',
+                    ),
               style: textTheme.labelLarge?.copyWith(
                 color: p.isRefunded
                     ? tokens.colors.muted

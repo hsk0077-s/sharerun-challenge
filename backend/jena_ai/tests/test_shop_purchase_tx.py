@@ -26,7 +26,7 @@ def test_catalog_prices_streak_items_from_config_and_keeps_battle_pass() -> None
     prices = {row["id"]: row["diamondCost"] for row in service.shop_catalog()}
     assert prices["record_cpr_ticket"] == 12
     assert prices["record_safe_guard"] == 8
-    assert prices["battle_run_pass"] == 120
+    assert prices["battle_run_pass"] == 200
 
 
 def test_generic_shop_purchase_does_not_sell_battle_pass() -> None:

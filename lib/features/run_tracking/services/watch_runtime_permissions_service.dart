@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../l10n/remaining_surface.dart';
 import 'health_data_service.dart';
 
 class WatchPermissionRequestResult {
@@ -33,15 +34,21 @@ class WatchRuntimePermissionsService {
     if (healthResult.openedInstall) {
       return WatchPermissionRequestResult(
         granted: false,
-        missingPermissionLabel: 'Health Connect 앱 설치',
+        missingPermissionLabel: RemainingSurface.trNow(
+          'run_tracking.watch_runtime_permissions_service.body',
+          'Health Connect 앱 설치',
+        ),
         openedHealthConnectInstall: true,
         healthConnectInstallLaunchFailed: healthResult.installLaunchFailed,
       );
     }
     if (!healthResult.granted) {
-      return const WatchPermissionRequestResult(
+      return WatchPermissionRequestResult(
         granted: false,
-        missingPermissionLabel: 'Health Connect 건강 데이터',
+        missingPermissionLabel: RemainingSurface.trNow(
+          'run_tracking.watch_runtime_permissions_service.body.2',
+          'Health Connect 건강 데이터',
+        ),
       );
     }
 
@@ -49,15 +56,21 @@ class WatchRuntimePermissionsService {
       try {
         final activityStatus = await Permission.activityRecognition.request();
         if (!activityStatus.isGranted) {
-          return const WatchPermissionRequestResult(
+          return WatchPermissionRequestResult(
             granted: false,
-            missingPermissionLabel: '신체 활동 인식',
+            missingPermissionLabel: RemainingSurface.trNow(
+              'run_tracking.watch_runtime_permissions_service.body.3',
+              '신체 활동 인식',
+            ),
           );
         }
       } catch (_) {
-        return const WatchPermissionRequestResult(
+        return WatchPermissionRequestResult(
           granted: false,
-          missingPermissionLabel: '신체 활동 인식',
+          missingPermissionLabel: RemainingSurface.trNow(
+            'run_tracking.watch_runtime_permissions_service.body.3',
+            '신체 활동 인식',
+          ),
         );
       }
     }

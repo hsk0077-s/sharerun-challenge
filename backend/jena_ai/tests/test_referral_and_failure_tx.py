@@ -101,7 +101,7 @@ def test_settle_failure_returns_partial_deposit() -> None:
     db.store["tournaments/room1"] = {"targetDistanceKm": 10}
     db.store["tournaments/room1/participants/u1"] = {
         "diamondDeposit": 10,
-        "selectedCharity": "UNICEF",
+        "selectedCharity": "GLOBAL_RELIEF_PARTNER",
     }
     service = _service(db)
     request = SettleTournamentFailureRequest(

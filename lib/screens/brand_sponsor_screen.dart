@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/theme.dart';
 import '../features/shop/widgets/store_look.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 브랜드 스폰서 챌린지. 지금은 진행 중인 스폰서가 없어서 "준비 중" 안내만 보여 준다.
 /// 실제 스폰서가 생기면 서버 데이터로 채운다.
@@ -40,7 +41,15 @@ class BrandSponsorScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      '${AppStrings.lobbySponsorPreparing}이에요',
+                      RemainingSurface.tr(
+                        context,
+                        'brand_sponsor.body',
+                        '${AppStrings.lobbySponsorPreparing}이에요',
+                        {
+                          'AppStrings.lobbySponsorPreparing':
+                              AppStrings.lobbySponsorPreparing,
+                        },
+                      ),
                       style: storeText(18, c.primary, w: FontWeight.w800),
                     ),
                     const SizedBox(height: 6),

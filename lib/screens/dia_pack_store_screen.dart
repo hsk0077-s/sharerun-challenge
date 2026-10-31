@@ -6,6 +6,7 @@ import '../core/navigation/app_route_nav.dart';
 import '../features/iap/widgets/purchases_closed_page.dart';
 import '../core/theme/app_colors.dart';
 import '../features/iap/models/dia_pack_product.dart';
+import '../l10n/remaining_surface.dart';
 
 /// DIA pack list. Buttons stay disabled until Play products exist.
 class DiaPackStoreScreen extends StatelessWidget {
@@ -14,13 +15,17 @@ class DiaPackStoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!AppEnv.inAppPurchasesEnabled) {
-      return const PurchasesClosedPage(title: 'DIA 팩');
+      return PurchasesClosedPage(
+        title: RemainingSurface.tr(context, 'dia_pack_store.title', 'DIA 팩'),
+      );
     }
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('DIA 팩'),
+        title: Text(
+          RemainingSurface.tr(context, 'dia_pack_store.title', 'DIA 팩'),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => AppRouteNav.pop(context),
@@ -65,10 +70,22 @@ class _DiaPackCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
             ),
             const SizedBox(height: 4),
-            Text('$price원 · ${pack.bonusLabel}'),
+            Text(
+              RemainingSurface.tr(
+                context,
+                'dia_pack_store.body',
+                '$price원 · ${pack.bonusLabel}',
+                {'price': price, 'pack.bonusLabel': pack.bonusLabel},
+              ),
+            ),
             const SizedBox(height: 2),
             Text(
-              '기본 ${pack.baseDia} DIA · ${pack.productId}',
+              RemainingSurface.tr(
+                context,
+                'dia_pack_store.body.2',
+                '기본 ${pack.baseDia} DIA · ${pack.productId}',
+                {'pack.baseDia': pack.baseDia, 'pack.productId': pack.productId},
+              ),
               style: const TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 10),

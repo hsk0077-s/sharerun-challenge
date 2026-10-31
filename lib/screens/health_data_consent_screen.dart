@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/providers/app_providers.dart';
 import '../app/theme/app_colors.dart';
 import '../features/legal/widgets/health_data_consent_card.dart';
+import '../l10n/remaining_surface.dart';
 
 /// Dedicated health-data opt-in screen (PIPA defense — separate from ToS).
 class HealthDataConsentScreen extends ConsumerStatefulWidget {
@@ -26,19 +27,31 @@ class _HealthDataConsentScreenState extends ConsumerState<HealthDataConsentScree
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('건강정보 동의')),
+      appBar: AppBar(
+        title: Text(
+          RemainingSurface.tr(context, 'health_data_consent.title', '건강정보 동의'),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            '스마트워치 연동 전 동의',
+            RemainingSurface.tr(
+              context,
+              'health_data_consent.title.2',
+              '스마트워치 연동 전 동의',
+            ),
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
-          const Text(
-            '개인정보보호법에 따라 건강·생체 데이터는 일반 약관과 분리된 '
-            '명시적 Opt-in이 필요합니다.',
-            style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+          Text(
+            RemainingSurface.tr(
+              context,
+              'health_data_consent.body',
+              '개인정보보호법에 따라 건강·생체 데이터는 일반 약관과 분리된 '
+                  '명시적 Opt-in이 필요합니다.',
+            ),
+            style: const TextStyle(color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 20),
           HealthDataConsentCard(
@@ -48,12 +61,26 @@ class _HealthDataConsentScreenState extends ConsumerState<HealthDataConsentScree
           const SizedBox(height: 24),
           FilledButton(
             onPressed: _consented && !_submitting ? _requestHealthPermissions : null,
-            child: Text(_submitting ? '권한 요청 중...' : '동의하고 워치 연동 계속'),
+            child: Text(
+              _submitting
+                  ? RemainingSurface.tr(
+                      context,
+                      'health_data_consent.button',
+                      '권한 요청 중...',
+                    )
+                  : RemainingSurface.tr(
+                      context,
+                      'health_data_consent.button.2',
+                      '동의하고 워치 연동 계속',
+                    ),
+            ),
           ),
           const SizedBox(height: 10),
           TextButton(
             onPressed: _submitting ? null : () => Navigator.of(context).pop(false),
-            child: const Text('나중에 하기'),
+            child: Text(
+              RemainingSurface.tr(context, 'health_data_consent.button.3', '나중에 하기'),
+            ),
           ),
         ],
       ),

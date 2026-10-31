@@ -12,6 +12,7 @@ import '../core/widgets/src_gradient_background.dart';
 import '../features/crew/crew_membership.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/wallet/providers/wallet_provider.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 크루 방장 관리 대시보드 (Screen 19). 크루 정보와 크루원은 서버 값이다.
 class CrewManagerScreen extends ConsumerStatefulWidget {
@@ -63,7 +64,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
   }
 
   Future<void> _onPreparing() async {
-    _toast('아직 열리지 않았어요. 준비되면 알려드릴게요.');
+    _toast(RemainingSurface.tr(
+      context,
+      'crew_manager.toast',
+      '아직 열리지 않았어요. 준비되면 알려드릴게요.',
+    ));
   }
 
   Future<void> _onRename(MyCrew mine) async {
@@ -74,7 +79,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     final next = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('크루 이름 변경'),
+        title: Text(RemainingSurface.tr(
+          ctx,
+          'crew_manager.dialog',
+          '크루 이름 변경',
+        )),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,7 +94,18 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
               decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
             Text(
-              cost == 0 ? '처음 한 번은 무료예요.' : '이름을 바꿀 때마다 $cost DIA가 들어요.',
+              cost == 0
+                  ? RemainingSurface.tr(
+                      ctx,
+                      'crew_manager.body',
+                      '처음 한 번은 무료예요.',
+                    )
+                  : RemainingSurface.tr(
+                      ctx,
+                      'crew_manager.button',
+                      '이름을 바꿀 때마다 $cost DIA가 들어요.',
+                      {'cost': cost},
+                    ),
               style: AppTextStyles.caption,
             ),
           ],
@@ -97,7 +117,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
-            child: const Text('저장'),
+            child: Text(RemainingSurface.tr(
+              ctx,
+              'crew_manager.button.2',
+              '저장',
+            )),
           ),
         ],
       ),
@@ -108,9 +132,23 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     }
     if (cost > 0 &&
         !await _confirm(
-          '이름 바꾸기',
-          '"$next"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
-          '$cost DIA 내고 바꾸기',
+          RemainingSurface.tr(
+            context,
+            'crew_manager.body.2',
+            '이름 바꾸기',
+          ),
+          RemainingSurface.tr(
+            context,
+            'crew_manager.body.3',
+            '"$next"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
+            {'next': next, 'cost': cost},
+          ),
+          RemainingSurface.tr(
+            context,
+            'crew_manager.body.4',
+            '$cost DIA 내고 바꾸기',
+            {'cost': cost},
+          ),
         )) {
       return;
     }
@@ -123,16 +161,39 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
             );
       }
       _refresh();
-      _toast('크루 이름을 "$next"(으)로 바꿨어요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.2',
+        '크루 이름을 "$next"(으)로 바꿨어요.',
+        {'next': next},
+      ));
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
-        400 => 'DIA가 모자라거나 쓸 수 없는 이름이에요.',
-        403 => '크루장만 이름을 바꿀 수 있어요.',
-        _ => '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+        400 => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.3',
+            'DIA가 모자라거나 쓸 수 없는 이름이에요.',
+          ),
+        403 => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.4',
+            '크루장만 이름을 바꿀 수 있어요.',
+          ),
+        _ => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.5',
+            '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+          ),
       });
     } catch (_) {
-      if (mounted) _toast('이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(
+          context,
+          'crew_manager.toast.5',
+          '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+        ));
+      }
     }
   }
 
@@ -141,17 +202,41 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     final step = mine.crew.expansion;
     if (api == null || step == null) return;
     if (step.atMax) {
-      _toast('인원 한도가 최대(${mine.crew.maxMembers}명)예요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.6',
+        '인원 한도가 최대(${mine.crew.maxMembers}명)예요.',
+        {'mine.crew.maxMembers': mine.crew.maxMembers},
+      ));
       return;
     }
     if (!step.canBuy) {
-      _toast('자리를 모두 채우면 더 늘릴 수 있어요. (${mine.crew.maxMembers}명)');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.7',
+        '자리를 모두 채우면 더 늘릴 수 있어요. (${mine.crew.maxMembers}명)',
+        {'mine.crew.maxMembers': mine.crew.maxMembers},
+      ));
       return;
     }
     if (!await _confirm(
-      '인원 한도 확장',
-      '크루 인원 한도를 ${step.add}명 늘려요. ${step.costDia} DIA가 들고, 보너스 DIA를 먼저 써요.',
-      '${step.costDia} DIA 내고 늘리기',
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.8',
+        '인원 한도 확장',
+      ),
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.9',
+        '크루 인원 한도를 ${step.add}명 늘려요. ${step.costDia} DIA가 들고, 보너스 DIA를 먼저 써요.',
+        {'step.add': step.add, 'step.costDia': step.costDia},
+      ),
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.10',
+        '${step.costDia} DIA 내고 늘리기',
+        {'step.costDia': step.costDia},
+      ),
     )) {
       return;
     }
@@ -164,17 +249,40 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
             );
       }
       _refresh();
-      _toast('인원 한도가 ${result.maxMembers}명이 됐어요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.11',
+        '인원 한도가 ${result.maxMembers}명이 됐어요.',
+        {'result.maxMembers': result.maxMembers},
+      ));
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
         400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
-        403 => '크루장만 늘릴 수 있어요.',
-        409 => '자리를 모두 채워야 하거나 이미 최대예요.',
-        _ => '인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.',
+        403 => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.12',
+            '크루장만 늘릴 수 있어요.',
+          ),
+        409 => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.13',
+            '자리를 모두 채워야 하거나 이미 최대예요.',
+          ),
+        _ => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.14',
+            '인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.',
+          ),
       });
     } catch (_) {
-      if (mounted) _toast('인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(
+          context,
+          'crew_manager.toast.14',
+          '인원 한도를 늘리지 못했어요. 잠시 뒤 다시 해 주세요.',
+        ));
+      }
     }
   }
 
@@ -184,13 +292,21 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
             ServerShopInventory.crewCheerId,
           );
       if (!mounted) return;
-      _toast('크루 응원 깃발을 걸었습니다. 오늘 대회 SHARE 보상이 10% 늘어납니다.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.15',
+        '크루 응원 깃발을 걸었습니다. 오늘 대회 SHARE 보상이 10% 늘어납니다.',
+      ));
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(error.userMessage);
     } catch (_) {
       if (!mounted) return;
-      _toast('응원 깃발을 걸지 못했습니다.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.16',
+        '응원 깃발을 걸지 못했습니다.',
+      ));
     }
   }
 
@@ -202,15 +318,45 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
         ? mine.members.where((m) => m.role != 'leader').length
         : 1;
     if (count == 0) {
-      _toast('선물을 받을 크루원이 없어요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.17',
+        '선물을 받을 크루원이 없어요.',
+      ));
       return;
     }
     final cost = count * _giftDiaPerMember;
-    final who = member == null ? '크루원 $count명 모두' : '${member.nickname}님';
+    final who = member == null
+        ? RemainingSurface.tr(
+            context,
+            'crew_manager.toast.18',
+            '크루원 $count명 모두',
+            {'count': count},
+          )
+        : RemainingSurface.tr(
+            context,
+            'crew_manager.toast.19',
+            '${member.nickname}님',
+            {'member.nickname': member.nickname},
+          );
     if (!await _confirm(
-      '심폐소생권·세이프가드 선물',
-      '$who에게 심폐소생권과 세이프가드를 하나씩 보내요. 한 명당 $_giftDiaPerMember DIA, 모두 $cost DIA가 들고 보너스 DIA를 먼저 써요.',
-      '$cost DIA 내고 보내기',
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.20',
+        '심폐소생권·세이프가드 선물',
+      ),
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.21',
+        '$who에게 심폐소생권과 세이프가드를 하나씩 보내요. 한 명당 $_giftDiaPerMember DIA, 모두 $cost DIA가 들고 보너스 DIA를 먼저 써요.',
+        {'who': who, '_giftDiaPerMember': _giftDiaPerMember, 'cost': cost},
+      ),
+      RemainingSurface.tr(
+        context,
+        'crew_manager.body.5',
+        '$cost DIA 내고 보내기',
+        {'cost': cost},
+      ),
     )) {
       return;
     }
@@ -222,17 +368,40 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
               diamondBalance: result.diamondBalance,
             );
       }
-      _toast('${result.recipients}명의 보관함에 선물을 넣었어요. (−$cost DIA)');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.22',
+        '${result.recipients}명의 보관함에 선물을 넣었어요. (−$cost DIA)',
+        {'result.recipients': result.recipients, 'cost': cost},
+      ));
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
         400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
-        403 => '크루장만 선물할 수 있어요.',
-        404 => '그 크루원을 찾지 못했어요.',
-        _ => '선물을 보내지 못했어요. 잠시 뒤 다시 해 주세요.',
+        403 => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.23',
+            '크루장만 선물할 수 있어요.',
+          ),
+        404 => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.24',
+            '그 크루원을 찾지 못했어요.',
+          ),
+        _ => RemainingSurface.tr(
+            context,
+            'crew_manager.toast.25',
+            '선물을 보내지 못했어요. 잠시 뒤 다시 해 주세요.',
+          ),
       });
     } catch (_) {
-      if (mounted) _toast('선물을 보내지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(
+          context,
+          'crew_manager.toast.25',
+          '선물을 보내지 못했어요. 잠시 뒤 다시 해 주세요.',
+        ));
+      }
     }
   }
 
@@ -245,11 +414,27 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
       _refresh();
       _toast(
         role == 'sub'
-            ? '${member.nickname}님을 부방장으로 임명했어요.'
-            : '${member.nickname}님을 크루원으로 돌렸어요.',
+            ? RemainingSurface.tr(
+                context,
+                'crew_manager.toast.26',
+                '${member.nickname}님을 부방장으로 임명했어요.',
+                {'member.nickname': member.nickname},
+              )
+            : RemainingSurface.tr(
+                context,
+                'crew_manager.toast.27',
+                '${member.nickname}님을 크루원으로 돌렸어요.',
+                {'member.nickname': member.nickname},
+              ),
       );
     } catch (_) {
-      if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(
+          context,
+          'crew_manager.toast.28',
+          '바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+        ));
+      }
     }
   }
 
@@ -257,9 +442,22 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     final api = ref.read(crewApiProvider);
     if (api == null) return;
     if (!await _confirm(
-      '크루원 내보내기',
-      '${member.nickname}님을 크루에서 내보낼까요?',
-      '내보내기',
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.29',
+        '크루원 내보내기',
+      ),
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.30',
+        '${member.nickname}님을 크루에서 내보낼까요?',
+        {'member.nickname': member.nickname},
+      ),
+      RemainingSurface.tr(
+        context,
+        'crew_manager.toast.31',
+        '내보내기',
+      ),
     )) {
       return;
     }
@@ -267,18 +465,50 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
       await api.kickCrewMember(member.uid);
       if (!mounted) return;
       _refresh();
-      _toast('${member.nickname}님을 내보냈어요.');
+      _toast(RemainingSurface.tr(
+        context,
+        'crew_manager.toast.32',
+        '${member.nickname}님을 내보냈어요.',
+        {'member.nickname': member.nickname},
+      ));
     } catch (_) {
-      if (mounted) _toast('내보내지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) {
+        _toast(RemainingSurface.tr(
+          context,
+          'crew_manager.toast.33',
+          '내보내지 못했어요. 잠시 뒤 다시 해 주세요.',
+        ));
+      }
     }
   }
 
   static String _expandLabel(CrewSummary crew) {
     final step = crew.expansion;
-    if (step == null) return '인원 한도 확장';
-    if (step.atMax) return '인원 한도 최대 (${crew.maxMembers}명)';
-    final base = '+${step.add}명 인원 한도 확장하기 (${step.costDia} DIA)';
-    return step.canBuy ? base : '$base · ${crew.maxMembers}명을 모두 채우면 열려요';
+    if (step == null) {
+      return RemainingSurface.trNow(
+        'crew_manager.toast.8',
+        '인원 한도 확장',
+      );
+    }
+    if (step.atMax) {
+      return RemainingSurface.trNow(
+        'crew_manager.toast.34',
+        '인원 한도 최대 (${crew.maxMembers}명)',
+        {'crew.maxMembers': crew.maxMembers},
+      );
+    }
+    final base = RemainingSurface.trNow(
+      'crew_manager.body.6',
+      '+${step.add}명 인원 한도 확장하기 (${step.costDia} DIA)',
+      {'step.add': step.add, 'step.costDia': step.costDia},
+    );
+    return step.canBuy
+        ? base
+        : RemainingSurface.trNow(
+            'crew_manager.body.7',
+            '$base · ${crew.maxMembers}명을 모두 채우면 열려요',
+            {'base': base, 'crew.maxMembers': crew.maxMembers},
+          );
   }
 
   Widget _scaffold(Widget body) {
@@ -318,10 +548,18 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     }
     final mine = async.asData?.value;
     if (mine == null) {
-      return _scaffold(_message('크루 정보를 불러오지 못했어요. 크루에 들어 있는지, 네트워크가 연결됐는지 확인해 주세요.'));
+      return _scaffold(_message(RemainingSurface.tr(
+        context,
+        'crew_manager.body.8',
+        '크루 정보를 불러오지 못했어요. 크루에 들어 있는지, 네트워크가 연결됐는지 확인해 주세요.',
+      )));
     }
     if (!mine.isManager) {
-      return _scaffold(_message('크루장과 부크루장만 관리할 수 있어요.'));
+      return _scaffold(_message(RemainingSurface.tr(
+        context,
+        'crew_manager.body.9',
+        '크루장과 부크루장만 관리할 수 있어요.',
+      )));
     }
     final subs = [
       for (final m in mine.members)
@@ -349,7 +587,15 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '보유 DIA ${wallet.diamondBalance} · SHARE ${wallet.shareBalance}',
+                    RemainingSurface.tr(
+                      context,
+                      'crew_manager.body.10',
+                      '보유 DIA ${wallet.diamondBalance} · SHARE ${wallet.shareBalance}',
+                      {
+                        'wallet.diamondBalance': wallet.diamondBalance,
+                        'wallet.shareBalance': wallet.shareBalance,
+                      },
+                    ),
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -386,7 +632,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         ],
                         const SizedBox(height: 14),
                         _RoyalBlueButton(
-                          label: '📢 전체 공지 푸시 (준비 중)',
+                          label: RemainingSurface.tr(
+                            context,
+                            'crew_manager.body.12',
+                            '📢 전체 공지 푸시 (준비 중)',
+                          ),
                           onTap: _onPreparing,
                         ),
                       ],
@@ -404,7 +654,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         children: [
                           Expanded(
                             child: Text(
-                              '크루 이름',
+                              RemainingSurface.tr(
+                                context,
+                                'crew_manager.body.13',
+                                '크루 이름',
+                              ),
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.agreementLabel.copyWith(
                                 fontWeight: FontWeight.w600,
@@ -416,8 +670,20 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                           const SizedBox(width: 8),
                           _RoyalBlueChip(
                             label: mine.crew.renameCostDia == 0
-                                ? '이름 변경 (첫 1회 무료)'
-                                : '이름 변경 (${mine.crew.renameCostDia} DIA)',
+                                ? RemainingSurface.tr(
+                                    context,
+                                    'crew_manager.body.14',
+                                    '이름 변경 (첫 1회 무료)',
+                                  )
+                                : RemainingSurface.tr(
+                                    context,
+                                    'crew_manager.body.15',
+                                    '이름 변경 (${mine.crew.renameCostDia} DIA)',
+                                    {
+                                      'mine.crew.renameCostDia':
+                                          mine.crew.renameCostDia,
+                                    },
+                                  ),
                             onTap: () => _onRename(mine),
                           ),
                         ],
@@ -430,7 +696,11 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          '보관함 아이템',
+                          RemainingSurface.tr(
+                            context,
+                            'crew_manager.body.16',
+                            '보관함 아이템',
+                          ),
                           style: AppTextStyles.agreementLabel.copyWith(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
@@ -439,25 +709,45 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         const SizedBox(height: 14),
                         if (mine.isLeader) ...[
                           _RoyalBlueButton(
-                            label:
-                                '🎁 크루원 전체에게 심폐소생권·세이프가드 선물 (1인당 $_giftDiaPerMember DIA)',
-                            subtitle: '내가 아닌 크루원의 보관함에 하나씩 들어가요. 한 명에게만 줄 때는 아래 팀원 목록에서 골라요.',
+                            label: RemainingSurface.tr(
+                              context,
+                              'crew_manager.body.17',
+                              '🎁 크루원 전체에게 심폐소생권·세이프가드 선물 (1인당 $_giftDiaPerMember DIA)',
+                              {'_giftDiaPerMember': _giftDiaPerMember},
+                            ),
+                            subtitle: RemainingSurface.tr(
+                              context,
+                              'crew_manager.body.18',
+                              '내가 아닌 크루원의 보관함에 하나씩 들어가요. 한 명에게만 줄 때는 아래 팀원 목록에서 골라요.',
+                            ),
                             onTap: () => _onGift(mine),
                           ),
                         ],
                         const SizedBox(height: 10),
                         _RoyalBlueButton(
-                          label: '🚩 크루 응원 깃발 (15 DIA, 하루 1회)',
+                          label: RemainingSurface.tr(
+                            context,
+                            'crew_manager.body.19',
+                            '🚩 크루 응원 깃발 (15 DIA, 하루 1회)',
+                          ),
                           onTap: _onCheerFlag,
                         ),
                         const SizedBox(height: 10),
                         _RoyalBlueButton(
-                          label: '🛡️ 크루 대항전 예치금 대납 (준비 중)',
+                          label: RemainingSurface.tr(
+                            context,
+                            'crew_manager.body.20',
+                            '🛡️ 크루 대항전 예치금 대납 (준비 중)',
+                          ),
                           onTap: _onPreparing,
                         ),
                         const SizedBox(height: 10),
                         _RoyalBlueButton(
-                          label: '🎉 크루 전용 챌린지 패스 & 스킨 (준비 중)',
+                          label: RemainingSurface.tr(
+                            context,
+                            'crew_manager.body.21',
+                            '🎉 크루 전용 챌린지 패스 & 스킨 (준비 중)',
+                          ),
                           onTap: _onPreparing,
                         ),
                       ],
@@ -469,7 +759,12 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          '소속 팀원 관리 ($count / $limit명)',
+                          RemainingSurface.tr(
+                            context,
+                            'crew_manager.body.22',
+                            '소속 팀원 관리 ($count / $limit명)',
+                            {'count': count, 'limit': limit},
+                          ),
                           style: AppTextStyles.agreementLabel.copyWith(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
@@ -526,7 +821,14 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         ],
                         const SizedBox(height: 16),
                         if (mine.members.isEmpty)
-                          const Text('소속 팀원이 없습니다.', style: AppTextStyles.caption)
+                          Text(
+                            RemainingSurface.tr(
+                              context,
+                              'crew_manager.body.23',
+                              '소속 팀원이 없습니다.',
+                            ),
+                            style: AppTextStyles.caption,
+                          )
                         else
                           ...mine.members.map(
                             (member) => Padding(
@@ -773,8 +1075,18 @@ class _MemberRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (role) {
-      'leader' => '$name (방장)',
-      'sub' => '$name (부방장)',
+      'leader' => RemainingSurface.tr(
+          context,
+          'crew_manager.body.24',
+          '$name (방장)',
+          {'name': name},
+        ),
+      'sub' => RemainingSurface.tr(
+          context,
+          'crew_manager.body.25',
+          '$name (부방장)',
+          {'name': name},
+        ),
       _ => name,
     };
     return Row(
@@ -798,7 +1110,11 @@ class _MemberRow extends StatelessWidget {
           TextButton(
             onPressed: onGift,
             child: Text(
-              '선물',
+              RemainingSurface.tr(
+                context,
+                'crew_manager.button.3',
+                '선물',
+              ),
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.nightLime,
                 fontWeight: FontWeight.w700,
@@ -810,7 +1126,13 @@ class _MemberRow extends StatelessWidget {
           TextButton(
             onPressed: onAppoint,
             child: Text(
-              role == 'sub' ? '부방장 해제' : AppStrings.crewManagerAppointVice,
+              role == 'sub'
+                  ? RemainingSurface.tr(
+                      context,
+                      'crew_manager.button.4',
+                      '부방장 해제',
+                    )
+                  : AppStrings.crewManagerAppointVice,
               style: AppTextStyles.caption.copyWith(
                 color: AppColors.nightLime,
                 fontWeight: FontWeight.w700,

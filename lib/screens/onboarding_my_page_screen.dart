@@ -27,6 +27,7 @@ import 'donation_settlement_screen.dart';
 import 'settings_screen.dart';
 import 'snail_to_cheetah_book_page.dart';
 import 'subscription_management_screen.dart';
+import '../l10n/remaining_surface.dart';
 
 /// 온보딩 마이페이지 · 캘린더 · 러닝 일지 (Screen 12).
 class OnboardingMyPageScreen extends StatefulWidget {
@@ -221,7 +222,12 @@ class _CalendarCard extends ConsumerWidget {
               borderRadius: tokens.radii.capsule,
             ),
             child: Text(
-              '🔥 현재 연속 출석(Streak): ${stats.streakDays}일',
+              RemainingSurface.tr(
+                context,
+                'onboarding_my_page.body',
+                '🔥 현재 연속 출석(Streak): ${stats.streakDays}일',
+                {'stats.streakDays': stats.streakDays},
+              ),
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,

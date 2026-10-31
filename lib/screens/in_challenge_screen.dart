@@ -34,6 +34,7 @@ import '../features/shop/widgets/server_item_use_button.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
+import '../l10n/remaining_surface.dart';
 import 'run_result_screen.dart';
 import 'appeal_center_screen.dart';
 
@@ -289,9 +290,11 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                     enabled: _sessionStarted && !_starting && !_validating,
                     loading: _starting || _validating,
                     label: _starting
-                        ? '센서 준비 중...'
+                        ? RemainingSurface.tr(
+                            context, 'in_challenge.body', '센서 준비 중...')
                         : _validating
-                            ? 'Jena 검증 중...'
+                            ? RemainingSurface.tr(
+                                context, 'in_challenge.body.2', 'Jena 검증 중...')
                             : '[ ${AppStrings.liveRunningFinish} > ]',
                     onConfirmed: _finishAndValidate,
                   ),
@@ -299,7 +302,16 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
-                    '제출 기회: ${widget.submissionsRemaining}/${widget.maxSubmissions}회 남음',
+                    RemainingSurface.tr(
+                      context,
+                      'in_challenge.body.3',
+                      '제출 기회: ${widget.submissionsRemaining}/${widget.maxSubmissions}회 남음',
+                      {
+                        'widget.submissionsRemaining':
+                            widget.submissionsRemaining,
+                        'widget.maxSubmissions': widget.maxSubmissions,
+                      },
+                    ),
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       fontSize: 11,
@@ -396,7 +408,8 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       setState(() {
         _starting = false;
         _sessionStarted = false;
-        _startError = '센서 시작 실패: $e';
+        _startError = RemainingSurface.tr(
+            context, 'in_challenge.body.4', '센서 시작 실패: $e', {'e': e});
       });
     }
   }
@@ -462,14 +475,24 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              title: const Text('기록 검증 보류'),
-              content: const Text(
-                '강제 정지 대신 소명 기회가 부여되었습니다. 증빙 자료를 제출해 주세요.',
+              title: Text(
+                RemainingSurface.tr(
+                    dialogContext, 'in_challenge.dialog', '기록 검증 보류'),
+              ),
+              content: Text(
+                RemainingSurface.tr(
+                  dialogContext,
+                  'in_challenge.button',
+                  '강제 정지 대신 소명 기회가 부여되었습니다. 증빙 자료를 제출해 주세요.',
+                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('소명하러 가기'),
+                  child: Text(
+                    RemainingSurface.tr(
+                        dialogContext, 'in_challenge.button.2', '소명하러 가기'),
+                  ),
                 ),
               ],
             );
@@ -501,7 +524,14 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Jena 검증 실패: ${ApiErrorMessage.from(error)}'),
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'in_challenge.toast',
+              'Jena 검증 실패: ${ApiErrorMessage.from(error)}',
+              {'ApiErrorMessage.from(error)': ApiErrorMessage.from(error)},
+            ),
+          ),
         ),
       );
     } finally {
@@ -597,7 +627,11 @@ class _BlurStats extends StatelessWidget {
               _Stat(AppStrings.liveRunningStatDistance, '${distanceKm.toStringAsFixed(1)} km'),
               _Stat(AppStrings.liveRunningStatTime, '$mm:$ss', color: AppColors.nightLime),
               _Stat(AppStrings.liveRunningStatPace, paceLabel, color: AppColors.nightLime),
-              _Stat('심박수', heartRate != null ? '$heartRate BPM' : '-- BPM', color: AppColors.nightDanger),
+              _Stat(
+                RemainingSurface.tr(context, 'in_challenge.body.5', '심박수'),
+                heartRate != null ? '$heartRate BPM' : '-- BPM',
+                color: AppColors.nightDanger,
+              ),
             ],
           ),
         ),
@@ -690,7 +724,9 @@ class _LiveMap extends StatelessWidget {
                 const Icon(Icons.location_off_rounded, color: AppColors.nightDanger, size: 40),
                 const SizedBox(height: 12),
                 Text(
-                  startError ?? '위치 권한이 필요합니다.',
+                  startError ??
+                      RemainingSurface.tr(
+                          context, 'in_challenge.body.6', '위치 권한이 필요합니다.'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.w600),
                 ),
@@ -698,7 +734,10 @@ class _LiveMap extends StatelessWidget {
                 FilledButton(
                   style: FilledButton.styleFrom(backgroundColor: AppColors.nightLime),
                   onPressed: onOpenSettings,
-                  child: const Text('시스템 설정 열기'),
+                  child: Text(
+                    RemainingSurface.tr(
+                        context, 'in_challenge.button.3', '시스템 설정 열기'),
+                  ),
                 ),
               ],
             ),
@@ -707,10 +746,14 @@ class _LiveMap extends StatelessWidget {
       );
     }
     if (!AppEnv.isGoogleMapsConfigured) {
-      return const ColoredBox(
+      return ColoredBox(
         color: AppColors.nightCard,
         child: Center(
-          child: Text('Google Maps API 키가 설정되지 않았습니다.', style: TextStyle(color: AppColors.nightMuted)),
+          child: Text(
+            RemainingSurface.tr(
+                context, 'in_challenge.body.7', 'Google Maps API 키가 설정되지 않았습니다.'),
+            style: const TextStyle(color: AppColors.nightMuted),
+          ),
         ),
       );
     }
@@ -884,15 +927,16 @@ class _JenaOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.black.withValues(alpha: 0.72),
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: AppColors.nightLime),
-            SizedBox(height: 16),
+            const CircularProgressIndicator(color: AppColors.nightLime),
+            const SizedBox(height: 16),
             Text(
-              '러닝 데이터를 검증 중입니다...',
-              style: TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.w700),
+              RemainingSurface.tr(
+                  context, 'in_challenge.body.8', '러닝 데이터를 검증 중입니다...'),
+              style: const TextStyle(color: AppColors.textWhite, fontWeight: FontWeight.w700),
             ),
           ],
         ),

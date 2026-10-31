@@ -15,6 +15,7 @@ import 'package:share_run_challenge/features/shop/shop_request_ids.dart';
 import 'package:share_run_challenge/features/shop/streak_item_message.dart';
 import 'package:share_run_challenge/features/wallet/providers/wallet_provider.dart';
 import 'package:share_run_challenge/screens/battle_pass_screen.dart';
+import '../../support/ko_localization.dart';
 
 void main() {
   test('a legacy quantity is a pass and rewards stay server ids', () {
@@ -42,8 +43,8 @@ void main() {
     final costs = {
       for (final item in ShopItemModel.catalog) item.id: item.diamondCost,
     };
-    expect(costs[battlePassItemId], 120);
-    expect(costs[battlePassPlusItemId], 200);
+    expect(costs[battlePassItemId], 200);
+    expect(costs[battlePassPlusItemId], 280);
     expect(requestPricedShopItemIds, contains(battlePassItemId));
     expect(requestPricedShopItemIds, contains(battlePassPlusItemId));
   });
@@ -82,8 +83,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(AppStrings.battlePassNone), findsOneWidget);
-    expect(find.text('배틀런 패스 · 120 DIA'), findsOneWidget);
-    expect(find.text('패스+ · 200 DIA'), findsOneWidget);
+    expect(find.text('배틀런 패스 · 200 DIA'), findsOneWidget);
+    expect(find.text('패스+ · 280 DIA'), findsOneWidget);
     expect(find.text(AppStrings.battlePassCosmeticNote), findsOneWidget);
     expect(find.text('100 SHARE'), findsNothing);
     expect(find.text('3 다이아몬드'), findsNothing);
@@ -171,19 +172,15 @@ Widget _screen(ServerShopInventory inventory) {
           .overrideWith((ref) => Stream.value(inventory)),
       shopCatalogProvider.overrideWith(
         (ref) async => const {
-          battlePassItemId: 120,
-          battlePassPlusItemId: 200,
+          battlePassItemId: 200,
+          battlePassPlusItemId: 280,
         },
       ),
     ],
     child: MaterialApp(
-      locale: const Locale('ko', 'KR'),
-      supportedLocales: const [Locale('ko', 'KR'), Locale('en', 'US')],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.light,
       home: const BattlePassScreen(),
     ),

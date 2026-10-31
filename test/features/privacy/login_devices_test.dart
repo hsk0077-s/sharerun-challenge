@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/features/privacy/login_devices.dart';
 import 'package:share_run_challenge/screens/login_devices_screen.dart';
+import '../../support/ko_localization.dart';
 
 Widget _host(List<LoginDevice> rows) {
   return ProviderScope(
     overrides: [loginDevicesProvider.overrideWith((ref) async => rows)],
-    child: const MaterialApp(home: LoginDevicesScreen()),
+    child: const MaterialApp(
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,home: LoginDevicesScreen()),
   );
 }
 

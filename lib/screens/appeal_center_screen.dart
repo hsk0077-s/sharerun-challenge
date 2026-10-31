@@ -13,6 +13,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/appeal/appeal_hold.dart';
+import '../l10n/remaining_surface.dart';
 
 /// src-27 기록 소명 및 고객센터.
 class AppealCenterScreen extends ConsumerStatefulWidget {
@@ -165,7 +166,15 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
       debugPrint('Appeal proof pick failed: $error\n$stackTrace');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이미지를 불러오지 못했습니다. 다시 시도해 주세요.')),
+        SnackBar(
+          content: Text(
+            RemainingSurface.tr(
+              context,
+              'appeal_center.toast',
+              '이미지를 불러오지 못했습니다. 다시 시도해 주세요.',
+            ),
+          ),
+        ),
       );
     }
   }
@@ -174,7 +183,7 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
     if (_busy) return;
     if (_proofImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text(AppStrings.appealProofRequiredSnack)),
+        SnackBar(content: Text(AppStrings.appealProofRequiredSnack)),
       );
       return;
     }
@@ -196,8 +205,8 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            title: const Text(AppStrings.appealSubmitSuccessTitle),
-            content: const Text(AppStrings.appealSubmitSuccessBody),
+            title: Text(AppStrings.appealSubmitSuccessTitle),
+            content: Text(AppStrings.appealSubmitSuccessBody),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
@@ -217,8 +226,16 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
         SnackBar(
           content: Text(
             tooLarge
-                ? '사진 용량이 너무 커요. 다른 사진으로 다시 시도해 주세요.'
-                : '소명을 접수하지 못했어요. 잠시 후 다시 시도해 주세요.',
+                ? RemainingSurface.tr(
+                    context,
+                    'appeal_center.toast.2',
+                    '사진 용량이 너무 커요. 다른 사진으로 다시 시도해 주세요.',
+                  )
+                : RemainingSurface.tr(
+                    context,
+                    'appeal_center.toast.3',
+                    '소명을 접수하지 못했어요. 잠시 후 다시 시도해 주세요.',
+                  ),
           ),
         ),
       );
@@ -255,14 +272,39 @@ class _JenaHoldBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final current = hold;
     final title = current != null
-        ? '⚠️ 기록 검증 보류 안내'
-        : (loaded ? '소명할 기록이 없어요' : '기록을 불러오는 중이에요');
+        ? RemainingSurface.tr(context, 'appeal_center.body', '⚠️ 기록 검증 보류 안내')
+        : (loaded
+            ? RemainingSurface.tr(context, 'appeal_center.body.2', '소명할 기록이 없어요')
+            : RemainingSurface.tr(
+                context,
+                'appeal_center.body.3',
+                '기록을 불러오는 중이에요',
+              ));
+    final dateLabelPrefix =
+        current == null || current.dateLabel.isEmpty ? '' : '${current.dateLabel} ';
     final body = current != null
-        ? '${current.dateLabel.isEmpty ? '' : '${current.dateLabel} '}'
-            '${current.title} 기록이 검증 보류 상태예요.\n'
-            '이유: ${current.reason}\n'
-            '억울한 경우 아래에서 소명 자료를 제출해 주세요.'
-        : (loaded ? '검증이 보류된 달리기가 생기면 여기에서 소명할 수 있어요.' : '잠시만 기다려 주세요.');
+        ? '${RemainingSurface.tr(
+            context,
+            'appeal_center.body.4',
+            '$dateLabelPrefix${current.title} 기록이 검증 보류 상태예요.\n이유: ${current.reason}',
+            {
+              'dateLabelPrefix': dateLabelPrefix,
+              'current.title': current.title,
+              'current.reason': current.reason,
+            },
+          )}\n'
+            '${RemainingSurface.tr(
+              context,
+              'appeal_center.body.5',
+              '억울한 경우 아래에서 소명 자료를 제출해 주세요.',
+            )}'
+        : (loaded
+            ? RemainingSurface.tr(
+                context,
+                'appeal_center.body.6',
+                '검증이 보류된 달리기가 생기면 여기에서 소명할 수 있어요.',
+              )
+            : RemainingSurface.tr(context, 'appeal_center.body.7', '잠시만 기다려 주세요.'));
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: BackdropFilter(

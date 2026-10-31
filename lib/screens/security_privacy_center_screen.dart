@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../app/router/route_names.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/theme/app_colors.dart';
+import '../l10n/remaining_surface.dart';
 import '../l10n/surface_copy.dart';
 import '../core/theme/app_text_styles.dart';
 import '../features/privacy/ai_learning_tile.dart';
@@ -41,7 +42,11 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           Text(
-            '적립 규칙, 내 거래 내역, 기부 정산, 기록 이의 신청을 한곳에서 확인해요.',
+            RemainingSurface.tr(
+              context,
+              'security_privacy_center.body',
+              '적립 규칙, 내 거래 내역, 기부 정산, 기록 이의 신청을 한곳에서 확인해요.',
+            ),
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
           ),
           const SizedBox(height: 14),
@@ -74,7 +79,11 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                   tileKey: historyTileKey,
                   icon: Icons.receipt_long_outlined,
                   title: '내 거래 내역',
-                  subtitle: '서버 원장에 기록된 지급·사용 내역',
+                  subtitle: RemainingSurface.tr(
+                    context,
+                    'security_privacy_center.body.2',
+                    '서버 원장에 기록된 지급·사용 내역',
+                  ),
                   onTap: () => AppRouteNav.push<void>(
                     context,
                     RouteNames.securityTransactions,
@@ -85,8 +94,13 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                 _CenterTile(
                   tileKey: donationTileKey,
                   icon: Icons.volunteer_activism_outlined,
-                  title: '기부 정산',
-                  subtitle: '내가 기여한 금액 · 이번 달 기부',
+                  title: RemainingSurface.tr(
+                    context, 'security_privacy_center.body.3', '기부 정산'),
+                  subtitle: RemainingSurface.tr(
+                    context,
+                    'security_privacy_center.body.4',
+                    '내가 기여한 금액 · 이번 달 기부',
+                  ),
                   onTap: () => AppRouteNav.push<void>(
                     context,
                     RouteNames.donationSettlement,
@@ -97,8 +111,13 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                 _CenterTile(
                   tileKey: devicesTileKey,
                   icon: Icons.devices_outlined,
-                  title: '로그인된 기기',
-                  subtitle: '내 계정을 연 기기 · 모든 기기에서 로그아웃',
+                  title: RemainingSurface.tr(
+                    context, 'security_privacy_center.body.5', '로그인된 기기'),
+                  subtitle: RemainingSurface.tr(
+                    context,
+                    'security_privacy_center.body.6',
+                    '내 계정을 연 기기 · 모든 기기에서 로그아웃',
+                  ),
                   onTap: () => Navigator.of(context).push<void>(
                     MaterialPageRoute<void>(
                       builder: (_) => const LoginDevicesScreen(),
@@ -113,8 +132,10 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                 _CenterTile(
                   tileKey: appealTileKey,
                   icon: Icons.support_agent_outlined,
-                  title: '기록 소명 및 고객센터',
-                  subtitle: '검증 결과에 이의가 있을 때',
+                  title: RemainingSurface.tr(
+                    context, 'security_privacy_center.body.7', '기록 소명 및 고객센터'),
+                  subtitle: RemainingSurface.tr(
+                    context, 'security_privacy_center.body.8', '검증 결과에 이의가 있을 때'),
                   onTap: () => AppRouteNav.push<void>(
                     context,
                     RouteNames.appeal,

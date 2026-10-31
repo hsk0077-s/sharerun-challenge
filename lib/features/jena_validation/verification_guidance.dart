@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// Shown once before a verified room or company race, until the runner opts out.
 const verificationGuidanceDismissedKey = 'verification_guidance_dismissed_v1';
 

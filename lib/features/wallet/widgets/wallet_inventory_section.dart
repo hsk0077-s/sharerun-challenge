@@ -124,7 +124,7 @@ class WalletInventorySection extends ConsumerWidget {
                   RouteNames.itemInventory,
                   materialBuilder: (_) => const ItemInventoryScreen(),
                 ),
-                child: const Text(AppStrings.myWalletInventoryOpen),
+                child: Text(AppStrings.myWalletInventoryOpen),
               ),
             ],
           ),

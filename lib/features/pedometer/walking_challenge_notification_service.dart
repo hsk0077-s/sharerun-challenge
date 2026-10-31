@@ -1,4 +1,4 @@
-import 'dart:ui' show Color, PlatformDispatcher;
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -153,7 +153,6 @@ abstract final class WalkingChallengeNotificationService {
         _goldenChannelId,
         _goldenChannelName,
         channelDescription: _goldenChannelDescription,
-        color: const Color(0xFFD4FF4A),
         importance: Importance.high,
         priority: Priority.high,
       ),

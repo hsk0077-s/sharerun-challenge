@@ -349,7 +349,6 @@ class SoloPedometerForegroundHandler extends TaskHandler {
         _smartPushChannelId,
         _smartPushChannelName,
         channelDescription: _smartPushChannelDescription,
-        color: const Color(0xFFD4FF4A),
         importance: Importance.high,
         priority: Priority.high,
       ),

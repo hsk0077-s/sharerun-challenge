@@ -2,5 +2,4 @@
 <resources>
     <color name="splash_background">#FF070B09</color>
     <color name="ic_launcher_background">#FF070B09</color>
-    <color name="notification_neon">#FFD4FF4A</color>
 </resources>

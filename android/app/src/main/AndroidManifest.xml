@@ -217,9 +217,6 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_stat_sharerun" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/notification_neon" />
 
         <service
             android:name="com.pravera.flutter_foreground_task.service.ForegroundService"

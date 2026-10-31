@@ -401,7 +401,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
             Text(
-              AppStrings.myPageSettings,
+              RemainingSurface.tr(context, 'settings.title', '설정'),
               style: storeText(36, AppColors.nightInk, w: FontWeight.w900),
             ),
             const SizedBox(height: 4),

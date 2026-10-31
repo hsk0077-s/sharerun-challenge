@@ -233,7 +233,7 @@ class _TournamentScreenState extends ConsumerState<TournamentScreen> {
         _SectionHeader(
           title: shown > 1
               ? RemainingSurface.tr(context, 'tournament.body.10', '그 밖의 대회')
-              : '대회',
+              : RemainingSurface.tr(context, 'common.tournament', '대회'),
         ),
         for (final room in groups.other) card(room),
       ],

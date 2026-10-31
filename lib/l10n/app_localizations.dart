@@ -60,6 +60,13 @@ abstract final class ShareRunLocalizations {
     Locale('id', 'ID'),
   ];
 
+  /// The strings for the language the screen is showing; English when the
+  /// language is not one we ship.
+  static ShareRunLocalizedStrings of(BuildContext context) {
+    final code = Localizations.maybeLocaleOf(context)?.languageCode;
+    return byLanguage[code] ?? byLanguage['en']!;
+  }
+
   static const Map<String, ShareRunLocalizedStrings> byLanguage = {
     'ko': ShareRunLocalizedStrings(
       localeCode: 'ko-KR',

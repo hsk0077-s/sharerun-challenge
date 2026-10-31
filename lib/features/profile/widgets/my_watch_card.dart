@@ -9,6 +9,7 @@ import '../../../data/api/identity_api_client.dart';
 import '../../../data/models/user_model.dart';
 import '../../../screens/device_connection_screen.dart';
 import '../../auth/login_connection_providers.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 이 계정에 연결된 워치 앱 목록. 못 받으면 빈 목록으로 보여 준다(마이 화면이 막히면 안 됨).
 final connectedWatchAppsProvider =
@@ -54,14 +55,14 @@ class MyWatchCard extends ConsumerWidget {
     final String headline;
     final String note;
     if (healthLinked && apps.isNotEmpty) {
-      headline = '스마트워치 연결됨';
-      note = '걸음·심박을 받고, 시계 앱으로도 기록해요';
+      headline = RemainingSurface.tr(context, 'profile.my_watch.body', '스마트워치 연결됨');
+      note = RemainingSurface.tr(context, 'profile.my_watch.body.2', '걸음·심박을 받고, 시계 앱으로도 기록해요');
     } else if (healthLinked) {
-      headline = '스마트워치 연결됨';
-      note = '걸음·심박을 휴대폰으로 받아요';
+      headline = RemainingSurface.tr(context, 'profile.my_watch.body', '스마트워치 연결됨');
+      note = RemainingSurface.tr(context, 'profile.my_watch.body.3', '걸음·심박을 휴대폰으로 받아요');
     } else {
-      headline = appName.isEmpty ? '시계 앱 연결됨' : '$appName 연결됨';
-      note = '시계에서 바로 기록해요';
+      headline = appName.isEmpty ? RemainingSurface.tr(context, 'profile.my_watch.body.4', '시계 앱 연결됨') : RemainingSurface.tr(context, 'profile.my_watch.body.5', '\$appName 연결됨', {'appName': appName});
+      note = RemainingSurface.tr(context, 'profile.my_watch.body.6', '시계에서 바로 기록해요');
     }
 
     return Padding(
@@ -88,7 +89,7 @@ class MyWatchCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        anyConnected ? '내 워치' : '워치로 더 정확하게 달리기',
+                        anyConnected ? RemainingSurface.tr(context, 'profile.my_watch.body.7', '내 워치') : RemainingSurface.tr(context, 'profile.my_watch.body.8', '워치로 더 정확하게 달리기'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
@@ -113,7 +114,7 @@ class MyWatchCard extends ConsumerWidget {
                         ),
                       ] else
                         Text(
-                          '걸음·심박을 시계에서 바로 기록해요',
+                          RemainingSurface.tr(context, 'profile.my_watch.body.9', '걸음·심박을 시계에서 바로 기록해요'),
                           style: TextStyle(
                               fontSize: 12, height: 1.4, color: c.muted),
                         ),
@@ -124,7 +125,7 @@ class MyWatchCard extends ConsumerWidget {
                 FilledButton(
                   key: buttonKey,
                   onPressed: () => _open(context, ref),
-                  child: Text(anyConnected ? '관리' : '연결하기'),
+                  child: Text(anyConnected ? RemainingSurface.tr(context, 'profile.my_watch.button', '관리') : RemainingSurface.tr(context, 'profile.my_watch.connect', '연결하기')),
                 ),
               ],
             ),

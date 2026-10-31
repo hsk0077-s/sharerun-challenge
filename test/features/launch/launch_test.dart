@@ -13,8 +13,13 @@ import 'package:share_run_challenge/features/launch/launch_splash.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/ko_localization.dart';
+
 Widget _intro({required VoidCallback onFinished, bool replay = false}) {
   return MaterialApp(
+    locale: koTestLocale,
+    supportedLocales: koTestSupportedLocales,
+    localizationsDelegates: koTestDelegates,
     home: IntroScreen(onFinished: onFinished, replay: replay),
   );
 }
@@ -203,6 +208,9 @@ void main() {
   testWidgets('first run shows the photo splash, then the intro', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        locale: koTestLocale,
+        supportedLocales: koTestSupportedLocales,
+        localizationsDelegates: koTestDelegates,
         home: FirstRunSplash(
           duration: const Duration(milliseconds: 300),
           child: IntroScreen(onFinished: () {}),

@@ -5,6 +5,7 @@ import '../../app/providers/app_providers.dart';
 import '../strings/app_strings.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
+import '../../l10n/app_localizations.dart';
 
 /// 메인 대시보드 하단 네비게이션 바 (5대 탭).
 class DashboardBottomNav extends ConsumerWidget {
@@ -49,7 +50,7 @@ class DashboardBottomNav extends ConsumerWidget {
             children: [
               _NavItem(
                 icon: Icons.home_rounded,
-                label: AppStrings.dashboardNavHome,
+                label: ShareRunLocalizations.of(context).navHome,
                 selected: !walletTabSelected && currentIndex == 0,
                 onTap: () => onTap(0),
               ),
@@ -58,26 +59,26 @@ class DashboardBottomNav extends ConsumerWidget {
                     ? Icons.account_balance_wallet_outlined
                     : Icons.shopping_bag_rounded,
                 label: walletTabSelected
-                    ? AppStrings.dashboardNavWallet
-                    : AppStrings.dashboardNavStore,
+                    ? ShareRunLocalizations.of(context).navWallet
+                    : ShareRunLocalizations.of(context).navStore,
                 selected: walletTabSelected || currentIndex == 1,
                 onTap: () => onTap(1),
               ),
               _NavItem(
                 icon: Icons.emoji_events_rounded,
-                label: AppStrings.dashboardNavChallenge,
+                label: ShareRunLocalizations.of(context).navChallenge,
                 selected: !walletTabSelected && currentIndex == 2,
                 onTap: () => onTap(2),
               ),
               _NavItem(
                 icon: Icons.groups_rounded,
-                label: AppStrings.dashboardNavCrew,
+                label: ShareRunLocalizations.of(context).navCrew,
                 selected: !walletTabSelected && currentIndex == 3,
                 onTap: () => onTap(3),
               ),
               _NavItem(
                 icon: Icons.person_rounded,
-                label: AppStrings.dashboardNavMyPage,
+                label: ShareRunLocalizations.of(context).navMyPage,
                 selected: !walletTabSelected && currentIndex == 4,
                 showDot: myPageDot,
                 onTap: () => onTap(4),

@@ -12,6 +12,7 @@ import '../../../screens/personal_sponsor_screen.dart';
 import '../../onboarding/src_onboarding_controller.dart';
 import '../user_profile_notifier.dart';
 import 'gender_profile_avatar.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// src-17 개인스폰서 후원결제. 도감을 거치지 않고 직행한다.
 void openPersonalSponsor(BuildContext context) {
@@ -380,7 +381,7 @@ class AngelChronicleCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    '나의 천사 연대기',
+                    RemainingSurface.tr(context, 'profile.angel_tier_widgets.body', '나의 천사 연대기'),
                     style: textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: tokens.colors.ink,
@@ -476,7 +477,7 @@ class _FirstWingCta extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              '첫 날개 달기 👼 〉',
+              RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.4', '첫 날개 달기 👼 〉'),
               style: textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w800,
                 fontSize: 14,
@@ -510,7 +511,7 @@ class _PromoteAngelCta extends StatelessWidget {
             vertical: tokens.spacing.sm - 2,
           ),
           child: Text(
-            '후원하고 천사 등급 올리기 〉',
+            RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.5', '후원하고 천사 등급 올리기 〉'),
             textAlign: TextAlign.center,
             style: textTheme.bodySmall?.copyWith(
               fontSize: 13,
@@ -606,7 +607,7 @@ class AngelSponsorBanner extends StatelessWidget {
             ),
           ),
           child: Text(
-            '❤️  내 이름으로 달리기 후원하기',
+            RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.6', '❤️  내 이름으로 달리기 후원하기'),
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w800,
@@ -629,7 +630,7 @@ class SeraphimHonorBillboard extends ConsumerWidget {
     final nickname = ref.watch(userNicknameProvider);
     final isSeraphim = profile.angelTier == AngelTier.seraphim;
     final display = SrcOnboardingController.isUnsetNickname(nickname)
-        ? '이번 달 명예 후원자'
+        ? RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.7', '이번 달 명예 후원자')
         : nickname;
 
     return Container(
@@ -648,7 +649,7 @@ class SeraphimHonorBillboard extends ConsumerWidget {
       child: Column(
         children: [
           Text(
-            '세라핌 VVIP 명예 전광판',
+            RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.8', '세라핌 VVIP 명예 전광판'),
             style: AppTextStyles.agreementLabel.copyWith(
               fontWeight: FontWeight.w800,
               fontSize: 14,
@@ -658,15 +659,15 @@ class SeraphimHonorBillboard extends ConsumerWidget {
           const AngelMascot(tier: AngelTier.seraphim, size: 96),
           const SizedBox(height: 8),
           Text(
-            isSeraphim ? display : '이번 달 최고 누적 기부 · 세라핌',
+            isSeraphim ? display : RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.9', '이번 달 최고 누적 기부 · 세라핌'),
             style: AppTextStyles.header1.copyWith(fontSize: 16),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             isSeraphim
-                ? '6익 천사 · 영롱한 광배가 당신을 비춥니다'
-                : '누적 100회 또는 5,000,000 SHARE 후원 시 이 자리에 오릅니다',
+                ? RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.10', '6익 천사 · 영롱한 광배가 당신을 비춥니다')
+                : RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.11', '누적 100회 또는 5,000,000 SHARE 후원 시 이 자리에 오릅니다'),
             style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
             textAlign: TextAlign.center,
           ),
@@ -702,7 +703,7 @@ Future<void> showPreAngelGuideSheet(BuildContext context) {
               const AngelMascot(tier: AngelTier.preAngel, size: 88),
               const SizedBox(height: 12),
               Text(
-                '등록된 날개가 없습니다. 단 1회 후원으로 귀여운 진짜 아기 날개를 등 뒤에 달아보세요!',
+                RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.12', '등록된 날개가 없습니다. 단 1회 후원으로 귀여운 진짜 아기 날개를 등 뒤에 달아보세요!'),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontSize: 14,
@@ -723,7 +724,7 @@ Future<void> showPreAngelGuideSheet(BuildContext context) {
                     foregroundColor: AppColors.nightOnLime,
                     shape: const StadiumBorder(),
                   ),
-                  child: const Text('지금 후원하고 아기 날개 달기'),
+                  child: Text(RemainingSurface.tr(context, 'profile.angel_tier_widgets.body.13', '지금 후원하고 아기 날개 달기')),
                 ),
               ),
             ],

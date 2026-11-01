@@ -552,7 +552,8 @@ abstract final class AppStrings {
   static String get dashboardStampTourCta => RemainingSurface.trNow('app.dashboardStampTourCta', '스탬프 투어 확인하기');
 
   // ── Battle Pass (Screen 24) ─────────────────────────────────────────
-  static const battlePassTitle = '배틀런 패스 (Season 1)';
+  static String get battlePassTitle =>
+      RemainingSurface.trNow('app.battlePassTitle', '배틀런 패스 (Season 1)');
   static String get battlePassPremiumActive => RemainingSurface.trNow('app.battlePassPremiumActive', '👑 프리미엄 패스 활성화 중');
   static String get battlePassCurrentLevel => RemainingSurface.trNow('app.battlePassCurrentLevel', '현재 레벨: Lv. 15');
   static const battlePassProgressLabel = '80%';

@@ -510,7 +510,7 @@ class _ActiveChallengeCard extends StatelessWidget {
               SizedBox(width: tokens.spacing.xs),
               Expanded(
                 child: Text(
-                  room.title,
+                  room.displayTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.titleSmall,

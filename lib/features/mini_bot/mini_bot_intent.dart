@@ -1,3 +1,4 @@
+import '../../l10n/remaining_surface.dart';
 import '../../core/config/app_env.dart';
 import '../../core/challenge/challenge_entry_fee.dart';
 import '../../core/strings/app_strings.dart';
@@ -142,13 +143,19 @@ abstract final class MiniBotPrompts {
 }
 
 abstract final class MiniBotCopy {
-  static const greeting = '저는 당신의 달리기 친구, 달팽이예요. 말로 물어보면 바로 도와드릴게요. '
-      '이동하거나 결제하기 전에는 꼭 확인받아요.';
+  static String get greeting => RemainingSurface.trNow(
+        'mini_bot.copy.greeting',
+        '저는 당신의 달리기 친구, 달팽이예요. 말로 물어보면 바로 도와드릴게요. '
+            '이동하거나 결제하기 전에는 꼭 확인받아요.',
+      );
 
-  static const intro = '쉐어런은 함께 걷고 달리는 챌린지 앱이에요. '
-      '홈에서 오늘 상태를 보고, 챌린지 로비나 초보 1km 챌린지에서 레이스에 참가할 수 있어요. '
-      '기록 심폐소생권은 상점 아이템에서 볼 수 있어요. '
-      '저는 화면 이동만 돕고, 결제나 참가 확정은 하지 않아요.';
+  static String get intro => RemainingSurface.trNow(
+        'mini_bot.copy.intro',
+        '쉐어런은 함께 걷고 달리는 챌린지 앱이에요. '
+            '홈에서 오늘 상태를 보고, 챌린지 로비나 초보 1km 챌린지에서 레이스에 참가할 수 있어요. '
+            '기록 심폐소생권은 상점 아이템에서 볼 수 있어요. '
+            '저는 화면 이동만 돕고, 결제나 참가 확정은 하지 않아요.',
+      );
 
   static String get donateAmount =>
       '${ShopTabNotifier.donateValueAmount} VALUE';
@@ -169,14 +176,23 @@ abstract final class MiniBotCopy {
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';
 
-  static String get donate => '기부 펀딩으로 이동할까요? $donateAmount예요. '
-      '후원하기를 눌러도 여기서는 기부가 끝나지 않아요. '
-      '상점의 기부 버튼으로 직접 눌러 주세요.';
+  static String get donate => RemainingSurface.trNow(
+        'mini_bot.copy.donate',
+        '기부 펀딩으로 이동할까요? \${donateAmount}예요. '
+            '후원하기를 눌러도 여기서는 기부가 끝나지 않아요. '
+            '상점의 기부 버튼으로 직접 눌러 주세요.',
+        {'donateAmount': donateAmount},
+      );
 
-  static String get joinBeginner => '초보 1km 챌린지로 이동할까요? 참가비는 $joinAmount예요. '
-      '참가하기를 눌러도 참가는 확정되지 않아요. 그 화면에서 직접 확인해 주세요.';
+  static String get joinBeginner => RemainingSurface.trNow(
+        'mini_bot.copy.join_beginner',
+        '초보 1km 챌린지로 이동할까요? 참가비는 \${joinAmount}예요. '
+            '참가하기를 눌러도 참가는 확정되지 않아요. 그 화면에서 직접 확인해 주세요.',
+        {'joinAmount': joinAmount},
+      );
 
-  static const joinLobby = '챌린지 로비로 이동할까요? 로비에서 참가할 대회를 고를 수 있어요.';
+  static String get joinLobby => RemainingSurface.trNow(
+      'mini_bot.copy.join_lobby', '챌린지 로비로 이동할까요? 로비에서 참가할 대회를 고를 수 있어요.');
 
   static String prizeRace(CompanyTournamentConfig? config) {
     if (config == null || config.tiers.isEmpty) {
@@ -205,22 +221,37 @@ abstract final class MiniBotCopy {
         '이동만 하고, 참가는 확정하지 않아요.';
   }
 
-  static String get cpr => '상점의 기록 심폐소생권으로 이동할까요? $itemAmount예요. '
-      '구매하기를 눌러도 결제하지 않아요. 상점 화면에서 직접 구매해 주세요.';
+  static String get cpr => RemainingSurface.trNow(
+        'mini_bot.copy.cpr',
+        '상점의 기록 심폐소생권으로 이동할까요? \${itemAmount}예요. '
+            '구매하기를 눌러도 결제하지 않아요. 상점 화면에서 직접 구매해 주세요.',
+        {'itemAmount': itemAmount},
+      );
 
-  static String get safeGuard => '상점의 세이프 가드로 이동할까요? $itemAmount예요. '
-      '구매하기를 눌러도 결제하지 않아요. '
-      '상점의 세이프 가드 칸에서 직접 구매해 주세요.';
+  static String get safeGuard => RemainingSurface.trNow(
+        'mini_bot.copy.safe_guard',
+        '상점의 세이프 가드로 이동할까요? \${itemAmount}예요. '
+            '구매하기를 눌러도 결제하지 않아요. '
+            '상점의 세이프 가드 칸에서 직접 구매해 주세요.',
+        {'itemAmount': itemAmount},
+      );
 
-  static String get charge => '다이아 교환소로 이동할까요? $chargeAmount예요. '
-      '교환하기를 눌러도 여기서는 결제되지 않아요. 교환소에서 직접 바꿔 주세요.';
+  static String get charge => RemainingSurface.trNow(
+        'mini_bot.copy.charge',
+        '다이아 교환소로 이동할까요? \${chargeAmount}예요. '
+            '교환하기를 눌러도 여기서는 결제되지 않아요. 교환소에서 직접 바꿔 주세요.',
+        {'chargeAmount': chargeAmount},
+      );
 
   static String get sponsor => '러너 후원 화면으로 이동할까요? $sponsorAmount예요. '
       '후원하기를 눌러도 여기서는 후원이 끝나지 않아요. '
       '그 화면의 후원 버튼으로 직접 확정해 주세요.';
 
-  static String get brand => '브랜드 스폰서 챌린지는 아직 준비 중이에요. '
-      '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 챌린지 탭에서 알려 드릴게요.';
+  static String get brand => RemainingSurface.trNow(
+        'mini_bot.copy.brand',
+        '브랜드 스폰서 챌린지는 아직 준비 중이에요. '
+            '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 챌린지 탭에서 알려 드릴게요.',
+      );
 
   static String get subscription => '구독 관리 화면으로 이동할까요? $subscriptionAmount. '
       '이동만 하고, 구독이나 결제는 바꾸지 않아요.';
@@ -235,47 +266,86 @@ abstract final class MiniBotCopy {
   static String get coachPlus => 'Coach+ 안내를 열까요? 심박·상황에 맞춘 심층 코칭이에요. '
       '$coachPlusAmount. 이동만 하고, 여기서는 결제하지 않아요.';
 
-  static String get battlePass => '배틀런 패스 화면으로 이동할까요? $battlePassAmount. '
-      '여기서는 패스를 구매하지 않아요. 보상 화면만 열어요.';
+  static String get battlePass => RemainingSurface.trNow(
+        'mini_bot.copy.battle_pass',
+        '배틀런 패스 화면으로 이동할까요? \${battlePassAmount}. '
+            '여기서는 패스를 구매하지 않아요. 보상 화면만 열어요.',
+        {'battlePassAmount': battlePassAmount},
+      );
 
-  static const cancelled = '알겠어요. 이동은 취소했어요.';
+  static String get cancelled =>
+      RemainingSurface.trNow('mini_bot.copy.cancelled', '알겠어요. 이동은 취소했어요.');
 
-  static const unknown = '그 말은 아직 연결되지 않았어요. '
-      '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
-      '다이아 교환, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.';
+  static String get unknown => RemainingSurface.trNow(
+        'mini_bot.copy.unknown',
+        '그 말은 아직 연결되지 않았어요. '
+            '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
+            '다이아 교환, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.',
+      );
 
-  static const micDenied = '마이크 권한이 없어 음성을 듣지 못했어요. '
-      '한글로 입력하거나 아래 버튼을 눌러 주세요.';
+  static String get micDenied => RemainingSurface.trNow(
+        'mini_bot.copy.mic_denied',
+        '마이크 권한이 없어 음성을 듣지 못했어요. '
+            '한글로 입력하거나 아래 버튼을 눌러 주세요.',
+      );
 
-  static const sttUnavailable = '지금은 음성 인식을 쓸 수 없어요. '
-      '한글로 입력하거나 아래 버튼을 눌러 주세요.';
+  static String get sttUnavailable => RemainingSurface.trNow(
+        'mini_bot.copy.stt_unavailable',
+        '지금은 음성 인식을 쓸 수 없어요. '
+            '한글로 입력하거나 아래 버튼을 눌러 주세요.',
+      );
 
-  static const sttEmpty = '말씀을 알아듣지 못했어요. 다시 말하거나 한글로 입력해 주세요.';
+  static String get sttEmpty => RemainingSurface.trNow('mini_bot.copy.stt_empty',
+      '말씀을 알아듣지 못했어요. 다시 말하거나 한글로 입력해 주세요.');
 
-  static const listening = '듣는 중이에요. 말씀해 주세요.';
+  static String get listening =>
+      RemainingSurface.trNow('mini_bot.copy.listening', '듣는 중이에요. 말씀해 주세요.');
 
   static String executed(MiniBotDestination destination) {
     return switch (destination) {
-      MiniBotDestination.beginnerRoom =>
+      MiniBotDestination.beginnerRoom => RemainingSurface.trNow(
+        'mini_bot.copy.run_beginner',
         '초보 1km 챌린지로 이동할게요. 참가 확정은 그 화면에서 해 주세요. '
             '여기서는 참가되지 않아요.',
-      MiniBotDestination.challengeLobby => '챌린지 로비로 이동할게요.',
-      MiniBotDestination.cprStore => '상점 아이템 화면으로 이동할게요. '
+      ),
+      MiniBotDestination.challengeLobby => RemainingSurface.trNow(
+        'mini_bot.copy.run_lobby',
+        '챌린지 로비로 이동할게요.',
+      ),
+      MiniBotDestination.cprStore => RemainingSurface.trNow(
+        'mini_bot.copy.run_cpr',
+        '상점 아이템 화면으로 이동할게요. '
           '기록 심폐소생권을 눌러 구매해 주세요. 여기서는 결제되지 않아요.',
-      MiniBotDestination.safeGuardStore => '상점 아이템 화면으로 이동할게요. '
+      ),
+      MiniBotDestination.safeGuardStore => RemainingSurface.trNow(
+        'mini_bot.copy.run_safe_guard',
+        '상점 아이템 화면으로 이동할게요. '
           '세이프 가드를 눌러 구매해 주세요. 여기서는 결제되지 않아요.',
-      MiniBotDestination.donateStore => '상점 기부 펀딩으로 이동할게요. '
+      ),
+      MiniBotDestination.donateStore => RemainingSurface.trNow(
+        'mini_bot.copy.run_donate',
+        '상점 기부 펀딩으로 이동할게요. '
           '기부 버튼으로 직접 눌러 주세요. 여기서는 기부되지 않아요.',
-      MiniBotDestination.shareCharge => '다이아 교환소로 이동할게요. '
+      ),
+      MiniBotDestination.shareCharge => RemainingSurface.trNow(
+        'mini_bot.copy.run_charge',
+        '다이아 교환소로 이동할게요. '
           '교환은 그 화면에서 직접 해 주세요. 여기서는 결제되지 않아요.',
+      ),
       MiniBotDestination.personalSponsor => '러너 후원 화면으로 이동할게요. '
           '후원 버튼으로 직접 확정해 주세요. 여기서는 후원되지 않아요.',
-      MiniBotDestination.brandSponsor => '브랜드 스폰서 챌린지로 이동할게요. '
+      MiniBotDestination.brandSponsor => RemainingSurface.trNow(
+        'mini_bot.copy.run_brand',
+        '브랜드 스폰서 챌린지로 이동할게요. '
           '참가는 그 화면에서 직접 해 주세요. 여기서는 참가되지 않아요.',
+      ),
       MiniBotDestination.subscription => '구독 관리 화면으로 이동할게요. 여기서는 구독을 바꾸지 않아요.',
       MiniBotDestination.coachPlus => 'Coach+ 안내를 열게요. '
           '월간·연간은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
-      MiniBotDestination.battlePass => '배틀런 패스 화면으로 이동할게요. 여기서는 패스를 구매하지 않아요.',
+      MiniBotDestination.battlePass => RemainingSurface.trNow(
+        'mini_bot.copy.run_battle_pass',
+        '배틀런 패스 화면으로 이동할게요. 여기서는 패스를 구매하지 않아요.',
+      ),
       MiniBotDestination.none => cancelled,
     };
   }
@@ -288,7 +358,7 @@ abstract final class MiniBotInterpreter {
   }) {
     final text = raw.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     if (text.isEmpty) {
-      return const MiniBotRead(
+      return MiniBotRead(
         intent: MiniBotIntent.unknown,
         destination: MiniBotDestination.none,
         reply: MiniBotCopy.unknown,
@@ -381,7 +451,7 @@ abstract final class MiniBotInterpreter {
         text.contains('초보') || text.contains('1km') || text.contains('1 km');
     final hasLobby = text.contains('로비');
     if (hasLobby && !hasBeginner) {
-      return const MiniBotRead(
+      return MiniBotRead(
         intent: MiniBotIntent.joinChallenge,
         destination: MiniBotDestination.challengeLobby,
         reply: MiniBotCopy.joinLobby,
@@ -415,7 +485,7 @@ abstract final class MiniBotInterpreter {
     }
 
     if (hasIntro || text.contains('sharerun') || text.contains('쉐어런')) {
-      return const MiniBotRead(
+      return MiniBotRead(
         intent: MiniBotIntent.appIntro,
         destination: MiniBotDestination.none,
         reply: MiniBotCopy.intro,
@@ -423,7 +493,7 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    return const MiniBotRead(
+    return MiniBotRead(
       intent: MiniBotIntent.unknown,
       destination: MiniBotDestination.none,
       reply: MiniBotCopy.unknown,

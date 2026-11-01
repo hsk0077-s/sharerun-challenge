@@ -237,7 +237,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     _ownsVoice = widget.voice == null;
     _voice = widget.voice ?? FlutterTtsMiniBotVoice();
     _speech = widget.speech ?? MiniBotSpeechToTextHook();
-    _lines.add(const _MiniBotLine(text: MiniBotCopy.greeting, fromUser: false));
+    _lines.add(_MiniBotLine(text: MiniBotCopy.greeting, fromUser: false));
     unawaited(_voice.speak(MiniBotCopy.greeting));
     _faq = widget.faq;
     if (_faq == null) unawaited(_loadFaq());
@@ -394,7 +394,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
       _mood = SnailBotMood.smiling;
       _pending = null;
       _lines.add(
-        const _MiniBotLine(text: MiniBotCopy.cancelled, fromUser: false),
+        _MiniBotLine(text: MiniBotCopy.cancelled, fromUser: false),
       );
     });
     unawaited(_voice.speak(MiniBotCopy.cancelled));

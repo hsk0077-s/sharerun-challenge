@@ -138,7 +138,7 @@ class MyTournamentsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    p.tournament.title,
+                    p.tournament.displayTitle,
                     style: textTheme.titleSmall?.copyWith(
                       color: tokens.colors.ink,
                       fontWeight: FontWeight.w800,

@@ -10,6 +10,132 @@
     "answer": "You earn SHARE for the steps and runs you do, and for every verified 1 km the company plans to donate 100 KRW. The company pays the donation; you pay nothing."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Who are you?",
+    "aliases": [
+      "What are you, Snail?"
+    ],
+    "answer": "I’m Snail, your running buddy. Ask me out loud and I’ll help right away."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "How do I use the Snail bot?",
+    "aliases": [
+      "How do I ask Snail?"
+    ],
+    "answer": "Tap the snail button at the bottom right of the screen and you’ll see suggested questions for the current screen. You can also tap the microphone and ask out loud."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Can I move the snail button?",
+    "aliases": [
+      "The snail button blocks the screen"
+    ],
+    "answer": "You can drag the button to wherever you like."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Why is Snail not shown while I run?",
+    "aliases": [
+      "The snail button disappeared when I run"
+    ],
+    "answer": "While you run, the button is hidden so it doesn’t block the screen. Instead, I coach you with Snail’s voice."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Does Snail ever speak first?",
+    "aliases": [
+      "Snail suddenly talks"
+    ],
+    "answer": "I only speak first at moments worth celebrating. Otherwise I help only when you call me."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "What is the ShareRun slogan?",
+    "aliases": [
+      "What does “as long as the heart beats” mean?"
+    ],
+    "answer": "The main slogan is “As long as the heart beats, sharing keeps running.” On the donation screen we also use “One step becomes sharing.”"
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Do I have to pay to use this app?",
+    "aliases": [
+      "Is it free?"
+    ],
+    "answer": "Walking, running and joining donations cost nothing. Right now there is nothing to pay for inside the app."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Can I make money with this app?",
+    "aliases": [
+      "Do you pay me for walking?"
+    ],
+    "answer": "ShareRun is not an app for making money; it’s an app for joining in sharing while you walk and run. SHARE is an activity point that cannot be exchanged for cash."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "What’s the difference between SHARE, DIA and VALUE?",
+    "aliases": [
+      "Tell me the kinds of currency"
+    ],
+    "answer": "SHARE is an activity point you get by walking and running, and DIA is the in-app currency used in the shop. VALUE is an honor score earned from verified runs, so it can’t be exchanged or transferred."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "What tabs are at the bottom?",
+    "aliases": [
+      "Tell me the bottom menu"
+    ],
+    "answer": "There are five tabs at the bottom: Home, Shop, Challenges, Crew and My Page. You can start a run right from Home or Challenges."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "I want to see the intro again",
+    "aliases": [
+      "See the first explanation again"
+    ],
+    "answer": "You can watch it again anytime from “Replay intro” in Settings."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Is there a home screen widget?",
+    "aliases": [
+      "Can I put a widget on my desktop?"
+    ],
+    "answer": "If you like, you can add a home screen widget to see today’s steps and donation amount at a glance."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "What is SHARE?",
+    "aliases": [
+      "What does SHARE mean?"
+    ],
+    "answer": "SHARE is an activity point that builds up as you walk and run. You can’t buy it with money, and you can’t exchange it for cash."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "How many steps do I need to get SHARE?",
+    "aliases": [
+      "How much SHARE per step?"
+    ],
+    "answer": "You get 10 SHARE for every 100 steps."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "How much SHARE can I get per day?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Does SHARE disappear if I don’t pick it up?",
+    "aliases": [
+      "Does it vanish if I skip collecting?"
+    ],
+    "answer": "SHARE from steps can be picked up until midnight that day, within the daily limit of 600 SHARE. After midnight it starts fresh together with the new day’s steps, so be sure to pick it up on Home the same day."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Can I exchange SHARE for DIA?",
+    "aliases": [
+      "Exchange SHARE for DIA"
+    ],
+    "answer": "You can exchange 1,200 SHARE for 1 DIA, up to 20 DIA per week."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Can I exchange DIA for SHARE?",
+    "aliases": [
+      "Exchange DIA for SHARE"
+    ],
+    "answer": "No. Exchange only goes one way, from SHARE to DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Can I exchange SHARE for cash?",
+    "aliases": [
+      "SHARE withdrawal"
+    ],
+    "answer": "SHARE is an activity point that cannot be exchanged for cash or gift cards. You can exchange it for DIA or use it for event entry."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Can I buy SHARE with money?",
+    "aliases": [
+      "Top up SHARE"
+    ],
+    "answer": "No, SHARE is not for sale. You can only collect it by walking and running."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Is SHARE a coin?",
+    "aliases": [
+      "Will the token be listed?"
+    ],
+    "answer": "No, SHARE is not a coin or a token. It is an activity point used only inside the app."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "How much is SHARE worth in KRW?",
+    "aliases": [
+      "SHARE value"
+    ],
+    "answer": "SHARE is a point that isn’t priced in money, so we don’t show it as a KRW amount."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "What can I use SHARE for?",
+    "aliases": [
+      "Where to use SHARE"
+    ],
+    "answer": "You can exchange it for DIA, or use it for event and running room entry fees and crew deposits."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Do I get SHARE for watching ads?",
+    "aliases": [
+      "Is there an ad reward?"
+    ],
+    "answer": "No, there is no feature to get SHARE by watching ads. You can collect SHARE by walking and running, with the new-runner trial runs, and by inviting friends."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "What do I get for inviting a friend?",
+    "aliases": [
+      "Invite reward"
+    ],
+    "answer": "If a friend you invited finishes runs of 1 km or more on 3 different days within 14 days, you receive 30,000 SHARE. It arrives after a 7-day hold, and your friend also gets 10,000 SHARE for their first run and 40,000 SHARE for their third."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "What is DIA?",
+    "aliases": [
+      "What does DIA mean?"
+    ],
+    "answer": "DIA is the in-app currency you use in the shop to buy cosmetics and items. You can get it by exchanging SHARE or as event prizes."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "What’s the difference between bonus DIA and paid DIA?",
+    "aliases": [
+      "What is bonus DIA?"
+    ],
+    "answer": "Bonus DIA is DIA you received for free (SHARE exchange, event prizes, rewards, extras and so on). Paid DIA is DIA you bought yourself. When you spend, bonus DIA is used first."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "Which DIA is used first?",
+    "aliases": [
+      "DIA spending order"
+    ],
+    "answer": "Bonus DIA is used first, and paid DIA is used once that runs out. However, Battle Pass and Pass+ can only be bought with paid DIA."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Can I exchange bonus DIA for cash?",
+    "aliases": [
+      "Refund prize DIA"
+    ],
+    "answer": "Bonus DIA cannot be exchanged for cash, refunded or transferred. It’s DIA you use inside the app."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Can I get a refund for DIA?",
+    "aliases": [
+      "How to refund DIA"
+    ],
+    "answer": "We don’t sell DIA right now, so there is no paid DIA to refund. Once sales start, unused paid DIA can be refunded within 7 days of purchase."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "How do I buy DIA?",
+    "aliases": [
+      "Top up DIA"
+    ],
+    "answer": "We don’t sell DIA right now. We’ll let you know first when sales start. You can get DIA by exchanging SHARE or as event prizes."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "What DIA bundles are there?",
+    "aliases": [
+      "DIA price list"
+    ],
+    "answer": "We don’t sell DIA right now. Once sales start, we’ll show the bundle types and prices on the shop screen."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "What can I buy in the shop?",
+    "aliases": [
+      "Shop product list"
+    ],
+    "answer": "In the shop you can buy character parts and skins, and running items like the Record CPR Ticket and Safe Guard, with DIA. Donation funding you join with VALUE is also in the shop."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Are there random draws or boxes?",
+    "aliases": [
+      "Is there gacha?"
+    ],
+    "answer": "No, there are no random draws. Every item is sold only at a fixed DIA price."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "How do I get to the shop?",
+    "aliases": [
+      "Where is the shop?"
+    ],
+    "answer": "Tap the Shop tab at the bottom of the screen, or tap the My DIA card on the Home screen to go straight in."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Can I buy things with bonus DIA too?",
+    "aliases": [
+      "Buying cosmetics with prize DIA"
+    ],
+    "answer": "Yes, bonus DIA can be used in the shop too, and it’s used before paid DIA."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Is there a Battle Pass?",
+    "aliases": [
+      "Is there a season pass?"
+    ],
+    "answer": "You can view the Season 1 Battle Run Pass screen from Challenges and the Shop. Paid purchases aren’t open yet, so you can start with the free reward track."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Can I join events with DIA?",
+    "aliases": [
+      "Sign up for an event with DIA"
+    ],
+    "answer": "Events with prizes are joined only with free tickets or SHARE. You can’t join with paid DIA."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "I paid but my DIA didn’t arrive",
+    "aliases": [
+      "Missing DIA top-up"
+    ],
+    "answer": "DIA arrives after the payment is confirmed and recorded in the server’s transaction log. Check My transactions in the Security & Privacy Center after a moment, and if it still doesn’t appear, let us know through Contact in Settings."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "What is the Record CPR Ticket?",
+    "aliases": [
+      "Tell me the CPR ticket effect"
+    ],
+    "answer": "The Record CPR Ticket is an item that revives a broken daily streak within 72 hours, and you can use it up to twice a month for 12 DIA. Safe Guard is an item that protects a missed day in advance."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Can I gift DIA to a friend?",
+    "aliases": [
+      "Send DIA"
+    ],
+    "answer": "No, neither bonus DIA nor paid DIA can be gifted or transferred to anyone else. You can safely use it only on your own account."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Can I see my DIA spending history?",
+    "aliases": [
+      "DIA usage history"
+    ],
+    "answer": "Yes, you can see every record of DIA coming in and going out in My transactions in the Security & Privacy Center. These records are stored on the server and are not deleted."
   },
   {
     "id": "CO-01",
@@ -63,6 +432,42 @@
     "answer": "You can join the Beginner event for free the first two times. After that it is 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "How many events can I enter?",
+    "aliases": [
+      "Event entry limit"
+    ],
+    "answer": "You can join one tier event per week."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "I want to join an event",
+    "aliases": [
+      "I’ll sign up for an event"
+    ],
+    "answer": "I’ll open the event entry screen for you. When an entry fee is going to be charged, I’ll ask once more with a confirmation card."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "What are prizes paid in?",
+    "aliases": [
+      "Is the prize cash?"
+    ],
+    "answer": "Prizes are given as bonus DIA, and there are no cash prizes. Prizes come only from the company’s and sponsors’ budgets."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Do entry fees pool into prizes?",
+    "aliases": [
+      "Do prizes come from entry fees?"
+    ],
+    "answer": "No, entry fees are not used for prizes. Prizes come only from the company’s and sponsors’ budgets."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "How are prizes split by rank?",
@@ -71,6 +476,132 @@
       "Does 6th place get one?"
     ],
     "answer": "Ranks 1 to 5 get the set DIA in full, and ranks 6 to 10 get half. Everyone in the top 10 also gets an entry ticket for the next-level event."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "How do I get into the Final?",
+    "aliases": [
+      "Final entry requirements"
+    ],
+    "answer": "The Final is a championship event held once each season. If you finish 1st to 3rd in a Half event, you get a ticket that takes you straight into the Final."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Is a seat guaranteed if I have an entry ticket?",
+    "aliases": [
+      "Entry ticket seats"
+    ],
+    "answer": "Seats you can enter with an entry ticket are up to 20% of an event’s capacity, and up to 15% for the Final."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Do I really need a watch for events?",
+    "aliases": [
+      "Do I need a smartwatch to enter?"
+    ],
+    "answer": "Beginner and Intermediate events can be joined without a watch. Advanced, Half and the Final need heart-rate records, so you need a watch."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "How much is a running room entry fee?",
+    "aliases": [
+      "Room entry fee"
+    ],
+    "answer": "It’s 600 SHARE for 1 km, 900 for 2 km, 1,200 for 3 km, 1,800 for 5 km and 3,000 for 10 km. For distances over 10 km, it goes up by 600 SHARE for every extra 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "How do I create a running room?",
+    "aliases": [
+      "Create a room"
+    ],
+    "answer": "I’ll open the room creation screen. Pick a distance and the entry fee is set, and a confirmation card appears when SHARE is going to be charged."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "How is finishing a room counted?",
+    "aliases": [
+      "Room completion criteria"
+    ],
+    "answer": "You need a verified run of the room’s distance to count as finished. The server checks whether you finished."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "What do I need to create a crew?",
+    "aliases": [
+      "How much is the crew deposit?"
+    ],
+    "answer": "Creating a crew needs a 3,000 SHARE opening deposit. In the Crew tab you can pick a crew name and intro and create it right away."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Can I collect crew dues in the app?",
+    "aliases": [
+      "Crew dues management"
+    ],
+    "answer": "No, ShareRun does not build a feature for collecting crew dues on your behalf."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Can I enter events for free with VALUE?",
+    "aliases": [
+      "Pay the entry fee with VALUE"
+    ],
+    "answer": "No, event entry fees are paid with free entry tickets or SHARE, and VALUE is not deducted for entry fees. VALUE is an honor score that shows your effort and is also the score used for donation funding."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Do I pay tax on prizes?",
+    "aliases": [
+      "Prize tax"
+    ],
+    "answer": "Event rewards are paid as app-only bonus DIA, not as cash withdrawals. If there are prizes or giveaways that require withholding tax or tax-filing guidance under tax law, we will notify you in advance, before payout, in line with the relevant laws."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "When are event results out?",
+    "aliases": [
+      "When are rankings announced?"
+    ],
+    "answer": "After the event ends and run verification is complete, the final ranking and bonus DIA prizes are settled. You can check the result on the event details screen and in My transactions in the Security & Privacy Center."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Can I see live event rankings?",
+    "aliases": [
+      "See live rankings while running"
+    ],
+    "answer": "You can check the ranking of participants’ verified records on the leaderboard on the event details screen. While you run, we focus on your pace and heart-rate guidance for safety."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "How does running turn into a donation?",
+    "aliases": [
+      "How donations work"
+    ],
+    "answer": "For every verified 1 km you run, the company (operator) plans to donate 100 KRW from its own funds. The company’s monthly donation budget is up to 1,000,000 KRW. The app shows the contribution built up from your runs."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Do I have to pay to donate?",
+    "aliases": [
+      "Do I pay the donation?"
+    ],
+    "answer": "No, the running donation is planned to be made from the company’s (operator’s) funds. There is nothing for you to pay."
   },
   {
     "id": "DO-03",
@@ -86,6 +617,159 @@
     ]
   },
   {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "In whose name is the donation made?",
+    "aliases": [
+      "Who is the donor?"
+    ],
+    "answer": "We plan to donate 100 KRW per verified 1 km from the company’s (operator’s) funds (up to 10 km per person per day and 1,000,000 KRW per month overall). The recipient is under discussion, and we’ll tell you in the app once it’s decided. It is recorded in the app as your donation contribution. Donations you make yourself are sent in your own name."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Can I get a donation receipt?",
+    "aliases": [
+      "Year-end tax donation"
+    ],
+    "answer": "For donations you make yourself, you can get a receipt in your own name on donation pages such as Happybean or Gachi Gachi. The running donation is planned to be made from the company’s (operator’s) funds, so no receipt is issued."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "I want to donate on my own",
+    "aliases": [
+      "Donate with my own money"
+    ],
+    "answer": "I’ll link you to a donation page such as Happybean or Gachi Gachi. Your donation goes straight to the organization, and the receipt is issued in your own name."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Does the company take a fee from donations?",
+    "aliases": [
+      "Donation fee"
+    ],
+    "answer": "No, the company doesn’t take a single won from donations."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "What does “donation goal reached” mean?",
+    "aliases": [
+      "“Donation goal reached” showed up"
+    ],
+    "answer": "It means the company’s donation budget for that month (1,000,000 KRW) has been fully used. Your run records are still saved, and contributions build up again when the new month starts."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Does walking alone count as a donation?",
+    "aliases": [
+      "Do steps count toward donations?"
+    ],
+    "answer": "Donations are calculated from the distance of runs that pass verification. Steps build up SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "Which organization receives the donation?",
+    "aliases": [
+      "Where does the donation go?"
+    ],
+    "answer": "The recipient is currently under discussion. Once it’s decided, we’ll tell you in the app, and we plan to publish the transfer records and settlement results in the app’s donation status and the Security & Privacy Center."
+  },
+  {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "How do I know donations are used properly?",
+    "aliases": [
+      "Donation transparency"
+    ],
+    "answer": "We publish the donation settlement records. Check them together with your own contribution in the Security & Privacy Center."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "What is a corporate donation campaign?",
+    "aliases": [
+      "Sponsor campaign"
+    ],
+    "answer": "It’s a campaign where a company donates 100 KRW per 1 km within a budget it sets. You can see the remaining budget in real time, and it ends when the budget is used up."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "I finished but “donation complete” doesn’t show",
+    "aliases": [
+      "Donation not reflected"
+    ],
+    "answer": "The donation-complete mark only appears after it is recorded in the server’s transaction log. Runs that don’t pass verification are not included in the donation."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Is there a donation race?",
+    "aliases": [
+      "Virtual donation race"
+    ],
+    "answer": "For every verified run, the company (operator) plans to donate 100 KRW per km from its own funds (up to 10 km per person per day and 1,000,000 KRW per month overall). Whenever a donation campaign with a company opens, you can also join it from the Challenges tab."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "How do I get a grade?",
+    "aliases": [
+      "How to get a grade"
+    ],
+    "answer": "Just complete verified runs of 1 km or more on three different days. After the third run, your grade is set from the median pace of the three records."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Are the 5 grade-evaluation runs gone?",
+    "aliases": [
+      "Five evaluations"
+    ],
+    "answer": "Yes, the 5 grade evaluations are gone and have been merged into three new-runner trial runs."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Can I still get a grade after 14 days?",
+    "aliases": [
+      "I started late, can I still get a grade?"
+    ],
+    "answer": "Yes, you can get a grade anytime with three verified runs. However, the trial-reward SHARE is only given within 14 days of signing up."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "How do I move up in grade?",
+    "aliases": [
+      "Promotion conditions"
+    ],
+    "answer": "It goes up automatically based on your run records of the last 28 days. You don’t need to take a separate test."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Can my grade go down?",
+    "aliases": [
+      "Do I get demoted?"
+    ],
+    "answer": "No, a grade you’ve earned never goes down."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "How do existing users get a grade?",
+    "aliases": [
+      "Grade for existing users"
+    ],
+    "answer": "If you already have three or more verified runs, your grade is set from those records."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Tell me my grade",
@@ -97,6 +781,630 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Why does Snail look glum?",
+    "aliases": [
+      "Snail looks sad"
+    ],
+    "answer": "The slightly disappointed look means you don’t have a rank yet. Once you get a grade and your tier goes up, the expression gradually brightens."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Can I still use Snail after getting a grade?",
+    "aliases": [
+      "Pick Snail again"
+    ],
+    "answer": "Yes, Snail is a free default character, so you can pick it again anytime."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Are there no other animal characters?",
+    "aliases": [
+      "Tell me the animal character types"
+    ],
+    "answer": "Besides the default Snail, there are animal characters across five speed tiers: Turtle, Beagle, Wolf, Zebra and Cheetah. When you get a grade from verified runs, you meet the animal character that fits your pace."
+  },
+  {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Can I decorate my character?",
+    "aliases": [
+      "Cosmetics"
+    ],
+    "answer": "Yes, you can decorate with parts and skins. They’re sold only at the fixed DIA price, and there are no random draws."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Can anyone wear tier skins?",
+    "aliases": [
+      "Tier skin conditions"
+    ],
+    "answer": "You can wear a tier skin only after reaching that tier."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Does buying cosmetics improve my records or rewards?",
+    "aliases": [
+      "Skin stats"
+    ],
+    "answer": "No, cosmetics only change appearance and have no effect on your records or rewards."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "What happens to the animal characters I bought before?",
+    "aliases": [
+      "What about characters I bought?"
+    ],
+    "answer": "Animal characters are no longer sold separately in the shop; they unlock automatically from Turtle to Cheetah according to your running grade. Cosmetic parts and skins you got earlier stay in your inventory."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "What is VALUE?",
+    "aliases": [
+      "What does VALUE mean?"
+    ],
+    "answer": "VALUE is an honor score built up only through effort. It’s used for voting, the Hall of Fame, effort-only cosmetics, event eligibility and crew benefits."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "How do I collect VALUE?",
+    "aliases": [
+      "How to get VALUE"
+    ],
+    "answer": "You get 10 VALUE for every verified 1 km. It builds up to 5 km, or 50 VALUE, per day."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Can I exchange VALUE for DIA or cash?",
+    "aliases": [
+      "Convert VALUE"
+    ],
+    "answer": "No, VALUE can’t be exchanged or handed over for anything. It’s an honor score that shows your effort."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "How much VALUE do I have?",
+    "aliases": [
+      "VALUE balance"
+    ],
+    "answer": "You currently have {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "What is the Hall of Fame?",
+    "aliases": [
+      "Tell me the Hall of Fame criteria"
+    ],
+    "answer": "The Hall of Fame is an honor ranking that celebrates runners who steadily build up VALUE and donation contributions through verified runs. You can check it on the Challenges and Crew screens."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Does Snail’s picture change?",
+    "aliases": [
+      "Does Snail’s design change?"
+    ],
+    "answer": "The Snail bot changes among four expressions to match the conversation: a smiling face, a listening face, a joyful face and a disappointed face."
+  },
+  {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "What’s in the Security & Privacy Center?",
+    "aliases": [
+      "Security Center features"
+    ],
+    "answer": "It has features such as the list of logged-in devices, remote logout, new-login alerts, My transactions and privacy settings."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "Is ShareRun safe?",
+    "aliases": [
+      "Can it be hacked?"
+    ],
+    "answer": "We have several layers of protection, such as login device management, new-login alerts and fingerprint confirmation for payments. If you notice anything strange, check right away in the Security & Privacy Center."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "I want to log out a device I don’t recognize",
+    "aliases": [
+      "Remote logout"
+    ],
+    "answer": "Pick that device from the list of logged-in devices and you can log it out remotely."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Will I be told when I log in on a new device?",
+    "aliases": [
+      "New login alert"
+    ],
+    "answer": "Yes, we send you a notification when you log in on a new device."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "I think my account was hacked",
+    "aliases": [
+      "Someone used my account"
+    ],
+    "answer": "First look at the list of logged-in devices in the Security & Privacy Center and log out any device you don’t recognize right away. Also check whether there are any strange records in your transactions."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Why does it ask for my fingerprint when paying for DIA?",
+    "aliases": [
+      "Payment fingerprint check"
+    ],
+    "answer": "When DIA payments open, we confirm once more with your fingerprint at payment time to prevent payments you didn’t want."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Can Snail spend my DIA on its own?",
+    "aliases": [
+      "Does the bot pay?"
+    ],
+    "answer": "No, anything that moves currency, like DIA or donations, goes ahead only after a confirmation card and a fingerprint check."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Can others see my running route?",
+    "aliases": [
+      "Record visibility"
+    ],
+    "answer": "The default visibility of your records is “Only me.” Change the visibility only when you want to."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Can I hide the route near my home?",
+    "aliases": [
+      "Hide my home location"
+    ],
+    "answer": "Yes, there is a feature that hides the route near your home. Set it in the Security & Privacy Center."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Is my data used for AI training?",
+    "aliases": [
+      "AI learning consent"
+    ],
+    "answer": "You can turn on or off yourself whether it’s used for AI training. Check the setting in the Security & Privacy Center."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Can I use it on a rooted phone?",
+    "aliases": [
+      "Jailbroken phone"
+    ],
+    "answer": "On a tampered phone, use may be restricted to keep records fair."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "What if my earnings are limited or I’m penalized?",
+    "aliases": [
+      "Appeal a penalty"
+    ],
+    "answer": "We publish the daily earning limit, penalty stages and how to appeal as our fair earning policy. If you feel it was unfair, please file an appeal."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Why is location data needed?",
+    "aliases": [
+      "Why is location permission needed?"
+    ],
+    "answer": "We use location data to record and verify your running distance and route. By default, only you can see your route."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "I want to delete my personal data",
+    "aliases": [
+      "Delete personal data"
+    ],
+    "answer": "Your personal data is deleted when you leave the service. Activity records are erased within 30 days, and only transaction records that must be kept by law are kept for the set period. You can change visibility and AI-learning settings right away in the Security & Privacy Center."
+  },
+  {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Will my records disappear if I change phones?",
+    "aliases": [
+      "Changing devices"
+    ],
+    "answer": "No, all records and currency are stored on the server. Log in with the same account on the new phone and everything is there as it was."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "The numbers differ between phones",
+    "aliases": [
+      "SHARE differs per device"
+    ],
+    "answer": "The values follow the server’s records, so they should be the same on any phone. Try closing the app and opening it again."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "My records disappeared",
+    "aliases": [
+      "My run records are gone"
+    ],
+    "answer": "Records are stored in the server’s permanent transaction log. First check that you logged in with the same account."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "What ways can I log in?",
+    "aliases": [
+      "Login methods"
+    ],
+    "answer": "You can log in with a Google, Apple, Kakao or Naver account. If they’re the same person, you can combine them into one account through Linked logins in Settings, after checking the nickname and balance of the target account."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "How do I leave the service (delete my account)?",
+    "aliases": [
+      "Delete account"
+    ],
+    "answer": "Tap “Delete account” in Settings to leave. Once you do, your login account is deleted right away and any remaining SHARE, DIA and VALUE are gone. Activity records such as runs are erased within 30 days, and only payment and transaction records that must be kept by law are kept for the set period (5 years). Be sure to check your remaining DIA and records before leaving."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Can I make two accounts?",
+    "aliases": [
+      "Can I use a second account?"
+    ],
+    "answer": "For fair earning and events, only one account per person is allowed. Even if you use several social logins, please link them into one account in Linked logins in Settings."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Where can I see my invite code?",
+    "aliases": [
+      "My invite code"
+    ],
+    "answer": "I’ll open the invite code screen. Your invite code is shared separately from the brag card."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "When does the invite reward arrive?",
+    "aliases": [
+      "When do I get invite SHARE?"
+    ],
+    "answer": "The 30,000 SHARE invite reward arrives after the 7-day hold period."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "I want to turn off the Snail bot",
+    "aliases": [
+      "Turn off Snail"
+    ],
+    "answer": "You can turn off the Snail bot in Settings. To turn it back on, use the same place."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Where is customer support?",
+    "aliases": [
+      "Where do I contact you?"
+    ],
+    "answer": "You can leave an inquiry anytime from Contact on the Settings screen or from the sanction appeal in the Security & Privacy Center. For quick questions, you can also just ask me directly."
+  },
+  {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "I want to start a run",
+    "aliases": [
+      "Start running"
+    ],
+    "answer": "I’ll open the run screen. While you run, I’ll cheer you on with my voice."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Are free runs recorded too?",
+    "aliases": [
+      "If I just run, is it saved?"
+    ],
+    "answer": "Yes, free-run records, streaks and badges are always saved. VALUE rewards are given only for runs that pass verification."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "What is a verified run?",
+    "aliases": [
+      "What is verification?"
+    ],
+    "answer": "The principle is that records are always kept, and rewards go only to verified runs. A run is verified when you run 1 km or more and pass the set criteria."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "What are the verification criteria?",
+    "aliases": [
+      "Cadence criteria"
+    ],
+    "answer": "Run at least 1 km at between 120 and 210 steps per minute. In a room, you need to run the room’s distance."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Why did verification fail?",
+    "aliases": [
+      "Verification failure reason"
+    ],
+    "answer": "Verification may fail if the distance is shorter than required, or if your step speed or GPS speed is outside the criteria. The record itself is still saved."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Can I be verified without a watch?",
+    "aliases": [
+      "Do I really need a watch?"
+    ],
+    "answer": "Yes. Without a watch, we check using your stride and GPS speed. A watch is needed only for Advanced, Half and Final events."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Is there a watch-only app?",
+    "aliases": [
+      "Galaxy Watch app"
+    ],
+    "answer": "On Wear OS watches such as the Galaxy Watch, we support a standalone watch app that connects with a 6-digit pairing code. An app for Apple Watch is also ready, and Garmin, Mi Band, Amazfit, Fitbit, Samsung Health and COROS can be used through health-app sync and real-time Bluetooth heart-rate sending."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Do I get more SHARE when running with a watch?",
+    "aliases": [
+      "Watch bonus"
+    ],
+    "answer": "No, running with a watch does not give extra SHARE."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Does recording stop if I turn off the screen?",
+    "aliases": [
+      "Can I turn off the screen?"
+    ],
+    "answer": "No, recording keeps going even with the screen off. While you run, a “Recording” indicator stays in the notification area."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "My run recording got cut off midway",
+    "aliases": [
+      "Recording stopped"
+    ],
+    "answer": "It can be cut off because of location, notification or battery settings. Check them all at once in “Run recording settings check” on My Page."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS is not locking well",
+    "aliases": [
+      "My location looks wrong"
+    ],
+    "answer": "First check that location permission is on. In “Run recording settings check” you can go through the needed settings one by one."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Why does it ask for permissions before my first run?",
+    "aliases": [
+      "Why change the battery settings?"
+    ],
+    "answer": "We guide you through the location, notification and battery settings in advance so that recording isn’t cut off even with the screen off."
+  },
+  {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "How much VALUE do I get per day from free runs?",
+    "aliases": [
+      "Daily VALUE limit"
+    ],
+    "answer": "You can get 50 VALUE for up to 5 km a day. Even if you run farther, all of your records are saved."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "How do the new-runner trial runs work?",
+    "aliases": [
+      "Trial runs"
+    ],
+    "answer": "Within 14 days of signing up, complete a verified run of 1 km or more on three different days. Only one run per day counts."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "How much is the trial reward?",
+    "aliases": [
+      "Trial SHARE"
+    ],
+    "answer": "You get 10,000 SHARE after your first run, and another 40,000 SHARE after finishing all three, for a total of 50,000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "If I run twice a day, do both count as trial runs?",
+    "aliases": [
+      "Do all three in one day"
+    ],
+    "answer": "No, only one trial run per day counts. Please run again on a different day."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "I finished but SHARE or the completion mark didn’t show",
+    "aliases": [
+      "The reward arrives late"
+    ],
+    "answer": "The completion mark shows only after it is saved in the server’s transaction log. Please wait a moment and check again."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Where did the stamp tour go?",
+    "aliases": [
+      "I can’t see the stamps"
+    ],
+    "answer": "The stamp tour is hidden for now. The 1 km walk has been merged into the pedometer and verified-run missions, and landmark stamps will come back later as an event."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Can I make a brag card?",
+    "aliases": [
+      "Make a record-sharing card"
+    ],
+    "answer": "Yes, when you finish a run you can make a finish brag card with your time, distance, pace and a donation message, and share it right away on KakaoTalk, Instagram, X or by text message."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Does the brag card include my invite code?",
+    "aliases": [
+      "Invite code on the share card"
+    ],
+    "answer": "No, we don’t put the invite code on the brag card. You can share your invite code separately."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "My step count isn’t going up",
+    "aliases": [
+      "The pedometer stopped"
+    ],
+    "answer": "Please check that your phone’s activity permission is on, and try reopening the app."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Did my streak or badges disappear?",
+    "aliases": [
+      "My badge is gone"
+    ],
+    "answer": "Records, streaks and badges are always saved, regardless of verification. Please check that you logged in with the same account."
+  },
+  {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "What is Coach+?",
+    "aliases": [
+      "Explain Coach+"
+    ],
+    "answer": "Coach+ is a subscription service that gives you in-depth voice coaching tuned to your real-time heart rate and pace while you run. It’s getting ready for sale, so for now you can use the free coaching."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "How much is Coach+?",
+    "aliases": [
+      "Coach+ pricing"
+    ],
+    "answer": "Coach+ is being prepared at 6,900 KRW per month and 59,000 KRW per year, with a 7-day free trial. Payments are not open yet, so you won’t be charged."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Is there a Coach+ free trial?",
+    "aliases": [
+      "Trial version"
+    ],
+    "answer": "Yes, there is a 7-day free trial."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "How do I cancel Coach+?",
+    "aliases": [
+      "Cancel subscription"
+    ],
+    "answer": "You can easily cancel inside the app. I’ll open the subscription management screen for you."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Can I buy Coach+ now?",
+    "aliases": [
+      "When does Coach+ come out?"
+    ],
+    "answer": "We don’t sell Coach+ right now. We’ll let you know first when it’s ready."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "How is it different from free coaching?",
+    "aliases": [
+      "Coach+ differences"
+    ],
+    "answer": "Free coaching gives basic guidance at the start, the finish and by distance, and Coach+ adds in-depth coaching tuned to your real-time heart-rate zones and pace changes."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Does it coach on hills or event rankings too?",
+    "aliases": [
+      "Hill coaching"
+    ],
+    "answer": "Hill coaching and event-ranking coaching are still being prepared. We’ll let you know first when they’re ready."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "How does Snail’s voice work?",
+    "aliases": [
+      "Coaching voice"
+    ],
+    "answer": "We play cheers and numbers in a pre-made Snail voice. When no prepared voice is available, we use your phone’s default voice instead."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "I want to turn off the coaching voice",
+    "aliases": [
+      "Mute"
+    ],
+    "answer": "Tap once while you run and it’s muted right away."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Is Coach+ charged automatically?",
+    "aliases": [
+      "Does the subscription auto-renew?"
+    ],
+    "answer": "Coach+ isn’t on sale yet, so nothing is charged automatically. If you subscribe after the official launch, it renews automatically each chosen period using your store payment method, and you can cancel anytime in the store’s subscription management."
   },
   {
     "id": "SYS-FALLBACK",

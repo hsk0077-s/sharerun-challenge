@@ -10,6 +10,132 @@
     "answer": "Kamu mengumpulkan SHARE dari langkah dan lari, dan untuk setiap 1 km terverifikasi perusahaan berencana mendonasikan 100 KRW. Donasi dibayar perusahaan; kamu tidak membayar apa pun."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Kamu siapa?",
+    "aliases": [
+      "Siput, kamu apa?"
+    ],
+    "answer": "Aku Siput, teman larimu. Tanyakan saja dengan suara dan aku langsung bantu."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Bagaimana cara memakai bot Siput?",
+    "aliases": [
+      "Bagaimana bertanya pada Siput?"
+    ],
+    "answer": "Ketuk tombol siput di kanan bawah layar untuk melihat pertanyaan yang disarankan sesuai layar saat ini. Kamu juga bisa mengetuk mikrofon dan bertanya dengan suara."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Bisakah tombol siput dipindahkan?",
+    "aliases": [
+      "Tombol siput menutupi layar"
+    ],
+    "answer": "Kamu bisa menyeret tombol ke mana saja."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Mengapa Siput tidak terlihat saat berlari?",
+    "aliases": [
+      "Tombol siput hilang saat berlari"
+    ],
+    "answer": "Saat berlari, tombol disembunyikan agar tidak menutupi layar. Sebagai gantinya, aku melatihmu dengan suara Siput."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Apakah Siput kadang bicara lebih dulu?",
+    "aliases": [
+      "Siput tiba-tiba bicara"
+    ],
+    "answer": "Aku hanya bicara lebih dulu pada momen yang pantas dirayakan. Selain itu aku membantu hanya saat kamu memanggil."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Apa slogan ShareRun?",
+    "aliases": [
+      "Apa arti “selama jantung berdetak”?"
+    ],
+    "answer": "Slogan utamanya adalah “Selama jantung berdetak, berbagi pun terus berlari.” Di layar donasi kami juga memakai “Satu langkah menjadi berbagi.”"
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Apakah harus membayar untuk memakai aplikasi ini?",
+    "aliases": [
+      "Gratis?"
+    ],
+    "answer": "Berjalan, berlari, dan ikut donasi tidak dipungut biaya. Saat ini tidak ada yang perlu dibayar di dalam aplikasi."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Bisakah menghasilkan uang dari aplikasi ini?",
+    "aliases": [
+      "Apakah berjalan dibayar?"
+    ],
+    "answer": "ShareRun bukan aplikasi untuk mencari uang, melainkan untuk ikut berbagi sambil berjalan dan berlari. SHARE adalah poin aktivitas yang tidak dapat ditukar dengan uang tunai."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "Apa beda SHARE, DIA, dan VALUE?",
+    "aliases": [
+      "Beri tahu jenis mata uangnya"
+    ],
+    "answer": "SHARE adalah poin aktivitas dari berjalan dan berlari, DIA adalah mata uang aplikasi yang dipakai di toko. VALUE adalah skor kehormatan dari lari terverifikasi sehingga tidak bisa ditukar atau dipindahkan."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Ada tab apa di bagian bawah?",
+    "aliases": [
+      "Beri tahu menu bawah"
+    ],
+    "answer": "Ada lima tab di bawah: Beranda, Toko, Tantangan, Crew, dan Profil. Kamu bisa langsung mulai berlari dari Beranda atau Tantangan."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Aku ingin melihat pengenalan lagi",
+    "aliases": [
+      "Lihat penjelasan pertama lagi"
+    ],
+    "answer": "Kamu bisa menontonnya lagi kapan saja lewat “Lihat pengenalan lagi” di Pengaturan."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Apakah ada widget layar utama?",
+    "aliases": [
+      "Bisakah menaruh widget di layar utama?"
+    ],
+    "answer": "Jika mau, kamu bisa menambahkan widget ke layar utama untuk melihat langkah hari ini dan jumlah donasi sekilas."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "Apa itu SHARE?",
+    "aliases": [
+      "Apa arti SHARE?"
+    ],
+    "answer": "SHARE adalah poin aktivitas yang terkumpul dari berjalan dan berlari. Tidak bisa dibeli dengan uang dan tidak bisa ditukar dengan uang tunai."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Berapa langkah untuk mendapat SHARE?",
+    "aliases": [
+      "Berapa SHARE per langkah?"
+    ],
+    "answer": "Kamu mendapat 10 SHARE untuk setiap 100 langkah."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Berapa SHARE yang bisa didapat per hari?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Apakah SHARE hilang jika tidak diambil?",
+    "aliases": [
+      "Apakah hilang jika tidak diambil?"
+    ],
+    "answer": "SHARE dari langkah bisa diambil sampai tengah malam hari itu, dalam batas harian 600 SHARE. Lewat tengah malam akan mulai baru bersama langkah hari baru, jadi pastikan diambil di Beranda pada hari yang sama."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Bisakah menukar SHARE dengan DIA?",
+    "aliases": [
+      "Tukar SHARE ke DIA"
+    ],
+    "answer": "Kamu bisa menukar 1.200 SHARE dengan 1 DIA, maksimal 20 DIA per minggu."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Bisakah menukar DIA dengan SHARE?",
+    "aliases": [
+      "Tukar DIA ke SHARE"
+    ],
+    "answer": "Tidak. Penukaran hanya satu arah, dari SHARE ke DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Bisakah menukar SHARE dengan uang tunai?",
+    "aliases": [
+      "Tarik SHARE"
+    ],
+    "answer": "SHARE adalah poin aktivitas yang tidak dapat ditukar dengan uang tunai atau voucher. Kamu bisa menukarnya dengan DIA atau memakainya untuk mendaftar event."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Bisakah membeli SHARE dengan uang?",
+    "aliases": [
+      "Isi ulang SHARE"
+    ],
+    "answer": "Tidak, SHARE tidak dijual. Kamu hanya bisa mengumpulkannya dengan berjalan dan berlari."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Apakah SHARE itu koin?",
+    "aliases": [
+      "Apakah token akan dicatatkan?"
+    ],
+    "answer": "Bukan, SHARE bukan koin atau token. Ini poin aktivitas yang hanya dipakai di dalam aplikasi."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "Berapa nilai SHARE dalam KRW?",
+    "aliases": [
+      "Nilai SHARE"
+    ],
+    "answer": "SHARE adalah poin yang tidak dinilai dengan uang, jadi kami tidak menampilkannya dalam jumlah KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "SHARE bisa dipakai untuk apa?",
+    "aliases": [
+      "Kegunaan SHARE"
+    ],
+    "answer": "Kamu bisa menukarnya dengan DIA, atau memakainya untuk biaya pendaftaran event dan ruang lari serta deposit crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Apakah menonton iklan memberi SHARE?",
+    "aliases": [
+      "Apakah ada hadiah iklan?"
+    ],
+    "answer": "Tidak, tidak ada fitur mendapat SHARE dengan menonton iklan. Kamu bisa mengumpulkan SHARE dengan berjalan dan berlari, lari percobaan untuk pengguna baru, dan mengundang teman."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Apa yang kudapat jika mengundang teman?",
+    "aliases": [
+      "Hadiah undangan"
+    ],
+    "answer": "Jika temanmu yang diundang menyelesaikan lari 1 km atau lebih pada 3 hari berbeda dalam 14 hari, kamu menerima 30.000 SHARE. Diterima setelah masa tahan 7 hari, dan temanmu juga mendapat 10.000 SHARE di lari pertama dan 40.000 SHARE di lari ketiga."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "Apa itu DIA?",
+    "aliases": [
+      "Apa arti DIA?"
+    ],
+    "answer": "DIA adalah mata uang aplikasi yang dipakai di toko untuk membeli kostum dan item. Didapat dengan menukar SHARE atau sebagai hadiah event."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "Apa beda DIA bonus dan DIA berbayar?",
+    "aliases": [
+      "Apa itu DIA bonus?"
+    ],
+    "answer": "DIA bonus adalah DIA yang diterima gratis (penukaran SHARE, hadiah event, imbalan, bonus tambahan, dll.). DIA berbayar adalah DIA yang kamu beli sendiri. Saat dipakai, DIA bonus dipotong lebih dulu."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "DIA mana yang dipakai dulu?",
+    "aliases": [
+      "Urutan pemakaian DIA"
+    ],
+    "answer": "DIA bonus dipakai lebih dulu, dan jika habis baru DIA berbayar dipakai. Namun Battle Pass dan Pass+ hanya bisa dibeli dengan DIA berbayar."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Bisakah menukar DIA bonus dengan uang tunai?",
+    "aliases": [
+      "Pengembalian DIA hadiah"
+    ],
+    "answer": "DIA bonus tidak dapat ditukar dengan uang tunai, dikembalikan dananya, atau dipindahkan. Ini adalah DIA untuk dipakai di dalam aplikasi."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Apakah DIA bisa dikembalikan dananya?",
+    "aliases": [
+      "Cara mengembalikan dana DIA"
+    ],
+    "answer": "Saat ini kami tidak menjual DIA, jadi tidak ada DIA berbayar yang bisa dikembalikan. Setelah penjualan dimulai, DIA berbayar yang belum dipakai dapat dikembalikan dananya dalam 7 hari sejak pembelian."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Bagaimana cara membeli DIA?",
+    "aliases": [
+      "Isi ulang DIA"
+    ],
+    "answer": "Saat ini kami tidak menjual DIA. Kami akan memberi tahu lebih dulu saat penjualan dimulai. Kamu bisa mendapat DIA dengan menukar SHARE atau sebagai hadiah event."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Ada paket DIA apa saja?",
+    "aliases": [
+      "Daftar harga DIA"
+    ],
+    "answer": "Saat ini kami tidak menjual DIA. Setelah penjualan dimulai, jenis paket dan harganya akan ditampilkan di layar toko."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Apa yang bisa dibeli di toko?",
+    "aliases": [
+      "Daftar produk toko"
+    ],
+    "answer": "Di toko kamu bisa membeli bagian dan skin untuk dekorasi karakter, serta item lari seperti tiket CPR rekor dan Safe Guard dengan DIA. Penggalangan donasi yang diikuti dengan VALUE juga ada di toko."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Apakah ada undian acak atau kotak?",
+    "aliases": [
+      "Apakah ada gacha?"
+    ],
+    "answer": "Tidak ada undian acak. Semua produk hanya dijual dengan harga DIA yang tetap."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Bagaimana masuk ke toko?",
+    "aliases": [
+      "Di mana tokonya?"
+    ],
+    "answer": "Ketuk tab Toko di bagian bawah layar, atau ketuk kartu DIA Saya di Beranda untuk langsung masuk."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Bisakah membeli dengan DIA bonus juga?",
+    "aliases": [
+      "Beli kostum dengan DIA hadiah"
+    ],
+    "answer": "Bisa, DIA bonus juga dapat dipakai di toko dan dipakai sebelum DIA berbayar."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Apakah ada Battle Pass?",
+    "aliases": [
+      "Apakah ada season pass?"
+    ],
+    "answer": "Kamu bisa melihat layar Battle Run Pass Musim 1 dari Tantangan dan Toko. Pembelian berbayar belum dibuka, jadi kamu bisa mulai dari jalur hadiah gratis."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Bisakah ikut event dengan DIA?",
+    "aliases": [
+      "Daftar event dengan DIA"
+    ],
+    "answer": "Event berhadiah hanya bisa diikuti dengan tiket gratis atau SHARE. Tidak bisa dengan DIA berbayar."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "Saya sudah bayar tapi DIA belum masuk",
+    "aliases": [
+      "Isi ulang DIA belum masuk"
+    ],
+    "answer": "DIA masuk setelah pembayaran dikonfirmasi dan tercatat di riwayat transaksi server. Periksa Riwayat transaksi saya di Pusat keamanan & privasi setelah beberapa saat, dan jika masih belum muncul, beri tahu kami lewat Hubungi kami di Pengaturan."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Apa itu tiket CPR rekor?",
+    "aliases": [
+      "Jelaskan efek tiket CPR"
+    ],
+    "answer": "Tiket CPR rekor adalah item yang memulihkan streak yang terputus dalam 72 jam, dan bisa dipakai maksimal dua kali sebulan dengan 12 DIA. Safe Guard adalah item yang melindungi hari yang terlewat sebelumnya."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Bisakah menghadiahkan DIA ke teman?",
+    "aliases": [
+      "Kirim DIA"
+    ],
+    "answer": "Tidak, baik DIA bonus maupun DIA berbayar tidak dapat dihadiahkan atau dipindahkan ke orang lain. Kamu hanya bisa memakainya dengan aman di akunmu sendiri."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Bisakah melihat riwayat pemakaian DIA?",
+    "aliases": [
+      "Riwayat pemakaian DIA"
+    ],
+    "answer": "Ya, kamu bisa melihat semua catatan DIA masuk dan keluar di Riwayat transaksi saya di Pusat keamanan & privasi. Catatan ini disimpan di server dan tidak dihapus."
   },
   {
     "id": "CO-01",
@@ -63,6 +432,42 @@
     "answer": "Event Pemula bisa diikuti gratis dua kali pertama. Setelah itu 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "Berapa kali bisa ikut event?",
+    "aliases": [
+      "Batas ikut event"
+    ],
+    "answer": "Kamu bisa ikut satu event per tingkat setiap minggu."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Aku ingin ikut event",
+    "aliases": [
+      "Aku akan mendaftar event"
+    ],
+    "answer": "Aku akan membuka layar pendaftaran event. Saat biaya pendaftaran akan dipotong, aku akan bertanya sekali lagi dengan kartu konfirmasi."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Hadiah dibayar dalam bentuk apa?",
+    "aliases": [
+      "Apakah hadiahnya uang tunai?"
+    ],
+    "answer": "Hadiah diberikan dalam bentuk DIA bonus, dan tidak ada hadiah uang tunai. Hadiah hanya berasal dari anggaran perusahaan dan sponsor."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Apakah biaya pendaftaran dikumpulkan menjadi hadiah?",
+    "aliases": [
+      "Apakah hadiah berasal dari biaya pendaftaran?"
+    ],
+    "answer": "Tidak, biaya pendaftaran tidak dipakai untuk hadiah. Hadiah hanya berasal dari anggaran perusahaan dan sponsor."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Bagaimana pembagian hadiah per peringkat?",
@@ -71,6 +476,132 @@
       "Peringkat 6 dapat juga?"
     ],
     "answer": "Peringkat 1 sampai 5 menerima DIA yang ditetapkan penuh, peringkat 6 sampai 10 menerima setengah. Semua yang masuk 10 besar juga mendapat tiket untuk event level berikutnya."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Bagaimana masuk Final?",
+    "aliases": [
+      "Syarat masuk Final"
+    ],
+    "answer": "Final adalah event kejuaraan yang diadakan sekali setiap musim. Jika kamu finis peringkat 1 sampai 3 di event Half, kamu mendapat tiket langsung ke Final."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Apakah tiket menjamin kursi?",
+    "aliases": [
+      "Kursi untuk tiket"
+    ],
+    "answer": "Kursi yang bisa dimasuki dengan tiket maksimal 20% dari kapasitas event, dan 15% untuk Final."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Apakah wajib punya jam untuk event?",
+    "aliases": [
+      "Perlukah smartwatch untuk ikut?"
+    ],
+    "answer": "Event Pemula dan Menengah bisa diikuti tanpa jam. Lanjutan, Half, dan Final membutuhkan catatan detak jantung, jadi perlu jam."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Berapa biaya masuk ruang lari?",
+    "aliases": [
+      "Biaya ruang"
+    ],
+    "answer": "1 km 600 SHARE, 2 km 900, 3 km 1.200, 5 km 1.800, dan 10 km 3.000. Untuk jarak lebih dari 10 km, bertambah 600 SHARE setiap 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Bagaimana membuat ruang lari?",
+    "aliases": [
+      "Buat ruang"
+    ],
+    "answer": "Aku akan membuka layar pembuatan ruang. Pilih jarak dan biaya pendaftaran ditetapkan; kartu konfirmasi muncul saat SHARE akan dipotong."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Bagaimana penyelesaian ruang dihitung?",
+    "aliases": [
+      "Kriteria penyelesaian ruang"
+    ],
+    "answer": "Kamu perlu lari terverifikasi sejauh jarak ruang agar dihitung selesai. Server memeriksa apakah kamu sudah selesai."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Apa yang diperlukan untuk membuat crew?",
+    "aliases": [
+      "Berapa deposit crew?"
+    ],
+    "answer": "Membuat crew membutuhkan deposit pembukaan 3.000 SHARE. Di tab Crew kamu bisa menentukan nama dan perkenalan crew lalu langsung membuatnya."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Bisakah mengumpulkan iuran crew di aplikasi?",
+    "aliases": [
+      "Pengelolaan iuran crew"
+    ],
+    "answer": "Tidak, ShareRun tidak menyediakan fitur untuk menagih iuran crew atas namamu."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Bisakah ikut event gratis dengan VALUE?",
+    "aliases": [
+      "Bayar biaya dengan VALUE"
+    ],
+    "answer": "Tidak, biaya event dibayar dengan tiket masuk gratis atau SHARE, dan VALUE tidak dipotong sebagai biaya pendaftaran. VALUE adalah skor kehormatan yang menunjukkan usahamu dan juga skor yang dipakai dalam penggalangan donasi."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Apakah hadiah dikenai pajak?",
+    "aliases": [
+      "Pajak hadiah"
+    ],
+    "answer": "Hadiah event dibayarkan sebagai DIA bonus khusus aplikasi, bukan penarikan uang tunai. Jika ada hadiah atau bingkisan yang memerlukan pemotongan pajak atau panduan pelaporan pajak menurut hukum pajak, kami akan memberi tahu sebelumnya, sebelum pembayaran, sesuai peraturan terkait."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Kapan hasil event keluar?",
+    "aliases": [
+      "Kapan peringkat diumumkan?"
+    ],
+    "answer": "Setelah event berakhir dan verifikasi lari selesai, peringkat akhir dan hadiah DIA bonus diselesaikan. Kamu bisa melihat hasilnya di layar detail event dan di Riwayat transaksi saya di Pusat keamanan & privasi."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Bisakah melihat peringkat event secara langsung?",
+    "aliases": [
+      "Lihat peringkat langsung saat berlari"
+    ],
+    "answer": "Kamu bisa melihat peringkat catatan terverifikasi peserta di papan peringkat pada layar detail event. Saat berlari, demi keselamatan kami fokus pada panduan kecepatan dan detak jantungmu."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Bagaimana berlari menjadi donasi?",
+    "aliases": [
+      "Cara kerja donasi"
+    ],
+    "answer": "Untuk setiap 1 km terverifikasi yang kamu lari, perusahaan (operator) berencana mendonasikan 100 KRW dari dana sendiri. Anggaran donasi bulanan perusahaan maksimal 1.000.000 KRW. Aplikasi menampilkan kontribusi yang terkumpul dari lari kamu."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Apakah saya harus membayar untuk berdonasi?",
+    "aliases": [
+      "Apakah saya yang membayar donasi?"
+    ],
+    "answer": "Tidak, donasi dari berlari direncanakan dari dana perusahaan (operator). Kamu tidak perlu membayar apa pun."
   },
   {
     "id": "DO-03",
@@ -86,6 +617,159 @@
     ]
   },
   {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Donasi atas nama siapa?",
+    "aliases": [
+      "Siapa donaturnya?"
+    ],
+    "answer": "Kami berencana mendonasikan 100 KRW per 1 km terverifikasi dari dana perusahaan (operator) (maksimal 10 km per orang per hari dan total 1.000.000 KRW per bulan). Penerimanya masih dibahas, dan kami akan memberi tahu di aplikasi setelah ditetapkan. Ini dicatat di aplikasi sebagai kontribusi donasimu. Donasi yang kamu berikan sendiri disalurkan atas namamu."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Bisakah mendapat tanda terima donasi?",
+    "aliases": [
+      "Donasi untuk pajak akhir tahun"
+    ],
+    "answer": "Untuk donasi yang kamu berikan sendiri, kamu bisa mendapat tanda terima atas namamu di halaman donasi seperti Happybean atau Gachi Gachi. Donasi dari berlari direncanakan dari dana perusahaan (operator), jadi tidak ada tanda terima."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Saya ingin berdonasi sendiri",
+    "aliases": [
+      "Berdonasi dengan uang sendiri"
+    ],
+    "answer": "Aku akan menghubungkanmu ke halaman donasi seperti Happybean atau Gachi Gachi. Donasimu langsung ke organisasi, dan tanda terima diterbitkan atas namamu."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Apakah perusahaan memotong biaya dari donasi?",
+    "aliases": [
+      "Biaya donasi"
+    ],
+    "answer": "Tidak, perusahaan tidak memotong satu won pun dari donasi."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "Apa arti “target donasi tercapai”?",
+    "aliases": [
+      "Muncul “target donasi tercapai”"
+    ],
+    "answer": "Artinya anggaran donasi perusahaan bulan itu (1.000.000 KRW) sudah habis dipakai. Catatan larimu tetap tersimpan, dan kontribusi terkumpul lagi saat bulan baru dimulai."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Apakah hanya berjalan dihitung donasi?",
+    "aliases": [
+      "Apakah langkah dihitung untuk donasi?"
+    ],
+    "answer": "Donasi dihitung dari jarak lari yang lolos verifikasi. Langkah mengumpulkan SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "Donasi untuk organisasi mana?",
+    "aliases": [
+      "Donasi ke mana?"
+    ],
+    "answer": "Penerimanya saat ini sedang dibahas. Setelah ditetapkan, kami akan memberi tahu di aplikasi, dan kami berencana mengumumkan rincian penyaluran serta hasil penyelesaian di status donasi aplikasi dan Pusat keamanan & privasi."
+  },
+  {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Bagaimana tahu donasi digunakan dengan benar?",
+    "aliases": [
+      "Transparansi donasi"
+    ],
+    "answer": "Kami mempublikasikan rincian penyelesaian donasi. Periksa bersama kontribusimu di Pusat keamanan & privasi."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Apa itu kampanye donasi perusahaan?",
+    "aliases": [
+      "Kampanye sponsor"
+    ],
+    "answer": "Ini kampanye di mana perusahaan mendonasikan 100 KRW per 1 km dalam anggaran yang ditetapkannya. Sisa anggaran terlihat secara real time, dan kampanye berakhir saat anggaran habis."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Saya selesai tapi “donasi selesai” tidak muncul",
+    "aliases": [
+      "Donasi tidak tercatat"
+    ],
+    "answer": "Tanda donasi selesai hanya muncul setelah tercatat di riwayat transaksi server. Lari yang tidak lolos verifikasi tidak termasuk dalam donasi."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Apakah ada lomba donasi?",
+    "aliases": [
+      "Lomba donasi virtual"
+    ],
+    "answer": "Untuk setiap lari terverifikasi, perusahaan (operator) berencana mendonasikan 100 KRW per km dari dana sendiri (maksimal 10 km per orang per hari dan total 1.000.000 KRW per bulan). Setiap kali kampanye donasi bersama perusahaan dibuka, kamu juga bisa ikut dari tab Tantangan."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana mendapat peringkat?",
+    "aliases": [
+      "Cara mendapat peringkat"
+    ],
+    "answer": "Cukup selesaikan lari terverifikasi 1 km atau lebih pada tiga hari berbeda. Setelah lari ketiga selesai, peringkatmu ditentukan dari kecepatan median tiga catatan itu."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Apakah 5 kali lari penilaian sudah dihapus?",
+    "aliases": [
+      "Lima penilaian"
+    ],
+    "answer": "Ya, 5 kali penilaian peringkat sudah dihapus dan digabung menjadi tiga lari percobaan untuk pengguna baru."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Apakah masih bisa mendapat peringkat setelah 14 hari?",
+    "aliases": [
+      "Mulai terlambat, apakah masih dapat peringkat?"
+    ],
+    "answer": "Bisa, kamu bisa mendapat peringkat kapan saja dengan tiga lari terverifikasi. Namun SHARE hadiah percobaan hanya diberikan dalam 14 hari setelah mendaftar."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana naik peringkat?",
+    "aliases": [
+      "Syarat naik peringkat"
+    ],
+    "answer": "Naik otomatis berdasarkan catatan lari 28 hari terakhir. Kamu tidak perlu mengikuti tes terpisah."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Apakah peringkat bisa turun?",
+    "aliases": [
+      "Apakah bisa diturunkan?"
+    ],
+    "answer": "Tidak, peringkat yang sudah diraih tidak akan turun."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana pengguna lama mendapat peringkat?",
+    "aliases": [
+      "Peringkat pengguna lama"
+    ],
+    "answer": "Jika kamu sudah punya tiga atau lebih lari terverifikasi, peringkatmu ditentukan dari catatan itu."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Beri tahu peringkatku",
@@ -97,6 +781,630 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Mengapa Siput terlihat murung?",
+    "aliases": [
+      "Siput terlihat sedih"
+    ],
+    "answer": "Ekspresi sedikit kecewa berarti kamu belum punya peringkat. Setelah mendapat peringkat dan tier naik, ekspresinya akan makin cerah."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Bisakah tetap memakai Siput setelah dapat peringkat?",
+    "aliases": [
+      "Pilih Siput lagi"
+    ],
+    "answer": "Bisa, Siput adalah karakter dasar gratis, jadi kamu bisa memilihnya lagi kapan saja."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Tidak ada karakter hewan lain?",
+    "aliases": [
+      "Beri tahu jenis karakter hewan"
+    ],
+    "answer": "Selain Siput sebagai karakter dasar, ada karakter hewan di lima tier kecepatan: Kura-kura, Beagle, Serigala, Zebra, dan Cheetah. Saat kamu mendapat peringkat dari lari terverifikasi, kamu bertemu karakter hewan yang cocok dengan kecepatanmu."
+  },
+  {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Bisakah mendekorasi karakter?",
+    "aliases": [
+      "Kostum"
+    ],
+    "answer": "Bisa, kamu bisa mendekorasi dengan bagian dan skin. Hanya dijual dengan harga DIA tetap, tanpa undian acak."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Apakah siapa pun bisa memakai skin tier?",
+    "aliases": [
+      "Syarat skin tier"
+    ],
+    "answer": "Kamu hanya bisa memakai skin tier setelah mencapai tier itu."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Apakah membeli kostum meningkatkan catatan atau hadiah?",
+    "aliases": [
+      "Statistik skin"
+    ],
+    "answer": "Tidak, kostum hanya mengubah tampilan dan tidak memengaruhi catatan atau hadiah."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana karakter hewan yang pernah dibeli?",
+    "aliases": [
+      "Bagaimana karakter yang sudah dibeli?"
+    ],
+    "answer": "Karakter hewan tidak lagi dijual terpisah di toko; terbuka otomatis dari Kura-kura sampai Cheetah sesuai peringkat larimu. Bagian dekorasi dan skin yang kamu dapatkan sebelumnya tetap ada di inventaris."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "Apa itu VALUE?",
+    "aliases": [
+      "Apa arti VALUE?"
+    ],
+    "answer": "VALUE adalah skor kehormatan yang hanya dikumpulkan lewat usaha. Dipakai untuk voting, Hall of Fame, kostum khusus usaha, syarat event, dan keuntungan crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana mengumpulkan VALUE?",
+    "aliases": [
+      "Cara mendapat VALUE"
+    ],
+    "answer": "Kamu mendapat 10 VALUE untuk setiap 1 km terverifikasi. Terkumpul hingga 5 km, atau 50 VALUE, per hari."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Bisakah menukar VALUE dengan DIA atau uang tunai?",
+    "aliases": [
+      "Konversi VALUE"
+    ],
+    "answer": "Tidak, VALUE tidak dapat ditukar atau dipindahkan untuk apa pun. Ini skor kehormatan yang menunjukkan usahamu."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Berapa VALUE yang kumiliki?",
+    "aliases": [
+      "Saldo VALUE"
+    ],
+    "answer": "Saat ini kamu punya {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Apa itu Hall of Fame?",
+    "aliases": [
+      "Beri tahu kriteria Hall of Fame"
+    ],
+    "answer": "Hall of Fame adalah peringkat kehormatan yang menghargai pelari yang terus mengumpulkan VALUE dan kontribusi donasi lewat lari terverifikasi. Kamu bisa melihatnya di layar Tantangan dan Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Apakah gambar Siput berubah?",
+    "aliases": [
+      "Apakah desain Siput berubah?"
+    ],
+    "answer": "Bot Siput berganti di antara empat ekspresi sesuai percakapan: wajah tersenyum, wajah mendengarkan, wajah gembira, dan wajah kecewa."
+  },
+  {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Apa isi Pusat keamanan & privasi?",
+    "aliases": [
+      "Fitur Pusat keamanan"
+    ],
+    "answer": "Ada fitur seperti daftar perangkat yang login, logout jarak jauh, pemberitahuan login baru, Riwayat transaksi saya, dan pengaturan privasi."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "Apakah ShareRun aman?",
+    "aliases": [
+      "Apakah bisa diretas?"
+    ],
+    "answer": "Kami memiliki beberapa lapisan perlindungan, seperti pengelolaan perangkat login, pemberitahuan login baru, dan konfirmasi sidik jari saat pembayaran. Jika melihat sesuatu yang aneh, segera periksa di Pusat keamanan & privasi."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Saya ingin mengeluarkan perangkat yang tidak dikenal",
+    "aliases": [
+      "Logout jarak jauh"
+    ],
+    "answer": "Pilih perangkat itu dari daftar perangkat login dan kamu bisa mengeluarkannya dari jarak jauh."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Apakah ada pemberitahuan saat login di perangkat baru?",
+    "aliases": [
+      "Pemberitahuan login baru"
+    ],
+    "answer": "Ya, kami mengirim pemberitahuan saat kamu login di perangkat baru."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Saya rasa akun saya diretas",
+    "aliases": [
+      "Seseorang memakai akun saya"
+    ],
+    "answer": "Pertama lihat daftar perangkat login di Pusat keamanan & privasi dan segera keluarkan perangkat yang tidak dikenal. Periksa juga apakah ada catatan aneh di riwayat transaksi."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Mengapa sidik jari diminta saat membayar DIA?",
+    "aliases": [
+      "Konfirmasi sidik jari pembayaran"
+    ],
+    "answer": "Saat pembayaran DIA dibuka, kami akan mengonfirmasi sekali lagi dengan sidik jarimu saat membayar untuk mencegah pembayaran yang tidak diinginkan."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Apakah Siput bisa memakai DIA saya sendiri?",
+    "aliases": [
+      "Apakah bot yang membayar?"
+    ],
+    "answer": "Tidak, apa pun yang memindahkan mata uang seperti DIA atau donasi hanya berjalan setelah kartu konfirmasi dan pemeriksaan sidik jari."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Apakah orang lain bisa melihat rute lari saya?",
+    "aliases": [
+      "Cakupan visibilitas catatan"
+    ],
+    "answer": "Visibilitas catatanmu secara bawaan adalah “Hanya saya”. Ubah hanya jika kamu mau."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Bisakah menyembunyikan rute dekat rumah?",
+    "aliases": [
+      "Sembunyikan lokasi rumah"
+    ],
+    "answer": "Bisa, ada fitur yang menyembunyikan rute dekat rumah. Atur di Pusat keamanan & privasi."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Apakah data saya dipakai untuk melatih AI?",
+    "aliases": [
+      "Persetujuan pelatihan AI"
+    ],
+    "answer": "Kamu sendiri yang menyalakan atau mematikan apakah data dipakai untuk melatih AI. Periksa pengaturannya di Pusat keamanan & privasi."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Bisakah dipakai di ponsel yang di-root?",
+    "aliases": [
+      "Ponsel jailbreak"
+    ],
+    "answer": "Pada ponsel yang dimodifikasi, penggunaan dapat dibatasi demi catatan yang adil."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Bagaimana jika perolehan dibatasi atau dikenai sanksi?",
+    "aliases": [
+      "Banding sanksi"
+    ],
+    "answer": "Kami mempublikasikan batas perolehan harian, tahap sanksi, dan cara banding sebagai kebijakan perolehan yang adil. Jika merasa tidak adil, silakan ajukan banding."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Mengapa lokasi diperlukan?",
+    "aliases": [
+      "Mengapa izin lokasi diperlukan?"
+    ],
+    "answer": "Kami memakai lokasi untuk merekam dan memverifikasi jarak serta rute lari. Secara bawaan, hanya kamu yang bisa melihat rutemu."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Saya ingin menghapus data pribadi",
+    "aliases": [
+      "Hapus data pribadi"
+    ],
+    "answer": "Data pribadimu dihapus saat kamu berhenti menjadi anggota. Catatan aktivitas dihapus dalam 30 hari, dan hanya catatan transaksi yang wajib disimpan menurut hukum yang disimpan selama jangka waktu yang ditetapkan. Kamu bisa langsung mengubah visibilitas dan pengaturan pelatihan AI di Pusat keamanan & privasi."
+  },
+  {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Apakah catatan hilang jika ganti ponsel?",
+    "aliases": [
+      "Ganti perangkat"
+    ],
+    "answer": "Tidak, semua catatan dan mata uang disimpan di server. Login dengan akun yang sama di ponsel baru dan semuanya tampil seperti semula."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Angkanya berbeda di tiap ponsel",
+    "aliases": [
+      "SHARE berbeda di tiap perangkat"
+    ],
+    "answer": "Nilai mengikuti catatan di server, jadi seharusnya sama di ponsel mana pun. Coba tutup aplikasi lalu buka lagi."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Catatan saya hilang",
+    "aliases": [
+      "Catatan lari saya hilang"
+    ],
+    "answer": "Catatan disimpan di riwayat transaksi permanen server. Pertama, pastikan kamu login dengan akun yang sama."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "Dengan cara apa saja saya bisa login?",
+    "aliases": [
+      "Metode login"
+    ],
+    "answer": "Kamu bisa login dengan akun Google, Apple, Kakao, atau Naver. Jika orangnya sama, kamu bisa menggabungkannya menjadi satu akun lewat Login tertaut di Pengaturan, setelah memeriksa nama panggilan dan saldo akun tujuan."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Bagaimana berhenti jadi anggota (hapus akun)?",
+    "aliases": [
+      "Hapus akun"
+    ],
+    "answer": "Ketuk “Hapus akun” di Pengaturan untuk berhenti. Setelah itu, akun loginmu langsung dihapus dan sisa SHARE, DIA, dan VALUE hilang. Catatan aktivitas seperti lari dihapus dalam 30 hari, dan hanya catatan pembayaran serta transaksi yang wajib disimpan menurut hukum yang disimpan selama jangka waktu yang ditetapkan (5 tahun). Pastikan memeriksa sisa DIA dan catatanmu sebelum berhenti."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Bolehkah membuat dua akun?",
+    "aliases": [
+      "Bolehkah memakai akun kedua?"
+    ],
+    "answer": "Demi perolehan dan event yang adil, hanya satu akun per orang yang diperbolehkan. Meski memakai beberapa login sosial, hubungkan ke satu akun di Login tertaut di Pengaturan."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Di mana melihat kode undangan?",
+    "aliases": [
+      "Kode undangan saya"
+    ],
+    "answer": "Aku akan membuka layar kode undangan. Kode undangan dibagikan terpisah dari kartu pamer."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Kapan hadiah undangan masuk?",
+    "aliases": [
+      "Kapan SHARE undangan diberikan?"
+    ],
+    "answer": "Hadiah undangan 30.000 SHARE masuk setelah masa tahan 7 hari."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Saya ingin mematikan bot Siput",
+    "aliases": [
+      "Matikan Siput"
+    ],
+    "answer": "Kamu bisa mematikan bot Siput di Pengaturan. Untuk menyalakannya lagi, gunakan tempat yang sama."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Di mana layanan pelanggan?",
+    "aliases": [
+      "Di mana saya bisa menghubungi?"
+    ],
+    "answer": "Kamu bisa meninggalkan pertanyaan kapan saja lewat Hubungi kami di layar Pengaturan atau banding sanksi di Pusat keamanan & privasi. Untuk pertanyaan singkat, kamu juga bisa langsung bertanya padaku."
+  },
+  {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Saya ingin mulai berlari",
+    "aliases": [
+      "Mulai lari"
+    ],
+    "answer": "Aku akan membuka layar lari. Selama kamu berlari, aku menyemangati dengan suaraku."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah lari bebas juga dicatat?",
+    "aliases": [
+      "Jika hanya berlari, apakah tersimpan?"
+    ],
+    "answer": "Ya, catatan lari bebas, streak, dan lencana selalu tersimpan. Hadiah VALUE hanya diberikan untuk lari yang lolos verifikasi."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apa itu lari terverifikasi?",
+    "aliases": [
+      "Apa itu verifikasi?"
+    ],
+    "answer": "Prinsipnya, catatan selalu disimpan dan hadiah hanya untuk lari terverifikasi. Lari terverifikasi jika kamu berlari 1 km atau lebih dan lolos kriteria yang ditetapkan."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apa kriteria verifikasi?",
+    "aliases": [
+      "Kriteria kadensi"
+    ],
+    "answer": "Larilah minimal 1 km dengan 120 sampai 210 langkah per menit. Di ruang lari, kamu harus berlari sejauh jarak ruang."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mengapa verifikasi gagal?",
+    "aliases": [
+      "Alasan verifikasi gagal"
+    ],
+    "answer": "Verifikasi bisa gagal jika jarak lebih pendek dari yang diperlukan, atau kecepatan langkah atau GPS di luar kriteria. Catatan itu sendiri tetap tersimpan."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah terverifikasi tanpa jam?",
+    "aliases": [
+      "Apakah wajib punya jam?"
+    ],
+    "answer": "Ya. Tanpa jam, kami memeriksa dengan panjang langkah dan kecepatan GPS. Jam hanya diperlukan untuk event Lanjutan, Half, dan Final."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah ada aplikasi khusus jam?",
+    "aliases": [
+      "Aplikasi Galaxy Watch"
+    ],
+    "answer": "Di jam Wear OS seperti Galaxy Watch, kami mendukung aplikasi jam mandiri yang terhubung dengan kode pairing 6 digit. Aplikasi untuk Apple Watch juga sudah siap, dan Garmin, Mi Band, Amazfit, Fitbit, Samsung Health, serta COROS bisa dipakai lewat sinkronisasi aplikasi kesehatan dan pengiriman detak jantung Bluetooth secara real time."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah lari dengan jam memberi SHARE lebih banyak?",
+    "aliases": [
+      "Bonus jam"
+    ],
+    "answer": "Tidak, lari dengan jam tidak memberi SHARE tambahan."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah pencatatan terputus jika layar dimatikan?",
+    "aliases": [
+      "Bolehkah layar dimatikan?"
+    ],
+    "answer": "Tidak, pencatatan terus berjalan meski layar dimatikan. Saat berlari, indikator “Merekam” tetap muncul di area notifikasi."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Pencatatan lari terputus di tengah",
+    "aliases": [
+      "Pencatatan berhenti"
+    ],
+    "answer": "Bisa terputus karena pengaturan lokasi, notifikasi, atau baterai. Periksa semuanya sekaligus di “Pemeriksaan pengaturan perekaman lari” di Profil."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS sulit mendapat sinyal",
+    "aliases": [
+      "Lokasi saya terlihat aneh"
+    ],
+    "answer": "Pertama, pastikan izin lokasi menyala. Di “Pemeriksaan pengaturan perekaman lari” kamu bisa melihat pengaturan yang diperlukan satu per satu."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mengapa meminta izin sebelum lari pertama?",
+    "aliases": [
+      "Mengapa mengubah pengaturan baterai?"
+    ],
+    "answer": "Kami memandu pengaturan lokasi, notifikasi, dan baterai sebelumnya agar pencatatan tidak terputus meski layar dimatikan."
+  },
+  {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Berapa VALUE per hari dari lari bebas?",
+    "aliases": [
+      "Batas VALUE harian"
+    ],
+    "answer": "Kamu bisa mendapat 50 VALUE untuk maksimal 5 km per hari. Meski berlari lebih jauh, semua catatan tetap tersimpan."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bagaimana lari percobaan untuk pengguna baru?",
+    "aliases": [
+      "Lari percobaan"
+    ],
+    "answer": "Dalam 14 hari setelah mendaftar, selesaikan satu lari terverifikasi 1 km atau lebih pada tiga hari berbeda. Hanya satu lari per hari yang dihitung."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Berapa hadiah percobaan?",
+    "aliases": [
+      "SHARE percobaan"
+    ],
+    "answer": "Kamu mendapat 10.000 SHARE setelah lari pertama, dan 40.000 SHARE lagi setelah menyelesaikan ketiganya, total 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Jika lari dua kali sehari, apakah dihitung dua percobaan?",
+    "aliases": [
+      "Selesaikan ketiganya dalam sehari"
+    ],
+    "answer": "Tidak, hanya satu lari percobaan per hari yang dihitung. Silakan lari lagi di hari lain."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Saya selesai tapi SHARE atau tanda selesai tidak muncul",
+    "aliases": [
+      "Hadiah masuk terlambat"
+    ],
+    "answer": "Tanda selesai hanya muncul setelah tersimpan di riwayat transaksi server. Tunggu sebentar lalu periksa lagi."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ke mana tur stempel?",
+    "aliases": [
+      "Stempel tidak terlihat"
+    ],
+    "answer": "Tur stempel disembunyikan untuk sementara. Jalan 1 km sudah digabung ke misi pedometer dan lari terverifikasi, dan stempel landmark akan kembali nanti sebagai event."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bisakah membuat kartu pamer?",
+    "aliases": [
+      "Buat kartu berbagi catatan"
+    ],
+    "answer": "Ya, setelah selesai berlari kamu bisa membuat kartu pamer dengan waktu, jarak, kecepatan, dan pesan donasi, lalu langsung membagikannya ke KakaoTalk, Instagram, X, atau pesan teks."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah kartu pamer berisi kode undangan?",
+    "aliases": [
+      "Kode undangan di kartu berbagi"
+    ],
+    "answer": "Tidak, kartu pamer tidak memuat kode undangan. Kamu bisa membagikan kode undangan secara terpisah."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Jumlah langkah tidak bertambah",
+    "aliases": [
+      "Pedometer berhenti"
+    ],
+    "answer": "Pastikan izin aktivitas ponsel menyala, dan coba buka aplikasi lagi."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah streak atau lencana saya hilang?",
+    "aliases": [
+      "Lencana saya hilang"
+    ],
+    "answer": "Catatan, streak, dan lencana selalu tersimpan, terlepas dari verifikasi. Pastikan kamu login dengan akun yang sama."
+  },
+  {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Apa itu Coach+?",
+    "aliases": [
+      "Jelaskan Coach+"
+    ],
+    "answer": "Coach+ adalah layanan langganan yang memberi pelatihan suara mendalam sesuai detak jantung dan kecepatan real time saat kamu berlari. Layanan ini sedang disiapkan untuk dijual, jadi untuk sekarang kamu bisa memakai pelatihan gratis."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Berapa harga Coach+?",
+    "aliases": [
+      "Tarif Coach+"
+    ],
+    "answer": "Coach+ sedang disiapkan dengan harga 6.900 KRW per bulan dan 59.000 KRW per tahun, dengan percobaan gratis 7 hari. Pembayaran belum dibuka, jadi kamu tidak akan ditagih."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Apakah ada percobaan gratis Coach+?",
+    "aliases": [
+      "Versi percobaan"
+    ],
+    "answer": "Ya, ada percobaan gratis 7 hari."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Bagaimana membatalkan Coach+?",
+    "aliases": [
+      "Batalkan langganan"
+    ],
+    "answer": "Kamu bisa membatalkan dengan mudah di dalam aplikasi. Aku akan membuka layar pengelolaan langganan."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Bisakah membeli Coach+ sekarang?",
+    "aliases": [
+      "Kapan Coach+ keluar?"
+    ],
+    "answer": "Saat ini kami tidak menjual Coach+. Kami akan memberi tahu lebih dulu saat sudah siap."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Apa bedanya dengan pelatihan gratis?",
+    "aliases": [
+      "Perbedaan Coach+"
+    ],
+    "answer": "Pelatihan gratis memberi panduan dasar saat mulai, selesai, dan per jarak, sedangkan Coach+ menambah pelatihan mendalam sesuai zona detak jantung dan perubahan kecepatan secara real time."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Apakah juga melatih untuk tanjakan atau peringkat event?",
+    "aliases": [
+      "Pelatihan tanjakan"
+    ],
+    "answer": "Pelatihan tanjakan dan pelatihan peringkat event masih disiapkan. Kami akan memberi tahu lebih dulu saat siap."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Bagaimana suara Siput dihasilkan?",
+    "aliases": [
+      "Suara pelatihan"
+    ],
+    "answer": "Kami memutar semangat dan angka dengan suara Siput yang sudah dibuat sebelumnya. Jika tidak ada suara yang disiapkan, kami memakai suara bawaan ponselmu."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Saya ingin mematikan suara pelatihan",
+    "aliases": [
+      "Bisukan"
+    ],
+    "answer": "Ketuk sekali saat berlari dan langsung dibisukan."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Apakah Coach+ ditagih otomatis?",
+    "aliases": [
+      "Apakah langganan diperpanjang otomatis?"
+    ],
+    "answer": "Coach+ belum dijual, jadi tidak ada penagihan otomatis. Jika kamu berlangganan setelah peluncuran resmi, langganan diperpanjang otomatis setiap periode yang dipilih dengan metode pembayaran toko, dan kamu bisa membatalkan kapan saja di pengelolaan langganan toko."
   },
   {
     "id": "SYS-FALLBACK",

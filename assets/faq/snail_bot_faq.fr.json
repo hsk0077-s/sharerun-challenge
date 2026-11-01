@@ -10,6 +10,132 @@
     "answer": "Tu gagnes des SHARE pour tes pas et tes courses, et pour chaque km vérifié l’entreprise prévoit de donner 100 KRW. Le don est payé par l’entreprise ; tu ne paies rien."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Qui es-tu ?",
+    "aliases": [
+      "Escargot, qu’es-tu ?"
+    ],
+    "answer": "Je suis Escargot, ton compagnon de course. Demande-moi à voix haute et je t’aide tout de suite."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Comment utiliser le bot Escargot ?",
+    "aliases": [
+      "Comment poser une question à Escargot ?"
+    ],
+    "answer": "Touche le bouton escargot en bas à droite de l’écran pour voir des questions suggérées adaptées à l’écran. Tu peux aussi toucher le micro et demander à voix haute."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Puis-je déplacer le bouton escargot ?",
+    "aliases": [
+      "Le bouton escargot cache l’écran"
+    ],
+    "answer": "Tu peux faire glisser le bouton où tu veux."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Pourquoi Escargot n’apparaît-il pas pendant la course ?",
+    "aliases": [
+      "Le bouton escargot a disparu pendant la course"
+    ],
+    "answer": "Pendant la course, le bouton est masqué pour ne pas cacher l’écran. À la place, je te coache avec la voix d’Escargot."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Escargot parle-t-il parfois en premier ?",
+    "aliases": [
+      "Escargot parle soudainement"
+    ],
+    "answer": "Je ne parle en premier que pour les moments à fêter. Sinon, je n’aide que lorsque tu m’appelles."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Quel est le slogan de ShareRun ?",
+    "aliases": [
+      "Que signifie « tant que le cœur bat » ?"
+    ],
+    "answer": "Le slogan principal est « Tant que le cœur bat, le partage court aussi ». Sur l’écran des dons, nous utilisons aussi « Un pas devient partage »."
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Faut-il payer pour utiliser cette appli ?",
+    "aliases": [
+      "C’est gratuit ?"
+    ],
+    "answer": "Marcher, courir et participer aux dons ne coûte rien. Pour l’instant, il n’y a rien à payer dans l’appli."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Peut-on gagner de l’argent avec cette appli ?",
+    "aliases": [
+      "Est-on payé pour marcher ?"
+    ],
+    "answer": "ShareRun n’est pas une appli pour gagner de l’argent, mais pour participer au partage en marchant et en courant. Les SHARE sont des points d’activité qui ne s’échangent pas contre de l’argent."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "Quelle est la différence entre SHARE, DIA et VALUE ?",
+    "aliases": [
+      "Dis-moi les types de monnaie"
+    ],
+    "answer": "SHARE est un point d’activité gagné en marchant et en courant, et DIA est la monnaie de l’appli utilisée dans la boutique. VALUE est un score d’honneur gagné grâce aux courses vérifiées, donc il ne peut ni être échangé ni transféré."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Quels onglets y a-t-il en bas ?",
+    "aliases": [
+      "Dis-moi le menu du bas"
+    ],
+    "answer": "Il y a cinq onglets en bas : Accueil, Boutique, Défis, Crew et Mon Profil. Tu peux lancer une course directement depuis Accueil ou Défis."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Je veux revoir l’introduction",
+    "aliases": [
+      "Revoir la première explication"
+    ],
+    "answer": "Tu peux la revoir à tout moment via « Revoir l’introduction » dans les réglages."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Y a-t-il un widget pour l’écran d’accueil ?",
+    "aliases": [
+      "Puis-je mettre un widget sur le bureau ?"
+    ],
+    "answer": "Si tu veux, tu peux ajouter un widget à l’écran d’accueil pour voir d’un coup d’œil tes pas du jour et le montant du don."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "Qu’est-ce que SHARE ?",
+    "aliases": [
+      "Que veut dire SHARE ?"
+    ],
+    "answer": "SHARE est un point d’activité qui s’accumule quand tu marches et cours. On ne peut ni l’acheter avec de l’argent ni l’échanger contre de l’argent."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Combien de pas faut-il pour gagner des SHARE ?",
+    "aliases": [
+      "Combien de SHARE par pas ?"
+    ],
+    "answer": "Tu gagnes 10 SHARE tous les 100 pas."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Combien de SHARE puis-je gagner par jour ?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Les SHARE disparaissent-ils si je ne les ramasse pas ?",
+    "aliases": [
+      "Disparaît-il si je ne ramasse pas ?"
+    ],
+    "answer": "Les SHARE des pas peuvent être ramassés jusqu’à minuit le jour même, dans la limite quotidienne de 600 SHARE. Après minuit, tout recommence avec les pas du nouveau jour ; ramasse-les donc le jour même sur l’accueil."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Puis-je échanger des SHARE contre des DIA ?",
+    "aliases": [
+      "Échanger SHARE contre DIA"
+    ],
+    "answer": "Tu peux échanger 1 200 SHARE contre 1 DIA, jusqu’à 20 DIA par semaine."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Puis-je échanger des DIA contre des SHARE ?",
+    "aliases": [
+      "Échanger DIA contre SHARE"
+    ],
+    "answer": "Non. L’échange ne va que dans un sens, de SHARE vers DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Puis-je échanger des SHARE contre de l’argent ?",
+    "aliases": [
+      "Retirer des SHARE"
+    ],
+    "answer": "Les SHARE sont des points d’activité qui ne peuvent pas être échangés contre de l’argent ni des bons cadeaux. Tu peux les échanger contre des DIA ou les utiliser pour t’inscrire à des événements."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Puis-je acheter des SHARE avec de l’argent ?",
+    "aliases": [
+      "Recharger des SHARE"
+    ],
+    "answer": "Non, les SHARE ne sont pas en vente. On ne peut les gagner qu’en marchant et en courant."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Les SHARE sont-ils une cryptomonnaie ?",
+    "aliases": [
+      "Le jeton sera-t-il coté ?"
+    ],
+    "answer": "Non, les SHARE ne sont ni une cryptomonnaie ni un jeton. Ce sont des points d’activité utilisés uniquement dans l’appli."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "Combien valent les SHARE en KRW ?",
+    "aliases": [
+      "Valeur du SHARE"
+    ],
+    "answer": "Les SHARE sont des points sans prix en argent ; nous ne les affichons donc pas en montant KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "À quoi servent les SHARE ?",
+    "aliases": [
+      "Utilisation des SHARE"
+    ],
+    "answer": "Tu peux l’échanger contre des DIA ou l’utiliser pour les frais d’inscription aux événements et salles de course, ainsi que pour les cautions de crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Gagne-t-on des SHARE en regardant des pubs ?",
+    "aliases": [
+      "Y a-t-il une récompense pub ?"
+    ],
+    "answer": "Non, il n’existe pas de fonction pour gagner des SHARE en regardant des pubs. Tu peux en gagner en marchant et en courant, avec les courses d’essai des nouveaux et en invitant des amis."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Que gagne-t-on en invitant un ami ?",
+    "aliases": [
+      "Récompense de parrainage"
+    ],
+    "answer": "Si l’ami que tu as invité termine des courses d’au moins 1 km sur 3 jours différents en 14 jours, tu reçois 30 000 SHARE. Ils arrivent après 7 jours de blocage, et ton ami reçoit aussi 10 000 SHARE à sa première course et 40 000 SHARE à la troisième."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "Qu’est-ce que DIA ?",
+    "aliases": [
+      "Que veut dire DIA ?"
+    ],
+    "answer": "DIA est la monnaie de l’appli utilisée dans la boutique pour acheter des habillages et des objets. On l’obtient en échangeant des SHARE ou comme prix d’événements."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "Quelle différence entre DIA bonus et DIA payants ?",
+    "aliases": [
+      "Qu’est-ce que le DIA bonus ?"
+    ],
+    "answer": "Les DIA bonus sont des DIA reçus gratuitement (échange de SHARE, prix d’événements, récompenses, bonus, etc.). Les DIA payants sont ceux que tu as achetés. À l’usage, les DIA bonus sont dépensés en premier."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "Quels DIA sont utilisés en premier ?",
+    "aliases": [
+      "Ordre d’utilisation des DIA"
+    ],
+    "answer": "Les DIA bonus sont utilisés d’abord, puis les DIA payants quand ils sont épuisés. Cependant, le Battle Pass et le Pass+ ne s’achètent qu’avec des DIA payants."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Puis-je échanger des DIA bonus contre de l’argent ?",
+    "aliases": [
+      "Remboursement de DIA de prix"
+    ],
+    "answer": "Les DIA bonus ne peuvent être ni échangés contre de l’argent, ni remboursés, ni transférés. Ce sont des DIA à utiliser dans l’appli."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Les DIA sont-ils remboursables ?",
+    "aliases": [
+      "Comment se faire rembourser des DIA"
+    ],
+    "answer": "Nous ne vendons pas de DIA pour le moment, il n’y a donc pas de DIA payants à rembourser. Une fois la vente lancée, les DIA payants non utilisés pourront être remboursés dans les 7 jours suivant l’achat."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Comment acheter des DIA ?",
+    "aliases": [
+      "Recharger des DIA"
+    ],
+    "answer": "Nous ne vendons pas de DIA pour le moment. Nous te préviendrons d’abord quand la vente commencera. Tu peux obtenir des DIA en échangeant des SHARE ou comme prix d’événements."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Quels packs de DIA existe-t-il ?",
+    "aliases": [
+      "Tarifs des DIA"
+    ],
+    "answer": "Nous ne vendons pas de DIA pour le moment. Une fois la vente lancée, nous afficherons les types de packs et leurs prix dans la boutique."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Que peut-on acheter dans la boutique ?",
+    "aliases": [
+      "Liste des articles de la boutique"
+    ],
+    "answer": "Dans la boutique, tu peux acheter avec des DIA des pièces et skins pour habiller le personnage, ainsi que des objets de course comme le ticket de réanimation et le Garde-fou. Le financement de dons auquel tu participes avec des VALUE s’y trouve aussi."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Y a-t-il des tirages aléatoires ou des coffres ?",
+    "aliases": [
+      "Y a-t-il du gacha ?"
+    ],
+    "answer": "Non, il n’y a pas de tirages aléatoires. Tous les articles sont vendus uniquement à un prix fixe en DIA."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Comment accéder à la boutique ?",
+    "aliases": [
+      "Où est la boutique ?"
+    ],
+    "answer": "Touche l’onglet Boutique en bas de l’écran, ou la carte Mes DIA sur l’accueil pour y accéder directement."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Puis-je aussi acheter avec des DIA bonus ?",
+    "aliases": [
+      "Acheter des habillages avec des DIA de prix"
+    ],
+    "answer": "Oui, les DIA bonus peuvent aussi être utilisés dans la boutique, et ils sont dépensés avant les DIA payants."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Y a-t-il un Battle Pass ?",
+    "aliases": [
+      "Y a-t-il un pass de saison ?"
+    ],
+    "answer": "Tu peux voir l’écran du Pass Battle Run Saison 1 depuis Défis et la Boutique. Les achats payants ne sont pas encore ouverts, tu peux donc commencer par la piste de récompenses gratuite."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Puis-je participer aux événements avec des DIA ?",
+    "aliases": [
+      "S’inscrire à un événement avec des DIA"
+    ],
+    "answer": "Les événements dotés de prix ne se rejoignent qu’avec des tickets gratuits ou des SHARE. On ne peut pas participer avec des DIA payants."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "J’ai payé mais mes DIA ne sont pas arrivés",
+    "aliases": [
+      "Recharge de DIA manquante"
+    ],
+    "answer": "Les DIA arrivent une fois le paiement confirmé et enregistré dans l’historique des transactions du serveur. Consulte Mes transactions dans le Centre de sécurité et de confidentialité après un moment ; si rien n’apparaît, contacte-nous via Contact dans les réglages."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Qu’est-ce que le ticket de réanimation ?",
+    "aliases": [
+      "Dis-moi l’effet du ticket de réanimation"
+    ],
+    "answer": "Le ticket de réanimation est un objet qui rétablit une série interrompue dans les 72 heures ; tu peux l’utiliser jusqu’à deux fois par mois pour 12 DIA. Le Garde-fou protège à l’avance une journée manquée."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Puis-je offrir des DIA à un ami ?",
+    "aliases": [
+      "Envoyer des DIA"
+    ],
+    "answer": "Non, ni les DIA bonus ni les DIA payants ne peuvent être offerts ou transférés à quelqu’un d’autre. Tu ne peux les utiliser en toute sécurité que sur ton propre compte."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Puis-je voir l’historique de mes DIA ?",
+    "aliases": [
+      "Historique d’utilisation des DIA"
+    ],
+    "answer": "Oui, tu peux voir toutes les entrées et sorties de DIA dans Mes transactions, dans le Centre de sécurité et de confidentialité. Ces enregistrements sont conservés sur le serveur et ne sont pas supprimés."
   },
   {
     "id": "CO-01",
@@ -63,6 +432,42 @@
     "answer": "Tu peux participer gratuitement à l’événement Débutant les deux premières fois. Ensuite, c’est 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "À combien d’événements puis-je participer ?",
+    "aliases": [
+      "Limite de participations"
+    ],
+    "answer": "Tu peux participer à un événement par niveau une fois par semaine."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Je veux participer à un événement",
+    "aliases": [
+      "Je vais m’inscrire à un événement"
+    ],
+    "answer": "J’ouvre l’écran d’inscription à l’événement. Quand des frais vont être débités, je te redemanderai avec une carte de confirmation."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Les prix sont versés sous quelle forme ?",
+    "aliases": [
+      "Le prix est-il en espèces ?"
+    ],
+    "answer": "Les prix sont remis sous forme de DIA bonus, il n’y a pas de prix en espèces. Les prix proviennent uniquement du budget de l’entreprise et des sponsors."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Les frais d’inscription sont-ils cumulés en prix ?",
+    "aliases": [
+      "Les prix viennent-ils des frais d’inscription ?"
+    ],
+    "answer": "Non, les frais d’inscription ne servent pas aux prix. Les prix proviennent uniquement du budget de l’entreprise et des sponsors."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Comment les prix sont-ils répartis par rang ?",
@@ -71,6 +476,132 @@
       "La 6e place reçoit-elle quelque chose ?"
     ],
     "answer": "Les rangs 1 à 5 reçoivent les DIA prévus en totalité, les rangs 6 à 10 la moitié. Tous ceux du top 10 reçoivent aussi un ticket pour l’événement du niveau suivant."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Comment accéder à la Finale ?",
+    "aliases": [
+      "Conditions pour la Finale"
+    ],
+    "answer": "La Finale est un événement de championnat organisé une fois par saison. Si tu termines de la 1re à la 3e place d’un événement Demi, tu reçois un ticket qui t’envoie directement en Finale."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Avec un ticket, ai-je forcément une place ?",
+    "aliases": [
+      "Places par ticket"
+    ],
+    "answer": "Les places accessibles avec un ticket vont jusqu’à 20 % de la capacité de l’événement, et jusqu’à 15 % pour la Finale."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Une montre est-elle indispensable pour les événements ?",
+    "aliases": [
+      "Faut-il une montre connectée pour participer ?"
+    ],
+    "answer": "Les événements Débutant et Intermédiaire se font sans montre. Avancé, Demi et la Finale exigent un enregistrement de la fréquence cardiaque, donc une montre est nécessaire."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Combien coûte l’entrée dans une salle de course ?",
+    "aliases": [
+      "Frais de salle"
+    ],
+    "answer": "1 km coûte 600 SHARE, 2 km 900, 3 km 1 200, 5 km 1 800 et 10 km 3 000. Au-delà de 10 km, le prix augmente de 600 SHARE par tranche de 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Comment créer une salle de course ?",
+    "aliases": [
+      "Créer une salle"
+    ],
+    "answer": "J’ouvre l’écran de création de salle. Le choix de la distance fixe les frais, et une carte de confirmation s’affiche quand des SHARE vont être débités."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Comment la fin d’une salle est-elle validée ?",
+    "aliases": [
+      "Critère de fin de salle"
+    ],
+    "answer": "Il faut une course vérifiée sur la distance de la salle pour qu’elle soit validée. Le serveur vérifie si tu as terminé."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Que faut-il pour créer un crew ?",
+    "aliases": [
+      "Quelle est la caution du crew ?"
+    ],
+    "answer": "Créer un crew demande une caution d’ouverture de 3 000 SHARE. Dans l’onglet Crew, choisis un nom et une présentation et crée-le tout de suite."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Peut-on collecter les cotisations du crew dans l’appli ?",
+    "aliases": [
+      "Gestion des cotisations du crew"
+    ],
+    "answer": "Non, ShareRun ne propose pas de fonction pour collecter les cotisations du crew à ta place."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Puis-je participer gratuitement aux événements avec des VALUE ?",
+    "aliases": [
+      "Payer les frais avec des VALUE"
+    ],
+    "answer": "Non, les frais d’inscription se paient avec des tickets gratuits ou des SHARE, et les VALUE ne sont pas déduits pour cela. VALUE est un score d’honneur qui montre ton effort et aussi le score utilisé pour le financement de dons."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Dois-je payer des impôts sur les prix ?",
+    "aliases": [
+      "Impôts sur les prix"
+    ],
+    "answer": "Les récompenses d’événements sont versées sous forme de DIA bonus propres à l’appli, et non en retraits d’argent. S’il existe des prix ou cadeaux nécessitant une retenue à la source ou des informations de déclaration fiscale selon le droit fiscal, nous te préviendrons à l’avance, avant le versement, conformément aux lois applicables."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Quand les résultats de l’événement sont-ils publiés ?",
+    "aliases": [
+      "Quand les classements sont-ils annoncés ?"
+    ],
+    "answer": "Une fois l’événement terminé et la vérification des courses achevée, le classement final et les prix en DIA bonus sont réglés. Tu peux consulter le résultat sur l’écran de détails de l’événement et dans Mes transactions du Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Puis-je voir le classement en direct ?",
+    "aliases": [
+      "Voir le classement en direct en courant"
+    ],
+    "answer": "Tu peux voir le classement des résultats vérifiés des participants dans le tableau de l’écran de détails de l’événement. Pendant que tu cours, nous nous concentrons sur ton allure et les conseils de fréquence cardiaque, pour ta sécurité."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Comment la course devient-elle un don ?",
+    "aliases": [
+      "Fonctionnement des dons"
+    ],
+    "answer": "Pour chaque km vérifié que tu cours, l’entreprise (l’opérateur) prévoit de donner 100 KRW sur ses fonds propres. Le budget mensuel de dons de l’entreprise va jusqu’à 1 000 000 KRW. L’appli affiche la contribution accumulée grâce à tes courses."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Dois-je payer pour donner ?",
+    "aliases": [
+      "Est-ce moi qui paie le don ?"
+    ],
+    "answer": "Non, le don lié à la course est prévu sur les fonds de l’entreprise (opérateur). Tu n’as rien à payer."
   },
   {
     "id": "DO-03",
@@ -86,6 +617,159 @@
     ]
   },
   {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Le don est-il fait au nom de qui ?",
+    "aliases": [
+      "Qui est le donateur ?"
+    ],
+    "answer": "Nous prévoyons de donner 100 KRW par km vérifié sur les fonds de l’entreprise (opérateur) (jusqu’à 10 km par personne et par jour et 1 000 000 KRW par mois au total). Le bénéficiaire est en discussion et nous te le dirons dans l’appli dès qu’il sera choisi. Cela est enregistré dans l’appli comme ta contribution aux dons. Les dons que tu fais toi-même sont transmis en ton nom."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Puis-je obtenir un reçu de don ?",
+    "aliases": [
+      "Don pour la déclaration annuelle"
+    ],
+    "answer": "Pour les dons que tu fais toi-même, tu peux obtenir un reçu à ton nom sur des pages de don comme Happybean ou Gachi Gachi. Le don lié à la course est prévu sur les fonds de l’entreprise (opérateur), donc aucun reçu n’est délivré."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Je veux faire un don moi-même",
+    "aliases": [
+      "Donner avec mon propre argent"
+    ],
+    "answer": "Je te redirige vers une page de don comme Happybean ou Gachi Gachi. Ton don va directement à l’organisation et le reçu est établi à ton nom."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "L’entreprise prélève-t-elle des frais sur les dons ?",
+    "aliases": [
+      "Frais de don"
+    ],
+    "answer": "Non, l’entreprise ne prélève pas un seul won sur les dons."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "Que signifie « objectif de don atteint » ?",
+    "aliases": [
+      "« Objectif de don atteint » s’est affiché"
+    ],
+    "answer": "Cela signifie que le budget de dons de l’entreprise pour ce mois (1 000 000 KRW) est entièrement utilisé. Tes courses restent enregistrées, et les contributions se cumulent de nouveau dès le nouveau mois."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Marcher seulement compte-t-il comme don ?",
+    "aliases": [
+      "Les pas comptent-ils pour les dons ?"
+    ],
+    "answer": "Les dons sont calculés d’après la distance des courses qui passent la vérification. Les pas font gagner des SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "À quelle organisation le don est-il versé ?",
+    "aliases": [
+      "Où va le don ?"
+    ],
+    "answer": "Le bénéficiaire est actuellement en discussion. Dès qu’il sera choisi, nous te le dirons dans l’appli, et nous prévoyons de publier le détail des versements et les résultats du règlement dans l’état des dons de l’appli et le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Comment savoir que les dons sont bien utilisés ?",
+    "aliases": [
+      "Transparence des dons"
+    ],
+    "answer": "Nous publions le détail du règlement des dons. Consulte-le avec ta propre contribution dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Qu’est-ce qu’une campagne de dons d’entreprise ?",
+    "aliases": [
+      "Campagne de sponsor"
+    ],
+    "answer": "C’est une campagne où une entreprise donne 100 KRW par km dans la limite d’un budget qu’elle fixe. Tu vois le budget restant en temps réel, et elle se termine quand le budget est épuisé."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "J’ai terminé mais « don effectué » ne s’affiche pas",
+    "aliases": [
+      "Le don n’apparaît pas"
+    ],
+    "answer": "L’indicateur « don effectué » n’apparaît qu’une fois enregistré dans l’historique des transactions du serveur. Les courses qui ne passent pas la vérification ne sont pas incluses dans le don."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Y a-t-il une course de don ?",
+    "aliases": [
+      "Course de don virtuelle"
+    ],
+    "answer": "Pour chaque course vérifiée, l’entreprise (l’opérateur) prévoit de donner 100 KRW par km sur ses fonds (jusqu’à 10 km par personne et par jour et 1 000 000 KRW par mois au total). Chaque fois qu’une campagne de dons avec une entreprise est ouverte, tu peux aussi y participer depuis l’onglet Défis."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Comment obtenir un rang ?",
+    "aliases": [
+      "Comment obtenir un rang"
+    ],
+    "answer": "Il suffit de faire des courses vérifiées d’au moins 1 km sur trois jours différents. Après la troisième course, ton rang est déterminé par l’allure médiane des trois enregistrements."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Les 5 courses d’évaluation ont-elles disparu ?",
+    "aliases": [
+      "Cinq évaluations"
+    ],
+    "answer": "Oui, les 5 évaluations de rang ont disparu et ont été fusionnées en trois courses d’essai pour les nouveaux."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Puis-je obtenir un rang après 14 jours ?",
+    "aliases": [
+      "J’ai commencé tard, puis-je avoir un rang ?"
+    ],
+    "answer": "Oui, tu peux obtenir un rang à tout moment avec trois courses vérifiées. Toutefois, les SHARE de récompense d’essai ne sont accordés que dans les 14 jours suivant l’inscription."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Comment monter en rang ?",
+    "aliases": [
+      "Conditions de promotion"
+    ],
+    "answer": "Le rang monte automatiquement d’après tes courses des 28 derniers jours. Aucun test séparé n’est nécessaire."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Mon rang peut-il baisser ?",
+    "aliases": [
+      "Y a-t-il une rétrogradation ?"
+    ],
+    "answer": "Non, un rang obtenu ne baisse jamais."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Comment les anciens utilisateurs obtiennent-ils un rang ?",
+    "aliases": [
+      "Rang des utilisateurs existants"
+    ],
+    "answer": "Si tu as déjà trois courses vérifiées ou plus, ton rang est déterminé d’après ces enregistrements."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Dis-moi mon rang",
@@ -97,6 +781,630 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Pourquoi Escargot a-t-il l’air abattu ?",
+    "aliases": [
+      "Escargot a l’air triste"
+    ],
+    "answer": "L’air un peu déçu signifie que tu n’as pas encore de rang. Une fois que tu obtiens un rang et que ton tier monte, l’expression s’éclaircit peu à peu."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Puis-je garder Escargot après avoir obtenu un rang ?",
+    "aliases": [
+      "Choisir de nouveau Escargot"
+    ],
+    "answer": "Oui, Escargot est un personnage de base gratuit, tu peux donc le rechoisir à tout moment."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "N’y a-t-il pas d’autres personnages animaux ?",
+    "aliases": [
+      "Dis-moi les types de personnages animaux"
+    ],
+    "answer": "En plus d’Escargot, le personnage de base, il existe des personnages animaux répartis sur cinq niveaux de vitesse : Tortue, Beagle, Loup, Zèbre et Guépard. Quand tu obtiens un rang grâce à des courses vérifiées, tu rencontres le personnage animal qui correspond à ton allure."
+  },
+  {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Puis-je habiller mon personnage ?",
+    "aliases": [
+      "Habillages"
+    ],
+    "answer": "Oui, tu peux l’habiller avec des pièces et des skins. Ils sont vendus uniquement au prix fixe en DIA, sans tirages aléatoires."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "N’importe qui peut-il porter les skins de tier ?",
+    "aliases": [
+      "Conditions des skins de tier"
+    ],
+    "answer": "Tu ne peux porter un skin de tier qu’après avoir atteint ce tier."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Acheter des habillages améliore-t-il mes records ou récompenses ?",
+    "aliases": [
+      "Stats des skins"
+    ],
+    "answer": "Non, les habillages ne changent que l’apparence et n’ont aucun effet sur tes records ou récompenses."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Que deviennent les personnages animaux achetés auparavant ?",
+    "aliases": [
+      "Que deviennent les personnages achetés ?"
+    ],
+    "answer": "Les personnages animaux ne sont plus vendus séparément dans la boutique ; ils se débloquent automatiquement de Tortue à Guépard selon ton rang de course. Les pièces et skins obtenus auparavant restent dans ton inventaire."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "Qu’est-ce que VALUE ?",
+    "aliases": [
+      "Que veut dire VALUE ?"
+    ],
+    "answer": "VALUE est un score d’honneur qui ne s’accumule que par l’effort. Il sert aux votes, au Temple de la renommée, aux habillages réservés à l’effort, aux conditions d’événements et aux avantages de crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Comment gagner des VALUE ?",
+    "aliases": [
+      "Comment obtenir des VALUE"
+    ],
+    "answer": "Tu reçois 10 VALUE par km vérifié. Cela s’accumule jusqu’à 5 km, soit 50 VALUE, par jour."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Puis-je échanger des VALUE contre des DIA ou de l’argent ?",
+    "aliases": [
+      "Convertir des VALUE"
+    ],
+    "answer": "Non, les VALUE ne peuvent être ni échangés ni transférés contre quoi que ce soit. C’est un score d’honneur qui montre ton effort."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Combien de VALUE ai-je ?",
+    "aliases": [
+      "Solde de VALUE"
+    ],
+    "answer": "Tu as actuellement {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Qu’est-ce que le Temple de la renommée ?",
+    "aliases": [
+      "Dis-moi les critères du Temple de la renommée"
+    ],
+    "answer": "Le Temple de la renommée est un classement d’honneur qui célèbre les coureurs qui accumulent régulièrement des VALUE et des contributions aux dons grâce à des courses vérifiées. Tu peux le voir sur les écrans Défis et Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "L’image d’Escargot change-t-elle ?",
+    "aliases": [
+      "Le design d’Escargot change-t-il ?"
+    ],
+    "answer": "Le bot Escargot change entre quatre expressions selon la conversation : visage souriant, visage à l’écoute, visage joyeux et visage déçu."
+  },
+  {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Que contient le Centre de sécurité et de confidentialité ?",
+    "aliases": [
+      "Fonctions du Centre de sécurité"
+    ],
+    "answer": "Il propose des fonctions comme la liste des appareils connectés, la déconnexion à distance, les alertes de nouvelle connexion, Mes transactions et les réglages de confidentialité."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "ShareRun est-il sûr ?",
+    "aliases": [
+      "Peut-il être piraté ?"
+    ],
+    "answer": "Nous avons plusieurs couches de protection, comme la gestion des appareils connectés, les alertes de nouvelle connexion et la confirmation par empreinte lors des paiements. Si tu remarques quelque chose d’étrange, vérifie tout de suite dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Je veux déconnecter un appareil inconnu",
+    "aliases": [
+      "Déconnexion à distance"
+    ],
+    "answer": "Choisis cet appareil dans la liste des appareils connectés et tu pourras le déconnecter à distance."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Suis-je prévenu quand je me connecte sur un nouvel appareil ?",
+    "aliases": [
+      "Alerte de nouvelle connexion"
+    ],
+    "answer": "Oui, nous t’envoyons une notification quand tu te connectes sur un nouvel appareil."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Je pense que mon compte a été piraté",
+    "aliases": [
+      "Quelqu’un a utilisé mon compte"
+    ],
+    "answer": "Regarde d’abord la liste des appareils connectés dans le Centre de sécurité et de confidentialité et déconnecte tout de suite ceux que tu ne reconnais pas. Vérifie aussi s’il y a des enregistrements étranges dans tes transactions."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Pourquoi demande-t-on l’empreinte pour payer des DIA ?",
+    "aliases": [
+      "Vérification d’empreinte au paiement"
+    ],
+    "answer": "Quand les paiements de DIA seront ouverts, nous confirmerons une fois de plus avec ton empreinte au moment du paiement pour éviter les paiements non voulus."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Escargot peut-il dépenser mes DIA de lui-même ?",
+    "aliases": [
+      "Le bot paie-t-il ?"
+    ],
+    "answer": "Non, tout ce qui fait bouger de la monnaie, comme les DIA ou les dons, ne se fait qu’après une carte de confirmation et une vérification d’empreinte."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Les autres peuvent-ils voir mon parcours ?",
+    "aliases": [
+      "Visibilité des enregistrements"
+    ],
+    "answer": "La visibilité par défaut de tes enregistrements est « Moi seul ». Ne la modifie que si tu le souhaites."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Puis-je masquer le parcours près de chez moi ?",
+    "aliases": [
+      "Masquer l’emplacement de mon domicile"
+    ],
+    "answer": "Oui, il existe une fonction qui masque le parcours près de chez toi. Règle-la dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Mes données sont-elles utilisées pour entraîner l’IA ?",
+    "aliases": [
+      "Consentement à l’apprentissage de l’IA"
+    ],
+    "answer": "Tu peux activer ou désactiver toi-même l’utilisation pour l’entraînement de l’IA. Vérifie le réglage dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Puis-je l’utiliser sur un téléphone rooté ?",
+    "aliases": [
+      "Téléphone jailbreaké"
+    ],
+    "answer": "Sur un téléphone altéré, l’utilisation peut être restreinte afin de garder des enregistrements équitables."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Que faire si mes gains sont limités ou si je suis sanctionné ?",
+    "aliases": [
+      "Contester une sanction"
+    ],
+    "answer": "Nous publions la limite quotidienne de gains, les étapes de sanction et la façon de contester dans notre politique de gains équitables. Si tu estimes que c’est injuste, dépose une contestation."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Pourquoi la localisation est-elle nécessaire ?",
+    "aliases": [
+      "Pourquoi l’autorisation de localisation est-elle nécessaire ?"
+    ],
+    "answer": "Nous utilisons la localisation pour enregistrer et vérifier la distance et le parcours de tes courses. Par défaut, toi seul peux voir ton parcours."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Je veux supprimer mes données personnelles",
+    "aliases": [
+      "Supprimer les données personnelles"
+    ],
+    "answer": "Tes données personnelles sont supprimées quand tu quittes le service. Les données d’activité sont effacées sous 30 jours, et seuls les enregistrements de transactions que la loi oblige à conserver sont gardés pendant la durée prévue. Tu peux changer la visibilité et les réglages d’apprentissage de l’IA tout de suite dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Mes données disparaissent-elles si je change de téléphone ?",
+    "aliases": [
+      "Changement d’appareil"
+    ],
+    "answer": "Non, tous les enregistrements et monnaies sont stockés sur le serveur. Connecte-toi avec le même compte sur le nouveau téléphone et tout apparaît tel quel."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Les chiffres diffèrent d’un téléphone à l’autre",
+    "aliases": [
+      "Les SHARE diffèrent selon l’appareil"
+    ],
+    "answer": "Les valeurs suivent les enregistrements du serveur, elles devraient donc être identiques sur n’importe quel téléphone. Essaie de fermer l’appli puis de la rouvrir."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Mes enregistrements ont disparu",
+    "aliases": [
+      "Mes courses ont disparu"
+    ],
+    "answer": "Les enregistrements sont stockés dans l’historique de transactions permanent du serveur. Vérifie d’abord que tu t’es connecté avec le même compte."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "De quelles façons puis-je me connecter ?",
+    "aliases": [
+      "Méthodes de connexion"
+    ],
+    "answer": "Tu peux te connecter avec un compte Google, Apple, Kakao ou Naver. S’ils appartiennent à la même personne, tu peux les regrouper en un seul compte via Connexions liées dans les réglages, après avoir vérifié le pseudo et le solde du compte cible."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Comment quitter le service (supprimer le compte) ?",
+    "aliases": [
+      "Supprimer le compte"
+    ],
+    "answer": "Touche « Supprimer le compte » dans les réglages pour quitter. Ton compte de connexion est alors supprimé immédiatement et les SHARE, DIA et VALUE restants sont perdus. Les données d’activité comme les courses sont effacées sous 30 jours, et seuls les enregistrements de paiements et de transactions que la loi oblige à conserver sont gardés pendant la durée prévue (5 ans). Avant de partir, vérifie bien tes DIA restants et tes données."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Puis-je créer deux comptes ?",
+    "aliases": [
+      "Puis-je utiliser un compte secondaire ?"
+    ],
+    "answer": "Pour des gains et des événements équitables, un seul compte par personne est autorisé. Même si tu utilises plusieurs connexions sociales, relie-les à un seul compte dans Connexions liées, dans les réglages."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Où voir mon code d’invitation ?",
+    "aliases": [
+      "Mon code d’invitation"
+    ],
+    "answer": "J’ouvre l’écran du code d’invitation. Ton code d’invitation se partage séparément de la carte de fierté."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Quand la récompense de parrainage arrive-t-elle ?",
+    "aliases": [
+      "Quand reçoit-on les SHARE de parrainage ?"
+    ],
+    "answer": "La récompense de parrainage de 30 000 SHARE arrive après la période de blocage de 7 jours."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Je veux désactiver le bot Escargot",
+    "aliases": [
+      "Désactiver Escargot"
+    ],
+    "answer": "Tu peux désactiver le bot Escargot dans les réglages. Pour le réactiver, utilise le même endroit."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Où se trouve le service client ?",
+    "aliases": [
+      "Où puis-je vous contacter ?"
+    ],
+    "answer": "Tu peux laisser une demande à tout moment via Contact dans les réglages ou via la contestation de sanction dans le Centre de sécurité et de confidentialité. Pour une petite question, tu peux aussi me la poser directement."
+  },
+  {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Je veux commencer une course",
+    "aliases": [
+      "Commencer à courir"
+    ],
+    "answer": "J’ouvre l’écran de course. Pendant que tu cours, je t’encourage avec ma voix."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Les courses libres sont-elles aussi enregistrées ?",
+    "aliases": [
+      "Si je cours simplement, est-ce enregistré ?"
+    ],
+    "answer": "Oui, les enregistrements de courses libres, les séries et les badges sont toujours sauvegardés. Les récompenses en VALUE ne sont données que pour les courses qui passent la vérification."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Qu’est-ce qu’une course vérifiée ?",
+    "aliases": [
+      "Qu’est-ce que la vérification ?"
+    ],
+    "answer": "Le principe : les enregistrements sont toujours conservés et les récompenses ne vont qu’aux courses vérifiées. Une course est vérifiée quand tu cours au moins 1 km et passes les critères fixés."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quels sont les critères de vérification ?",
+    "aliases": [
+      "Critère de cadence"
+    ],
+    "answer": "Cours au moins 1 km à une cadence de 120 à 210 pas par minute. Dans une salle, il faut courir la distance de la salle."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Pourquoi la vérification a-t-elle échoué ?",
+    "aliases": [
+      "Raison de l’échec de la vérification"
+    ],
+    "answer": "La vérification peut échouer si la distance est inférieure à celle requise ou si ta cadence ou ta vitesse GPS sort des critères. L’enregistrement lui-même reste sauvegardé."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Peut-on être vérifié sans montre ?",
+    "aliases": [
+      "Une montre est-elle indispensable ?"
+    ],
+    "answer": "Oui. Sans montre, nous vérifions avec ta foulée et la vitesse GPS. Une montre n’est nécessaire que pour les événements Avancé, Demi et Finale."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Existe-t-il une appli dédiée à la montre ?",
+    "aliases": [
+      "Appli Galaxy Watch"
+    ],
+    "answer": "Sur les montres Wear OS comme la Galaxy Watch, nous prenons en charge une appli autonome qui se connecte avec un code d’appairage à 6 chiffres. Une appli pour Apple Watch est aussi prête, et Garmin, Mi Band, Amazfit, Fitbit, Samsung Health et COROS peuvent être utilisés via la synchronisation avec les applis santé et l’envoi de la fréquence cardiaque en Bluetooth en temps réel."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Gagne-t-on plus de SHARE en courant avec une montre ?",
+    "aliases": [
+      "Bonus montre"
+    ],
+    "answer": "Non, courir avec une montre ne donne pas de SHARE supplémentaires."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "L’enregistrement s’interrompt-il si j’éteins l’écran ?",
+    "aliases": [
+      "Puis-je éteindre l’écran ?"
+    ],
+    "answer": "Non, l’enregistrement continue même écran éteint. Pendant que tu cours, un indicateur « Enregistrement » reste affiché dans la zone de notifications."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mon enregistrement de course s’est interrompu en cours de route",
+    "aliases": [
+      "L’enregistrement s’est arrêté"
+    ],
+    "answer": "Elle peut être interrompue à cause des réglages de localisation, de notifications ou de batterie. Vérifie tout en une fois dans « Vérification des réglages d’enregistrement de course » dans Mon Profil."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "Le GPS capte mal",
+    "aliases": [
+      "Ma position semble fausse"
+    ],
+    "answer": "Vérifie d’abord que l’autorisation de localisation est activée. Dans « Vérification des réglages d’enregistrement de course », tu peux passer en revue les réglages nécessaires un par un."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Pourquoi demande-t-on des autorisations avant ma première course ?",
+    "aliases": [
+      "Pourquoi modifier les réglages de batterie ?"
+    ],
+    "answer": "Nous te guidons à l’avance sur les réglages de localisation, de notifications et de batterie pour que l’enregistrement ne s’interrompe pas, même écran éteint."
+  },
+  {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Combien de VALUE gagne-t-on par jour en course libre ?",
+    "aliases": [
+      "Limite quotidienne de VALUE"
+    ],
+    "answer": "Tu peux gagner 50 VALUE pour 5 km maximum par jour. Même si tu cours plus, tous tes enregistrements sont sauvegardés."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Comment fonctionnent les courses d’essai des nouveaux ?",
+    "aliases": [
+      "Courses d’essai"
+    ],
+    "answer": "Dans les 14 jours suivant l’inscription, termine une course vérifiée d’au moins 1 km sur trois jours différents. Une seule course compte par jour."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quelle est la récompense d’essai ?",
+    "aliases": [
+      "SHARE d’essai"
+    ],
+    "answer": "Tu reçois 10 000 SHARE après ta première course, puis 40 000 SHARE de plus après les trois, soit 50 000 SHARE au total."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Si je cours deux fois par jour, cela compte-t-il pour deux essais ?",
+    "aliases": [
+      "Faire les trois en un jour"
+    ],
+    "answer": "Non, une seule course d’essai compte par jour. Cours de nouveau un autre jour."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "J’ai terminé mais les SHARE ou l’indicateur de fin n’apparaissent pas",
+    "aliases": [
+      "La récompense arrive en retard"
+    ],
+    "answer": "L’indicateur de fin n’apparaît qu’une fois enregistré dans l’historique des transactions du serveur. Patiente un instant puis revérifie."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Où est passé le tour de tampons ?",
+    "aliases": [
+      "Je ne vois pas les tampons"
+    ],
+    "answer": "Le tour de tampons est masqué pour le moment. La marche de 1 km a été fusionnée avec les missions du podomètre et de course vérifiée, et les tampons de monuments reviendront plus tard sous forme d’événement."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Puis-je créer une carte de fierté ?",
+    "aliases": [
+      "Créer une carte de partage de record"
+    ],
+    "answer": "Oui, à la fin d’une course tu peux créer une carte de fierté avec ton temps, ta distance, ton allure et un message de don, et la partager tout de suite sur KakaoTalk, Instagram, X ou par SMS."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "La carte de fierté inclut-elle mon code d’invitation ?",
+    "aliases": [
+      "Code d’invitation sur la carte"
+    ],
+    "answer": "Non, nous ne mettons pas le code d’invitation sur la carte de fierté. Tu peux partager ton code d’invitation séparément."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mon nombre de pas n’augmente pas",
+    "aliases": [
+      "Le podomètre s’est arrêté"
+    ],
+    "answer": "Vérifie que l’autorisation d’activité du téléphone est activée et essaie de rouvrir l’appli."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ma série ou mes badges ont-ils disparu ?",
+    "aliases": [
+      "Mon badge a disparu"
+    ],
+    "answer": "Les enregistrements, séries et badges sont toujours sauvegardés, quelle que soit la vérification. Vérifie que tu t’es connecté avec le même compte."
+  },
+  {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Qu’est-ce que Coach+ ?",
+    "aliases": [
+      "Explique-moi Coach+"
+    ],
+    "answer": "Coach+ est un service d’abonnement qui te donne un coaching vocal approfondi, adapté à ta fréquence cardiaque et à ton allure en temps réel pendant que tu cours. Il est en préparation pour la vente ; pour l’instant, tu peux utiliser le coaching gratuit."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Combien coûte Coach+ ?",
+    "aliases": [
+      "Tarifs de Coach+"
+    ],
+    "answer": "Coach+ est en préparation à 6 900 KRW par mois et 59 000 KRW par an, avec 7 jours d’essai gratuit. Les paiements ne sont pas encore ouverts, tu ne seras donc pas facturé."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Y a-t-il un essai gratuit de Coach+ ?",
+    "aliases": [
+      "Version d’essai"
+    ],
+    "answer": "Oui, il y a un essai gratuit de 7 jours."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Comment résilier Coach+ ?",
+    "aliases": [
+      "Résilier l’abonnement"
+    ],
+    "answer": "Tu peux résilier facilement dans l’appli. J’ouvre l’écran de gestion de l’abonnement."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Puis-je acheter Coach+ maintenant ?",
+    "aliases": [
+      "Quand Coach+ sort-il ?"
+    ],
+    "answer": "Nous ne vendons pas Coach+ pour le moment. Nous te préviendrons d’abord quand ce sera prêt."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Quelle différence avec le coaching gratuit ?",
+    "aliases": [
+      "Différences de Coach+"
+    ],
+    "answer": "Le coaching gratuit donne des indications de base au départ, à l’arrivée et par distance, et Coach+ ajoute un coaching approfondi adapté à tes zones de fréquence cardiaque et à tes changements d’allure en temps réel."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Coache-t-il aussi sur les côtes ou le classement des événements ?",
+    "aliases": [
+      "Coaching en côte"
+    ],
+    "answer": "Le coaching en côte et le coaching selon le classement des événements sont encore en préparation. Nous te préviendrons d’abord quand ils seront prêts."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Comment fonctionne la voix d’Escargot ?",
+    "aliases": [
+      "Voix de coaching"
+    ],
+    "answer": "Nous diffusons encouragements et chiffres avec une voix d’Escargot préenregistrée. Quand aucune voix préparée n’est disponible, nous utilisons la voix par défaut de ton téléphone."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Je veux couper la voix de coaching",
+    "aliases": [
+      "Couper le son"
+    ],
+    "answer": "Touche une fois pendant ta course et le son est coupé immédiatement."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Coach+ est-il facturé automatiquement ?",
+    "aliases": [
+      "L’abonnement se renouvelle-t-il automatiquement ?"
+    ],
+    "answer": "Coach+ n’est pas encore en vente, rien n’est donc facturé automatiquement. Si tu t’abonnes après le lancement officiel, il se renouvelle automatiquement à la période choisie avec ton moyen de paiement du store, et tu peux résilier à tout moment dans la gestion des abonnements du store."
   },
   {
     "id": "SYS-FALLBACK",

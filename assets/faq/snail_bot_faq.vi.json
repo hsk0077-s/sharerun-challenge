@@ -10,6 +10,132 @@
     "answer": "Bạn tích lũy SHARE theo số bước đi và chạy, và với mỗi 1 km đã xác minh, công ty dự kiến quyên góp 100 KRW. Khoản quyên góp do công ty chi trả; bạn không phải trả gì."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Bạn là ai?",
+    "aliases": [
+      "Ốc Sên, bạn là gì?"
+    ],
+    "answer": "Mình là Ốc Sên, bạn đồng hành chạy bộ của bạn. Cứ hỏi bằng giọng nói là mình giúp ngay."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Dùng bot Ốc Sên thế nào?",
+    "aliases": [
+      "Hỏi Ốc Sên thế nào?"
+    ],
+    "answer": "Nhấn nút ốc sên ở góc dưới bên phải màn hình để xem các câu hỏi gợi ý phù hợp với màn hình hiện tại. Bạn cũng có thể nhấn micro và hỏi bằng giọng nói."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Có di chuyển được nút ốc sên không?",
+    "aliases": [
+      "Nút ốc sên che màn hình"
+    ],
+    "answer": "Bạn có thể kéo nút đến bất kỳ vị trí nào."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Sao khi chạy không thấy Ốc Sên?",
+    "aliases": [
+      "Nút ốc sên biến mất khi chạy"
+    ],
+    "answer": "Khi bạn chạy, nút được ẩn để không che màn hình. Thay vào đó, mình huấn luyện bạn bằng giọng của Ốc Sên."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Ốc Sên có chủ động nói chuyện không?",
+    "aliases": [
+      "Ốc Sên đột nhiên nói"
+    ],
+    "answer": "Mình chỉ chủ động nói vào những khoảnh khắc đáng ăn mừng. Còn lại, mình chỉ giúp khi bạn gọi."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Khẩu hiệu của ShareRun là gì?",
+    "aliases": [
+      "“Chừng nào tim còn đập” nghĩa là gì?"
+    ],
+    "answer": "Khẩu hiệu chính là “Chừng nào tim còn đập, sẻ chia cũng chạy”. Ở màn hình quyên góp còn dùng câu “Mỗi bước chân thành sẻ chia”."
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Dùng ứng dụng này có phải trả tiền không?",
+    "aliases": [
+      "Có miễn phí không?"
+    ],
+    "answer": "Đi bộ, chạy và tham gia quyên góp đều không tốn tiền. Hiện tại trong ứng dụng không có gì phải thanh toán."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Có kiếm tiền được bằng ứng dụng này không?",
+    "aliases": [
+      "Đi bộ có được trả tiền không?"
+    ],
+    "answer": "ShareRun không phải ứng dụng để kiếm tiền mà là ứng dụng để cùng sẻ chia khi đi bộ và chạy. SHARE là điểm hoạt động không thể đổi thành tiền mặt."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "SHARE, DIA và VALUE khác nhau thế nào?",
+    "aliases": [
+      "Cho mình biết các loại tiền tệ"
+    ],
+    "answer": "SHARE là điểm hoạt động nhận được khi đi bộ và chạy, DIA là tiền tệ trong ứng dụng dùng ở cửa hàng. VALUE là điểm danh dự tích lũy từ các lần chạy đã xác minh nên không thể đổi hay chuyển nhượng."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Thanh tab ở dưới có gì?",
+    "aliases": [
+      "Cho mình biết menu dưới"
+    ],
+    "answer": "Phía dưới có năm tab: Trang chủ, Cửa hàng, Thử thách, Crew và Cá nhân. Bạn có thể bắt đầu chạy ngay từ Trang chủ hoặc Thử thách."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Mình muốn xem lại phần giới thiệu",
+    "aliases": [
+      "Xem lại phần giải thích đầu tiên"
+    ],
+    "answer": "Bạn có thể xem lại bất cứ lúc nào ở mục “Xem lại phần giới thiệu” trong Cài đặt."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Có widget cho màn hình chính không?",
+    "aliases": [
+      "Có đặt widget lên màn hình được không?"
+    ],
+    "answer": "Nếu muốn, bạn có thể thêm widget vào màn hình chính để xem nhanh số bước hôm nay và số tiền quyên góp."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "SHARE là gì?",
+    "aliases": [
+      "SHARE nghĩa là gì?"
+    ],
+    "answer": "SHARE là điểm hoạt động tích lũy theo số bước đi và chạy. Không thể mua bằng tiền và cũng không thể đổi thành tiền mặt."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Cần đi bao nhiêu bước để nhận SHARE?",
+    "aliases": [
+      "Mỗi bước được bao nhiêu SHARE?"
+    ],
+    "answer": "Cứ mỗi 100 bước bạn được 10 SHARE."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Mỗi ngày nhận được bao nhiêu SHARE?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Không nhặt SHARE thì có mất không?",
+    "aliases": [
+      "Không nhặt thì có mất không?"
+    ],
+    "answer": "SHARE từ số bước có thể nhặt đến nửa đêm cùng ngày, trong giới hạn 600 SHARE mỗi ngày. Qua nửa đêm sẽ bắt đầu lại cùng số bước của ngày mới, nên hãy nhặt ngay trong ngày ở Trang chủ."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Có đổi SHARE sang DIA được không?",
+    "aliases": [
+      "Đổi SHARE sang DIA"
+    ],
+    "answer": "Bạn có thể đổi 1.200 SHARE lấy 1 DIA, tối đa 20 DIA mỗi tuần."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Có đổi DIA sang SHARE được không?",
+    "aliases": [
+      "Đổi DIA sang SHARE"
+    ],
+    "answer": "Không. Việc đổi chỉ một chiều, từ SHARE sang DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Có đổi SHARE sang tiền mặt được không?",
+    "aliases": [
+      "Rút SHARE"
+    ],
+    "answer": "SHARE là điểm hoạt động không thể đổi thành tiền mặt hay phiếu quà tặng. Bạn có thể đổi sang DIA hoặc dùng để đăng ký giải đấu."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Có mua SHARE bằng tiền được không?",
+    "aliases": [
+      "Nạp SHARE"
+    ],
+    "answer": "Không, SHARE không được bán. Bạn chỉ có thể tích lũy bằng cách đi bộ và chạy."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "SHARE có phải là coin không?",
+    "aliases": [
+      "Token có được niêm yết không?"
+    ],
+    "answer": "Không, SHARE không phải coin hay token. Đó là điểm hoạt động chỉ dùng trong ứng dụng."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "SHARE trị giá bao nhiêu KRW?",
+    "aliases": [
+      "Giá trị SHARE"
+    ],
+    "answer": "SHARE là điểm không được định giá bằng tiền nên chúng tôi không hiển thị số tiền KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "SHARE dùng để làm gì?",
+    "aliases": [
+      "Nơi dùng SHARE"
+    ],
+    "answer": "Bạn có thể đổi sang DIA hoặc dùng làm phí tham gia giải đấu, phòng chạy và tiền đặt cọc của crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Xem quảng cáo có được SHARE không?",
+    "aliases": [
+      "Có thưởng khi xem quảng cáo không?"
+    ],
+    "answer": "Không, không có tính năng nhận SHARE khi xem quảng cáo. Bạn có thể tích lũy SHARE bằng cách đi bộ và chạy, qua các lần chạy thử cho người mới và mời bạn bè."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Mời bạn bè thì nhận được gì?",
+    "aliases": [
+      "Thưởng mời bạn"
+    ],
+    "answer": "Nếu bạn bè được mời hoàn thành các lần chạy từ 1 km trở lên trong 3 ngày khác nhau trong vòng 14 ngày, bạn nhận 30.000 SHARE. Khoản này về sau thời gian giữ 7 ngày, và bạn của bạn cũng nhận 10.000 SHARE ở lần chạy đầu tiên và 40.000 SHARE ở lần thứ ba."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "DIA là gì?",
+    "aliases": [
+      "DIA nghĩa là gì?"
+    ],
+    "answer": "DIA là tiền tệ trong ứng dụng dùng ở cửa hàng để mua trang phục và vật phẩm. Bạn nhận được bằng cách đổi SHARE hoặc làm giải thưởng giải đấu."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "DIA thưởng và DIA trả phí khác nhau thế nào?",
+    "aliases": [
+      "DIA thưởng là gì?"
+    ],
+    "answer": "DIA thưởng là DIA nhận miễn phí (đổi SHARE, giải thưởng, phần thưởng, quà tặng kèm, v.v.). DIA trả phí là DIA bạn tự mua. Khi dùng, DIA thưởng được trừ trước."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "DIA nào được dùng trước?",
+    "aliases": [
+      "Thứ tự dùng DIA"
+    ],
+    "answer": "DIA thưởng được dùng trước, hết thì dùng DIA trả phí. Tuy nhiên, Battle Pass và Pass+ chỉ mua được bằng DIA trả phí."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Có đổi DIA thưởng sang tiền mặt được không?",
+    "aliases": [
+      "Hoàn tiền DIA giải thưởng"
+    ],
+    "answer": "DIA thưởng không thể đổi thành tiền mặt, hoàn tiền hay chuyển nhượng. Đây là DIA dùng trong ứng dụng."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "DIA có được hoàn tiền không?",
+    "aliases": [
+      "Cách hoàn tiền DIA"
+    ],
+    "answer": "Hiện chúng tôi không bán DIA nên không có DIA trả phí để hoàn tiền. Khi bắt đầu bán, DIA trả phí chưa dùng có thể được hoàn tiền trong vòng 7 ngày kể từ ngày mua."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Mua DIA như thế nào?",
+    "aliases": [
+      "Nạp DIA"
+    ],
+    "answer": "Hiện chúng tôi không bán DIA. Khi bắt đầu bán, chúng tôi sẽ báo trước. Bạn có thể nhận DIA bằng cách đổi SHARE hoặc làm giải thưởng giải đấu."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Có những gói DIA nào?",
+    "aliases": [
+      "Bảng giá DIA"
+    ],
+    "answer": "Hiện chúng tôi không bán DIA. Khi bắt đầu bán, các loại gói và giá sẽ được hiển thị ở màn hình cửa hàng."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Mua được gì ở cửa hàng?",
+    "aliases": [
+      "Danh sách sản phẩm cửa hàng"
+    ],
+    "answer": "Ở cửa hàng, bạn dùng DIA để mua bộ phận trang trí và skin cho nhân vật, cùng vật phẩm chạy như vé hồi sinh kỷ lục và Safe Guard. Gây quỹ quyên góp tham gia bằng VALUE cũng nằm ở cửa hàng."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Có rút thăm ngẫu nhiên hay hộp không?",
+    "aliases": [
+      "Có gacha không?"
+    ],
+    "answer": "Không, không có rút thăm ngẫu nhiên. Mọi sản phẩm chỉ bán với giá DIA cố định."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Vào cửa hàng ở đâu?",
+    "aliases": [
+      "Cửa hàng ở đâu?"
+    ],
+    "answer": "Nhấn tab Cửa hàng ở cuối màn hình, hoặc nhấn thẻ DIA của tôi ở Trang chủ để vào ngay."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Có mua đồ bằng DIA thưởng được không?",
+    "aliases": [
+      "Mua trang phục bằng DIA giải thưởng"
+    ],
+    "answer": "Được, DIA thưởng cũng dùng được ở cửa hàng và được trừ trước DIA trả phí."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Có Battle Pass không?",
+    "aliases": [
+      "Có thẻ mùa không?"
+    ],
+    "answer": "Bạn có thể xem màn hình Battle Run Pass Mùa 1 ở Thử thách và Cửa hàng. Hiện chưa mở mua trả phí nên bạn có thể bắt đầu với đường thưởng miễn phí."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Có tham gia giải đấu bằng DIA được không?",
+    "aliases": [
+      "Đăng ký giải đấu bằng DIA"
+    ],
+    "answer": "Giải đấu có giải thưởng chỉ tham gia bằng vé miễn phí hoặc SHARE. Không thể tham gia bằng DIA trả phí."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "Tôi đã thanh toán nhưng DIA chưa về",
+    "aliases": [
+      "Nạp DIA chưa nhận được"
+    ],
+    "answer": "DIA sẽ về sau khi thanh toán được xác nhận và ghi vào nhật ký giao dịch của máy chủ. Hãy xem Lịch sử giao dịch trong Trung tâm bảo mật & quyền riêng tư sau một lúc, nếu vẫn không thấy, hãy báo cho chúng tôi qua mục Liên hệ trong Cài đặt."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Vé hồi sinh kỷ lục là gì?",
+    "aliases": [
+      "Cho mình biết hiệu quả vé hồi sinh"
+    ],
+    "answer": "Vé hồi sinh kỷ lục là vật phẩm khôi phục chuỗi ngày bị đứt trong vòng 72 giờ, dùng tối đa hai lần mỗi tháng với 12 DIA. Safe Guard là vật phẩm bảo vệ trước một ngày bị bỏ lỡ."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Có tặng DIA cho bạn bè được không?",
+    "aliases": [
+      "Gửi DIA"
+    ],
+    "answer": "Không, cả DIA thưởng lẫn DIA trả phí đều không thể tặng hay chuyển cho người khác. Bạn chỉ có thể dùng an toàn trên tài khoản của mình."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Xem được lịch sử dùng DIA không?",
+    "aliases": [
+      "Lịch sử dùng DIA"
+    ],
+    "answer": "Có, bạn xem được mọi bản ghi DIA vào và ra trong Lịch sử giao dịch ở Trung tâm bảo mật & quyền riêng tư. Các bản ghi này được lưu trên máy chủ và không bị xóa."
   },
   {
     "id": "CO-01",
@@ -63,6 +432,42 @@
     "answer": "Giải Sơ cấp được tham gia miễn phí hai lần đầu. Sau đó là 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "Tham gia giải đấu được tối đa mấy lần?",
+    "aliases": [
+      "Số lần tham gia giải"
+    ],
+    "answer": "Mỗi tuần bạn có thể tham gia một giải theo cấp một lần."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Mình muốn tham gia giải đấu",
+    "aliases": [
+      "Mình sẽ đăng ký giải đấu"
+    ],
+    "answer": "Mình sẽ mở màn hình đăng ký giải đấu. Khi sắp trừ phí tham gia, mình sẽ hỏi lại một lần nữa bằng thẻ xác nhận."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Giải thưởng được trả bằng gì?",
+    "aliases": [
+      "Giải thưởng có phải tiền mặt không?"
+    ],
+    "answer": "Giải thưởng được trao bằng DIA thưởng và không có giải thưởng tiền mặt. Giải thưởng chỉ lấy từ ngân sách của công ty và nhà tài trợ."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Phí tham gia có gom lại thành giải thưởng không?",
+    "aliases": [
+      "Giải thưởng có lấy từ phí tham gia không?"
+    ],
+    "answer": "Không, phí tham gia không được dùng làm giải thưởng. Giải thưởng chỉ lấy từ ngân sách của công ty và nhà tài trợ."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Giải thưởng chia theo hạng thế nào?",
@@ -71,6 +476,132 @@
       "Hạng 6 có được không?"
     ],
     "answer": "Hạng 1 đến 5 nhận đủ số DIA quy định, hạng 6 đến 10 nhận một nửa. Ai vào top 10 cũng nhận vé tham gia giải cấp tiếp theo."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Làm sao vào Chung kết?",
+    "aliases": [
+      "Điều kiện vào Chung kết"
+    ],
+    "answer": "Chung kết là giải quyết định diễn ra mỗi mùa một lần. Nếu bạn về hạng 1 đến 3 ở giải Half, bạn nhận vé vào thẳng Chung kết."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Có vé tham gia thì chắc chắn có chỗ không?",
+    "aliases": [
+      "Chỗ cho vé tham gia"
+    ],
+    "answer": "Số chỗ vào bằng vé tham gia tối đa là 20% sức chứa của giải, riêng Chung kết là 15%."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Tham gia giải có bắt buộc cần đồng hồ không?",
+    "aliases": [
+      "Cần smartwatch mới tham gia được không?"
+    ],
+    "answer": "Giải Sơ cấp và Trung cấp tham gia được mà không cần đồng hồ. Cao cấp, Half và Chung kết cần ghi nhịp tim nên bạn phải có đồng hồ."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Phí vào phòng chạy là bao nhiêu?",
+    "aliases": [
+      "Phí phòng"
+    ],
+    "answer": "1 km là 600 SHARE, 2 km 900, 3 km 1.200, 5 km 1.800, 10 km 3.000. Với quãng đường trên 10 km, cứ thêm 5 km tăng 600 SHARE."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Tạo phòng chạy thế nào?",
+    "aliases": [
+      "Tạo phòng"
+    ],
+    "answer": "Mình sẽ mở màn hình tạo phòng. Chọn quãng đường là phí tham gia được định, và thẻ xác nhận hiện ra khi sắp trừ SHARE."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Hoàn thành phòng được tính thế nào?",
+    "aliases": [
+      "Tiêu chí hoàn thành phòng"
+    ],
+    "answer": "Bạn cần một lần chạy đã xác minh đủ quãng đường của phòng thì mới được tính là hoàn thành. Máy chủ sẽ kiểm tra việc hoàn thành."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Cần gì để tạo crew?",
+    "aliases": [
+      "Tiền đặt cọc crew là bao nhiêu?"
+    ],
+    "answer": "Tạo crew cần khoản đặt cọc mở 3.000 SHARE. Ở tab Crew, bạn đặt tên và giới thiệu crew rồi tạo ngay."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Có thu hội phí crew trong ứng dụng được không?",
+    "aliases": [
+      "Quản lý hội phí crew"
+    ],
+    "answer": "Không, ShareRun không có tính năng thu hội phí crew thay bạn."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Có tham gia giải miễn phí bằng VALUE được không?",
+    "aliases": [
+      "Trả phí tham gia bằng VALUE"
+    ],
+    "answer": "Không, phí tham gia giải được trả bằng vé miễn phí hoặc SHARE, VALUE không bị trừ làm phí tham gia. VALUE là điểm danh dự thể hiện nỗ lực của bạn và cũng là điểm dùng cho gây quỹ quyên góp."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Nhận giải thưởng có phải đóng thuế không?",
+    "aliases": [
+      "Thuế giải thưởng"
+    ],
+    "answer": "Phần thưởng giải đấu được trao bằng DIA thưởng chỉ dùng trong ứng dụng, không phải rút tiền mặt. Nếu có giải thưởng hoặc quà cần khấu trừ thuế hay hướng dẫn kê khai theo luật thuế, chúng tôi sẽ thông báo trước khi trao, theo quy định pháp luật liên quan."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Khi nào có kết quả giải đấu?",
+    "aliases": [
+      "Khi nào công bố thứ hạng?"
+    ],
+    "answer": "Sau khi giải kết thúc và việc xác minh các lần chạy hoàn tất, thứ hạng cuối cùng và giải thưởng DIA thưởng sẽ được quyết toán. Bạn xem kết quả ở màn hình chi tiết giải đấu và trong Lịch sử giao dịch ở Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Xem được thứ hạng giải đấu trực tiếp không?",
+    "aliases": [
+      "Xem thứ hạng trực tiếp khi chạy"
+    ],
+    "answer": "Bạn xem thứ hạng các kết quả đã xác minh của người tham gia ở bảng xếp hạng trong màn hình chi tiết giải đấu. Khi đang chạy, vì an toàn, chúng tôi tập trung hướng dẫn tốc độ và nhịp tim của bạn."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Chạy thì được quyên góp như thế nào?",
+    "aliases": [
+      "Cách quyên góp hoạt động"
+    ],
+    "answer": "Với mỗi 1 km đã xác minh bạn chạy, công ty (đơn vị vận hành) dự kiến quyên góp 100 KRW từ quỹ của mình. Ngân sách quyên góp hằng tháng của công ty tối đa 1.000.000 KRW. Ứng dụng hiển thị phần đóng góp tích lũy từ các lần chạy của bạn."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Tôi có phải bỏ tiền để quyên góp không?",
+    "aliases": [
+      "Tôi có phải trả tiền quyên góp không?"
+    ],
+    "answer": "Không, khoản quyên góp khi chạy dự kiến lấy từ quỹ của công ty (đơn vị vận hành). Bạn không phải trả gì."
   },
   {
     "id": "DO-03",
@@ -86,6 +617,159 @@
     ]
   },
   {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Quyên góp đứng tên ai?",
+    "aliases": [
+      "Ai là người quyên góp?"
+    ],
+    "answer": "Chúng tôi dự kiến quyên góp 100 KRW cho mỗi 1 km đã xác minh từ quỹ của công ty (đơn vị vận hành) (tối đa 10 km mỗi người mỗi ngày và tổng cộng 1.000.000 KRW mỗi tháng). Nơi nhận đang được thảo luận, khi có quyết định chúng tôi sẽ báo trong ứng dụng. Khoản này được ghi trong ứng dụng là phần đóng góp quyên góp của bạn. Các khoản quyên góp bạn tự thực hiện được chuyển dưới tên của bạn."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Có nhận được biên lai quyên góp không?",
+    "aliases": [
+      "Quyên góp để quyết toán thuế cuối năm"
+    ],
+    "answer": "Với các khoản quyên góp bạn tự thực hiện, bạn có thể nhận biên lai đứng tên mình trên các trang quyên góp như Happybean hoặc Gachi Gachi. Khoản quyên góp khi chạy dự kiến lấy từ quỹ của công ty (đơn vị vận hành) nên không có biên lai."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Tôi muốn tự quyên góp",
+    "aliases": [
+      "Quyên góp bằng tiền của mình"
+    ],
+    "answer": "Mình sẽ dẫn bạn đến trang quyên góp như Happybean hoặc Gachi Gachi. Tiền quyên góp đi thẳng đến tổ chức, biên lai được cấp đứng tên bạn."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Công ty có thu phí từ tiền quyên góp không?",
+    "aliases": [
+      "Phí quyên góp"
+    ],
+    "answer": "Không, công ty không giữ lại một won nào từ tiền quyên góp."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "“Đạt mục tiêu quyên góp” nghĩa là gì?",
+    "aliases": [
+      "Hiện “Đạt mục tiêu quyên góp”"
+    ],
+    "answer": "Nghĩa là ngân sách quyên góp tháng đó của công ty (1.000.000 KRW) đã dùng hết. Bản ghi chạy của bạn vẫn được lưu và phần đóng góp lại tích lũy khi sang tháng mới."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Chỉ đi bộ có được quyên góp không?",
+    "aliases": [
+      "Số bước có tính vào quyên góp không?"
+    ],
+    "answer": "Quyên góp được tính theo quãng đường các lần chạy vượt qua xác minh. Số bước tích lũy SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "Quyên góp cho tổ chức nào?",
+    "aliases": [
+      "Quyên góp đến đâu?"
+    ],
+    "answer": "Nơi nhận hiện đang được thảo luận. Khi có quyết định, chúng tôi sẽ báo trong ứng dụng và dự kiến công khai chi tiết chuyển tiền cùng kết quả quyết toán ở mục tình hình quyên góp của ứng dụng và Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Làm sao biết tiền quyên góp được dùng đúng?",
+    "aliases": [
+      "Tính minh bạch của quyên góp"
+    ],
+    "answer": "Chúng tôi công khai chi tiết quyết toán quyên góp. Hãy xem cùng phần đóng góp của bạn trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Chiến dịch quyên góp của doanh nghiệp là gì?",
+    "aliases": [
+      "Chiến dịch tài trợ"
+    ],
+    "answer": "Đây là chiến dịch trong đó doanh nghiệp quyên góp 100 KRW cho mỗi 1 km trong ngân sách do họ đặt. Bạn xem được ngân sách còn lại theo thời gian thực và chiến dịch kết thúc khi hết ngân sách."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Tôi chạy xong nhưng không thấy “hoàn tất quyên góp”",
+    "aliases": [
+      "Quyên góp chưa được ghi nhận"
+    ],
+    "answer": "Dấu hiệu hoàn tất quyên góp chỉ hiện sau khi được ghi vào nhật ký giao dịch của máy chủ. Các lần chạy không vượt qua xác minh sẽ không được tính vào quyên góp."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Có cuộc đua quyên góp không?",
+    "aliases": [
+      "Cuộc đua quyên góp ảo"
+    ],
+    "answer": "Với mỗi lần chạy đã xác minh, công ty (đơn vị vận hành) dự kiến quyên góp 100 KRW cho mỗi km từ quỹ của mình (tối đa 10 km mỗi người mỗi ngày và tổng cộng 1.000.000 KRW mỗi tháng). Mỗi khi có chiến dịch quyên góp cùng doanh nghiệp mở ra, bạn cũng có thể tham gia ở tab Thử thách."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Làm sao nhận hạng?",
+    "aliases": [
+      "Cách nhận hạng"
+    ],
+    "answer": "Bạn chỉ cần hoàn thành các lần chạy đã xác minh từ 1 km trở lên trong ba ngày khác nhau. Sau lần chạy thứ ba, hạng được xác định theo tốc độ trung vị của ba bản ghi."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "5 lần chạy đánh giá hạng đã bị bỏ chưa?",
+    "aliases": [
+      "Năm lần đánh giá"
+    ],
+    "answer": "Đúng vậy, 5 lần đánh giá hạng đã bỏ và được gộp thành ba lần chạy thử cho người mới."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Quá 14 ngày sau khi đăng ký có nhận hạng được không?",
+    "aliases": [
+      "Bắt đầu muộn có nhận hạng được không?"
+    ],
+    "answer": "Được, bạn nhận hạng bất cứ lúc nào bằng ba lần chạy đã xác minh. Tuy nhiên, SHARE thưởng chạy thử chỉ được trao trong vòng 14 ngày sau khi đăng ký."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Hạng tăng như thế nào?",
+    "aliases": [
+      "Điều kiện lên hạng"
+    ],
+    "answer": "Hạng tự động tăng dựa trên bản ghi chạy 28 ngày gần nhất. Bạn không cần thi riêng."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Hạng có bị giảm không?",
+    "aliases": [
+      "Có bị hạ hạng không?"
+    ],
+    "answer": "Không, hạng đã nhận sẽ không bị giảm."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Người dùng cũ nhận hạng thế nào?",
+    "aliases": [
+      "Hạng của người dùng hiện có"
+    ],
+    "answer": "Nếu bạn đã có từ ba lần chạy đã xác minh trở lên, hạng sẽ được xác định từ các bản ghi đó."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Cho mình biết hạng của mình",
@@ -97,6 +781,630 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Sao Ốc Sên trông buồn vậy?",
+    "aliases": [
+      "Ốc Sên trông buồn"
+    ],
+    "answer": "Vẻ hơi thất vọng nghĩa là bạn chưa có thứ hạng. Khi nhận hạng và tier tăng lên, nét mặt sẽ dần tươi hơn."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Sau khi có hạng vẫn dùng Ốc Sên được không?",
+    "aliases": [
+      "Chọn lại Ốc Sên"
+    ],
+    "answer": "Được, Ốc Sên là nhân vật cơ bản miễn phí nên bạn có thể chọn lại bất cứ lúc nào."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Không có nhân vật động vật nào khác sao?",
+    "aliases": [
+      "Cho mình biết các loại nhân vật động vật"
+    ],
+    "answer": "Ngoài nhân vật cơ bản Ốc Sên, còn có nhân vật động vật theo năm tier tốc độ: Rùa, Beagle, Sói, Ngựa vằn và Báo săn. Khi nhận hạng từ các lần chạy đã xác minh, bạn sẽ gặp nhân vật động vật hợp với tốc độ của mình."
+  },
+  {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Có trang trí nhân vật được không?",
+    "aliases": [
+      "Trang phục"
+    ],
+    "answer": "Được, bạn có thể trang trí bằng bộ phận và skin. Chỉ bán theo giá DIA cố định, không có rút thăm ngẫu nhiên."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Ai cũng mặc được skin tier không?",
+    "aliases": [
+      "Điều kiện skin tier"
+    ],
+    "answer": "Bạn chỉ mặc được skin tier sau khi đạt đến tier đó."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Mua trang phục có làm bản ghi hay phần thưởng tốt hơn không?",
+    "aliases": [
+      "Chỉ số skin"
+    ],
+    "answer": "Không, trang phục chỉ thay đổi diện mạo và không ảnh hưởng đến bản ghi hay phần thưởng."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Nhân vật động vật đã mua trước đây thì sao?",
+    "aliases": [
+      "Nhân vật đã mua thì sao?"
+    ],
+    "answer": "Nhân vật động vật không còn bán riêng ở cửa hàng; chúng tự động mở từ Rùa đến Báo săn theo hạng chạy của bạn. Các bộ phận và skin bạn có trước đó vẫn giữ nguyên trong kho."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "VALUE là gì?",
+    "aliases": [
+      "VALUE nghĩa là gì?"
+    ],
+    "answer": "VALUE là điểm danh dự chỉ tích lũy bằng nỗ lực. Dùng cho bỏ phiếu, Đại sảnh danh vọng, trang phục dành riêng cho nỗ lực, điều kiện tham gia giải và quyền lợi crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Tích lũy VALUE thế nào?",
+    "aliases": [
+      "Cách có VALUE"
+    ],
+    "answer": "Mỗi 1 km đã xác minh bạn nhận 10 VALUE. Tích lũy tối đa 5 km, tức 50 VALUE mỗi ngày."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Có đổi VALUE sang DIA hay tiền mặt được không?",
+    "aliases": [
+      "Quy đổi VALUE"
+    ],
+    "answer": "Không, VALUE không thể đổi hay chuyển nhượng lấy bất cứ thứ gì. Đây là điểm danh dự thể hiện nỗ lực của bạn."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Mình có bao nhiêu VALUE?",
+    "aliases": [
+      "Số dư VALUE"
+    ],
+    "answer": "Hiện bạn có {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Đại sảnh danh vọng là gì?",
+    "aliases": [
+      "Cho mình biết tiêu chí Đại sảnh danh vọng"
+    ],
+    "answer": "Đại sảnh danh vọng là bảng xếp hạng danh dự vinh danh những người chạy đều đặn tích lũy VALUE và đóng góp quyên góp qua các lần chạy đã xác minh. Bạn xem ở màn hình Thử thách và Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Hình ảnh Ốc Sên có thay đổi không?",
+    "aliases": [
+      "Thiết kế Ốc Sên có đổi không?"
+    ],
+    "answer": "Bot Ốc Sên thay đổi giữa bốn biểu cảm theo cuộc trò chuyện: mặt cười, mặt lắng nghe, mặt vui mừng và mặt thất vọng."
+  },
+  {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Trung tâm bảo mật & quyền riêng tư có gì?",
+    "aliases": [
+      "Tính năng Trung tâm bảo mật"
+    ],
+    "answer": "Có các tính năng như danh sách thiết bị đăng nhập, đăng xuất từ xa, thông báo đăng nhập mới, Lịch sử giao dịch và cài đặt phạm vi hiển thị."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "ShareRun có an toàn không?",
+    "aliases": [
+      "Có bị hack không?"
+    ],
+    "answer": "Chúng tôi có nhiều lớp bảo vệ như quản lý thiết bị đăng nhập, thông báo đăng nhập mới và xác nhận vân tay khi thanh toán. Nếu thấy điều gì lạ, hãy kiểm tra ngay trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Tôi muốn đăng xuất thiết bị lạ",
+    "aliases": [
+      "Đăng xuất từ xa"
+    ],
+    "answer": "Chọn thiết bị đó trong danh sách thiết bị đăng nhập là bạn có thể đăng xuất từ xa."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Có thông báo khi đăng nhập trên thiết bị mới không?",
+    "aliases": [
+      "Thông báo đăng nhập mới"
+    ],
+    "answer": "Có, chúng tôi gửi thông báo khi bạn đăng nhập trên thiết bị mới."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Tôi nghĩ tài khoản bị hack",
+    "aliases": [
+      "Có người dùng tài khoản của tôi"
+    ],
+    "answer": "Trước hết hãy xem danh sách thiết bị đăng nhập trong Trung tâm bảo mật & quyền riêng tư và đăng xuất ngay thiết bị lạ. Cũng hãy kiểm tra xem lịch sử giao dịch có bản ghi bất thường nào không."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Sao thanh toán DIA lại hỏi vân tay?",
+    "aliases": [
+      "Xác nhận vân tay khi thanh toán"
+    ],
+    "answer": "Khi mở thanh toán DIA, chúng tôi sẽ xác nhận thêm một lần bằng vân tay lúc thanh toán để ngăn các giao dịch ngoài ý muốn."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Ốc Sên có tự ý dùng DIA của tôi được không?",
+    "aliases": [
+      "Bot có thanh toán không?"
+    ],
+    "answer": "Không, mọi việc liên quan đến tiền tệ như DIA hay quyên góp chỉ được tiến hành sau thẻ xác nhận và xác nhận vân tay."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Người khác có thấy lộ trình chạy của tôi không?",
+    "aliases": [
+      "Phạm vi hiển thị bản ghi"
+    ],
+    "answer": "Phạm vi hiển thị mặc định của bản ghi là “Chỉ mình tôi”. Chỉ đổi phạm vi khi bạn muốn."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Có ẩn được lộ trình gần nhà không?",
+    "aliases": [
+      "Ẩn vị trí nhà"
+    ],
+    "answer": "Có, có tính năng ẩn lộ trình gần nhà. Hãy thiết lập trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Dữ liệu của tôi có dùng để huấn luyện AI không?",
+    "aliases": [
+      "Đồng ý huấn luyện AI"
+    ],
+    "answer": "Bạn tự bật hoặc tắt việc có dùng để huấn luyện AI hay không. Hãy kiểm tra cài đặt trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Dùng được trên điện thoại đã root không?",
+    "aliases": [
+      "Điện thoại jailbreak"
+    ],
+    "answer": "Trên điện thoại đã bị can thiệp, việc sử dụng có thể bị hạn chế để bản ghi được công bằng."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Nếu bị hạn chế tích lũy hoặc bị xử phạt thì sao?",
+    "aliases": [
+      "Khiếu nại xử phạt"
+    ],
+    "answer": "Chúng tôi công khai giới hạn tích lũy hằng ngày, các mức xử phạt và cách khiếu nại trong chính sách tích lũy công bằng. Nếu thấy bất công, hãy gửi khiếu nại."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Tại sao cần thông tin vị trí?",
+    "aliases": [
+      "Tại sao cần quyền vị trí?"
+    ],
+    "answer": "Chúng tôi dùng vị trí để ghi lại và xác minh quãng đường và lộ trình chạy. Mặc định chỉ mình bạn thấy lộ trình."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Tôi muốn xóa thông tin cá nhân",
+    "aliases": [
+      "Xóa thông tin cá nhân"
+    ],
+    "answer": "Thông tin cá nhân bị xóa khi bạn rời dịch vụ. Hồ sơ hoạt động được xóa trong vòng 30 ngày, chỉ các bản ghi giao dịch mà luật yêu cầu lưu giữ mới được giữ trong thời hạn quy định. Bạn có thể đổi ngay phạm vi hiển thị và cài đặt huấn luyện AI trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Đổi điện thoại thì bản ghi có mất không?",
+    "aliases": [
+      "Đổi thiết bị"
+    ],
+    "answer": "Không, mọi bản ghi và tiền tệ đều được lưu trên máy chủ. Đăng nhập cùng tài khoản trên điện thoại mới là mọi thứ hiện nguyên như cũ."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Con số khác nhau giữa các điện thoại",
+    "aliases": [
+      "SHARE khác nhau giữa các thiết bị"
+    ],
+    "answer": "Giá trị dựa theo bản ghi trên máy chủ nên phải giống nhau trên mọi điện thoại. Hãy thử đóng ứng dụng rồi mở lại."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Bản ghi của tôi biến mất",
+    "aliases": [
+      "Bản ghi chạy của tôi mất"
+    ],
+    "answer": "Bản ghi được lưu trong nhật ký giao dịch không thể xóa trên máy chủ. Trước hết hãy kiểm tra bạn đã đăng nhập đúng tài khoản chưa."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "Đăng nhập bằng cách nào?",
+    "aliases": [
+      "Cách đăng nhập"
+    ],
+    "answer": "Bạn có thể đăng nhập bằng tài khoản Google, Apple, Kakao hoặc Naver. Nếu là cùng một người, bạn có thể gộp thành một tài khoản ở mục Đăng nhập đã liên kết trong Cài đặt, sau khi kiểm tra biệt danh và số dư của tài khoản đích."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Rời dịch vụ (xóa tài khoản) thế nào?",
+    "aliases": [
+      "Xóa tài khoản"
+    ],
+    "answer": "Nhấn “Xóa tài khoản” trong Cài đặt để rời dịch vụ. Khi đó tài khoản đăng nhập bị xóa ngay và SHARE, DIA, VALUE còn lại sẽ mất. Hồ sơ hoạt động như các lần chạy được xóa trong vòng 30 ngày, chỉ các bản ghi thanh toán và giao dịch mà luật yêu cầu lưu giữ mới được giữ trong thời hạn quy định (5 năm). Trước khi rời, hãy nhớ kiểm tra DIA còn lại và các bản ghi."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Có được tạo hai tài khoản không?",
+    "aliases": [
+      "Có được dùng tài khoản phụ không?"
+    ],
+    "answer": "Để tích lũy và giải đấu công bằng, mỗi người chỉ được dùng một tài khoản. Dù dùng nhiều đăng nhập mạng xã hội, hãy liên kết chúng vào một tài khoản ở mục Đăng nhập đã liên kết trong Cài đặt."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Xem mã mời ở đâu?",
+    "aliases": [
+      "Mã mời của tôi"
+    ],
+    "answer": "Mình mở màn hình mã mời. Mã mời được chia sẻ riêng, tách khỏi thẻ khoe thành tích."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Khi nào nhận thưởng mời bạn?",
+    "aliases": [
+      "Khi nào được SHARE mời bạn?"
+    ],
+    "answer": "Phần thưởng mời bạn 30.000 SHARE về sau thời gian giữ 7 ngày."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Tôi muốn tắt bot Ốc Sên",
+    "aliases": [
+      "Tắt Ốc Sên"
+    ],
+    "answer": "Bạn có thể tắt bot Ốc Sên trong Cài đặt. Muốn bật lại, hãy dùng cùng chỗ đó."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Hỗ trợ khách hàng ở đâu?",
+    "aliases": [
+      "Liên hệ ở đâu?"
+    ],
+    "answer": "Bạn có thể để lại yêu cầu bất cứ lúc nào qua mục Liên hệ trong màn hình Cài đặt hoặc khiếu nại xử phạt trong Trung tâm bảo mật & quyền riêng tư. Với thắc mắc nhỏ, bạn cũng có thể hỏi mình trực tiếp."
+  },
+  {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mình muốn bắt đầu chạy",
+    "aliases": [
+      "Bắt đầu chạy"
+    ],
+    "answer": "Mình mở màn hình chạy. Trong khi bạn chạy, mình sẽ cổ vũ bằng giọng nói."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy tự do có được ghi lại không?",
+    "aliases": [
+      "Chỉ chạy thôi có được lưu không?"
+    ],
+    "answer": "Có, bản ghi chạy tự do, chuỗi ngày và huy hiệu luôn được lưu. Phần thưởng VALUE chỉ được trao cho các lần chạy vượt qua xác minh."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy đã xác minh là gì?",
+    "aliases": [
+      "Xác minh là gì?"
+    ],
+    "answer": "Nguyên tắc là bản ghi luôn được giữ, còn phần thưởng chỉ dành cho các lần chạy đã xác minh. Chạy từ 1 km trở lên và đạt các tiêu chí quy định thì được xác minh."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tiêu chí xác minh là gì?",
+    "aliases": [
+      "Tiêu chí nhịp bước"
+    ],
+    "answer": "Chạy từ 1 km trở lên với tốc độ 120 đến 210 bước mỗi phút. Trong phòng chạy, bạn cần chạy đủ quãng đường của phòng."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Sao xác minh thất bại?",
+    "aliases": [
+      "Lý do xác minh thất bại"
+    ],
+    "answer": "Xác minh có thể thất bại nếu quãng đường ngắn hơn yêu cầu, hoặc tốc độ bước hay tốc độ GPS nằm ngoài tiêu chí. Bản ghi vẫn được lưu nguyên."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Không có đồng hồ có xác minh được không?",
+    "aliases": [
+      "Có bắt buộc cần đồng hồ không?"
+    ],
+    "answer": "Có. Nếu không có đồng hồ, chúng tôi kiểm tra bằng sải chân và tốc độ GPS. Chỉ giải Cao cấp, Half và Chung kết mới cần đồng hồ."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Có ứng dụng riêng cho đồng hồ không?",
+    "aliases": [
+      "Ứng dụng Galaxy Watch"
+    ],
+    "answer": "Trên đồng hồ Wear OS như Galaxy Watch, chúng tôi hỗ trợ ứng dụng độc lập kết nối bằng mã ghép đôi 6 chữ số. Ứng dụng cho Apple Watch cũng đã sẵn sàng, còn Garmin, Mi Band, Amazfit, Fitbit, Samsung Health và COROS dùng được qua đồng bộ ứng dụng sức khỏe và gửi nhịp tim Bluetooth theo thời gian thực."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy bằng đồng hồ có thêm SHARE không?",
+    "aliases": [
+      "Thưởng đồng hồ"
+    ],
+    "answer": "Không, chạy bằng đồng hồ không được thêm SHARE."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tắt màn hình thì bản ghi có bị ngắt không?",
+    "aliases": [
+      "Tắt màn hình được không?"
+    ],
+    "answer": "Không, bản ghi vẫn tiếp tục dù tắt màn hình. Khi bạn chạy, chỉ báo “Đang ghi” hiển thị ở khu vực thông báo."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bản ghi chạy bị ngắt giữa chừng",
+    "aliases": [
+      "Bản ghi đã dừng"
+    ],
+    "answer": "Bản ghi có thể bị ngắt do cài đặt vị trí, thông báo hoặc pin. Hãy kiểm tra tất cả một lần trong “Kiểm tra cài đặt ghi chạy” ở Cá nhân."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS bắt sóng kém",
+    "aliases": [
+      "Vị trí có vẻ sai"
+    ],
+    "answer": "Trước hết hãy kiểm tra quyền vị trí đã bật chưa. Trong “Kiểm tra cài đặt ghi chạy”, bạn có thể xem lần lượt các cài đặt cần thiết."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Sao hỏi quyền trước lần chạy đầu tiên?",
+    "aliases": [
+      "Sao phải đổi cài đặt pin?"
+    ],
+    "answer": "Chúng tôi hướng dẫn trước các cài đặt vị trí, thông báo và pin để bản ghi không bị ngắt ngay cả khi tắt màn hình."
+  },
+  {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy tự do mỗi ngày nhận bao nhiêu VALUE?",
+    "aliases": [
+      "Giới hạn VALUE mỗi ngày"
+    ],
+    "answer": "Bạn có thể nhận 50 VALUE cho tối đa 5 km mỗi ngày. Dù chạy xa hơn, mọi bản ghi vẫn được lưu."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy thử cho người mới làm thế nào?",
+    "aliases": [
+      "Chạy thử"
+    ],
+    "answer": "Trong vòng 14 ngày sau khi đăng ký, hoàn thành một lần chạy đã xác minh từ 1 km trở lên trong ba ngày khác nhau. Mỗi ngày chỉ tính một lần."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Thưởng chạy thử là bao nhiêu?",
+    "aliases": [
+      "SHARE chạy thử"
+    ],
+    "answer": "Bạn nhận 10.000 SHARE sau lần chạy đầu tiên và thêm 40.000 SHARE sau khi hoàn thành cả ba, tổng cộng 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy hai lần một ngày có tính hai lần thử không?",
+    "aliases": [
+      "Làm cả ba trong một ngày"
+    ],
+    "answer": "Không, mỗi ngày chỉ tính một lần chạy thử. Hãy chạy lại vào ngày khác."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tôi chạy xong nhưng không thấy SHARE hay dấu hoàn thành",
+    "aliases": [
+      "Thưởng về chậm"
+    ],
+    "answer": "Dấu hoàn thành chỉ hiện sau khi được lưu vào nhật ký giao dịch của máy chủ. Hãy chờ một chút rồi kiểm tra lại."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Hành trình đóng dấu đi đâu rồi?",
+    "aliases": [
+      "Không thấy dấu"
+    ],
+    "answer": "Hành trình đóng dấu hiện đang tạm ẩn. Mục đi bộ 1 km đã được gộp vào nhiệm vụ máy đếm bước và chạy đã xác minh, còn dấu các địa danh sẽ trở lại sau dưới dạng sự kiện."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tôi có tạo được thẻ khoe thành tích không?",
+    "aliases": [
+      "Tạo thẻ chia sẻ thành tích"
+    ],
+    "answer": "Có, khi chạy xong bạn có thể tạo thẻ khoe thành tích hoàn thành với thời gian, quãng đường, tốc độ và lời nhắn quyên góp, rồi chia sẻ ngay qua KakaoTalk, Instagram, X hoặc tin nhắn."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Thẻ khoe thành tích có kèm mã mời không?",
+    "aliases": [
+      "Mã mời trên thẻ chia sẻ"
+    ],
+    "answer": "Không, thẻ khoe thành tích không kèm mã mời. Bạn có thể chia sẻ mã mời riêng."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Số bước không tăng",
+    "aliases": [
+      "Máy đếm bước đã dừng"
+    ],
+    "answer": "Hãy kiểm tra quyền hoạt động của điện thoại đã bật chưa và thử mở lại ứng dụng."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chuỗi ngày hay huy hiệu của tôi biến mất?",
+    "aliases": [
+      "Huy hiệu của tôi mất"
+    ],
+    "answer": "Bản ghi, chuỗi ngày và huy hiệu luôn được lưu, bất kể xác minh. Hãy kiểm tra bạn đã đăng nhập đúng tài khoản chưa."
+  },
+  {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Coach+ là gì?",
+    "aliases": [
+      "Giải thích Coach+ đi"
+    ],
+    "answer": "Coach+ là dịch vụ đăng ký mang đến huấn luyện bằng giọng nói chuyên sâu theo nhịp tim và tốc độ theo thời gian thực khi bạn chạy. Dịch vụ đang chuẩn bị bán nên hiện tại bạn dùng được huấn luyện miễn phí."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Coach+ giá bao nhiêu?",
+    "aliases": [
+      "Giá Coach+"
+    ],
+    "answer": "Coach+ đang được chuẩn bị với giá 6.900 KRW mỗi tháng và 59.000 KRW mỗi năm, kèm 7 ngày dùng thử miễn phí. Hiện chưa mở thanh toán nên bạn sẽ không bị tính phí."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Coach+ có dùng thử miễn phí không?",
+    "aliases": [
+      "Bản dùng thử"
+    ],
+    "answer": "Có, có 7 ngày dùng thử miễn phí."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Hủy Coach+ thế nào?",
+    "aliases": [
+      "Hủy đăng ký"
+    ],
+    "answer": "Bạn có thể hủy dễ dàng trong ứng dụng. Mình sẽ mở màn hình quản lý đăng ký."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Bây giờ mua Coach+ được không?",
+    "aliases": [
+      "Khi nào Coach+ ra mắt?"
+    ],
+    "answer": "Hiện chúng tôi không bán Coach+. Khi sẵn sàng, chúng tôi sẽ báo trước."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Khác gì huấn luyện miễn phí?",
+    "aliases": [
+      "Điểm khác của Coach+"
+    ],
+    "answer": "Huấn luyện miễn phí đưa ra hướng dẫn cơ bản lúc bắt đầu, về đích và theo quãng đường, còn Coach+ thêm huấn luyện chuyên sâu theo vùng nhịp tim và thay đổi tốc độ theo thời gian thực."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Có huấn luyện khi lên dốc hay theo thứ hạng giải không?",
+    "aliases": [
+      "Huấn luyện lên dốc"
+    ],
+    "answer": "Huấn luyện lên dốc và huấn luyện theo thứ hạng giải vẫn đang được chuẩn bị. Khi sẵn sàng, chúng tôi sẽ báo trước."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Giọng của Ốc Sên được tạo ra thế nào?",
+    "aliases": [
+      "Giọng huấn luyện"
+    ],
+    "answer": "Chúng tôi phát lời cổ vũ và con số bằng giọng Ốc Sên được làm sẵn. Khi không có giọng đã chuẩn bị, chúng tôi dùng giọng mặc định của điện thoại thay thế."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Tôi muốn tắt giọng huấn luyện",
+    "aliases": [
+      "Tắt tiếng"
+    ],
+    "answer": "Chạm một lần khi đang chạy là tắt tiếng ngay."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Coach+ có tự động thanh toán không?",
+    "aliases": [
+      "Đăng ký có tự động gia hạn không?"
+    ],
+    "answer": "Coach+ chưa được bán nên sẽ không tự động tính phí. Nếu bạn đăng ký sau khi chính thức mở bán, gói sẽ tự động gia hạn theo chu kỳ đã chọn bằng phương thức thanh toán của cửa hàng ứng dụng, và bạn có thể hủy bất cứ lúc nào trong phần quản lý đăng ký của cửa hàng."
   },
   {
     "id": "SYS-FALLBACK",

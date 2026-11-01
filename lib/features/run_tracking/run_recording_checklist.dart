@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import 'run_recording_policy.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// Once, immediately before the first run. Settings can open it again.
 Future<void> ensureRunRecordingChecklist(BuildContext context) {
@@ -178,7 +179,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
           await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
       if (!opened && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('배터리 설정 화면을 열지 못했습니다.')),
+          SnackBar(content: Text(RemainingSurface.trNow('run_tracking.run_recording_checklist.toast', '배터리 설정 화면을 열지 못했습니다.'))),
         );
       }
     } catch (error, stack) {
@@ -213,7 +214,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
           elevation: 0,
           foregroundColor: AppColors.textBlack,
           title: Text(
-            '달리기 기록 설정',
+            RemainingSurface.trNow('run_tracking.run_recording_checklist.title', '달리기 기록 설정'),
             style: AppTextStyles.header1.copyWith(fontSize: 20),
           ),
         ),
@@ -221,15 +222,15 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
             Text(
-              '화면을 끄거나 다른 앱을 켜도 경로 기록과 음성 코칭이 이어지도록 아래 항목을 확인해 주세요.',
+              RemainingSurface.trNow('run_tracking.run_recording_checklist.body', '화면을 끄거나 다른 앱을 켜도 경로 기록과 음성 코칭이 이어지도록 아래 항목을 확인해 주세요.'),
               style: AppTextStyles.inputText.copyWith(height: 1.45),
             ),
             const SizedBox(height: 16),
             _CheckRow(
-              title: '위치 권한',
-              body: '앱을 사용하는 동안 허용해 주세요. 항상 허용은 요청하지 않습니다.',
+              title: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.2', '위치 권한'),
+              body: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.3', '앱을 사용하는 동안 허용해 주세요. 항상 허용은 요청하지 않습니다.'),
               ready: _locationReady,
-              readyLabel: '허용됨',
+              readyLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.4', '허용됨'),
               actionLabel: '허용하기',
               loading: _loading || _busy,
               onAction: _locationReady ? null : _onLocation,
@@ -237,10 +238,10 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
             if (_notificationApplies) ...[
               const SizedBox(height: 10),
               _CheckRow(
-                title: '알림 권한',
-                body: '달리기 기록 알림을 표시합니다. Android 13 이상에서 필요합니다.',
+                title: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.6', '알림 권한'),
+                body: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.7', '달리기 기록 알림을 표시합니다. Android 13 이상에서 필요합니다.'),
                 ready: _notificationReady,
-                readyLabel: '허용됨',
+                readyLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.4', '허용됨'),
                 actionLabel: '허용하기',
                 loading: _loading || _busy,
                 onAction: _notificationReady ? null : _onNotification,
@@ -249,11 +250,11 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
             if (_batteryApplies) ...[
               const SizedBox(height: 10),
               _CheckRow(
-                title: '배터리 최적화',
+                title: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.8', '배터리 최적화'),
                 body: runRecordingBatteryGuidance,
                 ready: _batteryReady,
-                readyLabel: '설정됨',
-                actionLabel: '설정 열기',
+                readyLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.9', '설정됨'),
+                actionLabel: RemainingSurface.trNow('common.open_settings', '설정 열기'),
                 loading: _loading || _busy,
                 onAction: _batteryReady ? null : _onBattery,
               ),
@@ -266,13 +267,13 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
                 foregroundColor: AppColors.nightOnLime,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: Text(widget.beforeRun ? '확인하고 달리기' : '확인'),
+              child: Text(widget.beforeRun ? '확인하고 달리기' : RemainingSurface.trNow('common.confirm', '확인')),
             ),
             if (widget.beforeRun) ...[
               const SizedBox(height: 8),
               TextButton(
                 onPressed: _loading || _busy ? null : _close,
-                child: const Text('나중에'),
+                child: Text(RemainingSurface.trNow('solo_pedometer.button', '나중에')),
               ),
             ],
             if (!ready && !_loading)

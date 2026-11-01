@@ -136,7 +136,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         if (paidWithDia) {
           if (wallet.diamondBalance < _createCrewDiaCost) {
             if (mounted) setState(() => _isSubmitting = false);
-            _toast('DIA가 부족합니다. 상점에서 구매해 주세요.');
+            _toast(RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'));
             return;
           }
           ref.read(walletProvider.notifier).debitDia(_createCrewDiaCost);
@@ -398,7 +398,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -533,7 +533,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         );
       }
     } catch (_) {
-      if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.28', '바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'));
     }
   }
 
@@ -588,7 +588,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         _ => '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
       });
     } catch (_) {
-      if (mounted) _toast('이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+      if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.5', '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'));
     }
   }
 
@@ -808,7 +808,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                   if (ctx.mounted) Navigator.of(ctx).pop();
                   if (mounted) _toast('${member.nickname}님을 내보냈어요.');
                 } catch (_) {
-                  if (mounted) _toast('내보내지 못했어요. 잠시 뒤 다시 해 주세요.');
+                  if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.33', '내보내지 못했어요. 잠시 뒤 다시 해 주세요.'));
                 }
               },
         onTransfer: api == null || !mine.isLeader
@@ -866,7 +866,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                     );
                   }
                 } catch (_) {
-                  if (mounted) _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+                  if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.28', '바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'));
                 }
               },
       ),
@@ -1867,7 +1867,7 @@ class _CrewMembersSheet extends StatelessWidget {
                             PopupMenuItem(
                               key: kickKey(m.uid),
                               value: 'kick',
-                              child: const Text('내보내기'),
+                              child: Text(RemainingSurface.trNow('crew_manager.toast.31', '내보내기')),
                             ),
                           if (_canReport(m))
                             PopupMenuItem(
@@ -2026,7 +2026,7 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
         ],
       ),
       actions: [
-        TextButton(onPressed: () => _close(null), child: const Text('취소')),
+        TextButton(onPressed: () => _close(null), child: Text(RemainingSurface.trNow('my_page.button.4', '취소'))),
         FilledButton(
           key: _CrewNameDialog.okKey,
           onPressed: _valid ? () => _close(_name) : null,

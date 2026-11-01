@@ -21,6 +21,7 @@ import '../features/tournaments/utils/tournament_join_flow.dart';
 import 'live_running_screen.dart';
 import '../features/tournaments/utils/sponsor_display.dart';
 import '../l10n/remaining_surface.dart';
+import '../l10n/surface_rest.dart';
 
 /// 대회방 상세정보 및 기부처 선택 화면 (Screen 9).
 class ChallengeDetailScreen extends StatelessWidget {
@@ -353,7 +354,7 @@ class _ChallengeDetailCopy {
     if (isBeginner) {
       const fee = ChallengeEntryFee.beginner1kmShare;
       return _ChallengeDetailCopy(
-        title: '1km 초보 챌린지',
+        title: RemainingSurface.tr(context, 'live_running.body', '1km 초보 챌린지'),
         entryFee: AppStrings.dashboardChallenge1Sub,
         badge: RemainingSurface.tr(context, 'challenge_detail.body.3', '입문'),
         prize: AppStrings.challengeDetailPrize,
@@ -376,7 +377,7 @@ class _ChallengeDetailCopy {
     return _ChallengeDetailCopy(
       title: AppStrings.challengeDetailTitle,
       entryFee: AppStrings.challengeDetailEntryFee,
-      badge: AppStrings.challengeDetailGoldBadge,
+      badge: medalLabel(Localizations.localeOf(context), 'gold'),
       prize: AppStrings.challengeDetailPrize,
       donation: AppStrings.challengeDetailDonation,
       distance: AppStrings.challengeDetailDistance,

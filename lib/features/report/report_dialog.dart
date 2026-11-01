@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 신고 사유. 값은 서버가 받는 코드와 같다.
 const reportReasons = <String, String>{
@@ -25,7 +26,7 @@ Future<String?> askReportReason(BuildContext context, String targetName) {
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 4),
           child: Text(
-            '운영자가 확인한 뒤 조치합니다. 신고한 사람은 상대에게 알려지지 않아요.',
+            RemainingSurface.trNow('report.button', '운영자가 확인한 뒤 조치합니다. 신고한 사람은 상대에게 알려지지 않아요.'),
             style: Theme.of(dialogContext).textTheme.bodySmall,
           ),
         ),

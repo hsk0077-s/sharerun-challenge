@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/impact_constants.dart';
 import '../../../core/theme/theme.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class ShoeMileageTracker extends StatelessWidget {
   const ShoeMileageTracker({
@@ -34,7 +35,7 @@ class ShoeMileageTracker extends StatelessWidget {
             ),
             SizedBox(width: tokens.spacing.xs),
             Text(
-              '러닝화 마일리지 트래커',
+              RemainingSurface.trNow('my_page.shoe_mileage_tracker.body', '러닝화 마일리지 트래커'),
               style: textTheme.titleMedium?.copyWith(color: tokens.colors.ink),
             ),
           ],
@@ -75,7 +76,7 @@ class ShoeMileageTracker extends StatelessWidget {
               ),
             ),
             child: Text(
-              '⚠️ 500km 도달! 쿠셔닝 성능 저하 위험 — 러닝화 교체를 권장합니다.',
+              RemainingSurface.trNow('my_page.shoe_mileage_tracker.body.3', '⚠️ 500km 도달! 쿠셔닝 성능 저하 위험 — 러닝화 교체를 권장합니다.'),
               style: textTheme.bodyMedium?.copyWith(
                 color: tokens.colors.danger,
                 height: 1.4,

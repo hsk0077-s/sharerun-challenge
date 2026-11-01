@@ -83,7 +83,7 @@ class _CreateChallengeRoomScreenState
         if (!AppEnv.useLocalMockData) {
           if (mounted) setState(() => _isSubmitting = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('로그인한 뒤에 다시 시도해 주세요.')),
+            SnackBar(content: Text(RemainingSurface.trNow('running_crew.toast', '로그인한 뒤에 다시 시도해 주세요.'))),
           );
           return;
         }

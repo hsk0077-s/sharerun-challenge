@@ -51,7 +51,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -113,7 +113,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),
@@ -258,7 +258,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
-        400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+        400 => RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'),
         403 => RemainingSurface.tr(
             context,
             'crew_manager.toast.12',
@@ -377,7 +377,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
-        400 => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+        400 => RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'),
         403 => RemainingSurface.tr(
             context,
             'crew_manager.toast.23',
@@ -882,7 +882,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                       ),
                     ),
                     child: Text(
-                      '닫기',
+                      RemainingSurface.trNow('common.close', '닫기'),
                       style: AppTextStyles.buttonText.copyWith(
                         color: AppColors.nightOnLime,
                         fontSize: 15,

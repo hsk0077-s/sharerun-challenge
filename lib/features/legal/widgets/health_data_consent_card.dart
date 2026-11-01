@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../core/constants/legal_constants.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Pinpoint opt-in card — visually and legally separated from general ToS.
 class HealthDataConsentCard extends StatelessWidget {
@@ -54,8 +55,8 @@ class HealthDataConsentCard extends StatelessWidget {
               color: AppColors.surfaceBlack,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text(
-              '이용약관과 별도 · 선택 동의',
+            child: Text(
+              RemainingSurface.trNow('my_page.body', '이용약관과 별도 · 선택 동의'),
               style: TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -82,7 +83,7 @@ class HealthDataConsentCard extends StatelessWidget {
             value: value,
             onChanged: enabled ? (checked) => onChanged(checked ?? false) : null,
             title: Text(LegalConstants.healthDataConsentLabel),
-            subtitle: const Text('체크해야 워치 연동·심박 검증이 활성화됩니다.'),
+            subtitle: Text(RemainingSurface.trNow('legal.health_data_consent.body', '체크해야 워치 연동·심박 검증이 활성화됩니다.')),
             controlAffinity: ListTileControlAffinity.leading,
           ),
         ],

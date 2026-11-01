@@ -23,10 +23,10 @@ abstract final class TournamentJoinGate {
       return '로그인 후 챌린지에 참가할 수 있습니다.';
     }
     if (alreadyJoined) {
-      return '이미 참가한 챌린지입니다.';
+      return RemainingSurface.trNow('tournament.join_already', '이미 참가한 챌린지입니다.');
     }
     if (!tournament.isRecruiting && !ticketOpens) {
-      return '현재 모집 중인 대회가 아닙니다.';
+      return RemainingSurface.trNow('tournament.join_closed', '현재 모집 중인 대회가 아닙니다.');
     }
     if (tournament.lockedForTier(userTier)) {
       return '내 등급보다 낮은 대회는 참가할 수 없습니다.';

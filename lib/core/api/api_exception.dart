@@ -90,7 +90,7 @@ abstract final class ApiErrorMessage {
       'Season qualification is required.' => RemainingSurface.trNow('api_exception.body.15', '시즌 진출 자격이 있어야 참가할 수 있습니다.'),
       'Boost run already used today.' => RemainingSurface.trNow('api_exception.body.16', '부스트 런은 하루에 1번까지 사용할 수 있습니다.'),
       'An incubator is already active.' => RemainingSurface.trNow('api_exception.body.17', '만보기 부화기는 한 번에 하나만 동작합니다.'),
-      'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+      'Insufficient Diamond balance.' => RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'),
       'Insufficient paid Diamond balance.' =>
         RemainingSurface.trNow('api_exception.body.18', '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.'),
       'Battle pass already owned for this season.' =>

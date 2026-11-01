@@ -91,7 +91,7 @@ class _IntroScreenState extends State<IntroScreen> {
                       TextButton(
                         key: IntroScreen.skipKey,
                         onPressed: _finish,
-                        child: Text('건너뛰기'),
+                        child: Text(RemainingSurface.trNow('app.watchSyncSkip', '건너뛰기')),
                       ),
                   ],
                 ),
@@ -150,7 +150,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     if (!isLast)
                       _PrimaryButton(
                         key: IntroScreen.nextKey,
-                        label: '다음',
+                        label: RemainingSurface.trNow('running_crew.dialog.2', '다음'),
                         color: AppColors.tealAccent,
                         textColor: AppColors.nightOnLime,
                         onPressed: _next,
@@ -158,7 +158,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     else if (widget.replay)
                       _PrimaryButton(
                         key: IntroScreen.closeKey,
-                        label: '닫기',
+                        label: RemainingSurface.trNow('common.close', '닫기'),
                         color: AppColors.tealAccent,
                         textColor: AppColors.nightOnLime,
                         onPressed: _finish,

@@ -29,7 +29,7 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
     final hasHealthConsent = profile?.healthDataConsent ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('스마트워치 연동')),
+      appBar: AppBar(title: Text(RemainingSurface.trNow('my_page.body.3', '스마트워치 연동'))),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

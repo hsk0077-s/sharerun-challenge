@@ -374,7 +374,7 @@ class _TournamentRoomCard extends StatelessWidget {
             : canJoin && (room.isFull || !room.isRecruiting)
                 ? '추가 참가권으로 참가'
                 : room.isFull
-                    ? '정원이 가득 찼어요'
+                    ? RemainingSurface.trNow('tournament.full', '정원이 가득 찼어요')
                     : !room.isRecruiting
                         ? RemainingSurface.tr(
                             context,
@@ -407,7 +407,7 @@ class _TournamentRoomCard extends StatelessWidget {
               ),
               const Spacer(),
               if (isJoined)
-                Text('참가 중',
+                Text(RemainingSurface.trNow('my_tournaments.body.4', '참가 중'),
                     style: storeText(13, c.primary, w: FontWeight.w900)),
               if (locked)
                 Icon(Icons.lock_outline_rounded, size: 16, color: c.muted),

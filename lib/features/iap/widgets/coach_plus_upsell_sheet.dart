@@ -8,6 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../models/coach_plus_product.dart';
 import '../providers/coach_plus_providers.dart';
 import '../providers/iap_providers.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Thin Coach+ upsell. Free line vs heart-rate coaching, month / year only.
 class CoachPlusUpsellSheet extends ConsumerStatefulWidget {
@@ -72,13 +73,13 @@ class _CoachPlusUpsellSheetState extends ConsumerState<CoachPlusUpsellSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            const _PlanLine(label: '무료', body: '기본 러닝 안내'),
+            _PlanLine(label: RemainingSurface.trNow('iap.coach_plus_upsell.body', '무료'), body: RemainingSurface.trNow('iap.coach_plus_upsell.body.2', '기본 러닝 안내')),
             const SizedBox(height: 6),
-            const _PlanLine(label: 'Coach+', body: '심박·상황에 맞춘 심층 코칭'),
+            _PlanLine(label: 'Coach+', body: RemainingSurface.trNow('shop.store_look.body', '심박·상황에 맞춘 심층 코칭')),
             const SizedBox(height: 16),
             if (active)
               Text(
-                'Coach+ 이용 중',
+                RemainingSurface.trNow('iap.coach_plus_upsell.body.3', 'Coach+ 이용 중'),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.agreementLabel.copyWith(
                   fontWeight: FontWeight.w700,
@@ -109,7 +110,7 @@ class _CoachPlusUpsellSheetState extends ConsumerState<CoachPlusUpsellSheet> {
               TextButton(
                 key: const Key('coach-plus-restore'),
                 onPressed: _busyProductId == null ? _restore : null,
-                child: const Text('구매 복원'),
+                child: Text(RemainingSurface.trNow('iap.coach_plus_upsell.button', '구매 복원')),
               ),
               const SizedBox(height: 8),
               Text(

@@ -62,7 +62,7 @@ class _BootErrorAppState extends State<BootErrorApp> {
                   FilledButton(
                     key: const Key('boot-error-retry'),
                     onPressed: _busy ? null : _retry,
-                    child: const Text('다시 시도'),
+                    child: Text(RemainingSurface.trNow('common.retry', '다시 시도')),
                   ),
                 ],
               ),

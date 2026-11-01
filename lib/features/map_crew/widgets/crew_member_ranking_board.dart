@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../data/models/crew_member_ranking_model.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class CrewMemberRankingBoard extends StatelessWidget {
   const CrewMemberRankingBoard({
@@ -14,10 +15,10 @@ class CrewMemberRankingBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (members.isEmpty) {
-      return const Card(
+      return Card(
         child: ListTile(
-          title: Text('크루원 랭킹 데이터 없음'),
-          subtitle: Text('출석률·평균 페이스가 여기에 표시됩니다.'),
+          title: Text(RemainingSurface.trNow('map_crew.crew_member_ranking_board.body', '크루원 랭킹 데이터 없음')),
+          subtitle: Text(RemainingSurface.trNow('map_crew.crew_member_ranking_board.body.2', '출석률·평균 페이스가 여기에 표시됩니다.')),
         ),
       );
     }
@@ -29,12 +30,12 @@ class CrewMemberRankingBoard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '크루원 출석률 & 평균 페이스',
+          RemainingSurface.trNow('map_crew.crew_member_ranking_board.body.3', '크루원 출석률 & 평균 페이스'),
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
-        const Text(
-          '출석률 높은 순 · 페이스 빠른 순으로 B2B 크루 성과를 추적합니다.',
+        Text(
+          RemainingSurface.trNow('map_crew.crew_member_ranking_board.body.4', '출석률 높은 순 · 페이스 빠른 순으로 B2B 크루 성과를 추적합니다.'),
           style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
         const SizedBox(height: 12),

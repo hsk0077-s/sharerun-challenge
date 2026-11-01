@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/widgets/src_logo_header.dart';
 import 'run_card_summary.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 자랑 카드 오른쪽 위에 넣는 두 개의 동그란 등급 배지(동물 티어, 천사 등급).
 /// 기부 금액은 담지 않는다. 공유할 때 빼려면 카드에 넘기지 않는다.
@@ -76,16 +77,24 @@ String runFinishDateLabel(DateTime date) {
 /// Company donation the server recorded. Null when nothing was counted.
 String? runFinishDonationLine(int? won) {
   if (won == null || won <= 0) return null;
-  return '이번 달리기로 운영자가 ${_grouped(won)}원을 기부할 예정이에요';
+  return RemainingSurface.trNow(
+    'run_finish.donation_line',
+    '이번 달리기로 운영자가 \${won}원을 기부할 예정이에요',
+    {'won': _grouped(won)},
+  );
 }
 
 /// Shown when this month's company donation limit is used up.
-const runFinishDonationCapLine =
-    '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
+String get runFinishDonationCapLine => RemainingSurface.trNow(
+      'run_finish.cap_reached',
+      '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.',
+    );
 
 /// Today's 10km company-donation room is already full.
-const runFinishDailyDonationCapLine =
-    '오늘은 기부 인정 10km를 모두 채웠어요. 넘는 거리는 기록으로 남아요.';
+String get runFinishDailyDonationCapLine => RemainingSurface.trNow(
+      'run_finish.daily_cap',
+      '오늘은 기부 인정 10km를 모두 채웠어요. 넘는 거리는 기록으로 남아요.',
+    );
 
 /// Record name. This is not a tax receipt.
 const runFinishDonationRecordLabel = '기부 참여 기록';
@@ -95,7 +104,8 @@ String runFinishDonationSkippedLine(String reason) {
   final detail = reason.trim();
   if (detail == 'cap_reached') return runFinishDonationCapLine;
   if (detail == 'daily_donation_cap') return runFinishDailyDonationCapLine;
-  const lead = '이번 달리기는 기부에 포함되지 않았어요.';
+  final lead = RemainingSurface.trNow(
+      'run_finish.not_included', '이번 달리기는 기부에 포함되지 않았어요.');
   if (detail.isEmpty) return lead;
   return '$lead $detail';
 }
@@ -455,7 +465,7 @@ class _RecordColumn extends StatelessWidget {
         ),
         const SizedBox(height: 28),
         Text(
-          '거리',
+          RemainingSurface.trNow('crew.crew_emblem.body.6', '거리'),
           style: TextStyle(
             fontFamily: RunFinishShareCard.fontFamily,
             fontSize: 26,
@@ -532,7 +542,7 @@ class _SplitGraph extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '구간 페이스',
+              RemainingSurface.trNow('run_result.run_finish_share.body.22', '구간 페이스'),
               style: TextStyle(
                 fontFamily: RunFinishShareCard.fontFamily,
                 fontSize: 26,
@@ -640,7 +650,7 @@ class _StatRow extends StatelessWidget {
           child: _StatChip(
             palette: palette,
             kind: _LineIconKind.time,
-            label: '시간',
+            label: RemainingSurface.trNow('run_result.run_finish_share.body.23', '시간'),
             value: time,
             valueKey: RunFinishShareCard.timeKey,
           ),
@@ -650,7 +660,7 @@ class _StatRow extends StatelessWidget {
           child: _StatChip(
             palette: palette,
             kind: _LineIconKind.pace,
-            label: '페이스',
+            label: RemainingSurface.trNow('run_result.run_finish_share.body.24', '페이스'),
             value: paceNumber,
             unit: paceUnit,
             valueKey: RunFinishShareCard.paceKey,

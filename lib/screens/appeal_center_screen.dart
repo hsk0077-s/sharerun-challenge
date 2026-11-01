@@ -210,7 +210,7 @@ class _AppealCenterScreenState extends ConsumerState<AppealCenterScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('확인'),
+                child: Text(RemainingSurface.trNow('common.confirm', '확인')),
               ),
             ],
           );

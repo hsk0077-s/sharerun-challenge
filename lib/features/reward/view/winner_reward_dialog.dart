@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class WinnerRewardDialog extends StatelessWidget {
   const WinnerRewardDialog({
@@ -20,12 +21,12 @@ class WinnerRewardDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: AppColors.cardBlack,
-      title: const Text('우승 임팩트'),
+      title: Text(RemainingSurface.trNow('reward.winner_reward.dialog', '우승 임팩트')),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('축하합니다! 검증된 러닝으로 우승 상금을 획득했습니다.'),
+          Text(RemainingSurface.trNow('reward.winner_reward.body', '축하합니다! 검증된 러닝으로 우승 상금을 획득했습니다.')),
           const SizedBox(height: 16),
           Text(
             '+$rewardValueToken Value',
@@ -58,15 +59,15 @@ class WinnerRewardDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: onClaimAll,
-          child: const Text('우승 상금 수령하기'),
+          child: Text(RemainingSurface.trNow('reward.winner_reward.button', '우승 상금 수령하기')),
         ),
         TextButton(
           onPressed: onDonateHalf,
-          child: const Text('우승 상금 50% 기부하기'),
+          child: Text(RemainingSurface.trNow('reward.winner_reward.button.2', '우승 상금 50% 기부하기')),
         ),
         FilledButton(
           onPressed: onDonateAll,
-          child: const Text('100% 전액 기부하기'),
+          child: Text(RemainingSurface.trNow('reward.winner_reward.button.3', '100% 전액 기부하기')),
         ),
       ],
     );

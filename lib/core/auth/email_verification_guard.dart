@@ -40,7 +40,7 @@ Future<bool> ensureEmailVerified({
         actions: [
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('확인'),
+            child: Text(RemainingSurface.trNow('common.confirm', '확인')),
           ),
         ],
       );

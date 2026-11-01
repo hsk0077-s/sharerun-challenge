@@ -81,7 +81,7 @@ class _DeviceConnectionScreenState
                     TextButton(
                       onPressed: _busy ? null : () => _onSkip(authUser?.uid),
                       child: Text(
-                        _canGoBack() ? '닫기' : AppStrings.watchSyncSkip,
+                        _canGoBack() ? RemainingSurface.trNow('common.close', '닫기') : AppStrings.watchSyncSkip,
                         style: AppTextStyles.caption.copyWith(
                           color: AppColors.textGrey,
                           fontWeight: FontWeight.w500,
@@ -291,7 +291,7 @@ class _DeviceConnectionScreenState
     if (uid == null) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인이 필요합니다.')),
+        SnackBar(content: Text(RemainingSurface.trNow('run_result.body.3', '로그인이 필요합니다.'))),
       );
       return;
     }
@@ -373,7 +373,7 @@ class _DeviceConnectionScreenState
     if (uid == null) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인이 필요합니다.')),
+        SnackBar(content: Text(RemainingSurface.trNow('run_result.body.3', '로그인이 필요합니다.'))),
       );
       return;
     }
@@ -477,7 +477,7 @@ class _DeviceConnectionScreenState
             TextButton(
               key: const Key('health-connect-tip-ok'),
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('확인'),
+              child: Text(RemainingSurface.trNow('common.confirm', '확인')),
             ),
           ],
         );
@@ -508,7 +508,7 @@ class _DeviceConnectionScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('확인'),
+              child: Text(RemainingSurface.trNow('common.confirm', '확인')),
             ),
           ],
         );
@@ -578,15 +578,15 @@ class _DeviceConnectionScreenState
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('닫기'),
+              child: Text(RemainingSurface.trNow('common.close', '닫기')),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 openAppSettings();
               },
-              child: const Text(
-                '설정 열기',
+              child: Text(
+                RemainingSurface.trNow('common.open_settings', '설정 열기'),
                 style: TextStyle(
                   color: AppColors.primaryMintDark,
                   fontWeight: FontWeight.w700,

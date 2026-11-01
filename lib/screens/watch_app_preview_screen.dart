@@ -328,7 +328,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
                   TextButton(
                     key: Key('watch-revoke-${watch.id}'),
                     onPressed: _busy ? null : () => _revokeOne(watch),
-                    child: const Text('해제'),
+                    child: Text(RemainingSurface.trNow('common.disconnect', '해제')),
                   ),
                 ],
               ),

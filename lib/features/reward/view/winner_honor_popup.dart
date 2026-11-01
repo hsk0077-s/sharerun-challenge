@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class WinnerHonorPopup extends StatefulWidget {
   const WinnerHonorPopup({
@@ -141,15 +142,15 @@ class _WinnerHonorPopupState extends State<WinnerHonorPopup>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    '챌린지 우승!',
+                    RemainingSurface.trNow('reward.winner_honor_popup.body', '챌린지 우승!'),
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w900,
                           color: AppColors.neonLime,
                         ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    '당신의 땀방울이 세상을 바꿉니다.',
+                  Text(
+                    RemainingSurface.trNow('reward.winner_honor_popup.body.2', '당신의 땀방울이 세상을 바꿉니다.'),
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
@@ -171,8 +172,8 @@ class _WinnerHonorPopupState extends State<WinnerHonorPopup>
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       onPressed: widget.onDonateHalf,
-                      child: const Text(
-                        '우승 상금 50% 기부하기',
+                      child: Text(
+                        RemainingSurface.trNow('reward.winner_reward.button.2', '우승 상금 50% 기부하기'),
                         style: TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -186,8 +187,8 @@ class _WinnerHonorPopupState extends State<WinnerHonorPopup>
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
                       onPressed: widget.onDonateAll,
-                      child: const Text(
-                        '우승 상금 100% 전액 기부하기',
+                      child: Text(
+                        RemainingSurface.trNow('reward.winner_honor_popup.button', '우승 상금 100% 전액 기부하기'),
                         style: TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -196,7 +197,7 @@ class _WinnerHonorPopupState extends State<WinnerHonorPopup>
                     const SizedBox(height: 10),
                     TextButton(
                       onPressed: widget.onClaimAll,
-                      child: const Text('우승 상금 수령하기'),
+                      child: Text(RemainingSurface.trNow('reward.winner_reward.button', '우승 상금 수령하기')),
                     ),
                   ],
                 ],

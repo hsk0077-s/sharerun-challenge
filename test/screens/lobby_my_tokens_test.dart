@@ -22,6 +22,8 @@ import 'package:share_run_challenge/features/profile/village_scene.dart';
 import 'package:share_run_challenge/screens/challenge_lobby_screen.dart';
 import 'package:share_run_challenge/screens/my_tournaments_screen.dart';
 import 'package:share_run_challenge/screens/onboarding_my_page_screen.dart';
+import 'package:share_run_challenge/core/config/app_env.dart';
+import 'package:share_run_challenge/features/profile/widgets/angel_tier_widgets.dart';
 import 'package:share_run_challenge/screens/tournament_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../support/golden_helper.dart';
@@ -296,8 +298,13 @@ void main() {
     expect(find.text(AppStrings.myPageSubscriptionManage), findsNothing);
     expect(find.byKey(const Key('my-page-subscription')), findsNothing);
 
+    // 후원이 꺼진 1.0에서는 후원 화면으로 가는 천사 연대기 카드가 보이지 않는다.
+    expect(AppEnv.sponsorPaymentsVisible, isFalse);
+    expect(find.text('나의 천사 연대기'), findsNothing);
+    expect(find.byType(AngelChronicleCard), findsNothing);
+    expect(find.text('후원하고 천사 등급 올리기 〉'), findsNothing);
+
     // 아래 카드들은 그대로 이어진다.
-    expect(find.text('나의 천사 연대기'), findsOneWidget);
     expect(find.text('🔥 0일째 불꽃 유지 중!'), findsOneWidget);
     expect(find.text('🔥 현재 연속 출석(Streak): 0일'), findsOneWidget);
     expect(find.text('러닝 로그'), findsOneWidget);

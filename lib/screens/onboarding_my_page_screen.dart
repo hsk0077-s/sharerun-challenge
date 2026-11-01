@@ -120,8 +120,12 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                       const SizedBox(height: 6),
                       const MyPageInviteCodeCard(),
                       const MyPageReferralCodeEntry(),
-                      const SizedBox(height: 14),
-                      const AngelChronicleCard(),
+                      // 천사 연대기 카드의 버튼은 후원 화면으로 간다. 1.0은 후원이
+                      // 보류라 후원 배너와 같은 스위치를 따른다.
+                      if (AppEnv.sponsorPaymentsVisible) ...[
+                        const SizedBox(height: 14),
+                        const AngelChronicleCard(),
+                      ],
                       const SizedBox(height: 14),
                       const DailyStreakCard(),
                       const SizedBox(height: 14),

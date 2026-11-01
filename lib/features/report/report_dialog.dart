@@ -15,7 +15,7 @@ Future<String?> askReportReason(BuildContext context, String targetName) {
   return showDialog<String>(
     context: context,
     builder: (dialogContext) => SimpleDialog(
-      title: Text('"$targetName" 신고'),
+      title: Text(RemainingSurface.trNow('report.dialog.2', '"$targetName" 신고', {'targetName': targetName})),
       children: [
         for (final entry in reportReasons.entries)
           SimpleDialogOption(

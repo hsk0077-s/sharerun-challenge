@@ -56,7 +56,7 @@ class ShoeMileageTracker extends StatelessWidget {
         if (skinName != null && skinName!.isNotEmpty) ...[
           SizedBox(height: tokens.spacing.xs),
           Text(
-            '장착 중 · $skinName',
+            RemainingSurface.trNow('my_page.shoe_mileage_tracker.body.2', '장착 중 · $skinName', {'skinName': skinName}),
             style: textTheme.bodyMedium?.copyWith(
               color: skinColor ?? tokens.colors.accent,
               fontWeight: FontWeight.w700,
@@ -85,7 +85,7 @@ class ShoeMileageTracker extends StatelessWidget {
           )
         else
           Text(
-            '교체 알림: ${(goal - totalDistanceKm).toStringAsFixed(1)} km 남음',
+            RemainingSurface.trNow('my_page.shoe_mileage_tracker.body.4', '교체 알림: ${(goal - totalDistanceKm).toStringAsFixed(1)} km 남음', {'(goal - totalDistanceKm).toStringAsFixed(1)': (goal - totalDistanceKm).toStringAsFixed(1)}),
             style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
           ),
       ],

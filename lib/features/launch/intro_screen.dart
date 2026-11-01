@@ -26,7 +26,7 @@ class IntroScreen extends StatefulWidget {
   static const loginKey = Key('intro-login');
   static const closeKey = Key('intro-close');
 
-  static get titles => [
+  static List<String> get titles => [
     RemainingSurface.trNow('launch.intro.body', '걸으면 SHARE가 쌓여요'),
     RemainingSurface.trNow('launch.intro.body.2', '한 걸음이 나눔이 된다'),
     RemainingSurface.trNow('launch.intro.body.3', '내 기록은 어느 폰에서나 그대로예요'),
@@ -78,8 +78,8 @@ class _IntroScreenState extends State<IntroScreen> {
                     const Icon(Icons.favorite,
                         color: AppColors.tealAccent, size: 20),
                     const SizedBox(width: 6),
-                    const Text(
-                      '쉐어런',
+                    Text(
+                      RemainingSurface.trNow('brand.name', '쉐어런'),
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 16,

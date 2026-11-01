@@ -52,7 +52,7 @@ class ShareRunChallengeApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: '쉐어런',
+      title: RemainingSurface.trNow('brand.name', '쉐어런'),
       theme: SrcTheme.night,
       darkTheme: SrcTheme.night,
       themeMode: ThemeMode.dark,

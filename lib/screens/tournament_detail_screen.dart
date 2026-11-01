@@ -421,7 +421,15 @@ class _TournamentInfoCard extends StatelessWidget {
                       'tournament_detail.body.14',
                       '모집 인원이 차지 않아 참가비를 돌려드렸어요.',
                     )
-                  : '참가 상태: ${participantStatus == 'joined' ? '참가 중' : participantStatus}',
+                  : RemainingSurface.trNow(
+                    'tournament_detail.participant_status',
+                    '참가 상태: \$statusText',
+                    {
+                      'statusText': participantStatus == 'joined'
+                          ? RemainingSurface.trNow('tournament_detail.status_joined', '참가 중')
+                          : participantStatus,
+                    },
+                  ),
             ),
           ],
           if (joinedAt != null) ...[

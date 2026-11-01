@@ -17,6 +17,9 @@ STR = ROOT / "docs/l10n/remaining-ko-strings.json"
 LANGS = ["en", "ja", "zh-TW", "es", "pt-BR", "de", "fr", "vi", "th", "id"]
 H = re.compile("[가-힣]")
 
+def ph_rows(names):
+    return [{"name": n, "format": ("$" + n) if re.fullmatch(r"[A-Za-z_]\w*", n) else "${" + n + "}"} for n in names]
+
 def ensure_import(src, path):
     rel = os.path.relpath(ROOT / "lib/l10n/remaining_surface.dart", (ROOT / path).parent)
     if "remaining_surface.dart" in src:
@@ -37,7 +40,9 @@ def main(specs):
         path = s["file"]
         src = files.get(path) or (ROOT / path).read_text(encoding="utf-8")
         key = s.get("reuse") or s["key"]
-        if "member" in s:
+        if s.get("skip"):
+            pass  # only register the translation entry (the code already uses the key)
+        elif "member" in s:
             m = re.search(r"static const (?:String )?" + re.escape(s["member"]) + r"\s*=\s*", src)
             if not m:
                 problems.append(f"no member {s['member']} in {path}"); continue
@@ -62,7 +67,7 @@ def main(specs):
             bad = [l for l in LANGS if H.search(tr[l])]
             if bad: problems.append(f"{key}: Hangul in {bad}"); continue
             entry = {"key": key, "ko": s["ko"], "file": path, "screen": s.get("screen", key.split(".")[0]),
-                     "context": s.get("ctx", ""), "placeholders": s.get("ph", [])}
+                     "context": s.get("ctx", ""), "placeholders": ph_rows(s.get("ph", []))}
             entry.update({l: tr[l] for l in LANGS}); entry["native_review"] = "pending"
             data["strings"].append(entry); have.add(key)
     if problems:

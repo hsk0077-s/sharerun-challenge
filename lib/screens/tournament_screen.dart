@@ -372,7 +372,7 @@ class _TournamentRoomCard extends StatelessWidget {
         : isJoined
             ? RemainingSurface.tr(context, 'tournament.body.12', '이미 참가했어요')
             : canJoin && (room.isFull || !room.isRecruiting)
-                ? '추가 참가권으로 참가'
+                ? RemainingSurface.trNow('tournament_detail.body.2', '추가 참가권으로 참가')
                 : room.isFull
                     ? RemainingSurface.trNow('tournament.full', '정원이 가득 찼어요')
                     : !room.isRecruiting
@@ -383,7 +383,7 @@ class _TournamentRoomCard extends StatelessWidget {
                           )
                         : quote != null
                             ? quote!.shareJoinLabel
-                            : '${room.entryFeeShare} SHARE로 참가';
+                            : RemainingSurface.trNow('tournament_detail.body.3', '${room.entryFeeShare} SHARE로 참가', {'room.entryFeeShare': room.entryFeeShare});
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),

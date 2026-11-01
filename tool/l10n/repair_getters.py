@@ -22,8 +22,12 @@ def typ(rhs):
 for f in files:
     if not f.endswith(".dart"): continue
     p = Path(f); s = p.read_text(encoding="utf-8"); o = s
+    # getters that already existed on main keep their type: only repair ones this run created
+    base = subprocess.run(["git","show",f"origin/main:{f}"],capture_output=True,text=True).stdout
+    existing = set(re.findall(r"String get (\w+)\s*=>", base))
     def rep(m):
         global fixed
+        if m.group(2) in existing: return m.group(0)
         rhs = m.group(4)
         t = typ(rhs)
         if t == "String": return m.group(0)

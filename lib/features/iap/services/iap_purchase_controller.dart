@@ -448,7 +448,7 @@ class IapPurchaseController {
     _emit(
       IapUiEvent(
         kind: IapUiKind.verified,
-        message: '검증이 완료되어 $shareAmount SHARE가 지급되었습니다.',
+        message: RemainingSurface.trNow('iap.iap_purchase_controller.body.17', '검증이 완료되어 $shareAmount SHARE가 지급되었습니다.', {'shareAmount': shareAmount}),
         purchaseDocId: purchaseDocId,
         shareAmount: shareAmount,
       ),

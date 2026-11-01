@@ -547,7 +547,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         title: RemainingSurface.tr(context, 'running_crew.dialog', '크루 이름 바꾸기'),
         initial: mine.crew.name,
         okLabel: RemainingSurface.tr(context, 'running_crew.dialog.2', '다음'),
-        note: cost == 0 ? '처음 한 번은 무료예요.' : '이름을 바꿀 때마다 $cost DIA가 들어요.',
+        note: cost == 0 ? RemainingSurface.trNow('crew_manager.body', '처음 한 번은 무료예요.') : RemainingSurface.trNow('crew_manager.button', '이름을 바꿀 때마다 $cost DIA가 들어요.', {'cost': cost}),
       ),
     );
     if (name == null || name == mine.crew.name || !mounted) return;
@@ -560,7 +560,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
             '"$name"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
             {'name': name, 'cost': cost},
           ),
-          '$cost DIA 내고 바꾸기',
+          RemainingSurface.trNow('crew_manager.body.4', '$cost DIA 내고 바꾸기', {'cost': cost}),
         )) {
       return;
     }
@@ -799,14 +799,14 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
             ? null
             : (member) async {
                 if (!await _confirm(RemainingSurface.trNow('crew_manager.toast.29', '크루원 내보내기'),
-                    '${member.nickname}님을 크루에서 내보낼까요?', RemainingSurface.trNow('crew_manager.toast.31', '내보내기'))) {
+                    RemainingSurface.trNow('crew_manager.toast.30', '${member.nickname}님을 크루에서 내보낼까요?', {'member.nickname': member.nickname}), RemainingSurface.trNow('crew_manager.toast.31', '내보내기'))) {
                   return;
                 }
                 try {
                   await api.kickCrewMember(member.uid);
                   _refreshCrews();
                   if (ctx.mounted) Navigator.of(ctx).pop();
-                  if (mounted) _toast('${member.nickname}님을 내보냈어요.');
+                  if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.32', '${member.nickname}님을 내보냈어요.', {'member.nickname': member.nickname}));
                 } catch (_) {
                   if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.33', '내보내지 못했어요. 잠시 뒤 다시 해 주세요.'));
                 }
@@ -862,7 +862,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                               '${member.nickname}님을 부크루장으로 했어요.',
                               {'member.nickname': member.nickname},
                             )
-                          : '${member.nickname}님을 크루원으로 돌렸어요.',
+                          : RemainingSurface.trNow('crew_manager.toast.27', '${member.nickname}님을 크루원으로 돌렸어요.', {'member.nickname': member.nickname}),
                     );
                   }
                 } catch (_) {
@@ -1990,7 +1990,7 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
     super.dispose();
   }
 
-  get _name => _controller.text.trim();
+  String get _name => _controller.text.trim();
   bool get _valid => _name.length >= 2 && _name.length <= 20;
 
   void _close(String? value) {
@@ -2032,7 +2032,7 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
           key: _CrewNameDialog.okKey,
           onPressed: _valid ? () => _close(_name) : null,
           child: Text(
-            widget.okLabel == '다음'
+            widget.okLabel == RemainingSurface.trNow('running_crew.dialog.2', '다음')
                 ? RemainingSurface.tr(context, 'running_crew.dialog.2', '다음')
                 : widget.okLabel,
           ),

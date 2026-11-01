@@ -54,7 +54,7 @@ static String get loginApple => RemainingSurface.trNow('widget.apple_login_butto
   static String get existingAccountNaver => RemainingSurface.trNow('app.existingAccountNaver', '네이버로 가입했어요');
   static String get existingAccountApple => RemainingSurface.trNow('app.existingAccountApple', '애플로 가입했어요');
   static String get existingAccountNotFound => RemainingSurface.trNow('app.existingAccountNotFound', '그 방법으로 가입된 계정이 없어요. 다른 방법을 골라 주세요.');
-  static get existingAccountEmpty => existingAccountNotFound;
+  static String get existingAccountEmpty => existingAccountNotFound;
   static String get linkConfirmYes => RemainingSurface.trNow('app.linkConfirmYes', '네, 연결할게요');
   static String get linkConfirmNo => RemainingSurface.trNow('app.linkConfirmNo', '아니에요, 다시 고를게요');
 
@@ -311,7 +311,7 @@ static String get createRoomScreenTitle => RemainingSurface.trNow('wallet_transa
   static String get challengeDetailTitle => RemainingSurface.trNow('app.challengeDetailTitle', '3km 중급 챌린지 (골드 대회)');
   static String get challengeDetailEntryFee => RemainingSurface.trNow('app.dashboardChallenge2Sub', '참가비: 1,200 SHARE');
   static const challengeDetailGoldBadge = '골드';
-  static get challengeDetailPrize => noCashPrizePool;
+  static String get challengeDetailPrize => noCashPrizePool;
   static String get challengeDetailDonation => RemainingSurface.trNow('app.challengeDetailDonation', '기부: 회사(운영자) 자금으로 기부 예정');
   static String get challengeDetailDistance => RemainingSurface.trNow('app.challengeDetailDistance', '거리: 3km');
   static String get challengeDetailDonationTarget => RemainingSurface.trNow('app.challengeDetailDonationTarget', '기부처: 정해지면 알려 드려요');

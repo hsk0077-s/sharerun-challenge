@@ -157,7 +157,7 @@ class TournamentModel {
     };
   }
 
-  get statusCode => switch (status) {
+  String get statusCode => switch (status) {
         TournamentStatus.active => 'active',
         TournamentStatus.cancelled => 'cancelled',
         TournamentStatus.cancelledBepNotMet => 'cancelled_bep_not_met',

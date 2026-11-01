@@ -16,7 +16,7 @@ class DiaPackProduct {
 
   int get totalDia => baseDia + bonusDia;
 
-  get bonusLabel => bonusDia == 0 ? RemainingSurface.trNow('iap.dia_pack_product.body', '보너스 없음') : '보너스 $bonusDia DIA';
+  String get bonusLabel => bonusDia == 0 ? RemainingSurface.trNow('iap.dia_pack_product.body', '보너스 없음') : RemainingSurface.trNow('iap.dia_pack_product.body.2', '보너스 $bonusDia DIA', {'bonusDia': bonusDia});
 
   static const catalog = <DiaPackProduct>[
     DiaPackProduct(

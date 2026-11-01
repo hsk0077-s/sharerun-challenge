@@ -43,7 +43,7 @@ enum TierAnimal {
 typedef AnimalGroup = TierAnimal;
 
 extension TierAnimalX on TierAnimal {
-  get code => switch (this) {
+  String get code => switch (this) {
         TierAnimal.turtle => 'turtle',
         TierAnimal.beagle => 'beagle',
         TierAnimal.wolf => 'wolf',
@@ -61,7 +61,7 @@ extension TierAnimalX on TierAnimal {
     return locale.languageCode == 'ko' ? labelKo : animalLabel(locale, code);
   }
 
-  get labelKo => switch (this) {
+  String get labelKo => switch (this) {
         TierAnimal.turtle => '거북이',
         TierAnimal.beagle => '비글',
         TierAnimal.wolf => '늑대',
@@ -70,7 +70,7 @@ extension TierAnimalX on TierAnimal {
         TierAnimal.snail => '달팽이',
       };
 
-  get emoji => switch (this) {
+  String get emoji => switch (this) {
         TierAnimal.turtle => '🐢',
         TierAnimal.beagle => '🐶',
         TierAnimal.wolf => '🐺',
@@ -93,7 +93,7 @@ enum TierMedal {
 typedef SubTier = TierMedal;
 
 extension TierMedalX on TierMedal {
-  get code => switch (this) {
+  String get code => switch (this) {
         TierMedal.bronze => 'bronze',
         TierMedal.silver => 'silver',
         TierMedal.gold => 'gold',
@@ -110,7 +110,7 @@ extension TierMedalX on TierMedal {
     return locale.languageCode == 'ko' ? labelKo : medalLabel(locale, code);
   }
 
-  get labelKo => switch (this) {
+  String get labelKo => switch (this) {
         TierMedal.bronze => '브론즈',
         TierMedal.silver => '실버',
         TierMedal.gold => '골드',
@@ -166,11 +166,11 @@ class UserTier {
   String get koreanName =>
       isSnail ? '달팽이' : '${animal.labelKo} ${medal.labelKo}';
 
-  get englishName => isSnail
+  String get englishName => isSnail
       ? 'Snail (Unrated)'
       : '${_titleCase(animal.code)} ${_titleCase(medal.code)}';
 
-  get displayNameKo => isSnail ? '달팽이' : '${medal.labelKo} ${animal.labelKo}';
+  String get displayNameKo => isSnail ? '달팽이' : '${medal.labelKo} ${animal.labelKo}';
 
   String get displayNameWithEmoji => '${animal.emoji} $koreanName';
 
@@ -195,12 +195,12 @@ class UserTier {
   /// 티어 마스코트 그림. 모두 오른쪽을 본다. 메달은 그림에 없고
   /// 화면에서 [TierMedalBadge]로 따로 보여 준다.
   /// 달팽이(등급 미배정): 워킹 챌린지에서 쓰는 웃는 달팽이. 바탕은 투명하다.
-  get avatarAssetPath => isSnail
+  String get avatarAssetPath => isSnail
       ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 전용 — 메달 없는 순수 티어 마스코트. 모두 오른쪽을 본다.
-  get pureAvatarAssetPath => isSnail
+  String get pureAvatarAssetPath => isSnail
       ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
@@ -336,7 +336,7 @@ enum AngelTier {
 }
 
 extension AngelTierX on AngelTier {
-  get code => switch (this) {
+  String get code => switch (this) {
         AngelTier.preAngel => 'pre_angel',
         AngelTier.cupid => 'cupid',
         AngelTier.guardian => 'guardian',
@@ -345,7 +345,7 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => 'seraphim',
       };
 
-  get koreanName => switch (this) {
+  String get koreanName => switch (this) {
         AngelTier.preAngel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body', '예비 천사 (Pre-Angel)'),
         AngelTier.cupid => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.2', '큐피드'),
         AngelTier.guardian => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.3', '수호천사'),
@@ -388,7 +388,7 @@ extension AngelTierX on AngelTier {
         rewardLabel,
       );
 
-  get englishName => switch (this) {
+  String get englishName => switch (this) {
         AngelTier.preAngel => 'Pre-Angel',
         AngelTier.cupid => 'Cupid',
         AngelTier.guardian => 'Guardian Angel',
@@ -397,7 +397,7 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => 'Seraphim',
       };
 
-  get emoji => switch (this) {
+  String get emoji => switch (this) {
         AngelTier.preAngel => '🩹',
         AngelTier.cupid => '🏹',
         AngelTier.guardian => '🛡️',
@@ -406,7 +406,7 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => '👑',
       };
 
-  get avatarAssetPath => switch (this) {
+  String get avatarAssetPath => switch (this) {
         AngelTier.preAngel =>
           'assets/images/characters/chibi_pre_angel_bandaid.png',
         AngelTier.cupid => 'assets/images/characters/chibi_cupid_wing.png',
@@ -482,7 +482,7 @@ extension AngelTierX on AngelTier {
   double get tokenBoostMultiplier =>
       index >= AngelTier.archangel.index ? 1.2 : 1.0;
 
-  get requirementLabel => switch (this) {
+  String get requirementLabel => switch (this) {
         AngelTier.preAngel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.7', '후원 0회 · 1회 정산 시 큐피드 승급'),
         AngelTier.cupid => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.8', '최초 1회 이상 후원 (SHARE 무관)'),
         AngelTier.guardian => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.9', '누적 5회 또는 누적 50,000 SHARE 이상'),
@@ -491,7 +491,7 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.12', '누적 100회 또는 누적 5,000,000 SHARE 이상'),
       };
 
-  get rewardLabel => switch (this) {
+  String get rewardLabel => switch (this) {
         AngelTier.preAngel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.13', '등에 귀여운 날개 반창고를 붙인 마스코트'),
         AngelTier.cupid => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.14', '등 뒤 아기 날개 배지 장착'),
         AngelTier.guardian => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.15', '은빛 날개 · 대회 입장 시 닉네임 볼드 테두리 강조'),
@@ -620,7 +620,7 @@ enum OnboardingPhase {
 
 extension OnboardingPhaseRoute on OnboardingPhase {
   /// go_router / [RouteNames] 선언적 경로.
-  get routePath => switch (this) {
+  String get routePath => switch (this) {
         OnboardingPhase.socialSignup => RouteNames.login,
         OnboardingPhase.sensitiveConsent => RouteNames.termsAgreement,
         OnboardingPhase.deviceSync => RouteNames.smartWatchSync,
@@ -1912,9 +1912,12 @@ abstract final class RetentionAlertEngine {
           code: 'jena_pending',
           title: RemainingSurface.trNow('in_challenge.dialog', '기록 검증 보류'),
           body:
-              '⚠️ 방금 완료하신 기록의 검증이 보류되었습니다. '
-              '억울한 오탐지가 없도록 7일 이내에 원본 센서 로그로 '
-              '소명 자료를 간편 제출해 주세요! 〉',
+              RemainingSurface.trNow(
+            'onboarding.pending_push_body',
+            '⚠️ 방금 완료하신 기록의 검증이 보류되었습니다. '
+            '억울한 오탐지가 없도록 7일 이내에 원본 센서 로그로 '
+            '소명 자료를 간편 제출해 주세요! 〉',
+          ),
           routeName: RouteNames.appealCenter,
           extra: {'activityId': pending.id},
         ),

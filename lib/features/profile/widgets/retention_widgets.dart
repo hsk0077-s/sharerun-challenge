@@ -351,7 +351,7 @@ class _HeroChip extends StatelessWidget {
 class DailyStreakCard extends ConsumerWidget {
   const DailyStreakCard({super.key});
 
-  static const _labels = ['월', '화', '수', '목', '금', '토', '일'];
+  static List<String> get _labels => [RemainingSurface.trNow('solo_pedometer.body.15', '월'), RemainingSurface.trNow('solo_pedometer.body.16', '화'), RemainingSurface.trNow('solo_pedometer.body.17', '수'), RemainingSurface.trNow('solo_pedometer.body.18', '목'), RemainingSurface.trNow('solo_pedometer.body.19', '금'), RemainingSurface.trNow('solo_pedometer.body.20', '토'), RemainingSurface.trNow('solo_pedometer.body.21', '일')];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

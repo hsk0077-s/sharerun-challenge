@@ -8,6 +8,7 @@ import '../../../core/api/api_exception.dart';
 import '../../../core/constants/economy_constants.dart';
 import '../../../core/strings/app_strings.dart';
 import '../../../core/theme/theme.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Same 7-day window as the server redeem check (`>` 7 days is expired).
 bool referralRedeemWindowOpen({
@@ -104,7 +105,7 @@ class _MyPageReferralCodeEntryState
       padding: EdgeInsets.only(top: tokens.spacing.sm),
       child: done
           ? Text(
-              '${AppStrings.referralRedeemDone} · $runs/${EconomyConstants.referralTrialRunsRequired} 런 · 1.1km 이상 달리면 안전해요',
+              '${AppStrings.referralRedeemDone} · ${RemainingSurface.trNow('referral.progress', '$runs/${EconomyConstants.referralTrialRunsRequired} 런 · 1.1km 이상 달리면 안전해요', {'runs': runs, 'EconomyConstants.referralTrialRunsRequired': EconomyConstants.referralTrialRunsRequired})}',
               key: MyPageReferralCodeEntry.doneKey,
               style: textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,

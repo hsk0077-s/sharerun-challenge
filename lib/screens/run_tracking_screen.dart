@@ -86,8 +86,14 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
                   Text(_formatDuration(telemetry.durationSeconds)),
                   const SizedBox(height: 8),
                   Text(
-                    '심박 ${telemetry.currentHeartRate?.toString() ?? '--'} BPM / '
-                    '케이던스 ${telemetry.currentCadenceSpm?.toString() ?? '--'} SPM',
+                    RemainingSurface.trNow(
+                      'run_tracking.telemetry',
+                      '심박 \$hr BPM / 케이던스 \$spm SPM',
+                      {
+                        'hr': telemetry.currentHeartRate?.toString() ?? '--',
+                        'spm': telemetry.currentCadenceSpm?.toString() ?? '--',
+                      },
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(

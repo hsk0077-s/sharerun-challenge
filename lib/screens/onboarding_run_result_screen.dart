@@ -137,9 +137,9 @@ class _OnboardingRunResultScreenState
   final _styleController = PageController(viewportFraction: 0.8);
   final _cardKey = GlobalKey();
 
-  get _distanceLabel => widget.distanceKm.toStringAsFixed(2);
+  String get _distanceLabel => widget.distanceKm.toStringAsFixed(2);
 
-  get _timeLabel => _formatRunClock(widget.durationSeconds);
+  String get _timeLabel => _formatRunClock(widget.durationSeconds);
 
   String get _paceLabel =>
       _formatRunPace(widget.distanceKm, widget.durationSeconds);

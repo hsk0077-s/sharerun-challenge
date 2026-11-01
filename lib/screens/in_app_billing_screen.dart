@@ -138,7 +138,7 @@ class _DiaExchangeEntry extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               const SizedBox(height: 4),
-              const Text('1,200 SHARE = 1 DIA · 주간 한도 안에서 교환'),
+              Text(RemainingSurface.trNow('billing.share_to_dia', '1,200 SHARE = 1 DIA · 주간 한도 안에서 교환')),
             ],
           ),
         ),
@@ -231,7 +231,7 @@ class _CoachPlusBillingEntry extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭',
+                RemainingSurface.trNow('billing.free_note', '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭'),
                 style: AppTextStyles.caption.copyWith(fontSize: 12),
               ),
               const SizedBox(height: 8),

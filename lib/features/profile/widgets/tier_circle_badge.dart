@@ -121,7 +121,7 @@ class TierCircleBadge extends StatelessWidget {
 /// 홈, 공유 카드에서 같이 쓰는 두 등급의 이름과 그림.
 extension TierCircleLabels on UserTier {
   /// 동물 이름만. 달팽이는 '달팽이'.
-  get circleLabel => animal.label();
+  String get circleLabel => animal.label();
 
   /// 둘째 줄: 메달 이름. 달팽이는 없다.
   String? get circleSubLabel => isSnail ? null : medal.label();
@@ -129,7 +129,7 @@ extension TierCircleLabels on UserTier {
 
 extension AngelCircleLabels on AngelTier {
   /// 원 아래에 쓰는 짧은 이름. 예비 천사는 괄호 영문을 뺀다.
-  get circleLabel => this == AngelTier.preAngel ? RemainingSurface.trNow('profile.tier_circle_badge.body', '예비 천사') : koreanName;
+  String get circleLabel => this == AngelTier.preAngel ? RemainingSurface.trNow('profile.tier_circle_badge.body', '예비 천사') : koreanName;
 
   /// Same label in the screen's language.
   String circleLabelFor(BuildContext? context) => circleName(context);

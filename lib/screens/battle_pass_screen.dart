@@ -70,7 +70,7 @@ class _BattlePassScreenState extends ConsumerState<BattlePassScreen> {
       final title = serverShopItemTitle(itemId) ?? itemId;
       _toast(
         result.status == 'already_purchased'
-            ? '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.'
+            ? RemainingSurface.trNow('battle_pass.already_purchased', '이미 처리된 구매입니다. DIA는 한 번만 차감됩니다.')
             : RemainingSurface.tr(
                 context,
                 'battle_pass.toast',

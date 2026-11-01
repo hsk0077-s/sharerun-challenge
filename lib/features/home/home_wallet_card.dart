@@ -5,6 +5,7 @@ import '../../core/strings/app_strings.dart';
 import '../../core/theme/theme.dart';
 import '../profile/widgets/retention_widgets.dart';
 import '../wallet/widgets/wallet_sync_note.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 지갑 카드. SHARE·VALUE 잔액을 누르면 충전·기부 화면으로 간다.
 /// 홈에서 마이로 옮겼다. 글자와 눌렀을 때 가는 곳은 그대로다.
@@ -139,7 +140,7 @@ class HomeGradeEvalBanner extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '$completedCount/$total회 완료 >',
+                    RemainingSurface.trNow('home.home_wallet.body', '$completedCount/$total회 완료 >', {'completedCount': completedCount, 'total': total}),
                     style: textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: tokens.colors.ink,

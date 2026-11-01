@@ -48,7 +48,7 @@ enum RunFinishCardTheme {
     mint
   ];
 
-  get label => switch (this) {
+  String get label => switch (this) {
         dark => RemainingSurface.trNow('run_result.run_finish_share.body', '다크'),
         blue => RemainingSurface.trNow('run_result.run_finish_share.body.2', '블루'),
         pink => RemainingSurface.trNow('run_result.run_finish_share.body.3', '핑크'),
@@ -71,7 +71,7 @@ enum RunFinishCardTheme {
 /// `10월 3일 토요일`
 String runFinishDateLabel(DateTime date) {
   final weekdays = [RemainingSurface.trNow('run_result.run_finish_share.body.7', '월요일'), RemainingSurface.trNow('run_result.run_finish_share.body.8', '화요일'), RemainingSurface.trNow('run_result.run_finish_share.body.9', '수요일'), RemainingSurface.trNow('run_result.run_finish_share.body.10', '목요일'), RemainingSurface.trNow('run_result.run_finish_share.body.11', '금요일'), RemainingSurface.trNow('run_result.run_finish_share.body.12', '토요일'), RemainingSurface.trNow('run_result.run_finish_share.body.13', '일요일')];
-  return '${date.month}월 ${date.day}일 ${weekdays[date.weekday - 1]}';
+  return RemainingSurface.trNow('run_finish.date_label', '${date.month}월 ${date.day}일 ${weekdays[date.weekday - 1]}', {'date.month': date.month, 'date.day': date.day, 'weekdays[date.weekday - 1]': weekdays[date.weekday - 1]});
 }
 
 /// Company donation the server recorded. Null when nothing was counted.
@@ -116,7 +116,7 @@ String runFinishShareText({
   required String time,
   int? donationWon,
 }) {
-  final record = '쉐어런 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time';
+  final record = RemainingSurface.trNow('run_result.run_finish_share.body.19', '쉐어런 앱에서 ${distanceKm}km를 달렸어요. ⏱ 기록: $time', {'distanceKm': distanceKm, 'time': time});
   final donation = runFinishDonationLine(donationWon);
   if (donation == null) return record;
   return '$donation. $record';
@@ -169,7 +169,7 @@ class RunFinishShareCard extends StatelessWidget {
   static const splitGraphKey = Key('run-finish-split-graph');
   static const badgesKey = Key('run-finish-tier-badges');
 
-  static const appName = '쉐어런';
+  static String get appName => RemainingSurface.trNow('brand.name', '쉐어런');
   static String get headline => RemainingSurface.trNow('run_result.run_finish_share.body.20', '오늘의 러닝');
   static const fontFamily = 'ShareRunCard';
 
@@ -487,7 +487,7 @@ class _RecordColumn extends StatelessWidget {
         if (averageHeartRate != null) ...[
           const SizedBox(height: 18),
           Text(
-            '평균 심박 $averageHeartRate bpm',
+            RemainingSurface.trNow('run_result.run_finish_share.body.21', '평균 심박 $averageHeartRate bpm', {'averageHeartRate': averageHeartRate}),
             key: RunFinishShareCard.heartRateKey,
             style: TextStyle(
               fontFamily: RunFinishShareCard.fontFamily,

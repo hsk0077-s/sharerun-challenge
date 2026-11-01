@@ -137,7 +137,9 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
     final paceSec = (paceSeconds % 60).round().clamp(0, 59);
     final finish = '${hours}h ${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
-    return '목표 페이스: $paceMin:${paceSec.toString().padLeft(2, '0')} /km\n'
-        '예상 완주: $finish (${distance.toStringAsFixed(1)} km)';
+    final pace = '$paceMin:${paceSec.toString().padLeft(2, '0')}';
+    final distanceText = distance.toStringAsFixed(1);
+    return '${RemainingSurface.trNow('pace.target', '목표 페이스: $pace /km', {'pace': pace})}\n'
+        '${RemainingSurface.trNow('pace.finish', '예상 완주: $finish ($distanceText km)', {'finish': finish, 'distanceText': distanceText})}';
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/providers/app_providers.dart';
 import '../pedometer/walking_challenge_notification_service.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 시작 화면. 사진 + 위쪽 그라데이션 + 슬로건 + 작은 로고.
 class LaunchSplashView extends StatelessWidget {
@@ -112,8 +113,8 @@ class LaunchSplashView extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                '쉐어런',
+                              Text(
+                                RemainingSurface.trNow('brand.name', '쉐어런'),
                                 style: TextStyle(
                                   color: _green,
                                   fontWeight: FontWeight.w800,

@@ -295,7 +295,7 @@ class RunFinishSequenceBanner extends StatelessWidget {
                 minimumSize: const Size.fromHeight(48),
               ),
               child: Text(
-                '다음: $label',
+                RemainingSurface.trNow('run_result.run_finish_share_flow.body.8', '다음: $label', {'label': label}),
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
               ),

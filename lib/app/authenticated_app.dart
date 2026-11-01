@@ -162,7 +162,7 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
       },
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
-        title: '쉐어런',
+        title: RemainingSurface.trNow('brand.name', '쉐어런'),
         // 앱 전체가 검정 바탕 + 라임 테마다.
         theme: SrcTheme.night,
         locale: ref.watch(appLocaleProvider),

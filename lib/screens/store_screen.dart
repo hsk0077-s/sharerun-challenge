@@ -38,6 +38,7 @@ import 'battle_pass_screen.dart';
 import 'dia_pack_store_screen.dart';
 import 'share_dia_exchange_screen.dart';
 import 'item_inventory_screen.dart';
+import '../l10n/app_localizations.dart';
 
 /// src-13 앱내 상점 및 글로벌 기부 펀딩.
 class StoreScreen extends ConsumerStatefulWidget {
@@ -779,7 +780,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              AppStrings.storeTitle,
+              ShareRunLocalizations.of(context).navStore,
               style: storeText(30, c.ink, w: FontWeight.w900, h: 1.1),
             ),
             const SizedBox(height: 10),

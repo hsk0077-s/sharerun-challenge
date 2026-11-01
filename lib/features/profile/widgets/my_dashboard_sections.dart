@@ -136,7 +136,7 @@ class MyIdentityRow extends ConsumerWidget {
                 RouteNames.angelBook,
               ),
             ),
-            label: angel.circleLabel,
+            label: angel.circleLabelFor(context),
             sub: RemainingSurface.tr(context, 'angel_book.title', '천사 도감'),
             subColor: tokens.colors.donation,
             onLabelTap: () => HomeUserIdentityHeader.openBook(
@@ -376,7 +376,8 @@ class MyQuickSection extends ConsumerWidget {
           children: [
             tile(
               Icons.account_balance_wallet_outlined,
-              '내 지갑',
+              RemainingSurface.tr(
+                  context, 'profile.my_dashboard_sections.wallet', '내 지갑'),
               tokens.colors.accent,
               () => MyWalletScreen.open(context),
               key: const Key('my-tile-wallet'),
@@ -384,7 +385,8 @@ class MyQuickSection extends ConsumerWidget {
             const SizedBox(width: 8),
             tile(
               Icons.favorite_rounded,
-              '기부 정산',
+              RemainingSurface.tr(
+                  context, 'security_privacy_center.body.3', '기부 정산'),
               tokens.colors.donation,
               onDonation,
               key: const Key('my-tile-donation'),
@@ -392,7 +394,8 @@ class MyQuickSection extends ConsumerWidget {
             const SizedBox(width: 8),
             tile(
               Icons.pets_rounded,
-              '티어 도감',
+              RemainingSurface.tr(
+                  context, 'snail_to_cheetah_book.body', '티어 도감'),
               tokens.colors.accent,
               onTierBook,
               key: const Key('my-tile-tierbook'),

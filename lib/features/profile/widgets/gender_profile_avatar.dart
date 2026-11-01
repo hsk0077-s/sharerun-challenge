@@ -90,7 +90,7 @@ class TextTierLabel extends StatelessWidget {
           vertical: tokens.spacing.xxs / 2,
         ),
         child: Text(
-          '[${tier.koreanName}]',
+          '[${tier.gradeTitle(Localizations.localeOf(context))}]',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: tokens.colors.accent,
@@ -183,7 +183,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
               TierCircleBadge(
                 key: const Key('home-tier-angel'),
                 imagePath: angel.avatarAssetPath,
-                label: angel.circleLabel,
+                label: angel.circleLabelFor(context),
                 borderColor: AppColors.angelGold,
                 showLabel: false,
                 size: size,

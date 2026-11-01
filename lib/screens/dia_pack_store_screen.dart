@@ -89,9 +89,11 @@ class _DiaPackCard extends StatelessWidget {
               style: const TextStyle(fontSize: 12),
             ),
             const SizedBox(height: 10),
-            const FilledButton(
+            FilledButton(
               onPressed: null,
-              child: Text('준비 중'),
+              child: Text(
+                RemainingSurface.tr(context, 'common.preparing', '준비 중'),
+              ),
             ),
           ],
         ),

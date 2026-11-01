@@ -1951,6 +1951,11 @@ class RemainingSurface {
     'settings.title',
     'common.tournament',
     'profile.my_watch.connect',
+    'common.preparing',
+    'angel_tier.pre_short',
+    'running_crew.card_open',
+    'running_crew.card_approval',
+    'profile.my_dashboard_sections.wallet',
   ];
 
   static const _en = <String, String>{
@@ -3817,6 +3822,11 @@ class RemainingSurface {
     'settings.title': 'Settings',
     'common.tournament': 'Tournaments',
     'profile.my_watch.connect': 'Connect',
+    'common.preparing': 'Coming soon',
+    'angel_tier.pre_short': 'Pre-Angel',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} members · Open join',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} members · Approval required',
+    'profile.my_dashboard_sections.wallet': 'My wallet',
   };
 
   static const _ja = <String, String>{
@@ -5683,6 +5693,11 @@ class RemainingSurface {
     'settings.title': '設定',
     'common.tournament': '大会',
     'profile.my_watch.connect': '接続する',
+    'common.preparing': '準備中',
+    'angel_tier.pre_short': '見習い天使',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers}人 · 自由参加',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers}人 · 承認制',
+    'profile.my_dashboard_sections.wallet': 'マイウォレット',
   };
 
   static const _zh = <String, String>{
@@ -7549,6 +7564,11 @@ class RemainingSurface {
     'settings.title': '設定',
     'common.tournament': '大賽',
     'profile.my_watch.connect': '連線',
+    'common.preparing': '準備中',
+    'angel_tier.pre_short': '預備天使',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} 人 · 自由加入',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} 人 · 需審核',
+    'profile.my_dashboard_sections.wallet': '我的錢包',
   };
 
   static const _es = <String, String>{
@@ -9415,6 +9435,11 @@ class RemainingSurface {
     'settings.title': 'Ajustes',
     'common.tournament': 'Torneos',
     'profile.my_watch.connect': 'Conectar',
+    'common.preparing': 'Próximamente',
+    'angel_tier.pre_short': 'Pre-Ángel',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} miembros · Unión libre',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} miembros · Con aprobación',
+    'profile.my_dashboard_sections.wallet': 'Mi billetera',
   };
 
   static const _pt = <String, String>{
@@ -11281,6 +11306,11 @@ class RemainingSurface {
     'settings.title': 'Configurações',
     'common.tournament': 'Torneios',
     'profile.my_watch.connect': 'Conectar',
+    'common.preparing': 'Em breve',
+    'angel_tier.pre_short': 'Pré-Anjo',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} membros · Entrada livre',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} membros · Com aprovação',
+    'profile.my_dashboard_sections.wallet': 'Minha carteira',
   };
 
   static const _de = <String, String>{
@@ -13147,6 +13177,11 @@ class RemainingSurface {
     'settings.title': 'Einstellungen',
     'common.tournament': 'Turniere',
     'profile.my_watch.connect': 'Verbinden',
+    'common.preparing': 'In Vorbereitung',
+    'angel_tier.pre_short': 'Pre-Angel',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} Mitglieder · Offener Beitritt',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} Mitglieder · Beitritt mit Genehmigung',
+    'profile.my_dashboard_sections.wallet': 'Meine Wallet',
   };
 
   static const _fr = <String, String>{
@@ -15013,6 +15048,11 @@ class RemainingSurface {
     'settings.title': 'Réglages',
     'common.tournament': 'Tournois',
     'profile.my_watch.connect': 'Connecter',
+    'common.preparing': 'Bientôt disponible',
+    'angel_tier.pre_short': 'Pré-ange',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} membres · Adhésion libre',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} membres · Sur approbation',
+    'profile.my_dashboard_sections.wallet': 'Mon portefeuille',
   };
 
   static const _vi = <String, String>{
@@ -16879,6 +16919,11 @@ class RemainingSurface {
     'settings.title': 'Cài đặt',
     'common.tournament': 'Giải đấu',
     'profile.my_watch.connect': 'Kết nối',
+    'common.preparing': 'Sắp ra mắt',
+    'angel_tier.pre_short': 'Thiên thần dự bị',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} thành viên · Tham gia tự do',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} thành viên · Cần duyệt',
+    'profile.my_dashboard_sections.wallet': 'Ví của tôi',
   };
 
   static const _th = <String, String>{
@@ -18745,6 +18790,11 @@ class RemainingSurface {
     'settings.title': 'การตั้งค่า',
     'common.tournament': 'ทัวร์นาเมนต์',
     'profile.my_watch.connect': 'เชื่อมต่อ',
+    'common.preparing': 'เร็วๆ นี้',
+    'angel_tier.pre_short': 'นางฟ้าฝึกหัด',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} คน · เข้าร่วมได้อิสระ',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} คน · ต้องได้รับอนุมัติ',
+    'profile.my_dashboard_sections.wallet': 'กระเป๋าของฉัน',
   };
 
   static const _id = <String, String>{
@@ -20611,6 +20661,11 @@ class RemainingSurface {
     'settings.title': 'Pengaturan',
     'common.tournament': 'Turnamen',
     'profile.my_watch.connect': 'Hubungkan',
+    'common.preparing': 'Segera hadir',
+    'angel_tier.pre_short': 'Pra-Malaikat',
+    'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} anggota · Gabung bebas',
+    'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} anggota · Perlu persetujuan',
+    'profile.my_dashboard_sections.wallet': 'Dompet saya',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

@@ -470,6 +470,12 @@ flutter analyze
 flutter test
 ```
 
+`very_good test` bundles every test file into one process when it runs the whole suite.
+A few tests load real fonts (`run_finish_share_card_test`, `run_finish_share_sequence_test`),
+and in that shared process later tests render differently, so 15 tests fail even on `main`.
+They pass one file at a time, with `flutter test`, and with `very_good test --no-optimization`.
+Use one of those for a full run.
+
 ## Jena AI
 
 ```powershell

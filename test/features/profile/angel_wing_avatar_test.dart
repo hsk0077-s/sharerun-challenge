@@ -12,6 +12,8 @@ import 'package:share_run_challenge/features/profile/widgets/angel_tier_widgets.
 import 'package:share_run_challenge/features/profile/widgets/gender_profile_avatar.dart';
 import 'package:share_run_challenge/screens/personal_sponsor_screen.dart';
 
+import '../../support/ko_localization.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -375,6 +377,9 @@ Widget _scope({required int count, required Widget child}) {
     ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
+      locale: koTestLocale,
+      supportedLocales: koTestSupportedLocales,
+      localizationsDelegates: koTestDelegates,
       theme: SrcTheme.light,
       home: child,
     ),

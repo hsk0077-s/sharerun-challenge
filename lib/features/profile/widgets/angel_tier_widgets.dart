@@ -77,7 +77,7 @@ class AngelTierBadge extends StatelessWidget {
         const SizedBox(width: 3),
         Flexible(
           child: Text(
-            '[${tier.koreanName}]',
+            '[${tier.localizedName(context)}]',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.agreementLabel.copyWith(
@@ -357,6 +357,7 @@ class AngelChronicleCard extends ConsumerWidget {
     final gap = tier.nextGapLabel(
       donationCount: count,
       cumulativeDonationAmount: amount,
+      context: context,
     );
 
     final tokens = context.srcTokens;
@@ -396,7 +397,7 @@ class AngelChronicleCard extends ConsumerWidget {
                       ),
                       SizedBox(height: tokens.spacing.sm),
                       Text(
-                        '${tier.emoji} ${tier.koreanName}',
+                        '${tier.emoji} ${tier.localizedName(context)}',
                         style: textTheme.titleLarge?.copyWith(
                           fontSize: 17,
                           color: tokens.colors.ink,
@@ -411,8 +412,16 @@ class AngelChronicleCard extends ConsumerWidget {
                       ),
                       SizedBox(height: tokens.spacing.xxs + 2),
                       Text(
-                        '후원 $count회 · '
-                        '${AngelTierX.formatWon(amount)}',
+                        RemainingSurface.tr(
+                          context,
+                          'profile.angel_tier_widgets.body.2',
+                          '후원 \$count회 · \${AngelTierX.formatWon(amount)}',
+                          {
+                            'count': count,
+                            'AngelTierX.formatWon(amount)':
+                                AngelTierX.formatWon(amount),
+                          },
+                        ),
                         style: textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: tokens.colors.donation,
@@ -427,8 +436,11 @@ class AngelChronicleCard extends ConsumerWidget {
           if (isPreAngel) ...[
             SizedBox(height: tokens.spacing.sm),
             Text(
-              '아직 등 뒤에 장착된 진짜 날개가 없습니다. '
-              '단 1회 기부로 귀여운 아기 날개를 달아보세요!',
+              RemainingSurface.tr(
+                context,
+                'profile.angel_tier_widgets.body.3',
+                '아직 등 뒤에 장착된 진짜 날개가 없습니다. 단 1회 기부로 귀여운 아기 날개를 달아보세요!',
+              ),
               style: textTheme.bodySmall?.copyWith(
                 fontSize: 12,
                 height: 1.45,

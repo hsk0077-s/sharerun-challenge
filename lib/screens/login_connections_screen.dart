@@ -405,7 +405,10 @@ class _LoginConnectionsScreenState
                           '애플',
                         ),
                       ),
-                      trailing: const Text('준비 중', style: AppTextStyles.caption),
+                      trailing: Text(
+                        RemainingSurface.tr(context, 'common.preparing', '준비 중'),
+                        style: AppTextStyles.caption,
+                      ),
                     ),
                 ],
               ),

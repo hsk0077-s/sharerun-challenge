@@ -1119,6 +1119,114 @@
     "answer": "Kamu bisa meninggalkan pertanyaan kapan saja lewat Hubungi kami di layar Pengaturan atau banding sanksi di Pusat keamanan & privasi. Untuk pertanyaan singkat, kamu juga bisa langsung bertanya padaku."
   },
   {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Saya ingin mulai berlari",
+    "aliases": [
+      "Mulai lari"
+    ],
+    "answer": "Aku akan membuka layar lari. Selama kamu berlari, aku menyemangati dengan suaraku."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah lari bebas juga dicatat?",
+    "aliases": [
+      "Jika hanya berlari, apakah tersimpan?"
+    ],
+    "answer": "Ya, catatan lari bebas, streak, dan lencana selalu tersimpan. Hadiah VALUE hanya diberikan untuk lari yang lolos verifikasi."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apa itu lari terverifikasi?",
+    "aliases": [
+      "Apa itu verifikasi?"
+    ],
+    "answer": "Prinsipnya, catatan selalu disimpan dan hadiah hanya untuk lari terverifikasi. Lari terverifikasi jika kamu berlari 1 km atau lebih dan lolos kriteria yang ditetapkan."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apa kriteria verifikasi?",
+    "aliases": [
+      "Kriteria kadensi"
+    ],
+    "answer": "Larilah minimal 1 km dengan 120 sampai 210 langkah per menit. Di ruang lari, kamu harus berlari sejauh jarak ruang."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mengapa verifikasi gagal?",
+    "aliases": [
+      "Alasan verifikasi gagal"
+    ],
+    "answer": "Verifikasi bisa gagal jika jarak lebih pendek dari yang diperlukan, atau kecepatan langkah atau GPS di luar kriteria. Catatan itu sendiri tetap tersimpan."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah terverifikasi tanpa jam?",
+    "aliases": [
+      "Apakah wajib punya jam?"
+    ],
+    "answer": "Ya. Tanpa jam, kami memeriksa dengan panjang langkah dan kecepatan GPS. Jam hanya diperlukan untuk event Lanjutan, Half, dan Final."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah ada aplikasi khusus jam?",
+    "aliases": [
+      "Aplikasi Galaxy Watch"
+    ],
+    "answer": "Di jam Wear OS seperti Galaxy Watch, kami mendukung aplikasi jam mandiri yang terhubung dengan kode pairing 6 digit. Aplikasi untuk Apple Watch juga sudah siap, dan Garmin, Mi Band, Amazfit, Fitbit, Samsung Health, serta COROS bisa dipakai lewat sinkronisasi aplikasi kesehatan dan pengiriman detak jantung Bluetooth secara real time."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah lari dengan jam memberi SHARE lebih banyak?",
+    "aliases": [
+      "Bonus jam"
+    ],
+    "answer": "Tidak, lari dengan jam tidak memberi SHARE tambahan."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah pencatatan terputus jika layar dimatikan?",
+    "aliases": [
+      "Bolehkah layar dimatikan?"
+    ],
+    "answer": "Tidak, pencatatan terus berjalan meski layar dimatikan. Saat berlari, indikator “Merekam” tetap muncul di area notifikasi."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Pencatatan lari terputus di tengah",
+    "aliases": [
+      "Pencatatan berhenti"
+    ],
+    "answer": "Bisa terputus karena pengaturan lokasi, notifikasi, atau baterai. Periksa semuanya sekaligus di “Pemeriksaan pengaturan perekaman lari” di Profil."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS sulit mendapat sinyal",
+    "aliases": [
+      "Lokasi saya terlihat aneh"
+    ],
+    "answer": "Pertama, pastikan izin lokasi menyala. Di “Pemeriksaan pengaturan perekaman lari” kamu bisa melihat pengaturan yang diperlukan satu per satu."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mengapa meminta izin sebelum lari pertama?",
+    "aliases": [
+      "Mengapa mengubah pengaturan baterai?"
+    ],
+    "answer": "Kami memandu pengaturan lokasi, notifikasi, dan baterai sebelumnya agar pencatatan tidak terputus meski layar dimatikan."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

@@ -1119,6 +1119,114 @@
     "answer": "Bạn có thể để lại yêu cầu bất cứ lúc nào qua mục Liên hệ trong màn hình Cài đặt hoặc khiếu nại xử phạt trong Trung tâm bảo mật & quyền riêng tư. Với thắc mắc nhỏ, bạn cũng có thể hỏi mình trực tiếp."
   },
   {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mình muốn bắt đầu chạy",
+    "aliases": [
+      "Bắt đầu chạy"
+    ],
+    "answer": "Mình mở màn hình chạy. Trong khi bạn chạy, mình sẽ cổ vũ bằng giọng nói."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy tự do có được ghi lại không?",
+    "aliases": [
+      "Chỉ chạy thôi có được lưu không?"
+    ],
+    "answer": "Có, bản ghi chạy tự do, chuỗi ngày và huy hiệu luôn được lưu. Phần thưởng VALUE chỉ được trao cho các lần chạy vượt qua xác minh."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy đã xác minh là gì?",
+    "aliases": [
+      "Xác minh là gì?"
+    ],
+    "answer": "Nguyên tắc là bản ghi luôn được giữ, còn phần thưởng chỉ dành cho các lần chạy đã xác minh. Chạy từ 1 km trở lên và đạt các tiêu chí quy định thì được xác minh."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tiêu chí xác minh là gì?",
+    "aliases": [
+      "Tiêu chí nhịp bước"
+    ],
+    "answer": "Chạy từ 1 km trở lên với tốc độ 120 đến 210 bước mỗi phút. Trong phòng chạy, bạn cần chạy đủ quãng đường của phòng."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Sao xác minh thất bại?",
+    "aliases": [
+      "Lý do xác minh thất bại"
+    ],
+    "answer": "Xác minh có thể thất bại nếu quãng đường ngắn hơn yêu cầu, hoặc tốc độ bước hay tốc độ GPS nằm ngoài tiêu chí. Bản ghi vẫn được lưu nguyên."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Không có đồng hồ có xác minh được không?",
+    "aliases": [
+      "Có bắt buộc cần đồng hồ không?"
+    ],
+    "answer": "Có. Nếu không có đồng hồ, chúng tôi kiểm tra bằng sải chân và tốc độ GPS. Chỉ giải Cao cấp, Half và Chung kết mới cần đồng hồ."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Có ứng dụng riêng cho đồng hồ không?",
+    "aliases": [
+      "Ứng dụng Galaxy Watch"
+    ],
+    "answer": "Trên đồng hồ Wear OS như Galaxy Watch, chúng tôi hỗ trợ ứng dụng độc lập kết nối bằng mã ghép đôi 6 chữ số. Ứng dụng cho Apple Watch cũng đã sẵn sàng, còn Garmin, Mi Band, Amazfit, Fitbit, Samsung Health và COROS dùng được qua đồng bộ ứng dụng sức khỏe và gửi nhịp tim Bluetooth theo thời gian thực."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy bằng đồng hồ có thêm SHARE không?",
+    "aliases": [
+      "Thưởng đồng hồ"
+    ],
+    "answer": "Không, chạy bằng đồng hồ không được thêm SHARE."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tắt màn hình thì bản ghi có bị ngắt không?",
+    "aliases": [
+      "Tắt màn hình được không?"
+    ],
+    "answer": "Không, bản ghi vẫn tiếp tục dù tắt màn hình. Khi bạn chạy, chỉ báo “Đang ghi” hiển thị ở khu vực thông báo."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bản ghi chạy bị ngắt giữa chừng",
+    "aliases": [
+      "Bản ghi đã dừng"
+    ],
+    "answer": "Bản ghi có thể bị ngắt do cài đặt vị trí, thông báo hoặc pin. Hãy kiểm tra tất cả một lần trong “Kiểm tra cài đặt ghi chạy” ở Cá nhân."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS bắt sóng kém",
+    "aliases": [
+      "Vị trí có vẻ sai"
+    ],
+    "answer": "Trước hết hãy kiểm tra quyền vị trí đã bật chưa. Trong “Kiểm tra cài đặt ghi chạy”, bạn có thể xem lần lượt các cài đặt cần thiết."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Sao hỏi quyền trước lần chạy đầu tiên?",
+    "aliases": [
+      "Sao phải đổi cài đặt pin?"
+    ],
+    "answer": "Chúng tôi hướng dẫn trước các cài đặt vị trí, thông báo và pin để bản ghi không bị ngắt ngay cả khi tắt màn hình."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

@@ -1119,6 +1119,114 @@
     "answer": "Você pode deixar uma consulta a qualquer momento em Contato, na tela de Configurações, ou na contestação de penalidades da Central de segurança e privacidade. Para dúvidas rápidas, também pode me perguntar diretamente."
   },
   {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quero começar a correr",
+    "aliases": [
+      "Começar a correr"
+    ],
+    "answer": "Vou abrir a tela de corrida. Enquanto você corre, eu torço por você com a minha voz."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "As corridas livres também são registradas?",
+    "aliases": [
+      "Se eu só correr, é salvo?"
+    ],
+    "answer": "Sim, os registros de corridas livres, as sequências e os emblemas são sempre salvos. As recompensas de VALUE só são dadas por corridas que passam na verificação."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "O que é uma corrida verificada?",
+    "aliases": [
+      "O que é a verificação?"
+    ],
+    "answer": "O princípio é que os registros sempre são mantidos e as recompensas vão só para corridas verificadas. Uma corrida é verificada quando você corre 1 km ou mais e passa nos critérios definidos."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quais são os critérios de verificação?",
+    "aliases": [
+      "Critério de cadência"
+    ],
+    "answer": "Corra pelo menos 1 km a entre 120 e 210 passos por minuto. Em uma sala, é preciso correr a distância da sala."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Por que a verificação falhou?",
+    "aliases": [
+      "Motivo da falha de verificação"
+    ],
+    "answer": "A verificação pode falhar se a distância for menor que a exigida ou se a velocidade de passos ou do GPS estiver fora dos critérios. O registro em si continua salvo."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Dá para ser verificado sem relógio?",
+    "aliases": [
+      "Preciso mesmo de um relógio?"
+    ],
+    "answer": "Sim. Sem relógio, conferimos pela sua passada e pela velocidade do GPS. O relógio só é necessário nos eventos Avançado, Meia e Final."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Existe um app só para relógio?",
+    "aliases": [
+      "App para Galaxy Watch"
+    ],
+    "answer": "Em relógios Wear OS como o Galaxy Watch, oferecemos um app independente que se conecta com um código de pareamento de 6 dígitos. Também há um app para Apple Watch pronto, e Garmin, Mi Band, Amazfit, Fitbit, Samsung Health e COROS podem ser usados pela sincronização com apps de saúde e envio de frequência cardíaca por Bluetooth em tempo real."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ganho mais SHARE ao correr com relógio?",
+    "aliases": [
+      "Bônus por relógio"
+    ],
+    "answer": "Não, correr com relógio não dá SHARE adicional."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "O registro é interrompido se eu apagar a tela?",
+    "aliases": [
+      "Posso apagar a tela?"
+    ],
+    "answer": "Não, o registro continua mesmo com a tela apagada. Enquanto você corre, um indicador de “Gravando” fica na área de notificações."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Meu registro de corrida foi interrompido no meio",
+    "aliases": [
+      "O registro parou"
+    ],
+    "answer": "Pode ser interrompido por configurações de localização, notificações ou bateria. Confira tudo de uma vez em “Verificação das configurações de gravação de corrida” em Meu Perfil."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "O GPS não está pegando bem",
+    "aliases": [
+      "Minha localização parece errada"
+    ],
+    "answer": "Primeiro confira se a permissão de localização está ativada. Em “Verificação das configurações de gravação de corrida” você pode ver, um a um, os ajustes necessários."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Por que pedem permissões antes da minha primeira corrida?",
+    "aliases": [
+      "Por que mudar as configurações de bateria?"
+    ],
+    "answer": "Orientamos você antecipadamente sobre as configurações de localização, notificações e bateria para que o registro não seja interrompido mesmo com a tela apagada."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

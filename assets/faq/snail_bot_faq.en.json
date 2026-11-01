@@ -1119,6 +1119,114 @@
     "answer": "You can leave an inquiry anytime from Contact on the Settings screen or from the sanction appeal in the Security & Privacy Center. For quick questions, you can also just ask me directly."
   },
   {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "I want to start a run",
+    "aliases": [
+      "Start running"
+    ],
+    "answer": "I’ll open the run screen. While you run, I’ll cheer you on with my voice."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Are free runs recorded too?",
+    "aliases": [
+      "If I just run, is it saved?"
+    ],
+    "answer": "Yes, free-run records, streaks and badges are always saved. VALUE rewards are given only for runs that pass verification."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "What is a verified run?",
+    "aliases": [
+      "What is verification?"
+    ],
+    "answer": "The principle is that records are always kept, and rewards go only to verified runs. A run is verified when you run 1 km or more and pass the set criteria."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "What are the verification criteria?",
+    "aliases": [
+      "Cadence criteria"
+    ],
+    "answer": "Run at least 1 km at between 120 and 210 steps per minute. In a room, you need to run the room’s distance."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Why did verification fail?",
+    "aliases": [
+      "Verification failure reason"
+    ],
+    "answer": "Verification may fail if the distance is shorter than required, or if your step speed or GPS speed is outside the criteria. The record itself is still saved."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Can I be verified without a watch?",
+    "aliases": [
+      "Do I really need a watch?"
+    ],
+    "answer": "Yes. Without a watch, we check using your stride and GPS speed. A watch is needed only for Advanced, Half and Final events."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Is there a watch-only app?",
+    "aliases": [
+      "Galaxy Watch app"
+    ],
+    "answer": "On Wear OS watches such as the Galaxy Watch, we support a standalone watch app that connects with a 6-digit pairing code. An app for Apple Watch is also ready, and Garmin, Mi Band, Amazfit, Fitbit, Samsung Health and COROS can be used through health-app sync and real-time Bluetooth heart-rate sending."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Do I get more SHARE when running with a watch?",
+    "aliases": [
+      "Watch bonus"
+    ],
+    "answer": "No, running with a watch does not give extra SHARE."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Does recording stop if I turn off the screen?",
+    "aliases": [
+      "Can I turn off the screen?"
+    ],
+    "answer": "No, recording keeps going even with the screen off. While you run, a “Recording” indicator stays in the notification area."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "My run recording got cut off midway",
+    "aliases": [
+      "Recording stopped"
+    ],
+    "answer": "It can be cut off because of location, notification or battery settings. Check them all at once in “Run recording settings check” on My Page."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS is not locking well",
+    "aliases": [
+      "My location looks wrong"
+    ],
+    "answer": "First check that location permission is on. In “Run recording settings check” you can go through the needed settings one by one."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Why does it ask for permissions before my first run?",
+    "aliases": [
+      "Why change the battery settings?"
+    ],
+    "answer": "We guide you through the location, notification and battery settings in advance so that recording isn’t cut off even with the screen off."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

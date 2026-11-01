@@ -1119,6 +1119,114 @@
     "answer": "Tu peux laisser une demande à tout moment via Contact dans les réglages ou via la contestation de sanction dans le Centre de sécurité et de confidentialité. Pour une petite question, tu peux aussi me la poser directement."
   },
   {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Je veux commencer une course",
+    "aliases": [
+      "Commencer à courir"
+    ],
+    "answer": "J’ouvre l’écran de course. Pendant que tu cours, je t’encourage avec ma voix."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Les courses libres sont-elles aussi enregistrées ?",
+    "aliases": [
+      "Si je cours simplement, est-ce enregistré ?"
+    ],
+    "answer": "Oui, les enregistrements de courses libres, les séries et les badges sont toujours sauvegardés. Les récompenses en VALUE ne sont données que pour les courses qui passent la vérification."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Qu’est-ce qu’une course vérifiée ?",
+    "aliases": [
+      "Qu’est-ce que la vérification ?"
+    ],
+    "answer": "Le principe : les enregistrements sont toujours conservés et les récompenses ne vont qu’aux courses vérifiées. Une course est vérifiée quand tu cours au moins 1 km et passes les critères fixés."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quels sont les critères de vérification ?",
+    "aliases": [
+      "Critère de cadence"
+    ],
+    "answer": "Cours au moins 1 km à une cadence de 120 à 210 pas par minute. Dans une salle, il faut courir la distance de la salle."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Pourquoi la vérification a-t-elle échoué ?",
+    "aliases": [
+      "Raison de l’échec de la vérification"
+    ],
+    "answer": "La vérification peut échouer si la distance est inférieure à celle requise ou si ta cadence ou ta vitesse GPS sort des critères. L’enregistrement lui-même reste sauvegardé."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Peut-on être vérifié sans montre ?",
+    "aliases": [
+      "Une montre est-elle indispensable ?"
+    ],
+    "answer": "Oui. Sans montre, nous vérifions avec ta foulée et la vitesse GPS. Une montre n’est nécessaire que pour les événements Avancé, Demi et Finale."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Existe-t-il une appli dédiée à la montre ?",
+    "aliases": [
+      "Appli Galaxy Watch"
+    ],
+    "answer": "Sur les montres Wear OS comme la Galaxy Watch, nous prenons en charge une appli autonome qui se connecte avec un code d’appairage à 6 chiffres. Une appli pour Apple Watch est aussi prête, et Garmin, Mi Band, Amazfit, Fitbit, Samsung Health et COROS peuvent être utilisés via la synchronisation avec les applis santé et l’envoi de la fréquence cardiaque en Bluetooth en temps réel."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Gagne-t-on plus de SHARE en courant avec une montre ?",
+    "aliases": [
+      "Bonus montre"
+    ],
+    "answer": "Non, courir avec une montre ne donne pas de SHARE supplémentaires."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "L’enregistrement s’interrompt-il si j’éteins l’écran ?",
+    "aliases": [
+      "Puis-je éteindre l’écran ?"
+    ],
+    "answer": "Non, l’enregistrement continue même écran éteint. Pendant que tu cours, un indicateur « Enregistrement » reste affiché dans la zone de notifications."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mon enregistrement de course s’est interrompu en cours de route",
+    "aliases": [
+      "L’enregistrement s’est arrêté"
+    ],
+    "answer": "Elle peut être interrompue à cause des réglages de localisation, de notifications ou de batterie. Vérifie tout en une fois dans « Vérification des réglages d’enregistrement de course » dans Mon Profil."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "Le GPS capte mal",
+    "aliases": [
+      "Ma position semble fausse"
+    ],
+    "answer": "Vérifie d’abord que l’autorisation de localisation est activée. Dans « Vérification des réglages d’enregistrement de course », tu peux passer en revue les réglages nécessaires un par un."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Pourquoi demande-t-on des autorisations avant ma première course ?",
+    "aliases": [
+      "Pourquoi modifier les réglages de batterie ?"
+    ],
+    "answer": "Nous te guidons à l’avance sur les réglages de localisation, de notifications et de batterie pour que l’enregistrement ne s’interrompe pas, même écran éteint."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

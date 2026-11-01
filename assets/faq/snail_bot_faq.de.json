@@ -1119,6 +1119,114 @@
     "answer": "Du kannst jederzeit eine Anfrage hinterlassen: über „Kontakt“ in den Einstellungen oder über den Sanktions-Einspruch im Sicherheits- und Datenschutzzentrum. Kurze Fragen kannst du auch direkt an mich richten."
   },
   {
+    "id": "RU-01",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ich möchte einen Lauf starten",
+    "aliases": [
+      "Lauf starten"
+    ],
+    "answer": "Ich öffne den Laufbildschirm. Während du läufst, feuere ich dich mit meiner Stimme an."
+  },
+  {
+    "id": "RU-02",
+    "category": "달리기 기록·문제 해결",
+    "question": "Werden auch freie Läufe aufgezeichnet?",
+    "aliases": [
+      "Wird es gespeichert, wenn ich einfach laufe?"
+    ],
+    "answer": "Ja, Aufzeichnungen freier Läufe, Serien und Abzeichen werden immer gespeichert. VALUE-Belohnungen gibt es nur für Läufe, die die Prüfung bestehen."
+  },
+  {
+    "id": "RU-03",
+    "category": "달리기 기록·문제 해결",
+    "question": "Was ist ein verifizierter Lauf?",
+    "aliases": [
+      "Was ist die Prüfung?"
+    ],
+    "answer": "Das Prinzip: Aufzeichnungen bleiben immer erhalten, Belohnungen gibt es nur für verifizierte Läufe. Ein Lauf gilt als verifiziert, wenn du mindestens 1 km läufst und die festgelegten Kriterien erfüllst."
+  },
+  {
+    "id": "RU-04",
+    "category": "달리기 기록·문제 해결",
+    "question": "Was sind die Prüfkriterien?",
+    "aliases": [
+      "Kadenz-Kriterium"
+    ],
+    "answer": "Lauf mindestens 1 km mit 120 bis 210 Schritten pro Minute. In einem Raum musst du die Distanz des Raums laufen."
+  },
+  {
+    "id": "RU-05",
+    "category": "달리기 기록·문제 해결",
+    "question": "Warum ist die Prüfung fehlgeschlagen?",
+    "aliases": [
+      "Grund für die fehlgeschlagene Prüfung"
+    ],
+    "answer": "Die Prüfung kann fehlschlagen, wenn die Distanz kürzer als gefordert ist oder dein Schritt- oder GPS-Tempo außerhalb der Kriterien liegt. Der Eintrag selbst bleibt gespeichert."
+  },
+  {
+    "id": "RU-06",
+    "category": "달리기 기록·문제 해결",
+    "question": "Werde ich auch ohne Uhr verifiziert?",
+    "aliases": [
+      "Brauche ich unbedingt eine Uhr?"
+    ],
+    "answer": "Ja. Ohne Uhr prüfen wir anhand deiner Schrittlänge und der GPS-Geschwindigkeit. Eine Uhr brauchst du nur für Fortgeschritten-, Halb- und Final-Events."
+  },
+  {
+    "id": "RU-07",
+    "category": "달리기 기록·문제 해결",
+    "question": "Gibt es eine reine Uhr-App?",
+    "aliases": [
+      "Galaxy-Watch-App"
+    ],
+    "answer": "Auf Wear-OS-Uhren wie der Galaxy Watch unterstützen wir eine eigenständige Uhr-App, die sich mit einem 6-stelligen Kopplungscode verbindet. Eine App für die Apple Watch ist ebenfalls vorbereitet, und Garmin, Mi Band, Amazfit, Fitbit, Samsung Health und COROS lassen sich über Gesundheits-App-Synchronisierung und Echtzeit-Herzfrequenzübertragung per Bluetooth nutzen."
+  },
+  {
+    "id": "RU-08",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bekomme ich mehr SHARE, wenn ich mit Uhr laufe?",
+    "aliases": [
+      "Uhr-Bonus"
+    ],
+    "answer": "Nein, mit der Uhr zu laufen gibt kein zusätzliches SHARE."
+  },
+  {
+    "id": "RU-09",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bricht die Aufzeichnung ab, wenn ich den Bildschirm ausschalte?",
+    "aliases": [
+      "Darf ich den Bildschirm ausschalten?"
+    ],
+    "answer": "Nein, die Aufzeichnung läuft auch bei ausgeschaltetem Bildschirm weiter. Während du läufst, steht in der Benachrichtigungsleiste die Anzeige „Aufzeichnung läuft“."
+  },
+  {
+    "id": "RU-10",
+    "category": "달리기 기록·문제 해결",
+    "question": "Meine Laufaufzeichnung ist mittendrin abgebrochen",
+    "aliases": [
+      "Die Aufzeichnung ist gestoppt"
+    ],
+    "answer": "Sie kann wegen der Einstellungen für Standort, Benachrichtigungen oder Akku abbrechen. Prüfe alles auf einmal unter „Prüfung der Laufaufzeichnungs-Einstellungen“ in Mein Profil."
+  },
+  {
+    "id": "RU-11",
+    "category": "달리기 기록·문제 해결",
+    "question": "GPS findet kein gutes Signal",
+    "aliases": [
+      "Mein Standort wirkt falsch"
+    ],
+    "answer": "Prüfe zuerst, ob die Standortberechtigung aktiviert ist. Unter „Prüfung der Laufaufzeichnungs-Einstellungen“ kannst du die nötigen Einstellungen der Reihe nach durchgehen."
+  },
+  {
+    "id": "RU-12",
+    "category": "달리기 기록·문제 해결",
+    "question": "Warum werden vor dem ersten Lauf Berechtigungen abgefragt?",
+    "aliases": [
+      "Warum die Akku-Einstellungen ändern?"
+    ],
+    "answer": "Wir führen dich vorab durch die Einstellungen für Standort, Benachrichtigungen und Akku, damit die Aufzeichnung auch bei ausgeschaltetem Bildschirm nicht abbricht."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

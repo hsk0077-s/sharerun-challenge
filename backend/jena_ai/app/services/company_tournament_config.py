@@ -615,6 +615,11 @@ def build_prize_viewer(
         "prizeClaimEligible": reason is None,
         "prizeIneligibleReason": reason,
         "prizeIneligibleReasonKo": prize_ineligible_reason_ko(reason, config),
+        # 숫자도 같이 보낸다. 앱이 한국어 문장 대신 이 값으로 사용자 언어 문장을 만든다.
+        "beginnerFreeEntryCount": allowance,
+        "prizeClaimMinAccountAgeDays": int(config["prizeClaimMinAccountAgeDays"]),
+        "prizeClaimMinVerifiedRuns": int(config["prizeClaimMinVerifiedRuns"]),
+        "prizeClaimVerifiedRunWindowDays": int(config["prizeClaimVerifiedRunWindowDays"]),
         "tierTickets": list(tier_tickets or []),
     }
 

@@ -137,7 +137,7 @@ PrizeRaceQuote? resolvePrizeRaceQuote({
     entryShare: tier.entryShare,
     ticketCost: tier.freeTicketCost,
     freeEntryLabel: beginner && readyConfig.beginnerFreeEntryEligible
-        ? readyConfig.freeEntryLabelKo
+        ? readyConfig.freeEntryLabel
         : null,
     rulesLabel: _rulesLabel(readyConfig),
     tierTicketJoinLabel: readyConfig.tierTicketJoinLabel(tournament.prizeTier),
@@ -146,8 +146,8 @@ PrizeRaceQuote? resolvePrizeRaceQuote({
 
 String? _rulesLabel(CompanyTournamentConfig config) {
   final parts = <String>[
-    if (config.weeklyLimitLabelKo != null) config.weeklyLimitLabelKo!,
-    if (config.prizeIneligibleReasonKo != null) config.prizeIneligibleReasonKo!,
+    if (config.weeklyLimitLabel != null) config.weeklyLimitLabel!,
+    if (config.prizeIneligibleLabel != null) config.prizeIneligibleLabel!,
   ];
   if (parts.isEmpty) return null;
   return parts.join(' ');

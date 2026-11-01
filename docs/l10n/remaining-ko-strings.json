@@ -38617,6 +38617,204 @@
       "th": "เสร็จสิ้น",
       "id": "Selesai",
       "native_review": "pending"
+    },
+    {
+      "key": "prize.free_entries",
+      "ko": "첫 $count회 무료",
+      "file": "lib/data/models/company_tournament_config.dart",
+      "screen": "prize",
+      "context": "운영자 상금 대회 무료 참가 횟수",
+      "placeholders": [
+        {
+          "name": "count",
+          "format": "$count"
+        }
+      ],
+      "en": "First $count free",
+      "ja": "最初の$count回は無料",
+      "zh-TW": "前 $count 次免費",
+      "es": "Las primeras $count gratis",
+      "pt-BR": "As primeiras $count grátis",
+      "de": "Die ersten $count gratis",
+      "fr": "Les $count premières gratuites",
+      "vi": "$count lượt đầu miễn phí",
+      "th": "ฟรี $count ครั้งแรก",
+      "id": "$count pertama gratis",
+      "native_review": "pending"
+    },
+    {
+      "key": "prize.weekly_limit",
+      "ko": "같은 등급은 일주일에 $limit번만 참가할 수 있어요.",
+      "file": "lib/data/models/company_tournament_config.dart",
+      "screen": "prize",
+      "context": "운영자 상금 대회 주간 참가 제한",
+      "placeholders": [
+        {
+          "name": "limit",
+          "format": "$limit"
+        }
+      ],
+      "en": "You can enter the same tier only $limit time(s) a week.",
+      "ja": "同じ等級には1週間に$limit回までしか参加できません。",
+      "zh-TW": "同一等級每週最多只能參加 $limit 次。",
+      "es": "Solo puedes participar $limit vez/veces por semana en el mismo nivel.",
+      "pt-BR": "Você só pode participar $limit vez(es) por semana no mesmo nível.",
+      "de": "In derselben Stufe kannst du nur $limit Mal pro Woche teilnehmen.",
+      "fr": "Vous ne pouvez participer que $limit fois par semaine au même niveau.",
+      "vi": "Cùng một hạng, bạn chỉ có thể tham gia $limit lần mỗi tuần.",
+      "th": "ระดับเดียวกันเข้าร่วมได้เพียง $limit ครั้งต่อสัปดาห์",
+      "id": "Pada tingkat yang sama Anda hanya bisa ikut $limit kali seminggu.",
+      "native_review": "pending"
+    },
+    {
+      "key": "prize.reason.identity",
+      "ko": "본인인증된 계정이 아니라 다이아 상금을 받을 수 없어요.",
+      "file": "lib/data/models/company_tournament_config.dart",
+      "screen": "prize",
+      "context": "다이아 상금 못 받는 이유: 본인인증 안 됨",
+      "placeholders": [],
+      "en": "Your account is not identity-verified, so you cannot receive DIA prizes.",
+      "ja": "本人確認済みのアカウントではないため、DIA賞金を受け取れません。",
+      "zh-TW": "此帳號尚未通過本人驗證,無法領取 DIA 獎金。",
+      "es": "Tu cuenta no tiene la identidad verificada, así que no puedes recibir premios en DIA.",
+      "pt-BR": "Sua conta não tem a identidade verificada, então você não pode receber prêmios em DIA.",
+      "de": "Dein Konto ist nicht identitätsgeprüft, daher kannst du keine DIA-Preise erhalten.",
+      "fr": "Votre compte n'a pas son identité vérifiée, vous ne pouvez donc pas recevoir de lots en DIA.",
+      "vi": "Tài khoản chưa xác minh danh tính nên bạn không thể nhận giải thưởng DIA.",
+      "th": "บัญชีนี้ยังไม่ผ่านการยืนยันตัวตน จึงรับรางวัล DIA ไม่ได้",
+      "id": "Akun ini belum terverifikasi identitas, jadi tidak bisa menerima hadiah DIA.",
+      "native_review": "pending"
+    },
+    {
+      "key": "prize.reason.account_new",
+      "ko": "가입 $age일이 지나야 다이아 상금을 받을 수 있어요.",
+      "file": "lib/data/models/company_tournament_config.dart",
+      "screen": "prize",
+      "context": "다이아 상금 못 받는 이유: 가입 기간 부족",
+      "placeholders": [
+        {
+          "name": "age",
+          "format": "$age"
+        }
+      ],
+      "en": "You can receive DIA prizes only after $age days have passed since signing up.",
+      "ja": "DIA賞金は、登録から$age日が過ぎてから受け取れます。",
+      "zh-TW": "註冊滿 $age 日後才能領取 DIA 獎金。",
+      "es": "Solo puedes recibir premios en DIA cuando hayan pasado $age días desde el registro.",
+      "pt-BR": "Você só pode receber prêmios em DIA depois de $age dias do cadastro.",
+      "de": "DIA-Preise kannst du erst $age Tage nach der Registrierung erhalten.",
+      "fr": "Vous ne pouvez recevoir des lots en DIA que $age jours après l'inscription.",
+      "vi": "Bạn chỉ nhận được giải thưởng DIA sau khi đăng ký được $age ngày.",
+      "th": "รับรางวัล DIA ได้หลังสมัครครบ $age วัน",
+      "id": "Hadiah DIA baru bisa diterima setelah $age hari sejak mendaftar.",
+      "native_review": "pending"
+    },
+    {
+      "key": "prize.reason.runs",
+      "ko": "최근 $window일 안에 인증된 달리기가 $runs회 이상이어야 다이아 상금을 받을 수 있어요.",
+      "file": "lib/data/models/company_tournament_config.dart",
+      "screen": "prize",
+      "context": "다이아 상금 못 받는 이유: 최근 인증 달리기 부족",
+      "placeholders": [
+        {
+          "name": "window",
+          "format": "$window"
+        },
+        {
+          "name": "runs",
+          "format": "$runs"
+        }
+      ],
+      "en": "You need at least $runs verified runs in the last $window days to receive DIA prizes.",
+      "ja": "DIA賞金を受け取るには、直近$window日以内に認証されたランが$runs回以上必要です。",
+      "zh-TW": "需在最近 $window 日內有至少 $runs 次通過驗證的跑步,才能領取 DIA 獎金。",
+      "es": "Necesitas al menos $runs carreras verificadas en los últimos $window días para recibir premios en DIA.",
+      "pt-BR": "Você precisa de pelo menos $runs corridas verificadas nos últimos $window dias para receber prêmios em DIA.",
+      "de": "Für DIA-Preise brauchst du mindestens $runs verifizierte Läufe in den letzten $window Tagen.",
+      "fr": "Il faut au moins $runs courses vérifiées au cours des $window derniers jours pour recevoir des lots en DIA.",
+      "vi": "Bạn cần ít nhất $runs lần chạy đã xác minh trong $window ngày gần đây để nhận giải thưởng DIA.",
+      "th": "ต้องมีการวิ่งที่ผ่านการตรวจสอบอย่างน้อย $runs ครั้งใน $window วันที่ผ่านมา จึงจะรับรางวัล DIA ได้",
+      "id": "Anda perlu minimal $runs lari terverifikasi dalam $window hari terakhir untuk menerima hadiah DIA.",
+      "native_review": "pending"
+    },
+    {
+      "key": "prize.tier_ticket_join",
+      "ko": "$tier 참가권으로 참가",
+      "file": "lib/data/models/company_tournament_config.dart",
+      "screen": "prize",
+      "context": "등급 참가권으로 참가하는 버튼",
+      "placeholders": [
+        {
+          "name": "tier",
+          "format": "$tier"
+        }
+      ],
+      "en": "Join with a $tier ticket",
+      "ja": "$tier参加券で参加",
+      "zh-TW": "使用$tier參賽券參加",
+      "es": "Unirse con boleto $tier",
+      "pt-BR": "Participar com ingresso $tier",
+      "de": "Mit $tier-Ticket teilnehmen",
+      "fr": "Participer avec un ticket $tier",
+      "vi": "Tham gia bằng vé $tier",
+      "th": "เข้าร่วมด้วยตั๋ว$tier",
+      "id": "Ikut dengan tiket $tier",
+      "native_review": "pending"
+    },
+    {
+      "key": "mini_bot.copy.prize_race_pending",
+      "ko": "운영자 상금 대회 참가비를 확인 중이에요. 대회 목록에서 서버 참가비를 확인해 주세요. 여기서는 참가하지 않아요.",
+      "file": "lib/features/mini_bot/mini_bot_intent.dart",
+      "screen": "mini_bot",
+      "context": "달팽이봇: 상금 대회 참가비 확인 중",
+      "placeholders": [],
+      "en": "I'm still checking the operator prize tournament entry fees. Please check the server fee in the tournament list. I don't enter you from here.",
+      "ja": "運営者賞金大会の参加費を確認中です。大会一覧でサーバーの参加費を確認してください。ここでは参加しません。",
+      "zh-TW": "正在確認營運者獎金賽事的參加費。請在賽事列表中確認伺服器上的參加費。這裡不會替您報名。",
+      "es": "Sigo comprobando las cuotas del torneo con premios del operador. Revisa la cuota del servidor en la lista de torneos. Desde aquí no te inscribo.",
+      "pt-BR": "Ainda estou verificando as taxas do torneio com prêmios do operador. Confira a taxa do servidor na lista de torneios. Não inscrevo você por aqui.",
+      "de": "Ich prüfe noch die Teilnahmegebühren des Preisturniers des Betreibers. Bitte sieh die Server-Gebühr in der Turnierliste nach. Von hier aus melde ich dich nicht an.",
+      "fr": "Je vérifie encore les frais de participation du tournoi à lots de l'opérateur. Consultez les frais du serveur dans la liste des tournois. Je ne vous inscris pas d'ici.",
+      "vi": "Mình vẫn đang kiểm tra phí tham gia giải thưởng của bên vận hành. Hãy xem phí từ máy chủ trong danh sách giải đấu. Mình không đăng ký thay bạn ở đây.",
+      "th": "ฉันกำลังตรวจสอบค่าสมัครของการแข่งขันชิงรางวัลของผู้ให้บริการ โปรดดูค่าสมัครจากเซิร์ฟเวอร์ในรายการแข่งขัน ฉันไม่สมัครให้จากตรงนี้",
+      "id": "Saya masih memeriksa biaya turnamen berhadiah operator. Silakan cek biaya dari server di daftar turnamen. Saya tidak mendaftarkan Anda dari sini.",
+      "native_review": "pending"
+    },
+    {
+      "key": "mini_bot.copy.prize_race",
+      "ko": "운영자 상금 대회로 이동할까요? 참가비는 $costs예요.$free $week $claim 이동만 하고, 참가는 확정하지 않아요.",
+      "file": "lib/features/mini_bot/mini_bot_intent.dart",
+      "screen": "mini_bot",
+      "context": "달팽이봇: 운영자 상금 대회로 이동 확인",
+      "placeholders": [
+        {
+          "name": "costs",
+          "format": "$costs"
+        },
+        {
+          "name": "free",
+          "format": "$free"
+        },
+        {
+          "name": "week",
+          "format": "$week"
+        },
+        {
+          "name": "claim",
+          "format": "$claim"
+        }
+      ],
+      "en": "Go to the operator prize tournament? The entry fees are $costs.$free $week $claim I only take you there; I don't confirm entry.",
+      "ja": "運営者賞金大会に移動しますか? 参加費は$costsです。$free $week $claim 移動するだけで、参加は確定しません。",
+      "zh-TW": "要前往營運者獎金賽事嗎?參加費為 $costs。$free $week $claim 只會帶您前往,不會確認報名。",
+      "es": "¿Ir al torneo con premios del operador? Las cuotas son $costs.$free $week $claim Solo te llevo allí; no confirmo la inscripción.",
+      "pt-BR": "Ir para o torneio com prêmios do operador? As taxas são $costs.$free $week $claim Só levo você até lá; não confirmo a inscrição.",
+      "de": "Zum Preisturnier des Betreibers wechseln? Die Teilnahmegebühren betragen $costs.$free $week $claim Ich bringe dich nur dorthin und bestätige keine Anmeldung.",
+      "fr": "Aller au tournoi à lots de l'opérateur ? Les frais sont de $costs.$free $week $claim Je vous y emmène seulement ; je ne confirme pas l'inscription.",
+      "vi": "Đến giải thưởng của bên vận hành nhé? Phí tham gia là $costs.$free $week $claim Mình chỉ đưa bạn tới đó, không xác nhận đăng ký.",
+      "th": "ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ $costs$free $week $claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้",
+      "id": "Pindah ke turnamen berhadiah operator? Biayanya $costs.$free $week $claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.",
+      "native_review": "pending"
     }
   ]
 }

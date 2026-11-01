@@ -61,20 +61,20 @@ class MiniBotRead {
   String get confirmLabel => switch (destination) {
         MiniBotDestination.donateStore ||
         MiniBotDestination.personalSponsor =>
-          '후원하기',
+          RemainingSurface.trNow('mini_bot.mini_bot_intent.body', '후원하기'),
         MiniBotDestination.cprStore ||
         MiniBotDestination.safeGuardStore =>
-          '구매하기',
-        MiniBotDestination.shareCharge => '교환하기',
+          RemainingSurface.trNow('mini_bot.mini_bot_intent.body.2', '구매하기'),
+        MiniBotDestination.shareCharge => RemainingSurface.trNow('app.myWalletCharge', '교환하기'),
         MiniBotDestination.beginnerRoom ||
         MiniBotDestination.brandSponsor =>
-          '참가하기',
+          RemainingSurface.trNow('mini_bot.mini_bot_intent.body.3', '참가하기'),
         MiniBotDestination.challengeLobby ||
         MiniBotDestination.subscription ||
         MiniBotDestination.coachPlus ||
         MiniBotDestination.battlePass ||
         MiniBotDestination.none =>
-          '이동하기',
+          RemainingSurface.trNow('mini_bot.mini_bot_intent.body.4', '이동하기'),
       };
 
   String? get amountLabel => switch (destination) {
@@ -225,8 +225,11 @@ abstract final class MiniBotCopy {
 
   static String prizeRace(CompanyTournamentConfig? config) {
     if (config == null || config.tiers.isEmpty) {
-      return '운영자 상금 대회 참가비를 확인 중이에요. '
-          '대회 목록에서 서버 참가비를 확인해 주세요. 여기서는 참가하지 않아요.';
+      return RemainingSurface.trNow(
+        'mini_bot.copy.prize_race_pending',
+        '운영자 상금 대회 참가비를 확인 중이에요. '
+            '대회 목록에서 서버 참가비를 확인해 주세요. 여기서는 참가하지 않아요.',
+      );
     }
     String fee(String id, String label) {
       final tier = config.tier(id);
@@ -235,19 +238,23 @@ abstract final class MiniBotCopy {
     }
 
     final costs = [
-      fee('beginner', '초급'),
-      fee('mid', '중급'),
-      fee('advanced', '상급'),
-      fee('half', '하프'),
+      fee('beginner', CompanyTournamentConfig.tierName('beginner')),
+      fee('mid', CompanyTournamentConfig.tierName('mid')),
+      fee('advanced', CompanyTournamentConfig.tierName('advanced')),
+      fee('half', CompanyTournamentConfig.tierName('half')),
     ].where((line) => line.isNotEmpty).join(', ');
     final free =
-        config.beginnerFreeEntryEligible && config.freeEntryLabelKo != null
-            ? ' ${config.freeEntryLabelKo}.'
+        config.beginnerFreeEntryEligible && config.freeEntryLabel != null
+            ? ' ${config.freeEntryLabel}.'
             : '';
-    final week = config.weeklyLimitLabelKo ?? '';
-    final claim = config.prizeIneligibleReasonKo ?? '';
-    return '운영자 상금 대회로 이동할까요? 참가비는 $costs예요.$free $week $claim '
-        '이동만 하고, 참가는 확정하지 않아요.';
+    final week = config.weeklyLimitLabel ?? '';
+    final claim = config.prizeIneligibleLabel ?? '';
+    return RemainingSurface.trNow(
+      'mini_bot.copy.prize_race',
+      '운영자 상금 대회로 이동할까요? 참가비는 \$costs예요.\$free \$week \$claim '
+          '이동만 하고, 참가는 확정하지 않아요.',
+      {'costs': costs, 'free': free, 'week': week, 'claim': claim},
+    );
   }
 
   static String get cpr => RemainingSurface.trNow(

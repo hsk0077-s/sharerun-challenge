@@ -2094,6 +2094,14 @@ class RemainingSurface {
     'watch_app_preview.paused',
     'watch_app_preview.tournament_alert',
     'watch_app_preview.finished',
+    'prize.free_entries',
+    'prize.weekly_limit',
+    'prize.reason.identity',
+    'prize.reason.account_new',
+    'prize.reason.runs',
+    'prize.tier_ticket_join',
+    'mini_bot.copy.prize_race_pending',
+    'mini_bot.copy.prize_race',
   ];
 
   static const _en = <String, String>{
@@ -4103,6 +4111,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'Paused',
     'watch_app_preview.tournament_alert': 'Tournament alert',
     'watch_app_preview.finished': 'Done',
+    'prize.free_entries': 'First \$count free',
+    'prize.weekly_limit': 'You can enter the same tier only \$limit time(s) a week.',
+    'prize.reason.identity': 'Your account is not identity-verified, so you cannot receive DIA prizes.',
+    'prize.reason.account_new': 'You can receive DIA prizes only after \$age days have passed since signing up.',
+    'prize.reason.runs': 'You need at least \$runs verified runs in the last \$window days to receive DIA prizes.',
+    'prize.tier_ticket_join': 'Join with a \$tier ticket',
+    'mini_bot.copy.prize_race_pending': 'I\'m still checking the operator prize tournament entry fees. Please check the server fee in the tournament list. I don\'t enter you from here.',
+    'mini_bot.copy.prize_race': 'Go to the operator prize tournament? The entry fees are \$costs.\$free \$week \$claim I only take you there; I don\'t confirm entry.',
   };
 
   static const _ja = <String, String>{
@@ -6112,6 +6128,14 @@ class RemainingSurface {
     'watch_app_preview.paused': '一時停止',
     'watch_app_preview.tournament_alert': '大会通知',
     'watch_app_preview.finished': '終了',
+    'prize.free_entries': '最初の\$count回は無料',
+    'prize.weekly_limit': '同じ等級には1週間に\$limit回までしか参加できません。',
+    'prize.reason.identity': '本人確認済みのアカウントではないため、DIA賞金を受け取れません。',
+    'prize.reason.account_new': 'DIA賞金は、登録から\$age日が過ぎてから受け取れます。',
+    'prize.reason.runs': 'DIA賞金を受け取るには、直近\$window日以内に認証されたランが\$runs回以上必要です。',
+    'prize.tier_ticket_join': '\$tier参加券で参加',
+    'mini_bot.copy.prize_race_pending': '運営者賞金大会の参加費を確認中です。大会一覧でサーバーの参加費を確認してください。ここでは参加しません。',
+    'mini_bot.copy.prize_race': '運営者賞金大会に移動しますか? 参加費は\$costsです。\$free \$week \$claim 移動するだけで、参加は確定しません。',
   };
 
   static const _zh = <String, String>{
@@ -8121,6 +8145,14 @@ class RemainingSurface {
     'watch_app_preview.paused': '已暫停',
     'watch_app_preview.tournament_alert': '賽事通知',
     'watch_app_preview.finished': '結束',
+    'prize.free_entries': '前 \$count 次免費',
+    'prize.weekly_limit': '同一等級每週最多只能參加 \$limit 次。',
+    'prize.reason.identity': '此帳號尚未通過本人驗證,無法領取 DIA 獎金。',
+    'prize.reason.account_new': '註冊滿 \$age 日後才能領取 DIA 獎金。',
+    'prize.reason.runs': '需在最近 \$window 日內有至少 \$runs 次通過驗證的跑步,才能領取 DIA 獎金。',
+    'prize.tier_ticket_join': '使用\$tier參賽券參加',
+    'mini_bot.copy.prize_race_pending': '正在確認營運者獎金賽事的參加費。請在賽事列表中確認伺服器上的參加費。這裡不會替您報名。',
+    'mini_bot.copy.prize_race': '要前往營運者獎金賽事嗎?參加費為 \$costs。\$free \$week \$claim 只會帶您前往,不會確認報名。',
   };
 
   static const _es = <String, String>{
@@ -10130,6 +10162,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'En pausa',
     'watch_app_preview.tournament_alert': 'Aviso de torneo',
     'watch_app_preview.finished': 'Fin',
+    'prize.free_entries': 'Las primeras \$count gratis',
+    'prize.weekly_limit': 'Solo puedes participar \$limit vez/veces por semana en el mismo nivel.',
+    'prize.reason.identity': 'Tu cuenta no tiene la identidad verificada, así que no puedes recibir premios en DIA.',
+    'prize.reason.account_new': 'Solo puedes recibir premios en DIA cuando hayan pasado \$age días desde el registro.',
+    'prize.reason.runs': 'Necesitas al menos \$runs carreras verificadas en los últimos \$window días para recibir premios en DIA.',
+    'prize.tier_ticket_join': 'Unirse con boleto \$tier',
+    'mini_bot.copy.prize_race_pending': 'Sigo comprobando las cuotas del torneo con premios del operador. Revisa la cuota del servidor en la lista de torneos. Desde aquí no te inscribo.',
+    'mini_bot.copy.prize_race': '¿Ir al torneo con premios del operador? Las cuotas son \$costs.\$free \$week \$claim Solo te llevo allí; no confirmo la inscripción.',
   };
 
   static const _pt = <String, String>{
@@ -12139,6 +12179,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'Pausado',
     'watch_app_preview.tournament_alert': 'Aviso de torneio',
     'watch_app_preview.finished': 'Fim',
+    'prize.free_entries': 'As primeiras \$count grátis',
+    'prize.weekly_limit': 'Você só pode participar \$limit vez(es) por semana no mesmo nível.',
+    'prize.reason.identity': 'Sua conta não tem a identidade verificada, então você não pode receber prêmios em DIA.',
+    'prize.reason.account_new': 'Você só pode receber prêmios em DIA depois de \$age dias do cadastro.',
+    'prize.reason.runs': 'Você precisa de pelo menos \$runs corridas verificadas nos últimos \$window dias para receber prêmios em DIA.',
+    'prize.tier_ticket_join': 'Participar com ingresso \$tier',
+    'mini_bot.copy.prize_race_pending': 'Ainda estou verificando as taxas do torneio com prêmios do operador. Confira a taxa do servidor na lista de torneios. Não inscrevo você por aqui.',
+    'mini_bot.copy.prize_race': 'Ir para o torneio com prêmios do operador? As taxas são \$costs.\$free \$week \$claim Só levo você até lá; não confirmo a inscrição.',
   };
 
   static const _de = <String, String>{
@@ -14148,6 +14196,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'Pausiert',
     'watch_app_preview.tournament_alert': 'Turnier-Hinweis',
     'watch_app_preview.finished': 'Fertig',
+    'prize.free_entries': 'Die ersten \$count gratis',
+    'prize.weekly_limit': 'In derselben Stufe kannst du nur \$limit Mal pro Woche teilnehmen.',
+    'prize.reason.identity': 'Dein Konto ist nicht identitätsgeprüft, daher kannst du keine DIA-Preise erhalten.',
+    'prize.reason.account_new': 'DIA-Preise kannst du erst \$age Tage nach der Registrierung erhalten.',
+    'prize.reason.runs': 'Für DIA-Preise brauchst du mindestens \$runs verifizierte Läufe in den letzten \$window Tagen.',
+    'prize.tier_ticket_join': 'Mit \$tier-Ticket teilnehmen',
+    'mini_bot.copy.prize_race_pending': 'Ich prüfe noch die Teilnahmegebühren des Preisturniers des Betreibers. Bitte sieh die Server-Gebühr in der Turnierliste nach. Von hier aus melde ich dich nicht an.',
+    'mini_bot.copy.prize_race': 'Zum Preisturnier des Betreibers wechseln? Die Teilnahmegebühren betragen \$costs.\$free \$week \$claim Ich bringe dich nur dorthin und bestätige keine Anmeldung.',
   };
 
   static const _fr = <String, String>{
@@ -16157,6 +16213,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'En pause',
     'watch_app_preview.tournament_alert': 'Alerte tournoi',
     'watch_app_preview.finished': 'Terminé',
+    'prize.free_entries': 'Les \$count premières gratuites',
+    'prize.weekly_limit': 'Vous ne pouvez participer que \$limit fois par semaine au même niveau.',
+    'prize.reason.identity': 'Votre compte n\'a pas son identité vérifiée, vous ne pouvez donc pas recevoir de lots en DIA.',
+    'prize.reason.account_new': 'Vous ne pouvez recevoir des lots en DIA que \$age jours après l\'inscription.',
+    'prize.reason.runs': 'Il faut au moins \$runs courses vérifiées au cours des \$window derniers jours pour recevoir des lots en DIA.',
+    'prize.tier_ticket_join': 'Participer avec un ticket \$tier',
+    'mini_bot.copy.prize_race_pending': 'Je vérifie encore les frais de participation du tournoi à lots de l\'opérateur. Consultez les frais du serveur dans la liste des tournois. Je ne vous inscris pas d\'ici.',
+    'mini_bot.copy.prize_race': 'Aller au tournoi à lots de l\'opérateur ? Les frais sont de \$costs.\$free \$week \$claim Je vous y emmène seulement ; je ne confirme pas l\'inscription.',
   };
 
   static const _vi = <String, String>{
@@ -18166,6 +18230,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'Tạm dừng',
     'watch_app_preview.tournament_alert': 'Thông báo giải đấu',
     'watch_app_preview.finished': 'Xong',
+    'prize.free_entries': '\$count lượt đầu miễn phí',
+    'prize.weekly_limit': 'Cùng một hạng, bạn chỉ có thể tham gia \$limit lần mỗi tuần.',
+    'prize.reason.identity': 'Tài khoản chưa xác minh danh tính nên bạn không thể nhận giải thưởng DIA.',
+    'prize.reason.account_new': 'Bạn chỉ nhận được giải thưởng DIA sau khi đăng ký được \$age ngày.',
+    'prize.reason.runs': 'Bạn cần ít nhất \$runs lần chạy đã xác minh trong \$window ngày gần đây để nhận giải thưởng DIA.',
+    'prize.tier_ticket_join': 'Tham gia bằng vé \$tier',
+    'mini_bot.copy.prize_race_pending': 'Mình vẫn đang kiểm tra phí tham gia giải thưởng của bên vận hành. Hãy xem phí từ máy chủ trong danh sách giải đấu. Mình không đăng ký thay bạn ở đây.',
+    'mini_bot.copy.prize_race': 'Đến giải thưởng của bên vận hành nhé? Phí tham gia là \$costs.\$free \$week \$claim Mình chỉ đưa bạn tới đó, không xác nhận đăng ký.',
   };
 
   static const _th = <String, String>{
@@ -20175,6 +20247,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'หยุดชั่วคราว',
     'watch_app_preview.tournament_alert': 'แจ้งเตือนการแข่งขัน',
     'watch_app_preview.finished': 'เสร็จสิ้น',
+    'prize.free_entries': 'ฟรี \$count ครั้งแรก',
+    'prize.weekly_limit': 'ระดับเดียวกันเข้าร่วมได้เพียง \$limit ครั้งต่อสัปดาห์',
+    'prize.reason.identity': 'บัญชีนี้ยังไม่ผ่านการยืนยันตัวตน จึงรับรางวัล DIA ไม่ได้',
+    'prize.reason.account_new': 'รับรางวัล DIA ได้หลังสมัครครบ \$age วัน',
+    'prize.reason.runs': 'ต้องมีการวิ่งที่ผ่านการตรวจสอบอย่างน้อย \$runs ครั้งใน \$window วันที่ผ่านมา จึงจะรับรางวัล DIA ได้',
+    'prize.tier_ticket_join': 'เข้าร่วมด้วยตั๋ว\$tier',
+    'mini_bot.copy.prize_race_pending': 'ฉันกำลังตรวจสอบค่าสมัครของการแข่งขันชิงรางวัลของผู้ให้บริการ โปรดดูค่าสมัครจากเซิร์ฟเวอร์ในรายการแข่งขัน ฉันไม่สมัครให้จากตรงนี้',
+    'mini_bot.copy.prize_race': 'ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ \$costs\$free \$week \$claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้',
   };
 
   static const _id = <String, String>{
@@ -22184,6 +22264,14 @@ class RemainingSurface {
     'watch_app_preview.paused': 'Dijeda',
     'watch_app_preview.tournament_alert': 'Info turnamen',
     'watch_app_preview.finished': 'Selesai',
+    'prize.free_entries': '\$count pertama gratis',
+    'prize.weekly_limit': 'Pada tingkat yang sama Anda hanya bisa ikut \$limit kali seminggu.',
+    'prize.reason.identity': 'Akun ini belum terverifikasi identitas, jadi tidak bisa menerima hadiah DIA.',
+    'prize.reason.account_new': 'Hadiah DIA baru bisa diterima setelah \$age hari sejak mendaftar.',
+    'prize.reason.runs': 'Anda perlu minimal \$runs lari terverifikasi dalam \$window hari terakhir untuk menerima hadiah DIA.',
+    'prize.tier_ticket_join': 'Ikut dengan tiket \$tier',
+    'mini_bot.copy.prize_race_pending': 'Saya masih memeriksa biaya turnamen berhadiah operator. Silakan cek biaya dari server di daftar turnamen. Saya tidak mendaftarkan Anda dari sini.',
+    'mini_bot.copy.prize_race': 'Pindah ke turnamen berhadiah operator? Biayanya \$costs.\$free \$week \$claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

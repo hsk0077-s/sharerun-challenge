@@ -407,7 +407,7 @@ class _TournamentRoomCard extends StatelessWidget {
               ),
               const Spacer(),
               if (isJoined)
-                Text('참가 중',
+                Text(RemainingSurface.trNow('my_tournaments.body.4', '참가 중'),
                     style: storeText(13, c.primary, w: FontWeight.w900)),
               if (locked)
                 Icon(Icons.lock_outline_rounded, size: 16, color: c.muted),

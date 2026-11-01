@@ -38,7 +38,7 @@ class EconomyStatusCard extends StatelessWidget {
           const SizedBox(height: 16),
           _RewardRow(
             icon: Icons.card_giftcard_rounded,
-            label: '신규 가입 보상',
+            label: RemainingSurface.trNow('wallet_transaction_model.body.11', '신규 가입 보상'),
             value: economy.signupRewardClaimed
                 ? RemainingSurface.tr(
                     context,
@@ -91,7 +91,7 @@ class EconomyStatusCard extends StatelessWidget {
           const SizedBox(height: 12),
           _ProgressRow(
             icon: Icons.people_alt_rounded,
-            label: '추천인 보상 (지연 지급)',
+            label: RemainingSurface.trNow('wallet_transaction_model.body.14', '추천인 보상 (지연 지급)'),
             detail: RemainingSurface.tr(
               context,
               'wallet.economy_status.body.7',

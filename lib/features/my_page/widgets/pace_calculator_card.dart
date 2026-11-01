@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/theme.dart';
+import '../../../l10n/remaining_surface.dart';
 
 class PaceCalculatorCard extends StatefulWidget {
   const PaceCalculatorCard({super.key});
@@ -38,7 +39,7 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
             Icon(Icons.speed_rounded, color: tokens.colors.primary),
             SizedBox(width: tokens.spacing.xs),
             Text(
-              '목표 페이스 계산기',
+              RemainingSurface.trNow('my_page.pace_calculator.body', '목표 페이스 계산기'),
               style: textTheme.titleMedium?.copyWith(color: tokens.colors.ink),
             ),
           ],
@@ -47,8 +48,8 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
         TextField(
           controller: _distanceController,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: '목표 거리 (km)',
+          decoration: InputDecoration(
+            labelText: RemainingSurface.trNow('my_page.pace_calculator.hint', '목표 거리 (km)'),
             border: OutlineInputBorder(),
           ),
           onChanged: (_) => setState(() {}),
@@ -60,8 +61,8 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
               child: TextField(
                 controller: _hoursController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '시',
+                decoration: InputDecoration(
+                  labelText: RemainingSurface.trNow('my_page.pace_calculator.hint.2', '시'),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -72,8 +73,8 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
               child: TextField(
                 controller: _minutesController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '분',
+                decoration: InputDecoration(
+                  labelText: RemainingSurface.trNow('my_page.pace_calculator.hint.3', '분'),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (_) => setState(() {}),
@@ -84,8 +85,8 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
               child: TextField(
                 controller: _secondsController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '초',
+                decoration: InputDecoration(
+                  labelText: RemainingSurface.trNow('my_page.pace_calculator.hint.4', '초'),
                   border: OutlineInputBorder(),
                 ),
                 onChanged: (_) => setState(() {}),

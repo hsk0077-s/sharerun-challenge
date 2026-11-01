@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../l10n/remaining_surface.dart';
 import '../onboarding/src_onboarding_controller.dart';
 import 'accessory_names.dart';
 
@@ -21,6 +22,13 @@ enum AccessorySlot {
   const AccessorySlot(this.labelKo);
 
   final String labelKo;
+
+  /// 화면 언어로 된 이름. 한국어는 [labelKo] 그대로다.
+  String label([BuildContext? context]) => RemainingSurface.tr(
+        context,
+        'accessories.accessory_catalog.body${index == 0 ? '' : '.${index + 1}'}',
+        labelKo,
+      );
 
   /// 그림이 들어 있는 폴더. 상의·하의·발은 한 폴더(body)에 있다.
   String get folder => switch (this) {
@@ -45,6 +53,13 @@ enum AccessoryRarity {
   const AccessoryRarity(this.labelKo);
 
   final String labelKo;
+
+  /// 화면 언어로 된 이름. 한국어는 [labelKo] 그대로다.
+  String label([BuildContext? context]) => RemainingSurface.tr(
+        context,
+        'accessories.accessory_catalog.body.${index + 9}',
+        labelKo,
+      );
 }
 
 class Accessory {
@@ -100,7 +115,9 @@ class Accessory {
 
   /// 화면에 보여 줄 값 문구. 가격이 없으면 비운다.
   String get priceLabel {
-    if (rarity == AccessoryRarity.tierReward) return '티어 보상';
+    if (rarity == AccessoryRarity.tierReward) {
+      return AccessoryRarity.tierReward.label();
+    }
     final p = price;
     if (p == null) return '';
     return switch (currency) {

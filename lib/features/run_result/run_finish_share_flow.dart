@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'run_finish_share_targets.dart';
+import '../../l10n/remaining_surface.dart';
 
 const runFinishCardShareKey = Key('run-finish-card-share');
 const runFinishModeOneKey = Key('run-finish-mode-one');
@@ -32,8 +33,8 @@ Future<RunFinishShareMode?> showRunFinishShareMode(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                '어떻게 올릴까요?',
+              Text(
+                RemainingSurface.trNow('run_result.run_finish_share_flow.body.5', '어떻게 올릴까요?'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 14),
@@ -120,12 +121,12 @@ Future<RunFinishShareTarget?> showRunFinishOnePicker(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  '어디에 올릴까요?',
+                  RemainingSurface.trNow('run_result.run_finish_share_flow.body.6', '어디에 올릴까요?'),
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                 ),
               ),
@@ -198,10 +199,10 @@ class _RunFinishSequencePickerState extends State<RunFinishSequencePicker> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(8, 0, 8, 8),
               child: Text(
-                '순서대로 올리기',
+                RemainingSurface.trNow('run_result.run_finish_share_flow.body.7', '순서대로 올리기'),
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
               ),
             ),

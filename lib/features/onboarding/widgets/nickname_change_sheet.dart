@@ -245,7 +245,7 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
                         style: AppTextStyles.inputText,
                         decoration: InputDecoration(
                           counterText: '$compactLen/12',
-                          hintText: '한글·영문·숫자 2~12자',
+                          hintText: RemainingSurface.trNow('onboarding.nickname_setup.hint', '한글·영문·숫자 2~12자'),
                           hintStyle: AppTextStyles.inputHint,
                           filled: true,
                           fillColor: AppColors.surfaceWhite.withValues(

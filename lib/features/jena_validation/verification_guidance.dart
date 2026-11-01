@@ -54,9 +54,9 @@ VerificationGuidanceCopy verificationGuidanceCopy({
     '기록은 언제나, 보상은 검증된 달리기에만.',
   ];
   return VerificationGuidanceCopy(
-    title: '검증 안내',
+    title: RemainingSurface.trNow('jena_validation.verification_guidance.body.6', '검증 안내'),
     body: lines.join('\n'),
-    confirmLabel: '확인하고 참가',
+    confirmLabel: RemainingSurface.trNow('jena_validation.verification_guidance.body.7', '확인하고 참가'),
     dismissLabel: '다시 보지 않기',
   );
 }

@@ -51,7 +51,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -113,7 +113,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, controller.text.trim()),

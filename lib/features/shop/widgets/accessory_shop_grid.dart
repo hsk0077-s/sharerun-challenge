@@ -68,7 +68,7 @@ class _AccessoryShopGridState extends ConsumerState<AccessoryShopGrid> {
                     ),
                     child: Center(
                       child: Text(
-                        s.labelKo,
+                        s.label(context),
                         style: storeText(
                           14,
                           s == _slot ? c.ink : c.muted,
@@ -153,7 +153,7 @@ class _AccessoryCard extends StatelessWidget {
         border: strong ? null : Border.all(color: c.outline, width: 1.2),
       ),
       child: Text(
-        accessory.rarity.labelKo,
+        accessory.rarity.label(context),
         style:
             storeText(10, strong ? c.onPrimary : c.muted, w: FontWeight.w900),
       ),
@@ -164,10 +164,10 @@ class _AccessoryCard extends StatelessWidget {
     final c = context.srcTokens.colors;
     final a = accessory;
     if (owned) {
-      return Text('보유', style: storeText(14, c.primary, w: FontWeight.w900));
+      return Text(RemainingSurface.tr(context, 'shop.accessory_shop_grid.owned', '보유'), style: storeText(14, c.primary, w: FontWeight.w900));
     }
     if (a.rarity == AccessoryRarity.tierReward) {
-      return Text('티어 보상', style: storeText(14, c.muted, w: FontWeight.w800));
+      return Text(AccessoryRarity.tierReward.label(context), style: storeText(14, c.muted, w: FontWeight.w800));
     }
     final dia = a.currency == AccessoryCurrency.dia;
     return Row(
@@ -275,7 +275,7 @@ class _AccessoryCard extends StatelessWidget {
                                     '${accessory.tierLock!.labelKo} 티어',
                                     {
                                       'accessory.tierLock!.labelKo':
-                                          accessory.tierLock!.labelKo,
+                                          accessory.tierLock!.label(context),
                                     },
                                   ),
                                   style: storeText(
@@ -458,7 +458,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
       final name = accessoryName(a.id, a.nameKo, locale);
       _toast(accessoryPhrase(locale, wearing ? 'worn' : 'removed', name: name));
     } catch (_) {
-      _toast('바꾸지 못했어요. 잠시 뒤 다시 해 주세요.');
+      _toast(RemainingSurface.trNow('crew_manager.toast.28', '바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -499,7 +499,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
             ),
             const SizedBox(height: 4),
             Text(
-              '${a.rarity.labelKo} · ${a.slot.labelKo}'
+              '${a.rarity.label(context)} · ${a.slot.label(context)}'
               '${a.priceLabel.isEmpty ? '' : ' · ${a.priceLabel}'}',
               style: storeText(13, c.muted),
             ),
@@ -553,7 +553,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
                   context,
                   'shop.accessory_shop_grid.button.5',
                   '${a.tierLock!.labelKo} 티어가 되면 살 수 있어요',
-                  {'a.tierLock!.labelKo': a.tierLock!.labelKo},
+                  {'a.tierLock!.labelKo': a.tierLock!.label(context)},
                 )),
               )
             else if (_forSale)

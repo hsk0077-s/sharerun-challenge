@@ -291,7 +291,7 @@ class _DeviceConnectionScreenState
     if (uid == null) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인이 필요합니다.')),
+        SnackBar(content: Text(RemainingSurface.trNow('run_result.body.3', '로그인이 필요합니다.'))),
       );
       return;
     }
@@ -373,7 +373,7 @@ class _DeviceConnectionScreenState
     if (uid == null) {
       if (!mounted || !context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인이 필요합니다.')),
+        SnackBar(content: Text(RemainingSurface.trNow('run_result.body.3', '로그인이 필요합니다.'))),
       );
       return;
     }

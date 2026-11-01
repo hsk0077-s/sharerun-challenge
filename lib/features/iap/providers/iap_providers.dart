@@ -10,6 +10,7 @@ import '../models/iap_ui_event.dart';
 import '../payment_auth.dart';
 import '../services/iap_purchase_controller.dart';
 import 'coach_plus_providers.dart';
+import '../../../l10n/remaining_surface.dart';
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>(
   (ref) => PurchaseRepository(ref.watch(firestoreServiceProvider)),
@@ -36,7 +37,7 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
       unawaited(
         ref.read(walletRepositoryProvider).logClientWalletTransaction(
               uid: uid,
-              title: 'SHARE 충전 💳',
+              title: RemainingSurface.trNow('iap.iap_providers.body', 'SHARE 충전 💳'),
               amount: amount,
               assetType: 'SHARE',
             ),

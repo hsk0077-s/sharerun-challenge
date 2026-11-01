@@ -110,9 +110,9 @@ class _Room extends StatelessWidget {
         const SizedBox(height: 18),
         Row(
           children: [
-            _Stat(value: '${crew.memberCount}/${crew.maxMembers}', label: '크루원'),
+            _Stat(value: '${crew.memberCount}/${crew.maxMembers}', label: RemainingSurface.trNow('running_crew.body.13', '크루원')),
             const SizedBox(width: 10),
-            _Stat(value: CrewRoomScreen._km(crew.totalDistanceKm), label: '누적 거리'),
+            _Stat(value: CrewRoomScreen._km(crew.totalDistanceKm), label: RemainingSurface.trNow('running_crew.body.14', '누적 거리')),
           ],
         ),
         const SizedBox(height: 18),
@@ -133,7 +133,7 @@ class _Room extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 22),
-        Text('크루원', style: storeText(16, c.ink, w: FontWeight.w900)),
+        Text(RemainingSurface.trNow('running_crew.body.13', '크루원'), style: storeText(16, c.ink, w: FontWeight.w900)),
         const SizedBox(height: 8),
         for (final m in mine.members)
           ListTile(

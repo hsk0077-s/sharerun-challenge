@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/remaining_surface.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../l10n/accessory_names.dart';
@@ -58,7 +59,7 @@ class _TryOnSheetState extends State<TryOnSheet> {
             ),
             const SizedBox(height: 4),
             Text(
-              '구경용이에요. 저장되거나 구매되지 않아요.',
+              RemainingSurface.trNow('accessories.try_on.body.2', '구경용이에요. 저장되거나 구매되지 않아요.'),
               style: AppTextStyles.caption.copyWith(color: AppColors.textGrey),
             ),
             const SizedBox(height: 12),
@@ -79,7 +80,7 @@ class _TryOnSheetState extends State<TryOnSheet> {
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
                         key: TryOnSheet.slotKey(slot),
-                        label: Text(slot.labelKo),
+                        label: Text(slot.label(context)),
                         selected: _slot == slot,
                         onSelected: (_) => setState(() => _slot = slot),
                       ),
@@ -112,7 +113,7 @@ class _TryOnSheetState extends State<TryOnSheet> {
               key: const Key('try-on-clear'),
               onPressed:
                   _worn.isEmpty ? null : () => setState(() => _worn = {}),
-              child: const Text('모두 벗기'),
+              child: Text(RemainingSurface.trNow('accessories.try_on.button', '모두 벗기')),
             ),
           ],
         ),
@@ -142,8 +143,14 @@ class _ItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final focus = accessoryFocus(acc.slot);
     final lock = acc.tierLock;
-    final sub =
-        lock != null && lock != animal ? '${lock.labelKo} 티어' : acc.priceLabel;
+    final sub = lock != null && lock != animal
+        ? RemainingSurface.tr(
+            context,
+            'accessories.try_on.accessibility',
+            '${lock.labelKo} 티어',
+            {'lock.labelKo': lock.label(context)},
+          )
+        : acc.priceLabel;
     return Semantics(
       button: true,
       selected: selected,

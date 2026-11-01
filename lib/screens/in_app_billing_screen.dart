@@ -179,8 +179,8 @@ class _DiaPackStoreEntry extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'DIA 팩',
+              Text(
+                RemainingSurface.trNow('dia_pack_store.title', 'DIA 팩'),
                 style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
               ),
               const SizedBox(height: 4),

@@ -81,7 +81,7 @@ class _AiLearningTileState extends ConsumerState<AiLearningTile> {
                 _confirmed = null;
                 ref.invalidate(aiLearningProvider);
               },
-              child: const Text('다시 불러오기'),
+              child: Text(RemainingSurface.trNow('login_connections.button.2', '다시 불러오기')),
             ),
           );
     return ListTile(

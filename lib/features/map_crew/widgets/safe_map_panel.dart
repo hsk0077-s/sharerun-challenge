@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../core/config/app_env.dart';
+import '../../../l10n/remaining_surface.dart';
 
 enum SafeMapPanelStatus { loading, ready, unavailable }
 
@@ -180,8 +181,8 @@ class _MapPlaceholder extends StatelessWidget {
             ),
             const SizedBox(height: 12),
           ],
-          const Text(
-            '지도 준비 중',
+          Text(
+            RemainingSurface.trNow('map_crew.safe_map_panel.body', '지도 준비 중'),
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 16,

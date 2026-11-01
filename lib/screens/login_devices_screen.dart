@@ -42,7 +42,7 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -87,7 +87,7 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
         elevation: 0,
         foregroundColor: AppColors.textBlack,
         title: Text(
-          '로그인된 기기',
+          RemainingSurface.trNow('security_privacy_center.body.5', '로그인된 기기'),
           style: AppTextStyles.header1.copyWith(fontSize: 20),
         ),
       ),
@@ -137,7 +137,7 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
               child: TextButton(
                 key: LoginDevicesScreen.retryKey,
                 onPressed: () => ref.invalidate(loginDevicesProvider),
-                child: const Text('다시 불러오기'),
+                child: Text(RemainingSurface.trNow('login_connections.button.2', '다시 불러오기')),
               ),
             ),
           ),

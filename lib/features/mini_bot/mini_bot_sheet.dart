@@ -17,6 +17,7 @@ import 'mini_bot_voice.dart';
 import '../snail_faq/snail_faq.dart';
 import 'mini_bot_dock.dart';
 import 'snail_bot_face.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// Extra space under the shell mic so it sits fully above the tab bar.
 const double miniBotFabBottomClearance = 24;
@@ -566,7 +567,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       child: OutlinedButton(
                         key: const Key('mini-bot-cancel'),
                         onPressed: _onCancel,
-                        child: const Text('취소'),
+                        child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
                       ),
                     ),
                     SizedBox(width: tokens.spacing.sm),
@@ -646,7 +647,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                   ),
                   IconButton(
                     key: const Key('mini-bot-send'),
-                    tooltip: '보내기',
+                    tooltip: RemainingSurface.trNow('mini_bot.button.3', '보내기'),
                     onPressed: () => _submit(_input.text),
                     icon:
                         Icon(Icons.send_rounded, color: tokens.colors.primary),

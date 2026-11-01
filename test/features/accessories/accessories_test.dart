@@ -10,6 +10,21 @@ import 'package:share_run_challenge/features/accessories/try_on_sheet.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/screens/snail_to_cheetah_book_page.dart';
 
+/// 칸 버튼 줄은 옆으로 밀리는 목록이라, 글자가 긴 언어에서는 끝 칸이 화면 밖일 수 있다.
+Future<void> tapSlot(WidgetTester tester, AccessorySlot slot) async {
+  final chip = find.byKey(TryOnSheet.slotKey(slot));
+  final row = find.descendant(
+    of: find.byType(TryOnSheet),
+    matching: find.byType(ListView),
+  );
+  await tester.scrollUntilVisible(
+    chip,
+    120,
+    scrollable: find.descendant(of: row.first, matching: find.byType(Scrollable)),
+  );
+  await tester.tap(chip);
+}
+
 void main() {
   final dressable = TierAnimal.values.where(canDress).toList(growable: false);
 
@@ -221,14 +236,14 @@ void main() {
     expect(drawn(), 2);
 
     // 다른 칸으로 옮겨서 하나 더 입는다.
-    await tester.tap(find.byKey(TryOnSheet.slotKey(AccessorySlot.eyes)));
+    await tapSlot(tester, AccessorySlot.eyes);
     await tester.pump();
     await tester.tap(find.byKey(TryOnSheet.chipKey(byId('P021'))));
     await tester.pump();
     expect(drawn(), 3);
 
     // 스킨을 입으면 한 장만 남는다.
-    await tester.tap(find.byKey(TryOnSheet.slotKey(AccessorySlot.skin)));
+    await tapSlot(tester, AccessorySlot.skin);
     await tester.pump();
     await tester.tap(find.byKey(TryOnSheet.chipKey(byId('S001'))));
     await tester.pump();

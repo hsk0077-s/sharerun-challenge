@@ -420,7 +420,7 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(sheetContext).pop(false),
-                  child: const Text('나중에'),
+                  child: Text(RemainingSurface.trNow('solo_pedometer.button', '나중에')),
                 ),
               ],
             ),

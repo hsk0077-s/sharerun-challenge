@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/widgets/src_logo_header.dart';
 import 'run_card_summary.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 자랑 카드 오른쪽 위에 넣는 두 개의 동그란 등급 배지(동물 티어, 천사 등급).
 /// 기부 금액은 담지 않는다. 공유할 때 빼려면 카드에 넘기지 않는다.
@@ -455,7 +456,7 @@ class _RecordColumn extends StatelessWidget {
         ),
         const SizedBox(height: 28),
         Text(
-          '거리',
+          RemainingSurface.trNow('crew.crew_emblem.body.6', '거리'),
           style: TextStyle(
             fontFamily: RunFinishShareCard.fontFamily,
             fontSize: 26,
@@ -532,7 +533,7 @@ class _SplitGraph extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '구간 페이스',
+              RemainingSurface.trNow('run_result.run_finish_share.body.22', '구간 페이스'),
               style: TextStyle(
                 fontFamily: RunFinishShareCard.fontFamily,
                 fontSize: 26,
@@ -640,7 +641,7 @@ class _StatRow extends StatelessWidget {
           child: _StatChip(
             palette: palette,
             kind: _LineIconKind.time,
-            label: '시간',
+            label: RemainingSurface.trNow('run_result.run_finish_share.body.23', '시간'),
             value: time,
             valueKey: RunFinishShareCard.timeKey,
           ),
@@ -650,7 +651,7 @@ class _StatRow extends StatelessWidget {
           child: _StatChip(
             palette: palette,
             kind: _LineIconKind.pace,
-            label: '페이스',
+            label: RemainingSurface.trNow('run_result.run_finish_share.body.24', '페이스'),
             value: paceNumber,
             unit: paceUnit,
             valueKey: RunFinishShareCard.paceKey,

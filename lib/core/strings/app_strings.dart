@@ -308,7 +308,8 @@ abstract final class AppStrings {
   static const challengeDetailCprMaxPerRace = 3;
   static String get challengeDetailCprUse => RemainingSurface.trNow('app.challengeDetailCprUse', '심폐소생권 사용');
   static String get challengeDetailCprBuyHint => RemainingSurface.trNow('app.challengeDetailCprBuyHint', '상점에서 구매');
-  static const challengeDetailJoin = '대회 참가';
+  static String get challengeDetailJoin =>
+      RemainingSurface.trNow('wallet_transaction_model.body.3', '대회 참가');
 
   // ── Live Running (Screen 10) ────────────────────────────────────────
   static String get liveRunningRoomTitle => RemainingSurface.trNow('app.liveRunningRoomTitle', '3km 중급 챌린지');

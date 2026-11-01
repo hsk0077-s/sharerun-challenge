@@ -52,6 +52,15 @@ extension TierAnimalX on TierAnimal {
         TierAnimal.snail => 'snail',
       };
 
+  /// 화면 언어로 된 동물 이름. 한국어는 [labelKo].
+  String label([BuildContext? context]) {
+    final locale = context == null
+        ? RemainingSurface.currentLocale
+        : (Localizations.maybeLocaleOf(context) ??
+            RemainingSurface.currentLocale);
+    return locale.languageCode == 'ko' ? labelKo : animalLabel(locale, code);
+  }
+
   String get labelKo => switch (this) {
         TierAnimal.turtle => '거북이',
         TierAnimal.beagle => '비글',
@@ -1846,7 +1855,7 @@ abstract final class RetentionAlertEngine {
       payloads.add(
         RetentionPushPayload(
           code: 'shoe_limit',
-          title: '러닝화 수명 한도',
+          title: RemainingSurface.trNow('onboarding.src_onboarding_controller.body.45', '러닝화 수명 한도'),
           body:
               '러너님, 등록하신 러닝화의 누적 수명이 ${shoeKm.round()}km에 도달했습니다. '
               '관절 보호와 완벽한 질주를 위해 쿠션 상태를 확인해 보세요! 👟',
@@ -1857,7 +1866,7 @@ abstract final class RetentionAlertEngine {
       payloads.add(
         RetentionPushPayload(
           code: 'shoe_warn',
-          title: '러닝화 쿠션 점검',
+          title: RemainingSurface.trNow('onboarding.src_onboarding_controller.body.47', '러닝화 쿠션 점검'),
           body:
               '러너님, 등록하신 러닝화의 누적 수명이 ${shoeKm.round()}km에 도달했습니다. '
               '관절 보호와 완벽한 질주를 위해 쿠션 상태를 확인해 보세요! 👟',
@@ -1869,9 +1878,9 @@ abstract final class RetentionAlertEngine {
         profile.goldenHourAlertDateKey != today &&
         inGoldenWindow(now, profile.preferredRunHour)) {
       payloads.add(
-        const RetentionPushPayload(
+        RetentionPushPayload(
           code: 'golden_hour',
-          title: '골든 아워 땀방울',
+          title: RemainingSurface.trNow('onboarding.src_onboarding_controller.body.48', '골든 아워 땀방울'),
           body:
               '오늘의 영웅이 될 준비가 되셨나요? 러너님만을 위한 골든 아워입니다. '
               '가볍게 걷고 일일 5km / 50 VALUE 한도를 채워 보세요! 👼',
@@ -1892,7 +1901,7 @@ abstract final class RetentionAlertEngine {
       payloads.add(
         RetentionPushPayload(
           code: 'jena_pending',
-          title: '기록 검증 보류',
+          title: RemainingSurface.trNow('in_challenge.dialog', '기록 검증 보류'),
           body:
               '⚠️ 방금 완료하신 기록의 검증이 보류되었습니다. '
               '억울한 오탐지가 없도록 7일 이내에 원본 센서 로그로 '

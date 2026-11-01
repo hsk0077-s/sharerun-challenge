@@ -83,7 +83,7 @@ class _LoginConnectionsScreenState
         methodName: methodName,
         nickname: preview.nickname,
         shareBalance: preview.shareBalance,
-        declineLabel: '취소',
+        declineLabel: RemainingSurface.trNow('my_page.button.4', '취소'),
       );
       if (ok != true || !mounted) return;
       final token = await askToken();
@@ -126,7 +126,7 @@ class _LoginConnectionsScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           TextButton(
             key: LoginConnectionsScreen.unlinkConfirmKey,

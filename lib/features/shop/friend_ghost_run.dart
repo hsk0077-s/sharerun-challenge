@@ -240,7 +240,7 @@ class _FriendRunDialogState extends State<_FriendRunDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('취소'),
+          child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
         ),
         FilledButton(
           onPressed: () {

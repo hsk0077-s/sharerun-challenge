@@ -6,6 +6,7 @@ import '../../core/theme/theme.dart';
 import '../shop/widgets/store_look.dart';
 import 'crew_emblem_layered.dart';
 import 'crew_emblem_status.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 크루 엠블럼. 두 가지 모양의 코드를 모두 읽는다.
 /// - 예전: `모양:색` (아이콘 44개 + 그림 문양 30개, 색 6개). 이미 만든 크루가 그대로 쓴다.
@@ -594,7 +595,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('유료 엠블럼 사기'),
+        title: Text(RemainingSurface.trNow('crew.crew_emblem.dialog', '유료 엠블럼 사기')),
         content: Text(
           '${price == null ? '' : '$price DIA를 내고 '}이 엠블럼을 살까요?\n'
           '크루가 평생 가지며 크루원 누구에게나 보여요. 크루를 없애면 함께 사라져요.',
@@ -602,7 +603,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('취소'),
+            child: Text(RemainingSurface.trNow('my_page.button.4', '취소')),
           ),
           FilledButton(
             key: const Key('crew-emblem-buy-confirm'),
@@ -823,7 +824,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
             const SizedBox(height: 16),
             const StoreTag('EMBLEM'),
             const SizedBox(height: 6),
-            Text('크루 엠블럼 고르기', style: storeText(24, c.ink, w: FontWeight.w900)),
+            Text(RemainingSurface.trNow('crew.crew_emblem.body.13', '크루 엠블럼 고르기'), style: storeText(24, c.ink, w: FontWeight.w900)),
             const SizedBox(height: 18),
             Center(
               child: CrewEmblemBadge(
@@ -883,7 +884,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                     selected: id == _pattern,
                     onTap: () => _edit(() => _pattern = id),
                     child: id == 'none'
-                        ? Text('없음', style: storeText(12, c.muted, w: FontWeight.w700))
+                        ? Text(RemainingSurface.trNow('crew.crew_emblem.body.17', '없음'), style: storeText(12, c.muted, w: FontWeight.w700))
                         : Image.asset(
                             CrewEmblem.patternAsset(id),
                             width: 40,
@@ -961,7 +962,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  '판매는 준비 중이에요.',
+                  RemainingSurface.trNow('crew.crew_emblem.body.22', '판매는 준비 중이에요.'),
                   key: const Key('crew-emblem-paid-preparing'),
                   style: storeText(11, c.muted),
                 ),
@@ -970,7 +971,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  '유료 엠블럼은 크루장만 살 수 있어요.',
+                  RemainingSurface.trNow('running_crew.toast.10', '유료 엠블럼은 크루장만 살 수 있어요.'),
                   key: const Key('crew-emblem-paid-leader-only'),
                   style: storeText(11, c.muted),
                 ),
@@ -978,7 +979,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
             const SizedBox(height: 22),
             StorePillButton(
               key: CrewEmblemPicker.doneKey,
-              label: '이 엠블럼으로 정하기',
+              label: RemainingSurface.trNow('crew.crew_emblem.button.2', '이 엠블럼으로 정하기'),
               onPressed: () => Navigator.of(context).pop(emblem),
             ),
           ],

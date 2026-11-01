@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'models/jena_validation_result.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// Plain Korean for a server [reason_code]. Null when the code is unknown.
 String? verificationReasonKo(String reasonCode) {
@@ -46,7 +47,7 @@ Future<void> showVerificationRejectedDialog(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        title: const Text('검증되지 않은 기록'),
+        title: Text(RemainingSurface.trNow('run_result.title.3', '검증되지 않은 기록')),
         content: Text(verificationUserMessage(result)),
         actions: [
           TextButton(

@@ -1956,6 +1956,7 @@ class RemainingSurface {
     'running_crew.card_open',
     'running_crew.card_approval',
     'profile.my_dashboard_sections.wallet',
+    'shop.accessory_shop_grid.owned',
   ];
 
   static const _en = <String, String>{
@@ -3827,6 +3828,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} members · Open join',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} members · Approval required',
     'profile.my_dashboard_sections.wallet': 'My wallet',
+    'shop.accessory_shop_grid.owned': 'Owned',
   };
 
   static const _ja = <String, String>{
@@ -5698,6 +5700,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers}人 · 自由参加',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers}人 · 承認制',
     'profile.my_dashboard_sections.wallet': 'マイウォレット',
+    'shop.accessory_shop_grid.owned': '所持',
   };
 
   static const _zh = <String, String>{
@@ -7569,6 +7572,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} 人 · 自由加入',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} 人 · 需審核',
     'profile.my_dashboard_sections.wallet': '我的錢包',
+    'shop.accessory_shop_grid.owned': '已擁有',
   };
 
   static const _es = <String, String>{
@@ -9440,6 +9444,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} miembros · Unión libre',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} miembros · Con aprobación',
     'profile.my_dashboard_sections.wallet': 'Mi billetera',
+    'shop.accessory_shop_grid.owned': 'Tengo',
   };
 
   static const _pt = <String, String>{
@@ -11311,6 +11316,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} membros · Entrada livre',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} membros · Com aprovação',
     'profile.my_dashboard_sections.wallet': 'Minha carteira',
+    'shop.accessory_shop_grid.owned': 'Tenho',
   };
 
   static const _de = <String, String>{
@@ -13182,6 +13188,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} Mitglieder · Offener Beitritt',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} Mitglieder · Beitritt mit Genehmigung',
     'profile.my_dashboard_sections.wallet': 'Meine Wallet',
+    'shop.accessory_shop_grid.owned': 'Im Besitz',
   };
 
   static const _fr = <String, String>{
@@ -15053,6 +15060,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} membres · Adhésion libre',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} membres · Sur approbation',
     'profile.my_dashboard_sections.wallet': 'Mon portefeuille',
+    'shop.accessory_shop_grid.owned': 'Possédé',
   };
 
   static const _vi = <String, String>{
@@ -16924,6 +16932,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} thành viên · Tham gia tự do',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} thành viên · Cần duyệt',
     'profile.my_dashboard_sections.wallet': 'Ví của tôi',
+    'shop.accessory_shop_grid.owned': 'Đã có',
   };
 
   static const _th = <String, String>{
@@ -18795,6 +18804,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} คน · เข้าร่วมได้อิสระ',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} คน · ต้องได้รับอนุมัติ',
     'profile.my_dashboard_sections.wallet': 'กระเป๋าของฉัน',
+    'shop.accessory_shop_grid.owned': 'มีแล้ว',
   };
 
   static const _id = <String, String>{
@@ -20666,6 +20676,7 @@ class RemainingSurface {
     'running_crew.card_open': '\${crew.memberCount}/\${crew.maxMembers} anggota · Gabung bebas',
     'running_crew.card_approval': '\${crew.memberCount}/\${crew.maxMembers} anggota · Perlu persetujuan',
     'profile.my_dashboard_sections.wallet': 'Dompet saya',
+    'shop.accessory_shop_grid.owned': 'Dimiliki',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

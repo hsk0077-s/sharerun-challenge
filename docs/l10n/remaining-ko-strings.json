@@ -35797,6 +35797,25 @@
       "th": "กระเป๋าของฉัน",
       "id": "Dompet saya",
       "native_review": "pending"
+    },
+    {
+      "key": "shop.accessory_shop_grid.owned",
+      "ko": "보유",
+      "file": "lib/features/shop/widgets/accessory_shop_grid.dart",
+      "screen": "shop",
+      "context": "상점 소품 카드에서 이미 가진 소품 표시. 한두 글자.",
+      "placeholders": [],
+      "en": "Owned",
+      "ja": "所持",
+      "zh-TW": "已擁有",
+      "es": "Tengo",
+      "pt-BR": "Tenho",
+      "de": "Im Besitz",
+      "fr": "Possédé",
+      "vi": "Đã có",
+      "th": "มีแล้ว",
+      "id": "Dimiliki",
+      "native_review": "pending"
     }
   ]
 }

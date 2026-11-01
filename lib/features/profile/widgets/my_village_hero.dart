@@ -144,7 +144,7 @@ class MyVillageHero extends StatelessWidget {
                       IconButton(
                         key: const Key('my-village-change'),
                         onPressed: onChangeVillage,
-                        tooltip: '마을 바꾸기',
+                        tooltip: RemainingSurface.trNow('profile.my_village_hero.button', '마을 바꾸기'),
                         icon: Icon(
                           Icons.landscape_outlined,
                           color: fg,

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'snail_bot_face.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 달팽이봇 버튼 설정. 폰에만 저장하고 서버와 무관하다.
 abstract final class MiniBotDockSettings {
@@ -307,7 +308,7 @@ class _MiniBotDockState extends State<MiniBotDock> {
                   Positioned.fill(
                     child: Semantics(
                       button: true,
-                      label: '달팽이봇',
+                      label: RemainingSurface.trNow('mini_bot.mini_bot_dock.accessibility', '달팽이봇'),
                       child: GestureDetector(
                         key: MiniBotDock.faceKey,
                         behavior: HitTestBehavior.opaque,
@@ -444,10 +445,10 @@ class _DockHint extends StatelessWidget {
       child: Material(
         color: const Color(0xE6202B2A),
         borderRadius: BorderRadius.circular(12),
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Text(
-            '끌어서 옮길 수 있어요',
+            RemainingSurface.trNow('mini_bot.mini_bot_dock.body', '끌어서 옮길 수 있어요'),
             style: TextStyle(color: Colors.white, fontSize: 12),
             softWrap: false,
           ),

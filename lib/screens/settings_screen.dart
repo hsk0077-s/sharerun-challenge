@@ -40,6 +40,7 @@ import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/launch/intro_screen.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/run_recording_policy.dart';
+import '../features/support/contact_support.dart';
 import '../features/mini_bot/mini_bot_dock.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
@@ -577,6 +578,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onChanged: (value) =>
                         unawaited(MiniBotDockSettings.setVisible(value)),
                   ),
+                ),
+                const Divider(height: 1, color: AppColors.nightLine),
+                ListTile(
+                  key: const Key('settings-contact'),
+                  title: Text(
+                    RemainingSurface.trNow('support.title', '문의하기'),
+                    style: AppTextStyles.agreementLabel.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  subtitle: Text(
+                    RemainingSurface.trNow(
+                      'support.subtitle',
+                      '오류나 불편한 점을 이메일로 알려 주세요',
+                    ),
+                    style: AppTextStyles.caption,
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_rounded),
+                  onTap: () => unawaited(openContactEmail(context)),
                 ),
                 if (AppEnv.inAppPurchasesEnabled) ...[
                   const Divider(height: 1, color: AppColors.nightLine),

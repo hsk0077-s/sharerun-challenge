@@ -5,7 +5,7 @@
 - **Short Description** (80/80 chars):
   `Registra carreras y pasos diarios, gana puntos SHARE en la app y compite en club`
 
-## Full Description (2301/4000 chars)
+## Full Description (2475/4000 chars)
 ```text
 ShareRun ("Mientras lata tu corazón, la solidaridad sigue corriendo") es la app de retos de running y podómetro donde corredores de todo el mundo entrenan, compiten en ligas justas y suman kilómetros con impacto social.
 
@@ -25,7 +25,7 @@ ShareRun ("Mientras lata tu corazón, la solidaridad sigue corriendo") es la app
 • El entrenador por voz anuncia tu ritmo y distancia mientras corres.
 
 ■ Relojes Inteligentes, Health Connect y Sensor Cardíaco BLE (0x180D)
-• Compatible con Apple Health y Google Health Connect (Garmin, Apple Watch, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
+• Compatible con Google Health Connect (Garmin, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
 • Conexión directa por Bluetooth (BLE 0x180D) para transmitir pulsaciones (BPM) en tiempo real desde Garmin/Xiaomi (Transmitir FC) o bandas pectorales Polar, Wahoo, Coospo y Magene.
 
 ■ Verificación Jena AI Antitrampas y Fondo Solidario

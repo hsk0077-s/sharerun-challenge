@@ -5,7 +5,7 @@
 - **Short Description** (77/80 chars):
   `Track runs & daily steps, earn in-app SHARE points, and join crew challenges!`
 
-## Full Description (2443/4000 chars)
+## Full Description (2650/4000 chars)
 ```text
 ShareRun ("As long as your heart beats, sharing runs on") is a fair running and daily step challenge app where runners and walkers around the world build healthy habits, compete in tier-matched races, and contribute to charity matching pools.
 
@@ -26,7 +26,7 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 • Real-time voice coaching announces your distance and pace while SnailBot answers your questions hands-free.
 
 ■ Smartwatches, Health Connect & Direct BLE Heart Rate (0x180D)
-• Works with Apple Health and Google Health Connect (Galaxy Watch, Apple Watch, Garmin, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
+• Works with Google Health Connect (Galaxy Watch, Garmin, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
 • Supports direct Bluetooth Low Energy (BLE 0x180D) Heart Rate sensors—stream live BPM with zero delay from Garmin/Xiaomi HR Broadcast or Polar, Wahoo, Coospo, and Magene straps.
 
 ■ Jena AI Anti-Cheat & Planned Charity Giving
@@ -50,5 +50,5 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 • Outdoor GPS run tracking with start/finish privacy masking
 • Daily pedometer (100 steps = 10 SHARE, up to 600 SHARE/day base cap)
 • Jena AI anti-cheat verification & 5 Animal Tiers (Turtle to Cheetah)
-• Wearable connection guide (Health Connect / Apple Health) & direct BLE Heart Rate sensor (0x180D) support
+• Wearable connection guide (Health Connect) & direct BLE Heart Rate sensor (0x180D) support
 ```

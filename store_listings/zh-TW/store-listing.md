@@ -5,7 +5,7 @@
 - **Short Description** (39/80 chars):
   `記錄每日步數與跑步里程，累積應用內 SHARE 點數，與跑團好友一起熱血挑戰！`
 
-## Full Description (1076/4000 chars)
+## Full Description (1122/4000 chars)
 ```text
 ShareRun（享跑）「只要心跳不止，分享就持續奔跑」是一款結合戶外 GPS 跑步、每日計步挑戰、跑團競賽與公益配捐的運動挑戰應用程式。
 
@@ -25,7 +25,7 @@ ShareRun（享跑）「只要心跳不止，分享就持續奔跑」是一款結
 • 跑步過程提供語音播報距離與配速，還有蝸牛機器人隨時解答問題。
 
 ■ 智慧手錶、Health Connect 與 BLE 心率感測器直連（0x180D）
-• 支援 Apple 健康與 Google Health Connect（Garmin、Apple Watch、Galaxy Watch、小米手環、Amazfit、Fitbit、COROS、Suunto）。
+• 支援 Google Health Connect（Garmin、Galaxy Watch、小米手環、Amazfit、Fitbit、COROS、Suunto）。
 • 支援標準藍牙低功耗心率感測器（BLE 0x180D）直接連線：開啟 Garmin/小米手環「廣播心率」或配戴 Polar、Coospo、Magene 心率帶，即可零延遲接收即時 BPM。
 
 ■ Jena AI 防作弊驗證與公益捐贈計畫

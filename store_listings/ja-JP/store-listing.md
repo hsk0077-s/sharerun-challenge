@@ -5,7 +5,7 @@
 - **Short Description** (38/80 chars):
   `毎日の歩数とランニングでアプリ内SHAREを集め、クルーや大会に挑戦しよう！`
 
-## Full Description (1356/4000 chars)
+## Full Description (1414/4000 chars)
 ```text
 ShareRun（シェアラン）は「心臓が鼓動する限り、分かち合いも走り続ける」をスローガンに、日々のウォーキングやランニングを記録し、全国のランナーやクルー仲間と楽しく競い合うランニング＆歩数チャレンジアプリです。
 
@@ -23,10 +23,10 @@ ShareRun（シェアラン）は「心臓が鼓動する限り、分かち合い
 
 ■ ランニングクルー＆音声コーチ・カタツムリボット
 • 友達や同僚とクルーを結成し、週間・月間の合計距離ランキングに挑戦できます。
-• 走行中は音声コーチが距離とペースをお知らせし、AIカタツムリボットが使い方をサポートします。
+• 走行中は音声コーチが距離とペースをお知らせし、カタツムリボットが使い方をサポートします。
 
 ■ スマートウォッチ・Health Connect・BLE心拍センサー直接接続（0x180D）
-• AppleヘルスケアおよびGoogle Health Connectに対応（Apple Watch、Galaxy Watch、Garmin、Xiaomi Mi Band、Amazfit、Fitbitなど）。
+• Google Health Connectに対応（Galaxy Watch、Garmin、Xiaomi Mi Band、Amazfit、Fitbitなど）。
 • Bluetooth心拍センサー（BLE 0x180D）直接接続により、Garmin・Xiaomiの心拍転送モードやPolar・Coospo等の心拍ベルトから遅延なしでリアルタイムBPMを受信します。
 
 ■ Jena AI不正防止＆チャリティ寄付マッチング
@@ -50,5 +50,5 @@ ShareRun（シェアラン）は「心臓が鼓動する限り、分かち合い
 • GPSランニング計測＆スタート・ゴール地点のプライバシー保護機能
 • 歩数計チャレンジ（100歩＝10 SHARE、1日基本600 SHARE上限）
 • Jena AI不正防止エンジン＆5段階の動物ティア別チャレンジ・クルー機能
-• Health Connect / Appleヘルスケア連携ガイド＆BLEリアルタイム心拍センサー（0x180D）直接接続に対応
+• Health Connect連携ガイド＆BLEリアルタイム心拍センサー（0x180D）直接接続に対応
 ```

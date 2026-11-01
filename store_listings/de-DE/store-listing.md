@@ -5,7 +5,7 @@
 - **Short Description** (79/80 chars):
   `Läufe & Schritte tracken, In-App-SHARE sammeln und in Crew-Challenges antreten!`
 
-## Full Description (2158/4000 chars)
+## Full Description (2379/4000 chars)
 ```text
 ShareRun („Solange dein Herz schlägt, läuft das Teilen weiter“) ist die faire Lauf- und Schrittzähler-Challenge-App, mit der Läufer weltweit trainieren, in passenden Leistungsklassen antreten und soziale Projekte unterstützen.
 
@@ -24,7 +24,7 @@ ShareRun („Solange dein Herz schlägt, läuft das Teilen weiter“) ist die fa
 • Der Sprachcoach informiert dich unterwegs über Distanz und Pace.
 
 ■ Smartwatches, Health Connect & Direkte BLE-Herzfrequenz (0x180D)
-• Unterstützt Apple Health und Google Health Connect (Garmin, Apple Watch, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
+• Unterstützt Google Health Connect (Garmin, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
 • Direkte Bluetooth-Verbindung (BLE 0x180D) für Echtzeit-BPM von Garmin/Xiaomi (Herzfrequenz senden) sowie Polar-, Wahoo-, Coospo- und Magene-Brustgurten.
 
 ■ Jena AI Anti-Cheat & Spenden-Matching

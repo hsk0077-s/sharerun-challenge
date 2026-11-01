@@ -5,7 +5,7 @@
 - **Short Description** (75/80 chars):
   `บันทึกการวิ่งและก้าวเดิน สะสมพอยต์ SHARE ในแอป พร้อมท้าทายกับเพื่อนใน Crew!`
 
-## Full Description (2001/4000 chars)
+## Full Description (2199/4000 chars)
 ```text
 ShareRun ("ตราบใดที่หัวใจยังเต้น การแบ่งปันก็ยังคงวิ่งต่อไป") แอปพลิเคชันท้าทายการวิ่งและนับก้าวเดินที่จะช่วยให้คุณสร้างนิสัยรักสุขภาพ แข่งขันอย่างยุติธรรม และร่วมแบ่งปันสู่สังคม
 
@@ -24,7 +24,7 @@ ShareRun ("ตราบใดที่หัวใจยังเต้น ก�
 • โค้ชเสียงคอยแจ้งระยะทางและเพซระหว่างวิ่ง พร้อมบอทหอยทากคอยช่วยเหลือ
 
 ■ รองรับสมาร์ทวอทช์, Health Connect และเซ็นเซอร์วัดหัวใจ BLE (0x180D)
-• เชื่อมต่อกับ Apple Health และ Google Health Connect (Garmin, Apple Watch, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto)
+• เชื่อมต่อกับ Google Health Connect (Garmin, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto)
 • รองรับการเชื่อมต่อเซ็นเซอร์วัดอัตราการเต้นหัวใจ Bluetooth (BLE 0x180D) โดยตรง ส่งค่า BPM แบบเรียลไทม์จากโหมด Broadcast HR ของ Garmin/Xiaomi หรือสายคาดอก Polar, Coospo, Magene
 
 ■ ระบบป้องกันการโกง Jena AI และการสมทบทุนเพื่อสังคม

@@ -5,7 +5,7 @@
 - **Short Description** (79/80 chars):
   `Catat lari & langkah harian, kumpulkan poin SHARE di aplikasi, dan gabung Crew!`
 
-## Full Description (2224/4000 chars)
+## Full Description (2459/4000 chars)
 ```text
 ShareRun ("Selama jantung berdetak, berbagi terus berlari") adalah aplikasi tantangan lari dan penghitung langkah harian untuk membangun kebiasaan sehat, berkompetisi secara adil, dan berbagi kebaikan.
 
@@ -24,7 +24,7 @@ ShareRun ("Selama jantung berdetak, berbagi terus berlari") adalah aplikasi tant
 • Panduan suara memberi tahu jarak dan pace saat berlari.
 
 ■ Smartwatch, Health Connect & Sensor Detak Jantung BLE (0x180D)
-• Terhubung dengan Apple Health dan Google Health Connect (Garmin, Apple Watch, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
+• Terhubung dengan Google Health Connect (Garmin, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
 • Koneksi langsung sensor detak jantung Bluetooth (BLE 0x180D) untuk menampilkan BPM real-time tanpa jeda dari fitur Broadcast HR Garmin/Xiaomi maupun strap Polar, Coospo, dan Magene.
 
 ■ Anti-Curang Jena AI & Dana Amal

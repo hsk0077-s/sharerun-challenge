@@ -5,7 +5,7 @@
 - **Short Description** (79/80 chars):
   `Ghi lại đường chạy & bước chân, tích điểm SHARE trong app và đua top cùng Crew!`
 
-## Full Description (2156/4000 chars)
+## Full Description (2389/4000 chars)
 ```text
 ShareRun ("Chừng nào trái tim còn đập, sự sẻ chia vẫn tiếp tục chạy") là ứng dụng thử thách chạy bộ và đếm bước chân giúp bạn rèn luyện sức khỏe mỗi ngày, thi đấu công bằng và lan tỏa giá trị thiện nguyện.
 
@@ -24,7 +24,7 @@ ShareRun ("Chừng nào trái tim còn đập, sự sẻ chia vẫn tiếp tục
 • Huấn luyện viên giọng nói thông báo quãng đường và pace suốt buổi chạy.
 
 ■ Đồng Hồ Thông Minh, Health Connect & Cảm Biến Nhịp Tim BLE (0x180D)
-• Hỗ trợ Apple Health và Google Health Connect (Garmin, Apple Watch, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
+• Hỗ trợ Google Health Connect (Garmin, Galaxy Watch, Xiaomi Mi Band, Amazfit, Fitbit, COROS, Suunto).
 • Kết nối trực tiếp cảm biến nhịp tim Bluetooth (BLE 0x180D) giúp truyền BPM thời gian thực không độ trễ từ tính năng Phát nhịp tim trên Garmin/Xiaomi hoặc đai ngực Polar, Coospo, Magene.
 
 ■ Chống Gian Lận Jena AI & Quỹ Thiện Nguyện

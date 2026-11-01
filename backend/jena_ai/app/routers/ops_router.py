@@ -11,6 +11,7 @@ from app.models.ops_result import (
     PrizeSettlementResult,
     PurgeDeletedAccountsResult,
     PurgeUserResult,
+    ReleaseCopyReviewsResult,
 )
 from app.services import crew_ranking
 from app.services.ops_auth_service import require_ops_admin
@@ -152,3 +153,23 @@ def backfill_grades(
     _: None = Depends(require_ops_admin),
 ) -> GradeBackfillResult:
     return service.backfill_grades(dry_run=dry_run)
+
+
+@router.post("/referral-reviews/release-due", response_model=ReleaseCopyReviewsResult)
+def release_due_referral_reviews(
+    _: None = Depends(require_ops_admin),
+) -> ReleaseCopyReviewsResult:
+    """Pay referral holds whose seven days are up. Run daily. Safe to run again."""
+    from datetime import datetime, timezone
+
+    from app.services.secured_action_service import SecuredActionService
+
+    released = SecuredActionService(
+        firebase_service=service.firebase_service
+    ).release_due_copy_reviews(datetime.now(timezone.utc))
+    return ReleaseCopyReviewsResult(
+        accepted=True,
+        status="completed",
+        reason="Due referral reviews released.",
+        released=released,
+    )

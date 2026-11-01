@@ -3447,7 +3447,8 @@ class SecuredActionService:
         """Pay copy-review holds whose seven days are up and were not rejected.
 
         Confirmed twins are not in this queue. An admin sets the review
-        status to ``rejected`` to keep the hold.
+        status to ``rejected`` to keep the hold. Each review is settled in its
+        own transaction, so two runs at once cannot pay the same one twice.
         """
         snapshots = (
             self.firebase_service.db.collection("referralReviews")
@@ -3457,37 +3458,134 @@ class SecuredActionService:
         released = 0
         for snapshot in snapshots:
             data = snapshot.to_dict() or {}
-            if data.get("status") == "rejected":
+            if data.get("status") != "pending":
                 continue
+            if self.settle_copy_review(snapshot.id, now, due_only=True) == "released":
+                released += 1
+        return released
+
+    def settle_copy_review(
+        self, review_id: str, now: datetime, *, due_only: bool
+    ) -> str:
+        """Pay one pending review. Returns ``released`` or why it was not paid."""
+        transaction = self.firebase_service.db.transaction()
+        return self._commit_settle_copy_review(transaction, review_id, now, due_only)
+
+    def _commit_settle_copy_review(
+        self, transaction, review_id: str, now: datetime, due_only: bool
+    ) -> str:
+        return _commit_settle_copy_review_tx(
+            transaction, self, review_id, now, due_only
+        )
+
+    def _settle_copy_review_in_txn(
+        self, transaction, review_id: str, now: datetime, due_only: bool
+    ) -> str:
+        db = self.firebase_service.db
+        review_ref = db.collection("referralReviews").document(review_id)
+        review_snapshot = review_ref.get(transaction=transaction)
+        if not review_snapshot.exists:
+            return "not_found"
+        data = review_snapshot.to_dict() or {}
+        if data.get("status") != "pending":
+            return f"not_pending:{data.get('status') or 'unknown'}"
+        if due_only:
             release_at = _parse_timestamp(data.get("releaseAt"))
             if release_at is None or release_at > now:
-                continue
-            amount = data.get("amount")
-            uid = data.get("payeeUid")
-            if not isinstance(uid, str) or not uid:
-                continue
-            if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:
-                continue
-            user_ref = self.firebase_service.db.collection("users").document(uid)
-            user_snapshot = user_ref.get()
-            wallet = {}
-            if user_snapshot.exists:
-                wallet = dict((user_snapshot.to_dict() or {}).get("wallet") or {})
-            moved = move_currency(
-                wallet,
-                share=amount,
-                lock_until=now + timedelta(days=REFERRAL_SHARE_LOCK_DAYS),
-                now=now,
-            )
-            user_ref.update({**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
-            snapshot.reference.set({**data, "status": "released"}, merge=True)
-            marker_id = data.get("markerId")
-            if isinstance(marker_id, str) and marker_id:
-                self.firebase_service.db.collection("referralPayouts").document(
-                    marker_id
-                ).set({"status": "released"}, merge=True)
-            released += 1
-        return released
+                return "not_due"
+        amount = data.get("amount")
+        uid = data.get("payeeUid")
+        if not isinstance(uid, str) or not uid:
+            return "invalid"
+        if not isinstance(amount, int) or isinstance(amount, bool) or amount <= 0:
+            return "invalid"
+        user_ref = db.collection("users").document(uid)
+        user_snapshot = user_ref.get(transaction=transaction)
+        if not user_snapshot.exists:
+            return "no_user"
+        wallet = dict((user_snapshot.to_dict() or {}).get("wallet") or {})
+        marker_id = data.get("markerId")
+        marker_ref = (
+            db.collection("referralPayouts").document(marker_id)
+            if isinstance(marker_id, str) and marker_id
+            else None
+        )
+        moved = move_currency(
+            wallet,
+            share=amount,
+            lock_until=now + timedelta(days=REFERRAL_SHARE_LOCK_DAYS),
+            now=now,
+        )
+        transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
+        transaction.set(
+            review_ref,
+            {**data, "status": "released", "releasedAt": SERVER_TIMESTAMP},
+            merge=True,
+        )
+        if marker_ref is not None:
+            transaction.set(marker_ref, {"status": "released"}, merge=True)
+        return "released"
+
+    def reject_copy_review(
+        self, review_id: str, *, actor_uid: str, note: str
+    ) -> str:
+        """Keep a pending hold: it will not be paid. Returns the new status."""
+        transaction = self.firebase_service.db.transaction()
+        return self._commit_set_copy_review_status(
+            transaction, review_id, "pending", "rejected", actor_uid, note
+        )
+
+    def reopen_copy_review(
+        self, review_id: str, *, actor_uid: str, note: str
+    ) -> str:
+        """Put a rejected hold back in the queue. Returns the new status."""
+        transaction = self.firebase_service.db.transaction()
+        return self._commit_set_copy_review_status(
+            transaction, review_id, "rejected", "pending", actor_uid, note
+        )
+
+    def _commit_set_copy_review_status(
+        self,
+        transaction,
+        review_id: str,
+        expect: str,
+        new_status: str,
+        actor_uid: str,
+        note: str,
+    ) -> str:
+        return _commit_set_copy_review_status_tx(
+            transaction, self, review_id, expect, new_status, actor_uid, note
+        )
+
+    def _set_copy_review_status_in_txn(
+        self,
+        transaction,
+        review_id: str,
+        expect: str,
+        new_status: str,
+        actor_uid: str,
+        note: str,
+    ) -> str:
+        review_ref = self.firebase_service.db.collection("referralReviews").document(
+            review_id
+        )
+        snapshot = review_ref.get(transaction=transaction)
+        if not snapshot.exists:
+            return "not_found"
+        data = snapshot.to_dict() or {}
+        if data.get("status") != expect:
+            return f"not_{expect}:{data.get('status') or 'unknown'}"
+        transaction.set(
+            review_ref,
+            {
+                "status": new_status,
+                "reviewedBy": actor_uid,
+                "reviewNote": note,
+                "reviewedAt": SERVER_TIMESTAMP,
+            },
+            merge=True,
+        )
+        return new_status
 
     def _write_share_receipt(self, transaction, payout: dict) -> None:
         referee_uid = payout["referee_uid"]
@@ -5359,6 +5457,28 @@ def _parse_timestamp(value: object) -> datetime | None:
     if parsed.tzinfo is None:
         return parsed.replace(tzinfo=timezone.utc)
     return parsed
+
+
+@firestore.transactional
+def _commit_settle_copy_review_tx(
+    transaction, service, review_id: str, now: datetime, due_only: bool
+) -> str:
+    return service._settle_copy_review_in_txn(transaction, review_id, now, due_only)
+
+
+@firestore.transactional
+def _commit_set_copy_review_status_tx(
+    transaction,
+    service,
+    review_id: str,
+    expect: str,
+    new_status: str,
+    actor_uid: str,
+    note: str,
+) -> str:
+    return service._set_copy_review_status_in_txn(
+        transaction, review_id, expect, new_status, actor_uid, note
+    )
 
 
 @firestore.transactional

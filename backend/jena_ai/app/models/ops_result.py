@@ -91,3 +91,10 @@ class CreateRankedTournamentResult(BaseModel):
     accepted: bool
     tournament_id: str
     status: str
+
+
+class ReleaseCopyReviewsResult(BaseModel):
+    accepted: bool
+    status: str
+    reason: str
+    released: int

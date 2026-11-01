@@ -24,7 +24,14 @@ _DAY3 = datetime(2026, 10, 3, 3, tzinfo=timezone.utc)
 
 
 def _service(db: _MemoryDb) -> SecuredActionService:
-    return SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+    # The memory db has no real transactions, so run the in-transaction body directly.
+    service._commit_settle_copy_review = (
+        lambda transaction, review_id, now, due_only: service._settle_copy_review_in_txn(
+            transaction, review_id, now, due_only
+        )
+    )
+    return service
 
 
 def _share(db: _MemoryDb, uid: str) -> int:

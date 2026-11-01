@@ -276,3 +276,55 @@ export async function fetchUserDetail(idToken: string, uid: string): Promise<Adm
   if (!response.ok) throw new Error('jena');
   return response.json() as Promise<AdminUserDetail>;
 }
+
+export type ReferralReviewStatus = 'pending' | 'rejected' | 'released';
+
+export type ReferralReview = {
+  id: string;
+  status: string;
+  reason: string | null;
+  detail: string | null;
+  amount: number;
+  payeeUid: string | null;
+  refereeUid: string | null;
+  payoutType: string | null;
+  releaseAt: string | null;
+  createdAt: string | null;
+  reviewedBy: string | null;
+  reviewNote: string | null;
+};
+
+/** 복사 의심으로 보류된 추천 SHARE. 가까운 지급일부터. */
+export async function fetchReferralReviews(
+  idToken: string,
+  status: ReferralReviewStatus
+): Promise<ReferralReview[]> {
+  const body = await jenaGet<{ reviews: ReferralReview[] }>(
+    `/admin/referral-reviews?status=${encodeURIComponent(status)}`,
+    idToken
+  );
+  return body.reviews;
+}
+
+export type ReferralReviewDecision = 'reject' | 'release' | 'reopen';
+
+export async function decideReferralReview(
+  idToken: string,
+  reviewId: string,
+  decision: ReferralReviewDecision,
+  note: string
+): Promise<{ id: string; status: string }> {
+  const response = await fetch(
+    `${jenaBaseUrl()}/admin/referral-reviews/${encodeURIComponent(reviewId)}/decision`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision, note }),
+    }
+  );
+  if (response.status === 409) throw new Error('conflict');
+  if (!response.ok) {
+    throw new Error(response.status === 401 || response.status === 403 ? 'forbidden' : 'jena');
+  }
+  return response.json() as Promise<{ id: string; status: string }>;
+}

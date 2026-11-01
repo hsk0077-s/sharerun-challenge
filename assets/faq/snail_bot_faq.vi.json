@@ -909,7 +909,7 @@
     "aliases": [
       "Tính năng Trung tâm bảo mật"
     ],
-    "answer": "Có các tính năng như danh sách thiết bị đăng nhập, đăng xuất từ xa, thông báo đăng nhập mới, Lịch sử giao dịch và cài đặt phạm vi hiển thị."
+    "answer": "Có các tính năng như danh sách thiết bị đăng nhập, đăng xuất từ xa, thông báo đăng nhập mới, Lịch sử giao dịch và cài đặt đồng ý huấn luyện AI."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Phạm vi hiển thị bản ghi"
     ],
-    "answer": "Phạm vi hiển thị mặc định của bản ghi là “Chỉ mình tôi”. Chỉ đổi phạm vi khi bạn muốn."
+    "answer": "Người dùng khác không thấy lộ trình chạy của bạn. Không có cài đặt nào để thay đổi ai được xem."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Ẩn vị trí nhà"
     ],
-    "answer": "Có, có tính năng ẩn lộ trình gần nhà. Hãy thiết lập trong Trung tâm bảo mật & quyền riêng tư."
+    "answer": "Có, khi lưu một lần chạy, đoạn 300 m gần điểm xuất phát và điểm đến sẽ được loại bỏ. Việc này tự động để vị trí nhà bạn không bị lộ, bạn không cần cài đặt gì."
   },
   {
     "id": "SE-11",

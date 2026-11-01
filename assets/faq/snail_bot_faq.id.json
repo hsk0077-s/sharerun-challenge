@@ -909,7 +909,7 @@
     "aliases": [
       "Fitur Pusat keamanan"
     ],
-    "answer": "Ada fitur seperti daftar perangkat yang login, logout jarak jauh, pemberitahuan login baru, Riwayat transaksi saya, dan pengaturan privasi."
+    "answer": "Ada fitur seperti daftar perangkat yang login, logout jarak jauh, pemberitahuan login baru, Riwayat transaksi saya, dan pengaturan persetujuan pelatihan AI."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Cakupan visibilitas catatan"
     ],
-    "answer": "Visibilitas catatanmu secara bawaan adalah “Hanya saya”. Ubah hanya jika kamu mau."
+    "answer": "Pengguna lain tidak dapat melihat rute larimu. Tidak ada pengaturan untuk mengubah siapa yang bisa melihatnya."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Sembunyikan lokasi rumah"
     ],
-    "answer": "Bisa, ada fitur yang menyembunyikan rute dekat rumah. Atur di Pusat keamanan & privasi."
+    "answer": "Ya, saat lari disimpan, 300 m terdekat dari titik awal dan akhir dihilangkan. Ini dilakukan otomatis agar lokasi rumahmu tidak terungkap, dan kamu tidak perlu mengatur apa pun."
   },
   {
     "id": "SE-11",

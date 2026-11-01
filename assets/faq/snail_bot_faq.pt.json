@@ -909,7 +909,7 @@
     "aliases": [
       "Funções da Central de segurança"
     ],
-    "answer": "Tem funções como a lista de dispositivos conectados, logout remoto, alertas de novo login, Minhas transações e configurações de privacidade."
+    "answer": "Tem funções como a lista de dispositivos conectados, logout remoto, alertas de novo login, Minhas transações e a configuração de consentimento para treinar IA."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Visibilidade dos registros"
     ],
-    "answer": "A visibilidade padrão dos seus registros é “Somente eu”. Altere a visibilidade apenas quando quiser."
+    "answer": "Outros usuários não podem ver o seu trajeto de corrida. Não há nenhuma configuração para mudar quem pode vê-lo."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Ocultar a localização da minha casa"
     ],
-    "answer": "Sim, há um recurso que oculta o trajeto perto da sua casa. Configure na Central de segurança e privacidade."
+    "answer": "Sim, ao salvar uma corrida, os 300 m mais próximos da largada e da chegada ficam de fora. Isso é feito automaticamente para não revelar a localização da sua casa, e você não precisa configurar nada."
   },
   {
     "id": "SE-11",

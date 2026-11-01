@@ -810,6 +810,99 @@
     "answer": "Ngoài nhân vật cơ bản Ốc Sên, còn có nhân vật động vật theo năm tier tốc độ: Rùa, Beagle, Sói, Ngựa vằn và Báo săn. Khi nhận hạng từ các lần chạy đã xác minh, bạn sẽ gặp nhân vật động vật hợp với tốc độ của mình."
   },
   {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Có trang trí nhân vật được không?",
+    "aliases": [
+      "Trang phục"
+    ],
+    "answer": "Được, bạn có thể trang trí bằng bộ phận và skin. Chỉ bán theo giá DIA cố định, không có rút thăm ngẫu nhiên."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Ai cũng mặc được skin tier không?",
+    "aliases": [
+      "Điều kiện skin tier"
+    ],
+    "answer": "Bạn chỉ mặc được skin tier sau khi đạt đến tier đó."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Mua trang phục có làm bản ghi hay phần thưởng tốt hơn không?",
+    "aliases": [
+      "Chỉ số skin"
+    ],
+    "answer": "Không, trang phục chỉ thay đổi diện mạo và không ảnh hưởng đến bản ghi hay phần thưởng."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Nhân vật động vật đã mua trước đây thì sao?",
+    "aliases": [
+      "Nhân vật đã mua thì sao?"
+    ],
+    "answer": "Nhân vật động vật không còn bán riêng ở cửa hàng; chúng tự động mở từ Rùa đến Báo săn theo hạng chạy của bạn. Các bộ phận và skin bạn có trước đó vẫn giữ nguyên trong kho."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "VALUE là gì?",
+    "aliases": [
+      "VALUE nghĩa là gì?"
+    ],
+    "answer": "VALUE là điểm danh dự chỉ tích lũy bằng nỗ lực. Dùng cho bỏ phiếu, Đại sảnh danh vọng, trang phục dành riêng cho nỗ lực, điều kiện tham gia giải và quyền lợi crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Tích lũy VALUE thế nào?",
+    "aliases": [
+      "Cách có VALUE"
+    ],
+    "answer": "Mỗi 1 km đã xác minh bạn nhận 10 VALUE. Tích lũy tối đa 5 km, tức 50 VALUE mỗi ngày."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Có đổi VALUE sang DIA hay tiền mặt được không?",
+    "aliases": [
+      "Quy đổi VALUE"
+    ],
+    "answer": "Không, VALUE không thể đổi hay chuyển nhượng lấy bất cứ thứ gì. Đây là điểm danh dự thể hiện nỗ lực của bạn."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Mình có bao nhiêu VALUE?",
+    "aliases": [
+      "Số dư VALUE"
+    ],
+    "answer": "Hiện bạn có {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Đại sảnh danh vọng là gì?",
+    "aliases": [
+      "Cho mình biết tiêu chí Đại sảnh danh vọng"
+    ],
+    "answer": "Đại sảnh danh vọng là bảng xếp hạng danh dự vinh danh những người chạy đều đặn tích lũy VALUE và đóng góp quyên góp qua các lần chạy đã xác minh. Bạn xem ở màn hình Thử thách và Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Hình ảnh Ốc Sên có thay đổi không?",
+    "aliases": [
+      "Thiết kế Ốc Sên có đổi không?"
+    ],
+    "answer": "Bot Ốc Sên thay đổi giữa bốn biểu cảm theo cuộc trò chuyện: mặt cười, mặt lắng nghe, mặt vui mừng và mặt thất vọng."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

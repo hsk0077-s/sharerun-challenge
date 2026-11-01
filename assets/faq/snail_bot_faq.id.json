@@ -810,6 +810,99 @@
     "answer": "Selain Siput sebagai karakter dasar, ada karakter hewan di lima tier kecepatan: Kura-kura, Beagle, Serigala, Zebra, dan Cheetah. Saat kamu mendapat peringkat dari lari terverifikasi, kamu bertemu karakter hewan yang cocok dengan kecepatanmu."
   },
   {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Bisakah mendekorasi karakter?",
+    "aliases": [
+      "Kostum"
+    ],
+    "answer": "Bisa, kamu bisa mendekorasi dengan bagian dan skin. Hanya dijual dengan harga DIA tetap, tanpa undian acak."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Apakah siapa pun bisa memakai skin tier?",
+    "aliases": [
+      "Syarat skin tier"
+    ],
+    "answer": "Kamu hanya bisa memakai skin tier setelah mencapai tier itu."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Apakah membeli kostum meningkatkan catatan atau hadiah?",
+    "aliases": [
+      "Statistik skin"
+    ],
+    "answer": "Tidak, kostum hanya mengubah tampilan dan tidak memengaruhi catatan atau hadiah."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana karakter hewan yang pernah dibeli?",
+    "aliases": [
+      "Bagaimana karakter yang sudah dibeli?"
+    ],
+    "answer": "Karakter hewan tidak lagi dijual terpisah di toko; terbuka otomatis dari Kura-kura sampai Cheetah sesuai peringkat larimu. Bagian dekorasi dan skin yang kamu dapatkan sebelumnya tetap ada di inventaris."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "Apa itu VALUE?",
+    "aliases": [
+      "Apa arti VALUE?"
+    ],
+    "answer": "VALUE adalah skor kehormatan yang hanya dikumpulkan lewat usaha. Dipakai untuk voting, Hall of Fame, kostum khusus usaha, syarat event, dan keuntungan crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana mengumpulkan VALUE?",
+    "aliases": [
+      "Cara mendapat VALUE"
+    ],
+    "answer": "Kamu mendapat 10 VALUE untuk setiap 1 km terverifikasi. Terkumpul hingga 5 km, atau 50 VALUE, per hari."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Bisakah menukar VALUE dengan DIA atau uang tunai?",
+    "aliases": [
+      "Konversi VALUE"
+    ],
+    "answer": "Tidak, VALUE tidak dapat ditukar atau dipindahkan untuk apa pun. Ini skor kehormatan yang menunjukkan usahamu."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Berapa VALUE yang kumiliki?",
+    "aliases": [
+      "Saldo VALUE"
+    ],
+    "answer": "Saat ini kamu punya {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Apa itu Hall of Fame?",
+    "aliases": [
+      "Beri tahu kriteria Hall of Fame"
+    ],
+    "answer": "Hall of Fame adalah peringkat kehormatan yang menghargai pelari yang terus mengumpulkan VALUE dan kontribusi donasi lewat lari terverifikasi. Kamu bisa melihatnya di layar Tantangan dan Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Apakah gambar Siput berubah?",
+    "aliases": [
+      "Apakah desain Siput berubah?"
+    ],
+    "answer": "Bot Siput berganti di antara empat ekspresi sesuai percakapan: wajah tersenyum, wajah mendengarkan, wajah gembira, dan wajah kecewa."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

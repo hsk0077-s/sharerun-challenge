@@ -810,6 +810,99 @@
     "answer": "En plus d’Escargot, le personnage de base, il existe des personnages animaux répartis sur cinq niveaux de vitesse : Tortue, Beagle, Loup, Zèbre et Guépard. Quand tu obtiens un rang grâce à des courses vérifiées, tu rencontres le personnage animal qui correspond à ton allure."
   },
   {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Puis-je habiller mon personnage ?",
+    "aliases": [
+      "Habillages"
+    ],
+    "answer": "Oui, tu peux l’habiller avec des pièces et des skins. Ils sont vendus uniquement au prix fixe en DIA, sans tirages aléatoires."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "N’importe qui peut-il porter les skins de tier ?",
+    "aliases": [
+      "Conditions des skins de tier"
+    ],
+    "answer": "Tu ne peux porter un skin de tier qu’après avoir atteint ce tier."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Acheter des habillages améliore-t-il mes records ou récompenses ?",
+    "aliases": [
+      "Stats des skins"
+    ],
+    "answer": "Non, les habillages ne changent que l’apparence et n’ont aucun effet sur tes records ou récompenses."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Que deviennent les personnages animaux achetés auparavant ?",
+    "aliases": [
+      "Que deviennent les personnages achetés ?"
+    ],
+    "answer": "Les personnages animaux ne sont plus vendus séparément dans la boutique ; ils se débloquent automatiquement de Tortue à Guépard selon ton rang de course. Les pièces et skins obtenus auparavant restent dans ton inventaire."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "Qu’est-ce que VALUE ?",
+    "aliases": [
+      "Que veut dire VALUE ?"
+    ],
+    "answer": "VALUE est un score d’honneur qui ne s’accumule que par l’effort. Il sert aux votes, au Temple de la renommée, aux habillages réservés à l’effort, aux conditions d’événements et aux avantages de crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Comment gagner des VALUE ?",
+    "aliases": [
+      "Comment obtenir des VALUE"
+    ],
+    "answer": "Tu reçois 10 VALUE par km vérifié. Cela s’accumule jusqu’à 5 km, soit 50 VALUE, par jour."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Puis-je échanger des VALUE contre des DIA ou de l’argent ?",
+    "aliases": [
+      "Convertir des VALUE"
+    ],
+    "answer": "Non, les VALUE ne peuvent être ni échangés ni transférés contre quoi que ce soit. C’est un score d’honneur qui montre ton effort."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Combien de VALUE ai-je ?",
+    "aliases": [
+      "Solde de VALUE"
+    ],
+    "answer": "Tu as actuellement {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Qu’est-ce que le Temple de la renommée ?",
+    "aliases": [
+      "Dis-moi les critères du Temple de la renommée"
+    ],
+    "answer": "Le Temple de la renommée est un classement d’honneur qui célèbre les coureurs qui accumulent régulièrement des VALUE et des contributions aux dons grâce à des courses vérifiées. Tu peux le voir sur les écrans Défis et Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "L’image d’Escargot change-t-elle ?",
+    "aliases": [
+      "Le design d’Escargot change-t-il ?"
+    ],
+    "answer": "Le bot Escargot change entre quatre expressions selon la conversation : visage souriant, visage à l’écoute, visage joyeux et visage déçu."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

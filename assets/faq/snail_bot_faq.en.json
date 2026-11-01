@@ -810,6 +810,99 @@
     "answer": "Besides the default Snail, there are animal characters across five speed tiers: Turtle, Beagle, Wolf, Zebra and Cheetah. When you get a grade from verified runs, you meet the animal character that fits your pace."
   },
   {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Can I decorate my character?",
+    "aliases": [
+      "Cosmetics"
+    ],
+    "answer": "Yes, you can decorate with parts and skins. They’re sold only at the fixed DIA price, and there are no random draws."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Can anyone wear tier skins?",
+    "aliases": [
+      "Tier skin conditions"
+    ],
+    "answer": "You can wear a tier skin only after reaching that tier."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Does buying cosmetics improve my records or rewards?",
+    "aliases": [
+      "Skin stats"
+    ],
+    "answer": "No, cosmetics only change appearance and have no effect on your records or rewards."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "What happens to the animal characters I bought before?",
+    "aliases": [
+      "What about characters I bought?"
+    ],
+    "answer": "Animal characters are no longer sold separately in the shop; they unlock automatically from Turtle to Cheetah according to your running grade. Cosmetic parts and skins you got earlier stay in your inventory."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "What is VALUE?",
+    "aliases": [
+      "What does VALUE mean?"
+    ],
+    "answer": "VALUE is an honor score built up only through effort. It’s used for voting, the Hall of Fame, effort-only cosmetics, event eligibility and crew benefits."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "How do I collect VALUE?",
+    "aliases": [
+      "How to get VALUE"
+    ],
+    "answer": "You get 10 VALUE for every verified 1 km. It builds up to 5 km, or 50 VALUE, per day."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Can I exchange VALUE for DIA or cash?",
+    "aliases": [
+      "Convert VALUE"
+    ],
+    "answer": "No, VALUE can’t be exchanged or handed over for anything. It’s an honor score that shows your effort."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "How much VALUE do I have?",
+    "aliases": [
+      "VALUE balance"
+    ],
+    "answer": "You currently have {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "What is the Hall of Fame?",
+    "aliases": [
+      "Tell me the Hall of Fame criteria"
+    ],
+    "answer": "The Hall of Fame is an honor ranking that celebrates runners who steadily build up VALUE and donation contributions through verified runs. You can check it on the Challenges and Crew screens."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Does Snail’s picture change?",
+    "aliases": [
+      "Does Snail’s design change?"
+    ],
+    "answer": "The Snail bot changes among four expressions to match the conversation: a smiling face, a listening face, a joyful face and a disappointed face."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

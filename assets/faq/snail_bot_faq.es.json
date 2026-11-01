@@ -810,6 +810,99 @@
     "answer": "Además del caracol básico, hay personajes animales de cinco niveles de velocidad: Tortuga, Beagle, Lobo, Cebra y Guepardo. Cuando obtienes un rango con carreras verificadas, conoces al personaje animal que encaja con tu ritmo."
   },
   {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "¿Puedo decorar a mi personaje?",
+    "aliases": [
+      "Cosméticos"
+    ],
+    "answer": "Sí, puedes decorarlo con piezas y skins. Se venden solo a precio fijo en DIA y no hay sorteos aleatorios."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "¿Cualquiera puede ponerse las skins de nivel?",
+    "aliases": [
+      "Condiciones de las skins de nivel"
+    ],
+    "answer": "Solo puedes ponerte una skin de nivel después de alcanzar ese nivel."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "¿Comprar cosméticos mejora mis registros o recompensas?",
+    "aliases": [
+      "Estadísticas de skins"
+    ],
+    "answer": "No, los cosméticos solo cambian el aspecto y no afectan tus registros ni recompensas."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "¿Qué pasa con los personajes animales que compré antes?",
+    "aliases": [
+      "¿Qué pasa con los personajes comprados?"
+    ],
+    "answer": "Los personajes animales ya no se venden por separado en la tienda; se desbloquean automáticamente de Tortuga a Guepardo según tu rango de carrera. Las piezas y skins que conseguiste antes se mantienen en tu inventario."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "¿Qué es VALUE?",
+    "aliases": [
+      "¿Qué significa VALUE?"
+    ],
+    "answer": "VALUE es una puntuación de honor que solo se acumula con esfuerzo. Se usa para votar, el Salón de la Fama, cosméticos exclusivos por esfuerzo, requisitos de eventos y beneficios del crew."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "¿Cómo acumulo VALUE?",
+    "aliases": [
+      "Cómo conseguir VALUE"
+    ],
+    "answer": "Recibes 10 VALUE por cada 1 km verificado. Se acumula hasta 5 km, o 50 VALUE, por día."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "¿Puedo canjear VALUE por DIA o efectivo?",
+    "aliases": [
+      "Convertir VALUE"
+    ],
+    "answer": "No, VALUE no se puede canjear ni transferir por nada. Es una puntuación de honor que muestra tu esfuerzo."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "¿Cuánto VALUE tengo?",
+    "aliases": [
+      "Saldo de VALUE"
+    ],
+    "answer": "Ahora tienes {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "¿Qué es el Salón de la Fama?",
+    "aliases": [
+      "Dime los criterios del Salón de la Fama"
+    ],
+    "answer": "El Salón de la Fama es un ranking de honor que reconoce a los corredores que acumulan de forma constante VALUE y aportaciones de donación con carreras verificadas. Puedes verlo en las pantallas de Retos y Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "¿Cambia la imagen del caracol?",
+    "aliases": [
+      "¿Cambia el diseño del caracol?"
+    ],
+    "answer": "El bot Caracol cambia entre cuatro expresiones según la conversación: cara sonriente, cara atenta, cara alegre y cara decepcionada."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

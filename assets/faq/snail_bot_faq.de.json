@@ -810,6 +810,99 @@
     "answer": "Neben der Standard-Schnecke gibt es Tier-Charaktere in fünf Tempo-Tiers: Schildkröte, Beagle, Wolf, Zebra und Gepard. Wenn du durch verifizierte Läufe eine Stufe erreichst, lernst du den Tier-Charakter kennen, der zu deinem Tempo passt."
   },
   {
+    "id": "GR-11",
+    "category": "등급·캐릭터",
+    "question": "Kann ich meinen Charakter dekorieren?",
+    "aliases": [
+      "Kosmetik"
+    ],
+    "answer": "Ja, du kannst mit Teilen und Skins dekorieren. Sie werden nur zum festen DIA-Preis verkauft, Zufallsziehungen gibt es nicht."
+  },
+  {
+    "id": "GR-12",
+    "category": "등급·캐릭터",
+    "question": "Kann jeder Tier-Skins tragen?",
+    "aliases": [
+      "Bedingungen für Tier-Skins"
+    ],
+    "answer": "Einen Tier-Skin kannst du erst tragen, wenn du dieses Tier erreicht hast."
+  },
+  {
+    "id": "GR-13",
+    "category": "등급·캐릭터",
+    "question": "Verbessert Kosmetik meine Ergebnisse oder Belohnungen?",
+    "aliases": [
+      "Skin-Werte"
+    ],
+    "answer": "Nein, Kosmetik verändert nur das Aussehen und hat keinen Einfluss auf deine Ergebnisse oder Belohnungen."
+  },
+  {
+    "id": "GR-14",
+    "category": "등급·캐릭터",
+    "question": "Was passiert mit den zuvor gekauften Tier-Charakteren?",
+    "aliases": [
+      "Was passiert mit gekauften Charakteren?"
+    ],
+    "answer": "Tier-Charaktere werden nicht mehr einzeln im Shop verkauft; sie werden je nach Laufstufe automatisch von Schildkröte bis Gepard freigeschaltet. Teile und Skins, die du früher erhalten hast, bleiben in deinem Inventar."
+  },
+  {
+    "id": "GR-15",
+    "category": "등급·캐릭터",
+    "question": "Was ist VALUE?",
+    "aliases": [
+      "Was bedeutet VALUE?"
+    ],
+    "answer": "VALUE ist ein Ehrenwert, der nur durch Einsatz entsteht. Er wird für Abstimmungen, die Ruhmeshalle, Kosmetik nur für Einsatz, Event-Voraussetzungen und Crew-Vorteile verwendet."
+  },
+  {
+    "id": "GR-16",
+    "category": "등급·캐릭터",
+    "question": "Wie sammle ich VALUE?",
+    "aliases": [
+      "So bekommst du VALUE"
+    ],
+    "answer": "Für jeden verifizierten Kilometer bekommst du 10 VALUE. Pro Tag sammelst du bis zu 5 km, also 50 VALUE."
+  },
+  {
+    "id": "GR-17",
+    "category": "등급·캐릭터",
+    "question": "Kann ich VALUE in DIA oder Bargeld tauschen?",
+    "aliases": [
+      "VALUE umtauschen"
+    ],
+    "answer": "Nein, VALUE kann gegen nichts getauscht oder übertragen werden. Es ist ein Ehrenwert, der deinen Einsatz zeigt."
+  },
+  {
+    "id": "GR-18",
+    "category": "등급·캐릭터",
+    "question": "Wie viel VALUE habe ich?",
+    "aliases": [
+      "VALUE-Guthaben"
+    ],
+    "answer": "Du hast aktuell {VALUE잔액} VALUE.",
+    "needs": [
+      "VALUE잔액"
+    ]
+  },
+  {
+    "id": "GR-19",
+    "category": "등급·캐릭터",
+    "question": "Was ist die Ruhmeshalle?",
+    "aliases": [
+      "Nenne mir die Kriterien der Ruhmeshalle"
+    ],
+    "answer": "Die Ruhmeshalle ist eine Ehren-Rangliste, die Läufer würdigt, die durch verifizierte Läufe stetig VALUE und Spendenbeiträge ansammeln. Du findest sie auf den Bildschirmen Challenges und Crew."
+  },
+  {
+    "id": "GR-20",
+    "category": "등급·캐릭터",
+    "question": "Ändert sich das Bild der Schnecke?",
+    "aliases": [
+      "Ändert sich das Design der Schnecke?"
+    ],
+    "answer": "Der Schnecken-Bot wechselt je nach Gespräch zwischen vier Ausdrücken: lächelnd, zuhörend, erfreut und enttäuscht."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

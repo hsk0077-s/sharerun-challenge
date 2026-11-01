@@ -34,7 +34,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
         elevation: 0,
         foregroundColor: AppColors.textBlack,
         title: Text(
-          '보안·프라이버시 센터',
+          RemainingSurface.trNow('security_center.title', '보안·프라이버시 센터'),
           style: AppTextStyles.header1.copyWith(fontSize: 20),
         ),
       ),
@@ -78,7 +78,7 @@ class SecurityPrivacyCenterScreen extends StatelessWidget {
                 _CenterTile(
                   tileKey: historyTileKey,
                   icon: Icons.receipt_long_outlined,
-                  title: '내 거래 내역',
+                  title: RemainingSurface.trNow('security_center.my_transactions', '내 거래 내역'),
                   subtitle: RemainingSurface.tr(
                     context,
                     'security_privacy_center.body.2',

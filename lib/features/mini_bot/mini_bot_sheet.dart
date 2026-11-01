@@ -523,7 +523,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                   ),
                   IconButton(
                     key: const Key('mini-bot-close'),
-                    tooltip: '닫기',
+                    tooltip: RemainingSurface.trNow('common.close', '닫기'),
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.close_rounded),
                   ),

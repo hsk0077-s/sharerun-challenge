@@ -131,7 +131,7 @@ class _LoginConnectionsScreenState
           TextButton(
             key: LoginConnectionsScreen.unlinkConfirmKey,
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('해제'),
+            child: Text(RemainingSurface.trNow('common.disconnect', '해제')),
           ),
         ],
       ),
@@ -209,7 +209,7 @@ class _LoginConnectionsScreenState
         elevation: 0,
         foregroundColor: AppColors.textBlack,
         title: Text(
-          '로그인 연결',
+          RemainingSurface.trNow('login_connections.title2', '로그인 연결'),
           style: AppTextStyles.header1.copyWith(fontSize: 20),
         ),
       ),
@@ -267,7 +267,7 @@ class _LoginConnectionsScreenState
                     ),
                     subtitle: Text(
                       googleLinked
-                          ? '연결됨'
+                          ? RemainingSurface.trNow('common.connected', '연결됨')
                           : RemainingSurface.tr(
                               context,
                               'login_connections.body.7',
@@ -279,7 +279,7 @@ class _LoginConnectionsScreenState
                         ? TextButton(
                             key: LoginConnectionsScreen.googleActionKey,
                             onPressed: _busy || !_canUnlink ? null : _unlinkGoogle,
-                            child: const Text('해제'),
+                            child: Text(RemainingSurface.trNow('common.disconnect', '해제')),
                           )
                         : null,
                   ),
@@ -296,7 +296,7 @@ class _LoginConnectionsScreenState
                     ),
                     subtitle: Text(
                       kakaoLinked
-                          ? '연결됨'
+                          ? RemainingSurface.trNow('common.connected', '연결됨')
                           : RemainingSurface.tr(
                               context,
                               'login_connections.body.7',
@@ -311,7 +311,7 @@ class _LoginConnectionsScreenState
                           : (kakaoLinked ? _unlinkKakao : _linkKakao),
                       child: Text(
                         kakaoLinked
-                            ? '해제'
+                            ? RemainingSurface.trNow('common.disconnect', '해제')
                             : RemainingSurface.tr(
                                 context,
                                 'login_connections.button.3',
@@ -333,7 +333,7 @@ class _LoginConnectionsScreenState
                     ),
                     subtitle: Text(
                       naverLinked
-                          ? '연결됨'
+                          ? RemainingSurface.trNow('common.connected', '연결됨')
                           : RemainingSurface.tr(
                               context,
                               'login_connections.body.7',
@@ -348,7 +348,7 @@ class _LoginConnectionsScreenState
                           : (naverLinked ? _unlinkNaver : _linkNaver),
                       child: Text(
                         naverLinked
-                            ? '해제'
+                            ? RemainingSurface.trNow('common.disconnect', '해제')
                             : RemainingSurface.tr(
                                 context,
                                 'login_connections.button.3',
@@ -371,7 +371,7 @@ class _LoginConnectionsScreenState
                       ),
                       subtitle: Text(
                         appleLinked
-                            ? '연결됨'
+                            ? RemainingSurface.trNow('common.connected', '연결됨')
                             : RemainingSurface.tr(
                                 context,
                                 'login_connections.body.7',
@@ -386,7 +386,7 @@ class _LoginConnectionsScreenState
                             : (appleLinked ? _unlinkApple : _linkApple),
                         child: Text(
                           appleLinked
-                              ? '해제'
+                              ? RemainingSurface.trNow('common.disconnect', '해제')
                               : RemainingSurface.tr(
                                   context,
                                   'login_connections.button.3',

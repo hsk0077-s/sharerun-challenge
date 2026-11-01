@@ -158,7 +158,7 @@ class _IntroScreenState extends State<IntroScreen> {
                     else if (widget.replay)
                       _PrimaryButton(
                         key: IntroScreen.closeKey,
-                        label: '닫기',
+                        label: RemainingSurface.trNow('common.close', '닫기'),
                         color: AppColors.tealAccent,
                         textColor: AppColors.nightOnLime,
                         onPressed: _finish,

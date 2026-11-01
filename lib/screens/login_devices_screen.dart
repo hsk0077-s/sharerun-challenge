@@ -46,7 +46,7 @@ class _LoginDevicesScreenState extends ConsumerState<LoginDevicesScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('로그아웃'),
+            child: Text(RemainingSurface.trNow('common.logout', '로그아웃')),
           ),
         ],
       ),

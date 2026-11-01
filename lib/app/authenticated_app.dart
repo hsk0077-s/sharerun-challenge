@@ -105,12 +105,12 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text(interruptedRunTitle),
-          content: const Text(interruptedRunBody),
+          title: Text(interruptedRunTitle),
+          content: Text(interruptedRunBody),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('확인'),
+              child: Text(RemainingSurface.trNow('common.confirm', '확인')),
             ),
           ],
         );

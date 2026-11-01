@@ -24,7 +24,7 @@ String streakItemMessage(ApiException error, {required String fallback}) {
         'shop.streak_item_message.body.5',
         '막을 빠진 날이 없습니다.',
       ),
-    'Insufficient Diamond balance.' => 'DIA가 부족합니다. 상점에서 구매해 주세요.',
+    'Insufficient Diamond balance.' => RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'),
     'Insufficient Share balance.' => 'SHARE가 부족합니다.',
     'Boost run already used today.' => '부스트 런은 하루에 1번까지 사용할 수 있습니다.',
     'An incubator is already active.' => '만보기 부화기는 한 번에 하나만 동작합니다.',

@@ -1,19 +1,24 @@
+import '../../l10n/remaining_surface.dart';
+
 /// Copy and decisions for background run recording. No plugins.
 const runRecordingNotificationTitle = '쉐어런 · 달리기 기록 중';
 
-const interruptedRunTitle = '이전 달리기가 중단되었습니다';
+String get interruptedRunTitle => RemainingSurface.trNow(
+    'run_recording.interrupted_title', '이전 달리기가 중단되었습니다');
 
-const interruptedRunBody =
+String get interruptedRunBody => RemainingSurface.trNow(
+    'run_recording.interrupted_body',
     '앱이 중간에 종료되어 직전 달리기는 저장되지 않았습니다. '
-    '보상은 지급되지 않고, 기록도 남지 않습니다.';
+        '보상은 지급되지 않고, 기록도 남지 않습니다.');
 
 const recordingMayStopWarning = '화면이 꺼지면 달리기 기록이 중단될 수 있습니다.';
 
 const runRecordingChecklistMenuLabel = '달리기 기록 설정 점검';
 
-const runRecordingBatteryGuidance =
+String get runRecordingBatteryGuidance => RemainingSurface.trNow(
+    'run_recording.battery_hint',
     "시스템 배터리 최적화 화면에서 쉐어런을 찾아 주세요. "
-    "삼성 갤럭시는 '제한 없음'으로 바꿔 주세요.";
+        "삼성 갤럭시는 '제한 없음'으로 바꿔 주세요.");
 
 const runChecklistCompletedKey = 'src_run_checklist_done';
 

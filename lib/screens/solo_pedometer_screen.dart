@@ -2291,7 +2291,7 @@ class _WalkingHeroCanvas extends StatelessWidget {
                           Icons.arrow_back_ios_new,
                           color: WalkingLook.onHero,
                         ),
-                        tooltip: '뒤로',
+                        tooltip: RemainingSurface.trNow('common.back', '뒤로'),
                         onPressed: onBack,
                       ),
                       Expanded(

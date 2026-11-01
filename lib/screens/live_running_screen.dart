@@ -616,7 +616,7 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
                           onTap: _onFinish,
                         )
                       : _ActionButton(
-                          label: '시작',
+                          label: RemainingSurface.trNow('common.start', '시작'),
                           onTap: _startRun,
                         ),
             ),

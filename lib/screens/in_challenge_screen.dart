@@ -255,22 +255,22 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
                     ),
                   ),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: AppShapes.termsHorizontalPadding,
                   ),
                   child: ServerItemUseButton(
                     itemId: ServerShopInventory.cprId,
-                    label: '기록 심폐소생권',
+                    label: RemainingSurface.trNow('items.record_cpr', '기록 심폐소생권'),
                   ),
                 ),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: AppShapes.termsHorizontalPadding,
                   ),
                   child: ServerItemUseButton(
                     itemId: ServerShopInventory.safeGuardId,
-                    label: '세이프 가드',
+                    label: RemainingSurface.trNow('items.safe_guard', '세이프 가드'),
                   ),
                 ),
                 const Padding(

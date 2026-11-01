@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../screens/item_inventory_screen.dart';
 import '../../shop/providers/server_shop_inventory_provider.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Wallet inventory list. Counts come from the account shopInventory docs.
 class WalletInventorySection extends ConsumerWidget {
@@ -93,7 +94,7 @@ class WalletInventorySection extends ConsumerWidget {
           icon: Icons.emoji_events_outlined,
           color: AppColors.progressYellow,
           title: shop.battlePass.ownsPlus
-              ? '배틀런 패스+'
+              ? RemainingSurface.trNow('items.battle_pass_plus', '배틀런 패스+')
               : serverShopItemTitle(ServerShopInventory.battlePassId) ?? '',
           count: shop.battlePassCount,
           note: ShopCatalogCopy.of(Localizations.localeOf(context)).pass('inventoryNote'),

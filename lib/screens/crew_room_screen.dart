@@ -90,7 +90,7 @@ class _Room extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    (crew.needsApproval ? '크루장 승인 가입' : '자유 가입') +
+                    (crew.needsApproval ? RemainingSurface.trNow('crew.join_approval', '크루장 승인 가입') : RemainingSurface.trNow('crew.join_free', '자유 가입')) +
                         RemainingSurface.tr(
                           context,
                           'crew_room.body.2',

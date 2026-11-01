@@ -254,7 +254,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
                 body: runRecordingBatteryGuidance,
                 ready: _batteryReady,
                 readyLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.9', '설정됨'),
-                actionLabel: '설정 열기',
+                actionLabel: RemainingSurface.trNow('common.open_settings', '설정 열기'),
                 loading: _loading || _busy,
                 onAction: _batteryReady ? null : _onBattery,
               ),
@@ -267,7 +267,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
                 foregroundColor: AppColors.nightOnLime,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: Text(widget.beforeRun ? '확인하고 달리기' : '확인'),
+              child: Text(widget.beforeRun ? '확인하고 달리기' : RemainingSurface.trNow('common.confirm', '확인')),
             ),
             if (widget.beforeRun) ...[
               const SizedBox(height: 8),

@@ -102,7 +102,7 @@ Future<bool> confirmVerificationGuidance(
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('닫기'),
+                child: Text(RemainingSurface.trNow('common.close', '닫기')),
               ),
               FilledButton(
                 onPressed: () => Navigator.pop(dialogContext, true),

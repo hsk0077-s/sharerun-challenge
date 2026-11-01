@@ -742,7 +742,7 @@ class MySponsorshipSheet extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
                   data.isLoading
-                      ? '불러오는 중이에요…'
+                      ? RemainingSurface.trNow('common.loading_dots', '불러오는 중이에요…')
                       : RemainingSurface.tr(
                           context,
                           'personal_sponsor.body.15',

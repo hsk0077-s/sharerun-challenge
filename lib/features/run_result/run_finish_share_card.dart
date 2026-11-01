@@ -77,16 +77,24 @@ String runFinishDateLabel(DateTime date) {
 /// Company donation the server recorded. Null when nothing was counted.
 String? runFinishDonationLine(int? won) {
   if (won == null || won <= 0) return null;
-  return '이번 달리기로 운영자가 ${_grouped(won)}원을 기부할 예정이에요';
+  return RemainingSurface.trNow(
+    'run_finish.donation_line',
+    '이번 달리기로 운영자가 \${won}원을 기부할 예정이에요',
+    {'won': _grouped(won)},
+  );
 }
 
 /// Shown when this month's company donation limit is used up.
-const runFinishDonationCapLine =
-    '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
+String get runFinishDonationCapLine => RemainingSurface.trNow(
+      'run_finish.cap_reached',
+      '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.',
+    );
 
 /// Today's 10km company-donation room is already full.
-const runFinishDailyDonationCapLine =
-    '오늘은 기부 인정 10km를 모두 채웠어요. 넘는 거리는 기록으로 남아요.';
+String get runFinishDailyDonationCapLine => RemainingSurface.trNow(
+      'run_finish.daily_cap',
+      '오늘은 기부 인정 10km를 모두 채웠어요. 넘는 거리는 기록으로 남아요.',
+    );
 
 /// Record name. This is not a tax receipt.
 const runFinishDonationRecordLabel = '기부 참여 기록';
@@ -96,7 +104,8 @@ String runFinishDonationSkippedLine(String reason) {
   final detail = reason.trim();
   if (detail == 'cap_reached') return runFinishDonationCapLine;
   if (detail == 'daily_donation_cap') return runFinishDailyDonationCapLine;
-  const lead = '이번 달리기는 기부에 포함되지 않았어요.';
+  final lead = RemainingSurface.trNow(
+      'run_finish.not_included', '이번 달리기는 기부에 포함되지 않았어요.');
   if (detail.isEmpty) return lead;
   return '$lead $detail';
 }

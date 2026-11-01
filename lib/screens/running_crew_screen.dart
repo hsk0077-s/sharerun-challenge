@@ -136,7 +136,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         if (paidWithDia) {
           if (wallet.diamondBalance < _createCrewDiaCost) {
             if (mounted) setState(() => _isSubmitting = false);
-            _toast('DIA가 부족합니다. 상점에서 구매해 주세요.');
+            _toast(RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'));
             return;
           }
           ref.read(walletProvider.notifier).debitDia(_createCrewDiaCost);

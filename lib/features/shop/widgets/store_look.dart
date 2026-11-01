@@ -378,7 +378,7 @@ class StorePackCard extends StatelessWidget {
                 height: 16,
                 child: hot
                     ? Text(
-                        '인기',
+                        RemainingSurface.trNow('common.popular', '인기'),
                         style:
                             storeText(11, c.primary, w: FontWeight.w900, ls: 1),
                       )

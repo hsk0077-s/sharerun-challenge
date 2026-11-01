@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 결제창을 열기 전 본인 확인 결과.
 enum PaymentAuthResult {
@@ -17,13 +18,13 @@ String paymentAuthMessage(PaymentAuthResult result) {
     case PaymentAuthResult.approved:
       return '';
     case PaymentAuthResult.canceled:
-      return '본인 확인이 취소됐어요. 결제는 진행되지 않았어요.';
+      return RemainingSurface.trNow('payment_auth.canceled', '본인 확인이 취소됐어요. 결제는 진행되지 않았어요.');
     case PaymentAuthResult.lockedOut:
-      return '확인을 여러 번 틀려 잠시 막혔어요. 잠시 뒤 다시 하거나 화면 잠금(PIN, 패턴)으로 확인해 주세요. 결제는 진행되지 않았어요.';
+      return RemainingSurface.trNow('payment_auth.locked_out', '확인을 여러 번 틀려 잠시 막혔어요. 잠시 뒤 다시 하거나 화면 잠금(PIN, 패턴)으로 확인해 주세요. 결제는 진행되지 않았어요.');
     case PaymentAuthResult.noScreenLock:
-      return '결제 전 본인 확인을 하려면 폰에 화면 잠금(지문, PIN, 패턴)이 필요해요. 기기 설정에서 화면 잠금을 켠 뒤 다시 시도해 주세요.';
+      return RemainingSurface.trNow('payment_auth.no_screen_lock', '결제 전 본인 확인을 하려면 폰에 화면 잠금(지문, PIN, 패턴)이 필요해요. 기기 설정에서 화면 잠금을 켠 뒤 다시 시도해 주세요.');
     case PaymentAuthResult.unavailable:
-      return '본인 확인을 할 수 없어요. 잠시 뒤 다시 시도해 주세요. 결제는 진행되지 않았어요.';
+      return RemainingSurface.trNow('payment_auth.unavailable', '본인 확인을 할 수 없어요. 잠시 뒤 다시 시도해 주세요. 결제는 진행되지 않았어요.');
   }
 }
 

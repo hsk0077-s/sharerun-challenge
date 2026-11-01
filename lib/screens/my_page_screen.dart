@@ -195,8 +195,8 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
                       foregroundColor: sheetTokens.colors.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text(
-                      '확인',
+                    child: Text(
+                      RemainingSurface.trNow('common.confirm', '확인'),
                       style: TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
@@ -243,7 +243,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       padding: EdgeInsets.all(tokens.spacing.page),
       children: [
         Text(
-          '마이페이지',
+          RemainingSurface.trNow('common.my_page', '마이페이지'),
           style: textTheme.headlineSmall?.copyWith(color: tokens.colors.ink),
         ),
         SizedBox(height: tokens.spacing.md + 2),
@@ -375,7 +375,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
           OutlinedButton.icon(
             onPressed: () => _signOut(),
             icon: const Icon(Icons.logout_rounded),
-            label: const Text('로그아웃'),
+            label: Text(RemainingSurface.trNow('common.logout', '로그아웃')),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
@@ -385,7 +385,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
             ),
             onPressed: () => _deleteAccount(),
             icon: const Icon(Icons.delete_forever_rounded),
-            label: const Text('계정 삭제'),
+            label: Text(RemainingSurface.trNow('common.delete_account', '계정 삭제')),
           ),
         ],
       ],
@@ -500,7 +500,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('계정 삭제'),
+          title: Text(RemainingSurface.trNow('common.delete_account', '계정 삭제')),
           content: Text(
             RemainingSurface.tr(
               context,
@@ -547,7 +547,7 @@ class _MyPageScreenState extends ConsumerState<MyPageScreen> {
       if (!mounted) {
         return;
       }
-      _showSnack('계정이 삭제되었습니다.');
+      _showSnack(RemainingSurface.trNow('common.account_deleted', '계정이 삭제되었습니다.'));
       navigateToLoginScreen();
     } catch (error) {
       _showSnack(FirebaseAuthMessages.from(error));

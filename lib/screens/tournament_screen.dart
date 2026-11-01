@@ -374,7 +374,7 @@ class _TournamentRoomCard extends StatelessWidget {
             : canJoin && (room.isFull || !room.isRecruiting)
                 ? '추가 참가권으로 참가'
                 : room.isFull
-                    ? '정원이 가득 찼어요'
+                    ? RemainingSurface.trNow('tournament.full', '정원이 가득 찼어요')
                     : !room.isRecruiting
                         ? RemainingSurface.tr(
                             context,

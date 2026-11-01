@@ -148,7 +148,7 @@ class _PaymentStatusBar extends StatelessWidget {
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: onClose,
-                child: const Text('닫기'),
+                child: Text(RemainingSurface.trNow('common.close', '닫기')),
               ),
             ],
           ),

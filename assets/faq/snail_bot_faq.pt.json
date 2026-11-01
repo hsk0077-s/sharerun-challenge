@@ -1317,6 +1317,96 @@
     "answer": "Registros, sequências e emblemas são sempre salvos, independentemente da verificação. Confira se você fez login com a mesma conta."
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "O que é Coach+?",
+    "aliases": [
+      "Explique o Coach+"
+    ],
+    "answer": "Coach+ é um serviço de assinatura que oferece treinamento por voz aprofundado, ajustado à sua frequência cardíaca e ritmo em tempo real enquanto você corre. Está em preparação para venda, então por enquanto você pode usar o treinamento gratuito."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Quanto custa o Coach+?",
+    "aliases": [
+      "Preço do Coach+"
+    ],
+    "answer": "O Coach+ está sendo preparado a 6.900 KRW por mês e 59.000 KRW por ano, com 7 dias de teste grátis. Os pagamentos ainda não estão abertos, então você não será cobrado."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Há teste grátis do Coach+?",
+    "aliases": [
+      "Versão de teste"
+    ],
+    "answer": "Sim, há um teste grátis de 7 dias."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Como cancelo o Coach+?",
+    "aliases": [
+      "Cancelar assinatura"
+    ],
+    "answer": "Você pode cancelar facilmente dentro do app. Vou abrir a tela de gerenciamento de assinatura."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Posso comprar o Coach+ agora?",
+    "aliases": [
+      "Quando sai o Coach+?"
+    ],
+    "answer": "No momento não vendemos o Coach+. Avisaremos primeiro quando estiver pronto."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Qual a diferença para o treinamento gratuito?",
+    "aliases": [
+      "Diferenças do Coach+"
+    ],
+    "answer": "O treinamento gratuito dá orientações básicas no início, no fim e por distância, e o Coach+ acrescenta treinamento aprofundado ajustado às suas zonas de frequência cardíaca e mudanças de ritmo em tempo real."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Também orienta em subidas ou pelo ranking do evento?",
+    "aliases": [
+      "Treinamento em subidas"
+    ],
+    "answer": "O treinamento em subidas e o de ranking de eventos ainda estão em preparação. Avisaremos primeiro quando estiverem prontos."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Como funciona a voz do caracol?",
+    "aliases": [
+      "Voz de treinamento"
+    ],
+    "answer": "Reproduzimos incentivos e números com uma voz do Caracol pré-gravada. Quando não há voz preparada, usamos a voz padrão do seu celular."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Quero desligar a voz de treinamento",
+    "aliases": [
+      "Silenciar"
+    ],
+    "answer": "Toque uma vez enquanto corre e ele é silenciado na hora."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "O Coach+ é cobrado automaticamente?",
+    "aliases": [
+      "A assinatura renova automaticamente?"
+    ],
+    "answer": "O Coach+ ainda não está à venda, então nada é cobrado automaticamente. Se você assinar após o lançamento oficial, ele renova automaticamente no período escolhido com a forma de pagamento da loja, e você pode cancelar a qualquer momento no gerenciamento de assinaturas da loja."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

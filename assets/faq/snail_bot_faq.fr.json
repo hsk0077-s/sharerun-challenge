@@ -1317,6 +1317,96 @@
     "answer": "Les enregistrements, séries et badges sont toujours sauvegardés, quelle que soit la vérification. Vérifie que tu t’es connecté avec le même compte."
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Qu’est-ce que Coach+ ?",
+    "aliases": [
+      "Explique-moi Coach+"
+    ],
+    "answer": "Coach+ est un service d’abonnement qui te donne un coaching vocal approfondi, adapté à ta fréquence cardiaque et à ton allure en temps réel pendant que tu cours. Il est en préparation pour la vente ; pour l’instant, tu peux utiliser le coaching gratuit."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Combien coûte Coach+ ?",
+    "aliases": [
+      "Tarifs de Coach+"
+    ],
+    "answer": "Coach+ est en préparation à 6 900 KRW par mois et 59 000 KRW par an, avec 7 jours d’essai gratuit. Les paiements ne sont pas encore ouverts, tu ne seras donc pas facturé."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Y a-t-il un essai gratuit de Coach+ ?",
+    "aliases": [
+      "Version d’essai"
+    ],
+    "answer": "Oui, il y a un essai gratuit de 7 jours."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Comment résilier Coach+ ?",
+    "aliases": [
+      "Résilier l’abonnement"
+    ],
+    "answer": "Tu peux résilier facilement dans l’appli. J’ouvre l’écran de gestion de l’abonnement."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Puis-je acheter Coach+ maintenant ?",
+    "aliases": [
+      "Quand Coach+ sort-il ?"
+    ],
+    "answer": "Nous ne vendons pas Coach+ pour le moment. Nous te préviendrons d’abord quand ce sera prêt."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Quelle différence avec le coaching gratuit ?",
+    "aliases": [
+      "Différences de Coach+"
+    ],
+    "answer": "Le coaching gratuit donne des indications de base au départ, à l’arrivée et par distance, et Coach+ ajoute un coaching approfondi adapté à tes zones de fréquence cardiaque et à tes changements d’allure en temps réel."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Coache-t-il aussi sur les côtes ou le classement des événements ?",
+    "aliases": [
+      "Coaching en côte"
+    ],
+    "answer": "Le coaching en côte et le coaching selon le classement des événements sont encore en préparation. Nous te préviendrons d’abord quand ils seront prêts."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Comment fonctionne la voix d’Escargot ?",
+    "aliases": [
+      "Voix de coaching"
+    ],
+    "answer": "Nous diffusons encouragements et chiffres avec une voix d’Escargot préenregistrée. Quand aucune voix préparée n’est disponible, nous utilisons la voix par défaut de ton téléphone."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Je veux couper la voix de coaching",
+    "aliases": [
+      "Couper le son"
+    ],
+    "answer": "Touche une fois pendant ta course et le son est coupé immédiatement."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Coach+ est-il facturé automatiquement ?",
+    "aliases": [
+      "L’abonnement se renouvelle-t-il automatiquement ?"
+    ],
+    "answer": "Coach+ n’est pas encore en vente, rien n’est donc facturé automatiquement. Si tu t’abonnes après le lancement officiel, il se renouvelle automatiquement à la période choisie avec ton moyen de paiement du store, et tu peux résilier à tout moment dans la gestion des abonnements du store."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

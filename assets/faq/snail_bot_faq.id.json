@@ -1317,6 +1317,96 @@
     "answer": "Catatan, streak, dan lencana selalu tersimpan, terlepas dari verifikasi. Pastikan kamu login dengan akun yang sama."
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Apa itu Coach+?",
+    "aliases": [
+      "Jelaskan Coach+"
+    ],
+    "answer": "Coach+ adalah layanan langganan yang memberi pelatihan suara mendalam sesuai detak jantung dan kecepatan real time saat kamu berlari. Layanan ini sedang disiapkan untuk dijual, jadi untuk sekarang kamu bisa memakai pelatihan gratis."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Berapa harga Coach+?",
+    "aliases": [
+      "Tarif Coach+"
+    ],
+    "answer": "Coach+ sedang disiapkan dengan harga 6.900 KRW per bulan dan 59.000 KRW per tahun, dengan percobaan gratis 7 hari. Pembayaran belum dibuka, jadi kamu tidak akan ditagih."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Apakah ada percobaan gratis Coach+?",
+    "aliases": [
+      "Versi percobaan"
+    ],
+    "answer": "Ya, ada percobaan gratis 7 hari."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Bagaimana membatalkan Coach+?",
+    "aliases": [
+      "Batalkan langganan"
+    ],
+    "answer": "Kamu bisa membatalkan dengan mudah di dalam aplikasi. Aku akan membuka layar pengelolaan langganan."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Bisakah membeli Coach+ sekarang?",
+    "aliases": [
+      "Kapan Coach+ keluar?"
+    ],
+    "answer": "Saat ini kami tidak menjual Coach+. Kami akan memberi tahu lebih dulu saat sudah siap."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Apa bedanya dengan pelatihan gratis?",
+    "aliases": [
+      "Perbedaan Coach+"
+    ],
+    "answer": "Pelatihan gratis memberi panduan dasar saat mulai, selesai, dan per jarak, sedangkan Coach+ menambah pelatihan mendalam sesuai zona detak jantung dan perubahan kecepatan secara real time."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Apakah juga melatih untuk tanjakan atau peringkat event?",
+    "aliases": [
+      "Pelatihan tanjakan"
+    ],
+    "answer": "Pelatihan tanjakan dan pelatihan peringkat event masih disiapkan. Kami akan memberi tahu lebih dulu saat siap."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Bagaimana suara Siput dihasilkan?",
+    "aliases": [
+      "Suara pelatihan"
+    ],
+    "answer": "Kami memutar semangat dan angka dengan suara Siput yang sudah dibuat sebelumnya. Jika tidak ada suara yang disiapkan, kami memakai suara bawaan ponselmu."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Saya ingin mematikan suara pelatihan",
+    "aliases": [
+      "Bisukan"
+    ],
+    "answer": "Ketuk sekali saat berlari dan langsung dibisukan."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Apakah Coach+ ditagih otomatis?",
+    "aliases": [
+      "Apakah langganan diperpanjang otomatis?"
+    ],
+    "answer": "Coach+ belum dijual, jadi tidak ada penagihan otomatis. Jika kamu berlangganan setelah peluncuran resmi, langganan diperpanjang otomatis setiap periode yang dipilih dengan metode pembayaran toko, dan kamu bisa membatalkan kapan saja di pengelolaan langganan toko."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

@@ -1317,6 +1317,96 @@
     "answer": "Records, streaks and badges are always saved, regardless of verification. Please check that you logged in with the same account."
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "What is Coach+?",
+    "aliases": [
+      "Explain Coach+"
+    ],
+    "answer": "Coach+ is a subscription service that gives you in-depth voice coaching tuned to your real-time heart rate and pace while you run. It’s getting ready for sale, so for now you can use the free coaching."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "How much is Coach+?",
+    "aliases": [
+      "Coach+ pricing"
+    ],
+    "answer": "Coach+ is being prepared at 6,900 KRW per month and 59,000 KRW per year, with a 7-day free trial. Payments are not open yet, so you won’t be charged."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Is there a Coach+ free trial?",
+    "aliases": [
+      "Trial version"
+    ],
+    "answer": "Yes, there is a 7-day free trial."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "How do I cancel Coach+?",
+    "aliases": [
+      "Cancel subscription"
+    ],
+    "answer": "You can easily cancel inside the app. I’ll open the subscription management screen for you."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Can I buy Coach+ now?",
+    "aliases": [
+      "When does Coach+ come out?"
+    ],
+    "answer": "We don’t sell Coach+ right now. We’ll let you know first when it’s ready."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "How is it different from free coaching?",
+    "aliases": [
+      "Coach+ differences"
+    ],
+    "answer": "Free coaching gives basic guidance at the start, the finish and by distance, and Coach+ adds in-depth coaching tuned to your real-time heart-rate zones and pace changes."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Does it coach on hills or event rankings too?",
+    "aliases": [
+      "Hill coaching"
+    ],
+    "answer": "Hill coaching and event-ranking coaching are still being prepared. We’ll let you know first when they’re ready."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "How does Snail’s voice work?",
+    "aliases": [
+      "Coaching voice"
+    ],
+    "answer": "We play cheers and numbers in a pre-made Snail voice. When no prepared voice is available, we use your phone’s default voice instead."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "I want to turn off the coaching voice",
+    "aliases": [
+      "Mute"
+    ],
+    "answer": "Tap once while you run and it’s muted right away."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Is Coach+ charged automatically?",
+    "aliases": [
+      "Does the subscription auto-renew?"
+    ],
+    "answer": "Coach+ isn’t on sale yet, so nothing is charged automatically. If you subscribe after the official launch, it renews automatically each chosen period using your store payment method, and you can cancel anytime in the store’s subscription management."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

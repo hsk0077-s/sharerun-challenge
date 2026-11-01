@@ -1317,6 +1317,96 @@
     "answer": "紀錄、連續紀錄與徽章不論是否通過驗證，一律會儲存。請確認是否以同一帳號登入。"
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Coach+ 是什麼？",
+    "aliases": [
+      "介紹一下 Coach+"
+    ],
+    "answer": "Coach+ 是在跑步時，依即時心率與配速狀況提供深度語音教練的訂閱服務。目前仍在準備販售，因此可先使用免費教練。"
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Coach+ 價格多少？",
+    "aliases": [
+      "Coach+ 費用"
+    ],
+    "answer": "Coach+ 預計月費 6,900 韓元、年費 59,000 韓元，並提供前 7 天免費體驗。目前尚未開放付款，因此不會收費。"
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Coach+ 有免費體驗嗎？",
+    "aliases": [
+      "試用版"
+    ],
+    "answer": "有，提供 7 天免費體驗。"
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "怎麼取消 Coach+？",
+    "aliases": [
+      "取消訂閱"
+    ],
+    "answer": "可在 App 內輕鬆取消。我來為你開啟訂閱管理畫面。"
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "現在可以購買 Coach+ 嗎？",
+    "aliases": [
+      "Coach+ 什麼時候推出？"
+    ],
+    "answer": "目前不販售 Coach+。準備好後會先通知你。"
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "和免費教練有什麼不同？",
+    "aliases": [
+      "Coach+ 差異"
+    ],
+    "answer": "免費教練提供開始、完賽與各距離的基本提示，Coach+ 則額外提供依即時心率區間與配速變化的深度教練。"
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "也會針對上坡或賽事排名提供教練嗎？",
+    "aliases": [
+      "上坡教練"
+    ],
+    "answer": "上坡教練與賽事排名教練仍在準備中。準備好後會先通知你。"
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "蝸牛的聲音是怎麼來的？",
+    "aliases": [
+      "教練聲音"
+    ],
+    "answer": "我們會用預先製作好的蝸牛聲音為你加油並報數字。沒有準備好的語音時，會改用手機預設語音。"
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "我想關閉教練聲音",
+    "aliases": [
+      "靜音"
+    ],
+    "answer": "跑步中點一下即可立刻靜音。"
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Coach+ 會自動扣款嗎？",
+    "aliases": [
+      "訂閱會自動續訂嗎？"
+    ],
+    "answer": "目前尚未販售 Coach+，因此不會自動扣款。正式開放後訂閱，會依所選週期以商店付款方式自動續訂，並可隨時在商店的訂閱管理中取消。"
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

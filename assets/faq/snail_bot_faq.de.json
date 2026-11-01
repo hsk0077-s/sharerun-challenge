@@ -1317,6 +1317,96 @@
     "answer": "Aufzeichnungen, Serien und Abzeichen werden unabhängig von der Prüfung immer gespeichert. Prüfe, ob du dich mit demselben Konto angemeldet hast."
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Was ist Coach+?",
+    "aliases": [
+      "Erkläre Coach+"
+    ],
+    "answer": "Coach+ ist ein Abo-Dienst, der dir beim Laufen ausführliches Sprach-Coaching passend zu deiner Echtzeit-Herzfrequenz und deinem Tempo gibt. Er wird noch für den Verkauf vorbereitet, daher kannst du vorerst das kostenlose Coaching nutzen."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Was kostet Coach+?",
+    "aliases": [
+      "Coach+ Preise"
+    ],
+    "answer": "Coach+ ist mit 6.900 KRW pro Monat und 59.000 KRW pro Jahr in Vorbereitung, mit 7 Tagen kostenloser Testphase. Zahlungen sind noch nicht geöffnet, daher wird nichts abgebucht."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Gibt es eine kostenlose Coach+-Testphase?",
+    "aliases": [
+      "Testversion"
+    ],
+    "answer": "Ja, es gibt eine 7-tägige kostenlose Testphase."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Wie kündige ich Coach+?",
+    "aliases": [
+      "Abo kündigen"
+    ],
+    "answer": "Du kannst ganz einfach in der App kündigen. Ich öffne den Bildschirm zur Abo-Verwaltung für dich."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Kann ich Coach+ jetzt kaufen?",
+    "aliases": [
+      "Wann kommt Coach+?"
+    ],
+    "answer": "Wir verkaufen Coach+ derzeit nicht. Wir sagen dir zuerst Bescheid, wenn es soweit ist."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Was ist der Unterschied zum kostenlosen Coaching?",
+    "aliases": [
+      "Unterschiede bei Coach+"
+    ],
+    "answer": "Das kostenlose Coaching gibt Grundhinweise zu Start, Ziel und nach Distanz, und Coach+ ergänzt ausführliches Coaching, abgestimmt auf deine Echtzeit-Herzfrequenzzonen und Tempowechsel."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Coacht es auch bei Anstiegen oder Event-Rängen?",
+    "aliases": [
+      "Anstiegs-Coaching"
+    ],
+    "answer": "Das Anstiegs-Coaching und das Coaching nach Event-Rang sind noch in Vorbereitung. Wir sagen dir zuerst Bescheid, wenn sie bereit sind."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Wie funktioniert die Stimme der Schnecke?",
+    "aliases": [
+      "Coaching-Stimme"
+    ],
+    "answer": "Wir spielen Anfeuerungen und Zahlen in einer vorab erstellten Schnecken-Stimme ab. Wenn keine vorbereitete Stimme verfügbar ist, nutzen wir stattdessen die Standardstimme deines Handys."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Ich möchte die Coaching-Stimme ausschalten",
+    "aliases": [
+      "Stummschalten"
+    ],
+    "answer": "Tippe beim Laufen einmal, dann ist die Stimme sofort stummgeschaltet."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Wird Coach+ automatisch abgebucht?",
+    "aliases": [
+      "Verlängert sich das Abo automatisch?"
+    ],
+    "answer": "Coach+ ist noch nicht im Verkauf, daher wird nichts automatisch abgebucht. Wenn du nach dem offiziellen Start abonnierst, verlängert es sich im gewählten Zeitraum automatisch über deine Store-Zahlungsmethode, und du kannst jederzeit in der Abo-Verwaltung des Stores kündigen."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

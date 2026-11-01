@@ -1317,6 +1317,96 @@
     "answer": "Bản ghi, chuỗi ngày và huy hiệu luôn được lưu, bất kể xác minh. Hãy kiểm tra bạn đã đăng nhập đúng tài khoản chưa."
   },
   {
+    "id": "CP-01",
+    "category": "Coach+",
+    "question": "Coach+ là gì?",
+    "aliases": [
+      "Giải thích Coach+ đi"
+    ],
+    "answer": "Coach+ là dịch vụ đăng ký mang đến huấn luyện bằng giọng nói chuyên sâu theo nhịp tim và tốc độ theo thời gian thực khi bạn chạy. Dịch vụ đang chuẩn bị bán nên hiện tại bạn dùng được huấn luyện miễn phí."
+  },
+  {
+    "id": "CP-02",
+    "category": "Coach+",
+    "question": "Coach+ giá bao nhiêu?",
+    "aliases": [
+      "Giá Coach+"
+    ],
+    "answer": "Coach+ đang được chuẩn bị với giá 6.900 KRW mỗi tháng và 59.000 KRW mỗi năm, kèm 7 ngày dùng thử miễn phí. Hiện chưa mở thanh toán nên bạn sẽ không bị tính phí."
+  },
+  {
+    "id": "CP-03",
+    "category": "Coach+",
+    "question": "Coach+ có dùng thử miễn phí không?",
+    "aliases": [
+      "Bản dùng thử"
+    ],
+    "answer": "Có, có 7 ngày dùng thử miễn phí."
+  },
+  {
+    "id": "CP-04",
+    "category": "Coach+",
+    "question": "Hủy Coach+ thế nào?",
+    "aliases": [
+      "Hủy đăng ký"
+    ],
+    "answer": "Bạn có thể hủy dễ dàng trong ứng dụng. Mình sẽ mở màn hình quản lý đăng ký."
+  },
+  {
+    "id": "CP-05",
+    "category": "Coach+",
+    "question": "Bây giờ mua Coach+ được không?",
+    "aliases": [
+      "Khi nào Coach+ ra mắt?"
+    ],
+    "answer": "Hiện chúng tôi không bán Coach+. Khi sẵn sàng, chúng tôi sẽ báo trước."
+  },
+  {
+    "id": "CP-06",
+    "category": "Coach+",
+    "question": "Khác gì huấn luyện miễn phí?",
+    "aliases": [
+      "Điểm khác của Coach+"
+    ],
+    "answer": "Huấn luyện miễn phí đưa ra hướng dẫn cơ bản lúc bắt đầu, về đích và theo quãng đường, còn Coach+ thêm huấn luyện chuyên sâu theo vùng nhịp tim và thay đổi tốc độ theo thời gian thực."
+  },
+  {
+    "id": "CP-07",
+    "category": "Coach+",
+    "question": "Có huấn luyện khi lên dốc hay theo thứ hạng giải không?",
+    "aliases": [
+      "Huấn luyện lên dốc"
+    ],
+    "answer": "Huấn luyện lên dốc và huấn luyện theo thứ hạng giải vẫn đang được chuẩn bị. Khi sẵn sàng, chúng tôi sẽ báo trước."
+  },
+  {
+    "id": "CP-08",
+    "category": "Coach+",
+    "question": "Giọng của Ốc Sên được tạo ra thế nào?",
+    "aliases": [
+      "Giọng huấn luyện"
+    ],
+    "answer": "Chúng tôi phát lời cổ vũ và con số bằng giọng Ốc Sên được làm sẵn. Khi không có giọng đã chuẩn bị, chúng tôi dùng giọng mặc định của điện thoại thay thế."
+  },
+  {
+    "id": "CP-09",
+    "category": "Coach+",
+    "question": "Tôi muốn tắt giọng huấn luyện",
+    "aliases": [
+      "Tắt tiếng"
+    ],
+    "answer": "Chạm một lần khi đang chạy là tắt tiếng ngay."
+  },
+  {
+    "id": "CP-10",
+    "category": "Coach+",
+    "question": "Coach+ có tự động thanh toán không?",
+    "aliases": [
+      "Đăng ký có tự động gia hạn không?"
+    ],
+    "answer": "Coach+ chưa được bán nên sẽ không tự động tính phí. Nếu bạn đăng ký sau khi chính thức mở bán, gói sẽ tự động gia hạn theo chu kỳ đã chọn bằng phương thức thanh toán của cửa hàng ứng dụng, và bạn có thể hủy bất cứ lúc nào trong phần quản lý đăng ký của cửa hàng."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

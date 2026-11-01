@@ -1227,6 +1227,96 @@
     "answer": "Wir führen dich vorab durch die Einstellungen für Standort, Benachrichtigungen und Akku, damit die Aufzeichnung auch bei ausgeschaltetem Bildschirm nicht abbricht."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Wie viel VALUE bekomme ich pro Tag bei freien Läufen?",
+    "aliases": [
+      "Tageslimit für VALUE"
+    ],
+    "answer": "Du kannst für bis zu 5 km pro Tag 50 VALUE bekommen. Auch wenn du weiter läufst, werden alle deine Aufzeichnungen gespeichert."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Wie funktionieren die Test-Läufe für Neue?",
+    "aliases": [
+      "Test-Läufe"
+    ],
+    "answer": "Absolviere innerhalb von 14 Tagen nach der Anmeldung an drei verschiedenen Tagen je einen verifizierten Lauf von mindestens 1 km. Pro Tag zählt nur ein Lauf."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Wie hoch ist die Testbelohnung?",
+    "aliases": [
+      "Test-SHARE"
+    ],
+    "answer": "Du bekommst 10.000 SHARE nach deinem ersten Lauf und weitere 40.000 SHARE nach allen drei, insgesamt 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Zählen zwei Läufe an einem Tag als zwei Tests?",
+    "aliases": [
+      "Alle drei an einem Tag machen"
+    ],
+    "answer": "Nein, pro Tag zählt nur ein Test-Lauf. Bitte lauf an einem anderen Tag erneut."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ich bin fertig, aber SHARE oder die Abschlussanzeige erscheint nicht",
+    "aliases": [
+      "Die Belohnung kommt verspätet"
+    ],
+    "answer": "Die Abschlussanzeige erscheint erst, nachdem sie im Transaktionsprotokoll des Servers gespeichert wurde. Bitte warte einen Moment und prüfe noch einmal."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Wohin ist die Stempeltour verschwunden?",
+    "aliases": [
+      "Ich sehe die Stempel nicht"
+    ],
+    "answer": "Die Stempeltour ist vorerst ausgeblendet. Das 1-km-Gehen wurde mit den Missionen für Schrittzähler und verifizierte Läufe zusammengelegt, und die Wahrzeichen-Stempel kommen später als Event zurück."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Kann ich eine Angeberkarte erstellen?",
+    "aliases": [
+      "Karte zum Teilen der Ergebnisse erstellen"
+    ],
+    "answer": "Ja, nach dem Lauf kannst du eine Abschluss-Angeberkarte mit Zeit, Distanz, Tempo und einem Spendentext erstellen und sofort über KakaoTalk, Instagram, X oder SMS teilen."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Enthält die Angeberkarte meinen Einladungscode?",
+    "aliases": [
+      "Einladungscode auf der Karte"
+    ],
+    "answer": "Nein, wir setzen den Einladungscode nicht auf die Angeberkarte. Du kannst deinen Einladungscode separat teilen."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Meine Schrittzahl steigt nicht",
+    "aliases": [
+      "Der Schrittzähler hat gestoppt"
+    ],
+    "answer": "Prüfe, ob die Aktivitätsberechtigung deines Handys aktiviert ist, und öffne die App erneut."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Sind meine Serie oder Abzeichen verschwunden?",
+    "aliases": [
+      "Mein Abzeichen ist weg"
+    ],
+    "answer": "Aufzeichnungen, Serien und Abzeichen werden unabhängig von der Prüfung immer gespeichert. Prüfe, ob du dich mit demselben Konto angemeldet hast."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

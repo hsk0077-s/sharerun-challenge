@@ -1227,6 +1227,96 @@
     "answer": "Te guiamos de antemano por los ajustes de ubicación, notificaciones y batería para que el registro no se corte aunque apagues la pantalla."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿Cuánto VALUE recibo al día en carreras libres?",
+    "aliases": [
+      "Límite diario de VALUE"
+    ],
+    "answer": "Puedes recibir 50 VALUE por un máximo de 5 km al día. Aunque corras más, todos tus registros se guardan."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿Cómo funcionan las carreras de prueba para nuevos usuarios?",
+    "aliases": [
+      "Carreras de prueba"
+    ],
+    "answer": "Dentro de los 14 días posteriores al registro, completa una carrera verificada de 1 km o más en tres días distintos. Solo cuenta una carrera por día."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿Cuánto es la recompensa de prueba?",
+    "aliases": [
+      "SHARE de prueba"
+    ],
+    "answer": "Recibes 10.000 SHARE al terminar tu primera carrera, y otros 40.000 SHARE al completar las tres, en total 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Si corro dos veces al día, ¿cuentan como dos pruebas?",
+    "aliases": [
+      "Hacer las tres en un día"
+    ],
+    "answer": "No, solo cuenta una carrera de prueba al día. Vuelve a correr otro día."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Terminé pero no aparece el SHARE ni la marca de completado",
+    "aliases": [
+      "La recompensa llega tarde"
+    ],
+    "answer": "La marca de completado solo aparece después de guardarse en el historial de transacciones del servidor. Espera un momento y vuelve a comprobar."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿Adónde fue el recorrido de sellos?",
+    "aliases": [
+      "No veo los sellos"
+    ],
+    "answer": "El recorrido de sellos está oculto por ahora. La caminata de 1 km se ha unido a las misiones del podómetro y de carrera verificada, y los sellos de lugares emblemáticos volverán más adelante como evento."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿Puedo crear una tarjeta de logro?",
+    "aliases": [
+      "Crear una tarjeta para compartir registros"
+    ],
+    "answer": "Sí, al terminar una carrera puedes crear una tarjeta de logro con tu tiempo, distancia, ritmo y un mensaje de donación, y compartirla al instante en KakaoTalk, Instagram, X o por mensaje de texto."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿La tarjeta de logro incluye mi código de invitación?",
+    "aliases": [
+      "Código de invitación en la tarjeta"
+    ],
+    "answer": "No, no ponemos el código de invitación en la tarjeta de logro. Puedes compartir tu código de invitación por separado."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mis pasos no suben",
+    "aliases": [
+      "El podómetro se detuvo"
+    ],
+    "answer": "Comprueba que el permiso de actividad del teléfono esté activado y prueba a volver a abrir la app."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "¿Desaparecieron mi racha o mis insignias?",
+    "aliases": [
+      "Mi insignia desapareció"
+    ],
+    "answer": "Los registros, rachas e insignias siempre se guardan, sin importar la verificación. Comprueba que hayas iniciado sesión con la misma cuenta."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

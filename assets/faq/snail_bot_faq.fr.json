@@ -1227,6 +1227,96 @@
     "answer": "Nous te guidons à l’avance sur les réglages de localisation, de notifications et de batterie pour que l’enregistrement ne s’interrompe pas, même écran éteint."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Combien de VALUE gagne-t-on par jour en course libre ?",
+    "aliases": [
+      "Limite quotidienne de VALUE"
+    ],
+    "answer": "Tu peux gagner 50 VALUE pour 5 km maximum par jour. Même si tu cours plus, tous tes enregistrements sont sauvegardés."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Comment fonctionnent les courses d’essai des nouveaux ?",
+    "aliases": [
+      "Courses d’essai"
+    ],
+    "answer": "Dans les 14 jours suivant l’inscription, termine une course vérifiée d’au moins 1 km sur trois jours différents. Une seule course compte par jour."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quelle est la récompense d’essai ?",
+    "aliases": [
+      "SHARE d’essai"
+    ],
+    "answer": "Tu reçois 10 000 SHARE après ta première course, puis 40 000 SHARE de plus après les trois, soit 50 000 SHARE au total."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Si je cours deux fois par jour, cela compte-t-il pour deux essais ?",
+    "aliases": [
+      "Faire les trois en un jour"
+    ],
+    "answer": "Non, une seule course d’essai compte par jour. Cours de nouveau un autre jour."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "J’ai terminé mais les SHARE ou l’indicateur de fin n’apparaissent pas",
+    "aliases": [
+      "La récompense arrive en retard"
+    ],
+    "answer": "L’indicateur de fin n’apparaît qu’une fois enregistré dans l’historique des transactions du serveur. Patiente un instant puis revérifie."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Où est passé le tour de tampons ?",
+    "aliases": [
+      "Je ne vois pas les tampons"
+    ],
+    "answer": "Le tour de tampons est masqué pour le moment. La marche de 1 km a été fusionnée avec les missions du podomètre et de course vérifiée, et les tampons de monuments reviendront plus tard sous forme d’événement."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Puis-je créer une carte de fierté ?",
+    "aliases": [
+      "Créer une carte de partage de record"
+    ],
+    "answer": "Oui, à la fin d’une course tu peux créer une carte de fierté avec ton temps, ta distance, ton allure et un message de don, et la partager tout de suite sur KakaoTalk, Instagram, X ou par SMS."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "La carte de fierté inclut-elle mon code d’invitation ?",
+    "aliases": [
+      "Code d’invitation sur la carte"
+    ],
+    "answer": "Non, nous ne mettons pas le code d’invitation sur la carte de fierté. Tu peux partager ton code d’invitation séparément."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Mon nombre de pas n’augmente pas",
+    "aliases": [
+      "Le podomètre s’est arrêté"
+    ],
+    "answer": "Vérifie que l’autorisation d’activité du téléphone est activée et essaie de rouvrir l’appli."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ma série ou mes badges ont-ils disparu ?",
+    "aliases": [
+      "Mon badge a disparu"
+    ],
+    "answer": "Les enregistrements, séries et badges sont toujours sauvegardés, quelle que soit la vérification. Vérifie que tu t’es connecté avec le même compte."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

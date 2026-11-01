@@ -1227,6 +1227,96 @@
     "answer": "Kami memandu pengaturan lokasi, notifikasi, dan baterai sebelumnya agar pencatatan tidak terputus meski layar dimatikan."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Berapa VALUE per hari dari lari bebas?",
+    "aliases": [
+      "Batas VALUE harian"
+    ],
+    "answer": "Kamu bisa mendapat 50 VALUE untuk maksimal 5 km per hari. Meski berlari lebih jauh, semua catatan tetap tersimpan."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bagaimana lari percobaan untuk pengguna baru?",
+    "aliases": [
+      "Lari percobaan"
+    ],
+    "answer": "Dalam 14 hari setelah mendaftar, selesaikan satu lari terverifikasi 1 km atau lebih pada tiga hari berbeda. Hanya satu lari per hari yang dihitung."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Berapa hadiah percobaan?",
+    "aliases": [
+      "SHARE percobaan"
+    ],
+    "answer": "Kamu mendapat 10.000 SHARE setelah lari pertama, dan 40.000 SHARE lagi setelah menyelesaikan ketiganya, total 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Jika lari dua kali sehari, apakah dihitung dua percobaan?",
+    "aliases": [
+      "Selesaikan ketiganya dalam sehari"
+    ],
+    "answer": "Tidak, hanya satu lari percobaan per hari yang dihitung. Silakan lari lagi di hari lain."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Saya selesai tapi SHARE atau tanda selesai tidak muncul",
+    "aliases": [
+      "Hadiah masuk terlambat"
+    ],
+    "answer": "Tanda selesai hanya muncul setelah tersimpan di riwayat transaksi server. Tunggu sebentar lalu periksa lagi."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Ke mana tur stempel?",
+    "aliases": [
+      "Stempel tidak terlihat"
+    ],
+    "answer": "Tur stempel disembunyikan untuk sementara. Jalan 1 km sudah digabung ke misi pedometer dan lari terverifikasi, dan stempel landmark akan kembali nanti sebagai event."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Bisakah membuat kartu pamer?",
+    "aliases": [
+      "Buat kartu berbagi catatan"
+    ],
+    "answer": "Ya, setelah selesai berlari kamu bisa membuat kartu pamer dengan waktu, jarak, kecepatan, dan pesan donasi, lalu langsung membagikannya ke KakaoTalk, Instagram, X, atau pesan teks."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah kartu pamer berisi kode undangan?",
+    "aliases": [
+      "Kode undangan di kartu berbagi"
+    ],
+    "answer": "Tidak, kartu pamer tidak memuat kode undangan. Kamu bisa membagikan kode undangan secara terpisah."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Jumlah langkah tidak bertambah",
+    "aliases": [
+      "Pedometer berhenti"
+    ],
+    "answer": "Pastikan izin aktivitas ponsel menyala, dan coba buka aplikasi lagi."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Apakah streak atau lencana saya hilang?",
+    "aliases": [
+      "Lencana saya hilang"
+    ],
+    "answer": "Catatan, streak, dan lencana selalu tersimpan, terlepas dari verifikasi. Pastikan kamu login dengan akun yang sama."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

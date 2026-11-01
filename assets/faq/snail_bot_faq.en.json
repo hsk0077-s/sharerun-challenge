@@ -1227,6 +1227,96 @@
     "answer": "We guide you through the location, notification and battery settings in advance so that recording isn’t cut off even with the screen off."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "How much VALUE do I get per day from free runs?",
+    "aliases": [
+      "Daily VALUE limit"
+    ],
+    "answer": "You can get 50 VALUE for up to 5 km a day. Even if you run farther, all of your records are saved."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "How do the new-runner trial runs work?",
+    "aliases": [
+      "Trial runs"
+    ],
+    "answer": "Within 14 days of signing up, complete a verified run of 1 km or more on three different days. Only one run per day counts."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "How much is the trial reward?",
+    "aliases": [
+      "Trial SHARE"
+    ],
+    "answer": "You get 10,000 SHARE after your first run, and another 40,000 SHARE after finishing all three, for a total of 50,000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "If I run twice a day, do both count as trial runs?",
+    "aliases": [
+      "Do all three in one day"
+    ],
+    "answer": "No, only one trial run per day counts. Please run again on a different day."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "I finished but SHARE or the completion mark didn’t show",
+    "aliases": [
+      "The reward arrives late"
+    ],
+    "answer": "The completion mark shows only after it is saved in the server’s transaction log. Please wait a moment and check again."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Where did the stamp tour go?",
+    "aliases": [
+      "I can’t see the stamps"
+    ],
+    "answer": "The stamp tour is hidden for now. The 1 km walk has been merged into the pedometer and verified-run missions, and landmark stamps will come back later as an event."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Can I make a brag card?",
+    "aliases": [
+      "Make a record-sharing card"
+    ],
+    "answer": "Yes, when you finish a run you can make a finish brag card with your time, distance, pace and a donation message, and share it right away on KakaoTalk, Instagram, X or by text message."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Does the brag card include my invite code?",
+    "aliases": [
+      "Invite code on the share card"
+    ],
+    "answer": "No, we don’t put the invite code on the brag card. You can share your invite code separately."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "My step count isn’t going up",
+    "aliases": [
+      "The pedometer stopped"
+    ],
+    "answer": "Please check that your phone’s activity permission is on, and try reopening the app."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Did my streak or badges disappear?",
+    "aliases": [
+      "My badge is gone"
+    ],
+    "answer": "Records, streaks and badges are always saved, regardless of verification. Please check that you logged in with the same account."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

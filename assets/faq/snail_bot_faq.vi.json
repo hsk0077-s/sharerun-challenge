@@ -1227,6 +1227,96 @@
     "answer": "Chúng tôi hướng dẫn trước các cài đặt vị trí, thông báo và pin để bản ghi không bị ngắt ngay cả khi tắt màn hình."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy tự do mỗi ngày nhận bao nhiêu VALUE?",
+    "aliases": [
+      "Giới hạn VALUE mỗi ngày"
+    ],
+    "answer": "Bạn có thể nhận 50 VALUE cho tối đa 5 km mỗi ngày. Dù chạy xa hơn, mọi bản ghi vẫn được lưu."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy thử cho người mới làm thế nào?",
+    "aliases": [
+      "Chạy thử"
+    ],
+    "answer": "Trong vòng 14 ngày sau khi đăng ký, hoàn thành một lần chạy đã xác minh từ 1 km trở lên trong ba ngày khác nhau. Mỗi ngày chỉ tính một lần."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Thưởng chạy thử là bao nhiêu?",
+    "aliases": [
+      "SHARE chạy thử"
+    ],
+    "answer": "Bạn nhận 10.000 SHARE sau lần chạy đầu tiên và thêm 40.000 SHARE sau khi hoàn thành cả ba, tổng cộng 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chạy hai lần một ngày có tính hai lần thử không?",
+    "aliases": [
+      "Làm cả ba trong một ngày"
+    ],
+    "answer": "Không, mỗi ngày chỉ tính một lần chạy thử. Hãy chạy lại vào ngày khác."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tôi chạy xong nhưng không thấy SHARE hay dấu hoàn thành",
+    "aliases": [
+      "Thưởng về chậm"
+    ],
+    "answer": "Dấu hoàn thành chỉ hiện sau khi được lưu vào nhật ký giao dịch của máy chủ. Hãy chờ một chút rồi kiểm tra lại."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Hành trình đóng dấu đi đâu rồi?",
+    "aliases": [
+      "Không thấy dấu"
+    ],
+    "answer": "Hành trình đóng dấu hiện đang tạm ẩn. Mục đi bộ 1 km đã được gộp vào nhiệm vụ máy đếm bước và chạy đã xác minh, còn dấu các địa danh sẽ trở lại sau dưới dạng sự kiện."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Tôi có tạo được thẻ khoe thành tích không?",
+    "aliases": [
+      "Tạo thẻ chia sẻ thành tích"
+    ],
+    "answer": "Có, khi chạy xong bạn có thể tạo thẻ khoe thành tích hoàn thành với thời gian, quãng đường, tốc độ và lời nhắn quyên góp, rồi chia sẻ ngay qua KakaoTalk, Instagram, X hoặc tin nhắn."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "Thẻ khoe thành tích có kèm mã mời không?",
+    "aliases": [
+      "Mã mời trên thẻ chia sẻ"
+    ],
+    "answer": "Không, thẻ khoe thành tích không kèm mã mời. Bạn có thể chia sẻ mã mời riêng."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Số bước không tăng",
+    "aliases": [
+      "Máy đếm bước đã dừng"
+    ],
+    "answer": "Hãy kiểm tra quyền hoạt động của điện thoại đã bật chưa và thử mở lại ứng dụng."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Chuỗi ngày hay huy hiệu của tôi biến mất?",
+    "aliases": [
+      "Huy hiệu của tôi mất"
+    ],
+    "answer": "Bản ghi, chuỗi ngày và huy hiệu luôn được lưu, bất kể xác minh. Hãy kiểm tra bạn đã đăng nhập đúng tài khoản chưa."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

@@ -1227,6 +1227,96 @@
     "answer": "Orientamos você antecipadamente sobre as configurações de localização, notificações e bateria para que o registro não seja interrompido mesmo com a tela apagada."
   },
   {
+    "id": "RU-13",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quanto VALUE recebo por dia em corridas livres?",
+    "aliases": [
+      "Limite diário de VALUE"
+    ],
+    "answer": "Você pode receber 50 VALUE por até 5 km por dia. Mesmo que corra mais, todos os seus registros são salvos."
+  },
+  {
+    "id": "RU-14",
+    "category": "달리기 기록·문제 해결",
+    "question": "Como funcionam as corridas de teste para novos usuários?",
+    "aliases": [
+      "Corridas de teste"
+    ],
+    "answer": "Em até 14 dias após o cadastro, complete uma corrida verificada de 1 km ou mais em três dias diferentes. Só conta uma corrida por dia."
+  },
+  {
+    "id": "RU-15",
+    "category": "달리기 기록·문제 해결",
+    "question": "Quanto é a recompensa do teste?",
+    "aliases": [
+      "SHARE do teste"
+    ],
+    "answer": "Você recebe 10.000 SHARE ao terminar a primeira corrida e mais 40.000 SHARE ao concluir as três, totalizando 50.000 SHARE."
+  },
+  {
+    "id": "RU-17",
+    "category": "달리기 기록·문제 해결",
+    "question": "Se eu correr duas vezes por dia, contam como dois testes?",
+    "aliases": [
+      "Fazer as três em um dia"
+    ],
+    "answer": "Não, só uma corrida de teste por dia conta. Corra novamente em outro dia."
+  },
+  {
+    "id": "RU-18",
+    "category": "달리기 기록·문제 해결",
+    "question": "Terminei mas o SHARE ou a marca de conclusão não aparece",
+    "aliases": [
+      "A recompensa chega tarde"
+    ],
+    "answer": "A marca de conclusão só aparece depois de salva no histórico de transações do servidor. Aguarde um instante e confira de novo."
+  },
+  {
+    "id": "RU-19",
+    "category": "달리기 기록·문제 해결",
+    "question": "Para onde foi o tour de selos?",
+    "aliases": [
+      "Não vejo os selos"
+    ],
+    "answer": "O tour de selos está oculto por enquanto. A caminhada de 1 km foi unida às missões do pedômetro e de corrida verificada, e os selos de pontos turísticos voltarão depois como evento."
+  },
+  {
+    "id": "RU-20",
+    "category": "달리기 기록·문제 해결",
+    "question": "Posso criar um cartão de conquista?",
+    "aliases": [
+      "Criar um cartão para compartilhar registros"
+    ],
+    "answer": "Sim, ao terminar uma corrida você pode criar um cartão de conquista com tempo, distância, ritmo e uma mensagem de doação, e compartilhá-lo na hora no KakaoTalk, Instagram, X ou por mensagem de texto."
+  },
+  {
+    "id": "RU-21",
+    "category": "달리기 기록·문제 해결",
+    "question": "O cartão de conquista inclui meu código de convite?",
+    "aliases": [
+      "Código de convite no cartão"
+    ],
+    "answer": "Não, não colocamos o código de convite no cartão de conquista. Você pode compartilhar seu código de convite separadamente."
+  },
+  {
+    "id": "RU-22",
+    "category": "달리기 기록·문제 해결",
+    "question": "Meus passos não aumentam",
+    "aliases": [
+      "O pedômetro parou"
+    ],
+    "answer": "Confira se a permissão de atividade do celular está ativada e tente abrir o app novamente."
+  },
+  {
+    "id": "RU-23",
+    "category": "달리기 기록·문제 해결",
+    "question": "Minha sequência ou meus emblemas sumiram?",
+    "aliases": [
+      "Meu emblema sumiu"
+    ],
+    "answer": "Registros, sequências e emblemas são sempre salvos, independentemente da verificação. Confira se você fez login com a mesma conta."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

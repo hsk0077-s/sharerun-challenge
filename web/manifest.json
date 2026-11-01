@@ -1,11 +1,11 @@
 {
-    "name": "쉐어 런",
-    "short_name": "쉐어 런",
+    "name": "쉐어런",
+    "short_name": "쉐어런",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#070B09",
+    "theme_color": "#070B09",
+    "description": "심장이 뛰는 한, 나눔도 달린다 — 쉐어런",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

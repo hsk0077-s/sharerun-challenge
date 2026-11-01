@@ -1,11 +1,11 @@
 {
-  "name": "SRC 관리자",
-  "short_name": "SRC 관리자",
+  "name": "쉐어런 관리자",
+  "short_name": "쉐어런 관리자",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#111827",
+  "background_color": "#070B09",
+  "theme_color": "#070B09",
   "icons": [
     {
       "src": "/icons/icon-192.png",

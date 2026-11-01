@@ -1,0 +1,131 @@
+[
+  {
+    "id": "AP-01",
+    "category": "앱 소개",
+    "question": "What kind of app is ShareRun?",
+    "aliases": [
+      "What does this app do?",
+      "Tell me about ShareRun"
+    ],
+    "answer": "You earn SHARE for the steps and runs you do, and for every verified 1 km the company plans to donate 100 KRW. The company pays the donation; you pay nothing."
+  },
+  {
+    "id": "SH-03",
+    "category": "걸음·SHARE",
+    "question": "How much SHARE can I get per day?",
+    "aliases": [
+      "Is there a daily limit?",
+      "Is 600 the max for 10,000 steps?"
+    ],
+    "answer": "SHARE from steps is capped at 600 per day. 6,000 steps fills today’s share."
+  },
+  {
+    "id": "SH-05",
+    "category": "걸음·SHARE",
+    "question": "How much SHARE do I have?",
+    "aliases": [
+      "My SHARE balance",
+      "Show my SHARE"
+    ],
+    "answer": "You currently have {SHARE잔액} SHARE.",
+    "needs": [
+      "SHARE잔액"
+    ]
+  },
+  {
+    "id": "CO-01",
+    "category": "대회·방",
+    "question": "What events are there?",
+    "aliases": [
+      "Event types",
+      "What races are there?"
+    ],
+    "answer": "Company events come in Beginner, Intermediate, Advanced and Half, and a Final is held once each season. You can also create your own running room."
+  },
+  {
+    "id": "CO-02",
+    "category": "대회·방",
+    "question": "How much is the entry fee?",
+    "aliases": [
+      "Tell me the event entry fees",
+      "How much is the Half event?"
+    ],
+    "answer": "Beginner 300, Intermediate 1,200, Advanced 2,400, Half 4,200 SHARE. Entry fees are paid in SHARE."
+  },
+  {
+    "id": "CO-03",
+    "category": "대회·방",
+    "question": "Is the Beginner event free?",
+    "aliases": [
+      "Is my first event free?",
+      "Free Beginner entry"
+    ],
+    "answer": "You can join the Beginner event for free the first two times. After that it is 300 SHARE."
+  },
+  {
+    "id": "CO-08",
+    "category": "대회·방",
+    "question": "How are prizes split by rank?",
+    "aliases": [
+      "How many ranks get a prize?",
+      "Does 6th place get one?"
+    ],
+    "answer": "Ranks 1 to 5 get the set DIA in full, and ranks 6 to 10 get half. Everyone in the top 10 also gets an entry ticket for the next-level event."
+  },
+  {
+    "id": "DO-03",
+    "category": "기부",
+    "question": "How much have I contributed to donations today?",
+    "aliases": [
+      "Today’s donation?",
+      "Today’s sharing amount"
+    ],
+    "answer": "Today’s donation contribution from your runs is {오늘기부기여} KRW. It is counted at 100 KRW per km run, within the company’s monthly donation budget of 1,000,000 KRW.",
+    "needs": [
+      "오늘기부기여"
+    ]
+  },
+  {
+    "id": "GR-07",
+    "category": "등급·캐릭터",
+    "question": "Tell me my grade",
+    "aliases": [
+      "My current grade",
+      "My tier"
+    ],
+    "answer": "Your current grade is {등급}.",
+    "needs": [
+      "등급"
+    ]
+  },
+  {
+    "id": "SYS-FALLBACK",
+    "category": "시스템",
+    "question": "",
+    "aliases": [],
+    "answer": "Oops, I don’t know that one yet. Pick one from below or try asking a bit differently."
+  },
+  {
+    "id": "SYS-OFFTOPIC",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "How is the weather today?",
+      "Which stock should I buy?",
+      "Sing me a song",
+      "Help with my homework"
+    ],
+    "answer": "Sorry, I can only talk about ShareRun. Ask me anytime about steps, events or donations."
+  },
+  {
+    "id": "SYS-GREETING",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Hello",
+      "Snail",
+      "Hey Snail"
+    ],
+    "answer": "I’m Snail, your running buddy. Ask me out loud and I’ll help right away."
+  }
+]

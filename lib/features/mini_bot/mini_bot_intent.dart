@@ -94,10 +94,20 @@ class MiniBotRead {
 }
 
 class MiniBotChip {
-  const MiniBotChip({required this.id, required this.label});
+  const MiniBotChip({
+    required this.id,
+    required this.prompt,
+    required this.labelKey,
+  });
 
   final String id;
-  final String label;
+
+  /// 해석기에 넘기는 한국어 명령. 화면 언어와 상관없이 같은 칩이 같은 일을 한다.
+  final String prompt;
+  final String labelKey;
+
+  /// 칩에 보이는 글자. 앱 언어를 따른다.
+  String get label => RemainingSurface.trNow(labelKey, prompt);
 }
 
 abstract final class MiniBotPrompts {
@@ -114,20 +124,38 @@ abstract final class MiniBotPrompts {
   static const coachPlus = 'Coach+';
   static const battlePass = '배틀패스';
 
+  static const _keys = {
+    intro: 'mini_bot.mini_bot_intent.body.5',
+    joinBeginner: 'mini_bot.mini_bot_intent.body.6',
+    joinLobby: 'mini_bot.copy.chip_lobby',
+    cpr: 'mini_bot.mini_bot_intent.body.7',
+    donate: 'mini_bot.mini_bot_intent.body.8',
+    safeGuard: 'mini_bot.mini_bot_intent.body.9',
+    charge: 'mini_bot.mini_bot_intent.body.10',
+    sponsor: 'mini_bot.mini_bot_intent.body.11',
+    runnerSponsor: 'mini_bot.mini_bot_intent.body.12',
+    subscription: 'mini_bot.copy.chip_subscription',
+    coachPlus: 'mini_bot.mini_bot_intent.coach_plus',
+    battlePass: 'mini_bot.mini_bot_intent.body.13',
+  };
+
+  static MiniBotChip _chip(String id, String prompt) =>
+      MiniBotChip(id: id, prompt: prompt, labelKey: _keys[prompt]!);
+
   /// Guide chips first, then monetization. Confirm still opens the screen only.
-  static const chips = <MiniBotChip>[
-    MiniBotChip(id: 'intro', label: intro),
-    MiniBotChip(id: 'lobby', label: joinLobby),
-    MiniBotChip(id: 'donate', label: donate),
-    MiniBotChip(id: 'brand', label: sponsor),
-    MiniBotChip(id: 'runner', label: runnerSponsor),
-    MiniBotChip(id: 'join', label: joinBeginner),
-    MiniBotChip(id: 'charge', label: charge),
-    MiniBotChip(id: 'cpr', label: cpr),
-    MiniBotChip(id: 'safeguard', label: safeGuard),
-    MiniBotChip(id: 'subscription', label: subscription),
-    MiniBotChip(id: 'coach-plus', label: coachPlus),
-    MiniBotChip(id: 'battle-pass', label: battlePass),
+  static final chips = <MiniBotChip>[
+    _chip('intro', intro),
+    _chip('lobby', joinLobby),
+    _chip('donate', donate),
+    _chip('brand', sponsor),
+    _chip('runner', runnerSponsor),
+    _chip('join', joinBeginner),
+    _chip('charge', charge),
+    _chip('cpr', cpr),
+    _chip('safeguard', safeGuard),
+    _chip('subscription', subscription),
+    _chip('coach-plus', coachPlus),
+    _chip('battle-pass', battlePass),
   ];
 
   /// 1.0은 현금 결제 칩(러너 후원 결제, 구독, Coach+)을 보여 주지 않는다.
@@ -171,7 +199,8 @@ abstract final class MiniBotCopy {
 
   static String get brandAmount => AppStrings.brandSponsorEntryFee;
 
-  static String get subscriptionAmount => '유료 구독은 Coach+ 하나예요';
+  static String get subscriptionAmount => RemainingSurface.trNow(
+      'mini_bot.copy.subscription_amount', '유료 구독은 Coach+ 하나예요');
 
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';
@@ -243,9 +272,13 @@ abstract final class MiniBotCopy {
         {'chargeAmount': chargeAmount},
       );
 
-  static String get sponsor => '러너 후원 화면으로 이동할까요? $sponsorAmount예요. '
-      '후원하기를 눌러도 여기서는 후원이 끝나지 않아요. '
-      '그 화면의 후원 버튼으로 직접 확정해 주세요.';
+  static String get sponsor => RemainingSurface.trNow(
+        'mini_bot.copy.sponsor',
+        '러너 후원 화면으로 이동할까요? \${sponsorAmount}예요. '
+            '후원하기를 눌러도 여기서는 후원이 끝나지 않아요. '
+            '그 화면의 후원 버튼으로 직접 확정해 주세요.',
+        {'sponsorAmount': sponsorAmount},
+      );
 
   static String get brand => RemainingSurface.trNow(
         'mini_bot.copy.brand',
@@ -253,18 +286,30 @@ abstract final class MiniBotCopy {
             '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 챌린지 탭에서 알려 드릴게요.',
       );
 
-  static String get subscription => '구독 관리 화면으로 이동할까요? $subscriptionAmount. '
-      '이동만 하고, 구독이나 결제는 바꾸지 않아요.';
+  static String get subscription => RemainingSurface.trNow(
+        'mini_bot.copy.subscription',
+        '구독 관리 화면으로 이동할까요? \${subscriptionAmount}. '
+            '이동만 하고, 구독이나 결제는 바꾸지 않아요.',
+        {'subscriptionAmount': subscriptionAmount},
+      );
 
   static String get coachPlusAmount {
     final monthly = CoachPlusPlan.monthly;
     final yearly = CoachPlusPlan.yearly;
-    return '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
-        '${yearly.periodLabel} ${yearly.fallbackPriceLabel}';
+    final monthLabel =
+        RemainingSurface.trNow('shop.store_look.body.2', monthly.periodLabel);
+    final yearLabel =
+        RemainingSurface.trNow('shop.store_look.body.3', yearly.periodLabel);
+    return '$monthLabel ${monthly.fallbackPriceLabel} · '
+        '$yearLabel ${yearly.fallbackPriceLabel}';
   }
 
-  static String get coachPlus => 'Coach+ 안내를 열까요? 심박·상황에 맞춘 심층 코칭이에요. '
-      '$coachPlusAmount. 이동만 하고, 여기서는 결제하지 않아요.';
+  static String get coachPlus => RemainingSurface.trNow(
+        'mini_bot.copy.coach_plus',
+        'Coach+ 안내를 열까요? 심박·상황에 맞춘 심층 코칭이에요. '
+            '\${coachPlusAmount}. 이동만 하고, 여기서는 결제하지 않아요.',
+        {'coachPlusAmount': coachPlusAmount},
+      );
 
   static String get battlePass => RemainingSurface.trNow(
         'mini_bot.copy.battle_pass',
@@ -332,16 +377,25 @@ abstract final class MiniBotCopy {
         '다이아 교환소로 이동할게요. '
           '교환은 그 화면에서 직접 해 주세요. 여기서는 결제되지 않아요.',
       ),
-      MiniBotDestination.personalSponsor => '러너 후원 화면으로 이동할게요. '
-          '후원 버튼으로 직접 확정해 주세요. 여기서는 후원되지 않아요.',
+      MiniBotDestination.personalSponsor => RemainingSurface.trNow(
+        'mini_bot.copy.run_sponsor',
+        '러너 후원 화면으로 이동할게요. '
+            '후원 버튼으로 직접 확정해 주세요. 여기서는 후원되지 않아요.',
+      ),
       MiniBotDestination.brandSponsor => RemainingSurface.trNow(
         'mini_bot.copy.run_brand',
         '브랜드 스폰서 챌린지로 이동할게요. '
           '참가는 그 화면에서 직접 해 주세요. 여기서는 참가되지 않아요.',
       ),
-      MiniBotDestination.subscription => '구독 관리 화면으로 이동할게요. 여기서는 구독을 바꾸지 않아요.',
-      MiniBotDestination.coachPlus => 'Coach+ 안내를 열게요. '
-          '월간·연간은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
+      MiniBotDestination.subscription => RemainingSurface.trNow(
+        'mini_bot.copy.run_subscription',
+        '구독 관리 화면으로 이동할게요. 여기서는 구독을 바꾸지 않아요.',
+      ),
+      MiniBotDestination.coachPlus => RemainingSurface.trNow(
+        'mini_bot.copy.run_coach_plus',
+        'Coach+ 안내를 열게요. '
+            '월간·연간은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
+      ),
       MiniBotDestination.battlePass => RemainingSurface.trNow(
         'mini_bot.copy.run_battle_pass',
         '배틀런 패스 화면으로 이동할게요. 여기서는 패스를 구매하지 않아요.',
@@ -429,7 +483,7 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    if (text.contains('충전') || text.contains('교환')) {
+    if (_any(text, _wCharge)) {
       return MiniBotRead(
         intent: MiniBotIntent.chargeShare,
         destination: MiniBotDestination.shareCharge,
@@ -438,7 +492,7 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    if (text.contains('상금')) {
+    if (_any(text, _wPrize)) {
       return MiniBotRead(
         intent: MiniBotIntent.joinChallenge,
         destination: MiniBotDestination.challengeLobby,
@@ -447,9 +501,8 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    final hasBeginner =
-        text.contains('초보') || text.contains('1km') || text.contains('1 km');
-    final hasLobby = text.contains('로비');
+    final hasBeginner = _any(text, _wBeginner);
+    final hasLobby = _any(text, _wLobby);
     if (hasLobby && !hasBeginner) {
       return MiniBotRead(
         intent: MiniBotIntent.joinChallenge,
@@ -468,12 +521,8 @@ abstract final class MiniBotInterpreter {
       );
     }
 
-    final hasJoin = text.contains('참가') ||
-        text.contains('레이스') ||
-        text.contains('입장') ||
-        text.contains('들어가');
-    final hasChallenge =
-        text.contains('챌린지') || text.contains('대회') || text.contains('도전');
+    final hasJoin = _any(text, _wJoin);
+    final hasChallenge = _any(text, _wChallenge);
     final hasIntro = _hasIntro(text);
     if (hasBeginner || hasJoin || (hasChallenge && !hasIntro)) {
       return MiniBotRead(
@@ -501,60 +550,105 @@ abstract final class MiniBotInterpreter {
     );
   }
 
-  static bool _hasSafeGuard(String text) {
-    return text.contains('세이프가드') ||
-        text.contains('세이프 가드') ||
-        text.contains('safeguard');
+  /// 11개 언어로 쓴 말에서 찾을 낱말. 소문자 기준이고, 어느 언어든 하나만 들어 있으면 맞는 것으로 본다.
+  static bool _any(String text, List<String> words) {
+    for (final word in words) {
+      if (text.contains(word)) return true;
+    }
+    return false;
   }
 
-  static bool _hasCpr(String text) {
-    return text.contains('심폐') || text.contains('소생') || text.contains('cpr');
-  }
+  static const _wSafeGuard = [
+    '세이프가드', '세이프 가드', 'safeguard', 'safe guard', 'セーフガード', '安全守護', '安全守护',
+    'salvaguarda', 'salva-vidas', 'garde-fou', 'เซฟการ์ด', //
+  ];
+  static const _wCpr = [
+    '심폐', '소생', 'cpr', '蘇生', '复活', '復活', 'reanima', 'ressuscit', 'wiederbeleb',
+    'réanim', 'hồi sinh', 'กู้สตรีค', 'ตั๋วกู้', 'resusit', //
+  ];
+  static const _wBattlePass = [
+    '배틀패스', '배틀 패스', '배틀런', 'battle pass', 'battlepass', 'battle run', 'バトルパス',
+    'バトルラン', '通行證', '通行证', 'pase de batalla', 'passe de batalha', 'pass battle',
+    'เบทเทิล', 'แบทเทิล', //
+  ];
+  static const _wCoachPlus = [
+    'coach', '코칭', '코치', '심박', 'コーチ', '教練', '教练', 'entrenad', 'treinad',
+    'entraîneur', 'huấn luyện', 'โค้ช', 'pelatih', 'heart rate', '心拍', '心率', //
+  ];
+  static const _wSubscription = [
+    '구독', '멤버십', 'subscri', 'membership', 'サブスク', '購読', '訂閱', '订阅', 'suscrip',
+    'assinatura', 'abonnement', 'đăng ký gói', 'สมาชิก', 'langganan', //
+  ];
+  static const _wBrand = [
+    '브랜드', '스폰서', 'brand', 'sponsor', 'ブランド', 'スポンサー', '品牌', '贊助商', '赞助商',
+    'patrocinador', 'marque', 'marke', 'thương hiệu', 'nhà tài trợ', 'แบรนด์', 'สปอนเซอร์',
+    'merek', //
+  ];
+  static const _wRunnerSponsor = [
+    '천사', 'angel', 'runner support', 'support a runner', 'sponsor a runner', 'ランナー支援',
+    'ランナー応援', '跑者贊助', '跑者赞助', '天使', 'apoyo a corredor', 'patrocinar a un corredor',
+    'apoio a corredor', 'läufer-sponsoring', 'unterstütze einen läufer', 'soutien aux coureurs',
+    'parrainer un coureur', 'ủng hộ người chạy', 'tài trợ người chạy', 'สนับสนุนนักวิ่ง',
+    'dukung pelari', 'sponsor pelari', //
+  ];
+  static const _wDonate = [
+    '후원', '기부', '펀딩', '유니세프', 'donat', 'charity', 'crowdfund', '寄付', '捐款', '捐赠',
+    '捐贈', 'donación', 'doação', 'doação', 'spende', 'dons', 'quyên góp', 'บริจาค', 'donasi', //
+  ];
+  static const _wCharge = [
+    '충전', '교환', 'exchange', 'top up', 'top-up', 'recharge', 'チャージ', '交換', '兌換', '兑换',
+    '充值', 'canje', 'canjear', 'recarga', 'troca', 'tausch', 'échange', 'đổi dia', 'nạp', 'แลก',
+    'เติม', 'tukar', 'isi ulang', //
+  ];
+  static const _wPrize = [
+    '상금', 'prize', '賞金', '獎金', '奖金', 'premio', 'prêmio', 'preisgeld', 'gewinn', 'cagnotte',
+    'giải thưởng', 'tiền thưởng', 'เงินรางวัล', 'hadiah', //
+  ];
+  static const _wBeginner = [
+    '초보', '1km', '1 km', 'beginner', 'novice', '初心者', '初學', '初学', 'principiante', 'iniciante',
+    'anfänger', 'débutant', 'người mới', 'มือใหม่', 'pemula', //
+  ];
+  static const _wLobby = [
+    '로비', 'lobby', 'ロビー', '大廳', '大厅', 'vestíbulo', 'sảnh', 'ล็อบบี้', 'lobi', //
+  ];
+  static const _wJoin = [
+    '참가', '레이스', '입장', '들어가', 'join', 'enter', 'participate', 'race', '参加', 'レース',
+    '報名', '参赛', '參加', 'unirse', 'participar', 'inscri', 'teilnehmen', 'mitmachen', 'rejoindre',
+    'participer', 'tham gia', 'เข้าร่วม', 'สมัคร', 'ikut', 'daftar', //
+  ];
+  static const _wChallenge = [
+    '챌린지', '대회', '도전', 'challenge', 'tournament', 'event', 'チャレンジ', '大会', '挑戰', '挑战',
+    '賽事', 'reto', 'desafio', 'herausforderung', 'défi', 'thử thách', 'ชาเลนจ์', 'tantangan', //
+  ];
+  static const _wIntro = [
+    '소개', '뭐야', '뭐니', '무엇', '어떤 앱', 'what is', 'what’s', 'what\'s', 'introduce', 'explain',
+    '설명해', '紹介', '説明', 'について', '介紹', '介绍', '什麼', '什么', 'qué es', 'que es', 'o que é',
+    'was ist', 'erklär', 'qu’est', 'c’est quoi', 'présente', 'là gì', 'giới thiệu', 'คืออะไร',
+    'แนะนำ', 'apa itu', 'jelaskan', 'perkenalan', //
+  ];
 
-  static bool _hasBattlePass(String text) {
-    return text.contains('배틀패스') ||
-        text.contains('배틀 패스') ||
-        text.contains('배틀런');
-  }
+  static bool _hasSafeGuard(String text) => _any(text, _wSafeGuard);
 
-  static bool _hasCoachPlus(String text) {
-    return text.contains('coach') ||
-        text.contains('코칭') ||
-        text.contains('코치') ||
-        text.contains('심박');
-  }
+  static bool _hasCpr(String text) => _any(text, _wCpr);
 
-  static bool _hasSubscription(String text) {
-    return text.contains('구독') ||
-        text.contains('멤버십') ||
-        (text.contains('정기') && text.contains('후원'));
-  }
+  static bool _hasBattlePass(String text) => _any(text, _wBattlePass);
 
-  static bool _hasRunnerSponsor(String text) {
-    return text.contains('천사') || (text.contains('러너') && text.contains('후원'));
-  }
+  static bool _hasCoachPlus(String text) => _any(text, _wCoachPlus);
+
+  static bool _hasSubscription(String text) =>
+      _any(text, _wSubscription) ||
+      (text.contains('정기') && text.contains('후원'));
+
+  static bool _hasRunnerSponsor(String text) =>
+      _any(text, _wRunnerSponsor) ||
+      (text.contains('러너') && text.contains('후원'));
 
   /// `스폰서` alone is the brand screen. Runner phrases are matched first.
-  static bool _hasBrandSponsor(String text) {
-    return text.contains('브랜드') || text.contains('스폰서');
-  }
+  static bool _hasBrandSponsor(String text) => _any(text, _wBrand);
 
-  static bool _hasDonate(String text) {
-    return text.contains('후원') ||
-        text.contains('기부') ||
-        text.contains('펀딩') ||
-        text.contains('유니세프');
-  }
+  static bool _hasDonate(String text) => _any(text, _wDonate);
 
-  static bool _hasIntro(String text) {
-    return text.contains('소개') ||
-        text.contains('뭐야') ||
-        text.contains('뭐니') ||
-        text.contains('무엇') ||
-        text.contains('어떤 앱') ||
-        text.contains('what is') ||
-        text.contains('설명해');
-  }
+  static bool _hasIntro(String text) => _any(text, _wIntro);
 }
 
 String _grouped(int value) {

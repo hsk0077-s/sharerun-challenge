@@ -27,16 +27,16 @@ enum MiniBotScreen { home, lobby }
 
 /// 달팽이봇 버튼 위에 잠깐 뜨는 한마디. 하루에 하나씩 돌아가며, 봇이 실제로 답할 수 있는 내용만 쓴다.
 abstract final class MiniBotBubble {
-  static const home = [
-    '궁금한 게 있으면 저를 눌러 물어보세요',
-    '오늘 목표나 SHARE가 궁금하면 물어보세요',
-    '기록 지키기가 헷갈리면 제가 알려 드려요',
-  ];
-  static const lobby = [
-    '어떤 챌린지가 맞는지 모르겠으면 물어보세요',
-    '참가비와 순위별 상금이 궁금하면 눌러 보세요',
-    '초급은 무료인지도 알려 드려요',
-  ];
+  static List<String> get home => [
+        RemainingSurface.trNow('mini_bot.body', '궁금한 게 있으면 저를 눌러 물어보세요'),
+        RemainingSurface.trNow('mini_bot.body.2', '오늘 목표나 SHARE가 궁금하면 물어보세요'),
+        RemainingSurface.trNow('mini_bot.body.3', '기록 지키기가 헷갈리면 제가 알려 드려요'),
+      ];
+  static List<String> get lobby => [
+        RemainingSurface.trNow('mini_bot.body.4', '어떤 챌린지가 맞는지 모르겠으면 물어보세요'),
+        RemainingSurface.trNow('mini_bot.body.5', '참가비와 순위별 상금이 궁금하면 눌러 보세요'),
+        RemainingSurface.trNow('mini_bot.body.6', '초급은 무료인지도 알려 드려요'),
+      ];
 
   static String forScreen(MiniBotScreen screen, DateTime now) {
     final list = screen == MiniBotScreen.home ? home : lobby;
@@ -54,16 +54,17 @@ abstract final class MiniBotFaqChips {
       screen == MiniBotScreen.lobby ? lobby : home;
 
   /// 칩에 보여 줄 짧은 이름. 누르면 FAQ의 원래 질문이 그대로 전달된다.
-  static const shortLabels = {
-    'DO-03': '오늘 내 기부',
-    'SH-05': '내 SHARE',
-    'GR-07': '내 등급',
-    'SH-03': '하루 SHARE 한도',
-    'CO-01': '어떤 대회?',
-    'CO-02': '참가비',
-    'CO-08': '순위별 상금',
-    'CO-03': '초급은 무료?',
-  };
+  static String? shortLabel(String id) => switch (id) {
+        'DO-03' => RemainingSurface.trNow('mini_bot.body.7', '오늘 내 기부'),
+        'SH-05' => RemainingSurface.trNow('mini_bot.body.8', '내 SHARE'),
+        'GR-07' => RemainingSurface.trNow('mini_bot.body.9', '내 등급'),
+        'SH-03' => RemainingSurface.trNow('mini_bot.body.10', '하루 SHARE 한도'),
+        'CO-01' => RemainingSurface.trNow('mini_bot.body.11', '어떤 대회?'),
+        'CO-02' => RemainingSurface.trNow('mini_bot.mini_bot_sheet.fee', '참가비'),
+        'CO-08' => RemainingSurface.trNow('mini_bot.body.12', '순위별 상금'),
+        'CO-03' => RemainingSurface.trNow('mini_bot.body.13', '초급은 무료?'),
+        _ => null,
+      };
 }
 
 /// Home tab (0) and challenge lobby tab (2) only. The tab shell owns the
@@ -245,7 +246,10 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
 
   Future<void> _loadFaq() async {
     try {
-      final faq = await SnailFaq.load();
+      final faq = await SnailFaq.load(
+        null,
+        RemainingSurface.currentLocale.languageCode,
+      );
       if (mounted) setState(() => _faq = faq);
     } catch (error) {
       debugPrint('mini-bot faq: $error');
@@ -276,7 +280,8 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     });
   }
 
-  void _submit(String raw) {
+  /// [display]는 말풍선에 보일 글자다. 칩은 화면 언어로 된 이름을 보이고, 해석은 [raw]로 한다.
+  void _submit(String raw, {String? display}) {
     final text = raw.trim();
     if (text.isEmpty) return;
     if (_listening) unawaited(_speech.stop());
@@ -302,7 +307,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
         ? MiniBotRead(
             intent: read.intent,
             destination: MiniBotDestination.none,
-            reply: '이 버전에서는 앱 안에서 결제하지 않아요.',
+            reply: RemainingSurface.trNow('mini_bot.body.18', '이 버전에서는 앱 안에서 결제하지 않아요.'),
             needsConfirm: false,
           )
         : read;
@@ -323,7 +328,7 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
     }
     setState(() {
       _mood = mood;
-      _lines.add(_MiniBotLine(text: text, fromUser: true));
+      _lines.add(_MiniBotLine(text: display ?? text, fromUser: true));
       _pending = shown.awaitsConfirm ? shown : null;
       _lines.add(_MiniBotLine(text: reply, fromUser: false));
     });
@@ -506,14 +511,14 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '달팽이봇',
+                          RemainingSurface.trNow('mini_bot.mini_bot_dock.accessibility', '달팽이봇'),
                           style: textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: tokens.colors.ink,
                           ),
                         ),
                         Text(
-                          '궁금한 걸 물어보세요',
+                          RemainingSurface.trNow('mini_bot.body.19', '궁금한 걸 물어보세요'),
                           style: textTheme.labelSmall?.copyWith(
                             color: tokens.colors.muted,
                           ),
@@ -598,14 +603,14 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       if (_faq?.questionOf(id) case final question?)
                         _Chip(
                           key: Key('mini-bot-faq-chip-$id'),
-                          label: MiniBotFaqChips.shortLabels[id] ?? question,
+                          label: MiniBotFaqChips.shortLabel(id) ?? question,
                           onTap: () => _submit(question),
                         ),
                     for (final chip in MiniBotPrompts.visibleChips)
                       _Chip(
                         key: Key('mini-bot-chip-${chip.id}'),
                         label: chip.label,
-                        onTap: () => _submit(chip.label),
+                        onTap: () => _submit(chip.prompt, display: chip.label),
                       ),
                   ],
                 ),
@@ -622,7 +627,9 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                 children: [
                   IconButton.filledTonal(
                     key: const Key('mini-bot-mic'),
-                    tooltip: _listening ? '멈추기' : '말하기',
+                    tooltip: _listening
+                        ? RemainingSurface.trNow('mini_bot.button', '멈추기')
+                        : RemainingSurface.trNow('mini_bot.button.2', '말하기'),
                     onPressed: _onMic,
                     icon: _listening
                         ? const Icon(
@@ -640,7 +647,9 @@ class _MiniBotSheetState extends State<MiniBotSheet> {
                       onSubmitted: _submit,
                       decoration: InputDecoration(
                         hintText:
-                            _listening ? MiniBotCopy.listening : '한글로 말해 주세요',
+                            _listening
+                                ? MiniBotCopy.listening
+                                : RemainingSurface.trNow('mini_bot.hint', '한글로 말해 주세요'),
                         isDense: true,
                       ),
                     ),

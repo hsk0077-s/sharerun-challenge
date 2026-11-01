@@ -71,14 +71,40 @@ class SnailFaq {
   final List<FaqEntry> entries;
   final List<({FaqEntry entry, List<String> phrases})> _index;
 
-  static Future<SnailFaq> load([AssetBundle? bundle]) async {
-    final raw = await (bundle ?? rootBundle).loadString(assetPath);
+  /// 번역본이 있는 언어(한국어 원본 위에 같은 id로 덮어쓴다).
+  static const translatedLanguages = {
+    'en', 'ja', 'zh', 'es', 'pt', 'de', 'fr', 'vi', 'th', 'id', //
+  };
+
+  static String assetPathFor(String languageCode) =>
+      'assets/faq/snail_bot_faq.$languageCode.json';
+
+  static List<FaqEntry> _parse(String raw) {
     final rows = jsonDecode(raw);
-    return SnailFaq([
+    return [
       if (rows is List)
         for (final row in rows)
           if (row is Map<String, dynamic>) FaqEntry.fromJson(row),
-    ]);
+    ];
+  }
+
+  /// 한국어 원본을 읽고, [languageCode] 번역본이 있으면 같은 id의 항목을 그것으로 바꾼다.
+  /// 번역이 없는 항목은 한국어로 남아 있어 한국어로 묻는 말에는 계속 답한다.
+  static Future<SnailFaq> load(
+      [AssetBundle? bundle, String languageCode = 'ko']) async {
+    final source = bundle ?? rootBundle;
+    final base = _parse(await source.loadString(assetPath));
+    if (!translatedLanguages.contains(languageCode)) return SnailFaq(base);
+    try {
+      final translated = {
+        for (final entry
+            in _parse(await source.loadString(assetPathFor(languageCode))))
+          entry.id: entry,
+      };
+      return SnailFaq([for (final entry in base) translated[entry.id] ?? entry]);
+    } catch (_) {
+      return SnailFaq(base);
+    }
   }
 
   /// 내 값이 필요한 답인데 서버에서 확인한 값이 아직 없을 때의 안내.
@@ -160,8 +186,12 @@ class SnailFaq {
 
   /// 띄어쓰기와 기호를 빼고 소문자로 바꾼다. 띄어 쓴 "쉐어런"과 붙여 쓴 "쉐어런"을 같게 본다.
   static String _normalize(String text) {
+    // 공백과 문장부호·기호만 빼고, 어느 나라 글자든 그대로 둔다.
     return text
         .toLowerCase()
-        .replaceAll(RegExp(r'[^0-9a-zㄱ-ㆎ가-힣+]'), '');
+        .replaceAllMapped(
+          RegExp(r'[\s\p{P}\p{S}]', unicode: true),
+          (m) => m[0] == '+' ? '+' : '',
+        );
   }
 }

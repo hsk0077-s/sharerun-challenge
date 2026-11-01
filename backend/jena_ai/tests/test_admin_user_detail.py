@@ -146,6 +146,7 @@ def test_full_detail(reset) -> None:
         "nickname": "runner",
         "email": "u1@example.com",
         "country": "KR",
+        "language": None,
         "providers": ["google", "kakao"],
         "rewardBlocked": True,
         "rewardBlockReason": "returning_identity",

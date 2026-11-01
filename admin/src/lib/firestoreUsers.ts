@@ -26,9 +26,50 @@ export type AdminUser = {
   diamond_balance?: number;
   /** KR / US / JP / IN / OTHER, or UNKNOWN when no country, countryCode or locale is stored. */
   country: UserCountry;
+  /** 앱 언어 11개 중 하나, 모르면 UNKNOWN. */
+  language: UserLanguage;
 };
 
 export type UserCountry = 'KR' | 'US' | 'JP' | 'IN' | 'OTHER' | 'UNKNOWN';
+
+/** 앱이 지원하는 11개 언어. 앱의 `ShareRunLocalizations.supportedLocales`와 같은 순서. */
+export const LANGUAGES = [
+  { code: 'ko', label: '한국어' },
+  { code: 'en', label: '영어' },
+  { code: 'ja', label: '일본어' },
+  { code: 'zh', label: '중국어' },
+  { code: 'es', label: '스페인어' },
+  { code: 'pt', label: '포르투갈어' },
+  { code: 'de', label: '독일어' },
+  { code: 'fr', label: '프랑스어' },
+  { code: 'vi', label: '베트남어' },
+  { code: 'th', label: '태국어' },
+  { code: 'id', label: '인도네시아어' },
+] as const;
+
+export type LanguageCode = (typeof LANGUAGES)[number]['code'];
+export type UserLanguage = LanguageCode | 'UNKNOWN';
+
+const LANGUAGE_CODES: ReadonlySet<string> = new Set(LANGUAGES.map((l) => l.code));
+
+export function languageLabel(language: UserLanguage): string {
+  if (language === 'UNKNOWN') return '미지정';
+  return LANGUAGES.find((l) => l.code === language)?.label ?? language;
+}
+
+/**
+ * 앱이 서버에 알린 `language`를 읽는다. 아직 업데이트하지 않은 폰의 계정은 값이 없으므로
+ * 예전 `locale`(`ko_KR`, `en-US`)의 언어 부분으로 짐작하고, 그것도 없으면 UNKNOWN.
+ */
+export function normalizeLanguage(data: Record<string, unknown>): UserLanguage {
+  for (const key of ['language', 'locale']) {
+    const raw = data[key];
+    if (typeof raw !== 'string' || !raw.trim()) continue;
+    const code = raw.trim().split(/[-_]/)[0]!.toLowerCase();
+    if (LANGUAGE_CODES.has(code)) return code as LanguageCode;
+  }
+  return 'UNKNOWN';
+}
 
 const LANGUAGE_REGION: Record<string, string> = { ko: 'KR', ja: 'JP', hi: 'IN' };
 
@@ -157,6 +198,7 @@ export function mapFirestoreUser(
     joined_at: readJoinedAt(data.createdAt),
     account_status,
     country: normalizeCountry(data),
+    language: normalizeLanguage(data),
   };
 }
 

@@ -367,6 +367,13 @@ class DailyStepsRequest(BaseModel):
     last_health: int | None = Field(default=None, ge=1, le=30_000)
 
 
+class ProfileLanguageRequest(BaseModel):
+    """The app language (one of the 11 shipped) and the phone's country, if known."""
+
+    language: str = Field(pattern="^(ko|en|ja|zh|es|pt|de|fr|vi|th|id)$")
+    country_code: str | None = Field(default=None, pattern="^[A-Z]{2}$")
+
+
 class ClientErrorRequest(BaseModel):
     message: str = Field(default="", max_length=2000)
     stack: str = Field(default="", max_length=20_000)

@@ -267,7 +267,7 @@ class _JoinedTournamentDetail extends StatelessWidget {
     final room = participation.tournament;
 
     return Scaffold(
-      appBar: AppBar(title: Text(room.title)),
+      appBar: AppBar(title: Text(room.displayTitle)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

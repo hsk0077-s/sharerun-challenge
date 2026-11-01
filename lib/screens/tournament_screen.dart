@@ -415,7 +415,7 @@ class _TournamentRoomCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            room.title,
+            room.displayTitle,
             style: storeText(
               24,
               locked ? c.muted : c.ink,

@@ -1,3 +1,4 @@
+import '../../l10n/remaining_surface.dart';
 enum TournamentStatus {
   recruiting,
   active,
@@ -28,6 +29,16 @@ class TournamentModel {
 
   final String id;
   final String title;
+
+  /// 화면에 보여 줄 제목. 앱이 이름을 아는 초보 1km 방만 화면 언어로 바꾸고,
+  /// 서버나 운영자가 정한 다른 제목은 그대로 둔다.
+  String get displayTitle {
+    const beginnerIds = {'beginner-1km-room', 'beginner-1km-room-01'};
+    if (beginnerIds.contains(id) || title.trim() == '1km 초보 챌린지') {
+      return RemainingSurface.trNow('live_running.body', '1km 초보 챌린지');
+    }
+    return title;
+  }
   final double targetDistanceKm;
   final int entryFeeShare;
   final int winnerRewardValue;
@@ -73,9 +84,17 @@ class TournamentModel {
   /// Headcount users see. The minimum-to-open figure stays off this line.
   String get recruitmentSummary {
     if (hasCapacityLimit) {
-      return '참가자 $participantCount/$maxParticipants명';
+      return RemainingSurface.trNow(
+        'tournament.recruit_max',
+        '참가자 \${count}/\${max}명',
+        {'count': participantCount, 'max': maxParticipants},
+      );
     }
-    return '참가자 $participantCount명';
+    return RemainingSurface.trNow(
+      'tournament.recruit_open',
+      '참가자 \${count}명',
+      {'count': participantCount},
+    );
   }
 
   bool get _prizeTakenFromEntryFee {
@@ -91,7 +110,11 @@ class TournamentModel {
             (winnerRewardValue <= 0 && donationValue <= 0))) {
       return null;
     }
-    return '기부 풀: $donationValue VALUE';
+    return RemainingSurface.trNow(
+      'tournament.donation_pool',
+      '기부 풀: \${value} VALUE',
+      {'value': donationValue},
+    );
   }
 
   factory TournamentModel.fromJson({

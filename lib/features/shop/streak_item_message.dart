@@ -25,35 +25,35 @@ String streakItemMessage(ApiException error, {required String fallback}) {
         '막을 빠진 날이 없습니다.',
       ),
     'Insufficient Diamond balance.' => RemainingSurface.trNow('common.dia_short', 'DIA가 부족합니다. 상점에서 구매해 주세요.'),
-    'Insufficient Share balance.' => 'SHARE가 부족합니다.',
-    'Boost run already used today.' => '부스트 런은 하루에 1번까지 사용할 수 있습니다.',
-    'An incubator is already active.' => '만보기 부화기는 한 번에 하나만 동작합니다.',
+    'Insufficient Share balance.' => RemainingSurface.trNow('personal_sponsor.body', 'SHARE가 부족합니다.'),
+    'Boost run already used today.' => RemainingSurface.trNow('api_exception.body.16', '부스트 런은 하루에 1번까지 사용할 수 있습니다.'),
+    'An incubator is already active.' => RemainingSurface.trNow('api_exception.body.17', '만보기 부화기는 한 번에 하나만 동작합니다.'),
     'Insufficient paid Diamond balance.' =>
-      '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.',
+      RemainingSurface.trNow('api_exception.body.18', '유료 DIA가 부족합니다. 무료 DIA로는 배틀런 패스를 살 수 없습니다.'),
     'Battle pass already owned for this season.' =>
-      '이번 시즌 배틀런 패스는 이미 구매했습니다.',
-    'Battle pass is not spent.' => '배틀런 패스는 사용해서 사라지지 않습니다.',
+      RemainingSurface.trNow('api_exception.body.19', '이번 시즌 배틀런 패스는 이미 구매했습니다.'),
+    'Battle pass is not spent.' => RemainingSurface.trNow('api_exception.body.20', '배틀런 패스는 사용해서 사라지지 않습니다.'),
     'Pass upgrade price is invalid.' =>
-      '패스+ 가격이 패스보다 낮아 업그레이드할 수 없습니다.',
+      RemainingSurface.trNow('api_exception.body.21', '패스+ 가격이 패스보다 낮아 업그레이드할 수 없습니다.'),
     'No item to use.' => fallback,
-    'Insufficient Value balance.' => 'VALUE가 부족합니다.',
-    'That day already counts.' => '이미 기록이 있는 날은 휴식일로 지정할 수 없습니다.',
-    'That day is already a rest day.' => '그 날은 이미 휴식일입니다.',
-    'Rest day must be today or yesterday.' => '휴식일은 오늘 또는 어제로만 지정할 수 있습니다.',
-    'Donation match monthly cap reached.' => '이번 달 기부 매칭 횟수를 모두 사용했습니다.',
+    'Insufficient Value balance.' => RemainingSurface.trNow('hall_of_fame.body.3', 'VALUE가 부족합니다.'),
+    'That day already counts.' => RemainingSurface.trNow('api_exception.body.34', '이미 기록이 있는 날은 휴식일로 지정할 수 없습니다.'),
+    'That day is already a rest day.' => RemainingSurface.trNow('api_exception.body.35', '그 날은 이미 휴식일입니다.'),
+    'Rest day must be today or yesterday.' => RemainingSurface.trNow('api_exception.body.36', '휴식일은 오늘 또는 어제로만 지정할 수 있습니다.'),
+    'Donation match monthly cap reached.' => RemainingSurface.trNow('api_exception.body.37', '이번 달 기부 매칭 횟수를 모두 사용했습니다.'),
     'Donation match company cap reached.' =>
-      '이번 달 운영자 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.',
-    'Coach one-point daily use cap is 1.' => '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.',
-    'Extra entry daily use cap is 2.' => '추가 참가권은 하루에 2번까지 사용할 수 있습니다.',
+      RemainingSurface.trNow('api_exception.body.38', '이번 달 운영자 기부 한도에 도달했습니다. VALUE는 차감되지 않았습니다.'),
+    'Coach one-point daily use cap is 1.' => RemainingSurface.trNow('api_exception.body.7', '코치 원포인트권은 하루에 1번까지 사용할 수 있습니다.'),
+    'Extra entry daily use cap is 2.' => RemainingSurface.trNow('api_exception.body.5', '추가 참가권은 하루에 2번까지 사용할 수 있습니다.'),
     'Prize races accept only SHARE or free tickets.' =>
-      '상금 대회는 SHARE 또는 무료 참가권만 사용할 수 있습니다.',
+      RemainingSurface.trNow('api_exception.body.4', '상금 대회는 SHARE 또는 무료 참가권만 사용할 수 있습니다.'),
     'Extra entry ticket is spent by joining a race.' =>
       RemainingSurface.trNow(
         'shop.streak_item_message.body.6',
         '추가 참가권은 대회에 참가할 때 사용됩니다.',
       ),
-    'No extra entry ticket.' => '사용할 추가 참가권이 없습니다.',
-    'Friend recorded run is required.' => '친구의 검증된 기록을 선택해 주세요.',
+    'No extra entry ticket.' => RemainingSurface.trNow('api_exception.body.6', '사용할 추가 참가권이 없습니다.'),
+    'Friend recorded run is required.' => RemainingSurface.trNow('api_exception.body.26', '친구의 검증된 기록을 선택해 주세요.'),
     'Recorded run not found.' => RemainingSurface.trNow(
         'shop.streak_item_message.body.7',
         '친구 기록을 찾지 못했습니다.',
@@ -70,9 +70,9 @@ String streakItemMessage(ApiException error, {required String fallback}) {
         'shop.streak_item_message.body.10',
         '그 기록에는 페이스가 없습니다.',
       ),
-    'No crew.' => '소속 크루가 없습니다.',
+    'No crew.' => RemainingSurface.trNow('api_exception.body.22', '소속 크루가 없습니다.'),
     'Cheer flag is already up for this crew today.' =>
-      '이 크루의 응원 깃발은 오늘 이미 걸려 있습니다.',
+      RemainingSurface.trNow('api_exception.body.25', '이 크루의 응원 깃발은 오늘 이미 걸려 있습니다.'),
     'Friend ghost pack is spent as single uses.' =>
       RemainingSurface.trNow(
         'shop.streak_item_message.body.11',

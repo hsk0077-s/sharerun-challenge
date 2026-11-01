@@ -1,0 +1,21 @@
+{
+ "s001": "Account deletion - ShareRun",
+ "s002": "ShareRun account deletion",
+ "s003": "App: ShareRun · Operator: 하상기",
+ "s004": "Delete directly in the app",
+ "s005": "Open ShareRun and sign in.",
+ "s006": "Open <strong>My</strong> from the bottom tabs and go to <strong>Settings</strong>.",
+ "s007": "Tap <strong>Delete account</strong> at the bottom of the screen and confirm following the instructions.",
+ "s008": "If you cannot use the app (request on the web)",
+ "s009": "Send the following to <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>. We process it after verifying your identity.",
+ "s010": "Subject: ShareRun account deletion request",
+ "s011": "The sign-in service you used (Google, Kakao, Naver) and the nickname shown in the app",
+ "s012": "We process requests within 10 days.",
+ "s013": "What happens when you delete?",
+ "s014": "Handled immediately",
+ "s015": "Cleaned up over time",
+ "s016": "Your sign-in account is deleted.<br> DIA, SHARE and VALUE balances become 0 and cannot be restored.<br> The push notification value is deleted.<br> The link is released so you can sign up again with the same Kakao or Naver account.",
+ "s017": "Activity records such as running records, daily step records and notification records are deleted within 30 days.<br> Payment and transaction records that must be kept by law are kept for the required period and then deleted. The period is 5 years.",
+ "s018": "If you want a refund for unused paid DIA you purchased, you can apply only within 7 days of purchase, so please apply on the app's refund screen before deleting.",
+ "s019": "<a href=\"privacy.html\">View the Privacy Policy</a>"
+}

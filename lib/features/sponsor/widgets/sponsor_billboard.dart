@@ -37,7 +37,7 @@ class _SponsorBillboardState extends ConsumerState<SponsorBillboard>
   Widget build(BuildContext context) {
     final buff = ref.watch(activeSponsorBuffProvider);
     final headline =
-        buff == null ? '쉐어런' : displaySponsorName(buff.sponsorName);
+        buff == null ? RemainingSurface.trNow('brand.name', '쉐어런') : displaySponsorName(buff.sponsorName);
     final message = buff?.message ??
         RemainingSurface.tr(
           context,

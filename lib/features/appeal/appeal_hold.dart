@@ -1,4 +1,5 @@
 import '../../data/models/activity_model.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 소명 화면이 보여 주는 "검증이 보류된 실제 기록" 한 건.
 class AppealHold {
@@ -8,7 +9,7 @@ class AppealHold {
 
   String get title {
     final km = activity.distanceKm.toStringAsFixed(2);
-    return '$km km 달리기';
+    return RemainingSurface.trNow('appeal.appeal_hold.body', '$km km 달리기', {'km': km});
   }
 
   String get dateLabel {
@@ -16,14 +17,14 @@ class AppealHold {
     if (at == null) return '';
     final hh = at.hour.toString().padLeft(2, '0');
     final mm = at.minute.toString().padLeft(2, '0');
-    return '${at.month}월 ${at.day}일 $hh:$mm';
+    return RemainingSurface.trNow('appeal.appeal_hold.body.2', '${at.month}월 ${at.day}일 $hh:$mm', {'at.month': at.month, 'at.day': at.day, 'hh': hh, 'mm': mm});
   }
 
   /// 서버가 남긴 보류 이유(한글 문장). 없거나 코드뿐이면 일반 문구를 쓴다.
   String get reason => holdReasonText(activity.jenaReason);
 }
 
-const _generalReason = '서버 검증에서 확인이 더 필요하다고 판단했어요.';
+String get _generalReason => RemainingSurface.trNow('appeal.appeal_hold.body.3', '서버 검증에서 확인이 더 필요하다고 판단했어요.');
 
 final _hangul = RegExp(r'[가-힣]');
 

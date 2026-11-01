@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../l10n/shop_catalog_copy.dart';
+import '../../l10n/remaining_surface.dart';
 
 class ShopItemModel {
   const ShopItemModel({
@@ -31,10 +32,10 @@ class ShopItemModel {
     return copy.isEmpty ? description : copy;
   }
 
-  static const catalog = <ShopItemModel>[
+  static List<ShopItemModel> get catalog => <ShopItemModel>[
     ShopItemModel(
       id: 'record_cpr_ticket',
-      title: '기록 심폐소생권',
+      title: RemainingSurface.trNow('items.record_cpr', '기록 심폐소생권'),
       description: '끊긴 연속 출석을 72시간 안에 되돌립니다. 한 달에 2번까지.',
       diamondCost: 12,
       iconName: 'favorite',
@@ -104,7 +105,7 @@ class ShopItemModel {
     ),
     ShopItemModel(
       id: 'battle_run_pass_plus',
-      title: '배틀런 패스+',
+      title: RemainingSurface.trNow('items.battle_pass_plus', '배틀런 패스+'),
       description: '패스 보상에 프레임, 스킨, 배지를 더합니다. 패스가 있으면 차액만 냅니다.',
       diamondCost: 280,
       iconName: 'emoji_events',
@@ -127,7 +128,7 @@ class ShopItemModel {
     ),
     ShopItemModel(
       id: 'rest_day_ticket',
-      title: '휴식일 지정권',
+      title: RemainingSurface.trNow('items.rest_day_ticket', '휴식일 지정권'),
       description: '매주 1장 무료. 추가 1장은 50 VALUE. 부상·이동일을 휴식으로 두어 스트릭을 잠시 멈춥니다.',
       diamondCost: 0,
       valueCost: 50,
@@ -135,7 +136,7 @@ class ShopItemModel {
     ),
     ShopItemModel(
       id: 'donation_match',
-      title: '기부 매칭권',
+      title: RemainingSurface.trNow('items.donation_match_ticket', '기부 매칭권'),
       description: '100 VALUE. 운영자가 러닝 기부 풀에 1,000원을 더합니다. 한 달에 1회.',
       diamondCost: 0,
       valueCost: 100,

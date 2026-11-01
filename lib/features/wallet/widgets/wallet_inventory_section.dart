@@ -79,7 +79,7 @@ class WalletInventorySection extends ConsumerWidget {
           color: AppColors.tealAccent,
           title: AppStrings.itemInventoryRestDayTitle,
           count: shop.restDayCount,
-          note: AppStrings.storeItemRestDayNote,
+          note: ShopCatalogCopy.of(Localizations.localeOf(context)).storeNote('rest_day_ticket'),
         ),
       if (shop.ghostPaceCount > 0)
         _InventoryRow(

@@ -48,7 +48,7 @@ void main() {
 
     await pump(const UserTier(animal: TierAnimal.wolf, medal: TierMedal.gold));
     expect(find.byKey(const Key('tier-medal-badge')), findsOneWidget);
-    expect(find.bySemanticsLabel('골드'), findsWidgets);
+    expect(find.bySemanticsLabel('Gold'), findsWidgets);
 
     await pump(UserTier.unratedFallback);
     expect(find.byKey(const Key('tier-medal-badge')), findsNothing);

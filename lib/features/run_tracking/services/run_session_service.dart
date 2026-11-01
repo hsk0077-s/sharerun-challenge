@@ -290,7 +290,7 @@ class GpsPermissionException implements Exception {
             'run_tracking.run_session_service.body.2',
             '위치 권한이 영구 거부되었습니다. 설정에서 허용해 주세요.',
           ),
-        GpsPermissionResult.denied => '위치 권한이 필요합니다.',
+        GpsPermissionResult.denied => RemainingSurface.trNow('in_challenge.body.6', '위치 권한이 필요합니다.'),
         GpsPermissionResult.granted => RemainingSurface.trNow(
             'run_tracking.run_session_service.body.3',
             '위치 권한이 허용되었습니다.',

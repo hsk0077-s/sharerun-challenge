@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../pedometer/solo_pedometer_foreground.dart';
 import 'run_recording_policy.dart';
+import '../../l10n/remaining_surface.dart';
 
 const _elapsedKey = 'src_run_elapsed';
 const _kmKey = 'src_run_km';
@@ -196,8 +197,8 @@ abstract final class RunRecordingForeground {
     FlutterForegroundTask.init(
       androidNotificationOptions: AndroidNotificationOptions(
         channelId: 'src_run_recording',
-        channelName: '달리기 기록',
-        channelDescription: '화면이 꺼져도 달리기 경로와 음성 코칭을 이어갑니다.',
+        channelName: RemainingSurface.trNow('run_tracking.title', '달리기 기록'),
+        channelDescription: RemainingSurface.trNow('run_tracking.run_recording_foreground.body', '화면이 꺼져도 달리기 경로와 음성 코칭을 이어갑니다.'),
         channelImportance: NotificationChannelImportance.DEFAULT,
         priority: NotificationPriority.DEFAULT,
         visibility: NotificationVisibility.VISIBILITY_PUBLIC,

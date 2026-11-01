@@ -154,11 +154,11 @@ class _PaymentMethodSelector extends StatefulWidget {
 }
 
 class _PaymentMethodSelectorState extends State<_PaymentMethodSelector> {
-  static const _methods = [
-    ('card', '신용/체크카드', Icons.credit_card_rounded),
-    ('toss', '토스페이', Icons.account_balance_wallet_rounded),
-    ('naver', '네이버페이', Icons.payments_rounded),
-    ('transfer', '계좌이체', Icons.account_balance_rounded),
+  static List<(String, String, IconData)> get _methods => [
+    ('card', RemainingSurface.trNow('charge.body.6', '신용/체크카드'), Icons.credit_card_rounded),
+    ('toss', RemainingSurface.trNow('charge.body.7', '토스페이'), Icons.account_balance_wallet_rounded),
+    ('naver', RemainingSurface.trNow('charge.body.8', '네이버페이'), Icons.payments_rounded),
+    ('transfer', RemainingSurface.trNow('charge.body.9', '계좌이체'), Icons.account_balance_rounded),
   ];
 
   static const _methodKeys = {

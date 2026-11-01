@@ -106,7 +106,7 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
             ),
           ),
           child: Text(
-            result ?? '유효한 거리와 목표 시간을 입력하세요.',
+            result ?? RemainingSurface.trNow('my_page.pace_calculator.body.2', '유효한 거리와 목표 시간을 입력하세요.'),
             style: textTheme.titleSmall?.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w700,
@@ -137,7 +137,9 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
     final paceSec = (paceSeconds % 60).round().clamp(0, 59);
     final finish = '${hours}h ${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
-    return '목표 페이스: $paceMin:${paceSec.toString().padLeft(2, '0')} /km\n'
-        '예상 완주: $finish (${distance.toStringAsFixed(1)} km)';
+    final pace = '$paceMin:${paceSec.toString().padLeft(2, '0')}';
+    final distanceText = distance.toStringAsFixed(1);
+    return '${RemainingSurface.trNow('pace.target', '목표 페이스: $pace /km', {'pace': pace})}\n'
+        '${RemainingSurface.trNow('pace.finish', '예상 완주: $finish ($distanceText km)', {'finish': finish, 'distanceText': distanceText})}';
   }
 }

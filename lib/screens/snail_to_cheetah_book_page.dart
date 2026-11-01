@@ -34,7 +34,7 @@ class SnailToCheetahBookPage extends ConsumerWidget {
                 IconButton(
                   key: const Key('tier-book-back'),
                   onPressed: () => Navigator.of(context).maybePop(),
-                  tooltip: '뒤로',
+                  tooltip: RemainingSurface.trNow('common.back', '뒤로'),
                   padding: EdgeInsets.zero,
                   alignment: Alignment.centerLeft,
                   icon: Icon(Icons.arrow_back_rounded, color: c.ink),
@@ -292,7 +292,9 @@ class _ChapterSpec {
   final String? paceGuideKey;
 
   String titleText(BuildContext context) =>
-      titleKey == null ? title : RemainingSurface.tr(context, titleKey!, title);
+      titleKey == null
+          ? animal.label(context)
+          : RemainingSurface.tr(context, titleKey!, title);
 
   String subtitleText(BuildContext context) => subtitleKey == null
       ? subtitle
@@ -303,12 +305,12 @@ class _ChapterSpec {
       : RemainingSurface.tr(context, paceGuideKey!, paceGuide);
 }
 
-const _chapters = <_ChapterSpec>[
+List<_ChapterSpec> get _chapters => <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 0,
-    title: '달팽이 (Unrated)',
-    subtitle: '등급 배정 전 임시 등급',
-    paceGuide: '등급 배정 전 · 첫 인증 1km에 거북이 브론즈 · 서브 티어 없음',
+    title: RemainingSurface.trNow('snail_to_cheetah_book.body.10', '달팽이 (Unrated)'),
+    subtitle: RemainingSurface.trNow('snail_to_cheetah_book.body.11', '등급 배정 전 임시 등급'),
+    paceGuide: RemainingSurface.trNow('snail_to_cheetah_book.body.12', '등급 배정 전 · 첫 인증 1km에 거북이 브론즈 · 서브 티어 없음'),
     animal: TierAnimal.snail,
     isSnail: true,
     titleKey: 'snail_to_cheetah_book.body.10',
@@ -318,8 +320,8 @@ const _chapters = <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 1,
     title: '거북이',
-    subtitle: '빠른 걸음 및 기초 체력 형성 단계',
-    paceGuide: '평균 페이스 7분 30초 이상',
+    subtitle: RemainingSurface.trNow('snail_to_cheetah_book.body.13', '빠른 걸음 및 기초 체력 형성 단계'),
+    paceGuide: RemainingSurface.trNow('snail_to_cheetah_book.body.14', '평균 페이스 7분 30초 이상'),
     animal: TierAnimal.turtle,
     subtitleKey: 'snail_to_cheetah_book.body.13',
     paceGuideKey: 'snail_to_cheetah_book.body.14',
@@ -327,8 +329,8 @@ const _chapters = <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 2,
     title: '비글',
-    subtitle: '가벼운 조깅을 즐기는 러닝 입문자',
-    paceGuide: '평균 페이스 6분 00초 ~ 7분 29초',
+    subtitle: RemainingSurface.trNow('snail_to_cheetah_book.body.15', '가벼운 조깅을 즐기는 러닝 입문자'),
+    paceGuide: RemainingSurface.trNow('snail_to_cheetah_book.body.16', '평균 페이스 6분 00초 ~ 7분 29초'),
     animal: TierAnimal.beagle,
     subtitleKey: 'snail_to_cheetah_book.body.15',
     paceGuideKey: 'snail_to_cheetah_book.body.16',
@@ -336,8 +338,8 @@ const _chapters = <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 3,
     title: '늑대',
-    subtitle: '일반 동호인 / 표준 그룹',
-    paceGuide: '평균 페이스 5분 00초 ~ 5분 59초',
+    subtitle: RemainingSurface.trNow('snail_to_cheetah_book.body.17', '일반 동호인 / 표준 그룹'),
+    paceGuide: RemainingSurface.trNow('snail_to_cheetah_book.body.18', '평균 페이스 5분 00초 ~ 5분 59초'),
     animal: TierAnimal.wolf,
     subtitleKey: 'snail_to_cheetah_book.body.17',
     paceGuideKey: 'snail_to_cheetah_book.body.18',
@@ -345,8 +347,8 @@ const _chapters = <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 4,
     title: '얼룩말',
-    subtitle: '러닝 숙련자 수준',
-    paceGuide: '평균 페이스 4분 00초 ~ 4분 59초',
+    subtitle: RemainingSurface.trNow('snail_to_cheetah_book.body.19', '러닝 숙련자 수준'),
+    paceGuide: RemainingSurface.trNow('snail_to_cheetah_book.body.20', '평균 페이스 4분 00초 ~ 4분 59초'),
     animal: TierAnimal.zebra,
     subtitleKey: 'snail_to_cheetah_book.body.19',
     paceGuideKey: 'snail_to_cheetah_book.body.20',
@@ -354,8 +356,8 @@ const _chapters = <_ChapterSpec>[
   _ChapterSpec(
     unlockRank: 5,
     title: '치타',
-    subtitle: '아마추어 최상위권 수준',
-    paceGuide: '평균 페이스 4분 00초 미만',
+    subtitle: RemainingSurface.trNow('snail_to_cheetah_book.body.21', '아마추어 최상위권 수준'),
+    paceGuide: RemainingSurface.trNow('snail_to_cheetah_book.body.22', '평균 페이스 4분 00초 미만'),
     animal: TierAnimal.cheetah,
     subtitleKey: 'snail_to_cheetah_book.body.21',
     paceGuideKey: 'snail_to_cheetah_book.body.22',

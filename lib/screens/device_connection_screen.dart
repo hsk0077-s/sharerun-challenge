@@ -142,7 +142,7 @@ class _DeviceConnectionScreenState
                         onConnect: () => _connectFromGuide(authUser?.uid),
                       ),
                       icon: const Icon(Icons.search_rounded),
-                      label: const Text(AppStrings.wearableGuideEntry),
+                      label: Text(AppStrings.wearableGuideEntry),
                     ),
                     const SizedBox(height: 24),
                     const _BleHeartRateSection(),

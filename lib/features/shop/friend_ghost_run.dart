@@ -160,7 +160,7 @@ class _FriendGhostUseButtonState extends ConsumerState<FriendGhostUseButton> {
             'shop.friend_ghost_run.body',
             '${AppStrings.storeItemFriendGhost} · 보유 $count',
             {
-              'AppStrings.storeItemFriendGhost': AppStrings.storeItemFriendGhost,
+              'AppStrings.storeItemFriendGhost': AppStrings.itemInventoryFriendGhostTitle,
               'count': count,
             },
           )
@@ -209,7 +209,7 @@ class _FriendRunDialogState extends State<_FriendRunDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(AppStrings.storeItemFriendGhost),
+      title: Text(AppStrings.itemInventoryFriendGhostTitle),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

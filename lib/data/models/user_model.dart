@@ -1,5 +1,6 @@
 import 'wallet_model.dart';
 import 'economy_state_model.dart';
+import '../../l10n/remaining_surface.dart';
 
 enum WatchType {
   none,
@@ -24,7 +25,7 @@ extension WatchTypeCode on WatchType {
 
   String get displayLabel {
     return switch (this) {
-      WatchType.none => '미연동',
+      WatchType.none => RemainingSurface.trNow('user_model.body', '미연동'),
       WatchType.appleWatch => 'Apple Watch',
       WatchType.galaxyWatch => 'Galaxy Watch',
       WatchType.garmin => 'Garmin',

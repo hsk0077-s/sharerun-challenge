@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../../../data/models/activity_model.dart';
 import '../models/jena_validation_result.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Jena AI 어뷰징 1차 게이트 — cadence / HR / GPS 텔레포트.
 class JenaPendingGate {
@@ -21,10 +22,10 @@ class JenaPendingGate {
     String watchTypeCode = 'none',
   }) {
     if (_cadenceMissingOrZero(cadenceSpm, watchTypeCode: watchTypeCode)) {
-      return const JenaValidationResult(
+      return JenaValidationResult(
         verified: false,
         decision: JenaDecision.pending,
-        reason: '케이던스(발구름) 데이터가 없거나 0입니다. 기록이 보류되었습니다.',
+        reason: RemainingSurface.trNow('jena_validation.jena_pending_gate.body', '케이던스(발구름) 데이터가 없거나 0입니다. 기록이 보류되었습니다.'),
         valueTokenReward: 0,
       );
     }
@@ -35,28 +36,28 @@ class JenaPendingGate {
       distanceKm: distanceKm,
       durationSeconds: durationSeconds,
     )) {
-      return const JenaValidationResult(
+      return JenaValidationResult(
         verified: false,
         decision: JenaDecision.pending,
-        reason: '심박수 추이가 페이스 증가에 반응하지 않아 차량·자전거·킥보드 탑승이 의심됩니다.',
+        reason: RemainingSurface.trNow('jena_validation.jena_pending_gate.body.2', '심박수 추이가 페이스 증가에 반응하지 않아 차량·자전거·킥보드 탑승이 의심됩니다.'),
         valueTokenReward: 0,
       );
     }
 
     final gpsVerdict = _gpsTeleportVerdict(gpsPoints);
     if (gpsVerdict == ActivityStatus.failed) {
-      return const JenaValidationResult(
+      return JenaValidationResult(
         verified: false,
         decision: JenaDecision.rejectedUnknown,
-        reason: 'GPS 오차 범위를 넘는 순간 이동 속도가 검출되어 기록이 거절되었습니다.',
+        reason: RemainingSurface.trNow('jena_validation.jena_pending_gate.body.3', 'GPS 오차 범위를 넘는 순간 이동 속도가 검출되어 기록이 거절되었습니다.'),
         valueTokenReward: 0,
       );
     }
     if (gpsVerdict == ActivityStatus.pending) {
-      return const JenaValidationResult(
+      return JenaValidationResult(
         verified: false,
         decision: JenaDecision.pending,
-        reason: '비정상적인 GPS 순간 속도가 검출되어 기록이 보류되었습니다.',
+        reason: RemainingSurface.trNow('jena_validation.jena_pending_gate.body.4', '비정상적인 GPS 순간 속도가 검출되어 기록이 보류되었습니다.'),
         valueTokenReward: 0,
       );
     }

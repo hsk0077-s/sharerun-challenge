@@ -54,7 +54,7 @@ class _TryOnSheetState extends State<TryOnSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${widget.title} 입혀 보기',
+              RemainingSurface.trNow('accessories.try_on.body', '${widget.title} 입혀 보기', {'widget.title': widget.title}),
               style: AppTextStyles.header1.copyWith(fontSize: 18),
             ),
             const SizedBox(height: 4),

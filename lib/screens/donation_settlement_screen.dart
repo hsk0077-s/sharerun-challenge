@@ -19,9 +19,8 @@ class DonationSettlementScreen extends ConsumerStatefulWidget {
   static const monthKey = Key('donation-settlement-month');
   static const capKey = Key('donation-settlement-cap');
 
-  static const intro = '달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.';
-  static const capReachedLine =
-      '이번 달 운영자 기부 예산을 모두 사용했어요 · 넘는 거리는 기록으로 남아요';
+  static String get intro => RemainingSurface.trNow('donation.intro', '달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.');
+  static String get capReachedLine => RemainingSurface.trNow('donation.cap_reached', '이번 달 운영자 기부 예산을 모두 사용했어요 · 넘는 거리는 기록으로 남아요');
   static String get disclaimer => RemainingSurface.trNow(
         'donation_settlement.body',
         '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 기부할 예정입니다. '

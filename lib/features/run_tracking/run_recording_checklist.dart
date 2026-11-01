@@ -47,7 +47,7 @@ Future<void> _presentRunRecordingChecklist(
     batteryReady: granted,
   )) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(recordingMayStopWarning)),
+      SnackBar(content: Text(recordingMayStopWarning)),
     );
   }
 }
@@ -231,7 +231,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
               body: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.3', '앱을 사용하는 동안 허용해 주세요. 항상 허용은 요청하지 않습니다.'),
               ready: _locationReady,
               readyLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.4', '허용됨'),
-              actionLabel: '허용하기',
+              actionLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.5', '허용하기'),
               loading: _loading || _busy,
               onAction: _locationReady ? null : _onLocation,
             ),
@@ -242,7 +242,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
                 body: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.7', '달리기 기록 알림을 표시합니다. Android 13 이상에서 필요합니다.'),
                 ready: _notificationReady,
                 readyLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.4', '허용됨'),
-                actionLabel: '허용하기',
+                actionLabel: RemainingSurface.trNow('run_tracking.run_recording_checklist.body.5', '허용하기'),
                 loading: _loading || _busy,
                 onAction: _notificationReady ? null : _onNotification,
               ),
@@ -267,7 +267,7 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
                 foregroundColor: AppColors.nightOnLime,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: Text(widget.beforeRun ? '확인하고 달리기' : RemainingSurface.trNow('common.confirm', '확인')),
+              child: Text(widget.beforeRun ? RemainingSurface.trNow('run_tracking.run_recording_checklist.button', '확인하고 달리기') : RemainingSurface.trNow('common.confirm', '확인')),
             ),
             if (widget.beforeRun) ...[
               const SizedBox(height: 8),
@@ -281,8 +281,8 @@ class _RunRecordingChecklistPageState extends State<RunRecordingChecklistPage>
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   widget.beforeRun
-                      ? '허용하지 않아도 달리기는 시작할 수 있습니다.'
-                      : '항목을 나중에 바꿔도 됩니다.',
+                      ? RemainingSurface.trNow('run_tracking.run_recording_checklist.body.10', '허용하지 않아도 달리기는 시작할 수 있습니다.')
+                      : RemainingSurface.trNow('run_tracking.run_recording_checklist.body.11', '항목을 나중에 바꿔도 됩니다.'),
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption,
                 ),
@@ -334,7 +334,7 @@ class _CheckRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  ready ? readyLabel : '필요',
+                  ready ? readyLabel : RemainingSurface.trNow('run_tracking.run_recording_checklist.body.12', '필요'),
                   style: AppTextStyles.caption.copyWith(
                     color: ready ? AppColors.tealAccent : AppColors.textGrey,
                     fontWeight: FontWeight.w700,

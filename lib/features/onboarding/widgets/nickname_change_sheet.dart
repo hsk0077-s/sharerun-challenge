@@ -90,7 +90,7 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
     final compact = _controller.text.trim().replaceAll(RegExp(r'\s+'), '');
     if (compact.isEmpty || error != null) {
       setState(() {
-        _liveError = error ?? '닉네임은 공백 제외 2~12자여야 합니다.';
+        _liveError = error ?? RemainingSurface.trNow('onboarding.src_onboarding_controller.body.41', '닉네임은 공백 제외 2~12자여야 합니다.');
       });
       return;
     }

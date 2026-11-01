@@ -104,7 +104,7 @@ class _MemberCard extends StatelessWidget {
                         size: 16, color: attendanceColor),
                     const SizedBox(width: 4),
                     Text(
-                      '출석 ${member.attendanceRate.toStringAsFixed(0)}%',
+                      RemainingSurface.trNow('map_crew.crew_member_ranking_board.body.5', '출석 ${member.attendanceRate.toStringAsFixed(0)}%', {'member.attendanceRate.toStringAsFixed(0)': member.attendanceRate.toStringAsFixed(0)}),
                       style: TextStyle(color: attendanceColor, fontSize: 13),
                     ),
                     const SizedBox(width: 12),

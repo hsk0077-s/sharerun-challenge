@@ -1,0 +1,21 @@
+{
+ "s001": "Suppression du compte - ShareRun",
+ "s002": "Suppression du compte ShareRun",
+ "s003": "Application : ShareRun · Opérateur : 하상기",
+ "s004": "Supprimer directement dans l'application",
+ "s005": "Ouvrez ShareRun et connectez-vous.",
+ "s006": "Ouvrez <strong>Moi</strong> dans les onglets du bas et allez dans <strong>Réglages</strong>.",
+ "s007": "Touchez <strong>Supprimer le compte</strong> en bas de l'écran et confirmez en suivant les instructions.",
+ "s008": "Si vous ne pouvez pas utiliser l'application (demande par le web)",
+ "s009": "Envoyez ce qui suit à <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>. Nous traitons la demande après vérification de votre identité.",
+ "s010": "Objet : ShareRun account deletion request",
+ "s011": "Le service de connexion que vous avez utilisé (Google, Kakao, Naver) et le pseudo affiché dans l'application",
+ "s012": "Les demandes sont traitées sous 10 jours.",
+ "s013": "Que se passe-t-il à la suppression ?",
+ "s014": "Traité immédiatement",
+ "s015": "Nettoyé avec le temps",
+ "s016": "Votre compte de connexion est supprimé.<br> Les soldes de DIA, SHARE et VALUE passent à 0 et ne peuvent pas être restaurés.<br> La valeur des notifications push est supprimée.<br> La liaison est levée pour que vous puissiez vous réinscrire avec le même compte Kakao ou Naver.",
+ "s017": "Les enregistrements d'activité, comme les courses, les pas quotidiens et les notifications, sont supprimés sous 30 jours.<br> Les enregistrements de paiements et de transactions à conserver en vertu de la loi sont gardés pendant la durée prévue puis supprimés. La durée est de 5 ans.",
+ "s018": "Pour obtenir le remboursement de la part payante non utilisée des DIA achetés, vous ne pouvez le demander que dans les 7 jours suivant l'achat ; si vous souhaitez un remboursement, faites la demande d'abord sur l'écran de remboursement de l'application.",
+ "s019": "<a href=\"privacy.html\">Voir la Politique de confidentialité</a>"
+}

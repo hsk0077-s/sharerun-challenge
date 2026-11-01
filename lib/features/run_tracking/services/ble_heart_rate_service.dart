@@ -43,7 +43,7 @@ class BleHrDevice {
       id: (map['id'] as String?)?.trim() ?? '',
       name: (rawName != null && rawName.isNotEmpty)
           ? rawName
-          : 'BLE 심박 센서 (${map['id'] ?? ''})',
+          : 'BLE ${RemainingSurface.trNow('ble.default_name', '심박 센서')} (${map['id'] ?? ''})',
       rssi: (map['rssi'] as num?)?.toInt() ?? -60,
     );
   }

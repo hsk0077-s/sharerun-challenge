@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/remaining_surface.dart';
 
 enum MusicKey { previous, playPause, next }
 
@@ -94,23 +95,23 @@ class MusicControls extends ConsumerWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        button(previousKey, Icons.skip_previous_rounded, '이전 곡', () async {
+        button(previousKey, Icons.skip_previous_rounded, RemainingSurface.trNow('run_tracking.music_controls.button', '이전 곡'), () async {
           final ok = await bridge.send(MusicKey.previous);
-          if (context.mounted) await _tell(context, ok, '음악을 조절하지 못했어요.');
+          if (context.mounted) await _tell(context, ok, RemainingSurface.trNow('run_tracking.music_controls.body', '음악을 조절하지 못했어요.'));
         }),
-        button(playPauseKey, Icons.play_circle_fill_rounded, '재생 / 일시정지', () async {
+        button(playPauseKey, Icons.play_circle_fill_rounded, RemainingSurface.trNow('run_tracking.music_controls.body.2', '재생 / 일시정지'), () async {
           final ok = await bridge.send(MusicKey.playPause);
-          if (context.mounted) await _tell(context, ok, '음악을 조절하지 못했어요.');
+          if (context.mounted) await _tell(context, ok, RemainingSurface.trNow('run_tracking.music_controls.body', '음악을 조절하지 못했어요.'));
         }),
-        button(nextKey, Icons.skip_next_rounded, '다음 곡', () async {
+        button(nextKey, Icons.skip_next_rounded, RemainingSurface.trNow('run_tracking.music_controls.body.3', '다음 곡'), () async {
           final ok = await bridge.send(MusicKey.next);
-          if (context.mounted) await _tell(context, ok, '음악을 조절하지 못했어요.');
+          if (context.mounted) await _tell(context, ok, RemainingSurface.trNow('run_tracking.music_controls.body', '음악을 조절하지 못했어요.'));
         }),
         const SizedBox(width: 12),
-        button(openKey, Icons.library_music_rounded, '음악 앱 열기', () async {
+        button(openKey, Icons.library_music_rounded, RemainingSurface.trNow('run_tracking.music_controls.body.4', '음악 앱 열기'), () async {
           final ok = await bridge.openApp();
           if (context.mounted) {
-            await _tell(context, ok, '음악 앱을 찾지 못했어요. 쓰는 음악 앱을 직접 열어 주세요.');
+            await _tell(context, ok, RemainingSurface.trNow('run_tracking.music_controls.body.5', '음악 앱을 찾지 못했어요. 쓰는 음악 앱을 직접 열어 주세요.'));
           }
         }),
       ],

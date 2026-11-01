@@ -112,7 +112,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     if (emblem == null || !mounted) return;
     final crewName = await showDialog<String>(
       context: context,
-      builder: (_) => const _CrewNameDialog(),
+      builder: (_) => _CrewNameDialog(),
     );
     if (crewName == null || !mounted) return;
     final payWith = await _chooseCrewPayment();
@@ -547,20 +547,20 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         title: RemainingSurface.tr(context, 'running_crew.dialog', '크루 이름 바꾸기'),
         initial: mine.crew.name,
         okLabel: RemainingSurface.tr(context, 'running_crew.dialog.2', '다음'),
-        note: cost == 0 ? '처음 한 번은 무료예요.' : '이름을 바꿀 때마다 $cost DIA가 들어요.',
+        note: cost == 0 ? RemainingSurface.trNow('crew_manager.body', '처음 한 번은 무료예요.') : RemainingSurface.trNow('crew_manager.button', '이름을 바꿀 때마다 $cost DIA가 들어요.', {'cost': cost}),
       ),
     );
     if (name == null || name == mine.crew.name || !mounted) return;
     if (cost > 0 &&
         !await _confirm(
-          '이름 바꾸기',
+          RemainingSurface.trNow('crew_manager.body.2', '이름 바꾸기'),
           RemainingSurface.tr(
             context,
             'running_crew.body.6',
             '"$name"(으)로 바꾸면 $cost DIA가 들어요. 보너스 DIA를 먼저 써요.',
             {'name': name, 'cost': cost},
           ),
-          '$cost DIA 내고 바꾸기',
+          RemainingSurface.trNow('crew_manager.body.4', '$cost DIA 내고 바꾸기', {'cost': cost}),
         )) {
       return;
     }
@@ -583,9 +583,9 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     } on ApiException catch (error) {
       if (!mounted) return;
       _toast(switch (error.statusCode) {
-        400 => 'DIA가 모자라거나 쓸 수 없는 이름이에요.',
-        403 => '크루장만 이름을 바꿀 수 있어요.',
-        _ => '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+        400 => RemainingSurface.trNow('crew_manager.toast.3', 'DIA가 모자라거나 쓸 수 없는 이름이에요.'),
+        403 => RemainingSurface.trNow('crew_manager.toast.4', '크루장만 이름을 바꿀 수 있어요.'),
+        _ => RemainingSurface.trNow('crew_manager.toast.5', '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'),
       });
     } catch (_) {
       if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.5', '이름을 바꾸지 못했어요. 잠시 뒤 다시 해 주세요.'));
@@ -798,15 +798,15 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
         onKick: api == null || !mine.isManager
             ? null
             : (member) async {
-                if (!await _confirm('크루원 내보내기',
-                    '${member.nickname}님을 크루에서 내보낼까요?', '내보내기')) {
+                if (!await _confirm(RemainingSurface.trNow('crew_manager.toast.29', '크루원 내보내기'),
+                    RemainingSurface.trNow('crew_manager.toast.30', '${member.nickname}님을 크루에서 내보낼까요?', {'member.nickname': member.nickname}), RemainingSurface.trNow('crew_manager.toast.31', '내보내기'))) {
                   return;
                 }
                 try {
                   await api.kickCrewMember(member.uid);
                   _refreshCrews();
                   if (ctx.mounted) Navigator.of(ctx).pop();
-                  if (mounted) _toast('${member.nickname}님을 내보냈어요.');
+                  if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.32', '${member.nickname}님을 내보냈어요.', {'member.nickname': member.nickname}));
                 } catch (_) {
                   if (mounted) _toast(RemainingSurface.trNow('crew_manager.toast.33', '내보내지 못했어요. 잠시 뒤 다시 해 주세요.'));
                 }
@@ -862,7 +862,7 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
                               '${member.nickname}님을 부크루장으로 했어요.',
                               {'member.nickname': member.nickname},
                             )
-                          : '${member.nickname}님을 크루원으로 돌렸어요.',
+                          : RemainingSurface.trNow('crew_manager.toast.27', '${member.nickname}님을 크루원으로 돌렸어요.', {'member.nickname': member.nickname}),
                     );
                   }
                 } catch (_) {
@@ -1960,12 +1960,13 @@ class _CrewRequestsSheet extends StatelessWidget {
 
 /// 크루 이름을 묻는다. 2~20자.
 class _CrewNameDialog extends StatefulWidget {
-  const _CrewNameDialog({
-    this.title = '크루 이름',
+  _CrewNameDialog({
+    String? title,
     this.initial = '',
-    this.okLabel = '다음',
+    String? okLabel,
     this.note,
-  });
+  })  : title = title ?? RemainingSurface.trNow('crew_manager.body.13', '크루 이름'),
+        okLabel = okLabel ?? RemainingSurface.trNow('running_crew.dialog.2', '다음');
 
   final String title;
   final String initial;
@@ -2031,7 +2032,7 @@ class _CrewNameDialogState extends State<_CrewNameDialog> {
           key: _CrewNameDialog.okKey,
           onPressed: _valid ? () => _close(_name) : null,
           child: Text(
-            widget.okLabel == '다음'
+            widget.okLabel == RemainingSurface.trNow('running_crew.dialog.2', '다음')
                 ? RemainingSurface.tr(context, 'running_crew.dialog.2', '다음')
                 : widget.okLabel,
           ),

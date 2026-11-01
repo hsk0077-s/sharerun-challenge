@@ -1,22 +1,28 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// One installed app the finish poster can be handed to.
 enum RunFinishShareTarget {
-  story('story', 'Instagram 스토리'),
-  feed('feed', 'Instagram 피드'),
+  story('story', 'Instagram 스토리', 'run_result.run_finish_share_targets.body'),
+  feed('feed', 'Instagram 피드', 'run_result.run_finish_share_targets.body.2'),
   tiktok('tiktok', 'TikTok'),
   facebook('facebook', 'Facebook'),
-  kakao('kakao', '카카오톡'),
+  kakao('kakao', '카카오톡', 'pedometer.walking_challenge_share.body.3'),
   line('line', 'LINE'),
   x('x', 'X'),
   whatsapp('whatsapp', 'WhatsApp'),
   telegram('telegram', 'Telegram'),
-  more('more', '더보기');
+  more('more', '더보기', 'run_result.run_finish_share_targets.body.3');
 
-  const RunFinishShareTarget(this.id, this.label);
+  const RunFinishShareTarget(this.id, this._ko, [this._key]);
 
   final String id;
-  final String label;
+  final String _ko;
+  final String? _key;
+
+  /// 화면 언어로 된 이름. 상표는 그대로다.
+  String get label =>
+      _key == null ? _ko : RemainingSurface.trNow(_key, _ko);
 
   static const catalog = <RunFinishShareTarget>[
     story,

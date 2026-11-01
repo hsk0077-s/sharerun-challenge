@@ -1,0 +1,21 @@
+{
+ "s001": "Konto löschen - ShareRun",
+ "s002": "ShareRun Kontolöschung",
+ "s003": "App: ShareRun · Betreiber: 하상기",
+ "s004": "Direkt in der App löschen",
+ "s005": "Öffne ShareRun und melde dich an.",
+ "s006": "Öffne unten im Tab <strong>Mein</strong> und gehe zu <strong>Einstellungen</strong>.",
+ "s007": "Tippe unten auf dem Bildschirm auf <strong>Konto löschen</strong> und bestätige gemäß den Hinweisen.",
+ "s008": "Wenn du die App nicht nutzen kannst (Antrag über das Web)",
+ "s009": "Sende Folgendes an <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>. Wir bearbeiten es nach der Identitätsprüfung.",
+ "s010": "Betreff: ShareRun account deletion request",
+ "s011": "Der Anmeldedienst, den du genutzt hast (Google, Kakao, Naver), und der in der App angezeigte Spitzname",
+ "s012": "Anfragen werden innerhalb von 10 Tagen bearbeitet.",
+ "s013": "Was passiert beim Löschen?",
+ "s014": "Sofort erledigt",
+ "s015": "Wird mit der Zeit bereinigt",
+ "s016": "Dein Anmeldekonto wird gelöscht.<br> Das Guthaben an DIA, SHARE und VALUE wird auf 0 gesetzt und kann nicht wiederhergestellt werden.<br> Der Wert für Push-Benachrichtigungen wird gelöscht.<br> Die Verknüpfung wird aufgehoben, sodass du dich mit demselben Kakao- oder Naver-Konto erneut registrieren kannst.",
+ "s017": "Aktivitätsaufzeichnungen wie Laufaufzeichnungen, tägliche Schrittaufzeichnungen und Benachrichtigungsaufzeichnungen werden innerhalb von 30 Tagen gelöscht.<br> Gesetzlich aufzubewahrende Zahlungs- und Transaktionsdaten werden für die vorgeschriebene Dauer aufbewahrt und danach gelöscht. Die Dauer beträgt 5 Jahre.",
+ "s018": "Für nicht genutzte kostenpflichtige DIA, die du gekauft hast, kannst du eine Erstattung nur innerhalb von 7 Tagen nach dem Kauf beantragen; wenn du eine Erstattung möchtest, beantrage sie bitte vor dem Löschen im Erstattungsbildschirm der App.",
+ "s019": "<a href=\"privacy.html\">Datenschutzerklärung ansehen</a>"
+}

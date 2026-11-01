@@ -123,7 +123,7 @@ class TournamentModel {
   }) {
     return TournamentModel(
       id: id,
-      title: json['title'] as String? ?? '쉐어런 대회',
+      title: json['title'] as String? ?? RemainingSurface.trNow('tournament_model.body.4', '쉐어런 대회'),
       targetDistanceKm: (json['targetDistanceKm'] as num?)?.toDouble() ?? 3,
       entryFeeShare: (json['entryFeeShare'] as num?)?.toInt() ?? 0,
       winnerRewardValue: (json['winnerRewardValue'] as num?)?.toInt() ?? 0,
@@ -133,7 +133,7 @@ class TournamentModel {
       participantCount: (json['participantCount'] as num?)?.toInt() ?? 0,
       requiredTier: (json['requiredTier'] as num?)?.toInt() ?? 1,
       status: _statusFromCode(json['status'] as String?),
-      sponsorName: json['sponsorName'] as String? ?? '쉐어런 스폰서',
+      sponsorName: json['sponsorName'] as String? ?? RemainingSurface.trNow('tournament_model.body.5', '쉐어런 스폰서'),
       prizeTier: json['prizeTier'] is String
           ? (json['prizeTier'] as String).trim()
           : '',

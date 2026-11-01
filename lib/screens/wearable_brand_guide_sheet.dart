@@ -44,7 +44,7 @@ const wearableBrands = <WearableBrand>[
   WearableBrand(
     id: 'xiaomi',
     name: '샤오미 미밴드 / 레드미 워치',
-    app: 'Mi Fitness (구형은 Zepp Life)',
+    app: 'Mi Fitness / Zepp Life',
     keywords: [
       '샤오미',
       'xiaomi',

@@ -16,6 +16,7 @@ import '../avatar_choice.dart';
 import '../avatar_choice_provider.dart';
 import '../user_profile_notifier.dart';
 import 'tier_circle_badge.dart';
+import '../../../l10n/remaining_surface.dart';
 
 abstract final class GenderAvatarAssets {
   static const male = 'assets/images/characters/avatar_gender_male.png';
@@ -150,7 +151,7 @@ class HomeUserIdentityHeader extends ConsumerWidget {
     final angel = ref.watch(userAngelTierProvider);
     final worn = ref.watch(wornAccessoriesProvider);
     final displayName = SrcOnboardingController.isUnsetNickname(nickname)
-        ? '닉네임을 설정해 주세요'
+        ? RemainingSurface.trNow('profile.gender_profile_avatar.body', '닉네임을 설정해 주세요')
         : nickname;
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;

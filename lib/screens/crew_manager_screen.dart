@@ -626,7 +626,7 @@ class _CrewManagerScreenState extends ConsumerState<CrewManagerScreen> {
                         if (subs.isNotEmpty) ...[
                           const SizedBox(height: 6),
                           Text(
-                            '부방장: ${subs.join(', ')}',
+                            RemainingSurface.trNow('crew.deputies', '부방장: ${subs.join(', ')}', {"subs.join(', ')": subs.join(', ')}),
                             style: AppTextStyles.caption.copyWith(fontSize: 12),
                           ),
                         ],

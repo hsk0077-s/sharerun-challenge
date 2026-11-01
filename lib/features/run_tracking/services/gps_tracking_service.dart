@@ -46,7 +46,7 @@ class GpsTrackingService {
         distanceFilter: 0,
         intervalDuration: const Duration(seconds: 1),
         foregroundNotificationConfig: ForegroundNotificationConfig(
-          notificationTitle: '쉐어런',
+          notificationTitle: RemainingSurface.trNow('brand.name', '쉐어런'),
           notificationText: RemainingSurface.trNow(
             'run_tracking.gps_tracking_service.body',
             '실시간 러닝 GPS 추적 중',

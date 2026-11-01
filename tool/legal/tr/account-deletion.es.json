@@ -1,0 +1,21 @@
+{
+ "s001": "Eliminación de la cuenta - ShareRun",
+ "s002": "Eliminación de la cuenta de ShareRun",
+ "s003": "App: ShareRun · Operador: 하상기",
+ "s004": "Eliminar directamente en la app",
+ "s005": "Abre ShareRun e inicia sesión.",
+ "s006": "Abre <strong>Yo</strong> en las pestañas de abajo y entra en <strong>Ajustes</strong>.",
+ "s007": "Toca <strong>Eliminar cuenta</strong> en la parte inferior de la pantalla y confirma siguiendo las instrucciones.",
+ "s008": "Si no puedes usar la app (solicitar por la web)",
+ "s009": "Envía lo siguiente a <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>. Lo tramitamos tras verificar tu identidad.",
+ "s010": "Asunto: ShareRun account deletion request",
+ "s011": "El servicio de inicio de sesión que usaste (Google, Kakao, Naver) y el apodo que se muestra en la app",
+ "s012": "Las solicitudes se tramitan en un plazo de 10 días.",
+ "s013": "¿Qué pasa al eliminar?",
+ "s014": "Se trata de inmediato",
+ "s015": "Se limpia con el tiempo",
+ "s016": "Se elimina tu cuenta de inicio de sesión.<br> Los saldos de DIA, SHARE y VALUE pasan a 0 y no se pueden recuperar.<br> Se elimina el valor de las notificaciones push.<br> Se libera la vinculación para que puedas volver a registrarte con la misma cuenta de Kakao o Naver.",
+ "s017": "Los registros de actividad, como los de carreras, de pasos diarios y de notificaciones, se eliminan en un plazo de 30 días.<br> Los registros de pagos y transacciones que deben conservarse por ley se guardan durante el plazo establecido y luego se eliminan. El plazo es de 5 años.",
+ "s018": "Si quieres el reembolso de la parte de pago no usada de los DIA que compraste, solo puedes solicitarlo dentro de los 7 días posteriores a la compra, así que solicítalo antes en la pantalla de reembolso de la app.",
+ "s019": "<a href=\"privacy.html\">Ver la Política de privacidad</a>"
+}

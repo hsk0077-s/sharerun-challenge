@@ -10,6 +10,7 @@ import '../../../core/theme/theme.dart';
 import '../../../core/widgets/social_brand_icons.dart';
 import '../../pedometer/walking_challenge_share.dart';
 import '../invite_copy.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Play Store listing. Package id is `applicationId` in
 /// `android/app/build.gradle.kts`.
@@ -45,12 +46,12 @@ class MyPageInviteCodeCard extends ConsumerStatefulWidget {
   static const retryKey = Key('my-page-invite-retry');
   static const kakaoKey = Key('my-page-invite-kakao');
 
-  static const title = '내 초대 코드';
-  static const copyLabel = '복사';
-  static const copiedMessage = '복사했어요';
-  static const loadFailedMessage = '초대 코드를 불러오지 못했어요. 다시 시도';
-  static const kakaoButtonLabel = '카카오톡으로 초대하기';
-  static const shareSubject = '쉐어런 초대';
+  static String get title => RemainingSurface.trNow('profile.invite_copy.body', '내 초대 코드');
+  static String get copyLabel => RemainingSurface.trNow('profile.invite_copy.body.2', '복사');
+  static String get copiedMessage => RemainingSurface.trNow('profile.invite_copy.body.3', '복사했어요');
+  static String get loadFailedMessage => RemainingSurface.trNow('profile.invite_copy.body.4', '초대 코드를 불러오지 못했어요. 다시 시도');
+  static String get kakaoButtonLabel => RemainingSurface.trNow('profile.invite_copy.body.5', '카카오톡으로 초대하기');
+  static String get shareSubject => RemainingSurface.trNow('profile.invite_copy.body.6', '쉐어런 초대');
 
   @override
   ConsumerState<MyPageInviteCodeCard> createState() =>

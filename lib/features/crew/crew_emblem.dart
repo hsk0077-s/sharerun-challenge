@@ -597,8 +597,8 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
       builder: (ctx) => AlertDialog(
         title: Text(RemainingSurface.trNow('crew.crew_emblem.dialog', '유료 엠블럼 사기')),
         content: Text(
-          '${price == null ? '' : '$price DIA를 내고 '}이 엠블럼을 살까요?\n'
-          '크루가 평생 가지며 크루원 누구에게나 보여요. 크루를 없애면 함께 사라져요.',
+          '${price == null ? RemainingSurface.trNow('crew.emblem.buy_ask', '이 엠블럼을 살까요?') : RemainingSurface.trNow('crew.emblem.buy_ask_price', '$price DIA를 내고 이 엠블럼을 살까요?', {'price': price})}\n'
+          '${RemainingSurface.trNow('crew.emblem.buy_note', '크루가 평생 가지며 크루원 누구에게나 보여요. 크루를 없애면 함께 사라져요.')}',
         ),
         actions: [
           TextButton(
@@ -608,7 +608,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
           FilledButton(
             key: const Key('crew-emblem-buy-confirm'),
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('사기'),
+            child: Text(RemainingSurface.trNow('crew.emblem.buy_btn', '사기')),
           ),
         ],
       ),
@@ -624,11 +624,11 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
     });
   }
 
-  static const _borderTitles = <String, String>{
-    'distance': '거리',
-    'donation': '기부',
-    'members': '인원',
-    'ranking': '랭킹',
+  static Map<String, String> get _borderTitles => <String, String>{
+    'distance': RemainingSurface.trNow('crew.emblem.border.distance', '거리'),
+    'donation': RemainingSurface.trNow('crew.emblem.border.donation', '기부'),
+    'members': RemainingSurface.trNow('crew.emblem.border.members', '인원'),
+    'ranking': RemainingSurface.trNow('crew.emblem.border.ranking', '랭킹'),
   };
 
   String _borderRule(String kind) {
@@ -641,13 +641,13 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
     final now = _status.progress[kind] ?? 0;
     switch (kind) {
       case 'distance':
-        return '${n(t[0])}km · ${n(t[1])}km · ${n(t[2])}km  (지금 ${n(now.round())}km)';
+        return RemainingSurface.trNow('crew.emblem.rule.distance', '${n(t[0])}km · ${n(t[1])}km · ${n(t[2])}km  (지금 ${n(now.round())}km)', {'n(t[0])': n(t[0]), 'n(t[1])': n(t[1]), 'n(t[2])': n(t[2]), 'n(now.round())': n(now.round())});
       case 'donation':
-        return '${n(t[0])}원 · ${n(t[1])}원 · ${n(t[2])}원  (지금 ${n(now.round())}원)';
+        return RemainingSurface.trNow('crew.emblem.rule.donation', '${n(t[0])}원 · ${n(t[1])}원 · ${n(t[2])}원  (지금 ${n(now.round())}원)', {'n(t[0])': n(t[0]), 'n(t[1])': n(t[1]), 'n(t[2])': n(t[2]), 'n(now.round())': n(now.round())});
       case 'members':
-        return '${t[0]}명 · ${t[1]}명 · ${t[2]}명  (지금 ${now.round()}명)';
+        return RemainingSurface.trNow('crew.emblem.rule.members', '${t[0]}명 · ${t[1]}명 · ${t[2]}명  (지금 ${now.round()}명)', {'t[0]': t[0], 't[1]': t[1], 't[2]': t[2], 'now.round()': now.round()});
       default:
-        return '월간 ${t[0]}위 · ${t[1]}위 · ${t[2]}위 이내';
+        return RemainingSurface.trNow('crew.emblem.rule.ranking', '월간 ${t[0]}위 · ${t[1]}위 · ${t[2]}위 이내', {'t[0]': t[0], 't[1]': t[1], 't[2]': t[2]});
     }
   }
 
@@ -791,7 +791,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
         ),
         const SizedBox(height: 4),
         Text(
-          owned ? '보유' : (price == null ? '' : '$price DIA'),
+          owned ? RemainingSurface.trNow('shop.accessory_shop_grid.owned', '보유') : (price == null ? '' : '$price DIA'),
           style: storeText(11, owned ? c.primary : c.muted, w: FontWeight.w700),
         ),
       ],
@@ -833,7 +833,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                 size: 120,
               ),
             ),
-            _label('틀', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.14', '틀'), c.muted),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -853,7 +853,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   ),
               ],
             ),
-            _label('문양', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.15', '문양'), c.muted),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -873,7 +873,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   ),
               ],
             ),
-            _label('배경 무늬', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.16', '배경 무늬'), c.muted),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -895,7 +895,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   ),
               ],
             ),
-            _label('틀 색', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.18', '틀 색'), c.muted),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -910,7 +910,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   ),
               ],
             ),
-            _label('문양 색 (틀 색과 잘 보이는 색만)', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.19', '문양 색 (틀 색과 잘 보이는 색만)'), c.muted),
             Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -925,7 +925,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                   ),
               ],
             ),
-            _label('해금 테두리 (활동으로 얻어요)', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.20', '해금 테두리 (활동으로 얻어요)'), c.muted),
             for (final kind in CrewEmblem.borderKinds) ...[
               Row(
                 children: [
@@ -951,7 +951,7 @@ class _CrewEmblemPickerState extends State<CrewEmblemPicker> {
                 ),
               ),
             ],
-            _label('유료 일러스트 (크루가 평생 가져요)', c.muted),
+            _label(RemainingSurface.trNow('crew.crew_emblem.body.21', '유료 일러스트 (크루가 평생 가져요)'), c.muted),
             Row(
               children: [
                 for (final id in CrewEmblem.paidIds.toList()..sort())

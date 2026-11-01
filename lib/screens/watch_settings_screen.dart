@@ -146,8 +146,14 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
                       'watch_settings.body.6',
                       '현재 연동된 워치가 없습니다.',
                     )
-                  : '현재 연동: ${watchType.displayLabel} '
-                      '(${watchType.isApiTrack ? 'API Track' : 'OS Direct Track'})',
+                  : RemainingSurface.trNow(
+                      'watch_settings.current_sync',
+                      '현재 연동: ${watchType.displayLabel} (\$track)',
+                      {
+                        'watchType.displayLabel': watchType.displayLabel,
+                        'track': watchType.isApiTrack ? 'API Track' : 'OS Direct Track',
+                      },
+                    ),
               style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
@@ -227,7 +233,7 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${watchType.displayLabel} 연동 설정이 저장되었습니다.')),
+        SnackBar(content: Text(RemainingSurface.trNow('device_connection.toast.9', '${watchType.displayLabel} 연동 설정이 저장되었습니다.', {'watchType.displayLabel': watchType.displayLabel}))),
       );
     } catch (error) {
       if (!context.mounted) {

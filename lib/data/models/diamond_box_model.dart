@@ -1,3 +1,4 @@
+import '../../l10n/remaining_surface.dart';
 class DiamondBoxModel {
   const DiamondBoxModel({
     required this.id,
@@ -21,7 +22,7 @@ class DiamondBoxModel {
   }) {
     return DiamondBoxModel(
       id: id,
-      title: json['title'] as String? ?? '다이아 상자',
+      title: json['title'] as String? ?? RemainingSurface.trNow('diamond_box_model.body', '다이아 상자'),
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
       rewardDiamond: (json['rewardDiamond'] as num?)?.toInt() ?? 1,

@@ -521,7 +521,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
               onPressed: () => TryOnSheet.show(
                 context,
                 animal: widget.animal,
-                title: widget.animal.labelKo,
+                title: widget.animal.label(context),
               ),
               child: Text(RemainingSurface.tr(
                 context,

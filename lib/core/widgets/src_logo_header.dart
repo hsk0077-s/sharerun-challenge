@@ -38,7 +38,7 @@ class SRCLogoHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppShapes.loginLogoToTitleGap),
-            const Text(
+            Text(
               AppStrings.loginTitle,
               textAlign: TextAlign.center,
               style: AppTextStyles.header1,

@@ -1,3 +1,4 @@
+import '../../l10n/remaining_surface.dart';
 /// 자생적 챌린지 방 개설(src-8) 참가비(SHARE) 수식.
 abstract final class ChallengeEntryFee {
   /// 목표 거리(km) → 참가비 SHARE.
@@ -34,6 +35,7 @@ abstract final class ChallengeEntryFee {
       buffer.write(digits[i]);
     }
     final formatted = buffer.toString();
-    return '참가비: ${share < 0 ? '-' : ''}$formatted SHARE';
+    final sign = share < 0 ? '-' : '';
+    return RemainingSurface.trNow('challenge.entry_fee', '참가비: $sign$formatted SHARE', {'sign': sign, 'formatted': formatted});
   }
 }

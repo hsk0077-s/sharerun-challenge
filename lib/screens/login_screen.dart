@@ -129,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _onGoogle() => _startProvider(
         provider: 'google',
-        providerName: '구글',
+        providerName: RemainingSurface.trNow('login_connections.body.5', '구글'),
         successMessage: RemainingSurface.tr(
             context, 'login.body', '구글 로그인에 성공했습니다!'),
         failureMessage: RemainingSurface.tr(
@@ -139,7 +139,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _onApple() => _startProvider(
         provider: 'apple',
-        providerName: '애플',
+        providerName: RemainingSurface.trNow('login_connections.body.4', '애플'),
         successMessage: RemainingSurface.tr(
             context, 'login.body.3', '애플 로그인에 성공했습니다!'),
         failureMessage: RemainingSurface.tr(
@@ -149,7 +149,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _onNaver() => _startProvider(
         provider: 'naver',
-        providerName: '네이버',
+        providerName: RemainingSurface.trNow('login_connections.body.3', '네이버'),
         successMessage: RemainingSurface.tr(
             context, 'login.body.5', '네이버 로그인에 성공했습니다!'),
         failureMessage: RemainingSurface.tr(
@@ -159,7 +159,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _onKakao() => _startProvider(
         provider: 'kakao',
-        providerName: '카카오',
+        providerName: RemainingSurface.trNow('login_connections.body.2', '카카오'),
         successMessage: RemainingSurface.tr(
             context, 'login.body.7', '카카오 로그인에 성공했습니다!'),
         failureMessage: RemainingSurface.tr(
@@ -377,10 +377,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   String _providerName(String provider) {
     return switch (provider) {
-      'google' => '구글',
-      'kakao' => '카카오',
-      'naver' => '네이버',
-      'apple' => '애플',
+      'google' => RemainingSurface.trNow('login_connections.body.5', '구글'),
+      'kakao' => RemainingSurface.trNow('login_connections.body.2', '카카오'),
+      'naver' => RemainingSurface.trNow('login_connections.body.3', '네이버'),
+      'apple' => RemainingSurface.trNow('login_connections.body.4', '애플'),
       _ => provider,
     };
   }

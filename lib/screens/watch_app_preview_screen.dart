@@ -212,8 +212,7 @@ class _WatchAppPreviewScreenState extends ConsumerState<WatchAppPreviewScreen> {
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
         children: [
           Text(
-            '손목에서 바로 뛸 수 있는 쉐어런 워치 앱을 준비하고 있어요. '
-            '워치 앱이 설치된 시계에서 아래 연결 코드를 입력하면 연결돼요. '
+            '${RemainingSurface.trNow('watch_app_preview.intro', '손목에서 바로 뛸 수 있는 쉐어런 워치 앱을 준비하고 있어요. 워치 앱이 설치된 시계에서 아래 연결 코드를 입력하면 연결돼요.')} '
             '${RemainingSurface.tr(
               context,
               'watch_app_preview.body.9',
@@ -416,23 +415,23 @@ class _WatchFaceData {
 }
 
 List<_WatchFaceData> get _watchFaces => [
-      const _WatchFaceData('시작', '3km', '탭해서 시작', Icons.play_arrow_rounded),
-      const _WatchFaceData(
-          '달리는 중', '5:42', '♥ 148  ·  1.8km', Icons.directions_run),
+      _WatchFaceData(RemainingSurface.trNow('common.start', '시작'), '3km', RemainingSurface.trNow('watch_app_preview.tap_start', '탭해서 시작'), Icons.play_arrow_rounded),
       _WatchFaceData(
-        '일시정지',
-        '일시정지',
+          RemainingSurface.trNow('watch_app_preview.running', '달리는 중'), '5:42', '♥ 148  ·  1.8km', Icons.directions_run),
+      _WatchFaceData(
+        RemainingSurface.trNow('watch_app_preview.paused', '일시정지'),
+        RemainingSurface.trNow('watch_app_preview.paused', '일시정지'),
         RemainingSurface.trNow('watch_app_preview.body.15', '탭해서 다시 시작'),
         Icons.pause_rounded,
       ),
       _WatchFaceData(
-        '대회 알림',
+        RemainingSurface.trNow('watch_app_preview.tournament_alert', '대회 알림'),
         RemainingSurface.trNow('watch_app_preview.body.16', '1위!'),
         RemainingSurface.trNow('watch_app_preview.body.17', '대회 2명 앞서요'),
         Icons.emoji_events_outlined,
       ),
       _WatchFaceData(
-        '끝',
+        RemainingSurface.trNow('watch_app_preview.finished', '끝'),
         '3.00km',
         RemainingSurface.trNow('watch_app_preview.body.18', '5:38/km · 17분'),
         Icons.check_rounded,

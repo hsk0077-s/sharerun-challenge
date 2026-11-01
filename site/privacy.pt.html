@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Política de Privacidade - ShareRun</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <p class="draft">Esta é uma tradução de cortesia do original em coreano. Em caso de divergência, prevalece o original em coreano.</p>
+  <nav class="muted"><a href="privacy.html">한국어</a> · <a href="privacy.en.html">English</a> · <a href="privacy.ja.html">日本語</a> · <a href="privacy.zh.html">繁體中文</a> · <a href="privacy.es.html">Español</a> · <strong>Português</strong> · <a href="privacy.de.html">Deutsch</a> · <a href="privacy.fr.html">Français</a> · <a href="privacy.vi.html">Tiếng Việt</a> · <a href="privacy.th.html">ไทย</a> · <a href="privacy.id.html">Bahasa Indonesia</a></nav>
+  <h1>Política de Privacidade do ShareRun</h1>
+  <p class="muted">Vigência: 2026-10-25 · Última alteração: 2026-10-24</p>
+
+  <p>하상기 (o "Operador") trata com cuidado os dados pessoais dos usuários ao oferecer o ShareRun (o "App") e cumpre a Lei de Proteção de Informações Pessoais e demais leis aplicáveis. O Operador trata apenas os dados pessoais mínimos necessários para prestar o serviço. Esta política explica quais dados o Operador coleta e por quê, como os usa e guarda, e quais direitos você tem.</p>
+
+  <h2>1. Dados pessoais coletados e finalidades</h2>
+  <table>
+    <tr><th>Categoria</th><th>Itens coletados</th><th>Finalidade</th></tr>
+    <tr><td>Conta</td><td>O identificador e o e-mail fornecidos pelo serviço de login (Google, Kakao, Naver), o apelido definido no app e a escolha de avatar masculino/feminino (a foto escolhida na galeria fica salva apenas no seu celular e não é enviada ao servidor)</td><td>Cadastro e login, vinculação de contas, exibição do apelido. O e-mail é usado apenas para encontrar e vincular uma conta existente cadastrada com o mesmo e-mail; o registro de vinculação guarda apenas um valor hash, não o e-mail em si.</td></tr>
+    <tr><td>Registros de corrida</td><td>Distância, tempo, velocidade média, trajeto (localização), pontuação de estabilidade do giroscópio (movimento), modelo do dispositivo, sistema operacional e versão do app usados, e se foi usado relógio ou frequência cardíaca</td><td>Verificar registros fraudulentos, conceder recompensas (como SHARE), rankings de torneios e verificar problemas. A localização é recebida no nível que você permitir, precisa ou aproximada. Ao coletar uma caixa de diamantes no mapa, sua localização atual é enviada ao servidor para verificar se você está perto da caixa; essa localização é descartada logo após a verificação e não é armazenada.</td></tr>
+    <tr><td>Número de passos</td><td>Passos lidos do sensor de passos do dispositivo e do Health Connect</td><td>Exibir os passos diários, recompensas do pedômetro e verificar se os passos foram dados por você</td></tr>
+    <tr><td>Informações de saúde (opcional)</td><td>Frequência cardíaca lida do Health Connect e cadência (velocidade dos passos) durante a corrida</td><td>Exibir a frequência cardíaca durante a corrida e verificar se a corrida foi sua. É lida apenas com o seu <strong>consentimento separado</strong>. Os valores originais são usados apenas nos cálculos de verificação e não são salvos no servidor; só se guarda se a frequência cardíaca foi usada (sim/não).</td></tr>
+    <tr><td>Dispositivo e segurança</td><td>Lista de dispositivos com login (modelo, sistema operacional, versão do app, hora do último acesso), resultado da verificação de integridade do Google Play e identificador de dispositivo criado pelo app (para distinguir dispositivos com login e limitar a recompensa de teste a uma vez)</td><td>Proteção da conta, logout de vários dispositivos e prevenção de uso indevido. O endereço IP e a localização não são salvos nesta lista.</td></tr>
+    <tr><td>Pagamentos e moeda</td><td>Número do pedido do Google Play e valor de confirmação da compra (o token de compra é guardado como hash), saldos e histórico de alterações de DIA, SHARE e VALUE, e conteúdo dos pedidos de reembolso</td><td>Confirmação de pagamento, concessão de moeda, tratamento de reembolsos e resposta a disputas</td></tr>
+    <tr><td>Crew e patrocínio</td><td>Nome do crew, situação de participação e função, apelido (visível para os membros do mesmo crew) e registros de patrocínio</td><td>Recursos do crew e exibição da situação do patrocínio. Somente o patrocinador pode ver o valor do próprio patrocínio.</td></tr>
+    <tr><td>Contestações (objeções)</td><td>A explicação e a foto de comprovação que você enviar</td><td>Decidir se um registro é reconhecido. A comprovação é excluída assim que há decisão e, se não houver decisão, automaticamente após 14 dias.</td></tr>
+    <tr><td>Denúncias</td><td>O conteúdo que você denuncia e o alvo (apelido, crew etc.)</td><td>Tratamento de conteúdo inadequado e prevenção de uso indevido</td></tr>
+    <tr><td>Indicações</td><td>Código de indicação e relação de indicação</td><td>Concessão de recompensas por indicação e prevenção de uso indevido</td></tr>
+    <tr><td>Notificações</td><td>O valor do dispositivo para enviar notificações push (token FCM) e as configurações de notificação</td><td>Notificações de torneios, resultados de verificação e recompensas</td></tr>
+    <tr><td>Configurações de uso</td><td>Se você consente o uso para treinamento de IA e o histórico de alterações</td><td>Usado apenas se você consentir. O padrão é não consentir.</td></tr>
+  </table>
+  <p class="muted">· A localização é usada apenas durante o registro de uma corrida e ao coletar uma caixa de diamantes. O trajeto salvo omite os 300 m próximos à largada e à chegada, para não revelar a localização da sua casa.<br> · O microfone é usado apenas quando você toca em "Falar" no bot caracol, e a câmera apenas ao tirar a foto de fundo do cartão de conclusão. O app não envia nem guarda no servidor sua voz nem as fotos do cartão de conclusão. No entanto, o reconhecimento de voz pode ser processado pelo serviço de reconhecimento de voz instalado no seu celular (por exemplo, o Google).<br> · Identificadores de publicidade que você não definiu por conta própria não são coletados.</p>
+
+  <h3>Dados do Health Connect</h3>
+  <p>O app lê do Health Connect apenas o número de passos e a frequência cardíaca, e não grava. Os dados lidos são usados apenas para as finalidades da tabela acima; não são usados para publicidade, venda nem decisões de crédito ou seguro, e não são repassados a terceiros. O Operador não consulta esses dados pessoalmente, exceto quando necessário por segurança, como na investigação de uso indevido.</p>
+  <p>The use of information received from Health Connect will adhere to the Health Connect Permissions policy, including the Limited Use requirements.<br> (O uso das informações recebidas do Health Connect segue a política de permissões do Health Connect, incluindo os requisitos de Limited Use.)</p>
+
+  <h2>2. Prazo de retenção</h2>
+  <ul>
+    <li>Informações da conta e registros de atividade: até você excluir a conta. Ao excluir, são tratados conforme "Exclusão da conta" abaixo.</li>
+    <li>Fotos de comprovação de contestação: imediatamente após a decisão, ou 14 dias se não houver decisão.</li>
+    <li>Registros de pagamentos e transações de moeda (registros sobre contratos ou desistência): guardados por 5 anos conforme o artigo 6, parágrafo 1, inciso 2 do Decreto de Aplicação da Lei de Proteção ao Consumidor no Comércio Eletrônico.</li>
+  </ul>
+  <p><strong>Procedimento e método de destruição.</strong> Os dados pessoais são destruídos sem demora quando o prazo de retenção termina ou a finalidade do tratamento é cumprida. Quando você exclui sua conta, a conta de login e o valor das notificações push são excluídos imediatamente, o saldo de moeda é zerado (0) e o status da conta passa a "excluída". Registros de atividade, como os de corrida, são excluídos do banco de dados por uma rotina de limpeza que processa as contas excluídas em conjunto. É concluída em até 30 dias após a exclusão da conta. Registros de pagamentos e transações que devem ser preservados por lei são guardados separados das demais informações (a base legal e o prazo constam em "2. Prazo de retenção") e são excluídos ao fim do prazo. Arquivos eletrônicos são destruídos por meio de exclusão do banco de dados.</p>
+
+  <h2>3. Terceirização e destinatários dos dados pessoais</h2>
+  <p>O Operador não fornece dados pessoais a terceiros sem o seu consentimento. Para operar o serviço, utiliza os serviços das empresas abaixo.</p>
+  <table>
+    <tr><th>Empresa</th><th>Tarefa terceirizada</th></tr>
+    <tr><td>Google LLC (autenticação, banco de dados e servidor em nuvem do Firebase, pagamentos do Google Play, Play Integrity, Google Maps)</td><td>Login, armazenamento de dados, operação do servidor, confirmação de pagamento, verificação do dispositivo, exibição do mapa</td></tr>
+    <tr><td>Kakao, Naver</td><td>Verificação de identidade ao fazer login com esse serviço</td></tr>
+  </table>
+  <p>O banco de dados que armazena os dados do app (Firestore) e o servidor (Cloud Run) estão na região da República da Coreia (Seul). No entanto, os serviços abaixo podem ser processados em servidores no exterior operados pelo Google, e por isso suas informações podem ser transferidas para fora do país. O tipo de transferência é terceirização de tratamento e armazenamento para prestar o serviço, e a base legal é o artigo 28-8, parágrafo 1, inciso 3 da Lei de Proteção de Informações Pessoais (terceirização de tratamento e armazenamento no exterior para execução de contrato).</p>
+  <table>
+    <tr><th>Destinatário</th><th>País</th><th>Itens transferidos</th><th>Momento e método</th><th>Finalidade e prazo de retenção</th><th>Contato</th></tr>
+    <tr><td>Google LLC (autenticação do Firebase, notificações push, pagamentos e verificação de integridade do Google Play, Google Maps)</td><td>Estados Unidos e os países onde o Google tem data centers (consulte as <a href="https://www.google.com/about/datacenters/locations/">localizações dos data centers</a> divulgadas pelo Google)</td><td>Informações da conta de login, valor do dispositivo para notificações push, informações de confirmação de pagamento, resultado da verificação de integridade do dispositivo, localização para exibição do mapa</td><td>Enviado pela rede ao fazer login, usar o app e pagar</td><td>Login, envio de notificações, confirmação de pagamento, verificação do dispositivo, exibição do mapa. O prazo de retenção segue a política do Google.</td><td><a href="https://policies.google.com/privacy">policies.google.com/privacy</a></td></tr>
+  </table>
+  <p class="muted">Se você não quiser que suas informações sejam transferidas para o exterior, pode parar de usar o serviço e excluir sua conta. Kakao e Naver são empresas coreanas.</p>
+  <p><strong>Como recusar a transferência e seu efeito.</strong> Você pode pedir a interrupção da transferência para o exterior por "Excluir conta" no app ou pelo contato abaixo. No entanto, os serviços acima são necessários para login, notificações, pagamentos e mapas; se você recusar a transferência, não poderá usar esses recursos e ficará difícil usar o app.</p>
+
+  <h2>4. Seus direitos</h2>
+  <p>Você pode, a qualquer momento, consultar, corrigir ou excluir seus dados pessoais, ou pedir a suspensão do tratamento. Você pode alterar os itens de consentimento na tela "Meu" do app e excluir sua conta em "Meu → Configurações → Excluir conta". Se não puder usar o app, faça o pedido pelo contato abaixo. Os pedidos são tratados em até 10 dias.</p>
+  <p>Para o procedimento detalhado de exclusão, veja o <a href="account-deletion.pt.html">guia de exclusão de conta</a>. Para as condições de uso do serviço, veja os <a href="terms.pt.html">Termos de Serviço</a>.</p>
+
+  <h2>5. Dados pessoais de crianças</h2>
+  <p>Crianças menores de 14 anos não podem se cadastrar. No cadastro, você confirma ter 14 anos ou mais e o horário da confirmação é registrado (a data de nascimento não é coletada).</p>
+
+  <h2>6. Decisões automatizadas</h2>
+  <p>Sem intervenção humana, o Operador usa um sistema de verificação automática (um sistema baseado em regras que decide por critérios definidos e não aprende com suas informações) para decidir se um registro de corrida é reconhecido e se uma recompensa (como VALUE) é concedida em consequência (artigo 37-2 da Lei de Proteção de Informações Pessoais).</p>
+  <ul>
+    <li>Sujeitos e finalidade: usuários que enviam registros de corrida. O objetivo é filtrar registros feitos em patinete, bicicleta ou veículo, ou que não possam ser considerados caminhada ou corrida, e dar recompensas apenas pelos registros que você correu por conta própria.</li>
+    <li>Informações usadas e como se decide: distância, tempo, velocidade média, velocidade por trecho do trajeto, número de passos e passada, estabilidade do movimento (giroscópio), resultado da verificação de integridade do dispositivo e, se você consentir, frequência cardíaca e cadência. Um registro que atende aos critérios é reconhecido; um que parece feito em meio de transporte, ou cujos valores não coincidem entre si, não é reconhecido e nenhuma recompensa é concedida. Os critérios detalhados não são divulgados para evitar uso indevido.</li>
+    <li>Informação sensível: a frequência cardíaca é usada apenas se você consentir separadamente. Informações de menores de 14 anos não são tratadas.</li>
+    <li>Recusa e pedido de explicação: se você acredita que um registro foi rejeitado por engano, pode enviar uma explicação e uma foto de comprovação na tela de contestação (objeção) do app, ou pedir pelo e-mail abaixo uma explicação do motivo da decisão e uma reavaliação. O Operador reexamina as contestações pessoalmente e informa o resultado.</li>
+  </ul>
+
+  <h2>7. Como os dados pessoais são protegidos</h2>
+  <ul>
+    <li>Toda a comunicação é criptografada (HTTPS).</li>
+    <li>Valores de moeda, recompensas e patrocínios só são alterados no servidor; o app não grava os valores diretamente.</li>
+    <li>O pessoal com acesso a dados pessoais é limitado, e o acesso de administradores (como às comprovações de contestação) é registrado.</li>
+  </ul>
+  <p class="muted">Não prometemos segurança perfeita, mas nos esforçamos para proteger os dados pessoais com as medidas acima.</p>
+
+  <h2>8. Responsável pela proteção de dados e contato</h2>
+  <p>Operador (responsável pela proteção de dados pessoais): 하상기<br> E-mail: <a href="mailto:src791004@gmail.com">src791004@gmail.com</a></p>
+
+  <p>Se precisar de ajuda por violação de dados pessoais, você pode buscar orientação ou fazer uma denúncia junto a: Comitê de Mediação de Disputas de Informações Pessoais (1833-6972, sem código de área; www.kopico.go.kr), Centro de Denúncias de Violação de Informações Pessoais (118, sem código de área; privacy.kisa.or.kr) e Agência Nacional de Polícia (182, sem código de área; ecrm.police.go.kr)</p>
+
+  <h2>9. Quando esta política mudar</h2>
+  <p>Esta Política de Privacidade vale a partir de 2026-10-25.</p>
+  <p>Quando o conteúdo mudar, será anunciado 7 dias antes da entrada em vigor, por exemplo por aviso no app. Alterações que afetem muito seus direitos, como os itens coletados ou as finalidades do tratamento, são explicadas à parte comparando o antes e o depois, e alterações desfavoráveis a você são anunciadas 30 dias antes.</p>
+  <p>As políticas anteriores ficam vinculadas abaixo, com seu período de aplicação, e você pode consultá-las a qualquer momento.</p>
+  <ul>
+    <li>Políticas anteriores: nenhuma (entrou em vigor pela primeira vez em 2026-10-25)</li>
+  </ul>
+</main>
+</body>
+</html>

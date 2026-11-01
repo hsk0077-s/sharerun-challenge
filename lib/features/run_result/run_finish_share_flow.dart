@@ -12,11 +12,11 @@ const runFinishNextKey = Key('run-finish-next');
 const runFinishSkipKey = Key('run-finish-skip');
 const runFinishStopKey = Key('run-finish-stop');
 
-const runFinishModeOneLabel = '하나만 올리기';
-const runFinishModeManyLabel = '여러 개 순서대로 올리기';
-const runFinishSequenceGoLabel = '순서대로 공유';
-const runFinishSkipLabel = '건너뛰기';
-const runFinishStopLabel = '그만하기';
+String get runFinishModeOneLabel => RemainingSurface.trNow('run_result.run_finish_share_flow.body', '하나만 올리기');
+String get runFinishModeManyLabel => RemainingSurface.trNow('run_result.run_finish_share_flow.body.2', '여러 개 순서대로 올리기');
+String get runFinishSequenceGoLabel => RemainingSurface.trNow('run_result.run_finish_share_flow.body.3', '순서대로 공유');
+String get runFinishSkipLabel => RemainingSurface.trNow('app.watchSyncSkip', '건너뛰기');
+String get runFinishStopLabel => RemainingSurface.trNow('run_result.run_finish_share_flow.body.4', '그만하기');
 
 Future<RunFinishShareMode?> showRunFinishShareMode(
   BuildContext context,
@@ -242,7 +242,7 @@ class _RunFinishSequencePickerState extends State<RunFinishSequencePicker> {
                 foregroundColor: AppColors.textBlack,
                 minimumSize: const Size.fromHeight(52),
               ),
-              child: const Text(
+              child: Text(
                 runFinishSequenceGoLabel,
                 style: TextStyle(fontWeight: FontWeight.w800),
               ),
@@ -295,7 +295,7 @@ class RunFinishSequenceBanner extends StatelessWidget {
                 minimumSize: const Size.fromHeight(48),
               ),
               child: Text(
-                '다음: $label',
+                RemainingSurface.trNow('run_result.run_finish_share_flow.body.8', '다음: $label', {'label': label}),
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
               ),
@@ -307,7 +307,7 @@ class RunFinishSequenceBanner extends StatelessWidget {
                   child: TextButton(
                     key: runFinishSkipKey,
                     onPressed: onSkip,
-                    child: const Text(
+                    child: Text(
                       runFinishSkipLabel,
                       style: TextStyle(
                         color: AppColors.textBlack,
@@ -320,7 +320,7 @@ class RunFinishSequenceBanner extends StatelessWidget {
                   child: TextButton(
                     key: runFinishStopKey,
                     onPressed: onStop,
-                    child: const Text(
+                    child: Text(
                       runFinishStopLabel,
                       style: TextStyle(
                         color: AppColors.textBlack,

@@ -311,7 +311,7 @@ class _OnboardingRunResultScreenState
       debugPrint('RunFinishImageShare.capture: $e\n$st');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content: Text(RunFinishImageShare.captureFailedMessage)),
         );
       }

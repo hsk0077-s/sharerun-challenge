@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../l10n/remaining_surface.dart';
+import '../../l10n/surface_rest.dart';
 
 /// Cosmetic Home-header avatar. Independent of walking-mascot / pay-to-win.
 @immutable
@@ -90,39 +91,39 @@ abstract final class AvatarPresets {
         ),
         asset: 'assets/images/characters/avatar_gender_male.png',
       );
-  static const female = AvatarPreset(
+  static AvatarPreset get female => AvatarPreset(
     id: AvatarChoice.femaleId,
-    label: '여성',
+    label: RemainingSurface.trNow('profile.avatar_choice.female', '여성'),
     asset: 'assets/images/characters/avatar_gender_female.png',
   );
-  static const snail = AvatarPreset(
+  static AvatarPreset get snail => AvatarPreset(
     id: 'snail',
-    label: '달팽이',
+    label: animalLabel(RemainingSurface.currentLocale, 'snail'),
     asset: 'assets/images/characters/chibi_snail_smiling.png',
   );
-  static const turtle = AvatarPreset(
+  static AvatarPreset get turtle => AvatarPreset(
     id: 'turtle',
-    label: '거북이',
+    label: animalLabel(RemainingSurface.currentLocale, 'turtle'),
     asset: 'assets/images/characters/tier_turtle.png',
   );
-  static const beagle = AvatarPreset(
+  static AvatarPreset get beagle => AvatarPreset(
     id: 'beagle',
-    label: '비글',
+    label: animalLabel(RemainingSurface.currentLocale, 'beagle'),
     asset: 'assets/images/characters/tier_beagle.png',
   );
-  static const wolf = AvatarPreset(
+  static AvatarPreset get wolf => AvatarPreset(
     id: 'wolf',
-    label: '늑대',
+    label: animalLabel(RemainingSurface.currentLocale, 'wolf'),
     asset: 'assets/images/characters/tier_wolf.png',
   );
-  static const zebra = AvatarPreset(
+  static AvatarPreset get zebra => AvatarPreset(
     id: 'zebra',
-    label: '얼룩말',
+    label: animalLabel(RemainingSurface.currentLocale, 'zebra'),
     asset: 'assets/images/characters/tier_zebra.png',
   );
-  static const cheetah = AvatarPreset(
+  static AvatarPreset get cheetah => AvatarPreset(
     id: 'cheetah',
-    label: '치타',
+    label: animalLabel(RemainingSurface.currentLocale, 'cheetah'),
     asset: 'assets/images/characters/tier_cheetah.png',
   );
 
@@ -130,7 +131,7 @@ abstract final class AvatarPresets {
   static List<AvatarPreset> get all => <AvatarPreset>[male, female];
 
   /// 예전에 동물을 골라 둔 사람의 사진이 깨지지 않게 [byId]는 이 목록까지 찾는다.
-  static const _legacy = <AvatarPreset>[
+  static List<AvatarPreset> get _legacy => <AvatarPreset>[
     snail,
     turtle,
     beagle,

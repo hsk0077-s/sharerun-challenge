@@ -8,6 +8,7 @@ import '../../../core/theme/theme.dart';
 import '../../crew/crew_membership.dart';
 import '../../shop/widgets/store_look.dart';
 import '../dia_refund.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// DIA 안내: 유료/보너스, 쓰는 순서, 환불. 충전하는 화면 아래에 둔다.
 class DiaNoticeCard extends StatelessWidget {
@@ -17,12 +18,12 @@ class DiaNoticeCard extends StatelessWidget {
   static const refundButtonKey = Key('dia-refund-open');
 
   /// 화면에 그대로 보이는 안내 문구. 약관·달팽이 봇 답변과 같은 내용을 쓴다.
-  static const lines = <String>[
-    '1 DIA는 100원이에요.',
-    '돈으로 산 DIA(유료)와 무료로 받은 DIA(보너스)가 있어요. 쓸 때는 보너스 DIA를 먼저 써요.',
-    '보너스 DIA는 현금으로 바꿀 수 없어요.',
-    '배틀패스와 패스+는 유료 DIA로만 살 수 있어요.',
-    '산 날부터 7일 안에, 쓰지 않은 유료 DIA는 환불할 수 있어요. 함께 받은 덤(보너스)은 같이 빠지고, 이미 쓴 덤은 환불 금액에서 DIA당 100원씩 빼요.',
+  static List<String> get lines => <String>[
+    RemainingSurface.trNow('dia_notice.rate', '1 DIA는 100원이에요.'),
+    RemainingSurface.trNow('dia_notice.kinds', '돈으로 산 DIA(유료)와 무료로 받은 DIA(보너스)가 있어요. 쓸 때는 보너스 DIA를 먼저 써요.'),
+    RemainingSurface.trNow('dia_notice.no_cash', '보너스 DIA는 현금으로 바꿀 수 없어요.'),
+    RemainingSurface.trNow('dia_notice.pass_paid_only', '배틀패스와 패스+는 유료 DIA로만 살 수 있어요.'),
+    RemainingSurface.trNow('dia_notice.refund', '산 날부터 7일 안에, 쓰지 않은 유료 DIA는 환불할 수 있어요. 함께 받은 덤(보너스)은 같이 빠지고, 이미 쓴 덤은 환불 금액에서 DIA당 100원씩 빼요.'),
   ];
 
   @override

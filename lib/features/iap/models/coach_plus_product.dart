@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// Coach+ subscription catalog.
 ///
@@ -40,21 +41,21 @@ class CoachPlusPlan {
   /// this while the subscription is still owned.
   final Duration localActiveWindow;
 
-  static const monthly = CoachPlusPlan(
+  static CoachPlusPlan get monthly => CoachPlusPlan(
     productId: 'coach_plus_monthly',
-    periodLabel: '월간',
-    fallbackPriceLabel: '6,900원',
+    periodLabel: RemainingSurface.trNow('shop.store_look.body.2', '월간'),
+    fallbackPriceLabel: RemainingSurface.trNow('iap.coach_plus_product.body', '6,900원'),
     localActiveWindow: Duration(days: 32),
   );
 
-  static const yearly = CoachPlusPlan(
+  static CoachPlusPlan get yearly => CoachPlusPlan(
     productId: 'coach_plus_yearly',
-    periodLabel: '연간',
-    fallbackPriceLabel: '59,000원',
+    periodLabel: RemainingSurface.trNow('shop.store_look.body.3', '연간'),
+    fallbackPriceLabel: RemainingSurface.trNow('iap.coach_plus_product.body.2', '59,000원'),
     localActiveWindow: Duration(days: 370),
   );
 
-  static const catalog = <CoachPlusPlan>[monthly, yearly];
+  static List<CoachPlusPlan> get catalog => <CoachPlusPlan>[monthly, yearly];
 
   static Set<String> get ids => <String>{
         monthly.productId,

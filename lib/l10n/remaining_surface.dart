@@ -2046,6 +2046,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription',
     'mini_bot.copy.run_coach_plus',
     'mini_bot.mini_bot_sheet.fee',
+    'support.title',
+    'support.subtitle',
+    'support.mail_subject',
+    'support.mail_note',
+    'support.copied',
   ];
 
   static const _en = <String, String>{
@@ -4007,6 +4012,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Moving to subscription management. I won’t change any subscription here.',
     'mini_bot.copy.run_coach_plus': 'Opening the Coach+ info. Pick monthly or yearly on that screen yourself. Nothing is charged from here.',
     'mini_bot.mini_bot_sheet.fee': 'Entry fee',
+    'support.title': 'Contact us',
+    'support.subtitle': 'Tell us about errors or problems by email',
+    'support.mail_subject': 'ShareRun inquiry',
+    'support.mail_note': 'The line below helps us find the problem. You can delete it.',
+    'support.copied': 'Couldn’t open a mail app, so the email address was copied',
   };
 
   static const _ja = <String, String>{
@@ -5968,6 +5978,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': '購読管理の画面に移動します。ここでは購読を変更しません。',
     'mini_bot.copy.run_coach_plus': 'Coach+の案内を開きます。月間か年間かはその画面でご自身で選んでください。ここでは決済されません。',
     'mini_bot.mini_bot_sheet.fee': '参加費',
+    'support.title': 'お問い合わせ',
+    'support.subtitle': 'エラーや不便な点をメールでお知らせください',
+    'support.mail_subject': 'ShareRunのお問い合わせ',
+    'support.mail_note': '下の行は原因を調べるための情報です。削除してもかまいません。',
+    'support.copied': 'メールアプリを開けないため、メールアドレスをコピーしました',
   };
 
   static const _zh = <String, String>{
@@ -7929,6 +7944,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': '前往訂閱管理畫面。這裡不會變更訂閱。',
     'mini_bot.copy.run_coach_plus': '開啟 Coach+ 說明。月方案或年方案請在該畫面自行選擇。這裡不會付款。',
     'mini_bot.mini_bot_sheet.fee': '報名費',
+    'support.title': '聯絡我們',
+    'support.subtitle': '請以電子郵件告訴我們錯誤或不便之處',
+    'support.mail_subject': 'ShareRun 詢問',
+    'support.mail_note': '以下是用來找出問題的資訊，可以刪除。',
+    'support.copied': '無法開啟郵件 App，已複製電子郵件地址',
   };
 
   static const _es = <String, String>{
@@ -9890,6 +9910,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Voy a la gestión de suscripciones. Aquí no cambio ninguna suscripción.',
     'mini_bot.copy.run_coach_plus': 'Abro la información de Coach+. Elige mensual o anual tú mismo en esa pantalla. Desde aquí no se cobra nada.',
     'mini_bot.mini_bot_sheet.fee': 'Cuota de inscripción',
+    'support.title': 'Contacto',
+    'support.subtitle': 'Cuéntanos por correo los errores o problemas',
+    'support.mail_subject': 'Consulta sobre ShareRun',
+    'support.mail_note': 'La línea de abajo nos ayuda a encontrar el problema. Puedes borrarla.',
+    'support.copied': 'No se pudo abrir una app de correo, así que se copió la dirección',
   };
 
   static const _pt = <String, String>{
@@ -11851,6 +11876,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Indo para o gerenciamento de assinatura. Aqui não altero nenhuma assinatura.',
     'mini_bot.copy.run_coach_plus': 'Abrindo as informações do Coach+. Escolha mensal ou anual você mesmo naquela tela. Daqui nada é cobrado.',
     'mini_bot.mini_bot_sheet.fee': 'Taxa de inscrição',
+    'support.title': 'Contato',
+    'support.subtitle': 'Conte-nos por e-mail sobre erros ou problemas',
+    'support.mail_subject': 'Contato sobre o ShareRun',
+    'support.mail_note': 'A linha abaixo nos ajuda a encontrar o problema. Você pode apagá-la.',
+    'support.copied': 'Não foi possível abrir um app de e-mail, então o endereço foi copiado',
   };
 
   static const _de = <String, String>{
@@ -13812,6 +13842,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Ich wechsle zur Abo-Verwaltung. Hier ändere ich kein Abo.',
     'mini_bot.copy.run_coach_plus': 'Ich öffne die Coach+-Infos. Wähle Monats- oder Jahresplan selbst dort. Von hier wird nichts abgebucht.',
     'mini_bot.mini_bot_sheet.fee': 'Startgebühr',
+    'support.title': 'Kontakt',
+    'support.subtitle': 'Melde Fehler oder Probleme per E-Mail',
+    'support.mail_subject': 'ShareRun-Anfrage',
+    'support.mail_note': 'Die Zeile unten hilft uns, das Problem zu finden. Du kannst sie löschen.',
+    'support.copied': 'Es konnte keine Mail-App geöffnet werden, daher wurde die Adresse kopiert',
   };
 
   static const _fr = <String, String>{
@@ -15773,6 +15808,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Direction la gestion de l’abonnement. Je ne change aucun abonnement ici.',
     'mini_bot.copy.run_coach_plus': 'J’ouvre les infos Coach+. Choisis toi-même mensuel ou annuel sur cet écran. Rien n’est débité d’ici.',
     'mini_bot.mini_bot_sheet.fee': 'Frais d’inscription',
+    'support.title': 'Contact',
+    'support.subtitle': 'Signale-nous les erreurs ou problèmes par e-mail',
+    'support.mail_subject': 'Demande ShareRun',
+    'support.mail_note': 'La ligne ci-dessous nous aide à trouver le problème. Tu peux la supprimer.',
+    'support.copied': 'Impossible d’ouvrir une appli de messagerie, l’adresse a donc été copiée',
   };
 
   static const _vi = <String, String>{
@@ -17734,6 +17774,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Mình chuyển đến quản lý gói đăng ký. Ở đây mình không thay đổi gói.',
     'mini_bot.copy.run_coach_plus': 'Mình mở thông tin Coach+. Hãy tự chọn gói tháng hoặc năm ở màn hình đó. Ở đây sẽ không trừ tiền.',
     'mini_bot.mini_bot_sheet.fee': 'Phí tham gia',
+    'support.title': 'Liên hệ',
+    'support.subtitle': 'Hãy báo lỗi hoặc điều bất tiện qua email',
+    'support.mail_subject': 'Liên hệ về ShareRun',
+    'support.mail_note': 'Dòng bên dưới giúp chúng tôi tìm ra vấn đề. Bạn có thể xóa nó.',
+    'support.copied': 'Không mở được ứng dụng email nên địa chỉ đã được sao chép',
   };
 
   static const _th = <String, String>{
@@ -19695,6 +19740,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'กำลังไปที่หน้าจัดการสมาชิก ที่นี่จะไม่เปลี่ยนการสมัคร',
     'mini_bot.copy.run_coach_plus': 'กำลังเปิดข้อมูล Coach+ กรุณาเลือกรายเดือนหรือรายปีเองที่หน้านั้น ที่นี่จะไม่ตัดเงิน',
     'mini_bot.mini_bot_sheet.fee': 'ค่าสมัคร',
+    'support.title': 'ติดต่อเรา',
+    'support.subtitle': 'แจ้งข้อผิดพลาดหรือปัญหาให้เราทางอีเมล',
+    'support.mail_subject': 'สอบถามเกี่ยวกับ ShareRun',
+    'support.mail_note': 'บรรทัดด้านล่างช่วยให้เราหาสาเหตุของปัญหา คุณลบออกได้',
+    'support.copied': 'เปิดแอปอีเมลไม่ได้ จึงคัดลอกที่อยู่อีเมลให้แล้ว',
   };
 
   static const _id = <String, String>{
@@ -21656,6 +21706,11 @@ class RemainingSurface {
     'mini_bot.copy.run_subscription': 'Menuju pengelolaan langganan. Aku tidak mengubah langganan di sini.',
     'mini_bot.copy.run_coach_plus': 'Membuka info Coach+. Pilih bulanan atau tahunan sendiri di layar itu. Dari sini tidak ada penagihan.',
     'mini_bot.mini_bot_sheet.fee': 'Biaya pendaftaran',
+    'support.title': 'Hubungi kami',
+    'support.subtitle': 'Beri tahu kami soal error atau kendala lewat email',
+    'support.mail_subject': 'Pertanyaan ShareRun',
+    'support.mail_note': 'Baris di bawah membantu kami menemukan masalah. Kamu boleh menghapusnya.',
+    'support.copied': 'Tidak bisa membuka aplikasi email, jadi alamat email disalin',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

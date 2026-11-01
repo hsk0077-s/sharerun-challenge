@@ -909,7 +909,7 @@
     "aliases": [
       "Funktionen des Sicherheitszentrums"
     ],
-    "answer": "Es bietet Funktionen wie die Liste der angemeldeten Geräte, Remote-Abmeldung, Hinweise auf neue Anmeldungen, Meine Transaktionen und Datenschutzeinstellungen."
+    "answer": "Es bietet Funktionen wie die Liste der angemeldeten Geräte, Remote-Abmeldung, Hinweise auf neue Anmeldungen, Meine Transaktionen und die Einstellung zur Einwilligung ins KI-Lernen."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Sichtbarkeit der Aufzeichnungen"
     ],
-    "answer": "Die Standard-Sichtbarkeit deiner Aufzeichnungen ist „Nur ich“. Ändere sie nur, wenn du es möchtest."
+    "answer": "Andere Nutzer können deine Laufstrecke nicht sehen. Es gibt keine Einstellung, um zu ändern, wer sie sehen kann."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Meinen Wohnort verbergen"
     ],
-    "answer": "Ja, es gibt eine Funktion, die die Strecke in der Nähe deines Zuhauses verbirgt. Stelle sie im Sicherheits- und Datenschutzzentrum ein."
+    "answer": "Ja, beim Speichern eines Laufs werden die 300 m nahe Start und Ziel weggelassen. Das geschieht automatisch, damit dein Wohnort nicht sichtbar wird, du musst nichts einstellen."
   },
   {
     "id": "SE-11",

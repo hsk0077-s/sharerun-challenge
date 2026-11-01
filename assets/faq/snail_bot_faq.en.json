@@ -909,7 +909,7 @@
     "aliases": [
       "Security Center features"
     ],
-    "answer": "It has features such as the list of logged-in devices, remote logout, new-login alerts, My transactions and privacy settings."
+    "answer": "It has features such as the list of logged-in devices, remote logout, new-login alerts, My transactions and the AI-learning consent setting."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Record visibility"
     ],
-    "answer": "The default visibility of your records is “Only me.” Change the visibility only when you want to."
+    "answer": "Other users can’t see your running route. There is no setting for changing who can see it."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Hide my home location"
     ],
-    "answer": "Yes, there is a feature that hides the route near your home. Set it in the Security & Privacy Center."
+    "answer": "Yes, when a run is saved, the 300 m closest to the start and finish are left out. This happens automatically so your home location isn’t revealed, and you don’t need to set anything."
   },
   {
     "id": "SE-11",

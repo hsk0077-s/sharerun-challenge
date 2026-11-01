@@ -909,7 +909,7 @@
     "aliases": [
       "Fonctions du Centre de sécurité"
     ],
-    "answer": "Il propose des fonctions comme la liste des appareils connectés, la déconnexion à distance, les alertes de nouvelle connexion, Mes transactions et les réglages de confidentialité."
+    "answer": "Il propose des fonctions comme la liste des appareils connectés, la déconnexion à distance, les alertes de nouvelle connexion, Mes transactions et le réglage du consentement à l’apprentissage de l’IA."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Visibilité des enregistrements"
     ],
-    "answer": "La visibilité par défaut de tes enregistrements est « Moi seul ». Ne la modifie que si tu le souhaites."
+    "answer": "Les autres utilisateurs ne peuvent pas voir ton parcours de course. Il n’existe pas de réglage pour changer qui peut le voir."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Masquer l’emplacement de mon domicile"
     ],
-    "answer": "Oui, il existe une fonction qui masque le parcours près de chez toi. Règle-la dans le Centre de sécurité et de confidentialité."
+    "answer": "Oui, quand une course est enregistrée, les 300 m les plus proches du départ et de l’arrivée sont retirés. C’est fait automatiquement pour que l’emplacement de ton domicile ne soit pas révélé, et tu n’as rien à régler."
   },
   {
     "id": "SE-11",

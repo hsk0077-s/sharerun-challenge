@@ -909,7 +909,7 @@
     "aliases": [
       "Funciones del Centro de seguridad"
     ],
-    "answer": "Tiene funciones como la lista de dispositivos con sesión iniciada, cierre de sesión remoto, avisos de nuevo inicio de sesión, Mis transacciones y ajustes de privacidad."
+    "answer": "Tiene funciones como la lista de dispositivos con sesión iniciada, cierre de sesión remoto, avisos de nuevo inicio de sesión, Mis transacciones y el ajuste de consentimiento para entrenar IA."
   },
   {
     "id": "SE-02",
@@ -972,7 +972,7 @@
     "aliases": [
       "Visibilidad de registros"
     ],
-    "answer": "La visibilidad predeterminada de tus registros es «Solo yo». Cambia la visibilidad solo cuando quieras."
+    "answer": "Otros usuarios no pueden ver tu ruta de carrera. No hay ningún ajuste para cambiar quién puede verla."
   },
   {
     "id": "SE-10",
@@ -981,7 +981,7 @@
     "aliases": [
       "Ocultar la ubicación de mi casa"
     ],
-    "answer": "Sí, hay una función que oculta la ruta cercana a tu casa. Actívala en el Centro de seguridad y privacidad."
+    "answer": "Sí, al guardar una carrera se omiten los 300 m más cercanos a la salida y a la llegada. Se hace automáticamente para que no se revele la ubicación de tu casa, así que no necesitas configurar nada."
   },
   {
     "id": "SE-11",

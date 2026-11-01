@@ -71,7 +71,7 @@ enum RunFinishCardTheme {
 /// `10월 3일 토요일`
 String runFinishDateLabel(DateTime date) {
   final weekdays = [RemainingSurface.trNow('run_result.run_finish_share.body.7', '월요일'), RemainingSurface.trNow('run_result.run_finish_share.body.8', '화요일'), RemainingSurface.trNow('run_result.run_finish_share.body.9', '수요일'), RemainingSurface.trNow('run_result.run_finish_share.body.10', '목요일'), RemainingSurface.trNow('run_result.run_finish_share.body.11', '금요일'), RemainingSurface.trNow('run_result.run_finish_share.body.12', '토요일'), RemainingSurface.trNow('run_result.run_finish_share.body.13', '일요일')];
-  return RemainingSurface.trNow('run_finish.date_label', '${date.month}월 ${date.day}일 ${weekdays[date.weekday - 1]}', {'date.month': date.month, 'date.day': date.day, 'weekdays[date.weekday - 1]': weekdays[date.weekday - 1]});
+  return RemainingSurface.trNow('run_result.run_finish_share.body.14', '${date.month}월 ${date.day}일 ${weekdays[date.weekday - 1]}', {'date.month': date.month, 'date.day': date.day, 'weekdays[date.weekday - 1]': weekdays[date.weekday - 1]});
 }
 
 /// Company donation the server recorded. Null when nothing was counted.

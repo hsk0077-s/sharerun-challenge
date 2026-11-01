@@ -273,11 +273,11 @@ PT: Na tela de otimização de bateria do sistema, encontre o ShareRun. No Samsu
 
 [run_finish.donation_line]
 KO: 이번 달리기로 운영자가 ${won}원을 기부할 예정이에요
-PT: A operadora planeja doar ${won} KRW por esta corrida
+PT: A equipe planeja doar ${won} KRW por esta corrida
 
 [run_finish.cap_reached]
 KO: 이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.
-PT: O orçamento de doações da operadora deste mês acabou. A distância adicional continua registrada.
+PT: O orçamento de doações da equipe deste mês acabou. A distância adicional continua registrada.
 
 [run_finish.daily_cap]
 KO: 오늘은 기부 인정 10km를 모두 채웠어요. 넘는 거리는 기록으로 남아요.
@@ -830,13 +830,13 @@ PT 답: Você pode ver a classificação dos registros verificados dos participa
 KO 질문: 달리면 어떻게 기부가 돼요?
 PT 질문: Como correr vira uma doação?
 KO 답: 검증된 달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요. 회사의 한 달 기부 예산은 100만 원까지예요. 앱에는 내 달리기로 쌓인 기여분이 표시돼요.
-PT 답: A cada 1 km verificado que você corre, a empresa (operadora) planeja doar 100 KRW com recursos próprios. O orçamento mensal de doações da empresa chega a 1.000.000 KRW. O app mostra a contribuição acumulada com suas corridas.
+PT 답: A cada 1 km verificado que você corre, a empresa (administração) planeja doar 100 KRW com recursos próprios. O orçamento mensal de doações da empresa chega a 1.000.000 KRW. O app mostra a contribuição acumulada com suas corridas.
 
 [DO-02]
 KO 질문: 기부하려면 제가 돈을 내야 해요?
 PT 질문: Preciso pagar para doar?
 KO 답: 아니요, 달리기 기부는 회사(운영자) 자금으로 할 예정이에요. 내시는 돈은 없어요.
-PT 답: Não, a doação por corrida está prevista com recursos da empresa (operadora). Você não paga nada.
+PT 답: Não, a doação por corrida está prevista com recursos da empresa (administração). Você não paga nada.
 
 [DO-03]
 KO 질문: 오늘 내 기부 기여는 얼마야?
@@ -848,13 +848,13 @@ PT 답: Sua contribuição de doação de hoje pelas corridas é de {오늘기�
 KO 질문: 기부는 누구 이름으로 돼요?
 PT 질문: Em nome de quem é a doação?
 KO 답: 검증된 달리기 1km마다 100원씩 회사(운영자) 자금으로 기부할 예정이에요(1인당 하루 10km, 전체 월 100만 원 한도). 기부처는 협의 중이며 정해지면 앱에서 알려 드려요. 앱에는 내 기부 기여분으로 기록돼요. 직접 내시는 기부는 본인 이름으로 전달돼요.
-PT 답: Planejamos doar 100 KRW por 1 km verificado com recursos da empresa (operadora) (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). O destinatário está em negociação e avisaremos no app quando for definido. Ele é registrado no app como sua contribuição de doação. As doações que você faz por conta própria são entregues em seu nome.
+PT 답: Planejamos doar 100 KRW por 1 km verificado com recursos da empresa (administração) (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). O destinatário está em negociação e avisaremos no app quando for definido. Ele é registrado no app como sua contribuição de doação. As doações que você faz por conta própria são entregues em seu nome.
 
 [DO-06]
 KO 질문: 기부 영수증 받을 수 있어요?
 PT 질문: Posso receber um recibo de doação?
 KO 답: 직접 내시는 기부는 해피빈이나 같이가치 같은 기부 페이지에서 본인 이름으로 영수증을 받으실 수 있어요. 달리기 기부는 회사(운영자) 자금으로 할 예정이라 영수증이 나오지 않아요.
-PT 답: Nas doações que você faz por conta própria, você pode obter um recibo em seu nome em páginas de doação como Happybean ou Gachi Gachi. A doação por corrida está prevista com recursos da empresa (operadora), por isso não é emitido recibo.
+PT 답: Nas doações que você faz por conta própria, você pode obter um recibo em seu nome em páginas de doação como Happybean ou Gachi Gachi. A doação por corrida está prevista com recursos da empresa (administração), por isso não é emitido recibo.
 
 [DO-07]
 KO 질문: 직접 기부하고 싶어요
@@ -908,7 +908,7 @@ PT 답: A marca de “doação concluída” só aparece depois de registrada no
 KO 질문: 기부 레이스 있어요?
 PT 질문: Existe uma corrida de doação?
 KO 답: 검증된 모든 달리기는 1km마다 100원씩 회사(운영자) 자금으로 기부할 예정이에요(1인당 하루 10km, 전체 월 100만 원 한도). 기업과 함께하는 기부 캠페인도 열릴 때마다 챌린지 탭에서 참여하실 수 있어요.
-PT 답: Em cada corrida verificada, a empresa (operadora) planeja doar 100 KRW por km com recursos próprios (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). Sempre que uma campanha de doação com uma empresa for aberta, você também poderá participar pela aba Desafios.
+PT 답: Em cada corrida verificada, a empresa (administração) planeja doar 100 KRW por km com recursos próprios (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). Sempre que uma campanha de doação com uma empresa for aberta, você também poderá participar pela aba Desafios.
 
 [GR-01]
 KO 질문: 등급은 어떻게 받아요?

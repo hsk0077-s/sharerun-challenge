@@ -69,7 +69,7 @@ export default function SponsorApproval() {
       <div className="px-6 pt-5 pb-3 shrink-0">
         <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
           <Building2 size={22} className="text-amber-400" />
-          B2B 스폰서 룸 승인
+          스폰서 현황 (조회 전용)
         </h2>
         <p className="text-sm text-gray-400 mt-1">
           스폰서 결제와 대회 스폰서 필드를 조회합니다. 이 화면에서는 바꾸지 않습니다.

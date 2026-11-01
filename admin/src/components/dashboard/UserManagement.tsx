@@ -4,6 +4,7 @@ import { Search, X } from 'lucide-react';
 import { useFirestoreUsers } from '../../hooks/useFirestoreUsers';
 import {
   LANGUAGES,
+  findUsersExact,
   languageLabel,
   type AdminUser,
   type UserCountry,
@@ -189,18 +190,32 @@ function UserDetailPanel({ user, onClose }: { user: AdminUser; onClose: () => vo
 }
 
 export default function UserManagement() {
-  const { users, loading, error } = useFirestoreUsers();
+  const { users, loading, error, total, truncated } = useFirestoreUsers();
   const [query, setQuery] = useState('');
+  const [extra, setExtra] = useState<AdminUser[]>([]);
+  const [lookupNote, setLookupNote] = useState<string | null>(null);
   const [language, setLanguage] = useState<LanguageFilter>('ALL');
   const [selected, setSelected] = useState<AdminUser | null>(null);
 
+  // 불러온 목록에 없는 계정은 UID·이메일 정확히 일치로 서버에서 찾아 붙인다.
+  const lookup = async () => {
+    setLookupNote(null);
+    try {
+      const hits = await findUsersExact(query);
+      setExtra(hits);
+      if (hits.length === 0) setLookupNote('UID·이메일이 정확히 일치하는 계정이 없습니다.');
+    } catch (err) {
+      setLookupNote(err instanceof Error ? err.message : '검색하지 못했습니다.');
+    }
+  };
+
   const visibleUsers = useMemo(
     () =>
-      users.filter(
+      [...users, ...extra.filter((e) => !users.some((u) => u.id === e.id))].filter(
         (user) =>
           (language === 'ALL' || user.language === language) && matchesUserQuery(user, query)
       ),
-    [users, query, language]
+    [users, extra, query, language]
   );
 
   const languageCounts = useMemo(() => {
@@ -234,6 +249,23 @@ export default function UserManagement() {
             className="w-full bg-gray-900 border border-gray-700 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
+        {truncated && (
+          <div className="text-xs text-amber-300 bg-amber-950/40 border border-amber-800 rounded-lg px-3 py-2 space-y-1">
+            <p>
+              전체 {total?.toLocaleString()}명 중 {users.length.toLocaleString()}명만 불러왔습니다.
+              탭 숫자와 합계는 불러온 계정 기준입니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => void lookup()}
+              disabled={!query.trim()}
+              className="underline disabled:opacity-40"
+            >
+              목록에 없으면 UID·이메일로 서버에서 찾기
+            </button>
+            {lookupNote && <p className="text-amber-200">{lookupNote}</p>}
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           {LANGUAGE_TABS.map((tab) => (
             <button

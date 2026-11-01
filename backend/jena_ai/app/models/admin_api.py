@@ -1,3 +1,4 @@
+from typing import Any
 from typing import Literal
 from pydantic import BaseModel, Field
 
@@ -137,6 +138,17 @@ class UserDetailResult(BaseModel):
     rewardBlockReason: str | None
     rewardBlockedAt: str | None
     crew: UserDetailCrew | None
+
+
+class ConfigDocument(BaseModel):
+    id: str
+    title: str
+    exists: bool
+    data: dict[str, Any] = {}
+
+
+class ConfigListResult(BaseModel):
+    documents: list[ConfigDocument]
 
 
 class ReferralReviewRow(BaseModel):

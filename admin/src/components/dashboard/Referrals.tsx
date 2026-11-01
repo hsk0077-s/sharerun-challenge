@@ -38,7 +38,7 @@ export default function Referrals() {
         setError(
           err instanceof Error && err.message === 'forbidden'
             ? '권한 없음'
-            : 'Jena에 연결하지 못했습니다. 재배포 전에는 이 주소가 없습니다.'
+            : 'Jena 서버에 연결하지 못했습니다. 잠시 뒤 다시 시도하세요.'
         );
       } finally {
         if (!cancelled) setLoading(false);

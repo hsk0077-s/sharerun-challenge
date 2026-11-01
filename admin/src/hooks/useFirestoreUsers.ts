@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  fetchUsersTotal,
   subscribeUsers,
   type AdminUser,
 } from '../lib/firestoreUsers';
@@ -12,6 +13,17 @@ export function useFirestoreUsers() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetchUsersTotal()
+      .then((count) => alive && setTotal(count))
+      .catch(() => alive && setTotal(null));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -38,5 +50,8 @@ export function useFirestoreUsers() {
     setUsers(updater);
   };
 
-  return { users, loading, error, setUsersLocal };
+  /** 전체 가입자 수가 불러온 수보다 많으면 목록·합계는 일부 기준이다. */
+  const truncated = total !== null && total > users.length;
+
+  return { users, loading, error, setUsersLocal, total, truncated };
 }

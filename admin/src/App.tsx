@@ -13,6 +13,7 @@ import WalletAnomalies from './components/dashboard/WalletAnomalies';
 import Runs from './components/dashboard/Runs';
 import WalletLedger from './components/dashboard/WalletLedger';
 import Reports from './components/dashboard/Reports';
+import ConfigView from './components/dashboard/ConfigView';
 import AuditLogs from './components/dashboard/AuditLogs';
 
 export default function App() {
@@ -41,6 +42,7 @@ export default function App() {
               <Route path="/runs" element={<Runs />} />
               <Route path="/wallet-ledger" element={<WalletLedger />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/config" element={<ConfigView />} />
               <Route path="/audit-logs" element={<AuditLogs />} />
             </Routes>
           </main>

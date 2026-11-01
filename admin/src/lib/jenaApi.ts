@@ -277,3 +277,21 @@ export async function fetchUserDetail(idToken: string, uid: string): Promise<Adm
   if (!response.ok) throw new Error('jena');
   return response.json() as Promise<AdminUserDetail>;
 }
+
+export type AdminConfigDocument = {
+  id: string;
+  title: string;
+  exists: boolean;
+  data: Record<string, unknown>;
+};
+
+/** 운영 설정 문서를 읽기 전용으로 가져온다. 열람은 서버 감사 로그에 남는다. */
+export async function fetchConfigDocuments(idToken: string): Promise<AdminConfigDocument[]> {
+  const response = await fetch(`${jenaBaseUrl()}/admin/config`, {
+    headers: { Authorization: `Bearer ${idToken}` },
+  });
+  if (response.status === 401 || response.status === 403) throw new Error('forbidden');
+  if (!response.ok) throw new Error('jena');
+  const body = (await response.json()) as { documents: AdminConfigDocument[] };
+  return body.documents;
+}

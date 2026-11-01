@@ -6,6 +6,15 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
  * 클라이언트 API 키는 공개 식별자이며, 접근 통제는 Firestore Rules가 담당합니다.
  * Vite 환경변수가 있으면 우선 사용합니다.
  */
+// 개발 서버(npm run dev)가 환경변수 없이 실서비스 프로젝트에 붙지 않게 막는다.
+// .env.example을 .env로 복사하면 같은 값이 들어가므로, 일부러 붙을 때만 통과한다.
+if (import.meta.env.DEV && !import.meta.env.VITE_FIREBASE_PROJECT_ID) {
+  throw new Error(
+    '개발 모드에서는 admin/.env 가 필요합니다. .env.example 을 .env 로 복사한 뒤 값을 확인하세요. ' +
+      '(배포 빌드는 환경변수가 없어도 실서비스 값으로 빌드됩니다.)'
+  );
+}
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'AIzaSyCeK4CUCswGAuy4jclEX8du_RF0CayNmdk',
   authDomain:

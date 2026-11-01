@@ -1,6 +1,13 @@
 import {
   collection,
+  doc,
+  getCountFromServer,
+  getDoc,
+  getDocs,
+  limit,
   onSnapshot,
+  query,
+  where,
   type Unsubscribe,
 } from 'firebase/firestore';
 import { getDb, USERS_COLLECTION } from './firebase';
@@ -202,6 +209,38 @@ export function mapFirestoreUser(
   };
 }
 
+/** 목록 화면이 한 번에 실시간으로 듣는 계정 수의 상한. 넘으면 일부만 보이고, 화면이 그 사실을 알린다. */
+export const USERS_LIST_LIMIT = 1000;
+
+/** 전체 가입자 수(서버 집계). 문서를 내려받지 않고 숫자만 받는다. */
+export async function fetchUsersTotal(): Promise<number> {
+  await ensureAdminAuth();
+  const snap = await getCountFromServer(collection(getDb(), USERS_COLLECTION));
+  return snap.data().count;
+}
+
+/**
+ * 상한 밖에 있는 계정을 찾는다. UID 정확히 일치, 이메일 정확히 일치만 지원한다.
+ * (닉네임 부분 검색은 Firestore에서 서버 쪽으로 할 수 없다.)
+ */
+export async function findUsersExact(term: string): Promise<AdminUser[]> {
+  const text = term.trim();
+  if (!text) return [];
+  await ensureAdminAuth();
+  const found = new Map<string, AdminUser>();
+  const byUid = await getDoc(doc(getDb(), USERS_COLLECTION, text));
+  if (byUid.exists()) {
+    found.set(byUid.id, mapFirestoreUser(byUid.id, byUid.data() as Record<string, unknown>));
+  }
+  const byEmail = await getDocs(
+    query(collection(getDb(), USERS_COLLECTION), where('email', '==', text), limit(5))
+  );
+  for (const d of byEmail.docs) {
+    found.set(d.id, mapFirestoreUser(d.id, d.data() as Record<string, unknown>));
+  }
+  return [...found.values()];
+}
+
 export type UsersListenerHandlers = {
   onData: (users: AdminUser[]) => void;
   onError?: (error: Error) => void;
@@ -221,7 +260,7 @@ export function subscribeUsers(handlers: UsersListenerHandlers): Unsubscribe {
 
     const col = collection(getDb(), USERS_COLLECTION);
     innerUnsub = onSnapshot(
-      col,
+      query(col, limit(USERS_LIST_LIMIT)),
       (snap) => {
         const users = snap.docs.map((d) =>
           mapFirestoreUser(d.id, d.data() as Record<string, unknown>)

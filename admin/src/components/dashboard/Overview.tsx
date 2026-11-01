@@ -71,7 +71,7 @@ function QueueLink({
 }
 
 export default function Overview() {
-  const { users, loading, error } = useFirestoreUsers();
+  const { users, loading, error, total, truncated } = useFirestoreUsers();
   const [statsReady, setStatsReady] = useState(false);
   const [tournaments, setTournaments] = useState<AdminTournament[]>([]);
   const [donation, setDonation] = useState<DonationMonth | null>(null);
@@ -268,6 +268,11 @@ export default function Overview() {
           <h3 className="text-gray-300 text-sm font-semibold mb-4">
             언어별 활성 계정
           </h3>
+          {truncated && (
+            <p className="text-xs text-amber-300 mb-3">
+              전체 {total?.toLocaleString()}명 중 {users.length.toLocaleString()}명 기준입니다.
+            </p>
+          )}
           {loading ? (
             <p className="text-sm text-gray-500 py-8 text-center">데이터 준비 중</p>
           ) : (

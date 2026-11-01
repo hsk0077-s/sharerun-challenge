@@ -4,6 +4,7 @@ from app.models.admin_api import (
     AppealDecisionRequest,
     AuditPingRequest,
     AuditPingResult,
+    ConfigListResult,
     DailyStepsResult,
     ReferralListResult,
     ReportStatusRequest,
@@ -15,6 +16,7 @@ from app.models.admin_api import (
 from app.services import appeals, reports
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
+from app.services.admin_config_service import admin_config_service
 from app.services.admin_daily_steps_service import admin_daily_steps_service
 from app.services.admin_referral_service import admin_referral_service
 from app.services.admin_user_detail_service import admin_user_detail_service
@@ -120,6 +122,15 @@ def get_user_detail(
     """Profile, login providers, reward block and crew for CS lookups."""
     return admin_user_detail_service.lookup(
         uid=uid,
+        actor_uid=str(actor["uid"]),
+        actor_email=_actor_email(actor),
+    )
+
+
+@router.get("/config", response_model=ConfigListResult)
+def read_config(actor: dict = Depends(require_admin_user)) -> ConfigListResult:
+    """Read-only view of the ops config documents. Every look is audited."""
+    return admin_config_service.read_all(
         actor_uid=str(actor["uid"]),
         actor_email=_actor_email(actor),
     )

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useFirestoreUsers } from '../../hooks/useFirestoreUsers';
-import { isActiveAccount } from '../../lib/firestoreUsers';
+import { LANGUAGES, isActiveAccount, languageLabel, type UserLanguage } from '../../lib/firestoreUsers';
 import { ensureAdminAuth } from '../../lib/adminAuth';
 import { fetchReports } from '../../lib/jenaApi';
 import {
@@ -81,6 +81,14 @@ export default function Overview() {
 
   const month = currentKstMonth();
   const activeUsers = users.filter(isActiveAccount);
+  // 활성 계정을 앱 언어별로 센다. 앱이 서버에 알리기 전의 계정은 "미지정".
+  const languageRows: { language: UserLanguage; count: number }[] = [
+    ...LANGUAGES.map((l) => l.code as UserLanguage),
+    'UNKNOWN' as UserLanguage,
+  ].map((language) => ({
+    language,
+    count: activeUsers.filter((user) => user.language === language).length,
+  }));
   const totalShare = sumWallet(activeUsers, 'share_balance');
   const totalDiamond = sumWallet(activeUsers, 'diamond_balance');
   const totalValue = sumWallet(activeUsers, 'value_balance');
@@ -252,6 +260,27 @@ export default function Overview() {
                 <p className="text-2xl font-bold text-lime-400">{totalValue.toLocaleString()}</p>
                 <span className="text-[11px] font-semibold text-gray-400 mt-1 block">VALUE</span>
               </div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+          <h3 className="text-gray-300 text-sm font-semibold mb-4">
+            언어별 활성 계정
+          </h3>
+          {loading ? (
+            <p className="text-sm text-gray-500 py-8 text-center">데이터 준비 중</p>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 text-center">
+              {languageRows.map((row) => (
+                <div
+                  key={row.language}
+                  className="rounded-lg bg-gray-900 border border-gray-700 py-2"
+                >
+                  <p className="text-lg font-bold text-white">{row.count.toLocaleString()}</p>
+                  <span className="text-[11px] text-gray-400">{languageLabel(row.language)}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>

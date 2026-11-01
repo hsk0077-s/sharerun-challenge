@@ -2,19 +2,22 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { useFirestoreUsers } from '../../hooks/useFirestoreUsers';
-import type { AdminUser, UserCountry } from '../../lib/firestoreUsers';
+import {
+  LANGUAGES,
+  languageLabel,
+  type AdminUser,
+  type UserCountry,
+  type UserLanguage,
+} from '../../lib/firestoreUsers';
 import { ensureAdminAuth } from '../../lib/adminAuth';
 import { fetchUserDetail, type AdminUserDetail } from '../../lib/jenaApi';
 
-type CountryFilter = 'ALL' | UserCountry;
+type LanguageFilter = 'ALL' | UserLanguage;
 
-const COUNTRY_TABS: { value: CountryFilter; label: string }[] = [
+/** 앱이 지원하는 11개 언어별로 나눠 본다. 앱이 서버에 알리기 전의 계정은 "미지정". */
+const LANGUAGE_TABS: { value: LanguageFilter; label: string }[] = [
   { value: 'ALL', label: '전체' },
-  { value: 'KR', label: 'KR' },
-  { value: 'US', label: 'US' },
-  { value: 'JP', label: 'JP' },
-  { value: 'IN', label: 'IN' },
-  { value: 'OTHER', label: '기타' },
+  ...LANGUAGES.map((l) => ({ value: l.code as LanguageFilter, label: l.label })),
   { value: 'UNKNOWN', label: '미지정' },
 ];
 
@@ -116,8 +119,14 @@ function UserDetailPanel({ user, onClose }: { user: AdminUser; onClose: () => vo
         {detail ? (
           <dl className="space-y-4 text-sm">
             <div>
-              <dt className="text-xs text-gray-400 mb-1">국가</dt>
-              <dd className="text-white">{detail.country ?? '미지정'}</dd>
+              <dt className="text-xs text-gray-400 mb-1">언어 · 국가</dt>
+              <dd className="text-white">
+                {detail.language
+                  ? languageLabel(detail.language as UserLanguage)
+                  : '미지정'}
+                {' · '}
+                {detail.country ?? '미지정'}
+              </dd>
             </div>
             <div>
               <dt className="text-xs text-gray-400 mb-1">연결된 소셜 로그인</dt>
@@ -182,21 +191,21 @@ function UserDetailPanel({ user, onClose }: { user: AdminUser; onClose: () => vo
 export default function UserManagement() {
   const { users, loading, error } = useFirestoreUsers();
   const [query, setQuery] = useState('');
-  const [country, setCountry] = useState<CountryFilter>('ALL');
+  const [language, setLanguage] = useState<LanguageFilter>('ALL');
   const [selected, setSelected] = useState<AdminUser | null>(null);
 
   const visibleUsers = useMemo(
     () =>
       users.filter(
         (user) =>
-          (country === 'ALL' || user.country === country) && matchesUserQuery(user, query)
+          (language === 'ALL' || user.language === language) && matchesUserQuery(user, query)
       ),
-    [users, query, country]
+    [users, query, language]
   );
 
-  const countryCounts = useMemo(() => {
+  const languageCounts = useMemo(() => {
     const counts: Record<string, number> = { ALL: users.length };
-    for (const user of users) counts[user.country] = (counts[user.country] ?? 0) + 1;
+    for (const user of users) counts[user.language] = (counts[user.language] ?? 0) + 1;
     return counts;
   }, [users]);
 
@@ -226,18 +235,19 @@ export default function UserManagement() {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {COUNTRY_TABS.map((tab) => (
+          {LANGUAGE_TABS.map((tab) => (
             <button
               key={tab.value}
               type="button"
-              onClick={() => setCountry(tab.value)}
+              onClick={() => setLanguage(tab.value)}
               className={`px-3 py-1 rounded-lg border text-xs ${
-                country === tab.value
+                language === tab.value
                   ? 'bg-gray-900 border-emerald-600 text-emerald-400 font-bold'
                   : 'bg-gray-800 border-gray-700 text-gray-400'
               }`}
             >
-              {tab.label} {(countryCounts[tab.value] ?? 0).toLocaleString()}
+              {tab.label}{' '}
+              {(tab.value === 'ALL' ? users.length : (languageCounts[tab.value] ?? 0)).toLocaleString()}
             </button>
           ))}
         </div>
@@ -249,7 +259,7 @@ export default function UserManagement() {
             <thead className="text-xs uppercase bg-gray-900/60 text-gray-400 border-b border-gray-700">
               <tr>
                 <th className="py-4 px-4">유저 정보</th>
-                <th className="py-4 px-4">국가</th>
+                <th className="py-4 px-4">언어</th>
                 <th className="py-4 px-4">SHARE</th>
                 <th className="py-4 px-4">다이아</th>
                 <th className="py-4 px-4">VALUE</th>
@@ -292,8 +302,11 @@ export default function UserManagement() {
                     </td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded-full text-xs bg-gray-900 border border-gray-600 text-gray-200">
-                        {countryLabel(user.country)}
+                        {languageLabel(user.language)}
                       </span>
+                      {user.country !== 'UNKNOWN' ? (
+                        <span className="ml-1 text-xs text-gray-500">{countryLabel(user.country)}</span>
+                      ) : null}
                     </td>
                     <td className="py-3 px-4 font-medium text-white">
                       {(user.share_balance ?? 0).toLocaleString()}

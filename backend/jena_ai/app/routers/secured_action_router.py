@@ -30,6 +30,7 @@ from app.models.secured_actions import (
     CrewDecideRequest,
     CrewRenameRequest,
     DailyStepsRequest,
+    ProfileLanguageRequest,
     ReportRequest,
     DiaRefundRequest,
     CrewJoinModeRequest,
@@ -59,7 +60,15 @@ from app.models.secured_actions import (
 from app.models.validation_result import ValidationResult
 from app.services.admin_auth_service import admin_auth_service
 from app.services.auth_service import require_uid
-from app.services import appeals, daily_steps, integrity, login_devices, privacy_settings, reports
+from app.services import (
+    appeals,
+    daily_steps,
+    integrity,
+    login_devices,
+    privacy_settings,
+    profile_language,
+    reports,
+)
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
@@ -381,6 +390,16 @@ def record_daily_steps(request: DailyStepsRequest, uid: str = Depends(require_ui
         request.steps,
         request.source,
         request.last_health,
+    )
+
+
+@router.post("/profile/language")
+def record_profile_language(
+    request: ProfileLanguageRequest, uid: str = Depends(require_uid)
+) -> dict:
+    """Remember which language the runner uses so the admin can sort by it."""
+    return profile_language.record_language(
+        service.firebase_service.db, uid, request.language, request.country_code
     )
 
 

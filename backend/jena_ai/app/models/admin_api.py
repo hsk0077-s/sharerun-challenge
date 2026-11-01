@@ -131,6 +131,7 @@ class UserDetailResult(BaseModel):
     nickname: str | None
     email: str | None
     country: str | None
+    language: str | None = None
     providers: list[str]
     rewardBlocked: bool
     rewardBlockReason: str | None

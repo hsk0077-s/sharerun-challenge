@@ -697,6 +697,17 @@ class SecuredActionApiClient {
     });
   }
 
+  /// 쓰는 앱 언어(11개 중 하나)와 폰의 나라를 서버에 알린다. 관리자가 언어별로 보는 데만 쓴다.
+  Future<void> recordProfileLanguage({
+    required String language,
+    String? countryCode,
+  }) async {
+    await _post('/actions/profile/language', {
+      'language': language,
+      if (countryCode != null) 'country_code': countryCode,
+    });
+  }
+
   /// 앱이 처리하지 못한 오류를 서버 로그로 보낸다.
   Future<void> reportClientError({
     required String message,

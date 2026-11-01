@@ -259,6 +259,7 @@ export type AdminUserDetail = {
   nickname: string | null;
   email: string | null;
   country: string | null;
+  language?: string | null;
   providers: string[];
   rewardBlocked: boolean;
   rewardBlockReason: string | null;

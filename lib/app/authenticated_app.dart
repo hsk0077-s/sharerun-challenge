@@ -17,6 +17,7 @@ import '../core/crash/client_error_reporter.dart';
 import '../features/jena_validation/run_device_info.dart'
     show readInstalledAppVersion;
 import '../features/pedometer/daily_metrics_account.dart';
+import '../features/profile/profile_language_sync.dart';
 import '../features/pedometer/solo_pedometer_foreground.dart';
 import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_step_keepalive.dart';
@@ -93,7 +94,22 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     };
     unawaited(_bootBackgroundRun());
     unawaited(registerThisDevice(ref));
+    unawaited(_syncProfileLanguage());
     unawaited(reportDeviceIntegrity(ref));
+  }
+
+  /// Lets the server know which language this runner uses (for the admin).
+  Future<void> _syncProfileLanguage() async {
+    final uid = ref.read(authStateChangesProvider).asData?.value?.uid;
+    if (uid == null || uid.isEmpty) return;
+    final api = ref.read(securedActionApiClientProvider);
+    await ProfileLanguageSync.sync(
+      uid: uid,
+      chosen: ref.read(appLocaleProvider),
+      device: WidgetsBinding.instance.platformDispatcher.locale,
+      send: (language, countryCode) =>
+          api.recordProfileLanguage(language: language, countryCode: countryCode),
+    );
   }
 
   Future<void> _bootBackgroundRun() async {
@@ -129,6 +145,10 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
 
   @override
   Widget build(BuildContext context) {
+    // A new language choice in Settings is sent to the server too.
+    ref.listen<Locale?>(appLocaleProvider, (_, __) {
+      unawaited(_syncProfileLanguage());
+    });
     // Nested inside ShareRunChallengeApp's MaterialApp. Without this, Android
     // treats an unhandled inner pop (HoF / sponsor as last page) as app exit
     // before those screens' PopScope can run. Delegate to the inner navigator

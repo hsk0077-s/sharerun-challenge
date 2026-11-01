@@ -42,6 +42,7 @@ class AdminUserDetailService:
             nickname=_text(user.get("nickname")),
             email=_text(user.get("email")),
             country=_country(user),
+            language=_text(user.get("language")),
             providers=self._providers(db, owner),
             rewardBlocked=blocked,
             rewardBlockReason=_text(block_data.get("reason")),

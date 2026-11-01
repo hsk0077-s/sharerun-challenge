@@ -1,0 +1,131 @@
+[
+  {
+    "id": "AP-01",
+    "category": "앱 소개",
+    "question": "ShareRun là ứng dụng gì?",
+    "aliases": [
+      "Ứng dụng này dùng để làm gì?",
+      "Giới thiệu ShareRun đi"
+    ],
+    "answer": "Bạn tích lũy SHARE theo số bước đi và chạy, và với mỗi 1 km đã xác minh, công ty dự kiến quyên góp 100 KRW. Khoản quyên góp do công ty chi trả; bạn không phải trả gì."
+  },
+  {
+    "id": "SH-03",
+    "category": "걸음·SHARE",
+    "question": "Mỗi ngày nhận được bao nhiêu SHARE?",
+    "aliases": [
+      "Có giới hạn mỗi ngày không?",
+      "10.000 bước thì tối đa 600 phải không?"
+    ],
+    "answer": "SHARE nhận từ bước chân tối đa 600 mỗi ngày. Đi 6.000 bước là đủ phần của hôm nay."
+  },
+  {
+    "id": "SH-05",
+    "category": "걸음·SHARE",
+    "question": "Mình có bao nhiêu SHARE?",
+    "aliases": [
+      "Số dư SHARE",
+      "Cho mình xem SHARE"
+    ],
+    "answer": "Hiện bạn có {SHARE잔액} SHARE.",
+    "needs": [
+      "SHARE잔액"
+    ]
+  },
+  {
+    "id": "CO-01",
+    "category": "대회·방",
+    "question": "Có những giải nào?",
+    "aliases": [
+      "Các loại giải",
+      "Có những cuộc đua nào?"
+    ],
+    "answer": "Giải của công ty có Sơ cấp, Trung cấp, Cao cấp và Half, và mỗi mùa có một Chung kết. Bạn cũng có thể tự tạo phòng chạy."
+  },
+  {
+    "id": "CO-02",
+    "category": "대회·방",
+    "question": "Phí tham gia giải là bao nhiêu?",
+    "aliases": [
+      "Cho mình biết phí tham gia",
+      "Giải Half bao nhiêu?"
+    ],
+    "answer": "Sơ cấp 300, Trung cấp 1.200, Cao cấp 2.400, Half 4.200 SHARE. Phí tham gia trả bằng SHARE."
+  },
+  {
+    "id": "CO-03",
+    "category": "대회·방",
+    "question": "Giải Sơ cấp có miễn phí không?",
+    "aliases": [
+      "Giải đầu tiên có miễn phí không?",
+      "Tham gia Sơ cấp miễn phí"
+    ],
+    "answer": "Giải Sơ cấp được tham gia miễn phí hai lần đầu. Sau đó là 300 SHARE."
+  },
+  {
+    "id": "CO-08",
+    "category": "대회·방",
+    "question": "Giải thưởng chia theo hạng thế nào?",
+    "aliases": [
+      "Đến hạng mấy có thưởng?",
+      "Hạng 6 có được không?"
+    ],
+    "answer": "Hạng 1 đến 5 nhận đủ số DIA quy định, hạng 6 đến 10 nhận một nửa. Ai vào top 10 cũng nhận vé tham gia giải cấp tiếp theo."
+  },
+  {
+    "id": "DO-03",
+    "category": "기부",
+    "question": "Hôm nay mình đóng góp quyên góp bao nhiêu?",
+    "aliases": [
+      "Quyên góp hôm nay?",
+      "Số tiền chia sẻ hôm nay"
+    ],
+    "answer": "Đóng góp quyên góp từ các lần chạy hôm nay là {오늘기부기여} KRW. Tính 100 KRW cho mỗi km, trong ngân sách quyên góp hằng tháng 1.000.000 KRW của công ty.",
+    "needs": [
+      "오늘기부기여"
+    ]
+  },
+  {
+    "id": "GR-07",
+    "category": "등급·캐릭터",
+    "question": "Cho mình biết hạng của mình",
+    "aliases": [
+      "Hạng hiện tại",
+      "Tier của mình"
+    ],
+    "answer": "Hạng hiện tại của bạn là {등급}.",
+    "needs": [
+      "등급"
+    ]
+  },
+  {
+    "id": "SYS-FALLBACK",
+    "category": "시스템",
+    "question": "",
+    "aliases": [],
+    "answer": "Ôi, câu này mình chưa biết. Hãy chọn một mục bên dưới hoặc hỏi theo cách khác nhé."
+  },
+  {
+    "id": "SYS-OFFTOPIC",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Hôm nay thời tiết thế nào?",
+      "Nên mua cổ phiếu nào?",
+      "Hát cho mình nghe đi",
+      "Giúp mình làm bài tập"
+    ],
+    "answer": "Xin lỗi, mình chỉ nói về ShareRun được thôi. Cứ hỏi mình về bước chân, giải đấu hay quyên góp bất cứ lúc nào nhé."
+  },
+  {
+    "id": "SYS-GREETING",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Xin chào",
+      "Ốc sên",
+      "Này Ốc sên"
+    ],
+    "answer": "Mình là Ốc Sên, bạn đồng hành chạy bộ của bạn. Cứ hỏi bằng giọng nói là mình giúp ngay."
+  }
+]

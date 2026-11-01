@@ -1,0 +1,131 @@
+[
+  {
+    "id": "AP-01",
+    "category": "앱 소개",
+    "question": "Quel genre d’appli est ShareRun ?",
+    "aliases": [
+      "À quoi sert cette appli ?",
+      "Présente-moi ShareRun"
+    ],
+    "answer": "Tu gagnes des SHARE pour tes pas et tes courses, et pour chaque km vérifié l’entreprise prévoit de donner 100 KRW. Le don est payé par l’entreprise ; tu ne paies rien."
+  },
+  {
+    "id": "SH-03",
+    "category": "걸음·SHARE",
+    "question": "Combien de SHARE puis-je gagner par jour ?",
+    "aliases": [
+      "Y a-t-il une limite quotidienne ?",
+      "600 est-il le maximum pour 10 000 pas ?"
+    ],
+    "answer": "Les SHARE gagnés en marchant sont plafonnés à 600 par jour. 6 000 pas suffisent pour remplir ta part du jour."
+  },
+  {
+    "id": "SH-05",
+    "category": "걸음·SHARE",
+    "question": "Combien de SHARE ai-je ?",
+    "aliases": [
+      "Mon solde de SHARE",
+      "Montre mes SHARE"
+    ],
+    "answer": "Tu as actuellement {SHARE잔액} SHARE.",
+    "needs": [
+      "SHARE잔액"
+    ]
+  },
+  {
+    "id": "CO-01",
+    "category": "대회·방",
+    "question": "Quels événements y a-t-il ?",
+    "aliases": [
+      "Types d’événements",
+      "Quelles courses y a-t-il ?"
+    ],
+    "answer": "Les événements de l’entreprise sont Débutant, Intermédiaire, Avancé et Demi, avec une Finale à chaque saison. Tu peux aussi créer ta propre salle de course."
+  },
+  {
+    "id": "CO-02",
+    "category": "대회·방",
+    "question": "Combien coûte l’inscription ?",
+    "aliases": [
+      "Dis-moi les frais d’inscription",
+      "Combien coûte l’événement Demi ?"
+    ],
+    "answer": "Débutant 300, Intermédiaire 1 200, Avancé 2 400, Demi 4 200 SHARE. Les frais se paient en SHARE."
+  },
+  {
+    "id": "CO-03",
+    "category": "대회·방",
+    "question": "L’événement Débutant est-il gratuit ?",
+    "aliases": [
+      "Le premier événement est-il gratuit ?",
+      "Inscription gratuite Débutant"
+    ],
+    "answer": "Tu peux participer gratuitement à l’événement Débutant les deux premières fois. Ensuite, c’est 300 SHARE."
+  },
+  {
+    "id": "CO-08",
+    "category": "대회·방",
+    "question": "Comment les prix sont-ils répartis par rang ?",
+    "aliases": [
+      "Jusqu’à quel rang y a-t-il un prix ?",
+      "La 6e place reçoit-elle quelque chose ?"
+    ],
+    "answer": "Les rangs 1 à 5 reçoivent les DIA prévus en totalité, les rangs 6 à 10 la moitié. Tous ceux du top 10 reçoivent aussi un ticket pour l’événement du niveau suivant."
+  },
+  {
+    "id": "DO-03",
+    "category": "기부",
+    "question": "Quelle est ma contribution aux dons aujourd’hui ?",
+    "aliases": [
+      "Combien de don aujourd’hui ?",
+      "Montant partagé du jour"
+    ],
+    "answer": "Ta contribution aux dons grâce à tes courses aujourd’hui est de {오늘기부기여} KRW. Elle est comptée à 100 KRW par km, dans la limite du budget mensuel de dons de l’entreprise de 1 000 000 KRW.",
+    "needs": [
+      "오늘기부기여"
+    ]
+  },
+  {
+    "id": "GR-07",
+    "category": "등급·캐릭터",
+    "question": "Dis-moi mon rang",
+    "aliases": [
+      "Mon rang actuel",
+      "Mon tier"
+    ],
+    "answer": "Ton rang actuel est {등급}.",
+    "needs": [
+      "등급"
+    ]
+  },
+  {
+    "id": "SYS-FALLBACK",
+    "category": "시스템",
+    "question": "",
+    "aliases": [],
+    "answer": "Oups, je ne connais pas encore la réponse. Choisis une option ci-dessous ou reformule un peu."
+  },
+  {
+    "id": "SYS-OFFTOPIC",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Quel temps fait-il aujourd’hui ?",
+      "Quelle action acheter ?",
+      "Chante-moi une chanson",
+      "Aide-moi pour mes devoirs"
+    ],
+    "answer": "Désolé, je ne peux parler que de ShareRun. Pose-moi toutes tes questions sur les pas, les événements ou les dons."
+  },
+  {
+    "id": "SYS-GREETING",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Salut",
+      "Escargot",
+      "Hé Escargot"
+    ],
+    "answer": "Je suis Escargot, ton compagnon de course. Demande-moi à voix haute et je t’aide tout de suite."
+  }
+]

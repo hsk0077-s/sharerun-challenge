@@ -1,0 +1,131 @@
+[
+  {
+    "id": "AP-01",
+    "category": "앱 소개",
+    "question": "ShareRun itu aplikasi apa?",
+    "aliases": [
+      "Aplikasi ini untuk apa?",
+      "Ceritakan tentang ShareRun"
+    ],
+    "answer": "Kamu mengumpulkan SHARE dari langkah dan lari, dan untuk setiap 1 km terverifikasi perusahaan berencana mendonasikan 100 KRW. Donasi dibayar perusahaan; kamu tidak membayar apa pun."
+  },
+  {
+    "id": "SH-03",
+    "category": "걸음·SHARE",
+    "question": "Berapa SHARE yang bisa didapat per hari?",
+    "aliases": [
+      "Apakah ada batas harian?",
+      "Apakah 600 maksimal untuk 10.000 langkah?"
+    ],
+    "answer": "SHARE dari langkah dibatasi 600 per hari. Dengan 6.000 langkah, jatah hari ini sudah penuh."
+  },
+  {
+    "id": "SH-05",
+    "category": "걸음·SHARE",
+    "question": "Berapa SHARE yang kumiliki?",
+    "aliases": [
+      "Saldo SHARE",
+      "Tampilkan SHARE-ku"
+    ],
+    "answer": "Saat ini kamu punya {SHARE잔액} SHARE.",
+    "needs": [
+      "SHARE잔액"
+    ]
+  },
+  {
+    "id": "CO-01",
+    "category": "대회·방",
+    "question": "Ada event apa saja?",
+    "aliases": [
+      "Jenis event",
+      "Ada lomba apa saja?"
+    ],
+    "answer": "Event perusahaan ada Pemula, Menengah, Lanjutan, dan Half, serta satu Final setiap musim. Kamu juga bisa membuat ruang lari sendiri."
+  },
+  {
+    "id": "CO-02",
+    "category": "대회·방",
+    "question": "Berapa biaya pendaftaran event?",
+    "aliases": [
+      "Beri tahu biaya pendaftaran",
+      "Berapa event Half?"
+    ],
+    "answer": "Pemula 300, Menengah 1.200, Lanjutan 2.400, Half 4.200 SHARE. Biaya dibayar dengan SHARE."
+  },
+  {
+    "id": "CO-03",
+    "category": "대회·방",
+    "question": "Apakah event Pemula gratis?",
+    "aliases": [
+      "Apakah event pertama gratis?",
+      "Daftar Pemula gratis"
+    ],
+    "answer": "Event Pemula bisa diikuti gratis dua kali pertama. Setelah itu 300 SHARE."
+  },
+  {
+    "id": "CO-08",
+    "category": "대회·방",
+    "question": "Bagaimana pembagian hadiah per peringkat?",
+    "aliases": [
+      "Sampai peringkat berapa dapat hadiah?",
+      "Peringkat 6 dapat juga?"
+    ],
+    "answer": "Peringkat 1 sampai 5 menerima DIA yang ditetapkan penuh, peringkat 6 sampai 10 menerima setengah. Semua yang masuk 10 besar juga mendapat tiket untuk event level berikutnya."
+  },
+  {
+    "id": "DO-03",
+    "category": "기부",
+    "question": "Berapa kontribusi donasiku hari ini?",
+    "aliases": [
+      "Donasi hari ini berapa?",
+      "Jumlah berbagi hari ini"
+    ],
+    "answer": "Kontribusi donasi dari lariku hari ini adalah {오늘기부기여} KRW. Dihitung 100 KRW per km, dalam anggaran donasi bulanan perusahaan sebesar 1.000.000 KRW.",
+    "needs": [
+      "오늘기부기여"
+    ]
+  },
+  {
+    "id": "GR-07",
+    "category": "등급·캐릭터",
+    "question": "Beri tahu peringkatku",
+    "aliases": [
+      "Peringkat saat ini",
+      "Tier-ku"
+    ],
+    "answer": "Peringkatmu saat ini adalah {등급}.",
+    "needs": [
+      "등급"
+    ]
+  },
+  {
+    "id": "SYS-FALLBACK",
+    "category": "시스템",
+    "question": "",
+    "aliases": [],
+    "answer": "Ups, aku belum tahu soal itu. Pilih salah satu di bawah atau tanyakan dengan cara lain."
+  },
+  {
+    "id": "SYS-OFFTOPIC",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Bagaimana cuaca hari ini?",
+      "Saham apa yang harus dibeli?",
+      "Nyanyikan sebuah lagu",
+      "Bantu PR-ku"
+    ],
+    "answer": "Maaf, aku hanya bisa membahas ShareRun. Tanyakan kapan saja soal langkah, event, atau donasi."
+  },
+  {
+    "id": "SYS-GREETING",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Halo",
+      "Siput",
+      "Hei Siput"
+    ],
+    "answer": "Aku Siput, teman larimu. Tanyakan saja dengan suara dan aku langsung bantu."
+  }
+]

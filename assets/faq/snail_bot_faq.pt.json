@@ -1,0 +1,131 @@
+[
+  {
+    "id": "AP-01",
+    "category": "앱 소개",
+    "question": "Que tipo de app é o ShareRun?",
+    "aliases": [
+      "Para que serve este app?",
+      "Fale sobre o ShareRun"
+    ],
+    "answer": "Você acumula SHARE pelos passos e corridas e, a cada 1 km verificado, a empresa planeja doar 100 KRW. A doação é paga pela empresa; você não paga nada."
+  },
+  {
+    "id": "SH-03",
+    "category": "걸음·SHARE",
+    "question": "Quanto SHARE posso receber por dia?",
+    "aliases": [
+      "Existe um limite diário?",
+      "600 é o máximo com 10.000 passos?"
+    ],
+    "answer": "O SHARE por passos tem limite de 600 por dia. Com 6.000 passos você completa a parte de hoje."
+  },
+  {
+    "id": "SH-05",
+    "category": "걸음·SHARE",
+    "question": "Quanto SHARE eu tenho?",
+    "aliases": [
+      "Meu saldo de SHARE",
+      "Mostre meu SHARE"
+    ],
+    "answer": "Você tem {SHARE잔액} SHARE agora.",
+    "needs": [
+      "SHARE잔액"
+    ]
+  },
+  {
+    "id": "CO-01",
+    "category": "대회·방",
+    "question": "Quais eventos existem?",
+    "aliases": [
+      "Tipos de evento",
+      "Quais corridas existem?"
+    ],
+    "answer": "Os eventos da empresa são Iniciante, Intermediário, Avançado e Meia, e uma Final a cada temporada. Você também pode criar sua própria sala de corrida."
+  },
+  {
+    "id": "CO-02",
+    "category": "대회·방",
+    "question": "Quanto custa a inscrição nos eventos?",
+    "aliases": [
+      "Diga as taxas de inscrição",
+      "Quanto custa o evento Meia?"
+    ],
+    "answer": "Iniciante 300, Intermediário 1.200, Avançado 2.400, Meia 4.200 SHARE. A taxa é paga em SHARE."
+  },
+  {
+    "id": "CO-03",
+    "category": "대회·방",
+    "question": "O evento Iniciante é grátis?",
+    "aliases": [
+      "O primeiro evento é de graça?",
+      "Inscrição grátis Iniciante"
+    ],
+    "answer": "Você pode participar do evento Iniciante de graça nas duas primeiras vezes. Depois custa 300 SHARE."
+  },
+  {
+    "id": "CO-08",
+    "category": "대회·방",
+    "question": "Como os prêmios são divididos por posição?",
+    "aliases": [
+      "Até que posição recebe prêmio?",
+      "O 6º lugar também recebe?"
+    ],
+    "answer": "Do 1º ao 5º lugar recebem os DIA definidos por inteiro, e do 6º ao 10º, metade. Quem fica entre os 10 primeiros também ganha um bilhete para o evento do próximo nível."
+  },
+  {
+    "id": "DO-03",
+    "category": "기부",
+    "question": "Quanto contribuí para as doações hoje?",
+    "aliases": [
+      "Quanto de doação hoje?",
+      "Valor compartilhado hoje"
+    ],
+    "answer": "Sua contribuição de doação de hoje pelas corridas é de {오늘기부기여} KRW. Ela conta 100 KRW por km, dentro do orçamento mensal de doações da empresa de 1.000.000 KRW.",
+    "needs": [
+      "오늘기부기여"
+    ]
+  },
+  {
+    "id": "GR-07",
+    "category": "등급·캐릭터",
+    "question": "Diga meu nível",
+    "aliases": [
+      "Meu nível atual",
+      "Meu tier"
+    ],
+    "answer": "Seu nível atual é {등급}.",
+    "needs": [
+      "등급"
+    ]
+  },
+  {
+    "id": "SYS-FALLBACK",
+    "category": "시스템",
+    "question": "",
+    "aliases": [],
+    "answer": "Ops, ainda não sei responder isso. Escolha uma opção abaixo ou pergunte de outro jeito."
+  },
+  {
+    "id": "SYS-OFFTOPIC",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Como está o tempo hoje?",
+      "Que ação comprar?",
+      "Cante uma música",
+      "Ajude com a lição de casa"
+    ],
+    "answer": "Desculpe, só posso falar sobre o ShareRun. Pergunte quando quiser sobre passos, eventos ou doações."
+  },
+  {
+    "id": "SYS-GREETING",
+    "category": "시스템",
+    "question": "",
+    "aliases": [
+      "Olá",
+      "Caracol",
+      "Ei Caracol"
+    ],
+    "answer": "Sou o Caracol, seu parceiro de corrida. Pergunte em voz alta e eu ajudo na hora."
+  }
+]

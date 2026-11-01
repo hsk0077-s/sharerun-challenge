@@ -6,6 +6,8 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import '../../l10n/remaining_surface.dart';
+
 /// Speaks mini-bot lines. Separate from run voice-coaching so that path stays
 /// untouched. Failures are swallowed — typed chat still works without audio.
 abstract class MiniBotVoice {
@@ -16,9 +18,28 @@ abstract class MiniBotVoice {
   Future<void> dispose();
 }
 
+/// 앱 언어(언어 코드)에 맞는 읽기·듣기 언어. 목록에 없으면 영어.
+const miniBotVoiceLocales = {
+  'ko': 'ko-KR',
+  'en': 'en-US',
+  'ja': 'ja-JP',
+  'zh': 'zh-TW',
+  'es': 'es-ES',
+  'pt': 'pt-BR',
+  'de': 'de-DE',
+  'fr': 'fr-FR',
+  'vi': 'vi-VN',
+  'th': 'th-TH',
+  'id': 'id-ID',
+};
+
+String miniBotVoiceLocale(String languageCode) =>
+    miniBotVoiceLocales[languageCode] ?? 'en-US';
+
 class FlutterTtsMiniBotVoice implements MiniBotVoice {
   FlutterTts? _tts;
   var _ready = false;
+  String? _language;
 
   Future<FlutterTts> _ensureEngine() async {
     final existing = _tts;
@@ -36,7 +57,6 @@ class FlutterTtsMiniBotVoice implements MiniBotVoice {
       debugPrint('mini-bot iOS audio category: $error\n$stack');
     }
     try {
-      await tts.setLanguage('ko-KR');
       await tts.setSpeechRate(0.48);
       await tts.setVolume(0.85);
       await tts.awaitSpeakCompletion(false);
@@ -53,6 +73,13 @@ class FlutterTtsMiniBotVoice implements MiniBotVoice {
     if (trimmed.isEmpty) return;
     try {
       final tts = await _ensureEngine();
+      // 앱 언어가 바뀌면 읽는 언어도 따라간다.
+      final language =
+          miniBotVoiceLocale(RemainingSurface.currentLocale.languageCode);
+      if (_language != language) {
+        await tts.setLanguage(language);
+        _language = language;
+      }
       await tts.stop();
       await tts.speak(trimmed);
     } catch (error, stack) {
@@ -117,15 +144,26 @@ class MiniBotListen {
   final String? text;
 }
 
-/// Prefer an installed Korean recognizer id. Falls back to `ko_KR` when the
-/// device list is empty or has no Korean locale.
-String miniBotKoreanLocaleId(Iterable<String> localeIds) {
+/// 기기에 깔린 음성 인식 언어 중 [languageCode]에 맞는 것을 고른다.
+/// 같은 나라 표기가 있으면 그것을, 없으면 같은 언어의 아무거나를,
+/// 아무것도 없으면 기본 표기(`ko_KR`, `ja_JP` …)를 돌려준다.
+String miniBotLocaleId(Iterable<String> localeIds, String languageCode) {
+  final wanted = miniBotVoiceLocale(languageCode).replaceAll('-', '_');
+  final prefix = '${wanted.split('_').first.toLowerCase()}_';
+  String? sameLanguage;
   for (final id in localeIds) {
     final normalized = id.toLowerCase().replaceAll('-', '_');
-    if (normalized == 'ko_kr' || normalized.startsWith('ko_')) return id;
+    if (normalized == wanted.toLowerCase()) return id;
+    if (sameLanguage == null && normalized.startsWith(prefix)) {
+      sameLanguage = id;
+    }
   }
-  return 'ko_KR';
+  return sameLanguage ?? wanted;
 }
+
+/// 예전 이름. 한국어 인식기를 고른다.
+String miniBotKoreanLocaleId(Iterable<String> localeIds) =>
+    miniBotLocaleId(localeIds, 'ko');
 
 /// In-sheet speech recognition. [listen] is called only when the user taps
 /// 말하기, which is also when the microphone / speech permission is requested.
@@ -205,12 +243,13 @@ class MiniBotSpeechToTextHook extends MiniBotSpeechToText {
   }
 
   Future<String> _koreanLocaleId() async {
+    final language = RemainingSurface.currentLocale.languageCode;
     try {
       final locales = await _engine.locales();
-      return miniBotKoreanLocaleId(locales.map((locale) => locale.localeId));
+      return miniBotLocaleId(locales.map((locale) => locale.localeId), language);
     } catch (error) {
       debugPrint('mini-bot locales: $error');
-      return 'ko_KR';
+      return miniBotVoiceLocale(language).replaceAll('-', '_');
     }
   }
 

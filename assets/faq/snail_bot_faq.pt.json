@@ -592,7 +592,7 @@
     "aliases": [
       "Como funcionam as doações"
     ],
-    "answer": "A cada 1 km verificado que você corre, a empresa (operadora) planeja doar 100 KRW com recursos próprios. O orçamento mensal de doações da empresa chega a 1.000.000 KRW. O app mostra a contribuição acumulada com suas corridas."
+    "answer": "A cada 1 km verificado que você corre, a empresa (administração) planeja doar 100 KRW com recursos próprios. O orçamento mensal de doações da empresa chega a 1.000.000 KRW. O app mostra a contribuição acumulada com suas corridas."
   },
   {
     "id": "DO-02",
@@ -601,7 +601,7 @@
     "aliases": [
       "Eu pago a doação?"
     ],
-    "answer": "Não, a doação por corrida está prevista com recursos da empresa (operadora). Você não paga nada."
+    "answer": "Não, a doação por corrida está prevista com recursos da empresa (administração). Você não paga nada."
   },
   {
     "id": "DO-03",
@@ -623,7 +623,7 @@
     "aliases": [
       "Quem é o doador?"
     ],
-    "answer": "Planejamos doar 100 KRW por 1 km verificado com recursos da empresa (operadora) (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). O destinatário está em negociação e avisaremos no app quando for definido. Ele é registrado no app como sua contribuição de doação. As doações que você faz por conta própria são entregues em seu nome."
+    "answer": "Planejamos doar 100 KRW por 1 km verificado com recursos da empresa (administração) (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). O destinatário está em negociação e avisaremos no app quando for definido. Ele é registrado no app como sua contribuição de doação. As doações que você faz por conta própria são entregues em seu nome."
   },
   {
     "id": "DO-06",
@@ -632,7 +632,7 @@
     "aliases": [
       "Doação para declaração anual"
     ],
-    "answer": "Nas doações que você faz por conta própria, você pode obter um recibo em seu nome em páginas de doação como Happybean ou Gachi Gachi. A doação por corrida está prevista com recursos da empresa (operadora), por isso não é emitido recibo."
+    "answer": "Nas doações que você faz por conta própria, você pode obter um recibo em seu nome em páginas de doação como Happybean ou Gachi Gachi. A doação por corrida está prevista com recursos da empresa (administração), por isso não é emitido recibo."
   },
   {
     "id": "DO-07",
@@ -713,7 +713,7 @@
     "aliases": [
       "Corrida de doação virtual"
     ],
-    "answer": "Em cada corrida verificada, a empresa (operadora) planeja doar 100 KRW por km com recursos próprios (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). Sempre que uma campanha de doação com uma empresa for aberta, você também poderá participar pela aba Desafios."
+    "answer": "Em cada corrida verificada, a empresa (administração) planeja doar 100 KRW por km com recursos próprios (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). Sempre que uma campanha de doação com uma empresa for aberta, você também poderá participar pela aba Desafios."
   },
   {
     "id": "GR-01",

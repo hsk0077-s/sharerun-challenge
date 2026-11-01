@@ -680,6 +680,96 @@
     "answer": "O destinatário está atualmente em negociação. Quando for definido, avisaremos no app, e planejamos publicar o histórico de repasses e os resultados da prestação de contas na situação de doações do app e na Central de segurança e privacidade."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Como sei que as doações são bem usadas?",
+    "aliases": [
+      "Transparência das doações"
+    ],
+    "answer": "Publicamos o detalhamento da prestação de contas das doações. Confira junto com a sua contribuição na Central de segurança e privacidade."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "O que é uma campanha de doação corporativa?",
+    "aliases": [
+      "Campanha de patrocinador"
+    ],
+    "answer": "É uma campanha em que uma empresa doa 100 KRW por 1 km dentro de um orçamento definido por ela. Você vê o orçamento restante em tempo real, e ela termina quando o orçamento acaba."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Terminei mas não aparece “doação concluída”",
+    "aliases": [
+      "A doação não foi refletida"
+    ],
+    "answer": "A marca de “doação concluída” só aparece depois de registrada no histórico de transações do servidor. Corridas que não passam na verificação não entram na doação."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Existe uma corrida de doação?",
+    "aliases": [
+      "Corrida de doação virtual"
+    ],
+    "answer": "Em cada corrida verificada, a empresa (operadora) planeja doar 100 KRW por km com recursos próprios (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). Sempre que uma campanha de doação com uma empresa for aberta, você também poderá participar pela aba Desafios."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Como consigo um nível?",
+    "aliases": [
+      "Como conseguir um nível"
+    ],
+    "answer": "Basta fazer corridas verificadas de 1 km ou mais em três dias diferentes. Após a terceira corrida, seu nível é definido pelo ritmo mediano dos três registros."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "As 5 corridas de avaliação acabaram?",
+    "aliases": [
+      "Cinco avaliações"
+    ],
+    "answer": "Sim, as 5 avaliações de nível acabaram e foram unificadas em três corridas de teste para novos usuários."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Posso conseguir nível após 14 dias?",
+    "aliases": [
+      "Comecei tarde, ainda posso ter nível?"
+    ],
+    "answer": "Sim, você pode conseguir nível a qualquer momento com três corridas verificadas. Porém, o SHARE de recompensa do teste só é dado em até 14 dias após o cadastro."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Como subo de nível?",
+    "aliases": [
+      "Condições de promoção"
+    ],
+    "answer": "Sobe automaticamente com base nos seus registros de corrida dos últimos 28 dias. Não é preciso fazer nenhum teste à parte."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Meu nível pode cair?",
+    "aliases": [
+      "Posso ser rebaixado?"
+    ],
+    "answer": "Não, um nível que você conquistou nunca cai."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Como os usuários antigos conseguem nível?",
+    "aliases": [
+      "Nível de usuários existentes"
+    ],
+    "answer": "Se você já tem três ou mais corridas verificadas, seu nível é definido por esses registros."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Diga meu nível",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Por que o caracol parece desanimado?",
+    "aliases": [
+      "O caracol parece triste"
+    ],
+    "answer": "A expressão um pouco decepcionada significa que você ainda não tem posição. Quando conseguir um nível e o tier subir, a expressão vai ficando mais alegre."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Posso continuar usando o caracol depois de conseguir nível?",
+    "aliases": [
+      "Escolher o caracol novamente"
+    ],
+    "answer": "Sim, o caracol é um personagem básico gratuito, então você pode escolhê-lo de novo a qualquer momento."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Não há outros personagens animais?",
+    "aliases": [
+      "Diga os tipos de personagens animais"
+    ],
+    "answer": "Além do caracol básico, há personagens animais de cinco níveis de velocidade: Tartaruga, Beagle, Lobo, Zebra e Guepardo. Quando você consegue um nível com corridas verificadas, conhece o personagem animal que combina com seu ritmo."
   },
   {
     "id": "SYS-FALLBACK",

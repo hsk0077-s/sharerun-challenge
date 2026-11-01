@@ -680,6 +680,96 @@
     "answer": "Der Empfänger wird derzeit noch abgestimmt. Sobald er feststeht, sagen wir dir in der App Bescheid und planen, die Übermittlungsdetails und Abrechnungsergebnisse im Spendenstatus der App und im Sicherheits- und Datenschutzzentrum zu veröffentlichen."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Woher weiß ich, dass Spenden richtig verwendet werden?",
+    "aliases": [
+      "Transparenz der Spenden"
+    ],
+    "answer": "Wir veröffentlichen die Abrechnung der Spenden. Sieh sie dir zusammen mit deinem eigenen Beitrag im Sicherheits- und Datenschutzzentrum an."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Was ist eine Unternehmens-Spendenkampagne?",
+    "aliases": [
+      "Sponsor-Kampagne"
+    ],
+    "answer": "Das ist eine Kampagne, bei der ein Unternehmen innerhalb eines selbst festgelegten Budgets pro 1 km 100 KRW spendet. Das Restbudget siehst du in Echtzeit, und die Kampagne endet, wenn es aufgebraucht ist."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Ich bin fertig, aber „Spende abgeschlossen“ erscheint nicht",
+    "aliases": [
+      "Spende wird nicht angezeigt"
+    ],
+    "answer": "Die Markierung „Spende abgeschlossen“ erscheint erst, nachdem sie im Transaktionsprotokoll des Servers erfasst wurde. Läufe, die die Prüfung nicht bestehen, werden nicht in die Spende einbezogen."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Gibt es ein Spendenrennen?",
+    "aliases": [
+      "Virtuelles Spendenrennen"
+    ],
+    "answer": "Für jeden verifizierten Lauf plant das Unternehmen (der Betreiber), pro km 100 KRW aus eigenen Mitteln zu spenden (bis zu 10 km pro Person und Tag und insgesamt 1.000.000 KRW pro Monat). Sobald eine Spendenkampagne mit einem Unternehmen startet, kannst du auch über den Tab Challenges teilnehmen."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Wie bekomme ich eine Stufe?",
+    "aliases": [
+      "So bekommst du eine Stufe"
+    ],
+    "answer": "Du musst nur an drei verschiedenen Tagen verifizierte Läufe von mindestens 1 km absolvieren. Nach dem dritten Lauf wird deine Stufe aus dem mittleren Tempo der drei Einträge festgelegt."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Sind die 5 Einstufungsläufe weggefallen?",
+    "aliases": [
+      "Fünf Bewertungen"
+    ],
+    "answer": "Ja, die 5 Einstufungen sind weggefallen und wurden zu drei Test-Läufen für Neue zusammengelegt."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Kann ich nach 14 Tagen noch eine Stufe bekommen?",
+    "aliases": [
+      "Ich habe spät angefangen, bekomme ich noch eine Stufe?"
+    ],
+    "answer": "Ja, mit drei verifizierten Läufen bekommst du jederzeit eine Stufe. Das SHARE der Testbelohnung gibt es allerdings nur innerhalb von 14 Tagen nach der Anmeldung."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Wie steige ich auf?",
+    "aliases": [
+      "Aufstiegsbedingungen"
+    ],
+    "answer": "Die Stufe steigt automatisch anhand deiner Laufdaten der letzten 28 Tage. Ein separater Test ist nicht nötig."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Kann meine Stufe sinken?",
+    "aliases": [
+      "Werde ich herabgestuft?"
+    ],
+    "answer": "Nein, eine einmal erreichte Stufe sinkt nie."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Wie bekommen bestehende Nutzer eine Stufe?",
+    "aliases": [
+      "Stufe für bestehende Nutzer"
+    ],
+    "answer": "Wenn du bereits drei oder mehr verifizierte Läufe hast, wird deine Stufe aus diesen Einträgen festgelegt."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Sag mir meine Stufe",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Warum schaut die Schnecke betrübt?",
+    "aliases": [
+      "Die Schnecke wirkt traurig"
+    ],
+    "answer": "Der leicht enttäuschte Blick bedeutet, dass du noch keinen Rang hast. Sobald du eine Stufe bekommst und dein Tier steigt, wird der Ausdruck nach und nach fröhlicher."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Kann ich die Schnecke nach dem Erreichen einer Stufe weiter nutzen?",
+    "aliases": [
+      "Schnecke erneut wählen"
+    ],
+    "answer": "Ja, die Schnecke ist ein kostenloser Standardcharakter; du kannst sie jederzeit erneut wählen."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Gibt es keine anderen Tier-Charaktere?",
+    "aliases": [
+      "Nenne mir die Tier-Charaktere"
+    ],
+    "answer": "Neben der Standard-Schnecke gibt es Tier-Charaktere in fünf Tempo-Tiers: Schildkröte, Beagle, Wolf, Zebra und Gepard. Wenn du durch verifizierte Läufe eine Stufe erreichst, lernst du den Tier-Charakter kennen, der zu deinem Tempo passt."
   },
   {
     "id": "SYS-FALLBACK",

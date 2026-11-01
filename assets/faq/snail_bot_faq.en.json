@@ -680,6 +680,96 @@
     "answer": "The recipient is currently under discussion. Once it’s decided, we’ll tell you in the app, and we plan to publish the transfer records and settlement results in the app’s donation status and the Security & Privacy Center."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "How do I know donations are used properly?",
+    "aliases": [
+      "Donation transparency"
+    ],
+    "answer": "We publish the donation settlement records. Check them together with your own contribution in the Security & Privacy Center."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "What is a corporate donation campaign?",
+    "aliases": [
+      "Sponsor campaign"
+    ],
+    "answer": "It’s a campaign where a company donates 100 KRW per 1 km within a budget it sets. You can see the remaining budget in real time, and it ends when the budget is used up."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "I finished but “donation complete” doesn’t show",
+    "aliases": [
+      "Donation not reflected"
+    ],
+    "answer": "The donation-complete mark only appears after it is recorded in the server’s transaction log. Runs that don’t pass verification are not included in the donation."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Is there a donation race?",
+    "aliases": [
+      "Virtual donation race"
+    ],
+    "answer": "For every verified run, the company (operator) plans to donate 100 KRW per km from its own funds (up to 10 km per person per day and 1,000,000 KRW per month overall). Whenever a donation campaign with a company opens, you can also join it from the Challenges tab."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "How do I get a grade?",
+    "aliases": [
+      "How to get a grade"
+    ],
+    "answer": "Just complete verified runs of 1 km or more on three different days. After the third run, your grade is set from the median pace of the three records."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Are the 5 grade-evaluation runs gone?",
+    "aliases": [
+      "Five evaluations"
+    ],
+    "answer": "Yes, the 5 grade evaluations are gone and have been merged into three new-runner trial runs."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Can I still get a grade after 14 days?",
+    "aliases": [
+      "I started late, can I still get a grade?"
+    ],
+    "answer": "Yes, you can get a grade anytime with three verified runs. However, the trial-reward SHARE is only given within 14 days of signing up."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "How do I move up in grade?",
+    "aliases": [
+      "Promotion conditions"
+    ],
+    "answer": "It goes up automatically based on your run records of the last 28 days. You don’t need to take a separate test."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Can my grade go down?",
+    "aliases": [
+      "Do I get demoted?"
+    ],
+    "answer": "No, a grade you’ve earned never goes down."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "How do existing users get a grade?",
+    "aliases": [
+      "Grade for existing users"
+    ],
+    "answer": "If you already have three or more verified runs, your grade is set from those records."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Tell me my grade",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Why does Snail look glum?",
+    "aliases": [
+      "Snail looks sad"
+    ],
+    "answer": "The slightly disappointed look means you don’t have a rank yet. Once you get a grade and your tier goes up, the expression gradually brightens."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Can I still use Snail after getting a grade?",
+    "aliases": [
+      "Pick Snail again"
+    ],
+    "answer": "Yes, Snail is a free default character, so you can pick it again anytime."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Are there no other animal characters?",
+    "aliases": [
+      "Tell me the animal character types"
+    ],
+    "answer": "Besides the default Snail, there are animal characters across five speed tiers: Turtle, Beagle, Wolf, Zebra and Cheetah. When you get a grade from verified runs, you meet the animal character that fits your pace."
   },
   {
     "id": "SYS-FALLBACK",

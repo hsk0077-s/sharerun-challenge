@@ -680,6 +680,96 @@
     "answer": "El destinatario está actualmente en conversaciones. Cuando se decida, te lo diremos en la app, y planeamos publicar el detalle de las entregas y los resultados de la liquidación en el estado de donaciones de la app y en el Centro de seguridad y privacidad."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "¿Cómo sé que las donaciones se usan bien?",
+    "aliases": [
+      "Transparencia de las donaciones"
+    ],
+    "answer": "Publicamos el detalle de la liquidación de las donaciones. Consúltalo junto con tu propia aportación en el Centro de seguridad y privacidad."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "¿Qué es una campaña de donación corporativa?",
+    "aliases": [
+      "Campaña de patrocinador"
+    ],
+    "answer": "Es una campaña en la que una empresa dona 100 KRW por cada 1 km dentro de un presupuesto que fija. Puedes ver el presupuesto restante en tiempo real, y termina cuando se agota."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Terminé pero no aparece «donación completada»",
+    "aliases": [
+      "La donación no se refleja"
+    ],
+    "answer": "La marca de «donación completada» solo aparece después de quedar registrada en el historial de transacciones del servidor. Las carreras que no pasan la verificación no se incluyen en la donación."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "¿Hay una carrera de donación?",
+    "aliases": [
+      "Carrera de donación virtual"
+    ],
+    "answer": "Por cada carrera verificada, la empresa (operador) planea donar 100 KRW por km con sus fondos (hasta 10 km por persona al día y 1.000.000 KRW al mes en total). Cuando se abra una campaña de donación con una empresa, también podrás unirte desde la pestaña Retos."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "¿Cómo obtengo un rango?",
+    "aliases": [
+      "Cómo conseguir un rango"
+    ],
+    "answer": "Basta con hacer carreras verificadas de 1 km o más en tres días distintos. Al terminar la tercera, tu rango se fija con el ritmo mediano de los tres registros."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "¿Ya no existen las 5 carreras de evaluación?",
+    "aliases": [
+      "Cinco evaluaciones"
+    ],
+    "answer": "Sí, las 5 evaluaciones de rango ya no existen y se fusionaron en tres carreras de prueba para nuevos usuarios."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "¿Puedo obtener rango pasados 14 días?",
+    "aliases": [
+      "Empecé tarde, ¿puedo tener rango?"
+    ],
+    "answer": "Sí, puedes obtener rango en cualquier momento con tres carreras verificadas. Eso sí, el SHARE de recompensa de prueba solo se da dentro de los 14 días posteriores al registro."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "¿Cómo subo de rango?",
+    "aliases": [
+      "Condiciones de ascenso"
+    ],
+    "answer": "Sube automáticamente según tus registros de carrera de los últimos 28 días. No hace falta hacer ninguna prueba aparte."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "¿Mi rango puede bajar?",
+    "aliases": [
+      "¿Me degradan?"
+    ],
+    "answer": "No, un rango que has obtenido nunca baja."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "¿Cómo obtienen rango los usuarios antiguos?",
+    "aliases": [
+      "Rango de usuarios existentes"
+    ],
+    "answer": "Si ya tienes tres o más carreras verificadas, tu rango se fija con esos registros."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Dime mi rango",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "¿Por qué el caracol parece decaído?",
+    "aliases": [
+      "El caracol se ve triste"
+    ],
+    "answer": "La expresión algo decepcionada significa que aún no tienes rango. Cuando obtengas un rango y subas de nivel, la expresión se irá alegrando."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "¿Puedo seguir usando el caracol después de obtener rango?",
+    "aliases": [
+      "Elegir de nuevo al caracol"
+    ],
+    "answer": "Sí, el caracol es un personaje básico gratuito, así que puedes elegirlo de nuevo cuando quieras."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "¿No hay otros personajes de animales?",
+    "aliases": [
+      "Dime los tipos de personajes animales"
+    ],
+    "answer": "Además del caracol básico, hay personajes animales de cinco niveles de velocidad: Tortuga, Beagle, Lobo, Cebra y Guepardo. Cuando obtienes un rango con carreras verificadas, conoces al personaje animal que encaja con tu ritmo."
   },
   {
     "id": "SYS-FALLBACK",

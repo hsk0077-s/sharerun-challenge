@@ -680,6 +680,96 @@
     "answer": "Nơi nhận hiện đang được thảo luận. Khi có quyết định, chúng tôi sẽ báo trong ứng dụng và dự kiến công khai chi tiết chuyển tiền cùng kết quả quyết toán ở mục tình hình quyên góp của ứng dụng và Trung tâm bảo mật & quyền riêng tư."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Làm sao biết tiền quyên góp được dùng đúng?",
+    "aliases": [
+      "Tính minh bạch của quyên góp"
+    ],
+    "answer": "Chúng tôi công khai chi tiết quyết toán quyên góp. Hãy xem cùng phần đóng góp của bạn trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Chiến dịch quyên góp của doanh nghiệp là gì?",
+    "aliases": [
+      "Chiến dịch tài trợ"
+    ],
+    "answer": "Đây là chiến dịch trong đó doanh nghiệp quyên góp 100 KRW cho mỗi 1 km trong ngân sách do họ đặt. Bạn xem được ngân sách còn lại theo thời gian thực và chiến dịch kết thúc khi hết ngân sách."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Tôi chạy xong nhưng không thấy “hoàn tất quyên góp”",
+    "aliases": [
+      "Quyên góp chưa được ghi nhận"
+    ],
+    "answer": "Dấu hiệu hoàn tất quyên góp chỉ hiện sau khi được ghi vào nhật ký giao dịch của máy chủ. Các lần chạy không vượt qua xác minh sẽ không được tính vào quyên góp."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Có cuộc đua quyên góp không?",
+    "aliases": [
+      "Cuộc đua quyên góp ảo"
+    ],
+    "answer": "Với mỗi lần chạy đã xác minh, công ty (đơn vị vận hành) dự kiến quyên góp 100 KRW cho mỗi km từ quỹ của mình (tối đa 10 km mỗi người mỗi ngày và tổng cộng 1.000.000 KRW mỗi tháng). Mỗi khi có chiến dịch quyên góp cùng doanh nghiệp mở ra, bạn cũng có thể tham gia ở tab Thử thách."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Làm sao nhận hạng?",
+    "aliases": [
+      "Cách nhận hạng"
+    ],
+    "answer": "Bạn chỉ cần hoàn thành các lần chạy đã xác minh từ 1 km trở lên trong ba ngày khác nhau. Sau lần chạy thứ ba, hạng được xác định theo tốc độ trung vị của ba bản ghi."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "5 lần chạy đánh giá hạng đã bị bỏ chưa?",
+    "aliases": [
+      "Năm lần đánh giá"
+    ],
+    "answer": "Đúng vậy, 5 lần đánh giá hạng đã bỏ và được gộp thành ba lần chạy thử cho người mới."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Quá 14 ngày sau khi đăng ký có nhận hạng được không?",
+    "aliases": [
+      "Bắt đầu muộn có nhận hạng được không?"
+    ],
+    "answer": "Được, bạn nhận hạng bất cứ lúc nào bằng ba lần chạy đã xác minh. Tuy nhiên, SHARE thưởng chạy thử chỉ được trao trong vòng 14 ngày sau khi đăng ký."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Hạng tăng như thế nào?",
+    "aliases": [
+      "Điều kiện lên hạng"
+    ],
+    "answer": "Hạng tự động tăng dựa trên bản ghi chạy 28 ngày gần nhất. Bạn không cần thi riêng."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Hạng có bị giảm không?",
+    "aliases": [
+      "Có bị hạ hạng không?"
+    ],
+    "answer": "Không, hạng đã nhận sẽ không bị giảm."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Người dùng cũ nhận hạng thế nào?",
+    "aliases": [
+      "Hạng của người dùng hiện có"
+    ],
+    "answer": "Nếu bạn đã có từ ba lần chạy đã xác minh trở lên, hạng sẽ được xác định từ các bản ghi đó."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Cho mình biết hạng của mình",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Sao Ốc Sên trông buồn vậy?",
+    "aliases": [
+      "Ốc Sên trông buồn"
+    ],
+    "answer": "Vẻ hơi thất vọng nghĩa là bạn chưa có thứ hạng. Khi nhận hạng và tier tăng lên, nét mặt sẽ dần tươi hơn."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Sau khi có hạng vẫn dùng Ốc Sên được không?",
+    "aliases": [
+      "Chọn lại Ốc Sên"
+    ],
+    "answer": "Được, Ốc Sên là nhân vật cơ bản miễn phí nên bạn có thể chọn lại bất cứ lúc nào."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Không có nhân vật động vật nào khác sao?",
+    "aliases": [
+      "Cho mình biết các loại nhân vật động vật"
+    ],
+    "answer": "Ngoài nhân vật cơ bản Ốc Sên, còn có nhân vật động vật theo năm tier tốc độ: Rùa, Beagle, Sói, Ngựa vằn và Báo săn. Khi nhận hạng từ các lần chạy đã xác minh, bạn sẽ gặp nhân vật động vật hợp với tốc độ của mình."
   },
   {
     "id": "SYS-FALLBACK",

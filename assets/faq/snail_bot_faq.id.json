@@ -680,6 +680,96 @@
     "answer": "Penerimanya saat ini sedang dibahas. Setelah ditetapkan, kami akan memberi tahu di aplikasi, dan kami berencana mengumumkan rincian penyaluran serta hasil penyelesaian di status donasi aplikasi dan Pusat keamanan & privasi."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Bagaimana tahu donasi digunakan dengan benar?",
+    "aliases": [
+      "Transparansi donasi"
+    ],
+    "answer": "Kami mempublikasikan rincian penyelesaian donasi. Periksa bersama kontribusimu di Pusat keamanan & privasi."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Apa itu kampanye donasi perusahaan?",
+    "aliases": [
+      "Kampanye sponsor"
+    ],
+    "answer": "Ini kampanye di mana perusahaan mendonasikan 100 KRW per 1 km dalam anggaran yang ditetapkannya. Sisa anggaran terlihat secara real time, dan kampanye berakhir saat anggaran habis."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "Saya selesai tapi “donasi selesai” tidak muncul",
+    "aliases": [
+      "Donasi tidak tercatat"
+    ],
+    "answer": "Tanda donasi selesai hanya muncul setelah tercatat di riwayat transaksi server. Lari yang tidak lolos verifikasi tidak termasuk dalam donasi."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Apakah ada lomba donasi?",
+    "aliases": [
+      "Lomba donasi virtual"
+    ],
+    "answer": "Untuk setiap lari terverifikasi, perusahaan (operator) berencana mendonasikan 100 KRW per km dari dana sendiri (maksimal 10 km per orang per hari dan total 1.000.000 KRW per bulan). Setiap kali kampanye donasi bersama perusahaan dibuka, kamu juga bisa ikut dari tab Tantangan."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana mendapat peringkat?",
+    "aliases": [
+      "Cara mendapat peringkat"
+    ],
+    "answer": "Cukup selesaikan lari terverifikasi 1 km atau lebih pada tiga hari berbeda. Setelah lari ketiga selesai, peringkatmu ditentukan dari kecepatan median tiga catatan itu."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Apakah 5 kali lari penilaian sudah dihapus?",
+    "aliases": [
+      "Lima penilaian"
+    ],
+    "answer": "Ya, 5 kali penilaian peringkat sudah dihapus dan digabung menjadi tiga lari percobaan untuk pengguna baru."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Apakah masih bisa mendapat peringkat setelah 14 hari?",
+    "aliases": [
+      "Mulai terlambat, apakah masih dapat peringkat?"
+    ],
+    "answer": "Bisa, kamu bisa mendapat peringkat kapan saja dengan tiga lari terverifikasi. Namun SHARE hadiah percobaan hanya diberikan dalam 14 hari setelah mendaftar."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana naik peringkat?",
+    "aliases": [
+      "Syarat naik peringkat"
+    ],
+    "answer": "Naik otomatis berdasarkan catatan lari 28 hari terakhir. Kamu tidak perlu mengikuti tes terpisah."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Apakah peringkat bisa turun?",
+    "aliases": [
+      "Apakah bisa diturunkan?"
+    ],
+    "answer": "Tidak, peringkat yang sudah diraih tidak akan turun."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Bagaimana pengguna lama mendapat peringkat?",
+    "aliases": [
+      "Peringkat pengguna lama"
+    ],
+    "answer": "Jika kamu sudah punya tiga atau lebih lari terverifikasi, peringkatmu ditentukan dari catatan itu."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Beri tahu peringkatku",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Mengapa Siput terlihat murung?",
+    "aliases": [
+      "Siput terlihat sedih"
+    ],
+    "answer": "Ekspresi sedikit kecewa berarti kamu belum punya peringkat. Setelah mendapat peringkat dan tier naik, ekspresinya akan makin cerah."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Bisakah tetap memakai Siput setelah dapat peringkat?",
+    "aliases": [
+      "Pilih Siput lagi"
+    ],
+    "answer": "Bisa, Siput adalah karakter dasar gratis, jadi kamu bisa memilihnya lagi kapan saja."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "Tidak ada karakter hewan lain?",
+    "aliases": [
+      "Beri tahu jenis karakter hewan"
+    ],
+    "answer": "Selain Siput sebagai karakter dasar, ada karakter hewan di lima tier kecepatan: Kura-kura, Beagle, Serigala, Zebra, dan Cheetah. Saat kamu mendapat peringkat dari lari terverifikasi, kamu bertemu karakter hewan yang cocok dengan kecepatanmu."
   },
   {
     "id": "SYS-FALLBACK",

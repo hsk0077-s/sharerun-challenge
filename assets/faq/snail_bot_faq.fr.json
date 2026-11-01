@@ -680,6 +680,96 @@
     "answer": "Le bénéficiaire est actuellement en discussion. Dès qu’il sera choisi, nous te le dirons dans l’appli, et nous prévoyons de publier le détail des versements et les résultats du règlement dans l’état des dons de l’appli et le Centre de sécurité et de confidentialité."
   },
   {
+    "id": "DO-12",
+    "category": "기부",
+    "question": "Comment savoir que les dons sont bien utilisés ?",
+    "aliases": [
+      "Transparence des dons"
+    ],
+    "answer": "Nous publions le détail du règlement des dons. Consulte-le avec ta propre contribution dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "DO-13",
+    "category": "기부",
+    "question": "Qu’est-ce qu’une campagne de dons d’entreprise ?",
+    "aliases": [
+      "Campagne de sponsor"
+    ],
+    "answer": "C’est une campagne où une entreprise donne 100 KRW par km dans la limite d’un budget qu’elle fixe. Tu vois le budget restant en temps réel, et elle se termine quand le budget est épuisé."
+  },
+  {
+    "id": "DO-15",
+    "category": "기부",
+    "question": "J’ai terminé mais « don effectué » ne s’affiche pas",
+    "aliases": [
+      "Le don n’apparaît pas"
+    ],
+    "answer": "L’indicateur « don effectué » n’apparaît qu’une fois enregistré dans l’historique des transactions du serveur. Les courses qui ne passent pas la vérification ne sont pas incluses dans le don."
+  },
+  {
+    "id": "DO-16",
+    "category": "기부",
+    "question": "Y a-t-il une course de don ?",
+    "aliases": [
+      "Course de don virtuelle"
+    ],
+    "answer": "Pour chaque course vérifiée, l’entreprise (l’opérateur) prévoit de donner 100 KRW par km sur ses fonds (jusqu’à 10 km par personne et par jour et 1 000 000 KRW par mois au total). Chaque fois qu’une campagne de dons avec une entreprise est ouverte, tu peux aussi y participer depuis l’onglet Défis."
+  },
+  {
+    "id": "GR-01",
+    "category": "등급·캐릭터",
+    "question": "Comment obtenir un rang ?",
+    "aliases": [
+      "Comment obtenir un rang"
+    ],
+    "answer": "Il suffit de faire des courses vérifiées d’au moins 1 km sur trois jours différents. Après la troisième course, ton rang est déterminé par l’allure médiane des trois enregistrements."
+  },
+  {
+    "id": "GR-02",
+    "category": "등급·캐릭터",
+    "question": "Les 5 courses d’évaluation ont-elles disparu ?",
+    "aliases": [
+      "Cinq évaluations"
+    ],
+    "answer": "Oui, les 5 évaluations de rang ont disparu et ont été fusionnées en trois courses d’essai pour les nouveaux."
+  },
+  {
+    "id": "GR-03",
+    "category": "등급·캐릭터",
+    "question": "Puis-je obtenir un rang après 14 jours ?",
+    "aliases": [
+      "J’ai commencé tard, puis-je avoir un rang ?"
+    ],
+    "answer": "Oui, tu peux obtenir un rang à tout moment avec trois courses vérifiées. Toutefois, les SHARE de récompense d’essai ne sont accordés que dans les 14 jours suivant l’inscription."
+  },
+  {
+    "id": "GR-04",
+    "category": "등급·캐릭터",
+    "question": "Comment monter en rang ?",
+    "aliases": [
+      "Conditions de promotion"
+    ],
+    "answer": "Le rang monte automatiquement d’après tes courses des 28 derniers jours. Aucun test séparé n’est nécessaire."
+  },
+  {
+    "id": "GR-05",
+    "category": "등급·캐릭터",
+    "question": "Mon rang peut-il baisser ?",
+    "aliases": [
+      "Y a-t-il une rétrogradation ?"
+    ],
+    "answer": "Non, un rang obtenu ne baisse jamais."
+  },
+  {
+    "id": "GR-06",
+    "category": "등급·캐릭터",
+    "question": "Comment les anciens utilisateurs obtiennent-ils un rang ?",
+    "aliases": [
+      "Rang des utilisateurs existants"
+    ],
+    "answer": "Si tu as déjà trois courses vérifiées ou plus, ton rang est déterminé d’après ces enregistrements."
+  },
+  {
     "id": "GR-07",
     "category": "등급·캐릭터",
     "question": "Dis-moi mon rang",
@@ -691,6 +781,33 @@
     "needs": [
       "등급"
     ]
+  },
+  {
+    "id": "GR-08",
+    "category": "등급·캐릭터",
+    "question": "Pourquoi Escargot a-t-il l’air abattu ?",
+    "aliases": [
+      "Escargot a l’air triste"
+    ],
+    "answer": "L’air un peu déçu signifie que tu n’as pas encore de rang. Une fois que tu obtiens un rang et que ton tier monte, l’expression s’éclaircit peu à peu."
+  },
+  {
+    "id": "GR-09",
+    "category": "등급·캐릭터",
+    "question": "Puis-je garder Escargot après avoir obtenu un rang ?",
+    "aliases": [
+      "Choisir de nouveau Escargot"
+    ],
+    "answer": "Oui, Escargot est un personnage de base gratuit, tu peux donc le rechoisir à tout moment."
+  },
+  {
+    "id": "GR-10",
+    "category": "등급·캐릭터",
+    "question": "N’y a-t-il pas d’autres personnages animaux ?",
+    "aliases": [
+      "Dis-moi les types de personnages animaux"
+    ],
+    "answer": "En plus d’Escargot, le personnage de base, il existe des personnages animaux répartis sur cinq niveaux de vitesse : Tortue, Beagle, Loup, Zèbre et Guépard. Quand tu obtiens un rang grâce à des courses vérifiées, tu rencontres le personnage animal qui correspond à ton allure."
   },
   {
     "id": "SYS-FALLBACK",

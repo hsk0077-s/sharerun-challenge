@@ -903,6 +903,132 @@
     "answer": "Le bot Escargot change entre quatre expressions selon la conversation : visage souriant, visage à l’écoute, visage joyeux et visage déçu."
   },
   {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Que contient le Centre de sécurité et de confidentialité ?",
+    "aliases": [
+      "Fonctions du Centre de sécurité"
+    ],
+    "answer": "Il propose des fonctions comme la liste des appareils connectés, la déconnexion à distance, les alertes de nouvelle connexion, Mes transactions et les réglages de confidentialité."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "ShareRun est-il sûr ?",
+    "aliases": [
+      "Peut-il être piraté ?"
+    ],
+    "answer": "Nous avons plusieurs couches de protection, comme la gestion des appareils connectés, les alertes de nouvelle connexion et la confirmation par empreinte lors des paiements. Si tu remarques quelque chose d’étrange, vérifie tout de suite dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Je veux déconnecter un appareil inconnu",
+    "aliases": [
+      "Déconnexion à distance"
+    ],
+    "answer": "Choisis cet appareil dans la liste des appareils connectés et tu pourras le déconnecter à distance."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Suis-je prévenu quand je me connecte sur un nouvel appareil ?",
+    "aliases": [
+      "Alerte de nouvelle connexion"
+    ],
+    "answer": "Oui, nous t’envoyons une notification quand tu te connectes sur un nouvel appareil."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Je pense que mon compte a été piraté",
+    "aliases": [
+      "Quelqu’un a utilisé mon compte"
+    ],
+    "answer": "Regarde d’abord la liste des appareils connectés dans le Centre de sécurité et de confidentialité et déconnecte tout de suite ceux que tu ne reconnais pas. Vérifie aussi s’il y a des enregistrements étranges dans tes transactions."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Pourquoi demande-t-on l’empreinte pour payer des DIA ?",
+    "aliases": [
+      "Vérification d’empreinte au paiement"
+    ],
+    "answer": "Quand les paiements de DIA seront ouverts, nous confirmerons une fois de plus avec ton empreinte au moment du paiement pour éviter les paiements non voulus."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Escargot peut-il dépenser mes DIA de lui-même ?",
+    "aliases": [
+      "Le bot paie-t-il ?"
+    ],
+    "answer": "Non, tout ce qui fait bouger de la monnaie, comme les DIA ou les dons, ne se fait qu’après une carte de confirmation et une vérification d’empreinte."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Les autres peuvent-ils voir mon parcours ?",
+    "aliases": [
+      "Visibilité des enregistrements"
+    ],
+    "answer": "La visibilité par défaut de tes enregistrements est « Moi seul ». Ne la modifie que si tu le souhaites."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Puis-je masquer le parcours près de chez moi ?",
+    "aliases": [
+      "Masquer l’emplacement de mon domicile"
+    ],
+    "answer": "Oui, il existe une fonction qui masque le parcours près de chez toi. Règle-la dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Mes données sont-elles utilisées pour entraîner l’IA ?",
+    "aliases": [
+      "Consentement à l’apprentissage de l’IA"
+    ],
+    "answer": "Tu peux activer ou désactiver toi-même l’utilisation pour l’entraînement de l’IA. Vérifie le réglage dans le Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Puis-je l’utiliser sur un téléphone rooté ?",
+    "aliases": [
+      "Téléphone jailbreaké"
+    ],
+    "answer": "Sur un téléphone altéré, l’utilisation peut être restreinte afin de garder des enregistrements équitables."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Que faire si mes gains sont limités ou si je suis sanctionné ?",
+    "aliases": [
+      "Contester une sanction"
+    ],
+    "answer": "Nous publions la limite quotidienne de gains, les étapes de sanction et la façon de contester dans notre politique de gains équitables. Si tu estimes que c’est injuste, dépose une contestation."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Pourquoi la localisation est-elle nécessaire ?",
+    "aliases": [
+      "Pourquoi l’autorisation de localisation est-elle nécessaire ?"
+    ],
+    "answer": "Nous utilisons la localisation pour enregistrer et vérifier la distance et le parcours de tes courses. Par défaut, toi seul peux voir ton parcours."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Je veux supprimer mes données personnelles",
+    "aliases": [
+      "Supprimer les données personnelles"
+    ],
+    "answer": "Tes données personnelles sont supprimées quand tu quittes le service. Les données d’activité sont effacées sous 30 jours, et seuls les enregistrements de transactions que la loi oblige à conserver sont gardés pendant la durée prévue. Tu peux changer la visibilité et les réglages d’apprentissage de l’IA tout de suite dans le Centre de sécurité et de confidentialité."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

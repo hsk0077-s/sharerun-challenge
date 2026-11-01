@@ -903,6 +903,132 @@
     "answer": "The Snail bot changes among four expressions to match the conversation: a smiling face, a listening face, a joyful face and a disappointed face."
   },
   {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "What’s in the Security & Privacy Center?",
+    "aliases": [
+      "Security Center features"
+    ],
+    "answer": "It has features such as the list of logged-in devices, remote logout, new-login alerts, My transactions and privacy settings."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "Is ShareRun safe?",
+    "aliases": [
+      "Can it be hacked?"
+    ],
+    "answer": "We have several layers of protection, such as login device management, new-login alerts and fingerprint confirmation for payments. If you notice anything strange, check right away in the Security & Privacy Center."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "I want to log out a device I don’t recognize",
+    "aliases": [
+      "Remote logout"
+    ],
+    "answer": "Pick that device from the list of logged-in devices and you can log it out remotely."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Will I be told when I log in on a new device?",
+    "aliases": [
+      "New login alert"
+    ],
+    "answer": "Yes, we send you a notification when you log in on a new device."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "I think my account was hacked",
+    "aliases": [
+      "Someone used my account"
+    ],
+    "answer": "First look at the list of logged-in devices in the Security & Privacy Center and log out any device you don’t recognize right away. Also check whether there are any strange records in your transactions."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Why does it ask for my fingerprint when paying for DIA?",
+    "aliases": [
+      "Payment fingerprint check"
+    ],
+    "answer": "When DIA payments open, we confirm once more with your fingerprint at payment time to prevent payments you didn’t want."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Can Snail spend my DIA on its own?",
+    "aliases": [
+      "Does the bot pay?"
+    ],
+    "answer": "No, anything that moves currency, like DIA or donations, goes ahead only after a confirmation card and a fingerprint check."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Can others see my running route?",
+    "aliases": [
+      "Record visibility"
+    ],
+    "answer": "The default visibility of your records is “Only me.” Change the visibility only when you want to."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Can I hide the route near my home?",
+    "aliases": [
+      "Hide my home location"
+    ],
+    "answer": "Yes, there is a feature that hides the route near your home. Set it in the Security & Privacy Center."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Is my data used for AI training?",
+    "aliases": [
+      "AI learning consent"
+    ],
+    "answer": "You can turn on or off yourself whether it’s used for AI training. Check the setting in the Security & Privacy Center."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Can I use it on a rooted phone?",
+    "aliases": [
+      "Jailbroken phone"
+    ],
+    "answer": "On a tampered phone, use may be restricted to keep records fair."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "What if my earnings are limited or I’m penalized?",
+    "aliases": [
+      "Appeal a penalty"
+    ],
+    "answer": "We publish the daily earning limit, penalty stages and how to appeal as our fair earning policy. If you feel it was unfair, please file an appeal."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Why is location data needed?",
+    "aliases": [
+      "Why is location permission needed?"
+    ],
+    "answer": "We use location data to record and verify your running distance and route. By default, only you can see your route."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "I want to delete my personal data",
+    "aliases": [
+      "Delete personal data"
+    ],
+    "answer": "Your personal data is deleted when you leave the service. Activity records are erased within 30 days, and only transaction records that must be kept by law are kept for the set period. You can change visibility and AI-learning settings right away in the Security & Privacy Center."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

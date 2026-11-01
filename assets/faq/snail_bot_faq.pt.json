@@ -903,6 +903,132 @@
     "answer": "O bot Caracol muda entre quatro expressões conforme a conversa: rosto sorridente, rosto atento, rosto alegre e rosto decepcionado."
   },
   {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "O que há na Central de segurança e privacidade?",
+    "aliases": [
+      "Funções da Central de segurança"
+    ],
+    "answer": "Tem funções como a lista de dispositivos conectados, logout remoto, alertas de novo login, Minhas transações e configurações de privacidade."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "O ShareRun é seguro?",
+    "aliases": [
+      "Pode ser hackeado?"
+    ],
+    "answer": "Temos várias camadas de proteção, como gerenciamento de dispositivos conectados, alertas de novo login e confirmação por digital nos pagamentos. Se notar algo estranho, confira agora mesmo na Central de segurança e privacidade."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Quero desconectar um dispositivo que não reconheço",
+    "aliases": [
+      "Logout remoto"
+    ],
+    "answer": "Escolha esse dispositivo na lista de dispositivos conectados e você poderá desconectá-lo remotamente."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Sou avisado quando faço login em um novo dispositivo?",
+    "aliases": [
+      "Alerta de novo login"
+    ],
+    "answer": "Sim, enviamos uma notificação quando você faz login em um novo dispositivo."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Acho que minha conta foi hackeada",
+    "aliases": [
+      "Alguém usou minha conta"
+    ],
+    "answer": "Primeiro veja a lista de dispositivos conectados na Central de segurança e privacidade e desconecte de imediato os que não reconhecer. Confira também se há registros estranhos nas suas transações."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Por que pedem a digital ao pagar DIA?",
+    "aliases": [
+      "Confirmação de digital no pagamento"
+    ],
+    "answer": "Quando os pagamentos de DIA forem abertos, confirmaremos mais uma vez com sua digital no momento do pagamento para evitar pagamentos indesejados."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "O caracol pode gastar meu DIA sozinho?",
+    "aliases": [
+      "O bot paga?"
+    ],
+    "answer": "Não, qualquer coisa que movimente moeda, como DIA ou doações, só prossegue após um cartão de confirmação e uma verificação de digital."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Outras pessoas podem ver meu trajeto de corrida?",
+    "aliases": [
+      "Visibilidade dos registros"
+    ],
+    "answer": "A visibilidade padrão dos seus registros é “Somente eu”. Altere a visibilidade apenas quando quiser."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Posso ocultar o trajeto perto da minha casa?",
+    "aliases": [
+      "Ocultar a localização da minha casa"
+    ],
+    "answer": "Sim, há um recurso que oculta o trajeto perto da sua casa. Configure na Central de segurança e privacidade."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Meus dados são usados para treinar IA?",
+    "aliases": [
+      "Consentimento para treinar IA"
+    ],
+    "answer": "Você mesmo pode ativar ou desativar o uso para treinar IA. Confira a configuração na Central de segurança e privacidade."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Posso usar em um celular com root?",
+    "aliases": [
+      "Celular com jailbreak"
+    ],
+    "answer": "Em um celular adulterado, o uso pode ser restrito para manter os registros justos."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "O que faço se meus ganhos forem limitados ou eu for penalizado?",
+    "aliases": [
+      "Contestar uma penalidade"
+    ],
+    "answer": "Publicamos o limite diário de ganhos, as etapas de penalidade e como contestar como nossa política de ganhos justos. Se achar injusto, faça uma contestação."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Por que a localização é necessária?",
+    "aliases": [
+      "Por que a permissão de localização é necessária?"
+    ],
+    "answer": "Usamos a localização para registrar e verificar a distância e o trajeto das suas corridas. Por padrão, só você vê o seu trajeto."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Quero apagar meus dados pessoais",
+    "aliases": [
+      "Apagar dados pessoais"
+    ],
+    "answer": "Seus dados pessoais são excluídos quando você encerra a conta. Os registros de atividade são apagados em 30 dias, e apenas os registros de transações que a lei obriga a guardar são mantidos pelo prazo definido. Você pode alterar a visibilidade e as configurações de treinamento de IA na hora na Central de segurança e privacidade."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

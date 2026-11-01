@@ -903,6 +903,132 @@
     "answer": "Der Schnecken-Bot wechselt je nach Gespräch zwischen vier Ausdrücken: lächelnd, zuhörend, erfreut und enttäuscht."
   },
   {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Was gibt es im Sicherheits- und Datenschutzzentrum?",
+    "aliases": [
+      "Funktionen des Sicherheitszentrums"
+    ],
+    "answer": "Es bietet Funktionen wie die Liste der angemeldeten Geräte, Remote-Abmeldung, Hinweise auf neue Anmeldungen, Meine Transaktionen und Datenschutzeinstellungen."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "Ist ShareRun sicher?",
+    "aliases": [
+      "Kann es gehackt werden?"
+    ],
+    "answer": "Wir haben mehrere Schutzschichten, etwa Geräteverwaltung, Hinweise auf neue Anmeldungen und Fingerabdruck-Bestätigung bei Zahlungen. Wenn dir etwas seltsam vorkommt, prüfe es sofort im Sicherheits- und Datenschutzzentrum."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Ich möchte ein unbekanntes Gerät abmelden",
+    "aliases": [
+      "Remote-Abmeldung"
+    ],
+    "answer": "Wähle dieses Gerät aus der Liste der angemeldeten Geräte, dann kannst du es aus der Ferne abmelden."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Werde ich benachrichtigt, wenn ich mich auf einem neuen Gerät anmelde?",
+    "aliases": [
+      "Hinweis auf neue Anmeldung"
+    ],
+    "answer": "Ja, wir senden dir eine Benachrichtigung, wenn du dich auf einem neuen Gerät anmeldest."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Ich glaube, mein Konto wurde gehackt",
+    "aliases": [
+      "Jemand hat mein Konto benutzt"
+    ],
+    "answer": "Sieh dir zuerst die Liste der angemeldeten Geräte im Sicherheits- und Datenschutzzentrum an und melde unbekannte Geräte sofort ab. Prüfe auch, ob in deinen Transaktionen seltsame Einträge stehen."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Warum wird beim DIA-Kauf nach dem Fingerabdruck gefragt?",
+    "aliases": [
+      "Fingerabdruck-Prüfung bei Zahlung"
+    ],
+    "answer": "Wenn DIA-Zahlungen verfügbar sind, bestätigen wir bei der Zahlung noch einmal mit deinem Fingerabdruck, um ungewollte Zahlungen zu verhindern."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Kann die Schnecke mein DIA eigenmächtig ausgeben?",
+    "aliases": [
+      "Bezahlt der Bot?"
+    ],
+    "answer": "Nein, alles, was Währung bewegt, wie DIA oder Spenden, läuft nur nach einer Bestätigungskarte und einer Fingerabdruck-Prüfung."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Können andere meine Laufstrecke sehen?",
+    "aliases": [
+      "Sichtbarkeit der Aufzeichnungen"
+    ],
+    "answer": "Die Standard-Sichtbarkeit deiner Aufzeichnungen ist „Nur ich“. Ändere sie nur, wenn du es möchtest."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Kann ich die Strecke in der Nähe meines Zuhauses verbergen?",
+    "aliases": [
+      "Meinen Wohnort verbergen"
+    ],
+    "answer": "Ja, es gibt eine Funktion, die die Strecke in der Nähe deines Zuhauses verbirgt. Stelle sie im Sicherheits- und Datenschutzzentrum ein."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Werden meine Daten für KI-Training verwendet?",
+    "aliases": [
+      "Einwilligung zum KI-Lernen"
+    ],
+    "answer": "Ob sie für KI-Training verwendet werden, kannst du selbst ein- oder ausschalten. Prüfe die Einstellung im Sicherheits- und Datenschutzzentrum."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Kann ich es auf einem gerooteten Handy nutzen?",
+    "aliases": [
+      "Jailbreak-Handy"
+    ],
+    "answer": "Auf einem manipulierten Handy kann die Nutzung eingeschränkt werden, damit die Aufzeichnungen fair bleiben."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Was ist, wenn mein Sammeln eingeschränkt oder ich sanktioniert werde?",
+    "aliases": [
+      "Sanktion anfechten"
+    ],
+    "answer": "Wir veröffentlichen das tägliche Sammellimit, die Sanktionsstufen und das Einspruchsverfahren als unsere faire Sammelrichtlinie. Wenn du es als ungerecht empfindest, reiche bitte einen Einspruch ein."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Warum wird der Standort benötigt?",
+    "aliases": [
+      "Warum wird die Standortberechtigung benötigt?"
+    ],
+    "answer": "Wir nutzen den Standort, um Distanz und Strecke deiner Läufe aufzuzeichnen und zu prüfen. Standardmäßig kannst nur du deine Strecke sehen."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Ich möchte meine persönlichen Daten löschen",
+    "aliases": [
+      "Persönliche Daten löschen"
+    ],
+    "answer": "Deine persönlichen Daten werden gelöscht, wenn du dein Konto kündigst. Aktivitätsdaten werden innerhalb von 30 Tagen gelöscht, und nur gesetzlich aufbewahrungspflichtige Transaktionsdaten werden für die festgelegte Frist aufbewahrt. Sichtbarkeit und KI-Lerneinstellungen kannst du sofort im Sicherheits- und Datenschutzzentrum ändern."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

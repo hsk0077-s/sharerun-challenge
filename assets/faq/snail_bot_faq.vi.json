@@ -903,6 +903,132 @@
     "answer": "Bot Ốc Sên thay đổi giữa bốn biểu cảm theo cuộc trò chuyện: mặt cười, mặt lắng nghe, mặt vui mừng và mặt thất vọng."
   },
   {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Trung tâm bảo mật & quyền riêng tư có gì?",
+    "aliases": [
+      "Tính năng Trung tâm bảo mật"
+    ],
+    "answer": "Có các tính năng như danh sách thiết bị đăng nhập, đăng xuất từ xa, thông báo đăng nhập mới, Lịch sử giao dịch và cài đặt phạm vi hiển thị."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "ShareRun có an toàn không?",
+    "aliases": [
+      "Có bị hack không?"
+    ],
+    "answer": "Chúng tôi có nhiều lớp bảo vệ như quản lý thiết bị đăng nhập, thông báo đăng nhập mới và xác nhận vân tay khi thanh toán. Nếu thấy điều gì lạ, hãy kiểm tra ngay trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Tôi muốn đăng xuất thiết bị lạ",
+    "aliases": [
+      "Đăng xuất từ xa"
+    ],
+    "answer": "Chọn thiết bị đó trong danh sách thiết bị đăng nhập là bạn có thể đăng xuất từ xa."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Có thông báo khi đăng nhập trên thiết bị mới không?",
+    "aliases": [
+      "Thông báo đăng nhập mới"
+    ],
+    "answer": "Có, chúng tôi gửi thông báo khi bạn đăng nhập trên thiết bị mới."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Tôi nghĩ tài khoản bị hack",
+    "aliases": [
+      "Có người dùng tài khoản của tôi"
+    ],
+    "answer": "Trước hết hãy xem danh sách thiết bị đăng nhập trong Trung tâm bảo mật & quyền riêng tư và đăng xuất ngay thiết bị lạ. Cũng hãy kiểm tra xem lịch sử giao dịch có bản ghi bất thường nào không."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Sao thanh toán DIA lại hỏi vân tay?",
+    "aliases": [
+      "Xác nhận vân tay khi thanh toán"
+    ],
+    "answer": "Khi mở thanh toán DIA, chúng tôi sẽ xác nhận thêm một lần bằng vân tay lúc thanh toán để ngăn các giao dịch ngoài ý muốn."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Ốc Sên có tự ý dùng DIA của tôi được không?",
+    "aliases": [
+      "Bot có thanh toán không?"
+    ],
+    "answer": "Không, mọi việc liên quan đến tiền tệ như DIA hay quyên góp chỉ được tiến hành sau thẻ xác nhận và xác nhận vân tay."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Người khác có thấy lộ trình chạy của tôi không?",
+    "aliases": [
+      "Phạm vi hiển thị bản ghi"
+    ],
+    "answer": "Phạm vi hiển thị mặc định của bản ghi là “Chỉ mình tôi”. Chỉ đổi phạm vi khi bạn muốn."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Có ẩn được lộ trình gần nhà không?",
+    "aliases": [
+      "Ẩn vị trí nhà"
+    ],
+    "answer": "Có, có tính năng ẩn lộ trình gần nhà. Hãy thiết lập trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Dữ liệu của tôi có dùng để huấn luyện AI không?",
+    "aliases": [
+      "Đồng ý huấn luyện AI"
+    ],
+    "answer": "Bạn tự bật hoặc tắt việc có dùng để huấn luyện AI hay không. Hãy kiểm tra cài đặt trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Dùng được trên điện thoại đã root không?",
+    "aliases": [
+      "Điện thoại jailbreak"
+    ],
+    "answer": "Trên điện thoại đã bị can thiệp, việc sử dụng có thể bị hạn chế để bản ghi được công bằng."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Nếu bị hạn chế tích lũy hoặc bị xử phạt thì sao?",
+    "aliases": [
+      "Khiếu nại xử phạt"
+    ],
+    "answer": "Chúng tôi công khai giới hạn tích lũy hằng ngày, các mức xử phạt và cách khiếu nại trong chính sách tích lũy công bằng. Nếu thấy bất công, hãy gửi khiếu nại."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Tại sao cần thông tin vị trí?",
+    "aliases": [
+      "Tại sao cần quyền vị trí?"
+    ],
+    "answer": "Chúng tôi dùng vị trí để ghi lại và xác minh quãng đường và lộ trình chạy. Mặc định chỉ mình bạn thấy lộ trình."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Tôi muốn xóa thông tin cá nhân",
+    "aliases": [
+      "Xóa thông tin cá nhân"
+    ],
+    "answer": "Thông tin cá nhân bị xóa khi bạn rời dịch vụ. Hồ sơ hoạt động được xóa trong vòng 30 ngày, chỉ các bản ghi giao dịch mà luật yêu cầu lưu giữ mới được giữ trong thời hạn quy định. Bạn có thể đổi ngay phạm vi hiển thị và cài đặt huấn luyện AI trong Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

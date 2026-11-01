@@ -903,6 +903,132 @@
     "answer": "Bot Siput berganti di antara empat ekspresi sesuai percakapan: wajah tersenyum, wajah mendengarkan, wajah gembira, dan wajah kecewa."
   },
   {
+    "id": "SE-01",
+    "category": "보안·개인정보",
+    "question": "Apa isi Pusat keamanan & privasi?",
+    "aliases": [
+      "Fitur Pusat keamanan"
+    ],
+    "answer": "Ada fitur seperti daftar perangkat yang login, logout jarak jauh, pemberitahuan login baru, Riwayat transaksi saya, dan pengaturan privasi."
+  },
+  {
+    "id": "SE-02",
+    "category": "보안·개인정보",
+    "question": "Apakah ShareRun aman?",
+    "aliases": [
+      "Apakah bisa diretas?"
+    ],
+    "answer": "Kami memiliki beberapa lapisan perlindungan, seperti pengelolaan perangkat login, pemberitahuan login baru, dan konfirmasi sidik jari saat pembayaran. Jika melihat sesuatu yang aneh, segera periksa di Pusat keamanan & privasi."
+  },
+  {
+    "id": "SE-04",
+    "category": "보안·개인정보",
+    "question": "Saya ingin mengeluarkan perangkat yang tidak dikenal",
+    "aliases": [
+      "Logout jarak jauh"
+    ],
+    "answer": "Pilih perangkat itu dari daftar perangkat login dan kamu bisa mengeluarkannya dari jarak jauh."
+  },
+  {
+    "id": "SE-05",
+    "category": "보안·개인정보",
+    "question": "Apakah ada pemberitahuan saat login di perangkat baru?",
+    "aliases": [
+      "Pemberitahuan login baru"
+    ],
+    "answer": "Ya, kami mengirim pemberitahuan saat kamu login di perangkat baru."
+  },
+  {
+    "id": "SE-06",
+    "category": "보안·개인정보",
+    "question": "Saya rasa akun saya diretas",
+    "aliases": [
+      "Seseorang memakai akun saya"
+    ],
+    "answer": "Pertama lihat daftar perangkat login di Pusat keamanan & privasi dan segera keluarkan perangkat yang tidak dikenal. Periksa juga apakah ada catatan aneh di riwayat transaksi."
+  },
+  {
+    "id": "SE-07",
+    "category": "보안·개인정보",
+    "question": "Mengapa sidik jari diminta saat membayar DIA?",
+    "aliases": [
+      "Konfirmasi sidik jari pembayaran"
+    ],
+    "answer": "Saat pembayaran DIA dibuka, kami akan mengonfirmasi sekali lagi dengan sidik jarimu saat membayar untuk mencegah pembayaran yang tidak diinginkan."
+  },
+  {
+    "id": "SE-08",
+    "category": "보안·개인정보",
+    "question": "Apakah Siput bisa memakai DIA saya sendiri?",
+    "aliases": [
+      "Apakah bot yang membayar?"
+    ],
+    "answer": "Tidak, apa pun yang memindahkan mata uang seperti DIA atau donasi hanya berjalan setelah kartu konfirmasi dan pemeriksaan sidik jari."
+  },
+  {
+    "id": "SE-09",
+    "category": "보안·개인정보",
+    "question": "Apakah orang lain bisa melihat rute lari saya?",
+    "aliases": [
+      "Cakupan visibilitas catatan"
+    ],
+    "answer": "Visibilitas catatanmu secara bawaan adalah “Hanya saya”. Ubah hanya jika kamu mau."
+  },
+  {
+    "id": "SE-10",
+    "category": "보안·개인정보",
+    "question": "Bisakah menyembunyikan rute dekat rumah?",
+    "aliases": [
+      "Sembunyikan lokasi rumah"
+    ],
+    "answer": "Bisa, ada fitur yang menyembunyikan rute dekat rumah. Atur di Pusat keamanan & privasi."
+  },
+  {
+    "id": "SE-11",
+    "category": "보안·개인정보",
+    "question": "Apakah data saya dipakai untuk melatih AI?",
+    "aliases": [
+      "Persetujuan pelatihan AI"
+    ],
+    "answer": "Kamu sendiri yang menyalakan atau mematikan apakah data dipakai untuk melatih AI. Periksa pengaturannya di Pusat keamanan & privasi."
+  },
+  {
+    "id": "SE-12",
+    "category": "보안·개인정보",
+    "question": "Bisakah dipakai di ponsel yang di-root?",
+    "aliases": [
+      "Ponsel jailbreak"
+    ],
+    "answer": "Pada ponsel yang dimodifikasi, penggunaan dapat dibatasi demi catatan yang adil."
+  },
+  {
+    "id": "SE-13",
+    "category": "보안·개인정보",
+    "question": "Bagaimana jika perolehan dibatasi atau dikenai sanksi?",
+    "aliases": [
+      "Banding sanksi"
+    ],
+    "answer": "Kami mempublikasikan batas perolehan harian, tahap sanksi, dan cara banding sebagai kebijakan perolehan yang adil. Jika merasa tidak adil, silakan ajukan banding."
+  },
+  {
+    "id": "SE-14",
+    "category": "보안·개인정보",
+    "question": "Mengapa lokasi diperlukan?",
+    "aliases": [
+      "Mengapa izin lokasi diperlukan?"
+    ],
+    "answer": "Kami memakai lokasi untuk merekam dan memverifikasi jarak serta rute lari. Secara bawaan, hanya kamu yang bisa melihat rutemu."
+  },
+  {
+    "id": "SE-15",
+    "category": "보안·개인정보",
+    "question": "Saya ingin menghapus data pribadi",
+    "aliases": [
+      "Hapus data pribadi"
+    ],
+    "answer": "Data pribadimu dihapus saat kamu berhenti menjadi anggota. Catatan aktivitas dihapus dalam 30 hari, dan hanya catatan transaksi yang wajib disimpan menurut hukum yang disimpan selama jangka waktu yang ditetapkan. Kamu bisa langsung mengubah visibilitas dan pengaturan pelatihan AI di Pusat keamanan & privasi."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

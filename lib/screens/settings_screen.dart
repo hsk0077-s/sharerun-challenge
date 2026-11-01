@@ -961,7 +961,10 @@ class _SettingsLegalWebViewScreenState
           },
         ),
       )
-      ..loadRequest(Uri.parse(LegalConstants.privacyPolicyUrl));
+      ..loadRequest(Uri.parse(localizedLegalUrl(
+        LegalConstants.privacyPolicyUrl,
+        RemainingSurface.currentLocale.languageCode,
+      )));
   }
 
   @override

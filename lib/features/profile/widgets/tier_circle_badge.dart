@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../onboarding/src_onboarding_controller.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 홈 프로필 사진 옆에 놓는 동그란 등급 배지. 사진과 같은 크기의 원 안에 캐릭터를 크게 넣고
 /// 아래에 등급 이름을 쓴다. 누르면 [onTap].
@@ -120,15 +121,15 @@ class TierCircleBadge extends StatelessWidget {
 /// 홈, 공유 카드에서 같이 쓰는 두 등급의 이름과 그림.
 extension TierCircleLabels on UserTier {
   /// 동물 이름만. 달팽이는 '달팽이'.
-  String get circleLabel => isSnail ? '달팽이' : animal.labelKo;
+  get circleLabel => animal.label();
 
   /// 둘째 줄: 메달 이름. 달팽이는 없다.
-  String? get circleSubLabel => isSnail ? null : medal.labelKo;
+  String? get circleSubLabel => isSnail ? null : medal.label();
 }
 
 extension AngelCircleLabels on AngelTier {
   /// 원 아래에 쓰는 짧은 이름. 예비 천사는 괄호 영문을 뺀다.
-  String get circleLabel => this == AngelTier.preAngel ? '예비 천사' : koreanName;
+  get circleLabel => this == AngelTier.preAngel ? RemainingSurface.trNow('profile.tier_circle_badge.body', '예비 천사') : koreanName;
 
   /// Same label in the screen's language.
   String circleLabelFor(BuildContext? context) => circleName(context);

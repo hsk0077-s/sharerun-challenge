@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../../l10n/remaining_surface.dart';
 
 /// 신고 사유. 값은 서버가 받는 코드와 같다.
-const reportReasons = <String, String>{
-  'offensive_name': '욕설·불쾌한 이름',
-  'sexual': '선정적인 이름',
-  'hate': '혐오·차별 표현',
-  'spam': '광고·도배',
-  'other': '기타',
+Map<String, String> get reportReasons => <String, String>{
+  'offensive_name': RemainingSurface.trNow('report.body', '욕설·불쾌한 이름'),
+  'sexual': RemainingSurface.trNow('report.body.2', '선정적인 이름'),
+  'hate': RemainingSurface.trNow('report.body.3', '혐오·차별 표현'),
+  'spam': RemainingSurface.trNow('report.body.4', '광고·도배'),
+  'other': RemainingSurface.trNow('report.dialog', '기타'),
 };
 
 /// 신고할 대상의 이름을 보여 주고 사유를 고르게 한다. 취소하면 null.

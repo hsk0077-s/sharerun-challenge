@@ -483,7 +483,7 @@ class _MissionCard extends StatelessWidget {
                       color: inProgressGrey,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Text(
+                    child: Text(
                       AppStrings.stampTourMissionInProgress,
                       style: TextStyle(
                         fontFamily: 'Pretendard',

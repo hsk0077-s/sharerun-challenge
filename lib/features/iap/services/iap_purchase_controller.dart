@@ -12,6 +12,7 @@ import '../models/coach_plus_product.dart';
 import '../models/iap_ui_event.dart';
 import '../models/share_iap_product.dart';
 import '../payment_auth.dart';
+import '../../../l10n/remaining_surface.dart';
 
 /// 앱 가동 시점부터 [purchaseStream]을 구독하는 IAP 라이프사이클 게이트웨이.
 class IapPurchaseController {
@@ -90,9 +91,9 @@ class IapPurchaseController {
     final available = await isStoreAvailable();
     if (!available) {
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.unavailable,
-          message: 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body', 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.'),
         ),
       );
       return;
@@ -121,18 +122,18 @@ class IapPurchaseController {
       );
       if (!launched) {
         _emit(
-          const IapUiEvent(
+          IapUiEvent(
             kind: IapUiKind.error,
-            message: '결제 창을 열 수 없습니다.',
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.3', '결제 창을 열 수 없습니다.'),
           ),
         );
       }
     } catch (error, stackTrace) {
       debugPrint('IAP buyCoachPlus failed: $error\n$stackTrace');
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '결제를 시작하지 못했습니다. 네트워크 상태를 확인해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.4', '결제를 시작하지 못했습니다. 네트워크 상태를 확인해 주세요.'),
         ),
       );
     }
@@ -144,9 +145,9 @@ class IapPurchaseController {
     final available = await isStoreAvailable();
     if (!available) {
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.unavailable,
-          message: 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body', 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.'),
         ),
       );
       return;
@@ -156,9 +157,9 @@ class IapPurchaseController {
     } catch (error, stackTrace) {
       debugPrint('IAP restorePurchases failed: $error\n$stackTrace');
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '구매 복원에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.5', '구매 복원에 실패했습니다. 잠시 후 다시 시도해 주세요.'),
         ),
       );
     }
@@ -200,9 +201,9 @@ class IapPurchaseController {
     final available = await isStoreAvailable();
     if (!available) {
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.unavailable,
-          message: 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body', 'Google Play 결제 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.'),
         ),
       );
       return;
@@ -230,18 +231,18 @@ class IapPurchaseController {
       );
       if (!launched) {
         _emit(
-          const IapUiEvent(
+          IapUiEvent(
             kind: IapUiKind.error,
-            message: '결제 창을 열 수 없습니다.',
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.3', '결제 창을 열 수 없습니다.'),
           ),
         );
       }
     } catch (error, stackTrace) {
       debugPrint('IAP buyConsumable failed: $error\n$stackTrace');
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '결제를 시작하지 못했습니다. 네트워크 상태를 확인해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.4', '결제를 시작하지 못했습니다. 네트워크 상태를 확인해 주세요.'),
         ),
       );
     }
@@ -266,9 +267,9 @@ class IapPurchaseController {
       switch (purchase.status) {
         case PurchaseStatus.pending:
           _emit(
-            const IapUiEvent(
+            IapUiEvent(
               kind: IapUiKind.pending,
-              message: '결제가 진행 중입니다. Google Play 승인을 기다려 주세요.',
+              message: RemainingSurface.trNow('iap.iap_purchase_controller.body.7', '결제가 진행 중입니다. Google Play 승인을 기다려 주세요.'),
             ),
           );
         case PurchaseStatus.purchased:
@@ -279,15 +280,15 @@ class IapPurchaseController {
           _emit(
             IapUiEvent(
               kind: IapUiKind.error,
-              message: purchase.error?.message ?? '결제가 실패했습니다.',
+              message: purchase.error?.message ?? RemainingSurface.trNow('iap.iap_purchase_controller.body.8', '결제가 실패했습니다.'),
             ),
           );
         case PurchaseStatus.canceled:
           await _completeQuietly(purchase);
           _emit(
-            const IapUiEvent(
+            IapUiEvent(
               kind: IapUiKind.canceled,
-              message: '결제가 취소되었습니다.',
+              message: RemainingSurface.trNow('iap.iap_purchase_controller.body.9', '결제가 취소되었습니다.'),
             ),
           );
       }
@@ -299,9 +300,9 @@ class IapPurchaseController {
         await _completeQuietly(purchase);
       }
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '결제 처리 중 오류가 발생했습니다.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.10', '결제 처리 중 오류가 발생했습니다.'),
         ),
       );
     }
@@ -310,9 +311,9 @@ class IapPurchaseController {
   Future<void> _handleCoachPlusPurchase(PurchaseDetails purchase) async {
     if (purchase.status == PurchaseStatus.pending) {
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.pending,
-          message: 'Coach+ 결제가 진행 중입니다.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.11', 'Coach+ 결제가 진행 중입니다.'),
         ),
       );
       return;
@@ -332,9 +333,9 @@ class IapPurchaseController {
       await _completeQuietly(purchase);
       if (purchase.status == PurchaseStatus.purchased) {
         _emit(
-          const IapUiEvent(
+          IapUiEvent(
             kind: IapUiKind.verified,
-            message: 'Coach+ 구독이 활성화되었습니다.',
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.12', 'Coach+ 구독이 활성화되었습니다.'),
           ),
         );
       }
@@ -345,16 +346,16 @@ class IapPurchaseController {
       _emit(
         IapUiEvent(
           kind: IapUiKind.error,
-          message: purchase.error?.message ?? 'Coach+ 결제가 실패했습니다.',
+          message: purchase.error?.message ?? RemainingSurface.trNow('iap.iap_purchase_controller.body.13', 'Coach+ 결제가 실패했습니다.'),
         ),
       );
       return;
     }
     await _completeQuietly(purchase);
     _emit(
-      const IapUiEvent(
+      IapUiEvent(
         kind: IapUiKind.canceled,
-        message: 'Coach+ 결제가 취소되었습니다.',
+        message: RemainingSurface.trNow('iap.iap_purchase_controller.body.14', 'Coach+ 결제가 취소되었습니다.'),
       ),
     );
   }
@@ -366,9 +367,9 @@ class IapPurchaseController {
     if (uid == null || uid.isEmpty) {
       await _completeQuietly(purchase);
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '로그인 후 Google Play 결제를 진행해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.15', '로그인 후 Google Play 결제를 진행해 주세요.'),
         ),
       );
       return;
@@ -391,7 +392,7 @@ class IapPurchaseController {
     _emit(
       IapUiEvent(
         kind: IapUiKind.verifying,
-        message: '영수증을 보안 검증 중입니다. SHARE는 검증 완료 후 지급됩니다.',
+        message: RemainingSurface.trNow('iap.iap_purchase_controller.body.16', '영수증을 보안 검증 중입니다. SHARE는 검증 완료 후 지급됩니다.'),
         purchaseDocId: docId,
         shareAmount: shareAmount,
       ),
@@ -475,7 +476,7 @@ class IapPurchaseController {
         _emit(
           IapUiEvent(
             kind: IapUiKind.verified,
-            message: 'Google 검증이 완료되어 SHARE가 지갑에 반영됩니다.',
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.18', 'Google 검증이 완료되어 SHARE가 지갑에 반영됩니다.'),
             purchaseDocId: purchaseDocId,
             shareAmount: shareAmount,
           ),
@@ -483,16 +484,16 @@ class IapPurchaseController {
         return;
       }
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '영수증 검증이 거절되었습니다. 고객센터로 문의해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.19', '영수증 검증이 거절되었습니다. 고객센터로 문의해 주세요.'),
         ),
       );
     } on TimeoutException {
       _emit(
-        const IapUiEvent(
+        IapUiEvent(
           kind: IapUiKind.error,
-          message: '검증 응답이 지연되고 있습니다. 지갑 잔액을 잠시 후 다시 확인해 주세요.',
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.20', '검증 응답이 지연되고 있습니다. 지갑 잔액을 잠시 후 다시 확인해 주세요.'),
         ),
       );
     } catch (error, stackTrace) {
@@ -532,9 +533,9 @@ class IapPurchaseController {
         onError: (Object error, StackTrace stackTrace) {
           debugPrint('IAP purchaseStream error: $error\n$stackTrace');
           _emit(
-            const IapUiEvent(
+            IapUiEvent(
               kind: IapUiKind.error,
-              message: '결제 스트림이 일시 중단되었습니다. 연결을 확인한 뒤 다시 시도해 주세요.',
+              message: RemainingSurface.trNow('iap.iap_purchase_controller.body.21', '결제 스트림이 일시 중단되었습니다. 연결을 확인한 뒤 다시 시도해 주세요.'),
             ),
           );
           _subscription = null;

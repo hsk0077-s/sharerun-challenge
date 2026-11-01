@@ -190,17 +190,17 @@ class MiniBotSheet extends StatefulWidget {
       final container = ProviderScope.containerOf(context, listen: false);
       final wallet = container.read(activeWalletProvider).asData?.value;
       if (wallet != null) {
-        values['SHARE잔액'] = _grouped(wallet.shareBalance);
-        values['VALUE잔액'] = _grouped(wallet.valueTokenBalance);
+        values[RemainingSurface.trNow('mini_bot.body.14', 'SHARE잔액')] = _grouped(wallet.shareBalance);
+        values[RemainingSurface.trNow('mini_bot.body.15', 'VALUE잔액')] = _grouped(wallet.valueTokenBalance);
       }
       final profile = container.read(activeUserProfileProvider).asData?.value;
       if (profile != null) {
         final tier = UserTier.tryFromRankScore(profile.gradeRank) ??
             UserTier.unratedFallback;
-        values['등급'] = tier.koreanName;
+        values[RemainingSurface.trNow('mini_bot.body.16', '등급')] = tier.koreanName;
       }
       final donation = container.read(todayDonationProvider).asData?.value;
-      if (donation != null) values['오늘기부기여'] = _grouped(donation.todayWon);
+      if (donation != null) values[RemainingSurface.trNow('mini_bot.body.17', '오늘기부기여')] = _grouped(donation.todayWon);
     } catch (_) {}
     return values;
   }

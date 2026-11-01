@@ -26,10 +26,10 @@ class IntroScreen extends StatefulWidget {
   static const loginKey = Key('intro-login');
   static const closeKey = Key('intro-close');
 
-  static const titles = [
-    '걸으면 SHARE가 쌓여요',
-    '한 걸음이 나눔이 된다',
-    '내 기록은 어느 폰에서나 그대로예요',
+  static get titles => [
+    RemainingSurface.trNow('launch.intro.body', '걸으면 SHARE가 쌓여요'),
+    RemainingSurface.trNow('launch.intro.body.2', '한 걸음이 나눔이 된다'),
+    RemainingSurface.trNow('launch.intro.body.3', '내 기록은 어느 폰에서나 그대로예요'),
   ];
 
   @override

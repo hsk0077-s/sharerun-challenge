@@ -43,7 +43,7 @@ enum TierAnimal {
 typedef AnimalGroup = TierAnimal;
 
 extension TierAnimalX on TierAnimal {
-  String get code => switch (this) {
+  get code => switch (this) {
         TierAnimal.turtle => 'turtle',
         TierAnimal.beagle => 'beagle',
         TierAnimal.wolf => 'wolf',
@@ -61,7 +61,7 @@ extension TierAnimalX on TierAnimal {
     return locale.languageCode == 'ko' ? labelKo : animalLabel(locale, code);
   }
 
-  String get labelKo => switch (this) {
+  get labelKo => switch (this) {
         TierAnimal.turtle => '거북이',
         TierAnimal.beagle => '비글',
         TierAnimal.wolf => '늑대',
@@ -70,7 +70,7 @@ extension TierAnimalX on TierAnimal {
         TierAnimal.snail => '달팽이',
       };
 
-  String get emoji => switch (this) {
+  get emoji => switch (this) {
         TierAnimal.turtle => '🐢',
         TierAnimal.beagle => '🐶',
         TierAnimal.wolf => '🐺',
@@ -93,7 +93,7 @@ enum TierMedal {
 typedef SubTier = TierMedal;
 
 extension TierMedalX on TierMedal {
-  String get code => switch (this) {
+  get code => switch (this) {
         TierMedal.bronze => 'bronze',
         TierMedal.silver => 'silver',
         TierMedal.gold => 'gold',
@@ -101,7 +101,16 @@ extension TierMedalX on TierMedal {
         TierMedal.master => 'master',
       };
 
-  String get labelKo => switch (this) {
+  /// 화면 언어로 된 메달 이름. 한국어는 [labelKo].
+  String label([BuildContext? context]) {
+    final locale = context == null
+        ? RemainingSurface.currentLocale
+        : (Localizations.maybeLocaleOf(context) ??
+            RemainingSurface.currentLocale);
+    return locale.languageCode == 'ko' ? labelKo : medalLabel(locale, code);
+  }
+
+  get labelKo => switch (this) {
         TierMedal.bronze => '브론즈',
         TierMedal.silver => '실버',
         TierMedal.gold => '골드',
@@ -157,11 +166,11 @@ class UserTier {
   String get koreanName =>
       isSnail ? '달팽이' : '${animal.labelKo} ${medal.labelKo}';
 
-  String get englishName => isSnail
+  get englishName => isSnail
       ? 'Snail (Unrated)'
       : '${_titleCase(animal.code)} ${_titleCase(medal.code)}';
 
-  String get displayNameKo => isSnail ? '달팽이' : '${medal.labelKo} ${animal.labelKo}';
+  get displayNameKo => isSnail ? '달팽이' : '${medal.labelKo} ${animal.labelKo}';
 
   String get displayNameWithEmoji => '${animal.emoji} $koreanName';
 
@@ -186,12 +195,12 @@ class UserTier {
   /// 티어 마스코트 그림. 모두 오른쪽을 본다. 메달은 그림에 없고
   /// 화면에서 [TierMedalBadge]로 따로 보여 준다.
   /// 달팽이(등급 미배정): 워킹 챌린지에서 쓰는 웃는 달팽이. 바탕은 투명하다.
-  String get avatarAssetPath => isSnail
+  get avatarAssetPath => isSnail
       ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
   /// 만보기 전용 — 메달 없는 순수 티어 마스코트. 모두 오른쪽을 본다.
-  String get pureAvatarAssetPath => isSnail
+  get pureAvatarAssetPath => isSnail
       ? 'assets/images/characters/chibi_snail_smiling.png'
       : 'assets/images/characters/tier_${animal.code}.png';
 
@@ -327,7 +336,7 @@ enum AngelTier {
 }
 
 extension AngelTierX on AngelTier {
-  String get code => switch (this) {
+  get code => switch (this) {
         AngelTier.preAngel => 'pre_angel',
         AngelTier.cupid => 'cupid',
         AngelTier.guardian => 'guardian',
@@ -336,13 +345,13 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => 'seraphim',
       };
 
-  String get koreanName => switch (this) {
-        AngelTier.preAngel => '예비 천사 (Pre-Angel)',
-        AngelTier.cupid => '큐피드',
-        AngelTier.guardian => '수호천사',
-        AngelTier.archangel => '대천사',
-        AngelTier.cherubim => '지천사',
-        AngelTier.seraphim => '세라핌',
+  get koreanName => switch (this) {
+        AngelTier.preAngel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body', '예비 천사 (Pre-Angel)'),
+        AngelTier.cupid => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.2', '큐피드'),
+        AngelTier.guardian => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.3', '수호천사'),
+        AngelTier.archangel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.4', '대천사'),
+        AngelTier.cherubim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.5', '지천사'),
+        AngelTier.seraphim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.6', '세라핌'),
       };
 
   /// Name for the language the screen shows. Korean when [context] is Korean
@@ -379,7 +388,7 @@ extension AngelTierX on AngelTier {
         rewardLabel,
       );
 
-  String get englishName => switch (this) {
+  get englishName => switch (this) {
         AngelTier.preAngel => 'Pre-Angel',
         AngelTier.cupid => 'Cupid',
         AngelTier.guardian => 'Guardian Angel',
@@ -388,7 +397,7 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => 'Seraphim',
       };
 
-  String get emoji => switch (this) {
+  get emoji => switch (this) {
         AngelTier.preAngel => '🩹',
         AngelTier.cupid => '🏹',
         AngelTier.guardian => '🛡️',
@@ -397,7 +406,7 @@ extension AngelTierX on AngelTier {
         AngelTier.seraphim => '👑',
       };
 
-  String get avatarAssetPath => switch (this) {
+  get avatarAssetPath => switch (this) {
         AngelTier.preAngel =>
           'assets/images/characters/chibi_pre_angel_bandaid.png',
         AngelTier.cupid => 'assets/images/characters/chibi_cupid_wing.png',
@@ -473,23 +482,23 @@ extension AngelTierX on AngelTier {
   double get tokenBoostMultiplier =>
       index >= AngelTier.archangel.index ? 1.2 : 1.0;
 
-  String get requirementLabel => switch (this) {
-        AngelTier.preAngel => '후원 0회 · 1회 정산 시 큐피드 승급',
-        AngelTier.cupid => '최초 1회 이상 후원 (SHARE 무관)',
-        AngelTier.guardian => '누적 5회 또는 누적 50,000 SHARE 이상',
-        AngelTier.archangel => '누적 20회 또는 누적 300,000 SHARE 이상',
-        AngelTier.cherubim => '누적 50회 또는 누적 1,000,000 SHARE 이상',
-        AngelTier.seraphim => '누적 100회 또는 누적 5,000,000 SHARE 이상',
+  get requirementLabel => switch (this) {
+        AngelTier.preAngel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.7', '후원 0회 · 1회 정산 시 큐피드 승급'),
+        AngelTier.cupid => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.8', '최초 1회 이상 후원 (SHARE 무관)'),
+        AngelTier.guardian => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.9', '누적 5회 또는 누적 50,000 SHARE 이상'),
+        AngelTier.archangel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.10', '누적 20회 또는 누적 300,000 SHARE 이상'),
+        AngelTier.cherubim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.11', '누적 50회 또는 누적 1,000,000 SHARE 이상'),
+        AngelTier.seraphim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.12', '누적 100회 또는 누적 5,000,000 SHARE 이상'),
       };
 
-  String get rewardLabel => switch (this) {
-        AngelTier.preAngel => '등에 귀여운 날개 반창고를 붙인 마스코트',
-        AngelTier.cupid => '등 뒤 아기 날개 배지 장착',
-        AngelTier.guardian => '은빛 날개 · 대회 입장 시 닉네임 볼드 테두리 강조',
+  get rewardLabel => switch (this) {
+        AngelTier.preAngel => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.13', '등에 귀여운 날개 반창고를 붙인 마스코트'),
+        AngelTier.cupid => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.14', '등 뒤 아기 날개 배지 장착'),
+        AngelTier.guardian => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.15', '은빛 날개 · 대회 입장 시 닉네임 볼드 테두리 강조'),
         AngelTier.archangel =>
-          '황금 날개 · 골드 그라데이션 닉네임 · 개설 대회 러너 1.2배 VALUE 부스트',
-        AngelTier.cherubim => '4익 날개 · 민트 오라 · 대회 입장 시 단독 등장 팝업',
-        AngelTier.seraphim => '6익 날개 · 골드 광배 회전 · 명예의 전당 VVIP 단독 배너',
+          RemainingSurface.trNow('onboarding.src_onboarding_controller.body.16', '황금 날개 · 골드 그라데이션 닉네임 · 개설 대회 러너 1.2배 VALUE 부스트'),
+        AngelTier.cherubim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.17', '4익 날개 · 민트 오라 · 대회 입장 시 단독 등장 팝업'),
+        AngelTier.seraphim => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.18', '6익 날개 · 골드 광배 회전 · 명예의 전당 VVIP 단독 배너'),
       };
 
   /// 횟수 OR 금액 — 높은 쪽부터 판정.
@@ -611,7 +620,7 @@ enum OnboardingPhase {
 
 extension OnboardingPhaseRoute on OnboardingPhase {
   /// go_router / [RouteNames] 선언적 경로.
-  String get routePath => switch (this) {
+  get routePath => switch (this) {
         OnboardingPhase.socialSignup => RouteNames.login,
         OnboardingPhase.sensitiveConsent => RouteNames.termsAgreement,
         OnboardingPhase.deviceSync => RouteNames.smartWatchSync,
@@ -653,11 +662,11 @@ abstract final class JenaPendingDebugSeed {
 
 /// Soft-prompt에 노출하는 웰니스 이득 카피.
 abstract final class OnboardingSoftPromptCopy {
-  static const title = '알림을 켜면 이런 이득이 있어요';
-  static const benefits = <String>[
-    '재화 실시간 입금 알림',
-    '소속 크루 방장 전체 공지 긴급 수신',
-    '러닝화 수명 도달에 따른 부상 방지 수명 알림',
+  static String get title => RemainingSurface.trNow('onboarding.src_onboarding_controller.body.21', '알림을 켜면 이런 이득이 있어요');
+  static List<String> get benefits => <String>[
+    RemainingSurface.trNow('onboarding.src_onboarding_controller.body.22', '재화 실시간 입금 알림'),
+    RemainingSurface.trNow('onboarding.src_onboarding_controller.body.23', '소속 크루 방장 전체 공지 긴급 수신'),
+    RemainingSurface.trNow('onboarding.src_onboarding_controller.body.24', '러닝화 수명 도달에 따른 부상 방지 수명 알림'),
   ];
 }
 
@@ -831,14 +840,14 @@ abstract final class NicknameValidator {
     final lower = nickname.toLowerCase();
     for (final word in _profanityBlacklist) {
       if (lower.contains(word.toLowerCase())) {
-        return '부적절한 단어가 포함되어 있습니다.';
+        return RemainingSurface.trNow('onboarding.src_onboarding_controller.body.40', '부적절한 단어가 포함되어 있습니다.');
       }
     }
     if (nickname.length < 2 || nickname.length > 12) {
-      return '닉네임은 공백 제외 2~12자여야 합니다.';
+      return RemainingSurface.trNow('onboarding.src_onboarding_controller.body.41', '닉네임은 공백 제외 2~12자여야 합니다.');
     }
     if (!pattern.hasMatch(nickname)) {
-      return '닉네임은 한글/영문/숫자만 사용할 수 있습니다.';
+      return RemainingSurface.trNow('onboarding.src_onboarding_controller.body.42', '닉네임은 한글/영문/숫자만 사용할 수 있습니다.');
     }
     return null;
   }
@@ -1184,7 +1193,7 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
   String _requireUid() {
     final uid = _currentUid();
     if (uid == null || uid.isEmpty) {
-      throw StateError('로그인이 필요합니다.');
+      throw StateError(RemainingSurface.trNow('run_result.body.3', '로그인이 필요합니다.'));
     }
     return uid;
   }
@@ -1246,13 +1255,13 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
   Future<void> submitSensitiveConsents() async {
     if (!state.locationConsent) {
       state = state.copyWith(
-        lastError: '위치정보 수집 및 이용약관에 동의해야 합니다.',
+        lastError: RemainingSurface.trNow('onboarding.src_onboarding_controller.body.43', '위치정보 수집 및 이용약관에 동의해야 합니다.'),
         actionStatus: AsyncError(
-          NicknameValidationException('위치정보 수집 및 이용약관에 동의해야 합니다.'),
+          NicknameValidationException(RemainingSurface.trNow('onboarding.src_onboarding_controller.body.43', '위치정보 수집 및 이용약관에 동의해야 합니다.')),
           StackTrace.current,
         ),
       );
-      throw NicknameValidationException('위치정보 수집 및 이용약관에 동의해야 합니다.');
+      throw NicknameValidationException(RemainingSurface.trNow('onboarding.src_onboarding_controller.body.43', '위치정보 수집 및 이용약관에 동의해야 합니다.'));
     }
 
     state = state.copyWith(actionStatus: const AsyncLoading());
@@ -1347,7 +1356,7 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
     WatchType? preferredWatchType,
   }) async {
     if (!state.canCompleteWatchLink) {
-      throw StateError('네이티브 또는 Garmin 연동이 필요합니다.');
+      throw StateError(RemainingSurface.trNow('onboarding.src_onboarding_controller.body.44', '네이티브 또는 Garmin 연동이 필요합니다.'));
     }
     final watchType = preferredWatchType ??
         (state.nativeWatchLinked
@@ -1479,7 +1488,7 @@ class SrcOnboardingController extends Notifier<SrcOnboardingState> {
   String validateNickname(String raw) {
     final nickname = raw.trim().replaceAll(RegExp(r'\s+'), '');
     if (nickname.isEmpty) {
-      throw NicknameValidationException('닉네임은 공백 제외 2~12자여야 합니다.');
+      throw NicknameValidationException(RemainingSurface.trNow('onboarding.src_onboarding_controller.body.41', '닉네임은 공백 제외 2~12자여야 합니다.'));
     }
     final live = liveNicknameError(raw);
     if (live != null) {

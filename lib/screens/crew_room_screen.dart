@@ -16,9 +16,9 @@ class CrewRoomScreen extends ConsumerWidget {
   static const preparingKey = Key('crew-room-preparing');
 
   static String _roleLabel(String role) => switch (role) {
-        'leader' => '크루장',
-        'sub' => '부크루장',
-        _ => '크루원',
+        'leader' => RemainingSurface.trNow('running_crew.body.33', '크루장'),
+        'sub' => RemainingSurface.trNow('running_crew.body.34', '부크루장'),
+        _ => RemainingSurface.trNow('running_crew.body.13', '크루원'),
       };
 
   static String _km(double km) =>

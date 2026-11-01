@@ -24,6 +24,7 @@ import '../models/personal_sponsor_donation.dart';
 import '../models/share_to_dia_view.dart';
 import '../models/tournament_join_result.dart';
 import '../models/winner_reward_action.dart';
+import '../../l10n/remaining_surface.dart';
 
 class ChallengeRoomCreateResult {
   const ChallengeRoomCreateResult({
@@ -653,7 +654,7 @@ class SecuredActionApiClient {
           if (r is Map<String, dynamic>)
             CrewJoinRequest(
               uid: r['uid'] as String? ?? '',
-              nickname: r['nickname'] as String? ?? '러너',
+              nickname: r['nickname'] as String? ?? RemainingSurface.trNow('personal_sponsor.body.5', '러너'),
             ),
     ];
   }

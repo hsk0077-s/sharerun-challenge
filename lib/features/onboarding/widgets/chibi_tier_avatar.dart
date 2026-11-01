@@ -104,7 +104,7 @@ class TierMedalBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: medal.labelKo,
+      label: medal.label(context),
       child: Container(
         key: const Key('tier-medal-badge'),
         width: size,

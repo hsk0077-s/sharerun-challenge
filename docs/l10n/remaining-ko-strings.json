@@ -37671,6 +37671,25 @@
       "th": "เปิดแอปอีเมลไม่ได้ จึงคัดลอกที่อยู่อีเมลให้แล้ว",
       "id": "Tidak bisa membuka aplikasi email, jadi alamat email disalin",
       "native_review": "pending"
+    },
+    {
+      "key": "profile.avatar_choice.female",
+      "ko": "여성",
+      "file": "lib/features/profile/avatar_choice.dart",
+      "screen": "profile.avatar_choice",
+      "context": "성별 아바타 이름. 남성과 짝. 한 단어.",
+      "placeholders": [],
+      "en": "Female",
+      "ja": "女性",
+      "zh-TW": "女性",
+      "es": "Mujer",
+      "pt-BR": "Feminino",
+      "de": "Weiblich",
+      "fr": "Femme",
+      "vi": "Nữ",
+      "th": "หญิง",
+      "id": "Perempuan",
+      "native_review": "pending"
     }
   ]
 }

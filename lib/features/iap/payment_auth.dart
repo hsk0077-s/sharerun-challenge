@@ -68,9 +68,10 @@ class PaymentAuthGate {
   }
 
   Future<PaymentAuthResult> confirm({
-    String reason = '결제를 진행하려면 본인 확인이 필요해요.',
+    String? reason,
     bool ignoreSetting = false,
   }) async {
+    reason ??= RemainingSurface.trNow('iap.payment_auth.body.5', '결제를 진행하려면 본인 확인이 필요해요.');
     if (!ignoreSetting && !await isEnabled()) return PaymentAuthResult.approved;
     final last = _lastApproved;
     if (last != null && _now().difference(last) < grace) {

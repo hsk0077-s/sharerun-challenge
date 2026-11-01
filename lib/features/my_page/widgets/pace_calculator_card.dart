@@ -106,7 +106,7 @@ class _PaceCalculatorCardState extends State<PaceCalculatorCard> {
             ),
           ),
           child: Text(
-            result ?? '유효한 거리와 목표 시간을 입력하세요.',
+            result ?? RemainingSurface.trNow('my_page.pace_calculator.body.2', '유효한 거리와 목표 시간을 입력하세요.'),
             style: textTheme.titleSmall?.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w700,

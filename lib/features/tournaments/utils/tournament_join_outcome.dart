@@ -5,7 +5,7 @@ import 'tournament_join_debit.dart';
 
 /// Client payment-history title. Same `users/{uid}/wallet_transactions`
 /// collection as personal sponsorship.
-const kTournamentEntryHistoryTitle = '대회 참가';
+String get kTournamentEntryHistoryTitle => RemainingSurface.trNow('wallet_transaction_model.body.3', '대회 참가');
 
 enum TournamentJoinKind {
   /// New Jena join — debit Home SHARE once and write history.

@@ -1,16 +1,27 @@
+import '../../l10n/app_localizations.dart';
 import '../../l10n/remaining_surface.dart';
+import '../../l10n/shop_catalog_copy.dart';
 
 /// 앱 전역 UI 문자열.
 ///
 /// Intl 패키지 도입 전까지 하드코딩 문자열을 이곳에 모읍니다.
 abstract final class AppStrings {
+  static ShareRunLocalizedStrings get _l {
+    final code = RemainingSurface.currentLocale.languageCode;
+    return ShareRunLocalizations.byLanguage[code] ??
+        ShareRunLocalizations.byLanguage['en']!;
+  }
+
+  static ShopCatalogCopy get _shop =>
+      ShopCatalogCopy.of(RemainingSurface.currentLocale);
+
   // ── Login (Screen 1) ──────────────────────────────────────────────
   static const loginLogoMark = '쉐어런';
-  static const loginTitle = '쉐어런';
+static String get loginTitle => _l.appTitle;
   static String get loginSubtitle => RemainingSurface.trNow('app.loginSubtitle', '세계를 향한 나눔의 질주');
 
   static String get loginGoogle => RemainingSurface.trNow('app.loginGoogle', 'Google로 계속하기');
-  static const loginApple = 'Apple로 계속하기';
+static String get loginApple => RemainingSurface.trNow('widget.apple_login_button.button', 'Apple로 계속하기');
   static String get loginNaver => RemainingSurface.trNow('app.loginNaver', 'Naver로 계속하기');
   static String get loginKakao => RemainingSurface.trNow('app.loginKakao', 'Kakao로 계속하기');
 
@@ -43,7 +54,7 @@ abstract final class AppStrings {
   static String get existingAccountNaver => RemainingSurface.trNow('app.existingAccountNaver', '네이버로 가입했어요');
   static String get existingAccountApple => RemainingSurface.trNow('app.existingAccountApple', '애플로 가입했어요');
   static String get existingAccountNotFound => RemainingSurface.trNow('app.existingAccountNotFound', '그 방법으로 가입된 계정이 없어요. 다른 방법을 골라 주세요.');
-  static String get existingAccountEmpty => existingAccountNotFound;
+  static get existingAccountEmpty => existingAccountNotFound;
   static String get linkConfirmYes => RemainingSurface.trNow('app.linkConfirmYes', '네, 연결할게요');
   static String get linkConfirmNo => RemainingSurface.trNow('app.linkConfirmNo', '아니에요, 다시 고를게요');
 
@@ -102,7 +113,7 @@ abstract final class AppStrings {
   static String get termsRequiredAge14 => RemainingSurface.trNow('app.termsRequiredAge14', '[필수] 만 14세 이상입니다');
   static String get termsOptionalHealth => RemainingSurface.trNow('app.termsOptionalHealth', '[선택] 건강정보(심박수) 수집 및\n이용 동의');
 
-  static const termsContinue = '동의하고 시작하기';
+static String get termsContinue => RemainingSurface.trNow('onboarding.button.2', '동의하고 시작하기');
 
   // ── Smart Watch Sync (Screen 3) ───────────────────────────────────
   static String get watchSyncSkip => RemainingSurface.trNow('app.watchSyncSkip', '건너뛰기');
@@ -114,7 +125,7 @@ abstract final class AppStrings {
   static String get watchSyncComplete => RemainingSurface.trNow('app.watchSyncComplete', '연동 완료하고 시작하기');
 
   // ── Device Connection (unified) ───────────────────────────────────
-  static const deviceConnectionTitle = '스마트워치 · 건강 데이터 연동';
+static String get deviceConnectionTitle => _l.deviceConnectionTitle;
   static String get deviceConnectionStatusTitle => RemainingSurface.trNow('app.deviceConnectionStatusTitle', '현재 연결된 기기');
   static String get deviceConnectionNone => RemainingSurface.trNow('app.deviceConnectionNone', '연결된 기기가 없습니다');
   static String get deviceConnectionNativeTitle => RemainingSurface.trNow('app.deviceConnectionNativeTitle', '네이티브 헬스 연동');
@@ -123,14 +134,14 @@ abstract final class AppStrings {
   static const deviceConnectionDisconnect = '연동 해제';
   static String get deviceConnectionSingleActiveNote => RemainingSurface.trNow('app.deviceConnectionSingleActiveNote', '쉐어런은 동시에 하나의 운동 기기만 활성 연결 상태로 유지합니다.');
   static String get deviceConnectionGoogleCaption => RemainingSurface.trNow('app.deviceConnectionGoogleCaption', '(갤럭시 워치, 샤오미 미밴드, 어메이즈핏, 가민, 핏빗 등)');
-  static const wearableGuideEntry = '내 워치·스마트밴드 연결 방법 찾기';
+static String get wearableGuideEntry => _l.wearableGuideEntry;
   static const wearableGuideSearchHint = '브랜드 검색 (예: 샤오미, 가민, 핏빗)';
   static const wearableGuideEmpty = '일치하는 브랜드가 없어요. 다른 이름으로 검색해 보세요.';
   static const wearableGuideCtaAndroid = 'Health Connect 연결하기';
   static const wearableGuideCtaIos = 'Apple 건강 연결하기';
   static String get healthConnectNoSamplesTip => RemainingSurface.trNow('app.healthConnectNoSamplesTip', '권한은 연결되었어요. 밴드/워치 앱 안에서 Health Connect 데이터 쓰기 스위치가 켜져 있는지 확인해 주세요. 스마트밴드 기록은 밴드 앱 동기화 후 반영됩니다.');
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
-  static const bleHrSectionTitle = '실시간 블루투스 심박 센서 (BLE) 직접 연결';
+static String get bleHrSectionTitle => _l.bleHrSectionTitle;
   static String get bleHrSectionSubtitle => RemainingSurface.trNow('app.bleHrSectionSubtitle', 'Health Connect 지연 없이 달리는 동안 실시간 심박수(0x180D)를 바로 받습니다.');
   static String get bleHrGuideTitle => RemainingSurface.trNow('app.bleHrGuideTitle', '내 기기별로 이렇게 하세요');
   static List<(String, String)> get bleHrGuideItems => <(String, String)>[
@@ -163,7 +174,7 @@ abstract final class AppStrings {
       ),
     ),
   ];
-  static const bleHrScanButton = '센서 찾기';
+static String get bleHrScanButton => _l.bleHrScanButton;
   static String get bleHrScanningLabel => RemainingSurface.trNow('app.bleHrScanningLabel', '근처 심박 센서 찾는 중...');
   static String get bleHrStopScanButton => RemainingSurface.trNow('app.bleHrStopScanButton', '스캔 중지');
   static String get bleHrDisconnectButton => RemainingSurface.trNow('app.bleHrDisconnectButton', '연결 해제');
@@ -181,7 +192,7 @@ abstract final class AppStrings {
   // ── Main Dashboard (Screen 5) ─────────────────────────────────────
   static const dashboardNickname = '달리기부자45';
   static const dashboardGoldBadge = '골드';
-  static const dashboardMyWallet = '내 지갑';
+static String get dashboardMyWallet => RemainingSurface.trNow('profile.my_dashboard_sections.wallet', '내 지갑');
   static String get walletUnconfirmedNote => RemainingSurface.trNow('app.walletUnconfirmedNote', '서버에서 확인하는 중이에요. 지금 보이는 값은 마지막으로 확인된 값이에요.');
   static String get dashboardShareBalance => RemainingSurface.trNow('app.dashboardShareBalance', '보유 SHARE: 90,000');
   static String get dashboardDiamondBalance => RemainingSurface.trNow('app.dashboardDiamondBalance', '💎 보유 다이아몬드: 5개');
@@ -264,7 +275,7 @@ abstract final class AppStrings {
   static String get lobbyEnterRoom => RemainingSurface.trNow('app.lobbyEnterRoom', '입장하기');
 
   // ── Create Challenge Room (Screen 8) ──────────────────────────────
-  static const createRoomScreenTitle = '대회 열기';
+static String get createRoomScreenTitle => RemainingSurface.trNow('wallet_transaction_model.body.39', '대회 열기');
   static String get createRoomScreenSubtitle => RemainingSurface.trNow('app.createRoomScreenSubtitle', '전 세계 러너들과 경쟁할 룰을 직접 설정하세요.');
   static String get createRoomTitleSection => RemainingSurface.trNow('app.createRoomTitleSection', '대회 제목 설정');
   static String get createRoomTitleHint => RemainingSurface.trNow('app.createRoomTitleHint', '어떤 목표로 달리시나요?');
@@ -300,7 +311,7 @@ abstract final class AppStrings {
   static String get challengeDetailTitle => RemainingSurface.trNow('app.challengeDetailTitle', '3km 중급 챌린지 (골드 대회)');
   static String get challengeDetailEntryFee => RemainingSurface.trNow('app.dashboardChallenge2Sub', '참가비: 1,200 SHARE');
   static const challengeDetailGoldBadge = '골드';
-  static String get challengeDetailPrize => noCashPrizePool;
+  static get challengeDetailPrize => noCashPrizePool;
   static String get challengeDetailDonation => RemainingSurface.trNow('app.challengeDetailDonation', '기부: 회사(운영자) 자금으로 기부 예정');
   static String get challengeDetailDistance => RemainingSurface.trNow('app.challengeDetailDistance', '거리: 3km');
   static String get challengeDetailDonationTarget => RemainingSurface.trNow('app.challengeDetailDonationTarget', '기부처: 정해지면 알려 드려요');
@@ -453,7 +464,7 @@ abstract final class AppStrings {
   static String get personalSponsorCta => RemainingSurface.trNow('app.personalSponsorCta', '50,000 SHARE 후원하고 천사 되기');
   static String get personalSponsorCelebrateTitle => RemainingSurface.trNow('app.personalSponsorCelebrateTitle', '천사 후원 완료!');
   static String get personalSponsorCelebrateHall => RemainingSurface.trNow('app.personalSponsorCelebrateHall', '명예의 전당 보기');
-  static const personalSponsorCelebrateDone = '확인';
+static String get personalSponsorCelebrateDone => RemainingSurface.trNow('common.confirm', '확인');
   static String get myPageAngelSponsor => RemainingSurface.trNow('app.myPageAngelSponsor', '천사 후원');
   static String get avatarCustomizeTitle => RemainingSurface.trNow('app.avatarCustomizeTitle', '아바타 커스터마이징');
   static String get avatarCustomizeHint => RemainingSurface.trNow('app.avatarCustomizeHint', '캐릭터를 고르거나 갤러리 사진을 쓰면 바로 저장됩니다');
@@ -465,7 +476,7 @@ abstract final class AppStrings {
   static String get runningCrewTitle => RemainingSurface.trNow('app.runningCrewTitle', '러닝 크루 (Crew)');
   static String get runningCrewHeadline => RemainingSurface.trNow('app.runningCrewHeadline', '같이 달릴\n크루 찾기');
   static String get runningCrewMyCrewName => RemainingSurface.trNow('app.runningCrewMyCrewName', '인천 논현 최강 크루');
-  static const runningCrewNoCrewLabel = '크루';
+static String get runningCrewNoCrewLabel => _l.navCrew;
   static String get runningCrewNoCrewName => RemainingSurface.trNow('app.runningCrewNoCrewName', '아직 크루가 없어요');
   static String get runningCrewNoCrewHint => RemainingSurface.trNow('app.runningCrewNoCrewHint', '크루에 들어가면 함께 달린 거리를 모아 월간 순위에 도전할 수 있어요. 크루를 만들거나 아래에서 찾아보세요.');
   static String get runningCrewMyCrewStats => RemainingSurface.trNow('app.runningCrewMyCrewStats', '소속 크루원: 45/50명 | 누적 달성 거리: 3,240km');
@@ -498,29 +509,28 @@ abstract final class AppStrings {
 
   // ── Item Inventory (Screen 20) ──────────────────────────────────────
   static String get itemInventoryTitle => RemainingSurface.trNow('app.itemInventoryTitle', '내 아이템 보관함');
-  static const itemInventoryCprTitle = '기록 심폐소생권';
-  static const itemInventoryCoachOnePointTitle = '코치 원포인트권';
-  static const itemInventoryExtraEntryTitle = '추가 참가권';
+static String get itemInventoryCprTitle => _shop.storeName('record_cpr_ticket');
+static String get itemInventoryCoachOnePointTitle => _shop.storeName('coach_one_point_ticket');
+static String get itemInventoryExtraEntryTitle => _shop.storeName('extra_entry_ticket');
   static String get itemInventoryCoachOnePointHint => RemainingSurface.trNow('app.itemInventoryCoachOnePointHint', '러닝을 시작하면 사용됩니다. 하루 1회.');
   static String get itemInventoryExtraEntryHint => RemainingSurface.trNow('app.itemInventoryExtraEntryHint', '모집 마감·정원 초과 참가 시 사용됩니다. 하루 2회.');
-  static const itemInventoryFriendGhostTitle = '친구 고스트 페이스';
+static String get itemInventoryFriendGhostTitle => _shop.storeName('friend_ghost_pace');
   static String get itemInventoryFriendGhostHint => RemainingSurface.trNow('app.itemInventoryFriendGhostHint', '러닝 중 친구 기록과 비교합니다. 내 최고 기록은 무료입니다.');
-  static const itemInventoryCrewCheerTitle = '크루 응원 깃발';
+static String get itemInventoryCrewCheerTitle => _shop.storeName('crew_cheer_flag');
   static String get itemInventoryCrewCheerHint => RemainingSurface.trNow('app.itemInventoryCrewCheerHint', '하루 1회. 대회 SHARE 보상만 10% 늘어납니다.');
-  static const itemInventoryBoostRunTitle = '부스트 런';
+static String get itemInventoryBoostRunTitle => _shop.storeName('boost_run');
   static String get itemInventoryBoostRunQuantityNote => RemainingSurface.trNow('app.itemInventoryBoostRunQuantityNote', '하루 1회 · 15분간 줍는 SHARE 2배 · 추가분 +240');
-  static const itemInventoryStepIncubatorTitle = '만보기 부화기';
-  static const itemInventoryStepIncubatorQuantityNote =
-      '검증 걸음 30,000보에 민트 러닝화';
-  static const itemInventoryRestDayTitle = '휴식일 지정권';
+static String get itemInventoryStepIncubatorTitle => _shop.storeName('step_incubator');
+static String get itemInventoryStepIncubatorQuantityNote => _shop.storeNote('step_incubator');
+static String get itemInventoryRestDayTitle => _shop.storeName('rest_day_ticket');
   static String get itemInventoryRestDayNote => RemainingSurface.trNow('app.itemInventoryRestDayNote', '매주 1회 무료. 추가 보유분만 VALUE로 샀습니다. 휴식일은 출석으로 세지 않고 스트릭도 끊지 않습니다.');
   static String get itemInventoryRestDayToday => RemainingSurface.trNow('app.itemInventoryRestDayToday', '오늘 휴식');
   static String get itemInventoryRestDayYesterday => RemainingSurface.trNow('app.itemInventoryRestDayYesterday', '어제 휴식');
-  static const itemInventoryDonationMatchTitle = '기부 매칭권';
+static String get itemInventoryDonationMatchTitle => _shop.storeName('donation_match');
   static String get itemInventoryDonationMatchNote => RemainingSurface.trNow('app.itemInventoryDonationMatchNote', '100 VALUE. 운영자 명의 1,000원이 러닝 기부 풀에 더해지고 내 이름이 함께 표시됩니다. 영수증은 없습니다.');
   static String get itemInventoryDonationMatchUse => RemainingSurface.trNow('app.itemInventoryDonationMatchUse', '매칭하기');
   static String get itemInventoryCprQuantity => RemainingSurface.trNow('app.itemInventoryCprQuantity', '보유량: 3/3');
-  static const itemInventorySafeGuardTitle = '세이프 가드';
+static String get itemInventorySafeGuardTitle => _shop.storeName('record_safe_guard');
   static String get itemInventorySafeGuardQuantity => RemainingSurface.trNow('app.itemInventorySafeGuardQuantity', '보유량: 1/1');
   static String get itemInventoryUse => RemainingSurface.trNow('app.itemInventoryUse', '사용하기');
 
@@ -546,7 +556,7 @@ abstract final class AppStrings {
   static String get stampTourMissionWalk => RemainingSurface.trNow('app.stampTourMissionWalk', '오늘 가볍게 1km 걷기');
   static String get stampTourMissionWalkReward => RemainingSurface.trNow('app.stampTourMissionWalkReward', 'DIA 지급 대기');
   static String get stampTourMissionStamp => RemainingSurface.trNow('app.stampTourMissionStamp', '우리 동네 랜드마크 스탬프 찍기 (1/3)');
-  static const stampTourMissionInProgress = '진행 중';
+static String get stampTourMissionInProgress => RemainingSurface.trNow('tournament_detail.body.18', '진행 중');
   static String get stampTourOfficialDiaPending => RemainingSurface.trNow('app.stampTourMissionWalkReward', 'DIA 지급 대기');
   static String get stampTourStampCollected => RemainingSurface.trNow('app.stampTourStampCollected', '스탬프 완료');
   static String get dashboardStampTourCta => RemainingSurface.trNow('app.dashboardStampTourCta', '스탬프 투어 확인하기');
@@ -590,7 +600,7 @@ abstract final class AppStrings {
   static String get runningCrewHallOfFame => RemainingSurface.trNow('app.runningCrewHallOfFame', '👑 명예의 전당');
 
   // ── Appeal / Customer Service (Screen 27) ────────────────────────
-  static const appealTitle = '기록 소명 및 고객센터';
+static String get appealTitle => RemainingSurface.trNow('security_privacy_center.body.7', '기록 소명 및 고객센터');
   static String get appealWarningTitle => RemainingSurface.trNow('app.appealWarningTitle', '기록 검증 보류 안내');
   static String get appealWarningBody => RemainingSurface.trNow('app.appealWarningBody', '최근 제출하신 [중급 3km 챌린지] 기록이 비정상적인 GPS/심박수 패턴으로 인해 보류 처리되었습니다. 억울한 경우 아래 폼을 통해 소명 자료를 제출해 주세요.');
   static String get appealFormTitle => RemainingSurface.trNow('app.appealFormTitle', '소명 자료 첨부 폼');

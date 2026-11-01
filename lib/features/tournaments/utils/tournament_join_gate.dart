@@ -20,7 +20,7 @@ abstract final class TournamentJoinGate {
   }) {
     final ticketOpens = extraEntryTickets > 0 && extraEntryCanOpen(tournament);
     if (!signedIn) {
-      return '로그인 후 챌린지에 참가할 수 있습니다.';
+      return RemainingSurface.trNow('tournaments.tournament_join_flow.body', '로그인 후 챌린지에 참가할 수 있습니다.');
     }
     if (alreadyJoined) {
       return RemainingSurface.trNow('tournament.join_already', '이미 참가한 챌린지입니다.');
@@ -29,16 +29,16 @@ abstract final class TournamentJoinGate {
       return RemainingSurface.trNow('tournament.join_closed', '현재 모집 중인 대회가 아닙니다.');
     }
     if (tournament.lockedForTier(userTier)) {
-      return '내 등급보다 낮은 대회는 참가할 수 없습니다.';
+      return RemainingSurface.trNow('api_exception.body.8', '내 등급보다 낮은 대회는 참가할 수 없습니다.');
     }
     if (tournament.isFull && !ticketOpens) {
-      return '대회 정원이 가득 찼습니다.';
+      return RemainingSurface.trNow('api_exception.body.2', '대회 정원이 가득 찼습니다.');
     }
     if (tournament.isPrizeRace && prizeEntryShare != null) {
       if (payingWithTierTicket) return null;
       if (payingWithTickets) {
         if (prizeTicketCost <= 0 || freeTicketBalance < prizeTicketCost) {
-          return '무료 참가권이 부족합니다.';
+          return RemainingSurface.trNow('api_exception.body.9', '무료 참가권이 부족합니다.');
         }
         return null;
       }

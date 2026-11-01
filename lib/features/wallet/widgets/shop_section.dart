@@ -51,7 +51,7 @@ class ShopSection extends StatelessWidget {
               : const Icon(Icons.diamond_outlined),
           label: Text(
             buyingDiamonds
-                ? '결제 준비 중...'
+                ? RemainingSurface.trNow('sponsor_payment.body', '결제 준비 중...')
                 : RemainingSurface.tr(
                     context,
                     'wallet.shop_section.body.3',

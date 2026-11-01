@@ -7,6 +7,7 @@ import '../../l10n/guidance_copy.dart';
 import '../../l10n/surface_rest.dart';
 import '../../data/models/wallet_model.dart';
 import '../donation/today_donation.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 천 단위 쉼표. `1250` → `1,250`.
 String groupedNumber(int value) {
@@ -205,8 +206,7 @@ class HomeDonationCard extends ConsumerWidget {
 
   static const rule = '검증된 모든 달리기, 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.';
   static const budget = '운영자의 월 기부 예산 안에서 진행될 예정이에요.';
-  static const capReachedLine =
-      '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.';
+  static String get capReachedLine => RemainingSurface.trNow('run_finish.cap_reached', '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

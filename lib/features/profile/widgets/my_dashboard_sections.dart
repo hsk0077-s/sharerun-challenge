@@ -35,7 +35,7 @@ class MyIdentityRow extends ConsumerWidget {
         ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
     final angel = ref.watch(userAngelTierProvider);
     final unset = SrcOnboardingController.isUnsetNickname(nickname);
-    final displayName = unset ? '닉네임을 설정해 주세요' : nickname;
+    final displayName = unset ? RemainingSurface.trNow('profile.gender_profile_avatar.body', '닉네임을 설정해 주세요') : nickname;
 
     Widget column({
       required Widget circle,

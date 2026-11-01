@@ -21,7 +21,7 @@ import 'pedometer_health_cap.dart';
 import 'pedometer_step_truth.dart';
 
 const _channelId = 'src_walking_coin_pickup';
-const _channelName = '워킹챌린지 코인 줍기';
+String get _channelName => RemainingSurface.trNow('wallet_transaction_model.body.27', '워킹챌린지 코인 줍기');
 const _iconMeta = 'mipmap/ic_launcher';
 const _targetKmKey = 'solo_pedo_target_km';
 const _healthBaseKey = 'solo_pedo_health_base';

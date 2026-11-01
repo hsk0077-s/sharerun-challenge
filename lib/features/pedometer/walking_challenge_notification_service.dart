@@ -14,7 +14,7 @@ import '../../core/notifications/reminder_schedule.dart';
 import '../../core/notifications/reminder_zone.dart';
 
 const _goldenChannelId = 'src_walking_golden_hour';
-const _goldenChannelName = '워킹챌린지 코인 줍기';
+String get _goldenChannelName => RemainingSurface.trNow('wallet_transaction_model.body.27', '워킹챌린지 코인 줍기');
 const _payload = RouteNames.soloPedometerPath;
 
 String get _goldenChannelDescription => RemainingSurface.trNow(
@@ -135,7 +135,7 @@ abstract final class WalkingChallengeNotificationService {
   static String _displayName(String nickname) {
     final trimmed = nickname.trim();
     if (trimmed.isEmpty || SrcOnboardingController.isUnsetNickname(trimmed)) {
-      return '러너';
+      return RemainingSurface.trNow('personal_sponsor.body.5', '러너');
     }
     return trimmed;
   }

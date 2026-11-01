@@ -19,7 +19,7 @@ class GoogleSignInButton extends StatelessWidget {
   /// 자리 너비를 꽉 채운다(구글 규격의 최대 너비 400까지). 아니면 내용만큼만 차지한다.
   final bool fullWidth;
 
-  static const defaultLabel = 'Google 계정으로 로그인';
+  static String get defaultLabel => RemainingSurface.trNow('widget.google_signin_button.button', 'Google 계정으로 로그인');
   static const buttonKey = Key('google-signin-button');
   static const logoKey = Key('google-signin-logo');
 

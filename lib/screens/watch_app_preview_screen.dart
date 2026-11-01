@@ -416,7 +416,7 @@ class _WatchFaceData {
 }
 
 List<_WatchFaceData> get _watchFaces => [
-      const _WatchFaceData('시작', '3km', '탭해서 시작', Icons.play_arrow_rounded),
+      _WatchFaceData(RemainingSurface.trNow('common.start', '시작'), '3km', '탭해서 시작', Icons.play_arrow_rounded),
       const _WatchFaceData(
           '달리는 중', '5:42', '♥ 148  ·  1.8km', Icons.directions_run),
       _WatchFaceData(

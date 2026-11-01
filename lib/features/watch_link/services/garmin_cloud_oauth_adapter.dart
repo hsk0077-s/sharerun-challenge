@@ -51,7 +51,7 @@ class GarminCloudOAuthAdapter {
       ));
     }
     if (!_looksLikeEmail(id)) {
-      throw const GarminOAuthException('올바른 이메일 형식이 아닙니다.');
+      throw GarminOAuthException(RemainingSurface.trNow('external_oauth_webview.body.2', '올바른 이메일 형식이 아닙니다.'));
     }
 
     await Future<void>.delayed(const Duration(milliseconds: 720));

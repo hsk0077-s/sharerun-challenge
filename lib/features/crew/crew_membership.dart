@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers/app_providers.dart';
 import '../../core/config/app_env.dart';
 import '../../data/api/secured_action_api_client.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 크루 한 곳의 공개 정보(목록·검색에 쓴다).
 @immutable
@@ -118,7 +119,7 @@ class CrewMember {
 
   factory CrewMember.fromJson(Map<String, dynamic> json) => CrewMember(
         uid: json['uid'] as String? ?? '',
-        nickname: json['nickname'] as String? ?? '러너',
+        nickname: json['nickname'] as String? ?? RemainingSurface.trNow('personal_sponsor.body.5', '러너'),
         role: json['role'] as String? ?? 'member',
       );
 }

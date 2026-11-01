@@ -2051,6 +2051,7 @@ class RemainingSurface {
     'support.mail_subject',
     'support.mail_note',
     'support.copied',
+    'profile.avatar_choice.female',
   ];
 
   static const _en = <String, String>{
@@ -4017,6 +4018,7 @@ class RemainingSurface {
     'support.mail_subject': 'ShareRun inquiry',
     'support.mail_note': 'The line below helps us find the problem. You can delete it.',
     'support.copied': 'Couldn’t open a mail app, so the email address was copied',
+    'profile.avatar_choice.female': 'Female',
   };
 
   static const _ja = <String, String>{
@@ -5983,6 +5985,7 @@ class RemainingSurface {
     'support.mail_subject': 'ShareRunのお問い合わせ',
     'support.mail_note': '下の行は原因を調べるための情報です。削除してもかまいません。',
     'support.copied': 'メールアプリを開けないため、メールアドレスをコピーしました',
+    'profile.avatar_choice.female': '女性',
   };
 
   static const _zh = <String, String>{
@@ -7949,6 +7952,7 @@ class RemainingSurface {
     'support.mail_subject': 'ShareRun 詢問',
     'support.mail_note': '以下是用來找出問題的資訊，可以刪除。',
     'support.copied': '無法開啟郵件 App，已複製電子郵件地址',
+    'profile.avatar_choice.female': '女性',
   };
 
   static const _es = <String, String>{
@@ -9915,6 +9919,7 @@ class RemainingSurface {
     'support.mail_subject': 'Consulta sobre ShareRun',
     'support.mail_note': 'La línea de abajo nos ayuda a encontrar el problema. Puedes borrarla.',
     'support.copied': 'No se pudo abrir una app de correo, así que se copió la dirección',
+    'profile.avatar_choice.female': 'Mujer',
   };
 
   static const _pt = <String, String>{
@@ -11881,6 +11886,7 @@ class RemainingSurface {
     'support.mail_subject': 'Contato sobre o ShareRun',
     'support.mail_note': 'A linha abaixo nos ajuda a encontrar o problema. Você pode apagá-la.',
     'support.copied': 'Não foi possível abrir um app de e-mail, então o endereço foi copiado',
+    'profile.avatar_choice.female': 'Feminino',
   };
 
   static const _de = <String, String>{
@@ -13847,6 +13853,7 @@ class RemainingSurface {
     'support.mail_subject': 'ShareRun-Anfrage',
     'support.mail_note': 'Die Zeile unten hilft uns, das Problem zu finden. Du kannst sie löschen.',
     'support.copied': 'Es konnte keine Mail-App geöffnet werden, daher wurde die Adresse kopiert',
+    'profile.avatar_choice.female': 'Weiblich',
   };
 
   static const _fr = <String, String>{
@@ -15813,6 +15820,7 @@ class RemainingSurface {
     'support.mail_subject': 'Demande ShareRun',
     'support.mail_note': 'La ligne ci-dessous nous aide à trouver le problème. Tu peux la supprimer.',
     'support.copied': 'Impossible d’ouvrir une appli de messagerie, l’adresse a donc été copiée',
+    'profile.avatar_choice.female': 'Femme',
   };
 
   static const _vi = <String, String>{
@@ -17779,6 +17787,7 @@ class RemainingSurface {
     'support.mail_subject': 'Liên hệ về ShareRun',
     'support.mail_note': 'Dòng bên dưới giúp chúng tôi tìm ra vấn đề. Bạn có thể xóa nó.',
     'support.copied': 'Không mở được ứng dụng email nên địa chỉ đã được sao chép',
+    'profile.avatar_choice.female': 'Nữ',
   };
 
   static const _th = <String, String>{
@@ -19745,6 +19754,7 @@ class RemainingSurface {
     'support.mail_subject': 'สอบถามเกี่ยวกับ ShareRun',
     'support.mail_note': 'บรรทัดด้านล่างช่วยให้เราหาสาเหตุของปัญหา คุณลบออกได้',
     'support.copied': 'เปิดแอปอีเมลไม่ได้ จึงคัดลอกที่อยู่อีเมลให้แล้ว',
+    'profile.avatar_choice.female': 'หญิง',
   };
 
   static const _id = <String, String>{
@@ -21711,6 +21721,7 @@ class RemainingSurface {
     'support.mail_subject': 'Pertanyaan ShareRun',
     'support.mail_note': 'Baris di bawah membantu kami menemukan masalah. Kamu boleh menghapusnya.',
     'support.copied': 'Tidak bisa membuka aplikasi email, jadi alamat email disalin',
+    'profile.avatar_choice.female': 'Perempuan',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

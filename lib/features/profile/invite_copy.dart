@@ -1,4 +1,5 @@
 import '../../l10n/app_localizations.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 마이 화면 초대 카드의 문구. 앱이 지원하는 언어별로 나눈다.
 /// 원어민 검수 전. 광고 랜딩에 쓰지 않는다.
@@ -45,16 +46,16 @@ const _en = InviteCopy(
   codeLabel: 'Invite code',
 );
 
-const inviteCopyByLanguage = <String, InviteCopy>{
+Map<String, InviteCopy> get inviteCopyByLanguage => <String, InviteCopy>{
   'ko': InviteCopy(
-    title: '내 초대 코드',
-    copyLabel: '복사',
-    copiedMessage: '복사했어요',
-    loadFailedMessage: '초대 코드를 불러오지 못했어요. 다시 시도',
-    buttonLabel: '카카오톡으로 초대하기',
-    shareSubject: '쉐어런 초대',
-    shareLead: '쉐어런에 초대해요!',
-    codeLabel: '초대 코드',
+    title: RemainingSurface.trNow('profile.invite_copy.body', '내 초대 코드'),
+    copyLabel: RemainingSurface.trNow('profile.invite_copy.body.2', '복사'),
+    copiedMessage: RemainingSurface.trNow('profile.invite_copy.body.3', '복사했어요'),
+    loadFailedMessage: RemainingSurface.trNow('profile.invite_copy.body.4', '초대 코드를 불러오지 못했어요. 다시 시도'),
+    buttonLabel: RemainingSurface.trNow('profile.invite_copy.body.5', '카카오톡으로 초대하기'),
+    shareSubject: RemainingSurface.trNow('profile.invite_copy.body.6', '쉐어런 초대'),
+    shareLead: RemainingSurface.trNow('profile.invite_copy.body.7', '쉐어런에 초대해요!'),
+    codeLabel: RemainingSurface.trNow('profile.invite_copy.body.8', '초대 코드'),
   ),
   'en': _en,
   'ja': InviteCopy(

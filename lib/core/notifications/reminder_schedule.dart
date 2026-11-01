@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// 아침·점심·저녁 리마인더는 몇 분 늦어도 괜찮으므로 "정확한 시각 알람"을 쓰지 않는다.
 /// 정확한 알람은 안드로이드 14 이상에서 사용자가 "알람 및 리마인더" 권한을 직접 허용해야
@@ -57,16 +58,16 @@ const _englishCopy = ReminderCopy(
   eveningBody: 'Verify today\'s steps and don\'t miss your reward.',
 );
 
-const reminderCopyByLanguage = <String, ReminderCopy>{
+Map<String, ReminderCopy> get reminderCopyByLanguage => <String, ReminderCopy>{
   'ko': ReminderCopy(
-    channelName: '워킹챌린지 참여 독려',
-    channelDescription: '워킹챌린지 아침·점심·저녁 참여 독려',
-    morningTitle: '🏃 활기찬 아침, 오늘의 첫걸음을 시작해 보세요!',
-    morningBody: '오늘 하루 걷는 모든 발걸음이 소중한 SHARE가 됩니다.',
-    lunchTitle: '☕ 가벼운 산책으로 활력을 충전해 볼까요?',
-    lunchBody: '잠깐의 가벼운 걸음이 오늘의 챌린지 목표를 완성합니다.',
-    eveningTitle: '🎁 오늘 획득할 수 있는 SHARE가 남아있어요!',
-    eveningBody: '오늘의 걸음을 인증하고 준비된 보상을 놓치지 마세요.',
+    channelName: RemainingSurface.trNow('reminder_schedule.body', '워킹챌린지 참여 독려'),
+    channelDescription: RemainingSurface.trNow('reminder_schedule.body.2', '워킹챌린지 아침·점심·저녁 참여 독려'),
+    morningTitle: RemainingSurface.trNow('reminder_schedule.body.3', '🏃 활기찬 아침, 오늘의 첫걸음을 시작해 보세요!'),
+    morningBody: RemainingSurface.trNow('reminder_schedule.body.4', '오늘 하루 걷는 모든 발걸음이 소중한 SHARE가 됩니다.'),
+    lunchTitle: RemainingSurface.trNow('reminder_schedule.body.5', '☕ 가벼운 산책으로 활력을 충전해 볼까요?'),
+    lunchBody: RemainingSurface.trNow('reminder_schedule.body.6', '잠깐의 가벼운 걸음이 오늘의 챌린지 목표를 완성합니다.'),
+    eveningTitle: RemainingSurface.trNow('reminder_schedule.body.7', '🎁 오늘 획득할 수 있는 SHARE가 남아있어요!'),
+    eveningBody: RemainingSurface.trNow('reminder_schedule.body.8', '오늘의 걸음을 인증하고 준비된 보상을 놓치지 마세요.'),
   ),
   'en': _englishCopy,
   'ja': ReminderCopy(

@@ -158,40 +158,40 @@ class _LoginConnectionsScreenState
   }
 
   Future<void> _linkKakao() => _link(
-        methodName: '카카오',
+        methodName: RemainingSurface.trNow('login_connections.body.2', '카카오'),
         askToken: ref.read(kakaoAccessTokenProvider),
         send: ref.read(identityApiClientProvider).linkKakao,
       );
 
   Future<void> _linkNaver() => _link(
-        methodName: '네이버',
+        methodName: RemainingSurface.trNow('login_connections.body.3', '네이버'),
         askToken: ref.read(naverAccessTokenProvider),
         send: ref.read(identityApiClientProvider).linkNaver,
       );
 
   Future<void> _linkApple() => _link(
-        methodName: '애플',
+        methodName: RemainingSurface.trNow('login_connections.body.4', '애플'),
         askToken: ref.read(appleIdTokenProvider),
         send: ref.read(identityApiClientProvider).linkApple,
       );
 
   Future<void> _unlinkApple() => _unlink(
-        name: '애플',
+        name: RemainingSurface.trNow('login_connections.body.4', '애플'),
         send: ref.read(identityApiClientProvider).unlinkApple,
       );
 
   Future<void> _unlinkKakao() => _unlink(
-        name: '카카오',
+        name: RemainingSurface.trNow('login_connections.body.2', '카카오'),
         send: ref.read(identityApiClientProvider).unlinkKakao,
       );
 
   Future<void> _unlinkNaver() => _unlink(
-        name: '네이버',
+        name: RemainingSurface.trNow('login_connections.body.3', '네이버'),
         send: ref.read(identityApiClientProvider).unlinkNaver,
       );
 
   Future<void> _unlinkGoogle() => _unlink(
-        name: '구글',
+        name: RemainingSurface.trNow('login_connections.body.5', '구글'),
         send: ref.read(identityApiClientProvider).unlinkGoogle,
       );
 

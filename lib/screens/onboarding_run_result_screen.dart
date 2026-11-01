@@ -137,9 +137,9 @@ class _OnboardingRunResultScreenState
   final _styleController = PageController(viewportFraction: 0.8);
   final _cardKey = GlobalKey();
 
-  String get _distanceLabel => widget.distanceKm.toStringAsFixed(2);
+  get _distanceLabel => widget.distanceKm.toStringAsFixed(2);
 
-  String get _timeLabel => _formatRunClock(widget.durationSeconds);
+  get _timeLabel => _formatRunClock(widget.durationSeconds);
 
   String get _paceLabel =>
       _formatRunPace(widget.distanceKm, widget.durationSeconds);
@@ -311,7 +311,7 @@ class _OnboardingRunResultScreenState
       debugPrint('RunFinishImageShare.capture: $e\n$st');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
               content: Text(RunFinishImageShare.captureFailedMessage)),
         );
       }

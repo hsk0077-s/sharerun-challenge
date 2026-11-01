@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../l10n/remaining_surface.dart';
 
 /// PNG capture plus Instagram Stories, TikTok, and the system sheet.
 ///
@@ -13,12 +14,12 @@ abstract final class RunFinishImageShare {
   static const channelName = 'share_run/finish_image_share';
   static const channel = MethodChannel(channelName);
 
-  static const instagramLabel = 'Instagram 스토리';
+  static String get instagramLabel => RemainingSurface.trNow('run_result.run_finish_share_targets.body', 'Instagram 스토리');
   static const tiktokLabel = 'TikTok';
-  static const moreLabel = '더보기';
-  static const captureFailedMessage = '공유 이미지를 만들지 못했어요.';
-  static const instagramFailedMessage = 'Instagram 스토리로 공유하지 못했어요.';
-  static const subject = '쉐어런 완주';
+  static String get moreLabel => RemainingSurface.trNow('run_result.run_finish_share_targets.body.3', '더보기');
+  static String get captureFailedMessage => RemainingSurface.trNow('run_result.run_finish_image_share.body', '공유 이미지를 만들지 못했어요.');
+  static String get instagramFailedMessage => RemainingSurface.trNow('run_result.run_finish_image_share.body.2', 'Instagram 스토리로 공유하지 못했어요.');
+  static String get subject => RemainingSurface.trNow('run_result.run_finish_image_share.body.3', '쉐어런 완주');
 
   static const instagramButtonKey = Key('run-finish-instagram');
   static const tiktokButtonKey = Key('run-finish-tiktok');

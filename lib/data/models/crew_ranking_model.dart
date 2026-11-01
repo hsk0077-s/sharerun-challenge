@@ -1,3 +1,4 @@
+import '../../l10n/remaining_surface.dart';
 class CrewRankingModel {
   const CrewRankingModel({
     required this.id,
@@ -17,7 +18,7 @@ class CrewRankingModel {
   }) {
     return CrewRankingModel(
       id: id,
-      name: json['name'] as String? ?? '쉐어런 크루',
+      name: json['name'] as String? ?? RemainingSurface.trNow('crew_ranking_model.body', '쉐어런 크루'),
       totalValue: (json['totalValue'] as num?)?.toInt() ?? 0,
       memberCount: (json['memberCount'] as num?)?.toInt() ?? 0,
     );

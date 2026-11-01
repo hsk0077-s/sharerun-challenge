@@ -47,7 +47,7 @@ Future<void> _presentRunRecordingChecklist(
     batteryReady: granted,
   )) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text(recordingMayStopWarning)),
+      SnackBar(content: Text(recordingMayStopWarning)),
     );
   }
 }
@@ -334,7 +334,7 @@ class _CheckRow extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  ready ? readyLabel : '필요',
+                  ready ? readyLabel : RemainingSurface.trNow('run_tracking.run_recording_checklist.body.12', '필요'),
                   style: AppTextStyles.caption.copyWith(
                     color: ready ? AppColors.tealAccent : AppColors.textGrey,
                     fontWeight: FontWeight.w700,

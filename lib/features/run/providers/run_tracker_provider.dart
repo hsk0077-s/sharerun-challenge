@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import '../../../l10n/remaining_surface.dart';
 
 @immutable
 class RunTrackerState {
@@ -68,7 +69,7 @@ class RunTrackerNotifier extends Notifier<RunTrackerState> {
       final granted = await _ensureLocationPermission();
       if (!granted) {
         state = state.copyWith(
-          lastError: '위치 권한이 필요합니다. 설정에서 허용해 주세요.',
+          lastError: RemainingSurface.trNow('stamp.stamp_tour_provider.body.2', '위치 권한이 필요합니다. 설정에서 허용해 주세요.'),
         );
         return;
       }
@@ -97,14 +98,14 @@ class RunTrackerNotifier extends Notifier<RunTrackerState> {
         _onPosition,
         onError: (Object e) {
           debugPrint('RunTracker GPS error: $e');
-          state = state.copyWith(lastError: 'GPS 수신 중 오류가 발생했습니다.');
+          state = state.copyWith(lastError: RemainingSurface.trNow('stamp.stamp_tour_provider.body.3', 'GPS 수신 중 오류가 발생했습니다.'));
         },
       );
     } catch (e) {
       debugPrint('RunTracker startRun error: $e');
       _cleanup();
       state = RunTrackerState.initial().copyWith(
-        lastError: '달리기를 시작할 수 없습니다. 위치 서비스를 확인해 주세요.',
+        lastError: RemainingSurface.trNow('run.run_tracker_provider.body', '달리기를 시작할 수 없습니다. 위치 서비스를 확인해 주세요.'),
       );
     }
   }

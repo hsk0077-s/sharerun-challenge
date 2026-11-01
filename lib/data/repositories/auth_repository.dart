@@ -7,6 +7,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 
 import '../../core/config/app_env.dart';
 import '../firebase/auth_service.dart';
+import '../../l10n/remaining_surface.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
@@ -91,7 +92,7 @@ class AuthRepository {
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       final idToken = googleAuth.idToken;
       if (idToken == null || idToken.isEmpty) {
-        throw Exception('구글 로그인 토큰을 가져오지 못했습니다.');
+        throw Exception(RemainingSurface.trNow('auth_repository.body.4', '구글 로그인 토큰을 가져오지 못했습니다.'));
       }
       return idToken;
     } on GoogleSignInException catch (e) {
@@ -130,14 +131,14 @@ class AuthRepository {
         return null; // 사용자가 로그인 창을 닫은 경우
       }
       if (result.status != NaverLoginStatus.loggedIn) {
-        throw Exception(result.errorMessage ?? '네이버 로그인 실패');
+        throw Exception(result.errorMessage ?? RemainingSurface.trNow('auth_repository.body.6', '네이버 로그인 실패'));
       }
 
       // 앱 전환 후에도 토큰이 유지되는지 재확인
       final token =
           result.accessToken ?? await FlutterNaverLogin.getCurrentAccessToken();
       if (token.accessToken.isEmpty) {
-        throw Exception('네이버 액세스 토큰을 가져오지 못했습니다.');
+        throw Exception(RemainingSurface.trNow('auth_repository.body.7', '네이버 액세스 토큰을 가져오지 못했습니다.'));
       }
       return token.accessToken;
     } catch (e) {

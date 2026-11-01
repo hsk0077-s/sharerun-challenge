@@ -432,6 +432,42 @@
     "answer": "Giải Sơ cấp được tham gia miễn phí hai lần đầu. Sau đó là 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "Tham gia giải đấu được tối đa mấy lần?",
+    "aliases": [
+      "Số lần tham gia giải"
+    ],
+    "answer": "Mỗi tuần bạn có thể tham gia một giải theo cấp một lần."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Mình muốn tham gia giải đấu",
+    "aliases": [
+      "Mình sẽ đăng ký giải đấu"
+    ],
+    "answer": "Mình sẽ mở màn hình đăng ký giải đấu. Khi sắp trừ phí tham gia, mình sẽ hỏi lại một lần nữa bằng thẻ xác nhận."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Giải thưởng được trả bằng gì?",
+    "aliases": [
+      "Giải thưởng có phải tiền mặt không?"
+    ],
+    "answer": "Giải thưởng được trao bằng DIA thưởng và không có giải thưởng tiền mặt. Giải thưởng chỉ lấy từ ngân sách của công ty và nhà tài trợ."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Phí tham gia có gom lại thành giải thưởng không?",
+    "aliases": [
+      "Giải thưởng có lấy từ phí tham gia không?"
+    ],
+    "answer": "Không, phí tham gia không được dùng làm giải thưởng. Giải thưởng chỉ lấy từ ngân sách của công ty và nhà tài trợ."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Giải thưởng chia theo hạng thế nào?",
@@ -440,6 +476,132 @@
       "Hạng 6 có được không?"
     ],
     "answer": "Hạng 1 đến 5 nhận đủ số DIA quy định, hạng 6 đến 10 nhận một nửa. Ai vào top 10 cũng nhận vé tham gia giải cấp tiếp theo."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Làm sao vào Chung kết?",
+    "aliases": [
+      "Điều kiện vào Chung kết"
+    ],
+    "answer": "Chung kết là giải quyết định diễn ra mỗi mùa một lần. Nếu bạn về hạng 1 đến 3 ở giải Half, bạn nhận vé vào thẳng Chung kết."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Có vé tham gia thì chắc chắn có chỗ không?",
+    "aliases": [
+      "Chỗ cho vé tham gia"
+    ],
+    "answer": "Số chỗ vào bằng vé tham gia tối đa là 20% sức chứa của giải, riêng Chung kết là 15%."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Tham gia giải có bắt buộc cần đồng hồ không?",
+    "aliases": [
+      "Cần smartwatch mới tham gia được không?"
+    ],
+    "answer": "Giải Sơ cấp và Trung cấp tham gia được mà không cần đồng hồ. Cao cấp, Half và Chung kết cần ghi nhịp tim nên bạn phải có đồng hồ."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Phí vào phòng chạy là bao nhiêu?",
+    "aliases": [
+      "Phí phòng"
+    ],
+    "answer": "1 km là 600 SHARE, 2 km 900, 3 km 1.200, 5 km 1.800, 10 km 3.000. Với quãng đường trên 10 km, cứ thêm 5 km tăng 600 SHARE."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Tạo phòng chạy thế nào?",
+    "aliases": [
+      "Tạo phòng"
+    ],
+    "answer": "Mình sẽ mở màn hình tạo phòng. Chọn quãng đường là phí tham gia được định, và thẻ xác nhận hiện ra khi sắp trừ SHARE."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Hoàn thành phòng được tính thế nào?",
+    "aliases": [
+      "Tiêu chí hoàn thành phòng"
+    ],
+    "answer": "Bạn cần một lần chạy đã xác minh đủ quãng đường của phòng thì mới được tính là hoàn thành. Máy chủ sẽ kiểm tra việc hoàn thành."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Cần gì để tạo crew?",
+    "aliases": [
+      "Tiền đặt cọc crew là bao nhiêu?"
+    ],
+    "answer": "Tạo crew cần khoản đặt cọc mở 3.000 SHARE. Ở tab Crew, bạn đặt tên và giới thiệu crew rồi tạo ngay."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Có thu hội phí crew trong ứng dụng được không?",
+    "aliases": [
+      "Quản lý hội phí crew"
+    ],
+    "answer": "Không, ShareRun không có tính năng thu hội phí crew thay bạn."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Có tham gia giải miễn phí bằng VALUE được không?",
+    "aliases": [
+      "Trả phí tham gia bằng VALUE"
+    ],
+    "answer": "Không, phí tham gia giải được trả bằng vé miễn phí hoặc SHARE, VALUE không bị trừ làm phí tham gia. VALUE là điểm danh dự thể hiện nỗ lực của bạn và cũng là điểm dùng cho gây quỹ quyên góp."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Nhận giải thưởng có phải đóng thuế không?",
+    "aliases": [
+      "Thuế giải thưởng"
+    ],
+    "answer": "Phần thưởng giải đấu được trao bằng DIA thưởng chỉ dùng trong ứng dụng, không phải rút tiền mặt. Nếu có giải thưởng hoặc quà cần khấu trừ thuế hay hướng dẫn kê khai theo luật thuế, chúng tôi sẽ thông báo trước khi trao, theo quy định pháp luật liên quan."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Khi nào có kết quả giải đấu?",
+    "aliases": [
+      "Khi nào công bố thứ hạng?"
+    ],
+    "answer": "Sau khi giải kết thúc và việc xác minh các lần chạy hoàn tất, thứ hạng cuối cùng và giải thưởng DIA thưởng sẽ được quyết toán. Bạn xem kết quả ở màn hình chi tiết giải đấu và trong Lịch sử giao dịch ở Trung tâm bảo mật & quyền riêng tư."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Xem được thứ hạng giải đấu trực tiếp không?",
+    "aliases": [
+      "Xem thứ hạng trực tiếp khi chạy"
+    ],
+    "answer": "Bạn xem thứ hạng các kết quả đã xác minh của người tham gia ở bảng xếp hạng trong màn hình chi tiết giải đấu. Khi đang chạy, vì an toàn, chúng tôi tập trung hướng dẫn tốc độ và nhịp tim của bạn."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Chạy thì được quyên góp như thế nào?",
+    "aliases": [
+      "Cách quyên góp hoạt động"
+    ],
+    "answer": "Với mỗi 1 km đã xác minh bạn chạy, công ty (đơn vị vận hành) dự kiến quyên góp 100 KRW từ quỹ của mình. Ngân sách quyên góp hằng tháng của công ty tối đa 1.000.000 KRW. Ứng dụng hiển thị phần đóng góp tích lũy từ các lần chạy của bạn."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Tôi có phải bỏ tiền để quyên góp không?",
+    "aliases": [
+      "Tôi có phải trả tiền quyên góp không?"
+    ],
+    "answer": "Không, khoản quyên góp khi chạy dự kiến lấy từ quỹ của công ty (đơn vị vận hành). Bạn không phải trả gì."
   },
   {
     "id": "DO-03",
@@ -453,6 +615,69 @@
     "needs": [
       "오늘기부기여"
     ]
+  },
+  {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Quyên góp đứng tên ai?",
+    "aliases": [
+      "Ai là người quyên góp?"
+    ],
+    "answer": "Chúng tôi dự kiến quyên góp 100 KRW cho mỗi 1 km đã xác minh từ quỹ của công ty (đơn vị vận hành) (tối đa 10 km mỗi người mỗi ngày và tổng cộng 1.000.000 KRW mỗi tháng). Nơi nhận đang được thảo luận, khi có quyết định chúng tôi sẽ báo trong ứng dụng. Khoản này được ghi trong ứng dụng là phần đóng góp quyên góp của bạn. Các khoản quyên góp bạn tự thực hiện được chuyển dưới tên của bạn."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Có nhận được biên lai quyên góp không?",
+    "aliases": [
+      "Quyên góp để quyết toán thuế cuối năm"
+    ],
+    "answer": "Với các khoản quyên góp bạn tự thực hiện, bạn có thể nhận biên lai đứng tên mình trên các trang quyên góp như Happybean hoặc Gachi Gachi. Khoản quyên góp khi chạy dự kiến lấy từ quỹ của công ty (đơn vị vận hành) nên không có biên lai."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Tôi muốn tự quyên góp",
+    "aliases": [
+      "Quyên góp bằng tiền của mình"
+    ],
+    "answer": "Mình sẽ dẫn bạn đến trang quyên góp như Happybean hoặc Gachi Gachi. Tiền quyên góp đi thẳng đến tổ chức, biên lai được cấp đứng tên bạn."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Công ty có thu phí từ tiền quyên góp không?",
+    "aliases": [
+      "Phí quyên góp"
+    ],
+    "answer": "Không, công ty không giữ lại một won nào từ tiền quyên góp."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "“Đạt mục tiêu quyên góp” nghĩa là gì?",
+    "aliases": [
+      "Hiện “Đạt mục tiêu quyên góp”"
+    ],
+    "answer": "Nghĩa là ngân sách quyên góp tháng đó của công ty (1.000.000 KRW) đã dùng hết. Bản ghi chạy của bạn vẫn được lưu và phần đóng góp lại tích lũy khi sang tháng mới."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Chỉ đi bộ có được quyên góp không?",
+    "aliases": [
+      "Số bước có tính vào quyên góp không?"
+    ],
+    "answer": "Quyên góp được tính theo quãng đường các lần chạy vượt qua xác minh. Số bước tích lũy SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "Quyên góp cho tổ chức nào?",
+    "aliases": [
+      "Quyên góp đến đâu?"
+    ],
+    "answer": "Nơi nhận hiện đang được thảo luận. Khi có quyết định, chúng tôi sẽ báo trong ứng dụng và dự kiến công khai chi tiết chuyển tiền cùng kết quả quyết toán ở mục tình hình quyên góp của ứng dụng và Trung tâm bảo mật & quyền riêng tư."
   },
   {
     "id": "GR-07",

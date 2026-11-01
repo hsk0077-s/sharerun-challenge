@@ -432,6 +432,42 @@
     "answer": "Puedes unirte gratis al evento Principiante las dos primeras veces. Después cuesta 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "¿A cuántos eventos puedo inscribirme?",
+    "aliases": [
+      "Límite de inscripciones"
+    ],
+    "answer": "Puedes participar en un evento por nivel una vez por semana."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Quiero inscribirme en un evento",
+    "aliases": [
+      "Me inscribiré en un evento"
+    ],
+    "answer": "Te abro la pantalla de inscripción al evento. Cuando se vaya a cobrar una cuota, te preguntaré una vez más con una tarjeta de confirmación."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "¿En qué se pagan los premios?",
+    "aliases": [
+      "¿El premio es en efectivo?"
+    ],
+    "answer": "Los premios se entregan como DIA de bono y no hay premios en efectivo. Los premios provienen solo del presupuesto de la empresa y de los patrocinadores."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "¿Las cuotas se juntan para formar los premios?",
+    "aliases": [
+      "¿Los premios salen de las cuotas?"
+    ],
+    "answer": "No, las cuotas no se usan para los premios. Los premios provienen solo del presupuesto de la empresa y de los patrocinadores."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "¿Cómo se reparten los premios por puesto?",
@@ -440,6 +476,132 @@
       "¿El 6.º también recibe?"
     ],
     "answer": "Del 1.º al 5.º puesto reciben los DIA fijados completos, y del 6.º al 10.º, la mitad. Quien quede entre los 10 primeros también recibe un boleto para el evento del siguiente nivel."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "¿Cómo llego a la Final?",
+    "aliases": [
+      "Requisitos para la Final"
+    ],
+    "answer": "La Final es un evento de campeonato que se celebra una vez por temporada. Si quedas del 1.º al 3.º en un evento Medio, recibes un boleto que te lleva directo a la Final."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "¿Si tengo un boleto, tengo plaza seguro?",
+    "aliases": [
+      "Plazas por boleto"
+    ],
+    "answer": "Las plazas a las que se puede entrar con boleto llegan hasta el 20 % del cupo del evento, y hasta el 15 % en la Final."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "¿Necesito un reloj para los eventos?",
+    "aliases": [
+      "¿Necesito un reloj inteligente para participar?"
+    ],
+    "answer": "Los eventos Principiante e Intermedio se pueden hacer sin reloj. Avanzado, Medio y la Final requieren registro de frecuencia cardíaca, así que necesitas un reloj."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "¿Cuánto cuesta entrar a una sala de carrera?",
+    "aliases": [
+      "Cuota de sala"
+    ],
+    "answer": "1 km cuesta 600 SHARE, 2 km 900, 3 km 1.200, 5 km 1.800 y 10 km 3.000. Para distancias de más de 10 km, sube 600 SHARE por cada 5 km adicionales."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "¿Cómo creo una sala de carrera?",
+    "aliases": [
+      "Crear una sala"
+    ],
+    "answer": "Te abro la pantalla de creación de sala. Al elegir la distancia se fija la cuota, y aparece una tarjeta de confirmación cuando se vaya a cobrar SHARE."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "¿Cómo se cuenta completar una sala?",
+    "aliases": [
+      "Criterio para completar una sala"
+    ],
+    "answer": "Debes hacer una carrera verificada de la distancia de la sala para que cuente como completada. El servidor comprueba si la terminaste."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "¿Qué necesito para crear un crew?",
+    "aliases": [
+      "¿Cuánto es el depósito del crew?"
+    ],
+    "answer": "Crear un crew requiere un depósito de apertura de 3.000 SHARE. En la pestaña Crew puedes elegir el nombre y la presentación y crearlo al momento."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "¿Puedo cobrar cuotas del crew en la app?",
+    "aliases": [
+      "Gestión de cuotas del crew"
+    ],
+    "answer": "No, ShareRun no ofrece una función para cobrar cuotas del crew en tu nombre."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "¿Puedo inscribirme gratis en eventos con VALUE?",
+    "aliases": [
+      "Pagar la cuota con VALUE"
+    ],
+    "answer": "No, la cuota de los eventos se paga con boletos gratuitos o SHARE, y VALUE no se descuenta como cuota. VALUE es una puntuación de honor que muestra tu esfuerzo y también la puntuación que se usa en la recaudación de donaciones."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "¿Pago impuestos por los premios?",
+    "aliases": [
+      "Impuestos de premios"
+    ],
+    "answer": "Las recompensas de los eventos se pagan como DIA de bono exclusivo de la app, no como retiros en efectivo. Si hay premios o regalos que, según la ley fiscal, requieran retención de impuestos o una guía para declararlos, te avisaremos con antelación, antes del pago, conforme a la normativa aplicable."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "¿Cuándo salen los resultados?",
+    "aliases": [
+      "¿Cuándo se anuncian las clasificaciones?"
+    ],
+    "answer": "Cuando termina el evento y se completa la verificación de las carreras, se liquidan la clasificación final y los premios en DIA de bono. Puedes ver el resultado en la pantalla de detalles del evento y en Mis transacciones, en el Centro de seguridad y privacidad."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "¿Puedo ver la clasificación en vivo?",
+    "aliases": [
+      "Ver clasificación en vivo mientras corro"
+    ],
+    "answer": "Puedes ver la clasificación de los registros verificados de los participantes en la tabla de posiciones de la pantalla de detalles del evento. Mientras corres, nos centramos en tu ritmo y en la guía de frecuencia cardíaca por seguridad."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "¿Cómo se convierte correr en una donación?",
+    "aliases": [
+      "Cómo funcionan las donaciones"
+    ],
+    "answer": "Por cada 1 km verificado que corres, la empresa (operador) planea donar 100 KRW con sus propios fondos. El presupuesto mensual de donaciones de la empresa llega hasta 1.000.000 KRW. La app muestra la aportación acumulada con tus carreras."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "¿Tengo que pagar para donar?",
+    "aliases": [
+      "¿Pago yo la donación?"
+    ],
+    "answer": "No, la donación por correr está prevista con fondos de la empresa (operador). No tienes nada que pagar."
   },
   {
     "id": "DO-03",
@@ -453,6 +615,69 @@
     "needs": [
       "오늘기부기여"
     ]
+  },
+  {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "¿A nombre de quién se hace la donación?",
+    "aliases": [
+      "¿Quién es el donante?"
+    ],
+    "answer": "Planeamos donar 100 KRW por cada 1 km verificado con fondos de la empresa (operador) (hasta 10 km por persona al día y 1.000.000 KRW al mes en total). El destinatario está en conversaciones y te lo diremos en la app cuando se decida. Se registra en la app como tu aportación de donación. Las donaciones que haces tú mismo se entregan a tu nombre."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "¿Puedo obtener un recibo de donación?",
+    "aliases": [
+      "Donación para la declaración anual"
+    ],
+    "answer": "En las donaciones que haces tú mismo, puedes obtener un recibo a tu nombre en páginas de donación como Happybean o Gachi Gachi. La donación por correr está prevista con fondos de la empresa (operador), por eso no se emite recibo."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Quiero donar por mi cuenta",
+    "aliases": [
+      "Donar con mi propio dinero"
+    ],
+    "answer": "Te llevo a una página de donación como Happybean o Gachi Gachi. Tu donación va directamente a la organización y el recibo se emite a tu nombre."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "¿La empresa cobra comisión de las donaciones?",
+    "aliases": [
+      "Comisión de donación"
+    ],
+    "answer": "No, la empresa no se queda ni un won de las donaciones."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "¿Qué significa «meta de donación alcanzada»?",
+    "aliases": [
+      "Apareció «meta de donación alcanzada»"
+    ],
+    "answer": "Significa que el presupuesto de donaciones de la empresa de ese mes (1.000.000 KRW) se ha usado por completo. Tus registros de carrera se guardan igual, y las aportaciones vuelven a acumularse al empezar el mes nuevo."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "¿Solo caminar cuenta como donación?",
+    "aliases": [
+      "¿Los pasos cuentan para las donaciones?"
+    ],
+    "answer": "Las donaciones se calculan con la distancia de las carreras que pasan la verificación. Los pasos acumulan SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "¿A qué organización va la donación?",
+    "aliases": [
+      "¿Adónde va la donación?"
+    ],
+    "answer": "El destinatario está actualmente en conversaciones. Cuando se decida, te lo diremos en la app, y planeamos publicar el detalle de las entregas y los resultados de la liquidación en el estado de donaciones de la app y en el Centro de seguridad y privacidad."
   },
   {
     "id": "GR-07",

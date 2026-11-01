@@ -432,6 +432,42 @@
     "answer": "Tu peux participer gratuitement à l’événement Débutant les deux premières fois. Ensuite, c’est 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "À combien d’événements puis-je participer ?",
+    "aliases": [
+      "Limite de participations"
+    ],
+    "answer": "Tu peux participer à un événement par niveau une fois par semaine."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Je veux participer à un événement",
+    "aliases": [
+      "Je vais m’inscrire à un événement"
+    ],
+    "answer": "J’ouvre l’écran d’inscription à l’événement. Quand des frais vont être débités, je te redemanderai avec une carte de confirmation."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Les prix sont versés sous quelle forme ?",
+    "aliases": [
+      "Le prix est-il en espèces ?"
+    ],
+    "answer": "Les prix sont remis sous forme de DIA bonus, il n’y a pas de prix en espèces. Les prix proviennent uniquement du budget de l’entreprise et des sponsors."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Les frais d’inscription sont-ils cumulés en prix ?",
+    "aliases": [
+      "Les prix viennent-ils des frais d’inscription ?"
+    ],
+    "answer": "Non, les frais d’inscription ne servent pas aux prix. Les prix proviennent uniquement du budget de l’entreprise et des sponsors."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Comment les prix sont-ils répartis par rang ?",
@@ -440,6 +476,132 @@
       "La 6e place reçoit-elle quelque chose ?"
     ],
     "answer": "Les rangs 1 à 5 reçoivent les DIA prévus en totalité, les rangs 6 à 10 la moitié. Tous ceux du top 10 reçoivent aussi un ticket pour l’événement du niveau suivant."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Comment accéder à la Finale ?",
+    "aliases": [
+      "Conditions pour la Finale"
+    ],
+    "answer": "La Finale est un événement de championnat organisé une fois par saison. Si tu termines de la 1re à la 3e place d’un événement Demi, tu reçois un ticket qui t’envoie directement en Finale."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Avec un ticket, ai-je forcément une place ?",
+    "aliases": [
+      "Places par ticket"
+    ],
+    "answer": "Les places accessibles avec un ticket vont jusqu’à 20 % de la capacité de l’événement, et jusqu’à 15 % pour la Finale."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Une montre est-elle indispensable pour les événements ?",
+    "aliases": [
+      "Faut-il une montre connectée pour participer ?"
+    ],
+    "answer": "Les événements Débutant et Intermédiaire se font sans montre. Avancé, Demi et la Finale exigent un enregistrement de la fréquence cardiaque, donc une montre est nécessaire."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Combien coûte l’entrée dans une salle de course ?",
+    "aliases": [
+      "Frais de salle"
+    ],
+    "answer": "1 km coûte 600 SHARE, 2 km 900, 3 km 1 200, 5 km 1 800 et 10 km 3 000. Au-delà de 10 km, le prix augmente de 600 SHARE par tranche de 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Comment créer une salle de course ?",
+    "aliases": [
+      "Créer une salle"
+    ],
+    "answer": "J’ouvre l’écran de création de salle. Le choix de la distance fixe les frais, et une carte de confirmation s’affiche quand des SHARE vont être débités."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Comment la fin d’une salle est-elle validée ?",
+    "aliases": [
+      "Critère de fin de salle"
+    ],
+    "answer": "Il faut une course vérifiée sur la distance de la salle pour qu’elle soit validée. Le serveur vérifie si tu as terminé."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Que faut-il pour créer un crew ?",
+    "aliases": [
+      "Quelle est la caution du crew ?"
+    ],
+    "answer": "Créer un crew demande une caution d’ouverture de 3 000 SHARE. Dans l’onglet Crew, choisis un nom et une présentation et crée-le tout de suite."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Peut-on collecter les cotisations du crew dans l’appli ?",
+    "aliases": [
+      "Gestion des cotisations du crew"
+    ],
+    "answer": "Non, ShareRun ne propose pas de fonction pour collecter les cotisations du crew à ta place."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Puis-je participer gratuitement aux événements avec des VALUE ?",
+    "aliases": [
+      "Payer les frais avec des VALUE"
+    ],
+    "answer": "Non, les frais d’inscription se paient avec des tickets gratuits ou des SHARE, et les VALUE ne sont pas déduits pour cela. VALUE est un score d’honneur qui montre ton effort et aussi le score utilisé pour le financement de dons."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Dois-je payer des impôts sur les prix ?",
+    "aliases": [
+      "Impôts sur les prix"
+    ],
+    "answer": "Les récompenses d’événements sont versées sous forme de DIA bonus propres à l’appli, et non en retraits d’argent. S’il existe des prix ou cadeaux nécessitant une retenue à la source ou des informations de déclaration fiscale selon le droit fiscal, nous te préviendrons à l’avance, avant le versement, conformément aux lois applicables."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Quand les résultats de l’événement sont-ils publiés ?",
+    "aliases": [
+      "Quand les classements sont-ils annoncés ?"
+    ],
+    "answer": "Une fois l’événement terminé et la vérification des courses achevée, le classement final et les prix en DIA bonus sont réglés. Tu peux consulter le résultat sur l’écran de détails de l’événement et dans Mes transactions du Centre de sécurité et de confidentialité."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Puis-je voir le classement en direct ?",
+    "aliases": [
+      "Voir le classement en direct en courant"
+    ],
+    "answer": "Tu peux voir le classement des résultats vérifiés des participants dans le tableau de l’écran de détails de l’événement. Pendant que tu cours, nous nous concentrons sur ton allure et les conseils de fréquence cardiaque, pour ta sécurité."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Comment la course devient-elle un don ?",
+    "aliases": [
+      "Fonctionnement des dons"
+    ],
+    "answer": "Pour chaque km vérifié que tu cours, l’entreprise (l’opérateur) prévoit de donner 100 KRW sur ses fonds propres. Le budget mensuel de dons de l’entreprise va jusqu’à 1 000 000 KRW. L’appli affiche la contribution accumulée grâce à tes courses."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Dois-je payer pour donner ?",
+    "aliases": [
+      "Est-ce moi qui paie le don ?"
+    ],
+    "answer": "Non, le don lié à la course est prévu sur les fonds de l’entreprise (opérateur). Tu n’as rien à payer."
   },
   {
     "id": "DO-03",
@@ -453,6 +615,69 @@
     "needs": [
       "오늘기부기여"
     ]
+  },
+  {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Le don est-il fait au nom de qui ?",
+    "aliases": [
+      "Qui est le donateur ?"
+    ],
+    "answer": "Nous prévoyons de donner 100 KRW par km vérifié sur les fonds de l’entreprise (opérateur) (jusqu’à 10 km par personne et par jour et 1 000 000 KRW par mois au total). Le bénéficiaire est en discussion et nous te le dirons dans l’appli dès qu’il sera choisi. Cela est enregistré dans l’appli comme ta contribution aux dons. Les dons que tu fais toi-même sont transmis en ton nom."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Puis-je obtenir un reçu de don ?",
+    "aliases": [
+      "Don pour la déclaration annuelle"
+    ],
+    "answer": "Pour les dons que tu fais toi-même, tu peux obtenir un reçu à ton nom sur des pages de don comme Happybean ou Gachi Gachi. Le don lié à la course est prévu sur les fonds de l’entreprise (opérateur), donc aucun reçu n’est délivré."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Je veux faire un don moi-même",
+    "aliases": [
+      "Donner avec mon propre argent"
+    ],
+    "answer": "Je te redirige vers une page de don comme Happybean ou Gachi Gachi. Ton don va directement à l’organisation et le reçu est établi à ton nom."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "L’entreprise prélève-t-elle des frais sur les dons ?",
+    "aliases": [
+      "Frais de don"
+    ],
+    "answer": "Non, l’entreprise ne prélève pas un seul won sur les dons."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "Que signifie « objectif de don atteint » ?",
+    "aliases": [
+      "« Objectif de don atteint » s’est affiché"
+    ],
+    "answer": "Cela signifie que le budget de dons de l’entreprise pour ce mois (1 000 000 KRW) est entièrement utilisé. Tes courses restent enregistrées, et les contributions se cumulent de nouveau dès le nouveau mois."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Marcher seulement compte-t-il comme don ?",
+    "aliases": [
+      "Les pas comptent-ils pour les dons ?"
+    ],
+    "answer": "Les dons sont calculés d’après la distance des courses qui passent la vérification. Les pas font gagner des SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "À quelle organisation le don est-il versé ?",
+    "aliases": [
+      "Où va le don ?"
+    ],
+    "answer": "Le bénéficiaire est actuellement en discussion. Dès qu’il sera choisi, nous te le dirons dans l’appli, et nous prévoyons de publier le détail des versements et les résultats du règlement dans l’état des dons de l’appli et le Centre de sécurité et de confidentialité."
   },
   {
     "id": "GR-07",

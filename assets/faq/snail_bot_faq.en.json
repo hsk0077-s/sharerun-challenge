@@ -432,6 +432,42 @@
     "answer": "You can join the Beginner event for free the first two times. After that it is 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "How many events can I enter?",
+    "aliases": [
+      "Event entry limit"
+    ],
+    "answer": "You can join one tier event per week."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "I want to join an event",
+    "aliases": [
+      "I’ll sign up for an event"
+    ],
+    "answer": "I’ll open the event entry screen for you. When an entry fee is going to be charged, I’ll ask once more with a confirmation card."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "What are prizes paid in?",
+    "aliases": [
+      "Is the prize cash?"
+    ],
+    "answer": "Prizes are given as bonus DIA, and there are no cash prizes. Prizes come only from the company’s and sponsors’ budgets."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Do entry fees pool into prizes?",
+    "aliases": [
+      "Do prizes come from entry fees?"
+    ],
+    "answer": "No, entry fees are not used for prizes. Prizes come only from the company’s and sponsors’ budgets."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "How are prizes split by rank?",
@@ -440,6 +476,132 @@
       "Does 6th place get one?"
     ],
     "answer": "Ranks 1 to 5 get the set DIA in full, and ranks 6 to 10 get half. Everyone in the top 10 also gets an entry ticket for the next-level event."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "How do I get into the Final?",
+    "aliases": [
+      "Final entry requirements"
+    ],
+    "answer": "The Final is a championship event held once each season. If you finish 1st to 3rd in a Half event, you get a ticket that takes you straight into the Final."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Is a seat guaranteed if I have an entry ticket?",
+    "aliases": [
+      "Entry ticket seats"
+    ],
+    "answer": "Seats you can enter with an entry ticket are up to 20% of an event’s capacity, and up to 15% for the Final."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Do I really need a watch for events?",
+    "aliases": [
+      "Do I need a smartwatch to enter?"
+    ],
+    "answer": "Beginner and Intermediate events can be joined without a watch. Advanced, Half and the Final need heart-rate records, so you need a watch."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "How much is a running room entry fee?",
+    "aliases": [
+      "Room entry fee"
+    ],
+    "answer": "It’s 600 SHARE for 1 km, 900 for 2 km, 1,200 for 3 km, 1,800 for 5 km and 3,000 for 10 km. For distances over 10 km, it goes up by 600 SHARE for every extra 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "How do I create a running room?",
+    "aliases": [
+      "Create a room"
+    ],
+    "answer": "I’ll open the room creation screen. Pick a distance and the entry fee is set, and a confirmation card appears when SHARE is going to be charged."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "How is finishing a room counted?",
+    "aliases": [
+      "Room completion criteria"
+    ],
+    "answer": "You need a verified run of the room’s distance to count as finished. The server checks whether you finished."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "What do I need to create a crew?",
+    "aliases": [
+      "How much is the crew deposit?"
+    ],
+    "answer": "Creating a crew needs a 3,000 SHARE opening deposit. In the Crew tab you can pick a crew name and intro and create it right away."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Can I collect crew dues in the app?",
+    "aliases": [
+      "Crew dues management"
+    ],
+    "answer": "No, ShareRun does not build a feature for collecting crew dues on your behalf."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Can I enter events for free with VALUE?",
+    "aliases": [
+      "Pay the entry fee with VALUE"
+    ],
+    "answer": "No, event entry fees are paid with free entry tickets or SHARE, and VALUE is not deducted for entry fees. VALUE is an honor score that shows your effort and is also the score used for donation funding."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Do I pay tax on prizes?",
+    "aliases": [
+      "Prize tax"
+    ],
+    "answer": "Event rewards are paid as app-only bonus DIA, not as cash withdrawals. If there are prizes or giveaways that require withholding tax or tax-filing guidance under tax law, we will notify you in advance, before payout, in line with the relevant laws."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "When are event results out?",
+    "aliases": [
+      "When are rankings announced?"
+    ],
+    "answer": "After the event ends and run verification is complete, the final ranking and bonus DIA prizes are settled. You can check the result on the event details screen and in My transactions in the Security & Privacy Center."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Can I see live event rankings?",
+    "aliases": [
+      "See live rankings while running"
+    ],
+    "answer": "You can check the ranking of participants’ verified records on the leaderboard on the event details screen. While you run, we focus on your pace and heart-rate guidance for safety."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "How does running turn into a donation?",
+    "aliases": [
+      "How donations work"
+    ],
+    "answer": "For every verified 1 km you run, the company (operator) plans to donate 100 KRW from its own funds. The company’s monthly donation budget is up to 1,000,000 KRW. The app shows the contribution built up from your runs."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Do I have to pay to donate?",
+    "aliases": [
+      "Do I pay the donation?"
+    ],
+    "answer": "No, the running donation is planned to be made from the company’s (operator’s) funds. There is nothing for you to pay."
   },
   {
     "id": "DO-03",
@@ -453,6 +615,69 @@
     "needs": [
       "오늘기부기여"
     ]
+  },
+  {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "In whose name is the donation made?",
+    "aliases": [
+      "Who is the donor?"
+    ],
+    "answer": "We plan to donate 100 KRW per verified 1 km from the company’s (operator’s) funds (up to 10 km per person per day and 1,000,000 KRW per month overall). The recipient is under discussion, and we’ll tell you in the app once it’s decided. It is recorded in the app as your donation contribution. Donations you make yourself are sent in your own name."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Can I get a donation receipt?",
+    "aliases": [
+      "Year-end tax donation"
+    ],
+    "answer": "For donations you make yourself, you can get a receipt in your own name on donation pages such as Happybean or Gachi Gachi. The running donation is planned to be made from the company’s (operator’s) funds, so no receipt is issued."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "I want to donate on my own",
+    "aliases": [
+      "Donate with my own money"
+    ],
+    "answer": "I’ll link you to a donation page such as Happybean or Gachi Gachi. Your donation goes straight to the organization, and the receipt is issued in your own name."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Does the company take a fee from donations?",
+    "aliases": [
+      "Donation fee"
+    ],
+    "answer": "No, the company doesn’t take a single won from donations."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "What does “donation goal reached” mean?",
+    "aliases": [
+      "“Donation goal reached” showed up"
+    ],
+    "answer": "It means the company’s donation budget for that month (1,000,000 KRW) has been fully used. Your run records are still saved, and contributions build up again when the new month starts."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Does walking alone count as a donation?",
+    "aliases": [
+      "Do steps count toward donations?"
+    ],
+    "answer": "Donations are calculated from the distance of runs that pass verification. Steps build up SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "Which organization receives the donation?",
+    "aliases": [
+      "Where does the donation go?"
+    ],
+    "answer": "The recipient is currently under discussion. Once it’s decided, we’ll tell you in the app, and we plan to publish the transfer records and settlement results in the app’s donation status and the Security & Privacy Center."
   },
   {
     "id": "GR-07",

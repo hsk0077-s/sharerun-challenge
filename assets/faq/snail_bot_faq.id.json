@@ -432,6 +432,42 @@
     "answer": "Event Pemula bisa diikuti gratis dua kali pertama. Setelah itu 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "Berapa kali bisa ikut event?",
+    "aliases": [
+      "Batas ikut event"
+    ],
+    "answer": "Kamu bisa ikut satu event per tingkat setiap minggu."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Aku ingin ikut event",
+    "aliases": [
+      "Aku akan mendaftar event"
+    ],
+    "answer": "Aku akan membuka layar pendaftaran event. Saat biaya pendaftaran akan dipotong, aku akan bertanya sekali lagi dengan kartu konfirmasi."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Hadiah dibayar dalam bentuk apa?",
+    "aliases": [
+      "Apakah hadiahnya uang tunai?"
+    ],
+    "answer": "Hadiah diberikan dalam bentuk DIA bonus, dan tidak ada hadiah uang tunai. Hadiah hanya berasal dari anggaran perusahaan dan sponsor."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Apakah biaya pendaftaran dikumpulkan menjadi hadiah?",
+    "aliases": [
+      "Apakah hadiah berasal dari biaya pendaftaran?"
+    ],
+    "answer": "Tidak, biaya pendaftaran tidak dipakai untuk hadiah. Hadiah hanya berasal dari anggaran perusahaan dan sponsor."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Bagaimana pembagian hadiah per peringkat?",
@@ -440,6 +476,132 @@
       "Peringkat 6 dapat juga?"
     ],
     "answer": "Peringkat 1 sampai 5 menerima DIA yang ditetapkan penuh, peringkat 6 sampai 10 menerima setengah. Semua yang masuk 10 besar juga mendapat tiket untuk event level berikutnya."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Bagaimana masuk Final?",
+    "aliases": [
+      "Syarat masuk Final"
+    ],
+    "answer": "Final adalah event kejuaraan yang diadakan sekali setiap musim. Jika kamu finis peringkat 1 sampai 3 di event Half, kamu mendapat tiket langsung ke Final."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Apakah tiket menjamin kursi?",
+    "aliases": [
+      "Kursi untuk tiket"
+    ],
+    "answer": "Kursi yang bisa dimasuki dengan tiket maksimal 20% dari kapasitas event, dan 15% untuk Final."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Apakah wajib punya jam untuk event?",
+    "aliases": [
+      "Perlukah smartwatch untuk ikut?"
+    ],
+    "answer": "Event Pemula dan Menengah bisa diikuti tanpa jam. Lanjutan, Half, dan Final membutuhkan catatan detak jantung, jadi perlu jam."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Berapa biaya masuk ruang lari?",
+    "aliases": [
+      "Biaya ruang"
+    ],
+    "answer": "1 km 600 SHARE, 2 km 900, 3 km 1.200, 5 km 1.800, dan 10 km 3.000. Untuk jarak lebih dari 10 km, bertambah 600 SHARE setiap 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Bagaimana membuat ruang lari?",
+    "aliases": [
+      "Buat ruang"
+    ],
+    "answer": "Aku akan membuka layar pembuatan ruang. Pilih jarak dan biaya pendaftaran ditetapkan; kartu konfirmasi muncul saat SHARE akan dipotong."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Bagaimana penyelesaian ruang dihitung?",
+    "aliases": [
+      "Kriteria penyelesaian ruang"
+    ],
+    "answer": "Kamu perlu lari terverifikasi sejauh jarak ruang agar dihitung selesai. Server memeriksa apakah kamu sudah selesai."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Apa yang diperlukan untuk membuat crew?",
+    "aliases": [
+      "Berapa deposit crew?"
+    ],
+    "answer": "Membuat crew membutuhkan deposit pembukaan 3.000 SHARE. Di tab Crew kamu bisa menentukan nama dan perkenalan crew lalu langsung membuatnya."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Bisakah mengumpulkan iuran crew di aplikasi?",
+    "aliases": [
+      "Pengelolaan iuran crew"
+    ],
+    "answer": "Tidak, ShareRun tidak menyediakan fitur untuk menagih iuran crew atas namamu."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Bisakah ikut event gratis dengan VALUE?",
+    "aliases": [
+      "Bayar biaya dengan VALUE"
+    ],
+    "answer": "Tidak, biaya event dibayar dengan tiket masuk gratis atau SHARE, dan VALUE tidak dipotong sebagai biaya pendaftaran. VALUE adalah skor kehormatan yang menunjukkan usahamu dan juga skor yang dipakai dalam penggalangan donasi."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Apakah hadiah dikenai pajak?",
+    "aliases": [
+      "Pajak hadiah"
+    ],
+    "answer": "Hadiah event dibayarkan sebagai DIA bonus khusus aplikasi, bukan penarikan uang tunai. Jika ada hadiah atau bingkisan yang memerlukan pemotongan pajak atau panduan pelaporan pajak menurut hukum pajak, kami akan memberi tahu sebelumnya, sebelum pembayaran, sesuai peraturan terkait."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Kapan hasil event keluar?",
+    "aliases": [
+      "Kapan peringkat diumumkan?"
+    ],
+    "answer": "Setelah event berakhir dan verifikasi lari selesai, peringkat akhir dan hadiah DIA bonus diselesaikan. Kamu bisa melihat hasilnya di layar detail event dan di Riwayat transaksi saya di Pusat keamanan & privasi."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Bisakah melihat peringkat event secara langsung?",
+    "aliases": [
+      "Lihat peringkat langsung saat berlari"
+    ],
+    "answer": "Kamu bisa melihat peringkat catatan terverifikasi peserta di papan peringkat pada layar detail event. Saat berlari, demi keselamatan kami fokus pada panduan kecepatan dan detak jantungmu."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Bagaimana berlari menjadi donasi?",
+    "aliases": [
+      "Cara kerja donasi"
+    ],
+    "answer": "Untuk setiap 1 km terverifikasi yang kamu lari, perusahaan (operator) berencana mendonasikan 100 KRW dari dana sendiri. Anggaran donasi bulanan perusahaan maksimal 1.000.000 KRW. Aplikasi menampilkan kontribusi yang terkumpul dari lari kamu."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Apakah saya harus membayar untuk berdonasi?",
+    "aliases": [
+      "Apakah saya yang membayar donasi?"
+    ],
+    "answer": "Tidak, donasi dari berlari direncanakan dari dana perusahaan (operator). Kamu tidak perlu membayar apa pun."
   },
   {
     "id": "DO-03",
@@ -453,6 +615,69 @@
     "needs": [
       "오늘기부기여"
     ]
+  },
+  {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Donasi atas nama siapa?",
+    "aliases": [
+      "Siapa donaturnya?"
+    ],
+    "answer": "Kami berencana mendonasikan 100 KRW per 1 km terverifikasi dari dana perusahaan (operator) (maksimal 10 km per orang per hari dan total 1.000.000 KRW per bulan). Penerimanya masih dibahas, dan kami akan memberi tahu di aplikasi setelah ditetapkan. Ini dicatat di aplikasi sebagai kontribusi donasimu. Donasi yang kamu berikan sendiri disalurkan atas namamu."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Bisakah mendapat tanda terima donasi?",
+    "aliases": [
+      "Donasi untuk pajak akhir tahun"
+    ],
+    "answer": "Untuk donasi yang kamu berikan sendiri, kamu bisa mendapat tanda terima atas namamu di halaman donasi seperti Happybean atau Gachi Gachi. Donasi dari berlari direncanakan dari dana perusahaan (operator), jadi tidak ada tanda terima."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Saya ingin berdonasi sendiri",
+    "aliases": [
+      "Berdonasi dengan uang sendiri"
+    ],
+    "answer": "Aku akan menghubungkanmu ke halaman donasi seperti Happybean atau Gachi Gachi. Donasimu langsung ke organisasi, dan tanda terima diterbitkan atas namamu."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Apakah perusahaan memotong biaya dari donasi?",
+    "aliases": [
+      "Biaya donasi"
+    ],
+    "answer": "Tidak, perusahaan tidak memotong satu won pun dari donasi."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "Apa arti “target donasi tercapai”?",
+    "aliases": [
+      "Muncul “target donasi tercapai”"
+    ],
+    "answer": "Artinya anggaran donasi perusahaan bulan itu (1.000.000 KRW) sudah habis dipakai. Catatan larimu tetap tersimpan, dan kontribusi terkumpul lagi saat bulan baru dimulai."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Apakah hanya berjalan dihitung donasi?",
+    "aliases": [
+      "Apakah langkah dihitung untuk donasi?"
+    ],
+    "answer": "Donasi dihitung dari jarak lari yang lolos verifikasi. Langkah mengumpulkan SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "Donasi untuk organisasi mana?",
+    "aliases": [
+      "Donasi ke mana?"
+    ],
+    "answer": "Penerimanya saat ini sedang dibahas. Setelah ditetapkan, kami akan memberi tahu di aplikasi, dan kami berencana mengumumkan rincian penyaluran serta hasil penyelesaian di status donasi aplikasi dan Pusat keamanan & privasi."
   },
   {
     "id": "GR-07",

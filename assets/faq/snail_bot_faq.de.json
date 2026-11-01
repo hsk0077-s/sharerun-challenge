@@ -432,6 +432,42 @@
     "answer": "Beim Anfänger-Event kannst du die ersten zwei Male kostenlos teilnehmen. Danach kostet es 300 SHARE."
   },
   {
+    "id": "CO-04",
+    "category": "대회·방",
+    "question": "An wie vielen Events kann ich teilnehmen?",
+    "aliases": [
+      "Teilnahmelimit"
+    ],
+    "answer": "An Events einer Stufe kannst du einmal pro Woche teilnehmen."
+  },
+  {
+    "id": "CO-05",
+    "category": "대회·방",
+    "question": "Ich möchte an einem Event teilnehmen",
+    "aliases": [
+      "Ich melde mich zu einem Event an"
+    ],
+    "answer": "Ich öffne den Anmeldebildschirm für das Event. Wenn eine Startgebühr abgebucht wird, frage ich noch einmal mit einer Bestätigungskarte nach."
+  },
+  {
+    "id": "CO-06",
+    "category": "대회·방",
+    "question": "Womit werden Preise ausgezahlt?",
+    "aliases": [
+      "Ist der Preis Bargeld?"
+    ],
+    "answer": "Preise werden als Bonus-DIA vergeben, Bargeldpreise gibt es nicht. Die Preise stammen ausschließlich aus dem Budget des Unternehmens und der Sponsoren."
+  },
+  {
+    "id": "CO-07",
+    "category": "대회·방",
+    "question": "Werden Startgebühren zu Preisen gesammelt?",
+    "aliases": [
+      "Stammen Preise aus Startgebühren?"
+    ],
+    "answer": "Nein, Startgebühren werden nicht für Preise verwendet. Die Preise stammen ausschließlich aus dem Budget des Unternehmens und der Sponsoren."
+  },
+  {
     "id": "CO-08",
     "category": "대회·방",
     "question": "Wie werden Preise nach Platz verteilt?",
@@ -440,6 +476,132 @@
       "Bekommt auch Platz 6 etwas?"
     ],
     "answer": "Platz 1 bis 5 erhalten die festgelegten DIA voll, Platz 6 bis 10 die Hälfte. Wer unter den Top 10 ist, bekommt außerdem ein Ticket für das Event der nächsten Stufe."
+  },
+  {
+    "id": "CO-10",
+    "category": "대회·방",
+    "question": "Wie komme ich ins Finale?",
+    "aliases": [
+      "Teilnahmebedingungen fürs Finale"
+    ],
+    "answer": "Das Finale ist ein Meisterschafts-Event, das einmal pro Saison stattfindet. Wenn du bei einem Halb-Event Platz 1 bis 3 erreichst, erhältst du ein Ticket, das dich direkt ins Finale bringt."
+  },
+  {
+    "id": "CO-11",
+    "category": "대회·방",
+    "question": "Habe ich mit einem Ticket sicher einen Platz?",
+    "aliases": [
+      "Ticket-Plätze"
+    ],
+    "answer": "Plätze, die du mit einem Ticket belegen kannst, sind auf 20 % der Event-Kapazität begrenzt, beim Finale auf 15 %."
+  },
+  {
+    "id": "CO-12",
+    "category": "대회·방",
+    "question": "Brauche ich für Events unbedingt eine Uhr?",
+    "aliases": [
+      "Brauche ich eine Smartwatch zur Teilnahme?"
+    ],
+    "answer": "An Anfänger- und Mittel-Events kannst du ohne Uhr teilnehmen. Fortgeschritten, Halb und das Finale brauchen Herzfrequenzdaten, daher ist eine Uhr nötig."
+  },
+  {
+    "id": "CO-13",
+    "category": "대회·방",
+    "question": "Wie viel kostet die Teilnahme an einem Laufraum?",
+    "aliases": [
+      "Raum-Startgebühr"
+    ],
+    "answer": "1 km kostet 600 SHARE, 2 km 900, 3 km 1.200, 5 km 1.800 und 10 km 3.000. Bei Strecken über 10 km steigt der Preis um 600 SHARE je weitere 5 km."
+  },
+  {
+    "id": "CO-14",
+    "category": "대회·방",
+    "question": "Wie erstelle ich einen Laufraum?",
+    "aliases": [
+      "Raum erstellen"
+    ],
+    "answer": "Ich öffne den Bildschirm zum Erstellen eines Raums. Mit der Streckenwahl steht die Startgebühr fest, und bei einer SHARE-Abbuchung erscheint eine Bestätigungskarte."
+  },
+  {
+    "id": "CO-15",
+    "category": "대회·방",
+    "question": "Wie wird der Abschluss eines Raums gewertet?",
+    "aliases": [
+      "Kriterium für den Raumabschluss"
+    ],
+    "answer": "Du brauchst einen verifizierten Lauf über die Distanz des Raums, damit er als abgeschlossen zählt. Der Server prüft, ob du fertig bist."
+  },
+  {
+    "id": "CO-16",
+    "category": "대회·방",
+    "question": "Was brauche ich, um eine Crew zu erstellen?",
+    "aliases": [
+      "Wie hoch ist die Crew-Kaution?"
+    ],
+    "answer": "Zum Erstellen einer Crew ist eine Eröffnungskaution von 3.000 SHARE nötig. Im Crew-Tab wählst du Namen und Beschreibung und erstellst sie sofort."
+  },
+  {
+    "id": "CO-17",
+    "category": "대회·방",
+    "question": "Kann ich in der App Crew-Beiträge einsammeln?",
+    "aliases": [
+      "Crew-Beitragsverwaltung"
+    ],
+    "answer": "Nein, ShareRun bietet keine Funktion, Crew-Beiträge in deinem Namen einzusammeln."
+  },
+  {
+    "id": "CO-18",
+    "category": "대회·방",
+    "question": "Kann ich mit VALUE kostenlos an Events teilnehmen?",
+    "aliases": [
+      "Startgebühr mit VALUE zahlen"
+    ],
+    "answer": "Nein, Startgebühren werden mit Gratis-Tickets oder SHARE bezahlt; VALUE wird dafür nicht abgezogen. VALUE ist ein Ehrenwert, der deinen Einsatz zeigt, und zugleich der Wert, der bei der Spenden-Finanzierung verwendet wird."
+  },
+  {
+    "id": "CO-19",
+    "category": "대회·방",
+    "question": "Muss ich auf Preise Steuern zahlen?",
+    "aliases": [
+      "Steuern auf Preise"
+    ],
+    "answer": "Event-Belohnungen werden als app-exklusives Bonus-DIA ausgezahlt, nicht als Bargeldauszahlung. Falls es Preise oder Gewinne gibt, für die nach Steuerrecht Quellensteuer oder Hinweise zur Steuererklärung nötig sind, informieren wir dich vor der Auszahlung gemäß den geltenden Gesetzen im Voraus."
+  },
+  {
+    "id": "CO-20",
+    "category": "대회·방",
+    "question": "Wann gibt es die Event-Ergebnisse?",
+    "aliases": [
+      "Wann werden die Ränge bekannt gegeben?"
+    ],
+    "answer": "Sobald das Event beendet ist und die Prüfung der Läufe abgeschlossen ist, werden die Endplatzierung und die Bonus-DIA-Preise abgerechnet. Das Ergebnis siehst du auf dem Event-Detailbildschirm und unter „Meine Transaktionen“ im Sicherheits- und Datenschutzzentrum."
+  },
+  {
+    "id": "CO-21",
+    "category": "대회·방",
+    "question": "Kann ich die Live-Rangliste sehen?",
+    "aliases": [
+      "Live-Rangliste beim Laufen sehen"
+    ],
+    "answer": "Auf der Rangliste im Event-Detailbildschirm siehst du die Platzierung der verifizierten Ergebnisse der Teilnehmer. Während du läufst, konzentrieren wir uns aus Sicherheitsgründen auf dein Tempo und die Herzfrequenz-Hinweise."
+  },
+  {
+    "id": "DO-01",
+    "category": "기부",
+    "question": "Wie wird Laufen zu einer Spende?",
+    "aliases": [
+      "So funktionieren Spenden"
+    ],
+    "answer": "Für jeden verifizierten Kilometer, den du läufst, plant das Unternehmen (der Betreiber), 100 KRW aus eigenen Mitteln zu spenden. Das monatliche Spendenbudget des Unternehmens beträgt bis zu 1.000.000 KRW. Die App zeigt den durch deine Läufe angesammelten Beitrag."
+  },
+  {
+    "id": "DO-02",
+    "category": "기부",
+    "question": "Muss ich für die Spende selbst bezahlen?",
+    "aliases": [
+      "Zahle ich die Spende?"
+    ],
+    "answer": "Nein, die Spende fürs Laufen soll aus Mitteln des Unternehmens (Betreibers) erfolgen. Du musst nichts bezahlen."
   },
   {
     "id": "DO-03",
@@ -453,6 +615,69 @@
     "needs": [
       "오늘기부기여"
     ]
+  },
+  {
+    "id": "DO-05",
+    "category": "기부",
+    "question": "Auf wessen Namen läuft die Spende?",
+    "aliases": [
+      "Wer ist der Spender?"
+    ],
+    "answer": "Wir planen, pro verifiziertem Kilometer 100 KRW aus Mitteln des Unternehmens (Betreibers) zu spenden (bis zu 10 km pro Person und Tag und insgesamt 1.000.000 KRW pro Monat). Der Empfänger wird noch abgestimmt; wir sagen dir in der App Bescheid, sobald er feststeht. In der App wird es als dein Spendenbeitrag erfasst. Spenden, die du selbst machst, werden in deinem eigenen Namen übermittelt."
+  },
+  {
+    "id": "DO-06",
+    "category": "기부",
+    "question": "Bekomme ich eine Spendenquittung?",
+    "aliases": [
+      "Spende für die Steuererklärung"
+    ],
+    "answer": "Bei Spenden, die du selbst machst, kannst du auf Spendenseiten wie Happybean oder Gachi Gachi eine Quittung auf deinen Namen erhalten. Die Lauf-Spende soll aus Mitteln des Unternehmens (Betreibers) erfolgen, daher wird keine Quittung ausgestellt."
+  },
+  {
+    "id": "DO-07",
+    "category": "기부",
+    "question": "Ich möchte selbst spenden",
+    "aliases": [
+      "Mit eigenem Geld spenden"
+    ],
+    "answer": "Ich leite dich zu einer Spendenseite wie Happybean oder Gachi Gachi weiter. Deine Spende geht direkt an die Organisation, und die Quittung wird auf deinen Namen ausgestellt."
+  },
+  {
+    "id": "DO-08",
+    "category": "기부",
+    "question": "Behält das Unternehmen eine Gebühr von Spenden ein?",
+    "aliases": [
+      "Spendengebühr"
+    ],
+    "answer": "Nein, das Unternehmen behält keinen einzigen Won von Spenden ein."
+  },
+  {
+    "id": "DO-09",
+    "category": "기부",
+    "question": "Was bedeutet „Spendenziel erreicht“?",
+    "aliases": [
+      "„Spendenziel erreicht“ wurde angezeigt"
+    ],
+    "answer": "Es bedeutet, dass das Spendenbudget des Unternehmens für diesen Monat (1.000.000 KRW) vollständig aufgebraucht ist. Deine Laufaufzeichnungen bleiben gespeichert, und Beiträge sammeln sich mit dem neuen Monat wieder an."
+  },
+  {
+    "id": "DO-10",
+    "category": "기부",
+    "question": "Zählt auch nur Gehen als Spende?",
+    "aliases": [
+      "Zählen Schritte für Spenden?"
+    ],
+    "answer": "Spenden werden anhand der Distanz von Läufen berechnet, die die Prüfung bestehen. Schritte sammeln SHARE."
+  },
+  {
+    "id": "DO-11",
+    "category": "기부",
+    "question": "An welche Organisation geht die Spende?",
+    "aliases": [
+      "Wohin geht die Spende?"
+    ],
+    "answer": "Der Empfänger wird derzeit noch abgestimmt. Sobald er feststeht, sagen wir dir in der App Bescheid und planen, die Übermittlungsdetails und Abrechnungsergebnisse im Spendenstatus der App und im Sicherheits- und Datenschutzzentrum zu veröffentlichen."
   },
   {
     "id": "GR-07",

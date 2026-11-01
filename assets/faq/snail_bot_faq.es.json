@@ -10,6 +10,132 @@
     "answer": "Acumulas SHARE por los pasos y carreras que haces, y por cada 1 km verificado la empresa planea donar 100 KRW. La donación la paga la empresa; tú no pagas nada."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "¿Quién eres?",
+    "aliases": [
+      "Caracol, ¿qué eres?"
+    ],
+    "answer": "Soy Caracol, tu compañero de carreras. Pregúntame en voz alta y te ayudo al instante."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "¿Cómo uso el bot Caracol?",
+    "aliases": [
+      "¿Cómo le pregunto a Caracol?"
+    ],
+    "answer": "Toca el botón del caracol en la esquina inferior derecha y verás preguntas sugeridas para la pantalla actual. También puedes tocar el micrófono y preguntar en voz alta."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "¿Puedo mover el botón del caracol?",
+    "aliases": [
+      "El botón del caracol tapa la pantalla"
+    ],
+    "answer": "Puedes arrastrar el botón al lugar que quieras."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "¿Por qué no se ve el caracol mientras corro?",
+    "aliases": [
+      "El botón del caracol desapareció al correr"
+    ],
+    "answer": "Mientras corres, el botón se oculta para no tapar la pantalla. En su lugar, te entreno con la voz de Caracol."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "¿El caracol habla primero a veces?",
+    "aliases": [
+      "El caracol habla de repente"
+    ],
+    "answer": "Solo hablo primero en momentos que merecen celebrarse. Si no, solo ayudo cuando me llamas."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "¿Cuál es el lema de ShareRun?",
+    "aliases": [
+      "¿Qué significa «mientras el corazón lata»?"
+    ],
+    "answer": "El lema principal es «Mientras el corazón lata, compartir también corre». En la pantalla de donación también usamos «Un paso se convierte en compartir»."
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "¿Tengo que pagar para usar esta app?",
+    "aliases": [
+      "¿Es gratis?"
+    ],
+    "answer": "Caminar, correr y participar en donaciones no cuesta nada. Ahora mismo no hay nada que pagar dentro de la app."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "¿Puedo ganar dinero con esta app?",
+    "aliases": [
+      "¿Me pagan por caminar?"
+    ],
+    "answer": "ShareRun no es una app para ganar dinero, sino para participar en el compartir mientras caminas y corres. SHARE es un punto de actividad que no se puede canjear por efectivo."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "¿Qué diferencia hay entre SHARE, DIA y VALUE?",
+    "aliases": [
+      "Dime los tipos de moneda"
+    ],
+    "answer": "SHARE es un punto de actividad que ganas al caminar y correr, y DIA es la moneda de la app que se usa en la tienda. VALUE es una puntuación de honor que se gana con carreras verificadas, por eso no se puede canjear ni transferir."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "¿Qué pestañas hay abajo?",
+    "aliases": [
+      "Dime el menú inferior"
+    ],
+    "answer": "Hay cinco pestañas abajo: Inicio, Tienda, Retos, Crew y Mi Perfil. Puedes empezar a correr directamente desde Inicio o Retos."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Quiero ver la introducción otra vez",
+    "aliases": [
+      "Ver la primera explicación otra vez"
+    ],
+    "answer": "Puedes verla de nuevo cuando quieras desde «Ver introducción otra vez» en Ajustes."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "¿Hay un widget para la pantalla de inicio?",
+    "aliases": [
+      "¿Puedo poner un widget en el escritorio?"
+    ],
+    "answer": "Si quieres, puedes añadir un widget a la pantalla de inicio para ver de un vistazo los pasos de hoy y el monto de donación."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "¿Qué es SHARE?",
+    "aliases": [
+      "¿Qué significa SHARE?"
+    ],
+    "answer": "SHARE es un punto de actividad que se acumula al caminar y correr. No se puede comprar con dinero ni canjear por efectivo."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "¿Cuántos pasos necesito para recibir SHARE?",
+    "aliases": [
+      "¿Cuánto SHARE por paso?"
+    ],
+    "answer": "Obtienes 10 SHARE por cada 100 pasos."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "¿Cuánto SHARE puedo recibir al día?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "¿El SHARE desaparece si no lo recojo?",
+    "aliases": [
+      "¿Desaparece si no lo recojo?"
+    ],
+    "answer": "El SHARE de los pasos se puede recoger hasta la medianoche de ese día, dentro del límite diario de 600 SHARE. Pasada la medianoche empieza de nuevo junto con los pasos del nuevo día, así que recógelo en Inicio el mismo día."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "¿Puedo canjear SHARE por DIA?",
+    "aliases": [
+      "Canjear SHARE por DIA"
+    ],
+    "answer": "Puedes canjear 1.200 SHARE por 1 DIA, hasta 20 DIA por semana."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "¿Puedo canjear DIA por SHARE?",
+    "aliases": [
+      "Canjear DIA por SHARE"
+    ],
+    "answer": "No. El canje es solo en un sentido, de SHARE a DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "¿Puedo canjear SHARE por efectivo?",
+    "aliases": [
+      "Retirar SHARE"
+    ],
+    "answer": "SHARE es un punto de actividad que no se puede canjear por efectivo ni por tarjetas regalo. Puedes canjearlo por DIA o usarlo para inscribirte en eventos."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "¿Puedo comprar SHARE con dinero?",
+    "aliases": [
+      "Recargar SHARE"
+    ],
+    "answer": "No, SHARE no se vende. Solo se acumula caminando y corriendo."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "¿SHARE es una moneda cripto?",
+    "aliases": [
+      "¿Se listará el token?"
+    ],
+    "answer": "No, SHARE no es una moneda ni un token. Es un punto de actividad que solo se usa dentro de la app."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "¿Cuánto vale SHARE en KRW?",
+    "aliases": [
+      "Valor de SHARE"
+    ],
+    "answer": "SHARE es un punto al que no se le pone precio en dinero, por eso no lo mostramos como un monto en KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "¿Para qué sirve SHARE?",
+    "aliases": [
+      "Usos de SHARE"
+    ],
+    "answer": "Puedes canjearlo por DIA o usarlo para las cuotas de eventos y salas de carrera y para los depósitos del crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "¿Recibo SHARE por ver anuncios?",
+    "aliases": [
+      "¿Hay recompensa por anuncios?"
+    ],
+    "answer": "No, no existe una función para obtener SHARE viendo anuncios. Puedes acumular SHARE caminando y corriendo, con las carreras de prueba para nuevos usuarios y invitando a amigos."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "¿Qué recibo si invito a un amigo?",
+    "aliases": [
+      "Recompensa por invitar"
+    ],
+    "answer": "Si el amigo al que invitaste completa carreras de 1 km o más en 3 días distintos dentro de 14 días, recibes 30.000 SHARE. Llegan tras un periodo de retención de 7 días, y tu amigo también recibe 10.000 SHARE en su primera carrera y 40.000 SHARE en la tercera."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "¿Qué es DIA?",
+    "aliases": [
+      "¿Qué significa DIA?"
+    ],
+    "answer": "DIA es la moneda de la app que usas en la tienda para comprar cosméticos y artículos. Se obtiene canjeando SHARE o como premio de eventos."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "¿Qué diferencia hay entre DIA de bono y DIA de pago?",
+    "aliases": [
+      "¿Qué es el DIA de bono?"
+    ],
+    "answer": "El DIA de bono es el que recibes gratis (canje de SHARE, premios de eventos, recompensas, extras, etc.). El DIA de pago es el que compras tú. Al gastar, se usa primero el DIA de bono."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "¿Qué DIA se usa primero?",
+    "aliases": [
+      "Orden de uso de DIA"
+    ],
+    "answer": "Primero se usa el DIA de bono, y cuando se agota se usa el de pago. Eso sí, el Pase de Batalla y el Pase+ solo se compran con DIA de pago."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "¿Puedo canjear DIA de bono por efectivo?",
+    "aliases": [
+      "Reembolso de DIA de premio"
+    ],
+    "answer": "El DIA de bono no se puede canjear por efectivo, reembolsar ni transferir. Es DIA para usar dentro de la app."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "¿Se reembolsa el DIA?",
+    "aliases": [
+      "Cómo reembolsar DIA"
+    ],
+    "answer": "Ahora mismo no vendemos DIA, así que no hay DIA de pago que reembolsar. Cuando empiece la venta, el DIA de pago sin usar podrá reembolsarse en los 7 días posteriores a la compra."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "¿Cómo compro DIA?",
+    "aliases": [
+      "Recargar DIA"
+    ],
+    "answer": "Ahora mismo no vendemos DIA. Te avisaremos primero cuando empiece la venta. Puedes obtener DIA canjeando SHARE o como premio de eventos."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "¿Qué paquetes de DIA hay?",
+    "aliases": [
+      "Lista de precios de DIA"
+    ],
+    "answer": "Ahora mismo no vendemos DIA. Cuando empiece la venta, mostraremos los tipos de paquete y sus precios en la pantalla de la tienda."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "¿Qué puedo comprar en la tienda?",
+    "aliases": [
+      "Lista de productos de la tienda"
+    ],
+    "answer": "En la tienda puedes comprar con DIA piezas y skins para decorar al personaje, y objetos de carrera como el boleto de reanimación y la Salvaguarda. La recaudación de donaciones en la que participas con VALUE también está en la tienda."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "¿Hay sorteos aleatorios o cajas?",
+    "aliases": [
+      "¿Hay gacha?"
+    ],
+    "answer": "No, no hay sorteos aleatorios. Todos los productos se venden solo a un precio fijo en DIA."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "¿Cómo entro a la tienda?",
+    "aliases": [
+      "¿Dónde está la tienda?"
+    ],
+    "answer": "Toca la pestaña Tienda en la parte inferior de la pantalla, o toca la tarjeta Mis DIA en Inicio para entrar directamente."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "¿Puedo comprar cosas también con DIA de bono?",
+    "aliases": [
+      "Comprar cosméticos con DIA de premio"
+    ],
+    "answer": "Sí, el DIA de bono también se puede usar en la tienda, y se usa antes que el DIA de pago."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "¿Hay Pase de Batalla?",
+    "aliases": [
+      "¿Hay pase de temporada?"
+    ],
+    "answer": "Puedes ver la pantalla del Pase Battle Run de la Temporada 1 desde Retos y la Tienda. Las compras de pago aún no están abiertas, así que puedes empezar con la vía de recompensas gratuita."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "¿Puedo inscribirme en eventos con DIA?",
+    "aliases": [
+      "Inscribirme en un evento con DIA"
+    ],
+    "answer": "Los eventos con premios solo se inscriben con boletos gratuitos o SHARE. No se puede participar con DIA de pago."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "Pagué pero no llegó mi DIA",
+    "aliases": [
+      "Recarga de DIA no recibida"
+    ],
+    "answer": "El DIA llega cuando el pago se confirma y queda registrado en el historial de transacciones del servidor. Revisa Mis transacciones en el Centro de seguridad y privacidad pasado un rato, y si sigue sin aparecer, avísanos desde Contacto en Ajustes."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "¿Qué es el boleto de reanimación?",
+    "aliases": [
+      "Dime el efecto del boleto de reanimación"
+    ],
+    "answer": "El boleto de reanimación es un objeto que revive una racha rota en un plazo de 72 horas; puedes usarlo hasta dos veces al mes por 12 DIA. La Salvaguarda es un objeto que protege de antemano un día perdido."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "¿Puedo regalar DIA a un amigo?",
+    "aliases": [
+      "Enviar DIA"
+    ],
+    "answer": "No, ni el DIA de bono ni el de pago se pueden regalar ni transferir a otra persona. Solo puedes usarlos con seguridad en tu propia cuenta."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "¿Puedo ver mi historial de gasto de DIA?",
+    "aliases": [
+      "Historial de uso de DIA"
+    ],
+    "answer": "Sí, puedes ver todos los registros de entradas y salidas de DIA en Mis transacciones, en el Centro de seguridad y privacidad. Estos registros se guardan en el servidor y no se borran."
   },
   {
     "id": "CO-01",

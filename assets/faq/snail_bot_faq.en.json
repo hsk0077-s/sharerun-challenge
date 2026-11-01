@@ -10,6 +10,132 @@
     "answer": "You earn SHARE for the steps and runs you do, and for every verified 1 km the company plans to donate 100 KRW. The company pays the donation; you pay nothing."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Who are you?",
+    "aliases": [
+      "What are you, Snail?"
+    ],
+    "answer": "I’m Snail, your running buddy. Ask me out loud and I’ll help right away."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "How do I use the Snail bot?",
+    "aliases": [
+      "How do I ask Snail?"
+    ],
+    "answer": "Tap the snail button at the bottom right of the screen and you’ll see suggested questions for the current screen. You can also tap the microphone and ask out loud."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Can I move the snail button?",
+    "aliases": [
+      "The snail button blocks the screen"
+    ],
+    "answer": "You can drag the button to wherever you like."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Why is Snail not shown while I run?",
+    "aliases": [
+      "The snail button disappeared when I run"
+    ],
+    "answer": "While you run, the button is hidden so it doesn’t block the screen. Instead, I coach you with Snail’s voice."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Does Snail ever speak first?",
+    "aliases": [
+      "Snail suddenly talks"
+    ],
+    "answer": "I only speak first at moments worth celebrating. Otherwise I help only when you call me."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "What is the ShareRun slogan?",
+    "aliases": [
+      "What does “as long as the heart beats” mean?"
+    ],
+    "answer": "The main slogan is “As long as the heart beats, sharing keeps running.” On the donation screen we also use “One step becomes sharing.”"
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Do I have to pay to use this app?",
+    "aliases": [
+      "Is it free?"
+    ],
+    "answer": "Walking, running and joining donations cost nothing. Right now there is nothing to pay for inside the app."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Can I make money with this app?",
+    "aliases": [
+      "Do you pay me for walking?"
+    ],
+    "answer": "ShareRun is not an app for making money; it’s an app for joining in sharing while you walk and run. SHARE is an activity point that cannot be exchanged for cash."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "What’s the difference between SHARE, DIA and VALUE?",
+    "aliases": [
+      "Tell me the kinds of currency"
+    ],
+    "answer": "SHARE is an activity point you get by walking and running, and DIA is the in-app currency used in the shop. VALUE is an honor score earned from verified runs, so it can’t be exchanged or transferred."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "What tabs are at the bottom?",
+    "aliases": [
+      "Tell me the bottom menu"
+    ],
+    "answer": "There are five tabs at the bottom: Home, Shop, Challenges, Crew and My Page. You can start a run right from Home or Challenges."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "I want to see the intro again",
+    "aliases": [
+      "See the first explanation again"
+    ],
+    "answer": "You can watch it again anytime from “Replay intro” in Settings."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Is there a home screen widget?",
+    "aliases": [
+      "Can I put a widget on my desktop?"
+    ],
+    "answer": "If you like, you can add a home screen widget to see today’s steps and donation amount at a glance."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "What is SHARE?",
+    "aliases": [
+      "What does SHARE mean?"
+    ],
+    "answer": "SHARE is an activity point that builds up as you walk and run. You can’t buy it with money, and you can’t exchange it for cash."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "How many steps do I need to get SHARE?",
+    "aliases": [
+      "How much SHARE per step?"
+    ],
+    "answer": "You get 10 SHARE for every 100 steps."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "How much SHARE can I get per day?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Does SHARE disappear if I don’t pick it up?",
+    "aliases": [
+      "Does it vanish if I skip collecting?"
+    ],
+    "answer": "SHARE from steps can be picked up until midnight that day, within the daily limit of 600 SHARE. After midnight it starts fresh together with the new day’s steps, so be sure to pick it up on Home the same day."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Can I exchange SHARE for DIA?",
+    "aliases": [
+      "Exchange SHARE for DIA"
+    ],
+    "answer": "You can exchange 1,200 SHARE for 1 DIA, up to 20 DIA per week."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Can I exchange DIA for SHARE?",
+    "aliases": [
+      "Exchange DIA for SHARE"
+    ],
+    "answer": "No. Exchange only goes one way, from SHARE to DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Can I exchange SHARE for cash?",
+    "aliases": [
+      "SHARE withdrawal"
+    ],
+    "answer": "SHARE is an activity point that cannot be exchanged for cash or gift cards. You can exchange it for DIA or use it for event entry."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Can I buy SHARE with money?",
+    "aliases": [
+      "Top up SHARE"
+    ],
+    "answer": "No, SHARE is not for sale. You can only collect it by walking and running."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Is SHARE a coin?",
+    "aliases": [
+      "Will the token be listed?"
+    ],
+    "answer": "No, SHARE is not a coin or a token. It is an activity point used only inside the app."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "How much is SHARE worth in KRW?",
+    "aliases": [
+      "SHARE value"
+    ],
+    "answer": "SHARE is a point that isn’t priced in money, so we don’t show it as a KRW amount."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "What can I use SHARE for?",
+    "aliases": [
+      "Where to use SHARE"
+    ],
+    "answer": "You can exchange it for DIA, or use it for event and running room entry fees and crew deposits."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Do I get SHARE for watching ads?",
+    "aliases": [
+      "Is there an ad reward?"
+    ],
+    "answer": "No, there is no feature to get SHARE by watching ads. You can collect SHARE by walking and running, with the new-runner trial runs, and by inviting friends."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "What do I get for inviting a friend?",
+    "aliases": [
+      "Invite reward"
+    ],
+    "answer": "If a friend you invited finishes runs of 1 km or more on 3 different days within 14 days, you receive 30,000 SHARE. It arrives after a 7-day hold, and your friend also gets 10,000 SHARE for their first run and 40,000 SHARE for their third."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "What is DIA?",
+    "aliases": [
+      "What does DIA mean?"
+    ],
+    "answer": "DIA is the in-app currency you use in the shop to buy cosmetics and items. You can get it by exchanging SHARE or as event prizes."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "What’s the difference between bonus DIA and paid DIA?",
+    "aliases": [
+      "What is bonus DIA?"
+    ],
+    "answer": "Bonus DIA is DIA you received for free (SHARE exchange, event prizes, rewards, extras and so on). Paid DIA is DIA you bought yourself. When you spend, bonus DIA is used first."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "Which DIA is used first?",
+    "aliases": [
+      "DIA spending order"
+    ],
+    "answer": "Bonus DIA is used first, and paid DIA is used once that runs out. However, Battle Pass and Pass+ can only be bought with paid DIA."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Can I exchange bonus DIA for cash?",
+    "aliases": [
+      "Refund prize DIA"
+    ],
+    "answer": "Bonus DIA cannot be exchanged for cash, refunded or transferred. It’s DIA you use inside the app."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Can I get a refund for DIA?",
+    "aliases": [
+      "How to refund DIA"
+    ],
+    "answer": "We don’t sell DIA right now, so there is no paid DIA to refund. Once sales start, unused paid DIA can be refunded within 7 days of purchase."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "How do I buy DIA?",
+    "aliases": [
+      "Top up DIA"
+    ],
+    "answer": "We don’t sell DIA right now. We’ll let you know first when sales start. You can get DIA by exchanging SHARE or as event prizes."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "What DIA bundles are there?",
+    "aliases": [
+      "DIA price list"
+    ],
+    "answer": "We don’t sell DIA right now. Once sales start, we’ll show the bundle types and prices on the shop screen."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "What can I buy in the shop?",
+    "aliases": [
+      "Shop product list"
+    ],
+    "answer": "In the shop you can buy character parts and skins, and running items like the Record CPR Ticket and Safe Guard, with DIA. Donation funding you join with VALUE is also in the shop."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Are there random draws or boxes?",
+    "aliases": [
+      "Is there gacha?"
+    ],
+    "answer": "No, there are no random draws. Every item is sold only at a fixed DIA price."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "How do I get to the shop?",
+    "aliases": [
+      "Where is the shop?"
+    ],
+    "answer": "Tap the Shop tab at the bottom of the screen, or tap the My DIA card on the Home screen to go straight in."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Can I buy things with bonus DIA too?",
+    "aliases": [
+      "Buying cosmetics with prize DIA"
+    ],
+    "answer": "Yes, bonus DIA can be used in the shop too, and it’s used before paid DIA."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Is there a Battle Pass?",
+    "aliases": [
+      "Is there a season pass?"
+    ],
+    "answer": "You can view the Season 1 Battle Run Pass screen from Challenges and the Shop. Paid purchases aren’t open yet, so you can start with the free reward track."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Can I join events with DIA?",
+    "aliases": [
+      "Sign up for an event with DIA"
+    ],
+    "answer": "Events with prizes are joined only with free tickets or SHARE. You can’t join with paid DIA."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "I paid but my DIA didn’t arrive",
+    "aliases": [
+      "Missing DIA top-up"
+    ],
+    "answer": "DIA arrives after the payment is confirmed and recorded in the server’s transaction log. Check My transactions in the Security & Privacy Center after a moment, and if it still doesn’t appear, let us know through Contact in Settings."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "What is the Record CPR Ticket?",
+    "aliases": [
+      "Tell me the CPR ticket effect"
+    ],
+    "answer": "The Record CPR Ticket is an item that revives a broken daily streak within 72 hours, and you can use it up to twice a month for 12 DIA. Safe Guard is an item that protects a missed day in advance."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Can I gift DIA to a friend?",
+    "aliases": [
+      "Send DIA"
+    ],
+    "answer": "No, neither bonus DIA nor paid DIA can be gifted or transferred to anyone else. You can safely use it only on your own account."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Can I see my DIA spending history?",
+    "aliases": [
+      "DIA usage history"
+    ],
+    "answer": "Yes, you can see every record of DIA coming in and going out in My transactions in the Security & Privacy Center. These records are stored on the server and are not deleted."
   },
   {
     "id": "CO-01",

@@ -10,6 +10,132 @@
     "answer": "Tu gagnes des SHARE pour tes pas et tes courses, et pour chaque km vérifié l’entreprise prévoit de donner 100 KRW. Le don est payé par l’entreprise ; tu ne paies rien."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Qui es-tu ?",
+    "aliases": [
+      "Escargot, qu’es-tu ?"
+    ],
+    "answer": "Je suis Escargot, ton compagnon de course. Demande-moi à voix haute et je t’aide tout de suite."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Comment utiliser le bot Escargot ?",
+    "aliases": [
+      "Comment poser une question à Escargot ?"
+    ],
+    "answer": "Touche le bouton escargot en bas à droite de l’écran pour voir des questions suggérées adaptées à l’écran. Tu peux aussi toucher le micro et demander à voix haute."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Puis-je déplacer le bouton escargot ?",
+    "aliases": [
+      "Le bouton escargot cache l’écran"
+    ],
+    "answer": "Tu peux faire glisser le bouton où tu veux."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Pourquoi Escargot n’apparaît-il pas pendant la course ?",
+    "aliases": [
+      "Le bouton escargot a disparu pendant la course"
+    ],
+    "answer": "Pendant la course, le bouton est masqué pour ne pas cacher l’écran. À la place, je te coache avec la voix d’Escargot."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Escargot parle-t-il parfois en premier ?",
+    "aliases": [
+      "Escargot parle soudainement"
+    ],
+    "answer": "Je ne parle en premier que pour les moments à fêter. Sinon, je n’aide que lorsque tu m’appelles."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Quel est le slogan de ShareRun ?",
+    "aliases": [
+      "Que signifie « tant que le cœur bat » ?"
+    ],
+    "answer": "Le slogan principal est « Tant que le cœur bat, le partage court aussi ». Sur l’écran des dons, nous utilisons aussi « Un pas devient partage »."
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Faut-il payer pour utiliser cette appli ?",
+    "aliases": [
+      "C’est gratuit ?"
+    ],
+    "answer": "Marcher, courir et participer aux dons ne coûte rien. Pour l’instant, il n’y a rien à payer dans l’appli."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Peut-on gagner de l’argent avec cette appli ?",
+    "aliases": [
+      "Est-on payé pour marcher ?"
+    ],
+    "answer": "ShareRun n’est pas une appli pour gagner de l’argent, mais pour participer au partage en marchant et en courant. Les SHARE sont des points d’activité qui ne s’échangent pas contre de l’argent."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "Quelle est la différence entre SHARE, DIA et VALUE ?",
+    "aliases": [
+      "Dis-moi les types de monnaie"
+    ],
+    "answer": "SHARE est un point d’activité gagné en marchant et en courant, et DIA est la monnaie de l’appli utilisée dans la boutique. VALUE est un score d’honneur gagné grâce aux courses vérifiées, donc il ne peut ni être échangé ni transféré."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Quels onglets y a-t-il en bas ?",
+    "aliases": [
+      "Dis-moi le menu du bas"
+    ],
+    "answer": "Il y a cinq onglets en bas : Accueil, Boutique, Défis, Crew et Mon Profil. Tu peux lancer une course directement depuis Accueil ou Défis."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Je veux revoir l’introduction",
+    "aliases": [
+      "Revoir la première explication"
+    ],
+    "answer": "Tu peux la revoir à tout moment via « Revoir l’introduction » dans les réglages."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Y a-t-il un widget pour l’écran d’accueil ?",
+    "aliases": [
+      "Puis-je mettre un widget sur le bureau ?"
+    ],
+    "answer": "Si tu veux, tu peux ajouter un widget à l’écran d’accueil pour voir d’un coup d’œil tes pas du jour et le montant du don."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "Qu’est-ce que SHARE ?",
+    "aliases": [
+      "Que veut dire SHARE ?"
+    ],
+    "answer": "SHARE est un point d’activité qui s’accumule quand tu marches et cours. On ne peut ni l’acheter avec de l’argent ni l’échanger contre de l’argent."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Combien de pas faut-il pour gagner des SHARE ?",
+    "aliases": [
+      "Combien de SHARE par pas ?"
+    ],
+    "answer": "Tu gagnes 10 SHARE tous les 100 pas."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Combien de SHARE puis-je gagner par jour ?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Les SHARE disparaissent-ils si je ne les ramasse pas ?",
+    "aliases": [
+      "Disparaît-il si je ne ramasse pas ?"
+    ],
+    "answer": "Les SHARE des pas peuvent être ramassés jusqu’à minuit le jour même, dans la limite quotidienne de 600 SHARE. Après minuit, tout recommence avec les pas du nouveau jour ; ramasse-les donc le jour même sur l’accueil."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Puis-je échanger des SHARE contre des DIA ?",
+    "aliases": [
+      "Échanger SHARE contre DIA"
+    ],
+    "answer": "Tu peux échanger 1 200 SHARE contre 1 DIA, jusqu’à 20 DIA par semaine."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Puis-je échanger des DIA contre des SHARE ?",
+    "aliases": [
+      "Échanger DIA contre SHARE"
+    ],
+    "answer": "Non. L’échange ne va que dans un sens, de SHARE vers DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Puis-je échanger des SHARE contre de l’argent ?",
+    "aliases": [
+      "Retirer des SHARE"
+    ],
+    "answer": "Les SHARE sont des points d’activité qui ne peuvent pas être échangés contre de l’argent ni des bons cadeaux. Tu peux les échanger contre des DIA ou les utiliser pour t’inscrire à des événements."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Puis-je acheter des SHARE avec de l’argent ?",
+    "aliases": [
+      "Recharger des SHARE"
+    ],
+    "answer": "Non, les SHARE ne sont pas en vente. On ne peut les gagner qu’en marchant et en courant."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Les SHARE sont-ils une cryptomonnaie ?",
+    "aliases": [
+      "Le jeton sera-t-il coté ?"
+    ],
+    "answer": "Non, les SHARE ne sont ni une cryptomonnaie ni un jeton. Ce sont des points d’activité utilisés uniquement dans l’appli."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "Combien valent les SHARE en KRW ?",
+    "aliases": [
+      "Valeur du SHARE"
+    ],
+    "answer": "Les SHARE sont des points sans prix en argent ; nous ne les affichons donc pas en montant KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "À quoi servent les SHARE ?",
+    "aliases": [
+      "Utilisation des SHARE"
+    ],
+    "answer": "Tu peux l’échanger contre des DIA ou l’utiliser pour les frais d’inscription aux événements et salles de course, ainsi que pour les cautions de crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Gagne-t-on des SHARE en regardant des pubs ?",
+    "aliases": [
+      "Y a-t-il une récompense pub ?"
+    ],
+    "answer": "Non, il n’existe pas de fonction pour gagner des SHARE en regardant des pubs. Tu peux en gagner en marchant et en courant, avec les courses d’essai des nouveaux et en invitant des amis."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Que gagne-t-on en invitant un ami ?",
+    "aliases": [
+      "Récompense de parrainage"
+    ],
+    "answer": "Si l’ami que tu as invité termine des courses d’au moins 1 km sur 3 jours différents en 14 jours, tu reçois 30 000 SHARE. Ils arrivent après 7 jours de blocage, et ton ami reçoit aussi 10 000 SHARE à sa première course et 40 000 SHARE à la troisième."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "Qu’est-ce que DIA ?",
+    "aliases": [
+      "Que veut dire DIA ?"
+    ],
+    "answer": "DIA est la monnaie de l’appli utilisée dans la boutique pour acheter des habillages et des objets. On l’obtient en échangeant des SHARE ou comme prix d’événements."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "Quelle différence entre DIA bonus et DIA payants ?",
+    "aliases": [
+      "Qu’est-ce que le DIA bonus ?"
+    ],
+    "answer": "Les DIA bonus sont des DIA reçus gratuitement (échange de SHARE, prix d’événements, récompenses, bonus, etc.). Les DIA payants sont ceux que tu as achetés. À l’usage, les DIA bonus sont dépensés en premier."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "Quels DIA sont utilisés en premier ?",
+    "aliases": [
+      "Ordre d’utilisation des DIA"
+    ],
+    "answer": "Les DIA bonus sont utilisés d’abord, puis les DIA payants quand ils sont épuisés. Cependant, le Battle Pass et le Pass+ ne s’achètent qu’avec des DIA payants."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Puis-je échanger des DIA bonus contre de l’argent ?",
+    "aliases": [
+      "Remboursement de DIA de prix"
+    ],
+    "answer": "Les DIA bonus ne peuvent être ni échangés contre de l’argent, ni remboursés, ni transférés. Ce sont des DIA à utiliser dans l’appli."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Les DIA sont-ils remboursables ?",
+    "aliases": [
+      "Comment se faire rembourser des DIA"
+    ],
+    "answer": "Nous ne vendons pas de DIA pour le moment, il n’y a donc pas de DIA payants à rembourser. Une fois la vente lancée, les DIA payants non utilisés pourront être remboursés dans les 7 jours suivant l’achat."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Comment acheter des DIA ?",
+    "aliases": [
+      "Recharger des DIA"
+    ],
+    "answer": "Nous ne vendons pas de DIA pour le moment. Nous te préviendrons d’abord quand la vente commencera. Tu peux obtenir des DIA en échangeant des SHARE ou comme prix d’événements."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Quels packs de DIA existe-t-il ?",
+    "aliases": [
+      "Tarifs des DIA"
+    ],
+    "answer": "Nous ne vendons pas de DIA pour le moment. Une fois la vente lancée, nous afficherons les types de packs et leurs prix dans la boutique."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Que peut-on acheter dans la boutique ?",
+    "aliases": [
+      "Liste des articles de la boutique"
+    ],
+    "answer": "Dans la boutique, tu peux acheter avec des DIA des pièces et skins pour habiller le personnage, ainsi que des objets de course comme le ticket de réanimation et le Garde-fou. Le financement de dons auquel tu participes avec des VALUE s’y trouve aussi."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Y a-t-il des tirages aléatoires ou des coffres ?",
+    "aliases": [
+      "Y a-t-il du gacha ?"
+    ],
+    "answer": "Non, il n’y a pas de tirages aléatoires. Tous les articles sont vendus uniquement à un prix fixe en DIA."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Comment accéder à la boutique ?",
+    "aliases": [
+      "Où est la boutique ?"
+    ],
+    "answer": "Touche l’onglet Boutique en bas de l’écran, ou la carte Mes DIA sur l’accueil pour y accéder directement."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Puis-je aussi acheter avec des DIA bonus ?",
+    "aliases": [
+      "Acheter des habillages avec des DIA de prix"
+    ],
+    "answer": "Oui, les DIA bonus peuvent aussi être utilisés dans la boutique, et ils sont dépensés avant les DIA payants."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Y a-t-il un Battle Pass ?",
+    "aliases": [
+      "Y a-t-il un pass de saison ?"
+    ],
+    "answer": "Tu peux voir l’écran du Pass Battle Run Saison 1 depuis Défis et la Boutique. Les achats payants ne sont pas encore ouverts, tu peux donc commencer par la piste de récompenses gratuite."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Puis-je participer aux événements avec des DIA ?",
+    "aliases": [
+      "S’inscrire à un événement avec des DIA"
+    ],
+    "answer": "Les événements dotés de prix ne se rejoignent qu’avec des tickets gratuits ou des SHARE. On ne peut pas participer avec des DIA payants."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "J’ai payé mais mes DIA ne sont pas arrivés",
+    "aliases": [
+      "Recharge de DIA manquante"
+    ],
+    "answer": "Les DIA arrivent une fois le paiement confirmé et enregistré dans l’historique des transactions du serveur. Consulte Mes transactions dans le Centre de sécurité et de confidentialité après un moment ; si rien n’apparaît, contacte-nous via Contact dans les réglages."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Qu’est-ce que le ticket de réanimation ?",
+    "aliases": [
+      "Dis-moi l’effet du ticket de réanimation"
+    ],
+    "answer": "Le ticket de réanimation est un objet qui rétablit une série interrompue dans les 72 heures ; tu peux l’utiliser jusqu’à deux fois par mois pour 12 DIA. Le Garde-fou protège à l’avance une journée manquée."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Puis-je offrir des DIA à un ami ?",
+    "aliases": [
+      "Envoyer des DIA"
+    ],
+    "answer": "Non, ni les DIA bonus ni les DIA payants ne peuvent être offerts ou transférés à quelqu’un d’autre. Tu ne peux les utiliser en toute sécurité que sur ton propre compte."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Puis-je voir l’historique de mes DIA ?",
+    "aliases": [
+      "Historique d’utilisation des DIA"
+    ],
+    "answer": "Oui, tu peux voir toutes les entrées et sorties de DIA dans Mes transactions, dans le Centre de sécurité et de confidentialité. Ces enregistrements sont conservés sur le serveur et ne sont pas supprimés."
   },
   {
     "id": "CO-01",

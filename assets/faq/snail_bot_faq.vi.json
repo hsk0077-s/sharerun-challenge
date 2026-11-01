@@ -10,6 +10,132 @@
     "answer": "Bạn tích lũy SHARE theo số bước đi và chạy, và với mỗi 1 km đã xác minh, công ty dự kiến quyên góp 100 KRW. Khoản quyên góp do công ty chi trả; bạn không phải trả gì."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Bạn là ai?",
+    "aliases": [
+      "Ốc Sên, bạn là gì?"
+    ],
+    "answer": "Mình là Ốc Sên, bạn đồng hành chạy bộ của bạn. Cứ hỏi bằng giọng nói là mình giúp ngay."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Dùng bot Ốc Sên thế nào?",
+    "aliases": [
+      "Hỏi Ốc Sên thế nào?"
+    ],
+    "answer": "Nhấn nút ốc sên ở góc dưới bên phải màn hình để xem các câu hỏi gợi ý phù hợp với màn hình hiện tại. Bạn cũng có thể nhấn micro và hỏi bằng giọng nói."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Có di chuyển được nút ốc sên không?",
+    "aliases": [
+      "Nút ốc sên che màn hình"
+    ],
+    "answer": "Bạn có thể kéo nút đến bất kỳ vị trí nào."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Sao khi chạy không thấy Ốc Sên?",
+    "aliases": [
+      "Nút ốc sên biến mất khi chạy"
+    ],
+    "answer": "Khi bạn chạy, nút được ẩn để không che màn hình. Thay vào đó, mình huấn luyện bạn bằng giọng của Ốc Sên."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Ốc Sên có chủ động nói chuyện không?",
+    "aliases": [
+      "Ốc Sên đột nhiên nói"
+    ],
+    "answer": "Mình chỉ chủ động nói vào những khoảnh khắc đáng ăn mừng. Còn lại, mình chỉ giúp khi bạn gọi."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Khẩu hiệu của ShareRun là gì?",
+    "aliases": [
+      "“Chừng nào tim còn đập” nghĩa là gì?"
+    ],
+    "answer": "Khẩu hiệu chính là “Chừng nào tim còn đập, sẻ chia cũng chạy”. Ở màn hình quyên góp còn dùng câu “Mỗi bước chân thành sẻ chia”."
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Dùng ứng dụng này có phải trả tiền không?",
+    "aliases": [
+      "Có miễn phí không?"
+    ],
+    "answer": "Đi bộ, chạy và tham gia quyên góp đều không tốn tiền. Hiện tại trong ứng dụng không có gì phải thanh toán."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Có kiếm tiền được bằng ứng dụng này không?",
+    "aliases": [
+      "Đi bộ có được trả tiền không?"
+    ],
+    "answer": "ShareRun không phải ứng dụng để kiếm tiền mà là ứng dụng để cùng sẻ chia khi đi bộ và chạy. SHARE là điểm hoạt động không thể đổi thành tiền mặt."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "SHARE, DIA và VALUE khác nhau thế nào?",
+    "aliases": [
+      "Cho mình biết các loại tiền tệ"
+    ],
+    "answer": "SHARE là điểm hoạt động nhận được khi đi bộ và chạy, DIA là tiền tệ trong ứng dụng dùng ở cửa hàng. VALUE là điểm danh dự tích lũy từ các lần chạy đã xác minh nên không thể đổi hay chuyển nhượng."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Thanh tab ở dưới có gì?",
+    "aliases": [
+      "Cho mình biết menu dưới"
+    ],
+    "answer": "Phía dưới có năm tab: Trang chủ, Cửa hàng, Thử thách, Crew và Cá nhân. Bạn có thể bắt đầu chạy ngay từ Trang chủ hoặc Thử thách."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Mình muốn xem lại phần giới thiệu",
+    "aliases": [
+      "Xem lại phần giải thích đầu tiên"
+    ],
+    "answer": "Bạn có thể xem lại bất cứ lúc nào ở mục “Xem lại phần giới thiệu” trong Cài đặt."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Có widget cho màn hình chính không?",
+    "aliases": [
+      "Có đặt widget lên màn hình được không?"
+    ],
+    "answer": "Nếu muốn, bạn có thể thêm widget vào màn hình chính để xem nhanh số bước hôm nay và số tiền quyên góp."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "SHARE là gì?",
+    "aliases": [
+      "SHARE nghĩa là gì?"
+    ],
+    "answer": "SHARE là điểm hoạt động tích lũy theo số bước đi và chạy. Không thể mua bằng tiền và cũng không thể đổi thành tiền mặt."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Cần đi bao nhiêu bước để nhận SHARE?",
+    "aliases": [
+      "Mỗi bước được bao nhiêu SHARE?"
+    ],
+    "answer": "Cứ mỗi 100 bước bạn được 10 SHARE."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Mỗi ngày nhận được bao nhiêu SHARE?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Không nhặt SHARE thì có mất không?",
+    "aliases": [
+      "Không nhặt thì có mất không?"
+    ],
+    "answer": "SHARE từ số bước có thể nhặt đến nửa đêm cùng ngày, trong giới hạn 600 SHARE mỗi ngày. Qua nửa đêm sẽ bắt đầu lại cùng số bước của ngày mới, nên hãy nhặt ngay trong ngày ở Trang chủ."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Có đổi SHARE sang DIA được không?",
+    "aliases": [
+      "Đổi SHARE sang DIA"
+    ],
+    "answer": "Bạn có thể đổi 1.200 SHARE lấy 1 DIA, tối đa 20 DIA mỗi tuần."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Có đổi DIA sang SHARE được không?",
+    "aliases": [
+      "Đổi DIA sang SHARE"
+    ],
+    "answer": "Không. Việc đổi chỉ một chiều, từ SHARE sang DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Có đổi SHARE sang tiền mặt được không?",
+    "aliases": [
+      "Rút SHARE"
+    ],
+    "answer": "SHARE là điểm hoạt động không thể đổi thành tiền mặt hay phiếu quà tặng. Bạn có thể đổi sang DIA hoặc dùng để đăng ký giải đấu."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Có mua SHARE bằng tiền được không?",
+    "aliases": [
+      "Nạp SHARE"
+    ],
+    "answer": "Không, SHARE không được bán. Bạn chỉ có thể tích lũy bằng cách đi bộ và chạy."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "SHARE có phải là coin không?",
+    "aliases": [
+      "Token có được niêm yết không?"
+    ],
+    "answer": "Không, SHARE không phải coin hay token. Đó là điểm hoạt động chỉ dùng trong ứng dụng."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "SHARE trị giá bao nhiêu KRW?",
+    "aliases": [
+      "Giá trị SHARE"
+    ],
+    "answer": "SHARE là điểm không được định giá bằng tiền nên chúng tôi không hiển thị số tiền KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "SHARE dùng để làm gì?",
+    "aliases": [
+      "Nơi dùng SHARE"
+    ],
+    "answer": "Bạn có thể đổi sang DIA hoặc dùng làm phí tham gia giải đấu, phòng chạy và tiền đặt cọc của crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Xem quảng cáo có được SHARE không?",
+    "aliases": [
+      "Có thưởng khi xem quảng cáo không?"
+    ],
+    "answer": "Không, không có tính năng nhận SHARE khi xem quảng cáo. Bạn có thể tích lũy SHARE bằng cách đi bộ và chạy, qua các lần chạy thử cho người mới và mời bạn bè."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Mời bạn bè thì nhận được gì?",
+    "aliases": [
+      "Thưởng mời bạn"
+    ],
+    "answer": "Nếu bạn bè được mời hoàn thành các lần chạy từ 1 km trở lên trong 3 ngày khác nhau trong vòng 14 ngày, bạn nhận 30.000 SHARE. Khoản này về sau thời gian giữ 7 ngày, và bạn của bạn cũng nhận 10.000 SHARE ở lần chạy đầu tiên và 40.000 SHARE ở lần thứ ba."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "DIA là gì?",
+    "aliases": [
+      "DIA nghĩa là gì?"
+    ],
+    "answer": "DIA là tiền tệ trong ứng dụng dùng ở cửa hàng để mua trang phục và vật phẩm. Bạn nhận được bằng cách đổi SHARE hoặc làm giải thưởng giải đấu."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "DIA thưởng và DIA trả phí khác nhau thế nào?",
+    "aliases": [
+      "DIA thưởng là gì?"
+    ],
+    "answer": "DIA thưởng là DIA nhận miễn phí (đổi SHARE, giải thưởng, phần thưởng, quà tặng kèm, v.v.). DIA trả phí là DIA bạn tự mua. Khi dùng, DIA thưởng được trừ trước."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "DIA nào được dùng trước?",
+    "aliases": [
+      "Thứ tự dùng DIA"
+    ],
+    "answer": "DIA thưởng được dùng trước, hết thì dùng DIA trả phí. Tuy nhiên, Battle Pass và Pass+ chỉ mua được bằng DIA trả phí."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Có đổi DIA thưởng sang tiền mặt được không?",
+    "aliases": [
+      "Hoàn tiền DIA giải thưởng"
+    ],
+    "answer": "DIA thưởng không thể đổi thành tiền mặt, hoàn tiền hay chuyển nhượng. Đây là DIA dùng trong ứng dụng."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "DIA có được hoàn tiền không?",
+    "aliases": [
+      "Cách hoàn tiền DIA"
+    ],
+    "answer": "Hiện chúng tôi không bán DIA nên không có DIA trả phí để hoàn tiền. Khi bắt đầu bán, DIA trả phí chưa dùng có thể được hoàn tiền trong vòng 7 ngày kể từ ngày mua."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Mua DIA như thế nào?",
+    "aliases": [
+      "Nạp DIA"
+    ],
+    "answer": "Hiện chúng tôi không bán DIA. Khi bắt đầu bán, chúng tôi sẽ báo trước. Bạn có thể nhận DIA bằng cách đổi SHARE hoặc làm giải thưởng giải đấu."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Có những gói DIA nào?",
+    "aliases": [
+      "Bảng giá DIA"
+    ],
+    "answer": "Hiện chúng tôi không bán DIA. Khi bắt đầu bán, các loại gói và giá sẽ được hiển thị ở màn hình cửa hàng."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Mua được gì ở cửa hàng?",
+    "aliases": [
+      "Danh sách sản phẩm cửa hàng"
+    ],
+    "answer": "Ở cửa hàng, bạn dùng DIA để mua bộ phận trang trí và skin cho nhân vật, cùng vật phẩm chạy như vé hồi sinh kỷ lục và Safe Guard. Gây quỹ quyên góp tham gia bằng VALUE cũng nằm ở cửa hàng."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Có rút thăm ngẫu nhiên hay hộp không?",
+    "aliases": [
+      "Có gacha không?"
+    ],
+    "answer": "Không, không có rút thăm ngẫu nhiên. Mọi sản phẩm chỉ bán với giá DIA cố định."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Vào cửa hàng ở đâu?",
+    "aliases": [
+      "Cửa hàng ở đâu?"
+    ],
+    "answer": "Nhấn tab Cửa hàng ở cuối màn hình, hoặc nhấn thẻ DIA của tôi ở Trang chủ để vào ngay."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Có mua đồ bằng DIA thưởng được không?",
+    "aliases": [
+      "Mua trang phục bằng DIA giải thưởng"
+    ],
+    "answer": "Được, DIA thưởng cũng dùng được ở cửa hàng và được trừ trước DIA trả phí."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Có Battle Pass không?",
+    "aliases": [
+      "Có thẻ mùa không?"
+    ],
+    "answer": "Bạn có thể xem màn hình Battle Run Pass Mùa 1 ở Thử thách và Cửa hàng. Hiện chưa mở mua trả phí nên bạn có thể bắt đầu với đường thưởng miễn phí."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Có tham gia giải đấu bằng DIA được không?",
+    "aliases": [
+      "Đăng ký giải đấu bằng DIA"
+    ],
+    "answer": "Giải đấu có giải thưởng chỉ tham gia bằng vé miễn phí hoặc SHARE. Không thể tham gia bằng DIA trả phí."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "Tôi đã thanh toán nhưng DIA chưa về",
+    "aliases": [
+      "Nạp DIA chưa nhận được"
+    ],
+    "answer": "DIA sẽ về sau khi thanh toán được xác nhận và ghi vào nhật ký giao dịch của máy chủ. Hãy xem Lịch sử giao dịch trong Trung tâm bảo mật & quyền riêng tư sau một lúc, nếu vẫn không thấy, hãy báo cho chúng tôi qua mục Liên hệ trong Cài đặt."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Vé hồi sinh kỷ lục là gì?",
+    "aliases": [
+      "Cho mình biết hiệu quả vé hồi sinh"
+    ],
+    "answer": "Vé hồi sinh kỷ lục là vật phẩm khôi phục chuỗi ngày bị đứt trong vòng 72 giờ, dùng tối đa hai lần mỗi tháng với 12 DIA. Safe Guard là vật phẩm bảo vệ trước một ngày bị bỏ lỡ."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Có tặng DIA cho bạn bè được không?",
+    "aliases": [
+      "Gửi DIA"
+    ],
+    "answer": "Không, cả DIA thưởng lẫn DIA trả phí đều không thể tặng hay chuyển cho người khác. Bạn chỉ có thể dùng an toàn trên tài khoản của mình."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Xem được lịch sử dùng DIA không?",
+    "aliases": [
+      "Lịch sử dùng DIA"
+    ],
+    "answer": "Có, bạn xem được mọi bản ghi DIA vào và ra trong Lịch sử giao dịch ở Trung tâm bảo mật & quyền riêng tư. Các bản ghi này được lưu trên máy chủ và không bị xóa."
   },
   {
     "id": "CO-01",

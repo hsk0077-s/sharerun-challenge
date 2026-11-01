@@ -10,6 +10,132 @@
     "answer": "Für deine Schritte und Läufe sammelst du SHARE, und für jeden verifizierten Kilometer plant das Unternehmen, 100 KRW zu spenden. Die Spende zahlt das Unternehmen; du zahlst nichts."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Wer bist du?",
+    "aliases": [
+      "Schnecke, was bist du?"
+    ],
+    "answer": "Ich bin Schnecke, dein Laufpartner. Frag mich einfach laut, ich helfe sofort."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Wie benutze ich den Schnecken-Bot?",
+    "aliases": [
+      "Wie frage ich die Schnecke?"
+    ],
+    "answer": "Tippe unten rechts auf den Schnecken-Button, dann siehst du passende Vorschlagsfragen für den aktuellen Bildschirm. Du kannst auch das Mikrofon antippen und laut fragen."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Kann ich den Schnecken-Button verschieben?",
+    "aliases": [
+      "Der Schnecken-Button verdeckt den Bildschirm"
+    ],
+    "answer": "Du kannst den Button an eine beliebige Stelle ziehen."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Warum sehe ich die Schnecke beim Laufen nicht?",
+    "aliases": [
+      "Der Schnecken-Button verschwindet beim Laufen"
+    ],
+    "answer": "Beim Laufen wird der Button ausgeblendet, damit er den Bildschirm nicht verdeckt. Stattdessen coache ich dich mit der Stimme der Schnecke."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Spricht die Schnecke auch von sich aus?",
+    "aliases": [
+      "Die Schnecke spricht plötzlich"
+    ],
+    "answer": "Ich spreche nur bei Momenten zum Feiern von mir aus. Sonst helfe ich nur, wenn du mich rufst."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Was ist der ShareRun-Slogan?",
+    "aliases": [
+      "Was bedeutet „Solange das Herz schlägt“?"
+    ],
+    "answer": "Der Hauptslogan lautet „Solange das Herz schlägt, läuft auch das Teilen mit“. Auf dem Spendenbildschirm verwenden wir außerdem „Ein Schritt wird zum Teilen“."
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Muss ich für diese App bezahlen?",
+    "aliases": [
+      "Ist es kostenlos?"
+    ],
+    "answer": "Gehen, Laufen und die Teilnahme an Spenden kosten nichts. Derzeit gibt es in der App nichts zu bezahlen."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Kann ich mit dieser App Geld verdienen?",
+    "aliases": [
+      "Bekomme ich Geld fürs Gehen?"
+    ],
+    "answer": "ShareRun ist keine App zum Geldverdienen, sondern zum Mitmachen beim Teilen, während du gehst und läufst. SHARE ist ein Aktivitätspunkt, der nicht gegen Bargeld getauscht werden kann."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "Was ist der Unterschied zwischen SHARE, DIA und VALUE?",
+    "aliases": [
+      "Nenne mir die Währungsarten"
+    ],
+    "answer": "SHARE ist ein Aktivitätspunkt fürs Gehen und Laufen, DIA die App-Währung für den Shop. VALUE ist ein Ehrenwert aus verifizierten Läufen und kann weder getauscht noch übertragen werden."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Welche Tabs gibt es unten?",
+    "aliases": [
+      "Nenne mir das untere Menü"
+    ],
+    "answer": "Unten gibt es fünf Tabs: Start, Shop, Challenges, Crew und Mein Profil. Direkt auf Start oder Challenges kannst du einen Lauf beginnen."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Ich möchte die Einführung noch einmal sehen",
+    "aliases": [
+      "Die erste Erklärung noch einmal ansehen"
+    ],
+    "answer": "Du kannst sie jederzeit unter „Einführung erneut ansehen“ in den Einstellungen wieder anschauen."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Gibt es ein Homescreen-Widget?",
+    "aliases": [
+      "Kann ich ein Widget auf den Desktop legen?"
+    ],
+    "answer": "Wenn du möchtest, kannst du ein Homescreen-Widget hinzufügen und die heutigen Schritte und den Spendenbetrag auf einen Blick sehen."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "Was ist SHARE?",
+    "aliases": [
+      "Was bedeutet SHARE?"
+    ],
+    "answer": "SHARE ist ein Aktivitätspunkt, der sich beim Gehen und Laufen ansammelt. Man kann ihn nicht mit Geld kaufen und nicht gegen Bargeld tauschen."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Wie viele Schritte brauche ich für SHARE?",
+    "aliases": [
+      "Wie viel SHARE pro Schritt?"
+    ],
+    "answer": "Für je 100 Schritte bekommst du 10 SHARE."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Wie viel SHARE bekomme ich pro Tag?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Verfällt SHARE, wenn ich es nicht einsammle?",
+    "aliases": [
+      "Verschwindet es, wenn ich nicht einsammle?"
+    ],
+    "answer": "SHARE aus Schritten kannst du bis Mitternacht desselben Tages einsammeln, im Rahmen des Tageslimits von 600 SHARE. Nach Mitternacht beginnt es zusammen mit den Schritten des neuen Tages von vorn; sammle es also am selben Tag auf der Startseite ein."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Kann ich SHARE in DIA tauschen?",
+    "aliases": [
+      "SHARE gegen DIA tauschen"
+    ],
+    "answer": "Du kannst 1.200 SHARE gegen 1 DIA tauschen, bis zu 20 DIA pro Woche."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Kann ich DIA in SHARE tauschen?",
+    "aliases": [
+      "DIA gegen SHARE tauschen"
+    ],
+    "answer": "Nein. Der Tausch geht nur in eine Richtung, von SHARE zu DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Kann ich SHARE in Bargeld tauschen?",
+    "aliases": [
+      "SHARE auszahlen"
+    ],
+    "answer": "SHARE ist ein Aktivitätspunkt, der weder gegen Bargeld noch gegen Gutscheine getauscht werden kann. Du kannst ihn in DIA tauschen oder für Event-Anmeldungen nutzen."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Kann ich SHARE mit Geld kaufen?",
+    "aliases": [
+      "SHARE aufladen"
+    ],
+    "answer": "Nein, SHARE wird nicht verkauft. Du kannst es nur durch Gehen und Laufen sammeln."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Ist SHARE eine Kryptomünze?",
+    "aliases": [
+      "Wird der Token gelistet?"
+    ],
+    "answer": "Nein, SHARE ist weder Münze noch Token. Es ist ein Aktivitätspunkt, der nur in der App verwendet wird."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "Wie viel ist SHARE in KRW wert?",
+    "aliases": [
+      "Wert von SHARE"
+    ],
+    "answer": "SHARE ist ein Punkt ohne Geldpreis, daher zeigen wir keinen KRW-Betrag an."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "Wofür kann ich SHARE verwenden?",
+    "aliases": [
+      "Verwendung von SHARE"
+    ],
+    "answer": "Du kannst es in DIA tauschen oder für Startgebühren bei Events und Laufräumen sowie für Crew-Kautionen verwenden."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Bekomme ich SHARE fürs Ansehen von Werbung?",
+    "aliases": [
+      "Gibt es eine Werbebelohnung?"
+    ],
+    "answer": "Nein, SHARE durch Werbung gibt es nicht. Du kannst SHARE durch Gehen und Laufen, mit den Test-Läufen für Neue und durch das Einladen von Freunden sammeln."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Was bekomme ich, wenn ich einen Freund einlade?",
+    "aliases": [
+      "Einladungsbelohnung"
+    ],
+    "answer": "Wenn dein eingeladener Freund innerhalb von 14 Tagen an 3 verschiedenen Tagen Läufe von mindestens 1 km abschließt, bekommst du 30.000 SHARE. Sie kommen nach einer 7-tägigen Sperrfrist an, und dein Freund erhält ebenfalls 10.000 SHARE für den ersten und 40.000 SHARE für den dritten Lauf."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "Was ist DIA?",
+    "aliases": [
+      "Was bedeutet DIA?"
+    ],
+    "answer": "DIA ist die App-Währung, mit der du im Shop Kosmetik und Items kaufst. Du erhältst sie durch SHARE-Tausch oder als Event-Preis."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "Was ist der Unterschied zwischen Bonus-DIA und bezahltem DIA?",
+    "aliases": [
+      "Was ist Bonus-DIA?"
+    ],
+    "answer": "Bonus-DIA ist DIA, das du kostenlos erhalten hast (SHARE-Tausch, Event-Preise, Belohnungen, Zugaben usw.). Bezahltes DIA hast du selbst gekauft. Beim Ausgeben wird zuerst Bonus-DIA verwendet."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "Welches DIA wird zuerst verwendet?",
+    "aliases": [
+      "Reihenfolge der DIA-Nutzung"
+    ],
+    "answer": "Zuerst wird Bonus-DIA verwendet, danach bezahltes DIA. Battle Pass und Pass+ können jedoch nur mit bezahltem DIA gekauft werden."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Kann ich Bonus-DIA in Bargeld tauschen?",
+    "aliases": [
+      "Erstattung von Preis-DIA"
+    ],
+    "answer": "Bonus-DIA kann weder in Bargeld getauscht noch erstattet oder übertragen werden. Es ist DIA zur Nutzung in der App."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Wird DIA erstattet?",
+    "aliases": [
+      "So erstattest du DIA"
+    ],
+    "answer": "Wir verkaufen derzeit kein DIA, daher gibt es kein bezahltes DIA zu erstatten. Sobald der Verkauf startet, kann ungenutztes bezahltes DIA innerhalb von 7 Tagen nach dem Kauf erstattet werden."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Wie kaufe ich DIA?",
+    "aliases": [
+      "DIA aufladen"
+    ],
+    "answer": "Wir verkaufen derzeit kein DIA. Wir sagen dir zuerst Bescheid, wenn der Verkauf startet. DIA erhältst du durch SHARE-Tausch oder als Event-Preis."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Welche DIA-Pakete gibt es?",
+    "aliases": [
+      "DIA-Preisliste"
+    ],
+    "answer": "Wir verkaufen derzeit kein DIA. Sobald der Verkauf startet, zeigen wir Paketarten und Preise auf dem Shop-Bildschirm."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Was kann ich im Shop kaufen?",
+    "aliases": [
+      "Shop-Produktliste"
+    ],
+    "answer": "Im Shop kannst du mit DIA Charakter-Teile und Skins sowie Lauf-Items wie das Rekord-Wiederbelebungsticket und den Safe Guard kaufen. Auch die Spenden-Finanzierung, an der du mit VALUE teilnimmst, ist im Shop."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Gibt es Zufallsziehungen oder Boxen?",
+    "aliases": [
+      "Gibt es Gacha?"
+    ],
+    "answer": "Nein, es gibt keine Zufallsziehungen. Alle Artikel werden nur zu einem festen DIA-Preis verkauft."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Wie komme ich in den Shop?",
+    "aliases": [
+      "Wo ist der Shop?"
+    ],
+    "answer": "Tippe unten auf den Shop-Tab oder auf die Karte „Meine DIA“ auf dem Startbildschirm, um direkt hineinzukommen."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Kann ich auch mit Bonus-DIA einkaufen?",
+    "aliases": [
+      "Kosmetik mit Preis-DIA kaufen"
+    ],
+    "answer": "Ja, Bonus-DIA kannst du auch im Shop verwenden, und es wird vor bezahltem DIA genutzt."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Gibt es einen Battle Pass?",
+    "aliases": [
+      "Gibt es einen Season Pass?"
+    ],
+    "answer": "Den Bildschirm des Battle Run Pass Saison 1 findest du bei Challenges und im Shop. Bezahlkäufe sind noch nicht geöffnet, du kannst also mit der kostenlosen Belohnungsleiste starten."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Kann ich mit DIA an Events teilnehmen?",
+    "aliases": [
+      "Mit DIA zu einem Event anmelden"
+    ],
+    "answer": "An Events mit Preisen nimmst du nur mit Gratis-Tickets oder SHARE teil. Mit bezahltem DIA ist die Teilnahme nicht möglich."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "Ich habe bezahlt, aber mein DIA ist nicht angekommen",
+    "aliases": [
+      "Fehlende DIA-Aufladung"
+    ],
+    "answer": "DIA kommt an, sobald die Zahlung bestätigt und im Transaktionsprotokoll des Servers erfasst ist. Schau nach einer Weile unter „Meine Transaktionen“ im Sicherheits- und Datenschutzzentrum nach; falls es dann immer noch fehlt, melde dich über „Kontakt“ in den Einstellungen."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Was ist das Rekord-Wiederbelebungsticket?",
+    "aliases": [
+      "Sag mir die Wirkung des Wiederbelebungstickets"
+    ],
+    "answer": "Das Rekord-Wiederbelebungsticket ist ein Item, das eine unterbrochene Serie innerhalb von 72 Stunden wiederherstellt; du kannst es bis zu zweimal im Monat für 12 DIA nutzen. Der Safe Guard schützt im Voraus einen verpassten Tag."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Kann ich DIA an Freunde verschenken?",
+    "aliases": [
+      "DIA senden"
+    ],
+    "answer": "Nein, weder Bonus-DIA noch bezahltes DIA können an andere verschenkt oder übertragen werden. Du kannst sie nur sicher auf deinem eigenen Konto nutzen."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Kann ich meinen DIA-Verlauf einsehen?",
+    "aliases": [
+      "DIA-Nutzungsverlauf"
+    ],
+    "answer": "Ja, unter „Meine Transaktionen“ im Sicherheits- und Datenschutzzentrum siehst du alle Ein- und Ausgänge von DIA. Diese Einträge werden auf dem Server gespeichert und nicht gelöscht."
   },
   {
     "id": "CO-01",

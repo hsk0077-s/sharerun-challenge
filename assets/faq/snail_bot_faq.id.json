@@ -10,6 +10,132 @@
     "answer": "Kamu mengumpulkan SHARE dari langkah dan lari, dan untuk setiap 1 km terverifikasi perusahaan berencana mendonasikan 100 KRW. Donasi dibayar perusahaan; kamu tidak membayar apa pun."
   },
   {
+    "id": "AP-02",
+    "category": "앱 소개",
+    "question": "Kamu siapa?",
+    "aliases": [
+      "Siput, kamu apa?"
+    ],
+    "answer": "Aku Siput, teman larimu. Tanyakan saja dengan suara dan aku langsung bantu."
+  },
+  {
+    "id": "AP-03",
+    "category": "앱 소개",
+    "question": "Bagaimana cara memakai bot Siput?",
+    "aliases": [
+      "Bagaimana bertanya pada Siput?"
+    ],
+    "answer": "Ketuk tombol siput di kanan bawah layar untuk melihat pertanyaan yang disarankan sesuai layar saat ini. Kamu juga bisa mengetuk mikrofon dan bertanya dengan suara."
+  },
+  {
+    "id": "AP-04",
+    "category": "앱 소개",
+    "question": "Bisakah tombol siput dipindahkan?",
+    "aliases": [
+      "Tombol siput menutupi layar"
+    ],
+    "answer": "Kamu bisa menyeret tombol ke mana saja."
+  },
+  {
+    "id": "AP-05",
+    "category": "앱 소개",
+    "question": "Mengapa Siput tidak terlihat saat berlari?",
+    "aliases": [
+      "Tombol siput hilang saat berlari"
+    ],
+    "answer": "Saat berlari, tombol disembunyikan agar tidak menutupi layar. Sebagai gantinya, aku melatihmu dengan suara Siput."
+  },
+  {
+    "id": "AP-06",
+    "category": "앱 소개",
+    "question": "Apakah Siput kadang bicara lebih dulu?",
+    "aliases": [
+      "Siput tiba-tiba bicara"
+    ],
+    "answer": "Aku hanya bicara lebih dulu pada momen yang pantas dirayakan. Selain itu aku membantu hanya saat kamu memanggil."
+  },
+  {
+    "id": "AP-07",
+    "category": "앱 소개",
+    "question": "Apa slogan ShareRun?",
+    "aliases": [
+      "Apa arti “selama jantung berdetak”?"
+    ],
+    "answer": "Slogan utamanya adalah “Selama jantung berdetak, berbagi pun terus berlari.” Di layar donasi kami juga memakai “Satu langkah menjadi berbagi.”"
+  },
+  {
+    "id": "AP-08",
+    "category": "앱 소개",
+    "question": "Apakah harus membayar untuk memakai aplikasi ini?",
+    "aliases": [
+      "Gratis?"
+    ],
+    "answer": "Berjalan, berlari, dan ikut donasi tidak dipungut biaya. Saat ini tidak ada yang perlu dibayar di dalam aplikasi."
+  },
+  {
+    "id": "AP-09",
+    "category": "앱 소개",
+    "question": "Bisakah menghasilkan uang dari aplikasi ini?",
+    "aliases": [
+      "Apakah berjalan dibayar?"
+    ],
+    "answer": "ShareRun bukan aplikasi untuk mencari uang, melainkan untuk ikut berbagi sambil berjalan dan berlari. SHARE adalah poin aktivitas yang tidak dapat ditukar dengan uang tunai."
+  },
+  {
+    "id": "AP-10",
+    "category": "앱 소개",
+    "question": "Apa beda SHARE, DIA, dan VALUE?",
+    "aliases": [
+      "Beri tahu jenis mata uangnya"
+    ],
+    "answer": "SHARE adalah poin aktivitas dari berjalan dan berlari, DIA adalah mata uang aplikasi yang dipakai di toko. VALUE adalah skor kehormatan dari lari terverifikasi sehingga tidak bisa ditukar atau dipindahkan."
+  },
+  {
+    "id": "AP-11",
+    "category": "앱 소개",
+    "question": "Ada tab apa di bagian bawah?",
+    "aliases": [
+      "Beri tahu menu bawah"
+    ],
+    "answer": "Ada lima tab di bawah: Beranda, Toko, Tantangan, Crew, dan Profil. Kamu bisa langsung mulai berlari dari Beranda atau Tantangan."
+  },
+  {
+    "id": "AP-12",
+    "category": "앱 소개",
+    "question": "Aku ingin melihat pengenalan lagi",
+    "aliases": [
+      "Lihat penjelasan pertama lagi"
+    ],
+    "answer": "Kamu bisa menontonnya lagi kapan saja lewat “Lihat pengenalan lagi” di Pengaturan."
+  },
+  {
+    "id": "AP-13",
+    "category": "앱 소개",
+    "question": "Apakah ada widget layar utama?",
+    "aliases": [
+      "Bisakah menaruh widget di layar utama?"
+    ],
+    "answer": "Jika mau, kamu bisa menambahkan widget ke layar utama untuk melihat langkah hari ini dan jumlah donasi sekilas."
+  },
+  {
+    "id": "SH-01",
+    "category": "걸음·SHARE",
+    "question": "Apa itu SHARE?",
+    "aliases": [
+      "Apa arti SHARE?"
+    ],
+    "answer": "SHARE adalah poin aktivitas yang terkumpul dari berjalan dan berlari. Tidak bisa dibeli dengan uang dan tidak bisa ditukar dengan uang tunai."
+  },
+  {
+    "id": "SH-02",
+    "category": "걸음·SHARE",
+    "question": "Berapa langkah untuk mendapat SHARE?",
+    "aliases": [
+      "Berapa SHARE per langkah?"
+    ],
+    "answer": "Kamu mendapat 10 SHARE untuk setiap 100 langkah."
+  },
+  {
     "id": "SH-03",
     "category": "걸음·SHARE",
     "question": "Berapa SHARE yang bisa didapat per hari?",
@@ -31,6 +157,249 @@
     "needs": [
       "SHARE잔액"
     ]
+  },
+  {
+    "id": "SH-07",
+    "category": "걸음·SHARE",
+    "question": "Apakah SHARE hilang jika tidak diambil?",
+    "aliases": [
+      "Apakah hilang jika tidak diambil?"
+    ],
+    "answer": "SHARE dari langkah bisa diambil sampai tengah malam hari itu, dalam batas harian 600 SHARE. Lewat tengah malam akan mulai baru bersama langkah hari baru, jadi pastikan diambil di Beranda pada hari yang sama."
+  },
+  {
+    "id": "SH-08",
+    "category": "걸음·SHARE",
+    "question": "Bisakah menukar SHARE dengan DIA?",
+    "aliases": [
+      "Tukar SHARE ke DIA"
+    ],
+    "answer": "Kamu bisa menukar 1.200 SHARE dengan 1 DIA, maksimal 20 DIA per minggu."
+  },
+  {
+    "id": "SH-09",
+    "category": "걸음·SHARE",
+    "question": "Bisakah menukar DIA dengan SHARE?",
+    "aliases": [
+      "Tukar DIA ke SHARE"
+    ],
+    "answer": "Tidak. Penukaran hanya satu arah, dari SHARE ke DIA."
+  },
+  {
+    "id": "SH-12",
+    "category": "걸음·SHARE",
+    "question": "Bisakah menukar SHARE dengan uang tunai?",
+    "aliases": [
+      "Tarik SHARE"
+    ],
+    "answer": "SHARE adalah poin aktivitas yang tidak dapat ditukar dengan uang tunai atau voucher. Kamu bisa menukarnya dengan DIA atau memakainya untuk mendaftar event."
+  },
+  {
+    "id": "SH-13",
+    "category": "걸음·SHARE",
+    "question": "Bisakah membeli SHARE dengan uang?",
+    "aliases": [
+      "Isi ulang SHARE"
+    ],
+    "answer": "Tidak, SHARE tidak dijual. Kamu hanya bisa mengumpulkannya dengan berjalan dan berlari."
+  },
+  {
+    "id": "SH-14",
+    "category": "걸음·SHARE",
+    "question": "Apakah SHARE itu koin?",
+    "aliases": [
+      "Apakah token akan dicatatkan?"
+    ],
+    "answer": "Bukan, SHARE bukan koin atau token. Ini poin aktivitas yang hanya dipakai di dalam aplikasi."
+  },
+  {
+    "id": "SH-15",
+    "category": "걸음·SHARE",
+    "question": "Berapa nilai SHARE dalam KRW?",
+    "aliases": [
+      "Nilai SHARE"
+    ],
+    "answer": "SHARE adalah poin yang tidak dinilai dengan uang, jadi kami tidak menampilkannya dalam jumlah KRW."
+  },
+  {
+    "id": "SH-16",
+    "category": "걸음·SHARE",
+    "question": "SHARE bisa dipakai untuk apa?",
+    "aliases": [
+      "Kegunaan SHARE"
+    ],
+    "answer": "Kamu bisa menukarnya dengan DIA, atau memakainya untuk biaya pendaftaran event dan ruang lari serta deposit crew."
+  },
+  {
+    "id": "SH-17",
+    "category": "걸음·SHARE",
+    "question": "Apakah menonton iklan memberi SHARE?",
+    "aliases": [
+      "Apakah ada hadiah iklan?"
+    ],
+    "answer": "Tidak, tidak ada fitur mendapat SHARE dengan menonton iklan. Kamu bisa mengumpulkan SHARE dengan berjalan dan berlari, lari percobaan untuk pengguna baru, dan mengundang teman."
+  },
+  {
+    "id": "SH-18",
+    "category": "걸음·SHARE",
+    "question": "Apa yang kudapat jika mengundang teman?",
+    "aliases": [
+      "Hadiah undangan"
+    ],
+    "answer": "Jika temanmu yang diundang menyelesaikan lari 1 km atau lebih pada 3 hari berbeda dalam 14 hari, kamu menerima 30.000 SHARE. Diterima setelah masa tahan 7 hari, dan temanmu juga mendapat 10.000 SHARE di lari pertama dan 40.000 SHARE di lari ketiga."
+  },
+  {
+    "id": "DI-01",
+    "category": "다이아·상점",
+    "question": "Apa itu DIA?",
+    "aliases": [
+      "Apa arti DIA?"
+    ],
+    "answer": "DIA adalah mata uang aplikasi yang dipakai di toko untuk membeli kostum dan item. Didapat dengan menukar SHARE atau sebagai hadiah event."
+  },
+  {
+    "id": "DI-03",
+    "category": "다이아·상점",
+    "question": "Apa beda DIA bonus dan DIA berbayar?",
+    "aliases": [
+      "Apa itu DIA bonus?"
+    ],
+    "answer": "DIA bonus adalah DIA yang diterima gratis (penukaran SHARE, hadiah event, imbalan, bonus tambahan, dll.). DIA berbayar adalah DIA yang kamu beli sendiri. Saat dipakai, DIA bonus dipotong lebih dulu."
+  },
+  {
+    "id": "DI-04",
+    "category": "다이아·상점",
+    "question": "DIA mana yang dipakai dulu?",
+    "aliases": [
+      "Urutan pemakaian DIA"
+    ],
+    "answer": "DIA bonus dipakai lebih dulu, dan jika habis baru DIA berbayar dipakai. Namun Battle Pass dan Pass+ hanya bisa dibeli dengan DIA berbayar."
+  },
+  {
+    "id": "DI-05",
+    "category": "다이아·상점",
+    "question": "Bisakah menukar DIA bonus dengan uang tunai?",
+    "aliases": [
+      "Pengembalian DIA hadiah"
+    ],
+    "answer": "DIA bonus tidak dapat ditukar dengan uang tunai, dikembalikan dananya, atau dipindahkan. Ini adalah DIA untuk dipakai di dalam aplikasi."
+  },
+  {
+    "id": "DI-06",
+    "category": "다이아·상점",
+    "question": "Apakah DIA bisa dikembalikan dananya?",
+    "aliases": [
+      "Cara mengembalikan dana DIA"
+    ],
+    "answer": "Saat ini kami tidak menjual DIA, jadi tidak ada DIA berbayar yang bisa dikembalikan. Setelah penjualan dimulai, DIA berbayar yang belum dipakai dapat dikembalikan dananya dalam 7 hari sejak pembelian."
+  },
+  {
+    "id": "DI-07",
+    "category": "다이아·상점",
+    "question": "Bagaimana cara membeli DIA?",
+    "aliases": [
+      "Isi ulang DIA"
+    ],
+    "answer": "Saat ini kami tidak menjual DIA. Kami akan memberi tahu lebih dulu saat penjualan dimulai. Kamu bisa mendapat DIA dengan menukar SHARE atau sebagai hadiah event."
+  },
+  {
+    "id": "DI-08",
+    "category": "다이아·상점",
+    "question": "Ada paket DIA apa saja?",
+    "aliases": [
+      "Daftar harga DIA"
+    ],
+    "answer": "Saat ini kami tidak menjual DIA. Setelah penjualan dimulai, jenis paket dan harganya akan ditampilkan di layar toko."
+  },
+  {
+    "id": "DI-09",
+    "category": "다이아·상점",
+    "question": "Apa yang bisa dibeli di toko?",
+    "aliases": [
+      "Daftar produk toko"
+    ],
+    "answer": "Di toko kamu bisa membeli bagian dan skin untuk dekorasi karakter, serta item lari seperti tiket CPR rekor dan Safe Guard dengan DIA. Penggalangan donasi yang diikuti dengan VALUE juga ada di toko."
+  },
+  {
+    "id": "DI-10",
+    "category": "다이아·상점",
+    "question": "Apakah ada undian acak atau kotak?",
+    "aliases": [
+      "Apakah ada gacha?"
+    ],
+    "answer": "Tidak ada undian acak. Semua produk hanya dijual dengan harga DIA yang tetap."
+  },
+  {
+    "id": "DI-11",
+    "category": "다이아·상점",
+    "question": "Bagaimana masuk ke toko?",
+    "aliases": [
+      "Di mana tokonya?"
+    ],
+    "answer": "Ketuk tab Toko di bagian bawah layar, atau ketuk kartu DIA Saya di Beranda untuk langsung masuk."
+  },
+  {
+    "id": "DI-12",
+    "category": "다이아·상점",
+    "question": "Bisakah membeli dengan DIA bonus juga?",
+    "aliases": [
+      "Beli kostum dengan DIA hadiah"
+    ],
+    "answer": "Bisa, DIA bonus juga dapat dipakai di toko dan dipakai sebelum DIA berbayar."
+  },
+  {
+    "id": "DI-13",
+    "category": "다이아·상점",
+    "question": "Apakah ada Battle Pass?",
+    "aliases": [
+      "Apakah ada season pass?"
+    ],
+    "answer": "Kamu bisa melihat layar Battle Run Pass Musim 1 dari Tantangan dan Toko. Pembelian berbayar belum dibuka, jadi kamu bisa mulai dari jalur hadiah gratis."
+  },
+  {
+    "id": "DI-14",
+    "category": "다이아·상점",
+    "question": "Bisakah ikut event dengan DIA?",
+    "aliases": [
+      "Daftar event dengan DIA"
+    ],
+    "answer": "Event berhadiah hanya bisa diikuti dengan tiket gratis atau SHARE. Tidak bisa dengan DIA berbayar."
+  },
+  {
+    "id": "DI-15",
+    "category": "다이아·상점",
+    "question": "Saya sudah bayar tapi DIA belum masuk",
+    "aliases": [
+      "Isi ulang DIA belum masuk"
+    ],
+    "answer": "DIA masuk setelah pembayaran dikonfirmasi dan tercatat di riwayat transaksi server. Periksa Riwayat transaksi saya di Pusat keamanan & privasi setelah beberapa saat, dan jika masih belum muncul, beri tahu kami lewat Hubungi kami di Pengaturan."
+  },
+  {
+    "id": "DI-16",
+    "category": "다이아·상점",
+    "question": "Apa itu tiket CPR rekor?",
+    "aliases": [
+      "Jelaskan efek tiket CPR"
+    ],
+    "answer": "Tiket CPR rekor adalah item yang memulihkan streak yang terputus dalam 72 jam, dan bisa dipakai maksimal dua kali sebulan dengan 12 DIA. Safe Guard adalah item yang melindungi hari yang terlewat sebelumnya."
+  },
+  {
+    "id": "DI-17",
+    "category": "다이아·상점",
+    "question": "Bisakah menghadiahkan DIA ke teman?",
+    "aliases": [
+      "Kirim DIA"
+    ],
+    "answer": "Tidak, baik DIA bonus maupun DIA berbayar tidak dapat dihadiahkan atau dipindahkan ke orang lain. Kamu hanya bisa memakainya dengan aman di akunmu sendiri."
+  },
+  {
+    "id": "DI-18",
+    "category": "다이아·상점",
+    "question": "Bisakah melihat riwayat pemakaian DIA?",
+    "aliases": [
+      "Riwayat pemakaian DIA"
+    ],
+    "answer": "Ya, kamu bisa melihat semua catatan DIA masuk dan keluar di Riwayat transaksi saya di Pusat keamanan & privasi. Catatan ini disimpan di server dan tidak dihapus."
   },
   {
     "id": "CO-01",

@@ -1029,6 +1029,96 @@
     "answer": "Deine persönlichen Daten werden gelöscht, wenn du dein Konto kündigst. Aktivitätsdaten werden innerhalb von 30 Tagen gelöscht, und nur gesetzlich aufbewahrungspflichtige Transaktionsdaten werden für die festgelegte Frist aufbewahrt. Sichtbarkeit und KI-Lerneinstellungen kannst du sofort im Sicherheits- und Datenschutzzentrum ändern."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Gehen meine Daten verloren, wenn ich das Handy wechsle?",
+    "aliases": [
+      "Gerätewechsel"
+    ],
+    "answer": "Nein, alle Aufzeichnungen und Währungen werden auf dem Server gespeichert. Melde dich auf dem neuen Handy mit demselben Konto an, dann ist alles unverändert da."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Die Zahlen unterscheiden sich je Handy",
+    "aliases": [
+      "SHARE unterscheidet sich je Gerät"
+    ],
+    "answer": "Die Werte richten sich nach den Server-Daten und sollten auf jedem Handy gleich sein. Schließe die App und öffne sie erneut."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Meine Daten sind verschwunden",
+    "aliases": [
+      "Meine Laufdaten sind weg"
+    ],
+    "answer": "Aufzeichnungen werden im dauerhaften Transaktionsprotokoll des Servers gespeichert. Prüfe zuerst, ob du dich mit demselben Konto angemeldet hast."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "Auf welche Arten kann ich mich anmelden?",
+    "aliases": [
+      "Anmeldemethoden"
+    ],
+    "answer": "Du kannst dich mit einem Google-, Apple-, Kakao- oder Naver-Konto anmelden. Gehören sie derselben Person, kannst du sie unter „Verknüpfte Anmeldungen“ in den Einstellungen zu einem Konto zusammenführen, nachdem du Spitznamen und Guthaben des Zielkontos geprüft hast."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Wie kündige ich (Konto löschen)?",
+    "aliases": [
+      "Konto löschen"
+    ],
+    "answer": "Tippe in den Einstellungen auf „Konto löschen“, um zu kündigen. Danach wird dein Anmeldekonto sofort gelöscht, und verbleibende SHARE, DIA und VALUE gehen verloren. Aktivitätsdaten wie Läufe werden innerhalb von 30 Tagen gelöscht, und nur gesetzlich aufbewahrungspflichtige Zahlungs- und Transaktionsdaten werden für die festgelegte Frist (5 Jahre) aufbewahrt. Prüfe vor der Kündigung unbedingt dein restliches DIA und deine Daten."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Darf ich zwei Konten erstellen?",
+    "aliases": [
+      "Darf ich ein Zweitkonto nutzen?"
+    ],
+    "answer": "Für faires Sammeln und faire Events ist nur ein Konto pro Person erlaubt. Auch wenn du mehrere Social-Logins nutzt, verknüpfe sie bitte unter „Verknüpfte Anmeldungen“ in den Einstellungen mit einem Konto."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Wo sehe ich meinen Einladungscode?",
+    "aliases": [
+      "Mein Einladungscode"
+    ],
+    "answer": "Ich öffne den Bildschirm für den Einladungscode. Dein Einladungscode wird getrennt von der Angeberkarte geteilt."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Wann kommt die Einladungsbelohnung an?",
+    "aliases": [
+      "Wann bekomme ich das Einladungs-SHARE?"
+    ],
+    "answer": "Die Einladungsbelohnung von 30.000 SHARE kommt nach der 7-tägigen Sperrfrist an."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Ich möchte den Schnecken-Bot ausschalten",
+    "aliases": [
+      "Schnecke ausschalten"
+    ],
+    "answer": "Du kannst den Schnecken-Bot in den Einstellungen ausschalten. Zum erneuten Einschalten nutzt du dieselbe Stelle."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Wo ist der Kundensupport?",
+    "aliases": [
+      "Wo kann ich euch kontaktieren?"
+    ],
+    "answer": "Du kannst jederzeit eine Anfrage hinterlassen: über „Kontakt“ in den Einstellungen oder über den Sanktions-Einspruch im Sicherheits- und Datenschutzzentrum. Kurze Fragen kannst du auch direkt an mich richten."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

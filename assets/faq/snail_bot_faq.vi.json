@@ -1029,6 +1029,96 @@
     "answer": "Thông tin cá nhân bị xóa khi bạn rời dịch vụ. Hồ sơ hoạt động được xóa trong vòng 30 ngày, chỉ các bản ghi giao dịch mà luật yêu cầu lưu giữ mới được giữ trong thời hạn quy định. Bạn có thể đổi ngay phạm vi hiển thị và cài đặt huấn luyện AI trong Trung tâm bảo mật & quyền riêng tư."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Đổi điện thoại thì bản ghi có mất không?",
+    "aliases": [
+      "Đổi thiết bị"
+    ],
+    "answer": "Không, mọi bản ghi và tiền tệ đều được lưu trên máy chủ. Đăng nhập cùng tài khoản trên điện thoại mới là mọi thứ hiện nguyên như cũ."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Con số khác nhau giữa các điện thoại",
+    "aliases": [
+      "SHARE khác nhau giữa các thiết bị"
+    ],
+    "answer": "Giá trị dựa theo bản ghi trên máy chủ nên phải giống nhau trên mọi điện thoại. Hãy thử đóng ứng dụng rồi mở lại."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Bản ghi của tôi biến mất",
+    "aliases": [
+      "Bản ghi chạy của tôi mất"
+    ],
+    "answer": "Bản ghi được lưu trong nhật ký giao dịch không thể xóa trên máy chủ. Trước hết hãy kiểm tra bạn đã đăng nhập đúng tài khoản chưa."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "Đăng nhập bằng cách nào?",
+    "aliases": [
+      "Cách đăng nhập"
+    ],
+    "answer": "Bạn có thể đăng nhập bằng tài khoản Google, Apple, Kakao hoặc Naver. Nếu là cùng một người, bạn có thể gộp thành một tài khoản ở mục Đăng nhập đã liên kết trong Cài đặt, sau khi kiểm tra biệt danh và số dư của tài khoản đích."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Rời dịch vụ (xóa tài khoản) thế nào?",
+    "aliases": [
+      "Xóa tài khoản"
+    ],
+    "answer": "Nhấn “Xóa tài khoản” trong Cài đặt để rời dịch vụ. Khi đó tài khoản đăng nhập bị xóa ngay và SHARE, DIA, VALUE còn lại sẽ mất. Hồ sơ hoạt động như các lần chạy được xóa trong vòng 30 ngày, chỉ các bản ghi thanh toán và giao dịch mà luật yêu cầu lưu giữ mới được giữ trong thời hạn quy định (5 năm). Trước khi rời, hãy nhớ kiểm tra DIA còn lại và các bản ghi."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Có được tạo hai tài khoản không?",
+    "aliases": [
+      "Có được dùng tài khoản phụ không?"
+    ],
+    "answer": "Để tích lũy và giải đấu công bằng, mỗi người chỉ được dùng một tài khoản. Dù dùng nhiều đăng nhập mạng xã hội, hãy liên kết chúng vào một tài khoản ở mục Đăng nhập đã liên kết trong Cài đặt."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Xem mã mời ở đâu?",
+    "aliases": [
+      "Mã mời của tôi"
+    ],
+    "answer": "Mình mở màn hình mã mời. Mã mời được chia sẻ riêng, tách khỏi thẻ khoe thành tích."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Khi nào nhận thưởng mời bạn?",
+    "aliases": [
+      "Khi nào được SHARE mời bạn?"
+    ],
+    "answer": "Phần thưởng mời bạn 30.000 SHARE về sau thời gian giữ 7 ngày."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Tôi muốn tắt bot Ốc Sên",
+    "aliases": [
+      "Tắt Ốc Sên"
+    ],
+    "answer": "Bạn có thể tắt bot Ốc Sên trong Cài đặt. Muốn bật lại, hãy dùng cùng chỗ đó."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Hỗ trợ khách hàng ở đâu?",
+    "aliases": [
+      "Liên hệ ở đâu?"
+    ],
+    "answer": "Bạn có thể để lại yêu cầu bất cứ lúc nào qua mục Liên hệ trong màn hình Cài đặt hoặc khiếu nại xử phạt trong Trung tâm bảo mật & quyền riêng tư. Với thắc mắc nhỏ, bạn cũng có thể hỏi mình trực tiếp."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

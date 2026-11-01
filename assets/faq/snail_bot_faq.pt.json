@@ -1029,6 +1029,96 @@
     "answer": "Seus dados pessoais são excluídos quando você encerra a conta. Os registros de atividade são apagados em 30 dias, e apenas os registros de transações que a lei obriga a guardar são mantidos pelo prazo definido. Você pode alterar a visibilidade e as configurações de treinamento de IA na hora na Central de segurança e privacidade."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Meus registros somem se eu trocar de celular?",
+    "aliases": [
+      "Troca de aparelho"
+    ],
+    "answer": "Não, todos os registros e moedas ficam salvos no servidor. Faça login com a mesma conta no celular novo e tudo aparece como estava."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Os números são diferentes em cada celular",
+    "aliases": [
+      "O SHARE é diferente em cada aparelho"
+    ],
+    "answer": "Os valores seguem os registros do servidor, então devem ser iguais em qualquer celular. Tente fechar o app e abri-lo de novo."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Meus registros sumiram",
+    "aliases": [
+      "Meus registros de corrida sumiram"
+    ],
+    "answer": "Os registros ficam salvos no histórico de transações permanente do servidor. Primeiro confira se você fez login com a mesma conta."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "De que formas posso fazer login?",
+    "aliases": [
+      "Métodos de login"
+    ],
+    "answer": "Você pode fazer login com uma conta Google, Apple, Kakao ou Naver. Se forem da mesma pessoa, pode uni-las em uma só conta em Logins vinculados nas Configurações, depois de conferir o apelido e o saldo da conta de destino."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Como encerrar a conta (excluir a conta)?",
+    "aliases": [
+      "Excluir conta"
+    ],
+    "answer": "Toque em “Excluir conta” nas Configurações para encerrar. Ao fazer isso, sua conta de login é excluída na hora e o SHARE, DIA e VALUE restantes são perdidos. Registros de atividade como corridas são apagados em 30 dias, e apenas os registros de pagamentos e transações que a lei obriga a guardar são mantidos pelo prazo definido (5 anos). Antes de encerrar, confira seus DIA restantes e seus registros."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Posso criar duas contas?",
+    "aliases": [
+      "Posso usar uma conta secundária?"
+    ],
+    "answer": "Para garantir ganhos e eventos justos, só é permitida uma conta por pessoa. Mesmo que use vários logins sociais, vincule-os a uma só conta em Logins vinculados, nas Configurações."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Onde vejo meu código de convite?",
+    "aliases": [
+      "Meu código de convite"
+    ],
+    "answer": "Vou abrir a tela do código de convite. Seu código de convite é compartilhado separadamente do cartão de conquista."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Quando chega a recompensa do convite?",
+    "aliases": [
+      "Quando recebo o SHARE do convite?"
+    ],
+    "answer": "A recompensa de convite de 30.000 SHARE chega depois do período de retenção de 7 dias."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Quero desligar o bot Caracol",
+    "aliases": [
+      "Desligar o caracol"
+    ],
+    "answer": "Você pode desligar o bot Caracol nas Configurações. Para ligar de novo, use o mesmo lugar."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Onde fica o atendimento ao cliente?",
+    "aliases": [
+      "Onde posso entrar em contato?"
+    ],
+    "answer": "Você pode deixar uma consulta a qualquer momento em Contato, na tela de Configurações, ou na contestação de penalidades da Central de segurança e privacidade. Para dúvidas rápidas, também pode me perguntar diretamente."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

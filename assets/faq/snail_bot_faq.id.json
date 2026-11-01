@@ -1029,6 +1029,96 @@
     "answer": "Data pribadimu dihapus saat kamu berhenti menjadi anggota. Catatan aktivitas dihapus dalam 30 hari, dan hanya catatan transaksi yang wajib disimpan menurut hukum yang disimpan selama jangka waktu yang ditetapkan. Kamu bisa langsung mengubah visibilitas dan pengaturan pelatihan AI di Pusat keamanan & privasi."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Apakah catatan hilang jika ganti ponsel?",
+    "aliases": [
+      "Ganti perangkat"
+    ],
+    "answer": "Tidak, semua catatan dan mata uang disimpan di server. Login dengan akun yang sama di ponsel baru dan semuanya tampil seperti semula."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Angkanya berbeda di tiap ponsel",
+    "aliases": [
+      "SHARE berbeda di tiap perangkat"
+    ],
+    "answer": "Nilai mengikuti catatan di server, jadi seharusnya sama di ponsel mana pun. Coba tutup aplikasi lalu buka lagi."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Catatan saya hilang",
+    "aliases": [
+      "Catatan lari saya hilang"
+    ],
+    "answer": "Catatan disimpan di riwayat transaksi permanen server. Pertama, pastikan kamu login dengan akun yang sama."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "Dengan cara apa saja saya bisa login?",
+    "aliases": [
+      "Metode login"
+    ],
+    "answer": "Kamu bisa login dengan akun Google, Apple, Kakao, atau Naver. Jika orangnya sama, kamu bisa menggabungkannya menjadi satu akun lewat Login tertaut di Pengaturan, setelah memeriksa nama panggilan dan saldo akun tujuan."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Bagaimana berhenti jadi anggota (hapus akun)?",
+    "aliases": [
+      "Hapus akun"
+    ],
+    "answer": "Ketuk “Hapus akun” di Pengaturan untuk berhenti. Setelah itu, akun loginmu langsung dihapus dan sisa SHARE, DIA, dan VALUE hilang. Catatan aktivitas seperti lari dihapus dalam 30 hari, dan hanya catatan pembayaran serta transaksi yang wajib disimpan menurut hukum yang disimpan selama jangka waktu yang ditetapkan (5 tahun). Pastikan memeriksa sisa DIA dan catatanmu sebelum berhenti."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Bolehkah membuat dua akun?",
+    "aliases": [
+      "Bolehkah memakai akun kedua?"
+    ],
+    "answer": "Demi perolehan dan event yang adil, hanya satu akun per orang yang diperbolehkan. Meski memakai beberapa login sosial, hubungkan ke satu akun di Login tertaut di Pengaturan."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Di mana melihat kode undangan?",
+    "aliases": [
+      "Kode undangan saya"
+    ],
+    "answer": "Aku akan membuka layar kode undangan. Kode undangan dibagikan terpisah dari kartu pamer."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Kapan hadiah undangan masuk?",
+    "aliases": [
+      "Kapan SHARE undangan diberikan?"
+    ],
+    "answer": "Hadiah undangan 30.000 SHARE masuk setelah masa tahan 7 hari."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Saya ingin mematikan bot Siput",
+    "aliases": [
+      "Matikan Siput"
+    ],
+    "answer": "Kamu bisa mematikan bot Siput di Pengaturan. Untuk menyalakannya lagi, gunakan tempat yang sama."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Di mana layanan pelanggan?",
+    "aliases": [
+      "Di mana saya bisa menghubungi?"
+    ],
+    "answer": "Kamu bisa meninggalkan pertanyaan kapan saja lewat Hubungi kami di layar Pengaturan atau banding sanksi di Pusat keamanan & privasi. Untuk pertanyaan singkat, kamu juga bisa langsung bertanya padaku."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

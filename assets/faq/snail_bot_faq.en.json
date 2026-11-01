@@ -1029,6 +1029,96 @@
     "answer": "Your personal data is deleted when you leave the service. Activity records are erased within 30 days, and only transaction records that must be kept by law are kept for the set period. You can change visibility and AI-learning settings right away in the Security & Privacy Center."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Will my records disappear if I change phones?",
+    "aliases": [
+      "Changing devices"
+    ],
+    "answer": "No, all records and currency are stored on the server. Log in with the same account on the new phone and everything is there as it was."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "The numbers differ between phones",
+    "aliases": [
+      "SHARE differs per device"
+    ],
+    "answer": "The values follow the server’s records, so they should be the same on any phone. Try closing the app and opening it again."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "My records disappeared",
+    "aliases": [
+      "My run records are gone"
+    ],
+    "answer": "Records are stored in the server’s permanent transaction log. First check that you logged in with the same account."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "What ways can I log in?",
+    "aliases": [
+      "Login methods"
+    ],
+    "answer": "You can log in with a Google, Apple, Kakao or Naver account. If they’re the same person, you can combine them into one account through Linked logins in Settings, after checking the nickname and balance of the target account."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "How do I leave the service (delete my account)?",
+    "aliases": [
+      "Delete account"
+    ],
+    "answer": "Tap “Delete account” in Settings to leave. Once you do, your login account is deleted right away and any remaining SHARE, DIA and VALUE are gone. Activity records such as runs are erased within 30 days, and only payment and transaction records that must be kept by law are kept for the set period (5 years). Be sure to check your remaining DIA and records before leaving."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Can I make two accounts?",
+    "aliases": [
+      "Can I use a second account?"
+    ],
+    "answer": "For fair earning and events, only one account per person is allowed. Even if you use several social logins, please link them into one account in Linked logins in Settings."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Where can I see my invite code?",
+    "aliases": [
+      "My invite code"
+    ],
+    "answer": "I’ll open the invite code screen. Your invite code is shared separately from the brag card."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "When does the invite reward arrive?",
+    "aliases": [
+      "When do I get invite SHARE?"
+    ],
+    "answer": "The 30,000 SHARE invite reward arrives after the 7-day hold period."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "I want to turn off the Snail bot",
+    "aliases": [
+      "Turn off Snail"
+    ],
+    "answer": "You can turn off the Snail bot in Settings. To turn it back on, use the same place."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Where is customer support?",
+    "aliases": [
+      "Where do I contact you?"
+    ],
+    "answer": "You can leave an inquiry anytime from Contact on the Settings screen or from the sanction appeal in the Security & Privacy Center. For quick questions, you can also just ask me directly."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

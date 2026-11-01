@@ -1029,6 +1029,96 @@
     "answer": "Tus datos personales se eliminan cuando te das de baja. Los registros de actividad se borran en 30 días, y solo se conservan durante el plazo establecido los registros de transacciones que la ley obliga a guardar. Puedes cambiar la visibilidad y los ajustes de entrenamiento de IA al instante en el Centro de seguridad y privacidad."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "¿Se pierden mis registros si cambio de teléfono?",
+    "aliases": [
+      "Cambio de dispositivo"
+    ],
+    "answer": "No, todos los registros y monedas se guardan en el servidor. Inicia sesión con la misma cuenta en el teléfono nuevo y todo aparecerá igual."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Los números son distintos en cada teléfono",
+    "aliases": [
+      "El SHARE es distinto en cada dispositivo"
+    ],
+    "answer": "Los valores se basan en los registros del servidor, así que deberían ser iguales en cualquier teléfono. Prueba a cerrar la app y volver a abrirla."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Mis registros desaparecieron",
+    "aliases": [
+      "Mis registros de carrera desaparecieron"
+    ],
+    "answer": "Los registros se guardan en el historial de transacciones permanente del servidor. Primero comprueba que hayas iniciado sesión con la misma cuenta."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "¿De qué formas puedo iniciar sesión?",
+    "aliases": [
+      "Métodos de inicio de sesión"
+    ],
+    "answer": "Puedes iniciar sesión con una cuenta de Google, Apple, Kakao o Naver. Si son de la misma persona, puedes unirlas en una sola cuenta desde Inicios de sesión vinculados en Ajustes, tras comprobar el apodo y el saldo de la cuenta de destino."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "¿Cómo me doy de baja (eliminar la cuenta)?",
+    "aliases": [
+      "Eliminar cuenta"
+    ],
+    "answer": "Toca «Eliminar cuenta» en Ajustes para darte de baja. Al hacerlo, tu cuenta de inicio de sesión se elimina de inmediato y el SHARE, DIA y VALUE restantes se pierden. Los registros de actividad como las carreras se borran en 30 días, y solo se conservan durante el plazo establecido (5 años) los registros de pagos y transacciones que la ley obliga a guardar. Antes de darte de baja, revisa tus DIA restantes y tus registros."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "¿Puedo crear dos cuentas?",
+    "aliases": [
+      "¿Puedo usar una cuenta secundaria?"
+    ],
+    "answer": "Para garantizar ganancias y eventos justos, solo se permite una cuenta por persona. Aunque uses varios inicios de sesión sociales, vincúlalos a una sola cuenta en Inicios de sesión vinculados, en Ajustes."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "¿Dónde veo mi código de invitación?",
+    "aliases": [
+      "Mi código de invitación"
+    ],
+    "answer": "Te abro la pantalla del código de invitación. Tu código de invitación se comparte por separado de la tarjeta de logro."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "¿Cuándo llega la recompensa de invitación?",
+    "aliases": [
+      "¿Cuándo me dan el SHARE de invitación?"
+    ],
+    "answer": "La recompensa de invitación de 30.000 SHARE llega después del periodo de retención de 7 días."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Quiero apagar el bot Caracol",
+    "aliases": [
+      "Apagar al caracol"
+    ],
+    "answer": "Puedes apagar el bot Caracol en Ajustes. Para volver a encenderlo, usa el mismo lugar."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "¿Dónde está el servicio de atención al cliente?",
+    "aliases": [
+      "¿Dónde puedo contactaros?"
+    ],
+    "answer": "Puedes dejar una consulta en cualquier momento desde Contacto en la pantalla de Ajustes o desde la apelación de sanciones en el Centro de seguridad y privacidad. Para dudas rápidas, también puedes preguntarme directamente."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

@@ -1029,6 +1029,96 @@
     "answer": "Tes données personnelles sont supprimées quand tu quittes le service. Les données d’activité sont effacées sous 30 jours, et seuls les enregistrements de transactions que la loi oblige à conserver sont gardés pendant la durée prévue. Tu peux changer la visibilité et les réglages d’apprentissage de l’IA tout de suite dans le Centre de sécurité et de confidentialité."
   },
   {
+    "id": "AC-01",
+    "category": "계정·기기",
+    "question": "Mes données disparaissent-elles si je change de téléphone ?",
+    "aliases": [
+      "Changement d’appareil"
+    ],
+    "answer": "Non, tous les enregistrements et monnaies sont stockés sur le serveur. Connecte-toi avec le même compte sur le nouveau téléphone et tout apparaît tel quel."
+  },
+  {
+    "id": "AC-02",
+    "category": "계정·기기",
+    "question": "Les chiffres diffèrent d’un téléphone à l’autre",
+    "aliases": [
+      "Les SHARE diffèrent selon l’appareil"
+    ],
+    "answer": "Les valeurs suivent les enregistrements du serveur, elles devraient donc être identiques sur n’importe quel téléphone. Essaie de fermer l’appli puis de la rouvrir."
+  },
+  {
+    "id": "AC-03",
+    "category": "계정·기기",
+    "question": "Mes enregistrements ont disparu",
+    "aliases": [
+      "Mes courses ont disparu"
+    ],
+    "answer": "Les enregistrements sont stockés dans l’historique de transactions permanent du serveur. Vérifie d’abord que tu t’es connecté avec le même compte."
+  },
+  {
+    "id": "AC-04",
+    "category": "계정·기기",
+    "question": "De quelles façons puis-je me connecter ?",
+    "aliases": [
+      "Méthodes de connexion"
+    ],
+    "answer": "Tu peux te connecter avec un compte Google, Apple, Kakao ou Naver. S’ils appartiennent à la même personne, tu peux les regrouper en un seul compte via Connexions liées dans les réglages, après avoir vérifié le pseudo et le solde du compte cible."
+  },
+  {
+    "id": "AC-05",
+    "category": "계정·기기",
+    "question": "Comment quitter le service (supprimer le compte) ?",
+    "aliases": [
+      "Supprimer le compte"
+    ],
+    "answer": "Touche « Supprimer le compte » dans les réglages pour quitter. Ton compte de connexion est alors supprimé immédiatement et les SHARE, DIA et VALUE restants sont perdus. Les données d’activité comme les courses sont effacées sous 30 jours, et seuls les enregistrements de paiements et de transactions que la loi oblige à conserver sont gardés pendant la durée prévue (5 ans). Avant de partir, vérifie bien tes DIA restants et tes données."
+  },
+  {
+    "id": "AC-06",
+    "category": "계정·기기",
+    "question": "Puis-je créer deux comptes ?",
+    "aliases": [
+      "Puis-je utiliser un compte secondaire ?"
+    ],
+    "answer": "Pour des gains et des événements équitables, un seul compte par personne est autorisé. Même si tu utilises plusieurs connexions sociales, relie-les à un seul compte dans Connexions liées, dans les réglages."
+  },
+  {
+    "id": "AC-07",
+    "category": "계정·기기",
+    "question": "Où voir mon code d’invitation ?",
+    "aliases": [
+      "Mon code d’invitation"
+    ],
+    "answer": "J’ouvre l’écran du code d’invitation. Ton code d’invitation se partage séparément de la carte de fierté."
+  },
+  {
+    "id": "AC-08",
+    "category": "계정·기기",
+    "question": "Quand la récompense de parrainage arrive-t-elle ?",
+    "aliases": [
+      "Quand reçoit-on les SHARE de parrainage ?"
+    ],
+    "answer": "La récompense de parrainage de 30 000 SHARE arrive après la période de blocage de 7 jours."
+  },
+  {
+    "id": "AC-09",
+    "category": "계정·기기",
+    "question": "Je veux désactiver le bot Escargot",
+    "aliases": [
+      "Désactiver Escargot"
+    ],
+    "answer": "Tu peux désactiver le bot Escargot dans les réglages. Pour le réactiver, utilise le même endroit."
+  },
+  {
+    "id": "AC-10",
+    "category": "계정·기기",
+    "question": "Où se trouve le service client ?",
+    "aliases": [
+      "Où puis-je vous contacter ?"
+    ],
+    "answer": "Tu peux laisser une demande à tout moment via Contact dans les réglages ou via la contestation de sanction dans le Centre de sécurité et de confidentialité. Pour une petite question, tu peux aussi me la poser directement."
+  },
+  {
     "id": "SYS-FALLBACK",
     "category": "시스템",
     "question": "",

@@ -387,6 +387,17 @@ After deploy:
 4. Configure the PG provider to call `POST https://<service-url>/payments/webhook`
 5. Store the same HMAC secret on both PG and Cloud Run
 6. Schedule `POST /ops/users/purge-deleted` daily via Cloud Scheduler (same ops secret header)
+7. Schedule `POST /ops/referral-reviews/release-due` daily via Cloud Scheduler (same ops secret header).
+   It pays referral SHARE held for copy review once its seven days are up. Without this job the
+   held rewards are never paid unless an admin pays them from the admin page ("추천 보류").
+   Example (replace the placeholders):
+   ```
+   gcloud scheduler jobs create http release-referral-reviews `
+     --project <gcp-project-id> --location asia-northeast3 `
+     --schedule "0 4 * * *" --time-zone "Asia/Seoul" `
+     --uri "https://<service-url>/ops/referral-reviews/release-due" `
+     --http-method POST --headers "X-Ops-Admin-Secret=<OPS_ADMIN_SECRET>"
+   ```
 
 Use Cloud Monitoring or an external uptime checker against `/health` (liveness) and
 `/health/ready` (readiness). Local script:

@@ -136,3 +136,32 @@ class UserDetailResult(BaseModel):
     rewardBlockReason: str | None
     rewardBlockedAt: str | None
     crew: UserDetailCrew | None
+
+
+class ReferralReviewRow(BaseModel):
+    id: str
+    status: str
+    reason: str | None
+    detail: str | None
+    amount: int
+    payeeUid: str | None
+    refereeUid: str | None
+    payoutType: str | None
+    releaseAt: str | None
+    createdAt: str | None
+    reviewedBy: str | None
+    reviewNote: str | None
+
+
+class ReferralReviewListResult(BaseModel):
+    reviews: list[ReferralReviewRow]
+
+
+class ReferralReviewDecisionRequest(BaseModel):
+    decision: Literal["reject", "release", "reopen"]
+    note: str = Field(default="", max_length=300)
+
+
+class ReferralReviewDecisionResult(BaseModel):
+    id: str
+    status: str

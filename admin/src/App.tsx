@@ -8,6 +8,7 @@ import AbuseAudit from './components/dashboard/AbuseAudit';
 import FinanceManagement from './components/dashboard/FinanceManagement';
 import SponsorApproval from './components/dashboard/SponsorApproval';
 import Referrals from './components/dashboard/Referrals';
+import ReferralReviews from './components/dashboard/ReferralReviews';
 import DailySteps from './components/dashboard/DailySteps';
 import WalletAnomalies from './components/dashboard/WalletAnomalies';
 import Runs from './components/dashboard/Runs';
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="/finance" element={<FinanceManagement />} />
               <Route path="/sponsor" element={<SponsorApproval />} />
               <Route path="/referrals" element={<Referrals />} />
+              <Route path="/referral-reviews" element={<ReferralReviews />} />
               <Route path="/steps" element={<DailySteps />} />
               <Route path="/wallet-anomalies" element={<WalletAnomalies />} />
               <Route path="/runs" element={<Runs />} />

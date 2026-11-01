@@ -18,6 +18,7 @@ export default function Sidebar() {
         <NavLink to="/abuse" className={navClass}>Jena 어뷰징 심사</NavLink>
         <NavLink to="/finance" className={navClass}>재무/환불 관리</NavLink>
         <NavLink to="/referrals" className={navClass}>추천인</NavLink>
+        <NavLink to="/referral-reviews" className={navClass}>추천 보류</NavLink>
         <NavLink to="/steps" className={navClass}>일별 걸음</NavLink>
         <NavLink to="/wallet-anomalies" className={navClass}>지갑 이상</NavLink>
         <NavLink to="/runs" className={navClass}>런 검증</NavLink>

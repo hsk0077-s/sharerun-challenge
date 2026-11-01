@@ -6,6 +6,9 @@ from app.models.admin_api import (
     AuditPingResult,
     DailyStepsResult,
     ReferralListResult,
+    ReferralReviewDecisionRequest,
+    ReferralReviewDecisionResult,
+    ReferralReviewListResult,
     ReportStatusRequest,
     UserDetailResult,
     WalletAnomalyListResult,
@@ -16,6 +19,7 @@ from app.services import appeals, reports
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
 from app.services.admin_daily_steps_service import admin_daily_steps_service
+from app.services.admin_referral_review_service import admin_referral_review_service
 from app.services.admin_referral_service import admin_referral_service
 from app.services.admin_user_detail_service import admin_user_detail_service
 from app.services.admin_wallet_anomaly_service import admin_wallet_anomaly_service
@@ -211,3 +215,41 @@ def set_report_status(
         reason=f"{report_id}: {body.note[:120]}",
     )
     return {"id": report_id, "status": outcome["status"]}
+
+
+@router.get("/referral-reviews", response_model=ReferralReviewListResult)
+def list_referral_reviews(
+    status: str = "pending",
+    limit: int = Query(default=100, ge=1, le=200),
+    _actor: dict = Depends(require_admin_user),
+) -> ReferralReviewListResult:
+    """Referral SHARE held for review, soonest release first."""
+    return admin_referral_review_service.list_reviews(review_status=status, limit=limit)
+
+
+@router.post(
+    "/referral-reviews/{review_id}/decision",
+    response_model=ReferralReviewDecisionResult,
+)
+def decide_referral_review(
+    review_id: str,
+    body: ReferralReviewDecisionRequest,
+    actor: dict = Depends(require_admin_user),
+) -> ReferralReviewDecisionResult:
+    """Reject (keep the hold), reopen a rejection, or pay now. Every call is audited."""
+    result = admin_referral_review_service.decide(
+        review_id,
+        body.decision,
+        actor_uid=str(actor["uid"]),
+        note=body.note,
+    )
+    admin_audit_service.write(
+        uid=str(actor["uid"]),
+        email=_actor_email(actor),
+        action=f"referral_review_{body.decision}",
+        target_uid=None,
+        before=None,
+        after={"status": result.status},
+        reason=f"{review_id}: {body.note[:120]}",
+    )
+    return result

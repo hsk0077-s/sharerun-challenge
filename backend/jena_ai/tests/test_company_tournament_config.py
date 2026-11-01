@@ -318,6 +318,11 @@ def test_read_route_returns_merged_config() -> None:
     assert body["viewer"]["freeEntryLabelKo"] == "첫 2회 무료"
     assert body["viewer"]["prizeIneligibleReason"] == "account_too_new"
     assert "일주일에 1번" in body["viewer"]["weeklyLimitLabelKo"]
+    # 앱이 사용자 언어 문장을 만들 숫자들.
+    assert body["viewer"]["beginnerFreeEntryCount"] == 2
+    assert isinstance(body["viewer"]["prizeClaimMinAccountAgeDays"], int)
+    assert isinstance(body["viewer"]["prizeClaimMinVerifiedRuns"], int)
+    assert isinstance(body["viewer"]["prizeClaimVerifiedRunWindowDays"], int)
     assert body["viewer"]["tierTickets"] == []
     assert body["finalFrequency"] == "season"
     assert body["finalCountsTowardMonthlyCap"] is False

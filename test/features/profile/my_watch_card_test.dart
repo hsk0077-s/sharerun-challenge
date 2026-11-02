@@ -51,7 +51,7 @@ void main() {
     await _pump(tester, watchType: WatchType.galaxyWatch);
     expect(find.text('내 워치'), findsOneWidget);
     expect(find.text('스마트워치 연결됨'), findsOneWidget);
-    expect(find.text('걸음·심박을 휴대폰으로 받아요'), findsOneWidget);
+    expect(find.text('걸음을 휴대폰으로 받아요'), findsOneWidget);
     expect(find.text('관리'), findsOneWidget);
     expect(find.textContaining('없음'), findsNothing);
   });

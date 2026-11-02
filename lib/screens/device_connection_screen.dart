@@ -301,7 +301,6 @@ class _DeviceConnectionScreenState
       final health = Health();
       await health.configure();
       const types = <HealthDataType>[
-        HealthDataType.HEART_RATE,
         HealthDataType.STEPS,
       ];
       final permissions = List<HealthDataAccess>.filled(

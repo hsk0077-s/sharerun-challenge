@@ -6,7 +6,7 @@
 - 광고, 분석(Analytics), 크래시 수집 SDK: **없음** (`pubspec.yaml`에 없음). 광고 ID 권한 없음.
 - 로그인: 구글, 카카오, 네이버(애플은 미구현). 서버: Firebase(서울 리전), Cloud Run.
 - 위치: 정밀·대략 위치, **백그라운드 위치 권한은 없음**(포그라운드 서비스 `health|location`으로 기록).
-- 건강: Health Connect에서 **걸음 수와 심박수만 읽음**, 쓰기 없음, 백그라운드 읽기 권한 제거됨.
+- 건강: Health Connect에서 **걸음 수만 읽음**(심박수는 Health Connect에서 읽지 않음, 블루투스 심박 센서로만 받음), 쓰기 없음, 백그라운드 읽기 권한 제거됨.
 - 마이크(달팽이봇 말하기), 카메라(완주 카드 사진), 알림(FCM).
 - `in_app_purchase` 패키지가 들어 있어 결제 권한이 병합될 수 있다. 1.0은 결제 비활성.
 
@@ -45,7 +45,7 @@
 | `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` | 러닝 경로·거리 기록과 검증, 지도 | |
 | `FOREGROUND_SERVICE_LOCATION`, `FOREGROUND_SERVICE_HEALTH` | 화면을 꺼도 달리기 기록이 끊기지 않게 | Play가 **포그라운드 서비스 사용 설명과 시연 영상**을 요구한다. 달리기 시작 → 화면 끔 → 알림에 "기록 중" 표시 → 종료 흐름을 영상으로 |
 | `ACTIVITY_RECOGNITION` | 만보기(걸음 수) | |
-| Health Connect `READ_STEPS`, `READ_HEART_RATE` | 걸음 수, 달리기 중 심박 표시와 검증 | 개인정보처리방침에 Health Connect Limited Use 문구가 이미 있음 |
+| Health Connect `READ_STEPS` | 걸음 수(케이던스·보폭 검증) | 개인정보처리방침에 Health Connect Limited Use 문구가 이미 있음 |
 | `RECORD_AUDIO` | 달팽이봇 말하기 | 누를 때만 사용 |
 | `CAMERA` | 완주 카드 배경 사진 | 선택 |
 | `BLUETOOTH_CONNECT` 등 | 심박 센서·워치 연결 | |

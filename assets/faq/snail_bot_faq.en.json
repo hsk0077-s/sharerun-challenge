@@ -502,7 +502,7 @@
     "aliases": [
       "Do I need a smartwatch to enter?"
     ],
-    "answer": "Beginner and Intermediate events can be joined without a watch. Advanced, Half and the Final need heart-rate records, so you need a watch."
+    "answer": "Beginner and Intermediate events can be joined without a heart-rate sensor. Advanced, Half and the Final need heart-rate records, so you need to connect a Bluetooth heart-rate sensor (BLE) directly."
   },
   {
     "id": "CO-13",
@@ -1170,7 +1170,7 @@
     "aliases": [
       "Do I really need a watch?"
     ],
-    "answer": "Yes. Without a watch, we check using your stride and GPS speed. A watch is needed only for Advanced, Half and Final events."
+    "answer": "Yes. Without a heart-rate sensor, we check using your stride and GPS speed. A Bluetooth heart-rate sensor is needed only for Advanced, Half and Final events."
   },
   {
     "id": "RU-07",

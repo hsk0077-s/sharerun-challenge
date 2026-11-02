@@ -28,8 +28,9 @@ class HealthDataService {
   final Health _health;
   final BleHeartRateService? _bleHeartRateService;
 
+  /// Health Connect에서는 걸음 수만 읽는다(1.0). 심박수는 Health Connect로 읽지 않고,
+  /// BLE 심박 센서(0x180D) 직접 연결로만 받는다.
   static const List<HealthDataType> watchLinkTypes = [
-    HealthDataType.HEART_RATE,
     HealthDataType.STEPS,
   ];
 
@@ -65,12 +66,6 @@ class HealthDataService {
 
       if (!authorized) {
         return const HealthAuthorizationResult(granted: false);
-      }
-
-      if (Platform.isAndroid) {
-        try {
-          await _health.requestHealthDataHistoryAuthorization();
-        } catch (_) {}
       }
 
       return const HealthAuthorizationResult(granted: true);
@@ -113,8 +108,8 @@ class HealthDataService {
     return (opened: opened, failed: !opened);
   }
 
-  /// Counts heart-rate / step samples from the last [window] so the UI can tell
-  /// "permission granted" apart from "band is not writing to Health Connect".
+  /// Counts step samples from the last [window] so the UI can tell
+  /// "permission granted" apart from "the watch is not writing to Health Connect".
   /// Returns null when the read itself fails.
   Future<HealthRecentSamples?> readRecentSampleCounts({
     Duration window = const Duration(hours: 24),
@@ -126,48 +121,20 @@ class HealthDataService {
         startTime: now.subtract(window),
         endTime: now,
       );
-      var heartRate = 0;
       var steps = 0;
       for (final point in points) {
-        if (point.type == HealthDataType.HEART_RATE) heartRate++;
         if (point.type == HealthDataType.STEPS) steps++;
       }
-      return HealthRecentSamples(heartRateCount: heartRate, stepsCount: steps);
+      return HealthRecentSamples(stepsCount: steps);
     } catch (_) {
       return null;
     }
   }
 
-  /// Latest BPM from direct BLE HR sensor (`0x180D`) when connected,
-  /// falling back to Health Connect / HealthKit (last ~2 minutes).
+  /// Latest BPM from the direct BLE HR sensor (`0x180D`). Null when no sensor is
+  /// connected: heart rate is not read from Health Connect.
   Future<int?> readLatestHeartRate() async {
-    final bleBpm = _bleHeartRateService?.recentValidBpm();
-    if (bleBpm != null) {
-      return bleBpm;
-    }
-
-    final now = DateTime.now();
-    try {
-      final points = await _health.getHealthDataFromTypes(
-        types: const [HealthDataType.HEART_RATE],
-        startTime: now.subtract(const Duration(minutes: 2)),
-        endTime: now,
-      );
-
-      int? latest;
-      for (final point in points) {
-        if (point.type != HealthDataType.HEART_RATE) {
-          continue;
-        }
-        final value = _numValue(point.value)?.round();
-        if (value != null && value > 0) {
-          latest = value;
-        }
-      }
-      return latest;
-    } catch (_) {
-      return null;
-    }
+    return _bleHeartRateService?.recentValidBpm();
   }
 
   Future<HealthRunSamples> readRunSamples({
@@ -192,13 +159,6 @@ class HealthDataService {
       );
 
       for (final point in points) {
-        if (point.type == HealthDataType.HEART_RATE && bleSamples.isEmpty) {
-          final value = _numValue(point.value)?.round();
-          if (value != null && value > 0) {
-            heartRates.add(value);
-          }
-        }
-
         if (point.type == HealthDataType.STEPS) {
           final value = _numValue(point.value)?.round();
           if (value != null && value > 0) {
@@ -232,15 +192,11 @@ class HealthDataService {
 }
 
 class HealthRecentSamples {
-  const HealthRecentSamples({
-    required this.heartRateCount,
-    required this.stepsCount,
-  });
+  const HealthRecentSamples({required this.stepsCount});
 
-  final int heartRateCount;
   final int stepsCount;
 
-  bool get isEmpty => heartRateCount == 0 && stepsCount == 0;
+  bool get isEmpty => stepsCount == 0;
 }
 
 class HealthRunSamples {

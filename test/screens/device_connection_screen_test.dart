@@ -50,7 +50,7 @@ class _FakeRepo implements UserRepository {
 class _FakeHealth extends HealthDataService {
   _FakeHealth({
     this.result = const HealthAuthorizationResult(granted: true),
-    this.samples = const HealthRecentSamples(heartRateCount: 3, stepsCount: 2),
+    this.samples = const HealthRecentSamples(stepsCount: 2),
   });
 
   final HealthAuthorizationResult result;
@@ -313,7 +313,7 @@ void main() {
     await _pump(
       tester,
       health: _FakeHealth(
-        samples: const HealthRecentSamples(heartRateCount: 0, stepsCount: 0),
+        samples: const HealthRecentSamples(stepsCount: 0),
       ),
       repo: repo,
     );

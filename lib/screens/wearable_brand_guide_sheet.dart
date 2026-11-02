@@ -57,8 +57,8 @@ const wearableBrands = <WearableBrand>[
     ],
     steps: [
       'Mi Fitness 앱에서 밴드/워치를 페어링하고 한 번 동기화해 주세요. (구형 Zepp Life는 [프로필 → 타사 데이터 → Zepp Life]로 이전 가능)',
-      'Mi Fitness 하단 [프로필(Profile)] → [타사 데이터(Third-party data)] (또는 [설정 → 타사 데이터 / 연결된 앱]) → [Health Connect(헬스 커넥트)]에서 걸음 수·심박수 쓰기를 허용해 주세요.',
-      '아래 버튼으로 쉐어런의 Health Connect 읽기 권한을 허용하거나, 기기 [심박수 공유(Share HR)]를 켜고 실시간 BLE 심박 센서로 직접 연결해 주세요.',
+      'Mi Fitness 하단 [프로필(Profile)] → [타사 데이터(Third-party data)] (또는 [설정 → 타사 데이터 / 연결된 앱]) → [Health Connect(헬스 커넥트)]에서 걸음 수 쓰기를 허용해 주세요.',
+      '아래 버튼으로 쉐어런의 Health Connect 읽기 권한(걸음 수)을 허용해 주세요. 심박수는 기기 [심박수 공유(Share HR)]를 켜고 실시간 BLE 심박 센서로 직접 연결해 주세요.',
     ],
     note: 'iOS는 Mi Fitness [프로필 → 타사 데이터 → 건강(Apple Health)]을 켜 주세요.',
   ),
@@ -69,8 +69,8 @@ const wearableBrands = <WearableBrand>[
     keywords: ['어메이즈핏', 'amazfit', 'zepp', '제프', '지프', 't-rex', 'balance', 'bip'],
     steps: [
       'Zepp 앱에서 어메이즈핏 워치/밴드를 페어링하고 동기화해 주세요.',
-      'Zepp 하단 [프로필(Profile)] → [타사 계정 연결(Third-party account linking / Add accounts)] → [Health Connect(헬스 커넥트)]를 켜고 걸음 수·심박수 쓰기를 허용해 주세요.',
-      '아래 버튼으로 쉐어런의 Health Connect 읽기 권한을 허용하거나, 워치 [심박수 공유(Heart Rate Push)]를 켜고 BLE 심박 센서로 직접 연결해 주세요.',
+      'Zepp 하단 [프로필(Profile)] → [타사 계정 연결(Third-party account linking / Add accounts)] → [Health Connect(헬스 커넥트)]를 켜고 걸음 수 쓰기를 허용해 주세요.',
+      '아래 버튼으로 쉐어런의 Health Connect 읽기 권한(걸음 수)을 허용해 주세요. 심박수는 워치 [심박수 공유(Heart Rate Push)]를 켜고 BLE 심박 센서로 직접 연결해 주세요.',
     ],
     note: 'iOS는 Zepp [프로필 → 타사 계정 연결 → Apple 건강(Health)]을 켜 주세요.',
   ),
@@ -81,8 +81,8 @@ const wearableBrands = <WearableBrand>[
     keywords: ['가민', 'garmin', 'garmin connect', '포러너', 'forerunner', 'fenix', 'epix', 'venu'],
     steps: [
       'Garmin Connect 앱에서 가민 워치를 동기화해 주세요.',
-      'Garmin Connect 하단 [더보기(More ···)] → [설정(Settings)] → [연결된 앱(Connected Apps)] → [헬스 커넥트(Health Connect)]에서 심박수·걸음 수 쓰기 권한을 허용해 주세요.',
-      '아래 버튼으로 쉐어런의 Health Connect 읽기 권한을 허용하거나, 워치 [UP 길게 → 건강 및 웰니스/센서 → 손목 심박수 → 심박수 전송(Broadcast HR)]을 켜고 BLE로 직접 연결해 주세요.',
+      'Garmin Connect 하단 [더보기(More ···)] → [설정(Settings)] → [연결된 앱(Connected Apps)] → [헬스 커넥트(Health Connect)]에서 걸음 수 쓰기 권한을 허용해 주세요.',
+      '아래 버튼으로 쉐어런의 Health Connect 읽기 권한(걸음 수)을 허용해 주세요. 심박수는 워치 [UP 길게 → 건강 및 웰니스/센서 → 손목 심박수 → 심박수 전송(Broadcast HR)]을 켜고 BLE로 직접 연결해 주세요.',
     ],
     note: 'Garmin → Health Connect는 단방향(가민에서 내보내기) 공식 지원입니다.',
   ),
@@ -104,7 +104,7 @@ const wearableBrands = <WearableBrand>[
     keywords: ['삼성', '갤럭시', 'galaxy', 'samsung', 'samsung health', '갤워치', '워치'],
     steps: [
       'Samsung Health 앱에서 갤럭시 워치를 연결하고 한 번 동기화해 주세요.',
-      'Samsung Health 우측 상단 [더보기(⋮)] → [설정(Settings)] → [헬스 커넥트(Health Connect)] → [앱 권한(App permissions)]에서 걸음 수·심박수 공유를 켜 주세요.',
+      'Samsung Health 우측 상단 [더보기(⋮)] → [설정(Settings)] → [헬스 커넥트(Health Connect)] → [앱 권한(App permissions)]에서 걸음 수 공유를 켜 주세요.',
       '아래 버튼으로 쉐어런의 Health Connect 읽기 권한을 허용해 주세요. (갤럭시 워치 단독 앱은 6자리 연결 코드로도 바로 연동됩니다.)',
     ],
   ),

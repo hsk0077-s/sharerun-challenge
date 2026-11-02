@@ -502,7 +502,7 @@
     "aliases": [
       "Brauche ich eine Smartwatch zur Teilnahme?"
     ],
-    "answer": "An Anfänger- und Mittel-Events kannst du ohne Uhr teilnehmen. Fortgeschritten, Halb und das Finale brauchen Herzfrequenzdaten, daher ist eine Uhr nötig."
+    "answer": "An Anfänger- und Mittel-Events kannst du ohne Herzfrequenzsensor teilnehmen. Fortgeschritten, Halb und das Finale brauchen Herzfrequenzdaten, daher musst du einen Bluetooth-Herzfrequenzsensor (BLE) direkt verbinden."
   },
   {
     "id": "CO-13",
@@ -1170,7 +1170,7 @@
     "aliases": [
       "Brauche ich unbedingt eine Uhr?"
     ],
-    "answer": "Ja. Ohne Uhr prüfen wir anhand deiner Schrittlänge und der GPS-Geschwindigkeit. Eine Uhr brauchst du nur für Fortgeschritten-, Halb- und Final-Events."
+    "answer": "Ja. Ohne Herzfrequenzsensor prüfen wir anhand deiner Schrittlänge und der GPS-Geschwindigkeit. Einen Bluetooth-Herzfrequenzsensor brauchst du nur für Fortgeschritten-, Halb- und Final-Events."
   },
   {
     "id": "RU-07",

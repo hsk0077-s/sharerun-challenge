@@ -83,7 +83,7 @@ class HealthDataConsentCard extends StatelessWidget {
             value: value,
             onChanged: enabled ? (checked) => onChanged(checked ?? false) : null,
             title: Text(LegalConstants.healthDataConsentLabel),
-            subtitle: Text(RemainingSurface.trNow('legal.health_data_consent.body', '체크해야 워치 연동·심박 검증이 활성화됩니다.')),
+            subtitle: Text(RemainingSurface.trNow('legal.health_data_consent.body', '체크해야 건강 데이터 연동(걸음 수)·심박 센서 검증이 활성화됩니다.')),
             controlAffinity: ListTileControlAffinity.leading,
           ),
         ],

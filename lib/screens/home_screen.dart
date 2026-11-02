@@ -98,12 +98,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   static const _healthTypes = [
-    HealthDataType.HEART_RATE,
     HealthDataType.STEPS,
   ];
 
   static const _healthPermissions = [
-    HealthDataAccess.READ,
     HealthDataAccess.READ,
   ];
 
@@ -222,11 +220,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       await health.configure();
                       final granted = await health.requestAuthorization(
                         [
-                          HealthDataType.HEART_RATE,
                           HealthDataType.STEPS,
                         ],
                         permissions: [
-                          HealthDataAccess.READ,
                           HealthDataAccess.READ,
                         ],
                       );

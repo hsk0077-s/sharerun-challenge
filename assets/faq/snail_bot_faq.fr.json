@@ -502,7 +502,7 @@
     "aliases": [
       "Faut-il une montre connectée pour participer ?"
     ],
-    "answer": "Les événements Débutant et Intermédiaire se font sans montre. Avancé, Demi et la Finale exigent un enregistrement de la fréquence cardiaque, donc une montre est nécessaire."
+    "answer": "Les événements Débutant et Intermédiaire se font sans capteur de fréquence cardiaque. Avancé, Demi et la Finale exigent un enregistrement de la fréquence cardiaque, donc il faut connecter directement un capteur Bluetooth (BLE)."
   },
   {
     "id": "CO-13",
@@ -1170,7 +1170,7 @@
     "aliases": [
       "Une montre est-elle indispensable ?"
     ],
-    "answer": "Oui. Sans montre, nous vérifions avec ta foulée et la vitesse GPS. Une montre n’est nécessaire que pour les événements Avancé, Demi et Finale."
+    "answer": "Oui. Sans capteur de fréquence cardiaque, nous vérifions avec ta foulée et la vitesse GPS. Un capteur Bluetooth n’est nécessaire que pour les événements Avancé, Demi et Finale."
   },
   {
     "id": "RU-07",

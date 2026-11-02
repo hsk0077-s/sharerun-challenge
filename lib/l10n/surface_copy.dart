@@ -66,8 +66,8 @@ class FairEarningCopy {
         FairBlock('검증 기준', [
           '달리기 거리는 대회 거리 이상이어야 하고, 최소 1km예요.',
           '러닝 케이던스는 분당 120~210보 범위여야 해요.',
-          '워치가 없으면 보폭과 GPS 속도로 확인해요.',
-          '심박은 상급·하프·파이널 대회에서만 필수예요.',
+          '심박 센서가 없으면 보폭과 GPS 속도로 확인해요.',
+          '블루투스 심박 센서는 상급·하프·파이널 대회에서만 필수예요.',
         ]),
         FairBlock('하루 한도', [
           '걷기: 100보마다 10 SHARE, 하루 최대 600 SHARE예요.',
@@ -118,8 +118,8 @@ class FairEarningCopy {
         FairBlock('What gets verified', [
           'The distance has to meet the race distance, and at least 1 km.',
           'Running cadence has to stay between 120 and 210 steps per minute.',
-          'Without a watch, stride and GPS speed are checked.',
-          'Heart rate is required only for advanced, half, and final races.',
+          'Without a heart-rate sensor, stride and GPS speed are checked.',
+          'A Bluetooth heart-rate sensor is required only for advanced, half, and final races.',
         ]),
         FairBlock('Daily caps', [
           'Walking: 10 SHARE per 100 steps, up to 600 SHARE a day.',
@@ -164,8 +164,8 @@ class FairEarningCopy {
         FairBlock('検証の基準', [
           '距離は大会の距離以上で、最低1kmです。',
           'ランニングのケイデンスは毎分120〜210歩です。',
-          'ウォッチがないときは歩幅とGPS速度で確認します。',
-          '心拍が必須なのは上級・ハーフ・ファイナルだけです。',
+          '心拍センサーがないときは歩幅とGPS速度で確認します。',
+          'Bluetooth心拍センサーが必須なのは上級・ハーフ・ファイナルだけです。',
         ]),
         FairBlock('1日の上限', [
           '歩き: 100歩ごとに10 SHARE、1日最大600 SHAREです。',
@@ -210,8 +210,8 @@ class FairEarningCopy {
         FairBlock('驗證標準', [
           '距離要達到賽事距離，而且至少 1 公里。',
           '跑步步頻要在每分鐘 120～210 步。',
-          '沒有手錶時，用步幅和 GPS 速度確認。',
-          '心率只在進階、半程和決賽必填。',
+          '沒有心率感測器時，用步幅和 GPS 速度確認。',
+          '藍牙心率感測器只在進階、半程和決賽必備。',
         ]),
         FairBlock('每日上限', [
           '走路：每 100 步 10 SHARE，每天最多 600 SHARE。',
@@ -257,8 +257,8 @@ class FairEarningCopy {
         FairBlock('Qué se verifica', [
           'La distancia tiene que alcanzar la de la carrera, y al menos 1 km.',
           'La cadencia tiene que estar entre 120 y 210 pasos por minuto.',
-          'Sin reloj, se miran la zancada y la velocidad GPS.',
-          'La frecuencia cardíaca solo es obligatoria en avanzado, medio y final.',
+          'Sin sensor de pulso, se miran la zancada y la velocidad GPS.',
+          'El sensor de pulso Bluetooth solo es obligatorio en avanzado, medio y final.',
         ]),
         FairBlock('Topes diarios', [
           'Caminar: 10 SHARE por cada 100 pasos, hasta 600 SHARE al día.',
@@ -303,8 +303,8 @@ class FairEarningCopy {
         FairBlock('O que é verificado', [
           'A distância precisa atingir a da prova, e no mínimo 1 km.',
           'A cadência precisa ficar entre 120 e 210 passos por minuto.',
-          'Sem relógio, a passada e a velocidade do GPS são checadas.',
-          'A frequência cardíaca só é obrigatória no avançado, no meio e na final.',
+          'Sem sensor de frequência cardíaca, a passada e a velocidade do GPS são checadas.',
+          'O sensor de frequência cardíaca Bluetooth só é obrigatório no avançado, no meio e na final.',
         ]),
         FairBlock('Limites diários', [
           'Caminhada: 10 SHARE a cada 100 passos, até 600 SHARE por dia.',
@@ -349,8 +349,8 @@ class FairEarningCopy {
         FairBlock('Was geprüft wird', [
           'Die Strecke muss die Renndistanz erreichen, mindestens 1 km.',
           'Die Kadenz muss zwischen 120 und 210 Schritten pro Minute liegen.',
-          'Ohne Uhr werden Schrittlänge und GPS-Tempo geprüft.',
-          'Die Herzfrequenz ist nur bei Fortgeschritten, Halb und Finale nötig.',
+          'Ohne Herzfrequenzsensor werden Schrittlänge und GPS-Tempo geprüft.',
+          'Ein Bluetooth-Herzfrequenzsensor ist nur bei Fortgeschritten, Halb und Finale nötig.',
         ]),
         FairBlock('Tagesgrenzen', [
           'Gehen: 10 SHARE je 100 Schritte, höchstens 600 SHARE am Tag.',
@@ -396,8 +396,8 @@ class FairEarningCopy {
         FairBlock('Ce qui est vérifié', [
           'La distance doit atteindre celle de la course, et au moins 1 km.',
           'La cadence doit rester entre 120 et 210 pas par minute.',
-          'Sans montre, la foulée et la vitesse GPS sont contrôlées.',
-          'La fréquence cardiaque n’est obligatoire qu’en avancé, semi et finale.',
+          'Sans capteur de fréquence cardiaque, la foulée et la vitesse GPS sont contrôlées.',
+          'Un capteur de fréquence cardiaque Bluetooth n’est obligatoire qu’en avancé, semi et finale.',
         ]),
         FairBlock('Plafonds du jour', [
           'Marche : 10 SHARE pour 100 pas, jusqu’à 600 SHARE par jour.',
@@ -442,8 +442,8 @@ class FairEarningCopy {
         FairBlock('Tiêu chí xác minh', [
           'Quãng đường phải đạt cự ly giải, và ít nhất 1 km.',
           'Nhịp chạy phải trong khoảng 120–210 bước mỗi phút.',
-          'Không có đồng hồ thì kiểm tra sải chân và tốc độ GPS.',
-          'Nhịp tim chỉ bắt buộc ở giải nâng cao, bán marathon và chung kết.',
+          'Không có cảm biến nhịp tim thì kiểm tra sải chân và tốc độ GPS.',
+          'Cảm biến nhịp tim Bluetooth chỉ bắt buộc ở giải nâng cao, bán marathon và chung kết.',
         ]),
         FairBlock('Hạn mức mỗi ngày', [
           'Đi bộ: 10 SHARE mỗi 100 bước, tối đa 600 SHARE một ngày.',
@@ -488,8 +488,8 @@ class FairEarningCopy {
         FairBlock('เกณฑ์ตรวจ', [
           'ระยะต้องถึงระยะของรายการ และอย่างน้อย 1 กม.',
           'เคเดนซ์การวิ่งต้องอยู่ที่ 120–210 ก้าวต่อนาที',
-          'ถ้าไม่มีนาฬิกา จะตรวจจากความยาวก้าวและความเร็ว GPS',
-          'อัตราหัวใจจำเป็นเฉพาะรายการขั้นสูง ฮาล์ฟ และรอบชิง',
+          'ถ้าไม่มีเซ็นเซอร์วัดหัวใจ จะตรวจจากความยาวก้าวและความเร็ว GPS',
+          'เซ็นเซอร์วัดหัวใจบลูทูธจำเป็นเฉพาะรายการขั้นสูง ฮาล์ฟ และรอบชิง',
         ]),
         FairBlock('เพดานรายวัน', [
           'เดิน: 100 ก้าวได้ 10 SHARE สูงสุด 600 SHARE ต่อวัน',
@@ -534,8 +534,8 @@ class FairEarningCopy {
         FairBlock('Yang diverifikasi', [
           'Jarak harus mencapai jarak lomba, dan minimal 1 km.',
           'Kadens lari harus antara 120 dan 210 langkah per menit.',
-          'Tanpa jam, panjang langkah dan kecepatan GPS yang diperiksa.',
-          'Detak jantung wajib hanya pada lomba lanjutan, setengah, dan final.',
+          'Tanpa sensor detak jantung, panjang langkah dan kecepatan GPS yang diperiksa.',
+          'Sensor detak jantung Bluetooth wajib hanya pada lomba lanjutan, setengah, dan final.',
         ]),
         FairBlock('Batas harian', [
           'Jalan: 10 SHARE tiap 100 langkah, paling banyak 600 SHARE sehari.',

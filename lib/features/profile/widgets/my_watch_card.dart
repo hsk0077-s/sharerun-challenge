@@ -56,10 +56,10 @@ class MyWatchCard extends ConsumerWidget {
     final String note;
     if (healthLinked && apps.isNotEmpty) {
       headline = RemainingSurface.tr(context, 'profile.my_watch.body', '스마트워치 연결됨');
-      note = RemainingSurface.tr(context, 'profile.my_watch.body.2', '걸음·심박을 받고, 시계 앱으로도 기록해요');
+      note = RemainingSurface.tr(context, 'profile.my_watch.body.2', '걸음을 받고, 시계 앱으로도 기록해요');
     } else if (healthLinked) {
       headline = RemainingSurface.tr(context, 'profile.my_watch.body', '스마트워치 연결됨');
-      note = RemainingSurface.tr(context, 'profile.my_watch.body.3', '걸음·심박을 휴대폰으로 받아요');
+      note = RemainingSurface.tr(context, 'profile.my_watch.body.3', '걸음을 휴대폰으로 받아요');
     } else {
       headline = appName.isEmpty ? RemainingSurface.tr(context, 'profile.my_watch.body.4', '시계 앱 연결됨') : RemainingSurface.tr(context, 'profile.my_watch.body.5', '\$appName 연결됨', {'appName': appName});
       note = RemainingSurface.tr(context, 'profile.my_watch.body.6', '시계에서 바로 기록해요');

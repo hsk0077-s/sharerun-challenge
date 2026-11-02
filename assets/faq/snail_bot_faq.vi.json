@@ -502,7 +502,7 @@
     "aliases": [
       "Cần smartwatch mới tham gia được không?"
     ],
-    "answer": "Giải Sơ cấp và Trung cấp tham gia được mà không cần đồng hồ. Cao cấp, Half và Chung kết cần ghi nhịp tim nên bạn phải có đồng hồ."
+    "answer": "Giải Sơ cấp và Trung cấp tham gia được mà không cần cảm biến nhịp tim. Cao cấp, Half và Chung kết cần ghi nhịp tim nên bạn phải kết nối trực tiếp cảm biến nhịp tim Bluetooth (BLE)."
   },
   {
     "id": "CO-13",
@@ -1170,7 +1170,7 @@
     "aliases": [
       "Có bắt buộc cần đồng hồ không?"
     ],
-    "answer": "Có. Nếu không có đồng hồ, chúng tôi kiểm tra bằng sải chân và tốc độ GPS. Chỉ giải Cao cấp, Half và Chung kết mới cần đồng hồ."
+    "answer": "Có. Nếu không có cảm biến nhịp tim, chúng tôi kiểm tra bằng sải chân và tốc độ GPS. Chỉ giải Cao cấp, Half và Chung kết mới cần cảm biến nhịp tim Bluetooth."
   },
   {
     "id": "RU-07",

@@ -502,7 +502,7 @@
     "aliases": [
       "¿Necesito un reloj inteligente para participar?"
     ],
-    "answer": "Los eventos Principiante e Intermedio se pueden hacer sin reloj. Avanzado, Medio y la Final requieren registro de frecuencia cardíaca, así que necesitas un reloj."
+    "answer": "Los eventos Principiante e Intermedio se pueden hacer sin sensor de pulso. Avanzado, Medio y la Final requieren registro de frecuencia cardíaca, así que debes conectar directamente un sensor de pulso Bluetooth (BLE)."
   },
   {
     "id": "CO-13",
@@ -1170,7 +1170,7 @@
     "aliases": [
       "¿Necesito un reloj sí o sí?"
     ],
-    "answer": "Sí. Sin reloj, comprobamos con tu zancada y la velocidad GPS. Solo necesitas reloj para los eventos Avanzado, Medio y Final."
+    "answer": "Sí. Sin sensor de pulso, comprobamos con tu zancada y la velocidad GPS. Solo necesitas un sensor de pulso Bluetooth para los eventos Avanzado, Medio y Final."
   },
   {
     "id": "RU-07",

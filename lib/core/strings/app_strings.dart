@@ -118,7 +118,7 @@ static String get termsContinue => RemainingSurface.trNow('onboarding.button.2',
   // ── Smart Watch Sync (Screen 3) ───────────────────────────────────
   static String get watchSyncSkip => RemainingSurface.trNow('app.watchSyncSkip', '건너뛰기');
   static String get watchSyncTitle => RemainingSurface.trNow('app.watchSyncTitle', '정확한 기록 측정을 위해\n스마트워치를 연결해 주세요.');
-  static String get watchSyncSubtitle => RemainingSurface.trNow('app.watchSyncSubtitle', '러닝 검증을 위해 심박수와 걸음 수 데이터가 필요합니다.');
+  static String get watchSyncSubtitle => RemainingSurface.trNow('app.watchSyncSubtitle', '러닝 검증을 위해 걸음 수 데이터가 필요합니다.');
   static String get watchSyncApple => RemainingSurface.trNow('app.watchSyncApple', 'Apple 건강 연동하기');
   static String get watchSyncGoogle => RemainingSurface.trNow('app.watchSyncGoogle', 'Google Health Connect 연동하기');
   static String get watchSyncExternalDevices => RemainingSurface.trNow('app.watchSyncExternalDevices', '가민, 순토, 코로스 등 외부 전문 기기를 사용하시나요?');
@@ -142,7 +142,7 @@ static String get wearableGuideEntry => _l.wearableGuideEntry;
   static String get healthConnectNoSamplesTip => RemainingSurface.trNow('app.healthConnectNoSamplesTip', '권한은 연결되었어요. 밴드/워치 앱 안에서 Health Connect 데이터 쓰기 스위치가 켜져 있는지 확인해 주세요. 스마트밴드 기록은 밴드 앱 동기화 후 반영됩니다.');
   static const deviceConnectionConsentCta = '건강정보 동의하고 연동 시작';
 static String get bleHrSectionTitle => _l.bleHrSectionTitle;
-  static String get bleHrSectionSubtitle => RemainingSurface.trNow('app.bleHrSectionSubtitle', 'Health Connect 지연 없이 달리는 동안 실시간 심박수(0x180D)를 바로 받습니다.');
+  static String get bleHrSectionSubtitle => RemainingSurface.trNow('app.bleHrSectionSubtitle', '달리는 동안 실시간 심박수(0x180D)를 블루투스로 바로 받습니다.');
   static String get bleHrGuideTitle => RemainingSurface.trNow('app.bleHrGuideTitle', '내 기기별로 이렇게 하세요');
   static List<(String, String)> get bleHrGuideItems => <(String, String)>[
     (
@@ -170,7 +170,7 @@ static String get bleHrSectionTitle => _l.bleHrSectionTitle;
       RemainingSurface.trNow('app.bleHrGuideItems.7', '갤럭시 워치 · 애플워치'),
       RemainingSurface.trNow(
         'app.bleHrGuideItems.8',
-        '이 방식이 아니에요. 위의 Health Connect / Apple 건강으로 연결하세요',
+        '이 방식으로는 심박수를 받을 수 없어요. 걸음 수는 위의 Health Connect / Apple 건강으로 연결하세요',
       ),
     ),
   ];

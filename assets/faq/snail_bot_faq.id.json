@@ -502,7 +502,7 @@
     "aliases": [
       "Perlukah smartwatch untuk ikut?"
     ],
-    "answer": "Event Pemula dan Menengah bisa diikuti tanpa jam. Lanjutan, Half, dan Final membutuhkan catatan detak jantung, jadi perlu jam."
+    "answer": "Event Pemula dan Menengah bisa diikuti tanpa sensor detak jantung. Lanjutan, Half, dan Final membutuhkan catatan detak jantung, jadi sensor detak jantung Bluetooth (BLE) harus disambungkan langsung."
   },
   {
     "id": "CO-13",
@@ -1170,7 +1170,7 @@
     "aliases": [
       "Apakah wajib punya jam?"
     ],
-    "answer": "Ya. Tanpa jam, kami memeriksa dengan panjang langkah dan kecepatan GPS. Jam hanya diperlukan untuk event Lanjutan, Half, dan Final."
+    "answer": "Ya. Tanpa sensor detak jantung, kami memeriksa dengan panjang langkah dan kecepatan GPS. Sensor detak jantung Bluetooth hanya diperlukan untuk event Lanjutan, Half, dan Final."
   },
   {
     "id": "RU-07",

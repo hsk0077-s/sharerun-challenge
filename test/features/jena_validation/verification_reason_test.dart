@@ -7,7 +7,7 @@ void main() {
     const codes = {
       'distance_too_short': '최소 거리',
       'cadence_out_of_range': '120~210',
-      'heart_rate_required': '워치 심박',
+      'heart_rate_required': '심박 센서',
       'heart_rate_low': '평균 심박',
       'heart_rate_flat': '거의 변하지',
       'stride_out_of_range': '보폭',

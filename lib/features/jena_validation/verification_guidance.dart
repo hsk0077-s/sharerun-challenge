@@ -48,9 +48,9 @@ VerificationGuidanceCopy verificationGuidanceCopy({
   final lines = <String>[
     RemainingSurface.trNow('jena_validation.verification_guidance.body', '이번 대회의 검증 최소 거리는 $distance예요. 대회 거리가 더 짧아도 1km는 넘어야 해요.', {'distance': distance}),
     RemainingSurface.trNow('jena_validation.verification_guidance.body.2', '분당 걸음 수는 120~210이어야 해요.'),
-    RemainingSurface.trNow('verification.guidance_no_watch', '워치가 없으면 보폭과 GPS 속도로 확인해요.'),
-    RemainingSurface.trNow('jena_validation.verification_guidance.body.3', '워치 심박은 운영자 대회 상급·하프·파이널에서만 필요해요.'),
-    if (requiresHeartRate) RemainingSurface.trNow('jena_validation.verification_guidance.body.4', '이 대회는 워치 심박이 있어야 완주로 인정돼요.'),
+    RemainingSurface.trNow('verification.guidance_no_watch', '심박 센서가 없으면 보폭과 GPS 속도로 확인해요.'),
+    RemainingSurface.trNow('jena_validation.verification_guidance.body.3', '블루투스 심박 센서는 운영자 대회 상급·하프·파이널에서만 필요해요.'),
+    if (requiresHeartRate) RemainingSurface.trNow('jena_validation.verification_guidance.body.4', '이 대회는 블루투스 심박 센서의 심박이 있어야 완주로 인정돼요.'),
     RemainingSurface.trNow('jena_validation.verification_guidance.body.5', '기록은 언제나, 보상은 검증된 달리기에만.'),
   ];
   return VerificationGuidanceCopy(

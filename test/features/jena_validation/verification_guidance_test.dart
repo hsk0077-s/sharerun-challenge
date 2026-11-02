@@ -25,14 +25,14 @@ void main() {
     expect(room.body, contains('보폭과 GPS'));
     expect(room.body, contains('상급·하프·파이널'));
     expect(room.body, contains('기록은 언제나, 보상은 검증된 달리기에만'));
-    expect(room.body, isNot(contains('이 대회는 워치 심박이 있어야')));
+    expect(room.body, isNot(contains('이 대회는 블루투스 심박 센서의 심박이 있어야')));
 
     final race = verificationGuidanceCopy(
       roomDistanceKm: 10,
       requiresHeartRate: true,
     );
     expect(race.body, contains('10km'));
-    expect(race.body, contains('이 대회는 워치 심박이 있어야 완주로 인정돼요.'));
+    expect(race.body, contains('이 대회는 블루투스 심박 센서의 심박이 있어야 완주로 인정돼요.'));
   });
 
   test('watch heart rate is only the advanced company tiers', () {

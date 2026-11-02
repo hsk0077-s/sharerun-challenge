@@ -43,10 +43,9 @@
         android:required="false" />
 
 
-    <!-- Google Health Connect — 앱이 실제로 읽는 종류만: 걸음, 심박. -->
-    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <!-- Google Health Connect — 앱이 실제로 읽는 종류만: 걸음 수. 심박수는 Health Connect로 읽지 않고 BLE 심박 센서 직접 연결로만 받는다(1.0). -->
     <uses-permission android:name="android.permission.health.READ_STEPS" />
-    <!-- 1.0은 포그라운드(및 건강 foreground service)에서만 걸음·심박을 읽는다. -->
+    <!-- 1.0은 포그라운드(및 건강 foreground service)에서만 걸음 수를 읽는다. -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND" tools:node="remove" />
     <uses-permission android:name="android.permission.BODY_SENSORS" tools:node="remove" />
 

@@ -51,7 +51,7 @@ void main() {
     await _pump(tester, watchType: WatchType.galaxyWatch);
     expect(find.text('내 워치'), findsOneWidget);
     expect(find.text('스마트워치 연결됨'), findsOneWidget);
-    expect(find.text('걸음·심박을 휴대폰으로 받아요'), findsOneWidget);
+    expect(find.text('걸음을 휴대폰으로 받아요'), findsOneWidget);
     expect(find.text('관리'), findsOneWidget);
     expect(find.textContaining('없음'), findsNothing);
   });
@@ -64,7 +64,7 @@ void main() {
       apps: const [ConnectedWatch(id: 'w1', label: 'Galaxy Watch6')],
     );
     expect(find.text('스마트워치 연결됨'), findsOneWidget);
-    expect(find.text('걸음·심박을 받고, 시계 앱으로도 기록해요'), findsOneWidget);
+    expect(find.text('걸음을 받고, 시계 앱으로도 기록해요'), findsOneWidget);
     expect(find.textContaining('대 연결'), findsNothing);
   });
 

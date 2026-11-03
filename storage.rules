@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // Walking Challenge brag card. One public PNG per user per day.
-//   share_cards/{uid}/{yyyy-mm-dd}.png
+//   share_cards/{uid}/{yyyyMMdd}.png
 // Only the owner writes (PNG, at most 5 MB). Anyone with the link can read:
 // KakaoTalk fetches the image without signing in. Everything else is closed.
 service firebase.storage {
@@ -12,7 +12,7 @@ service firebase.storage {
         && request.auth.uid == uid
         && request.resource.size <= 5 * 1024 * 1024
         && request.resource.contentType == 'image/png'
-        && file.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}\\.png');
+        && file.matches('[0-9]{8}\\.png');
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
 

@@ -10,6 +10,7 @@ import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/social_brand_icons.dart';
 
 import '../../core/constants/store_links.dart';
+import '../invite/invite_link.dart';
 import '../../l10n/remaining_surface.dart';
 import '../run_result/run_finish_image_share.dart';
 import '../run_result/run_finish_share_card.dart';
@@ -69,10 +70,40 @@ abstract final class WalkingChallengeShare {
         '쉐어런 오늘의 목표 달성',
       );
 
-  static String get dailyGoalBragText =>
-      '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_text', '오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n걷고 SHARE 모으고, 내일도 같이 걸어요!')}\n'
-      '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_tags', '#쉐어런 #워킹챌린지 #오늘의목표달성')}\n'
-      '$kPlayStoreUrl';
+  /// Sentence and hashtags, no link. With [steps] it names the step count.
+  static String dailyGoalBragBody({int? steps}) {
+    if (steps != null) {
+      final count = WalkingGoalShareCard.commaSteps(steps);
+      return RemainingSurface.trNow(
+        'pedometer.walking_goal_share_card.brag_steps',
+        '오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 ${count}걸음을 채웠어요.\n걷고 SHARE 모으고, 내일도 같이 걸어요!\n#쉐어런 #워킹챌린지 #오늘의목표달성',
+        {'steps': count},
+      );
+    }
+    return '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_text', '오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n걷고 SHARE 모으고, 내일도 같이 걸어요!')}\n'
+        '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_tags', '#쉐어런 #워킹챌린지 #오늘의목표달성')}';
+  }
+
+  static String inviteLine(String code) => RemainingSurface.trNow(
+        'pedometer.walking_challenge_share.invite_line',
+        '초대 코드 $code',
+        {'code': code},
+      );
+
+  /// What travels with the card: the brag, then (when the sender has an
+  /// invite code) the code line, then the store link, which carries the code
+  /// to Play Install Referrer. No code (signed out, not loaded): the plain
+  /// store link only.
+  static String dailyGoalBragTextFor({int? steps, String? inviteCode}) {
+    final code = normalizeInviteCode(inviteCode);
+    return [
+      dailyGoalBragBody(steps: steps),
+      if (code != null) inviteLine(code),
+      playStoreInviteUrl(code),
+    ].join('\n');
+  }
+
+  static String get dailyGoalBragText => dailyGoalBragTextFor();
 
   /// Test hook. Production always uses [SharePlus.instance].
   @visibleForTesting
@@ -219,6 +250,7 @@ abstract final class WalkingChallengeShare {
   static const goalCardStorageRoot = 'share_cards';
   static const goalCardMaxBytes = 5 * 1024 * 1024;
   static const goalCardUploadTimeout = Duration(seconds: 25);
+  static const inviteCodeTimeout = Duration(seconds: 4);
 
   static String get goalFeedDescription => RemainingSurface.trNow(
         'pedometer.walking_goal_share_card.feed_description',
@@ -248,6 +280,10 @@ abstract final class WalkingChallengeShare {
   static Future<void> Function(Uri imageUrl, int steps)?
       debugKakaoFeedOverride;
 
+  /// Test hook for the Kakao feed link (the store URL with the invite code).
+  @visibleForTesting
+  static void Function(Uri link)? debugKakaoFeedLinkSink;
+
   static String? _signedInUid() {
     final hook = debugUidOverride;
     if (hook != null) return hook();
@@ -258,11 +294,11 @@ abstract final class WalkingChallengeShare {
     }
   }
 
-  /// `2026-11-03`. One card per user per day: a second share the same day
+  /// `20261103`. One card per user per day: a second share the same day
   /// overwrites the first instead of piling up files.
   static String goalCardDay(DateTime date) {
     String two(int v) => v.toString().padLeft(2, '0');
-    return '${date.year}-${two(date.month)}-${two(date.day)}';
+    return '${date.year}${two(date.month)}${two(date.day)}';
   }
 
   /// Uploads the square card to `share_cards/{uid}/{date}.png` and returns
@@ -287,10 +323,15 @@ abstract final class WalkingChallengeShare {
     return Uri.parse(await ref.getDownloadURL().timeout(goalCardUploadTimeout));
   }
 
-  static Future<void> _shareKakaoFeed(Uri imageUrl, int steps) {
+  static Future<void> _shareKakaoFeed(
+    Uri imageUrl,
+    int steps,
+    String? inviteCode,
+  ) {
     final hook = debugKakaoFeedOverride;
     if (hook != null) return hook(imageUrl, steps);
-    final store = Uri.parse(kPlayStoreUrl);
+    final store = Uri.parse(playStoreInviteUrl(inviteCode));
+    debugKakaoFeedLinkSink?.call(store);
     return ShareClient.instance.shareDefault(
       template: FeedTemplate(
         content: Content(
@@ -330,9 +371,9 @@ abstract final class WalkingChallengeShare {
     required DateTime date,
     required Future<File> Function() capturePortrait,
     required Future<File> Function() captureSquare,
+    Future<String?> Function()? loadInviteCode,
     Rect? sharePositionOrigin,
   }) async {
-    final text = dailyGoalBragText;
     final kakaoInstalled = await isKakaoTalkInstalled();
     if (!context.mounted) return;
     var route = _ShareRoute.system;
@@ -342,13 +383,24 @@ abstract final class WalkingChallengeShare {
       route = choice;
     }
 
+    // The sender's invite code rides on the store link. A slow or failed
+    // lookup never blocks the share: the plain store link goes out instead.
+    String? inviteCode;
+    try {
+      inviteCode = await loadInviteCode?.call().timeout(inviteCodeTimeout);
+    } catch (e) {
+      debugPrint('WalkingChallengeShare.inviteCode: $e');
+    }
+    if (!context.mounted) return;
+    final text = dailyGoalBragTextFor(steps: steps, inviteCode: inviteCode);
+
     if (route == _ShareRoute.kakao) {
       try {
         final uid = _signedInUid();
         if (uid == null || uid.isEmpty) throw StateError('not signed in');
         final image = await captureSquare();
         final url = await uploadGoalCard(image, uid: uid, date: date);
-        await _shareKakaoFeed(url, steps);
+        await _shareKakaoFeed(url, steps, inviteCode);
         return;
       } catch (e, st) {
         debugPrint('WalkingChallengeShare.kakaoFeed: $e\n$st');
@@ -424,6 +476,9 @@ class WalkingDailyGoalCompleteCard extends StatefulWidget {
     this.steps,
     this.goalSteps = PedometerHarvestLedger.stepsForDailyCap,
     this.badges,
+    this.shareToday,
+    this.streakDays,
+    this.loadInviteCode,
     this.now,
   });
 
@@ -439,6 +494,16 @@ class WalkingDailyGoalCompleteCard extends StatefulWidget {
 
   /// 동물 티어·천사 등급 원. 아직 등급이 없으면 비워 둔다.
   final RunFinishTierBadges? badges;
+
+  /// 오늘 모은 SHARE, 서버가 확정한 값만. 없거나 0이면 카드에 쓰지 않는다.
+  final int? shareToday;
+
+  /// 연속 달성 일수. 2일 미만이면 카드에 쓰지 않는다.
+  final int? streakDays;
+
+  /// The sender's invite code for the store link. Null or a failure means the
+  /// plain store link.
+  final Future<String?> Function()? loadInviteCode;
 
   /// Test hook for the date printed on the card.
   final DateTime Function()? now;
@@ -473,6 +538,7 @@ class _WalkingDailyGoalCompleteCardState
         date: _today,
         capturePortrait: () => RunFinishImageShare.capture(_portraitKey),
         captureSquare: () => RunFinishImageShare.capture(_squareKey),
+        loadInviteCode: widget.loadInviteCode,
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {
@@ -522,6 +588,8 @@ class _WalkingDailyGoalCompleteCardState
                   goalSteps: widget.goalSteps,
                   date: _today,
                   badges: widget.badges,
+                  shareToday: widget.shareToday,
+                  streakDays: widget.streakDays,
                   square: square,
                 ),
               ),

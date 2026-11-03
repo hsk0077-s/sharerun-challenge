@@ -844,17 +844,27 @@ class _DonationBadge extends StatelessWidget {
 }
 
 class RunFinishBrandLockup extends StatelessWidget {
-  const RunFinishBrandLockup({super.key, required this.palette});
+  const RunFinishBrandLockup({
+    super.key,
+    required this.palette,
+    this.showHairline = true,
+  });
 
   final RunFinishCardPalette palette;
+
+  /// The thin rule and gap above the logo. Off where the lockup sits at the
+  /// top of a card.
+  final bool showHairline;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(height: 1, color: palette.hairline),
-        const SizedBox(height: 26),
+        if (showHairline) ...[
+          Container(height: 1, color: palette.hairline),
+          const SizedBox(height: 26),
+        ],
         Row(
           children: [
             DecoratedBox(

@@ -310,7 +310,7 @@ class WalkingGoalShareCard extends StatelessWidget {
                                     )
                                   : null,
                             ),
-                          if (hasAnimal) const SizedBox(width: 36),
+                          if (hasAnimal) SizedBox(width: hasAngel ? 66 : 36),
                           Expanded(
                             child: Text(
                               keepWordsTogether(tagline),
@@ -438,7 +438,7 @@ class _GoalCircle extends StatelessWidget {
           const SizedBox(height: 8),
           Flexible(
             child: Text(
-              text,
+              WalkingGoalShareCard.keepWordsTogether(text),
               key: WalkingGoalShareCard.goalKey,
               textAlign: TextAlign.center,
               maxLines: 3,

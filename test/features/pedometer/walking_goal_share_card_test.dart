@@ -248,7 +248,13 @@ void main() {
       expect(find.byKey(WalkingGoalShareCard.stepsKey), findsOneWidget);
       expect(find.text('8,421'), findsOneWidget);
       expect(find.text('오늘의 목표 달성!'), findsOneWidget);
-      expect(find.text('목표 6,000걸음'), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(WalkingGoalShareCard.goalKey))
+            .data!
+            .replaceAll('\u2060', ''),
+        '목표 6,000걸음',
+      );
       expect(find.text('11월 3일 화요일'), findsOneWidget);
       expect(find.text('쉐어런'), findsOneWidget);
       expect(find.byKey(WalkingGoalShareCard.taglineKey), findsOneWidget);

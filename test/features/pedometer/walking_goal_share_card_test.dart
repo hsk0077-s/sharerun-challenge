@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:share_run_challenge/core/constants/store_links.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
+import 'package:share_run_challenge/core/widgets/src_logo_header.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/pedometer/walking_goal_share_card.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_image_share.dart';
@@ -144,6 +145,16 @@ void main() {
         ),
       )));
       await tester.pump();
+      await tester.runAsync(() async {
+        final context = tester.element(find.byType(WalkingGoalShareCard));
+        for (final path in [
+          _badges.animalImage!,
+          _badges.angelImage!,
+          SRCLogoHeader.assetPath,
+        ]) {
+          await precacheImage(AssetImage(path), context);
+        }
+      });
       await tester.pump(const Duration(milliseconds: 100));
 
       await expectLater(

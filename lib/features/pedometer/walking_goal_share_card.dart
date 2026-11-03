@@ -105,56 +105,53 @@ class WalkingGoalShareCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          headline,
+                          key: headlineKey,
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontFamily: RunFinishShareCard.fontFamily,
+                            fontSize: 88,
+                            fontWeight: FontWeight.w900,
+                            height: 1.2,
+                            letterSpacing: -2,
+                            color: palette.hero,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
                               children: [
-                                Text(
-                                  headline,
-                                  key: headlineKey,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontFamily: RunFinishShareCard.fontFamily,
-                                    fontSize: 88,
-                                    fontWeight: FontWeight.w900,
-                                    height: 1.2,
-                                    letterSpacing: -2,
-                                    color: palette.hero,
+                                Container(
+                                  width: 42,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: palette.unit,
+                                    borderRadius: BorderRadius.circular(3),
                                   ),
                                 ),
-                                const SizedBox(height: 18),
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 42,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        color: palette.unit,
-                                        borderRadius: BorderRadius.circular(3),
-                                      ),
+                                const SizedBox(width: 14),
+                                Flexible(
+                                  child: Text(
+                                    runFinishDateLabel(date),
+                                    key: dateKey,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: RunFinishShareCard.fontFamily,
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w600,
+                                      color: palette.muted,
+                                      height: 1.35,
                                     ),
-                                    const SizedBox(width: 14),
-                                    Flexible(
-                                      child: Text(
-                                        runFinishDateLabel(date),
-                                        key: dateKey,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontFamily:
-                                              RunFinishShareCard.fontFamily,
-                                          fontSize: 32,
-                                          fontWeight: FontWeight.w600,
-                                          color: palette.muted,
-                                          height: 1.35,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -230,8 +227,13 @@ class WalkingGoalShareCard extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.check_circle_rounded,
-                                  size: 44, color: palette.unit),
+                              CustomPaint(
+                                size: const Size(44, 44),
+                                painter: _CheckPainter(
+                                  ring: palette.unit,
+                                  tick: palette.chip,
+                                ),
+                              ),
                               const SizedBox(width: 14),
                               Text(
                                 goalLine(goalSteps),
@@ -260,6 +262,38 @@ class WalkingGoalShareCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A filled circle with a tick. Drawn by hand so the shared image does not
+/// depend on the icon font being available.
+class _CheckPainter extends CustomPainter {
+  const _CheckPainter({required this.ring, required this.tick});
+
+  final Color ring;
+  final Color tick;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    canvas.drawCircle(c, size.width / 2, Paint()..color = ring);
+    final path = Path()
+      ..moveTo(size.width * 0.27, size.height * 0.52)
+      ..lineTo(size.width * 0.43, size.height * 0.68)
+      ..lineTo(size.width * 0.74, size.height * 0.34);
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = tick
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = size.width * 0.11
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CheckPainter oldDelegate) =>
+      oldDelegate.ring != ring || oldDelegate.tick != tick;
 }
 
 /// Fixed confetti, so the golden and the shared image are always the same.

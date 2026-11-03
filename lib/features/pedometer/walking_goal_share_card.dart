@@ -79,6 +79,16 @@ class WalkingGoalShareCard extends StatelessWidget {
         {'days': days},
       );
 
+  /// Korean text may otherwise break in the middle of a word ("쌓/여요").
+  /// A word joiner (zero width) between the letters of a word keeps each word
+  /// whole; lines still break at spaces.
+  static String keepWordsTogether(String text) {
+    return text
+        .split(' ')
+        .map((word) => word.runes.map(String.fromCharCode).join('\u2060'))
+        .join(' ');
+  }
+
   /// `12,345`. The card never shows a negative count.
   static String commaSteps(int value) {
     final digits = math.max(0, value).toString();
@@ -134,7 +144,7 @@ class WalkingGoalShareCard extends StatelessWidget {
     final hasAngel = badges != null && badges!.hasAngel;
     final animalSize = square ? 210.0 : 290.0;
     final heroFont = square ? 190.0 : 244.0;
-    final goalSize = square ? 168.0 : 206.0;
+    final goalSize = square ? 198.0 : 206.0;
     return DefaultTextStyle(
       style: const TextStyle(
         decoration: TextDecoration.none,
@@ -175,12 +185,13 @@ class WalkingGoalShareCard extends StatelessWidget {
                             palette: palette,
                             showHairline: false,
                           ),
-                          const Spacer(),
-                          Flexible(
+                          const SizedBox(width: 24),
+                          Expanded(
                             child: Text(
                               runFinishDateLabel(date),
                               key: dateKey,
                               maxLines: 1,
+                              textAlign: TextAlign.right,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontFamily: RunFinishShareCard.fontFamily,
@@ -264,8 +275,7 @@ class WalkingGoalShareCard extends StatelessWidget {
                                 if (showShare)
                                   _Chip(
                                     key: shareKey,
-                                    text:
-                                        '+${commaSteps(shareToday!)} SHARE',
+                                    text: '+${commaSteps(shareToday!)} SHARE',
                                     leading: const _Dot(),
                                   ),
                                 if (showStreak)
@@ -303,7 +313,7 @@ class WalkingGoalShareCard extends StatelessWidget {
                           if (hasAnimal) const SizedBox(width: 36),
                           Expanded(
                             child: Text(
-                              tagline,
+                              keepWordsTogether(tagline),
                               key: taglineKey,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
@@ -342,8 +352,8 @@ class _Ribbon extends StatelessWidget {
     return CustomPaint(
       painter: const _RibbonPainter(),
       child: Padding(
-        padding: EdgeInsets.symmetric(
-            horizontal: 56, vertical: compact ? 14 : 20),
+        padding:
+            EdgeInsets.symmetric(horizontal: 56, vertical: compact ? 14 : 20),
         child: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
@@ -406,7 +416,7 @@ class _GoalCircle extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(size < 200 ? 14 : 20),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: WalkingGoalShareCard.palette.chip,
@@ -435,7 +445,7 @@ class _GoalCircle extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: RunFinishShareCard.fontFamily,
-                fontSize: size < 190 ? 26 : 30,
+                fontSize: size < 200 ? 24 : 30,
                 fontWeight: FontWeight.w800,
                 color: WalkingGoalShareCard.palette.hero,
                 height: 1.25,
@@ -628,8 +638,10 @@ class _BeamPainter extends CustomPainter {
       final a2 = (beam[0] + beam[1] / 2) * math.pi / 180;
       final path = Path()
         ..moveTo(origin.dx, origin.dy)
-        ..lineTo(origin.dx + reach * math.cos(a1), origin.dy + reach * math.sin(a1))
-        ..lineTo(origin.dx + reach * math.cos(a2), origin.dy + reach * math.sin(a2))
+        ..lineTo(
+            origin.dx + reach * math.cos(a1), origin.dy + reach * math.sin(a1))
+        ..lineTo(
+            origin.dx + reach * math.cos(a2), origin.dy + reach * math.sin(a2))
         ..close();
       canvas.drawPath(
         path,
@@ -677,7 +689,8 @@ class _ConfettiPainter extends CustomPainter {
     const colors = [Color(0xFFC8F560), Color(0xFF3FD0C9), Color(0xFFFFFFFF)];
     for (final bit in _bits) {
       final paint = Paint()
-        ..color = colors[bit[4].toInt() % colors.length].withValues(alpha: 0.85);
+        ..color =
+            colors[bit[4].toInt() % colors.length].withValues(alpha: 0.85);
       canvas.save();
       canvas.translate(size.width * bit[0], size.height * bit[1]);
       canvas.rotate(bit[3] * math.pi * 2);

@@ -70,6 +70,17 @@ void main() {
       expect(WalkingGoalShareCard.commaSteps(-5), '0');
     });
 
+    test(
+        'keepWordsTogether only adds invisible joiners, never changes the words',
+        () {
+      const text = '나도 걸으면 리워드와 기부가 쌓여요';
+      final joined = WalkingGoalShareCard.keepWordsTogether(text);
+      expect(joined.replaceAll('\u2060', ''), text);
+      expect(joined.split(' '), hasLength(text.split(' ').length));
+      expect(WalkingGoalShareCard.keepWordsTogether('Walk too'),
+          'W\u2060a\u2060l\u2060k t\u2060o\u2060o');
+    });
+
     test('brag text keeps the sentence and ends with the store link', () {
       final text = WalkingChallengeShare.dailyGoalBragText;
       expect(text, contains('오늘의 목표 달성'));
@@ -240,7 +251,7 @@ void main() {
       expect(find.text('목표 6,000걸음'), findsOneWidget);
       expect(find.text('11월 3일 화요일'), findsOneWidget);
       expect(find.text('쉐어런'), findsOneWidget);
-      expect(find.text('나도 걸으면 리워드와 기부가 쌓여요'), findsOneWidget);
+      expect(find.byKey(WalkingGoalShareCard.taglineKey), findsOneWidget);
       expect(find.byKey(WalkingGoalShareCard.animalKey), findsOneWidget);
       expect(find.text('늑대'), findsOneWidget);
       expect(find.byKey(WalkingGoalShareCard.badgesKey), findsOneWidget);

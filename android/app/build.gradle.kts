@@ -150,6 +150,18 @@ gradle.taskGraph.whenReady {
                 "android/app/google-services.json 이 없습니다. Firebase 콘솔에서 받아 android/app 에 둔 뒤 다시 빌드하세요. (docs/play-release.md)",
             )
         }
+        // 구글 로그인은 웹 클라이언트 ID가 필요하다. dart-define GOOGLE_WEB_CLIENT_ID 가 있거나
+        // google-services.json 에 웹 클라이언트(client_type 3)가 있어야 한다. 둘 다 없으면
+        // 앱이 "serverClientId must be provided on Android" 로 로그인에 실패하므로 여기서 멈춘다.
+        val googleWebClientId = dartDefines["GOOGLE_WEB_CLIENT_ID"].orEmpty().trim()
+        val hasWebClientInJson = Regex("\"client_type\"\\s*:\\s*3")
+            .containsMatchIn(file("google-services.json").readText())
+        if (googleWebClientId.isEmpty() && !hasWebClientInJson) {
+            throw GradleException(
+                "구글 로그인용 웹 클라이언트 ID가 없습니다. .env.release 에 GOOGLE_WEB_CLIENT_ID=… 를 넣거나, " +
+                    "Firebase 에서 Google 로그인을 켜고 google-services.json 을 다시 받으세요. (docs/play-release.md)",
+            )
+        }
         val required = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")
         val missing = required.filter { keystoreProperties.getProperty(it).isNullOrBlank() }
         if (missing.isNotEmpty()) {

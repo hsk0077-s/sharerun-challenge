@@ -46,9 +46,10 @@ void main() {
     WalkingChallengeShare.debugShareOverride = null;
     WalkingChallengeShare.debugKakaoInstalledOverride = null;
     WalkingChallengeShare.debugKakaoShareOverride = null;
+    WalkingChallengeShare.debugUidOverride = null;
+    WalkingChallengeShare.debugUploadOverride = null;
+    WalkingChallengeShare.debugKakaoFeedOverride = null;
     RunFinishImageShare.debugCaptureOverride = null;
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(RunFinishImageShare.channel, null);
   });
 
   group('text', () {
@@ -81,13 +82,15 @@ void main() {
       final long = '${'가' * 400}\n#쉐어런\n$kPlayStoreUrl';
       final status = await WalkingChallengeShare.shareToKakao(text: long);
       expect(status, KakaoDirectShareStatus.sent);
-      expect(sent!.length, lessThanOrEqualTo(WalkingChallengeShare.kakaoTextLimit));
+      expect(sent!.length,
+          lessThanOrEqualTo(WalkingChallengeShare.kakaoTextLimit));
       expect(sent!.endsWith(kPlayStoreUrl), isTrue);
     });
   });
 
   group('card', () {
-    testWidgets('shows steps, headline, goal and date; tier circles only when given',
+    testWidgets(
+        'shows steps, headline, goal and date; tier circles only when given',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 1350);
       tester.view.devicePixelRatio = 1.0;
@@ -164,8 +167,101 @@ void main() {
     });
   });
 
+  group('rules', () {
+    test('storage.rules: owner-only write, public read, PNG up to 5 MB', () {
+      final rules = File('storage.rules').readAsStringSync();
+      expect(rules, contains('match /share_cards/{uid}/{file}'));
+      expect(rules, contains('allow read: if true;'));
+      expect(rules, contains('request.auth.uid == uid'));
+      expect(rules, contains('request.resource.size <= 5 * 1024 * 1024'));
+      expect(rules, contains("request.resource.contentType == 'image/png'"));
+      expect(rules, contains('allow read, write: if false;'));
+      final firebaseJson = File('firebase.json').readAsStringSync();
+      expect(firebaseJson, contains('"storage"'));
+      expect(firebaseJson, contains('storage.rules'));
+    });
+
+    test('card path is one file per user per day', () {
+      expect(WalkingChallengeShare.goalCardDay(DateTime(2026, 11, 3)),
+          '2026-11-03');
+      expect(WalkingChallengeShare.goalCardDay(DateTime(2026, 1, 9)),
+          '2026-01-09');
+    });
+  });
+
+  group('square card', () {
+    goldenTest('goal share card golden (1:1)', (tester) async {
+      tester.view.physicalSize = const Size(1080, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(_app(RepaintBoundary(
+        child: WalkingGoalShareCard(
+          steps: 12345,
+          goalSteps: 6000,
+          date: DateTime(2026, 11, 3),
+          badges: _badges,
+          square: true,
+        ),
+      )));
+      await tester.pump();
+      await tester.runAsync(() async {
+        final context = tester.element(find.byType(WalkingGoalShareCard));
+        for (final path in [
+          _badges.animalImage!,
+          _badges.angelImage!,
+          SRCLogoHeader.assetPath,
+        ]) {
+          await precacheImage(AssetImage(path), context);
+        }
+      });
+      await tester.pump(const Duration(milliseconds: 100));
+
+      await expectLater(
+        find.byType(RepaintBoundary).first,
+        matchesGoldenFile('goldens/walking_goal_share_card_square.png'),
+      );
+    });
+
+    testWidgets('square card keeps everything on screen without overflow',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(_app(WalkingGoalShareCard(
+        steps: 123456,
+        goalSteps: 6000,
+        date: DateTime(2026, 11, 3),
+        badges: _badges,
+        square: true,
+      )));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      expect(find.text('123,456'), findsOneWidget);
+      expect(tester.getSize(find.byType(WalkingGoalShareCard)).height,
+          WalkingGoalShareCard.squareHeight);
+    });
+  });
+
   group('share button', () {
-    final image = File('${Directory.systemTemp.path}/share_run_goal_test.png');
+    final portrait = File('${Directory.systemTemp.path}/goal_4x5_test.png');
+    final square = File('${Directory.systemTemp.path}/goal_1x1_test.png');
+    final captured = <String>[];
+
+    setUp(() {
+      captured.clear();
+      WalkingChallengeShare.debugUidOverride = () => 'uid-1';
+      RunFinishImageShare.debugCaptureOverride = (key) async {
+        // The dock hands over its own boundary keys: 4:5 first, 1:1 second.
+        final isSquare = key.currentContext?.size?.height ==
+            WalkingGoalShareCard.squareHeight;
+        captured.add(isSquare ? 'square' : 'portrait');
+        return isSquare ? square : portrait;
+      };
+    });
 
     Future<void> pumpDock(
       WidgetTester tester, {
@@ -186,10 +282,22 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('system sheet gets the card image, the sentence and the link',
+    Future<void> tapBrag(WidgetTester tester) async {
+      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+
+    Future<void> chooseKakao(WidgetTester tester) async {
+      await tapBrag(tester);
+      await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    testWidgets('no KakaoTalk: 4:5 PNG, sentence and link via the sheet',
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
-      RunFinishImageShare.debugCaptureOverride = (key) async => image;
       ShareParams? sent;
       WalkingChallengeShare.debugShareOverride = (params) async {
         sent = params;
@@ -197,20 +305,43 @@ void main() {
       };
 
       await pumpDock(tester);
-      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tapBrag(tester);
 
-      expect(sent, isNotNull);
+      expect(captured, ['portrait']);
       expect(sent!.files, hasLength(1));
       expect(sent!.files!.single.mimeType, 'image/png');
-      expect(sent!.files!.single.path, image.path);
+      expect(sent!.files!.single.path, portrait.path);
       expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
       expect(sent!.text, endsWith(kPlayStoreUrl));
       expect(sent!.subject, WalkingChallengeShare.dailyGoalBragSubject);
     });
 
-    testWidgets('capture failure still shares the text and the link',
+    testWidgets('"다른 앱" sends the 4:5 PNG through the sheet, not Kakao',
+        (tester) async {
+      WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+      var feeds = 0;
+      WalkingChallengeShare.debugKakaoFeedOverride = (url, steps) async {
+        feeds++;
+      };
+      ShareParams? sent;
+      WalkingChallengeShare.debugShareOverride = (params) async {
+        sent = params;
+        return const ShareResult('', ShareResultStatus.success);
+      };
+
+      await pumpDock(tester);
+      await tapBrag(tester);
+      await tester.tap(find.byKey(WalkingChallengeShare.systemChoiceKey));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(feeds, 0);
+      expect(captured, ['portrait']);
+      expect(sent!.files, hasLength(1));
+      expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
+    });
+
+    testWidgets('capture failure on the sheet still shares text and link',
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
       RunFinishImageShare.debugCaptureOverride =
@@ -222,11 +353,8 @@ void main() {
       };
 
       await pumpDock(tester);
-      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tapBrag(tester);
 
-      expect(sent, isNotNull);
       expect(sent!.files, isNull);
       expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
     });
@@ -242,24 +370,35 @@ void main() {
 
       await pumpDock(tester, steps: null);
       expect(find.byKey(WalkingDailyGoalCompleteCard.captureKey), findsNothing);
-      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await tapBrag(tester);
 
+      expect(captured, isEmpty);
       expect(sent!.files, isNull);
       expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
     });
 
-    testWidgets('KakaoTalk gets the image file with the sentence and link',
+    testWidgets('KakaoTalk: square card is uploaded and sent as a feed card',
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
-      RunFinishImageShare.debugCaptureOverride = (key) async => image;
-      final calls = <MethodCall>[];
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(RunFinishImageShare.channel, (call) async {
-        calls.add(call);
-        return true;
-      });
+      File? uploaded;
+      String? uploadUid;
+      DateTime? uploadDate;
+      WalkingChallengeShare.debugUploadOverride = (file, uid, date) async {
+        uploaded = file;
+        uploadUid = uid;
+        uploadDate = date;
+        return Uri.parse('https://firebasestorage.example/card.png');
+      };
+      Uri? feedUrl;
+      int? feedSteps;
+      WalkingChallengeShare.debugKakaoFeedOverride = (url, steps) async {
+        feedUrl = url;
+        feedSteps = steps;
+      };
+      var textSends = 0;
+      WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+        textSends++;
+      };
       ShareParams? sent;
       WalkingChallengeShare.debugShareOverride = (params) async {
         sent = params;
@@ -267,67 +406,85 @@ void main() {
       };
 
       await pumpDock(tester);
-      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await chooseKakao(tester);
 
-      expect(calls, hasLength(1));
-      expect(calls.single.method, 'shareTarget');
-      final args = calls.single.arguments as Map<Object?, Object?>;
-      expect(args['id'], 'kakao');
-      expect(args['path'], image.path);
-      expect(args['text'], WalkingChallengeShare.dailyGoalBragText);
+      expect(captured, ['square']);
+      expect(uploaded!.path, square.path);
+      expect(uploadUid, 'uid-1');
+      expect(uploadDate, DateTime(2026, 11, 3));
+      expect(feedUrl, Uri.parse('https://firebasestorage.example/card.png'));
+      expect(feedSteps, 8421);
+      expect(textSends, 0);
       expect(sent, isNull);
     });
 
-    testWidgets('KakaoTalk refusing the file falls back to the system sheet',
-        (tester) async {
-      WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
-      RunFinishImageShare.debugCaptureOverride = (key) async => image;
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-              RunFinishImageShare.channel, (call) async => false);
-      ShareParams? sent;
-      WalkingChallengeShare.debugShareOverride = (params) async {
-        sent = params;
-        return const ShareResult('', ShareResultStatus.success);
-      };
-
-      await pumpDock(tester);
-      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.byKey(WalkingChallengeShare.kakaoChoiceKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
-
-      expect(sent!.files, hasLength(1));
-      expect(sent!.text, WalkingChallengeShare.dailyGoalBragText);
+    testWidgets('feed title, description and one store button', (tester) async {
+      expect(WalkingChallengeShare.goalFeedTitle(8421), '오늘의 목표 달성! 8,421걸음');
+      expect(WalkingChallengeShare.goalFeedDescription, '걷고 SHARE 모으는 쉐어런');
+      expect(WalkingChallengeShare.goalFeedButton, '쉐어런 시작하기');
     });
 
-    testWidgets('"다른 앱" in the chooser sends the image through the sheet',
+    testWidgets('upload failure falls back to the Kakao text template',
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
-      RunFinishImageShare.debugCaptureOverride = (key) async => image;
-      ShareParams? sent;
-      WalkingChallengeShare.debugShareOverride = (params) async {
-        sent = params;
-        return const ShareResult('', ShareResultStatus.success);
+      WalkingChallengeShare.debugUploadOverride =
+          (file, uid, date) async => throw StateError('offline');
+      var feeds = 0;
+      WalkingChallengeShare.debugKakaoFeedOverride = (url, steps) async {
+        feeds++;
+      };
+      String? kakaoText;
+      WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+        kakaoText = text;
       };
 
       await pumpDock(tester);
-      await tester.tap(find.byKey(WalkingChallengeShare.dailyGoalBragKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.byKey(WalkingChallengeShare.systemChoiceKey));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+      await chooseKakao(tester);
 
-      expect(sent!.files, hasLength(1));
-      expect(sent!.files!.single.mimeType, 'image/png');
+      expect(feeds, 0);
+      expect(kakaoText, isNotNull);
+      expect(kakaoText!.endsWith(kPlayStoreUrl), isTrue);
+      expect(kakaoText!.length,
+          lessThanOrEqualTo(WalkingChallengeShare.kakaoTextLimit));
+    });
+
+    testWidgets('not signed in falls back to the Kakao text template',
+        (tester) async {
+      WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+      WalkingChallengeShare.debugUidOverride = () => null;
+      var uploads = 0;
+      WalkingChallengeShare.debugUploadOverride = (file, uid, date) async {
+        uploads++;
+        return Uri.parse('https://example.com/x.png');
+      };
+      String? kakaoText;
+      WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+        kakaoText = text;
+      };
+
+      await pumpDock(tester);
+      await chooseKakao(tester);
+
+      expect(uploads, 0);
+      expect(kakaoText, isNotNull);
+    });
+
+    testWidgets('Kakao feed failure falls back to the Kakao text template',
+        (tester) async {
+      WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
+      WalkingChallengeShare.debugUploadOverride =
+          (file, uid, date) async => Uri.parse('https://example.com/x.png');
+      WalkingChallengeShare.debugKakaoFeedOverride =
+          (url, steps) async => throw StateError('kakao refused');
+      String? kakaoText;
+      WalkingChallengeShare.debugKakaoShareOverride = (text) async {
+        kakaoText = text;
+      };
+
+      await pumpDock(tester);
+      await chooseKakao(tester);
+
+      expect(kakaoText, isNotNull);
     });
   });
 }

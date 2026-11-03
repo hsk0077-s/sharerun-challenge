@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_share/kakao_flutter_sdk_share.dart';
 import 'package:share_plus/share_plus.dart';
@@ -211,17 +213,126 @@ abstract final class WalkingChallengeShare {
     );
   }
 
-  /// Image + text share. KakaoTalk when installed (the card file with the
-  /// sentence and link as `EXTRA_TEXT`), otherwise the system sheet with
-  /// `ShareParams(files, text)`. Falls back to the sheet when KakaoTalk
-  /// refuses the file.
-  static Future<void> openImageChooser(
+  // ---- Walking goal card (image) -------------------------------------
+
+  /// Square card image on its way to Kakao, and the Storage path it uses.
+  static const goalCardStorageRoot = 'share_cards';
+  static const goalCardMaxBytes = 5 * 1024 * 1024;
+  static const goalCardUploadTimeout = Duration(seconds: 25);
+
+  static String get goalFeedDescription => RemainingSurface.trNow(
+        'pedometer.walking_goal_share_card.feed_description',
+        '걷고 SHARE 모으는 쉐어런',
+      );
+  static String get goalFeedButton => RemainingSurface.trNow(
+        'pedometer.walking_goal_share_card.feed_button',
+        '쉐어런 시작하기',
+      );
+  static String goalFeedTitle(int steps) => RemainingSurface.trNow(
+        'pedometer.walking_goal_share_card.feed_title',
+        '오늘의 목표 달성! ${WalkingGoalShareCard.commaSteps(steps)}걸음',
+        {'steps': WalkingGoalShareCard.commaSteps(steps)},
+      );
+
+  /// Test hook. Null reads the signed-in Firebase user.
+  @visibleForTesting
+  static String? Function()? debugUidOverride;
+
+  /// Test hook. Null uploads with Firebase Storage.
+  @visibleForTesting
+  static Future<Uri> Function(File image, String uid, DateTime date)?
+      debugUploadOverride;
+
+  /// Test hook. Null sends a Kakao FeedTemplate with [ShareClient].
+  @visibleForTesting
+  static Future<void> Function(Uri imageUrl, int steps)?
+      debugKakaoFeedOverride;
+
+  static String? _signedInUid() {
+    final hook = debugUidOverride;
+    if (hook != null) return hook();
+    try {
+      return FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      return null; // Firebase not initialised (tests, broken start-up)
+    }
+  }
+
+  /// `2026-11-03`. One card per user per day: a second share the same day
+  /// overwrites the first instead of piling up files.
+  static String goalCardDay(DateTime date) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${date.year}-${two(date.month)}-${two(date.day)}';
+  }
+
+  /// Uploads the square card to `share_cards/{uid}/{date}.png` and returns
+  /// its public download URL. Rules: only the owner writes, anyone reads,
+  /// PNG up to 5 MB (see `storage.rules`).
+  static Future<Uri> uploadGoalCard(
+    File image, {
+    required String uid,
+    required DateTime date,
+  }) async {
+    final hook = debugUploadOverride;
+    if (hook != null) return hook(image, uid, date);
+    final size = await image.length();
+    if (size > goalCardMaxBytes) {
+      throw StateError('goal card is $size bytes, over $goalCardMaxBytes');
+    }
+    final ref = FirebaseStorage.instance
+        .ref('$goalCardStorageRoot/$uid/${goalCardDay(date)}.png');
+    await ref
+        .putFile(image, SettableMetadata(contentType: 'image/png'))
+        .timeout(goalCardUploadTimeout);
+    return Uri.parse(await ref.getDownloadURL().timeout(goalCardUploadTimeout));
+  }
+
+  static Future<void> _shareKakaoFeed(Uri imageUrl, int steps) {
+    final hook = debugKakaoFeedOverride;
+    if (hook != null) return hook(imageUrl, steps);
+    final store = Uri.parse(kPlayStoreUrl);
+    return ShareClient.instance.shareDefault(
+      template: FeedTemplate(
+        content: Content(
+          title: goalFeedTitle(steps),
+          description: goalFeedDescription,
+          imageUrl: imageUrl,
+          imageWidth: WalkingGoalShareCard.squareHeight.toInt(),
+          imageHeight: WalkingGoalShareCard.squareHeight.toInt(),
+          link: Link(
+            webUrl: store,
+            mobileWebUrl: store,
+            androidExecutionParams: const {'src': 'share'},
+            iosExecutionParams: const {'src': 'share'},
+          ),
+        ),
+        buttons: [
+          Button(
+            title: goalFeedButton,
+            link: Link(webUrl: store, mobileWebUrl: store),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Walking goal brag with the image card.
+  ///
+  /// * KakaoTalk: the square card goes to Firebase Storage and a Kakao
+  ///   FeedTemplate (image, title, description, one store button) is sent.
+  ///   Any failure (no sign-in, upload, Kakao) falls back to the plain Kakao
+  ///   text template with the sentence and link.
+  /// * Every other target, and phones without KakaoTalk: the 4:5 PNG and the
+  ///   sentence + link through `share_plus`.
+  static Future<void> shareGoalCard(
     BuildContext context, {
-    required File image,
-    required String text,
-    String? subject,
+    required int steps,
+    required DateTime date,
+    required Future<File> Function() capturePortrait,
+    required Future<File> Function() captureSquare,
     Rect? sharePositionOrigin,
   }) async {
+    final text = dailyGoalBragText;
     final kakaoInstalled = await isKakaoTalkInstalled();
     if (!context.mounted) return;
     var route = _ShareRoute.system;
@@ -230,40 +341,47 @@ abstract final class WalkingChallengeShare {
       if (!context.mounted || choice == null) return;
       route = choice;
     }
-    if (route == _ShareRoute.kakao) {
-      final sent = await RunFinishImageShare.shareTarget(
-        id: 'kakao',
-        path: image.path,
-        text: text,
-      );
-      if (sent) return;
-    }
-    await openSystemSheetWithImage(
-      image: image,
-      text: text,
-      subject: subject,
-      sharePositionOrigin: sharePositionOrigin,
-    );
-  }
 
-  static Future<ShareResult> openSystemSheetWithImage({
-    required File image,
-    required String text,
-    String? subject,
-    Rect? sharePositionOrigin,
-  }) {
-    final resolvedSubject = subject ?? WalkingChallengeShare.subject;
-    final params = ShareParams(
-      files: [
-        XFile(image.path, mimeType: 'image/png', name: 'share_run_goal.png'),
-      ],
+    if (route == _ShareRoute.kakao) {
+      try {
+        final uid = _signedInUid();
+        if (uid == null || uid.isEmpty) throw StateError('not signed in');
+        final image = await captureSquare();
+        final url = await uploadGoalCard(image, uid: uid, date: date);
+        await _shareKakaoFeed(url, steps);
+        return;
+      } catch (e, st) {
+        debugPrint('WalkingChallengeShare.kakaoFeed: $e\n$st');
+      }
+      final status = await shareToKakao(text: text);
+      if (status == KakaoDirectShareStatus.failed && context.mounted) {
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+          SnackBar(content: Text(kakaoShareFailedMessage)),
+        );
+      }
+      return;
+    }
+
+    File? portrait;
+    try {
+      portrait = await capturePortrait();
+    } catch (e, st) {
+      debugPrint('WalkingChallengeShare.goalCardCapture: $e\n$st');
+    }
+    final resolvedSubject = dailyGoalBragSubject;
+    final send = debugShareOverride ?? SharePlus.instance.share;
+    await send(ShareParams(
+      files: portrait == null
+          ? null
+          : [
+              XFile(portrait.path,
+                  mimeType: 'image/png', name: 'share_run_goal.png'),
+            ],
       text: text,
       subject: resolvedSubject,
       title: resolvedSubject,
       sharePositionOrigin: sharePositionOrigin,
-    );
-    final send = debugShareOverride ?? SharePlus.instance.share;
-    return send(params);
+    ));
   }
 
   static String _textForKakao(String text) {
@@ -325,8 +443,9 @@ class WalkingDailyGoalCompleteCard extends StatefulWidget {
   /// Test hook for the date printed on the card.
   final DateTime Function()? now;
 
-  /// Off-screen capture boundary of the image card.
+  /// Off-screen image cards: 4:5 and 1:1.
   static const captureKey = Key('walking-goal-capture');
+  static const captureSquareKey = Key('walking-goal-capture-square');
 
   @override
   State<WalkingDailyGoalCompleteCard> createState() =>
@@ -335,7 +454,8 @@ class WalkingDailyGoalCompleteCard extends StatefulWidget {
 
 class _WalkingDailyGoalCompleteCardState
     extends State<WalkingDailyGoalCompleteCard> {
-  final _captureBoundaryKey = GlobalKey();
+  final _portraitKey = GlobalKey();
+  final _squareKey = GlobalKey();
   var _sharing = false;
 
   Future<void> _share(BuildContext buttonContext) async {
@@ -347,21 +467,12 @@ class _WalkingDailyGoalCompleteCardState
     }
     setState(() => _sharing = true);
     try {
-      File image;
-      try {
-        image = await RunFinishImageShare.capture(_captureBoundaryKey);
-      } catch (e, st) {
-        // No image, still a share: the sentence and link go out as text.
-        debugPrint('WalkingChallengeShare.goalCardCapture: $e\n$st');
-        if (buttonContext.mounted) await _shareDailyGoalBrag(buttonContext);
-        return;
-      }
-      if (!buttonContext.mounted) return;
-      await WalkingChallengeShare.openImageChooser(
+      await WalkingChallengeShare.shareGoalCard(
         buttonContext,
-        image: image,
-        text: WalkingChallengeShare.dailyGoalBragText,
-        subject: WalkingChallengeShare.dailyGoalBragSubject,
+        steps: steps,
+        date: _today,
+        capturePortrait: () => RunFinishImageShare.capture(_portraitKey),
+        captureSquare: () => RunFinishImageShare.capture(_squareKey),
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
     } catch (e, st) {
@@ -371,51 +482,77 @@ class _WalkingDailyGoalCompleteCardState
     }
   }
 
+  DateTime get _today => (widget.now ?? DateTime.now)();
+
+  /// Full-size card for export. The stack does not clip a zero-size child,
+  /// so it is shifted out of view; toImage reads the boundary before the
+  /// shift, at pixelRatio 1 (same trick as the run finish poster).
+  Widget _offscreen({
+    required GlobalKey boundaryKey,
+    required Key cardKey,
+    required bool square,
+    required int steps,
+  }) {
+    final height = square
+        ? WalkingGoalShareCard.squareHeight
+        : WalkingGoalShareCard.canvasHeight;
+    return Positioned(
+      left: 0,
+      top: 0,
+      width: 0,
+      height: 0,
+      child: IgnorePointer(
+        child: ExcludeSemantics(
+          child: OverflowBox(
+            alignment: Alignment.topLeft,
+            minWidth: WalkingGoalShareCard.canvasWidth,
+            maxWidth: WalkingGoalShareCard.canvasWidth,
+            minHeight: height,
+            maxHeight: height,
+            child: Transform.translate(
+              offset: Offset(
+                -(WalkingGoalShareCard.canvasWidth + 8),
+                -(height + 8),
+              ),
+              child: RepaintBoundary(
+                key: boundaryKey,
+                child: WalkingGoalShareCard(
+                  key: cardKey,
+                  steps: steps,
+                  goalSteps: widget.goalSteps,
+                  date: _today,
+                  badges: widget.badges,
+                  square: square,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final steps = widget.steps;
     final card = _buildCard(context);
     if (steps == null) return card;
-    // Full 1080×1350 card for export. The stack does not clip a zero-size
-    // child, so it is shifted out of view; toImage reads the boundary before
-    // the shift, at pixelRatio 1 (same trick as the run finish poster).
     return Stack(
       fit: StackFit.passthrough,
       clipBehavior: Clip.none,
       children: [
         card,
-        Positioned(
-          left: 0,
-          top: 0,
-          width: 0,
-          height: 0,
-          child: IgnorePointer(
-            child: ExcludeSemantics(
-              child: OverflowBox(
-                alignment: Alignment.topLeft,
-                minWidth: WalkingGoalShareCard.canvasWidth,
-                maxWidth: WalkingGoalShareCard.canvasWidth,
-                minHeight: WalkingGoalShareCard.canvasHeight,
-                maxHeight: WalkingGoalShareCard.canvasHeight,
-                child: Transform.translate(
-                  offset: const Offset(
-                    -(WalkingGoalShareCard.canvasWidth + 8),
-                    -(WalkingGoalShareCard.canvasHeight + 8),
-                  ),
-                  child: RepaintBoundary(
-                    key: _captureBoundaryKey,
-                    child: WalkingGoalShareCard(
-                      key: WalkingDailyGoalCompleteCard.captureKey,
-                      steps: steps,
-                      goalSteps: widget.goalSteps,
-                      date: (widget.now ?? DateTime.now)(),
-                      badges: widget.badges,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+        _offscreen(
+          boundaryKey: _portraitKey,
+          cardKey: WalkingDailyGoalCompleteCard.captureKey,
+          square: false,
+          steps: steps,
+        ),
+        _offscreen(
+          boundaryKey: _squareKey,
+          cardKey: WalkingDailyGoalCompleteCard.captureSquareKey,
+          square: true,
+          steps: steps,
         ),
       ],
     );

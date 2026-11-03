@@ -38848,6 +38848,65 @@
       "vi": "Mục tiêu: ${goal} bước",
       "th": "เป้าหมาย ${goal} ก้าว",
       "id": "Target ${goal} langkah"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.feed_title",
+      "ko": "오늘의 목표 달성! ${steps}걸음",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_challenge_share",
+      "context": "카카오톡 피드 카드 제목. steps는 천 단위 쉼표가 있는 숫자.",
+      "placeholders": [
+        {
+          "name": "steps",
+          "format": "${steps}"
+        }
+      ],
+      "en": "Daily goal reached! ${steps} steps",
+      "ja": "今日の目標達成！${steps}歩",
+      "zh-TW": "今日目標達成！${steps} 步",
+      "es": "¡Objetivo cumplido! ${steps} pasos",
+      "pt-BR": "Meta cumprida! ${steps} passos",
+      "de": "Tagesziel erreicht! ${steps} Schritte",
+      "fr": "Objectif atteint ! ${steps} pas",
+      "vi": "Đạt mục tiêu hôm nay! ${steps} bước",
+      "th": "บรรลุเป้าหมายวันนี้! ${steps} ก้าว",
+      "id": "Target hari ini tercapai! ${steps} langkah"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.feed_description",
+      "ko": "걷고 SHARE 모으는 쉐어런",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_challenge_share",
+      "context": "카카오톡 피드 카드 설명.",
+      "placeholders": [],
+      "en": "ShareRun: walk and collect SHARE",
+      "ja": "ShareRun：歩いてSHAREを貯めよう",
+      "zh-TW": "ShareRun：走路賺取 SHARE",
+      "es": "ShareRun: camina y reúne SHARE",
+      "pt-BR": "ShareRun: caminhe e junte SHARE",
+      "de": "ShareRun: gehen und SHARE sammeln",
+      "fr": "ShareRun : marchez et récoltez des SHARE",
+      "vi": "ShareRun: đi bộ và gom SHARE",
+      "th": "ShareRun เดินแล้วสะสม SHARE",
+      "id": "ShareRun: berjalan dan kumpulkan SHARE"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.feed_button",
+      "ko": "쉐어런 시작하기",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_challenge_share",
+      "context": "카카오톡 피드 카드 버튼(스토어 링크).",
+      "placeholders": [],
+      "en": "Start ShareRun",
+      "ja": "ShareRunを始める",
+      "zh-TW": "開始使用 ShareRun",
+      "es": "Empezar con ShareRun",
+      "pt-BR": "Começar no ShareRun",
+      "de": "ShareRun starten",
+      "fr": "Démarrer ShareRun",
+      "vi": "Bắt đầu với ShareRun",
+      "th": "เริ่มใช้ ShareRun",
+      "id": "Mulai ShareRun"
     }
   ]
 }

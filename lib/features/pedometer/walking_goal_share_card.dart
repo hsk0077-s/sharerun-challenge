@@ -20,11 +20,17 @@ class WalkingGoalShareCard extends StatelessWidget {
     required this.date,
     this.style = RunFinishCardTheme.mint,
     this.badges,
+    this.square = false,
     super.key,
   });
 
   static const canvasWidth = 1080.0;
+
+  /// 4:5, for KakaoTalk chat rooms and the system sheet.
   static const canvasHeight = 1350.0;
+
+  /// 1:1, for the KakaoTalk feed card image.
+  static const squareHeight = 1080.0;
 
   static const headlineKey = Key('walking-goal-card-headline');
   static const stepsKey = Key('walking-goal-card-steps');
@@ -69,6 +75,9 @@ class WalkingGoalShareCard extends StatelessWidget {
   /// 동물 티어·천사 등급 원. null이거나 비어 있으면 그리지 않는다.
   final RunFinishTierBadges? badges;
 
+  /// 1080×1080 instead of 1080×1350. Same content, tighter spacing.
+  final bool square;
+
   @override
   Widget build(BuildContext context) {
     final palette = RunFinishCardPalette.of(style);
@@ -83,7 +92,7 @@ class WalkingGoalShareCard extends StatelessWidget {
         data: media.copyWith(textScaler: TextScaler.noScaling),
         child: SizedBox(
           width: canvasWidth,
-          height: canvasHeight,
+          height: square ? squareHeight : canvasHeight,
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: const Color(0xFF07110E),
@@ -101,7 +110,7 @@ class WalkingGoalShareCard extends StatelessWidget {
                 CustomPaint(painter: RunFinishTrackFieldPainter(palette.decor)),
                 CustomPaint(painter: _ConfettiPainter(palette)),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(76, 84, 76, 76),
+                  padding: EdgeInsets.fromLTRB(76, square ? 64 : 84, 76, square ? 60 : 76),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -189,7 +198,7 @@ class WalkingGoalShareCard extends StatelessWidget {
                               key: stepsKey,
                               style: TextStyle(
                                 fontFamily: RunFinishShareCard.fontFamily,
-                                fontSize: 232,
+                                fontSize: square ? 200 : 232,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: -7,
                                 color: palette.hero,

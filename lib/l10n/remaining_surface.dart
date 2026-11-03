@@ -2103,6 +2103,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending',
     'mini_bot.copy.prize_race',
     'pedometer.walking_goal_share_card.goal',
+    'pedometer.walking_goal_share_card.feed_title',
+    'pedometer.walking_goal_share_card.feed_description',
+    'pedometer.walking_goal_share_card.feed_button',
   ];
 
   static const _en = <String, String>{
@@ -4121,6 +4124,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'I\'m still checking the operator prize tournament entry fees. Please check the server fee in the tournament list. I don\'t enter you from here.',
     'mini_bot.copy.prize_race': 'Go to the operator prize tournament? The entry fees are \$costs.\$free \$week \$claim I only take you there; I don\'t confirm entry.',
     'pedometer.walking_goal_share_card.goal': 'Goal \${goal} steps',
+    'pedometer.walking_goal_share_card.feed_title': 'Daily goal reached! \${steps} steps',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun: walk and collect SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'Start ShareRun',
   };
 
   static const _ja = <String, String>{
@@ -6139,6 +6145,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': '運営者賞金大会の参加費を確認中です。大会一覧でサーバーの参加費を確認してください。ここでは参加しません。',
     'mini_bot.copy.prize_race': '運営者賞金大会に移動しますか? 参加費は\$costsです。\$free \$week \$claim 移動するだけで、参加は確定しません。',
     'pedometer.walking_goal_share_card.goal': '目標 \${goal}歩',
+    'pedometer.walking_goal_share_card.feed_title': '今日の目標達成！\${steps}歩',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun：歩いてSHAREを貯めよう',
+    'pedometer.walking_goal_share_card.feed_button': 'ShareRunを始める',
   };
 
   static const _zh = <String, String>{
@@ -8157,6 +8166,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': '正在確認營運者獎金賽事的參加費。請在賽事列表中確認伺服器上的參加費。這裡不會替您報名。',
     'mini_bot.copy.prize_race': '要前往營運者獎金賽事嗎?參加費為 \$costs。\$free \$week \$claim 只會帶您前往,不會確認報名。',
     'pedometer.walking_goal_share_card.goal': '目標 \${goal} 步',
+    'pedometer.walking_goal_share_card.feed_title': '今日目標達成！\${steps} 步',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun：走路賺取 SHARE',
+    'pedometer.walking_goal_share_card.feed_button': '開始使用 ShareRun',
   };
 
   static const _es = <String, String>{
@@ -10175,6 +10187,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'Sigo comprobando las cuotas del torneo con premios del operador. Revisa la cuota del servidor en la lista de torneos. Desde aquí no te inscribo.',
     'mini_bot.copy.prize_race': '¿Ir al torneo con premios del operador? Las cuotas son \$costs.\$free \$week \$claim Solo te llevo allí; no confirmo la inscripción.',
     'pedometer.walking_goal_share_card.goal': 'Objetivo: \${goal} pasos',
+    'pedometer.walking_goal_share_card.feed_title': '¡Objetivo cumplido! \${steps} pasos',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun: camina y reúne SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'Empezar con ShareRun',
   };
 
   static const _pt = <String, String>{
@@ -12193,6 +12208,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'Ainda estou verificando as taxas do torneio com prêmios do operador. Confira a taxa do servidor na lista de torneios. Não inscrevo você por aqui.',
     'mini_bot.copy.prize_race': 'Ir para o torneio com prêmios do operador? As taxas são \$costs.\$free \$week \$claim Só levo você até lá; não confirmo a inscrição.',
     'pedometer.walking_goal_share_card.goal': 'Meta: \${goal} passos',
+    'pedometer.walking_goal_share_card.feed_title': 'Meta cumprida! \${steps} passos',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun: caminhe e junte SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'Começar no ShareRun',
   };
 
   static const _de = <String, String>{
@@ -14211,6 +14229,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'Ich prüfe noch die Teilnahmegebühren des Preisturniers des Betreibers. Bitte sieh die Server-Gebühr in der Turnierliste nach. Von hier aus melde ich dich nicht an.',
     'mini_bot.copy.prize_race': 'Zum Preisturnier des Betreibers wechseln? Die Teilnahmegebühren betragen \$costs.\$free \$week \$claim Ich bringe dich nur dorthin und bestätige keine Anmeldung.',
     'pedometer.walking_goal_share_card.goal': 'Ziel: \${goal} Schritte',
+    'pedometer.walking_goal_share_card.feed_title': 'Tagesziel erreicht! \${steps} Schritte',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun: gehen und SHARE sammeln',
+    'pedometer.walking_goal_share_card.feed_button': 'ShareRun starten',
   };
 
   static const _fr = <String, String>{
@@ -16229,6 +16250,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'Je vérifie encore les frais de participation du tournoi à lots de l\'opérateur. Consultez les frais du serveur dans la liste des tournois. Je ne vous inscris pas d\'ici.',
     'mini_bot.copy.prize_race': 'Aller au tournoi à lots de l\'opérateur ? Les frais sont de \$costs.\$free \$week \$claim Je vous y emmène seulement ; je ne confirme pas l\'inscription.',
     'pedometer.walking_goal_share_card.goal': 'Objectif : \${goal} pas',
+    'pedometer.walking_goal_share_card.feed_title': 'Objectif atteint ! \${steps} pas',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun : marchez et récoltez des SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'Démarrer ShareRun',
   };
 
   static const _vi = <String, String>{
@@ -18247,6 +18271,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'Mình vẫn đang kiểm tra phí tham gia giải thưởng của bên vận hành. Hãy xem phí từ máy chủ trong danh sách giải đấu. Mình không đăng ký thay bạn ở đây.',
     'mini_bot.copy.prize_race': 'Đến giải thưởng của bên vận hành nhé? Phí tham gia là \$costs.\$free \$week \$claim Mình chỉ đưa bạn tới đó, không xác nhận đăng ký.',
     'pedometer.walking_goal_share_card.goal': 'Mục tiêu: \${goal} bước',
+    'pedometer.walking_goal_share_card.feed_title': 'Đạt mục tiêu hôm nay! \${steps} bước',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun: đi bộ và gom SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'Bắt đầu với ShareRun',
   };
 
   static const _th = <String, String>{
@@ -20265,6 +20292,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'ฉันกำลังตรวจสอบค่าสมัครของการแข่งขันชิงรางวัลของผู้ให้บริการ โปรดดูค่าสมัครจากเซิร์ฟเวอร์ในรายการแข่งขัน ฉันไม่สมัครให้จากตรงนี้',
     'mini_bot.copy.prize_race': 'ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ \$costs\$free \$week \$claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้',
     'pedometer.walking_goal_share_card.goal': 'เป้าหมาย \${goal} ก้าว',
+    'pedometer.walking_goal_share_card.feed_title': 'บรรลุเป้าหมายวันนี้! \${steps} ก้าว',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun เดินแล้วสะสม SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'เริ่มใช้ ShareRun',
   };
 
   static const _id = <String, String>{
@@ -22283,6 +22313,9 @@ class RemainingSurface {
     'mini_bot.copy.prize_race_pending': 'Saya masih memeriksa biaya turnamen berhadiah operator. Silakan cek biaya dari server di daftar turnamen. Saya tidak mendaftarkan Anda dari sini.',
     'mini_bot.copy.prize_race': 'Pindah ke turnamen berhadiah operator? Biayanya \$costs.\$free \$week \$claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.',
     'pedometer.walking_goal_share_card.goal': 'Target \${goal} langkah',
+    'pedometer.walking_goal_share_card.feed_title': 'Target hari ini tercapai! \${steps} langkah',
+    'pedometer.walking_goal_share_card.feed_description': 'ShareRun: berjalan dan kumpulkan SHARE',
+    'pedometer.walking_goal_share_card.feed_button': 'Mulai ShareRun',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

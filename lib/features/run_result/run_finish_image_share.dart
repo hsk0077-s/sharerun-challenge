@@ -110,9 +110,14 @@ abstract final class RunFinishImageShare {
   }
 
   /// True when [id] accepted the image. False asks the caller to use the sheet.
+  ///
+  /// [text] rides along as `EXTRA_TEXT` when given (the Walking Challenge brag
+  /// sends its sentence and store link with the card). The finish poster
+  /// passes none and stays image-only.
   static Future<bool> shareTarget({
     required String id,
     required String path,
+    String? text,
   }) async {
     final hook = debugShareTarget;
     if (hook != null) return hook(id, path);
@@ -120,6 +125,7 @@ abstract final class RunFinishImageShare {
       return await channel.invokeMethod<bool>('shareTarget', {
             'id': id,
             'path': path,
+            if (text != null && text.isNotEmpty) 'text': text,
           }) ??
           false;
     } catch (_) {

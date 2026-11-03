@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:kakao_flutter_sdk_share/kakao_flutter_sdk_share.dart';
@@ -6,7 +7,12 @@ import 'package:share_plus/share_plus.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/social_brand_icons.dart';
 
+import '../../core/constants/store_links.dart';
 import '../../l10n/remaining_surface.dart';
+import '../run_result/run_finish_image_share.dart';
+import '../run_result/run_finish_share_card.dart';
+import 'pedometer_harvest_ledger.dart';
+import 'walking_goal_share_card.dart';
 import 'walking_look.dart';
 
 /// Outcome of a direct KakaoTalk share. The system sheet is a separate path.
@@ -63,7 +69,8 @@ abstract final class WalkingChallengeShare {
 
   static String get dailyGoalBragText =>
       '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_text', '오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 하루 목표를 채웠어요.\n걷고 SHARE 모으고, 내일도 같이 걸어요!')}\n'
-      '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_tags', '#쉐어런 #워킹챌린지 #오늘의목표달성')}';
+      '${RemainingSurface.trNow('pedometer.walking_challenge_share.goal_brag_tags', '#쉐어런 #워킹챌린지 #오늘의목표달성')}\n'
+      '$kPlayStoreUrl';
 
   /// Test hook. Production always uses [SharePlus.instance].
   @visibleForTesting
@@ -158,7 +165,27 @@ abstract final class WalkingChallengeShare {
       return;
     }
 
-    final choice = await showModalBottomSheet<_ShareRoute>(
+    final choice = await _askRoute(context);
+    if (!context.mounted || choice == null) return;
+    switch (choice) {
+      case _ShareRoute.kakao:
+        final status = await shareToKakao(text: text);
+        if (status == KakaoDirectShareStatus.failed && context.mounted) {
+          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+            SnackBar(content: Text(kakaoShareFailedMessage)),
+          );
+        }
+      case _ShareRoute.system:
+        await openSystemSheet(
+          sharePositionOrigin: sharePositionOrigin,
+          text: text,
+          subject: subject,
+        );
+    }
+  }
+
+  static Future<_ShareRoute?> _askRoute(BuildContext context) {
+    return showModalBottomSheet<_ShareRoute>(
       context: context,
       builder: (sheetContext) {
         return SafeArea(
@@ -182,27 +209,76 @@ abstract final class WalkingChallengeShare {
         );
       },
     );
-    if (!context.mounted || choice == null) return;
-    switch (choice) {
-      case _ShareRoute.kakao:
-        final status = await shareToKakao(text: text);
-        if (status == KakaoDirectShareStatus.failed && context.mounted) {
-          ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-            SnackBar(content: Text(kakaoShareFailedMessage)),
-          );
-        }
-      case _ShareRoute.system:
-        await openSystemSheet(
-          sharePositionOrigin: sharePositionOrigin,
-          text: text,
-          subject: subject,
-        );
+  }
+
+  /// Image + text share. KakaoTalk when installed (the card file with the
+  /// sentence and link as `EXTRA_TEXT`), otherwise the system sheet with
+  /// `ShareParams(files, text)`. Falls back to the sheet when KakaoTalk
+  /// refuses the file.
+  static Future<void> openImageChooser(
+    BuildContext context, {
+    required File image,
+    required String text,
+    String? subject,
+    Rect? sharePositionOrigin,
+  }) async {
+    final kakaoInstalled = await isKakaoTalkInstalled();
+    if (!context.mounted) return;
+    var route = _ShareRoute.system;
+    if (kakaoInstalled) {
+      final choice = await _askRoute(context);
+      if (!context.mounted || choice == null) return;
+      route = choice;
     }
+    if (route == _ShareRoute.kakao) {
+      final sent = await RunFinishImageShare.shareTarget(
+        id: 'kakao',
+        path: image.path,
+        text: text,
+      );
+      if (sent) return;
+    }
+    await openSystemSheetWithImage(
+      image: image,
+      text: text,
+      subject: subject,
+      sharePositionOrigin: sharePositionOrigin,
+    );
+  }
+
+  static Future<ShareResult> openSystemSheetWithImage({
+    required File image,
+    required String text,
+    String? subject,
+    Rect? sharePositionOrigin,
+  }) {
+    final resolvedSubject = subject ?? WalkingChallengeShare.subject;
+    final params = ShareParams(
+      files: [
+        XFile(image.path, mimeType: 'image/png', name: 'share_run_goal.png'),
+      ],
+      text: text,
+      subject: resolvedSubject,
+      title: resolvedSubject,
+      sharePositionOrigin: sharePositionOrigin,
+    );
+    final send = debugShareOverride ?? SharePlus.instance.share;
+    return send(params);
   }
 
   static String _textForKakao(String text) {
     if (text.length <= kakaoTextLimit) return text;
-    return '${text.substring(0, kakaoTextLimit - 1)}…';
+    // Cut the sentence, never the store link at the end.
+    final lines = text.split('\n');
+    final link = lines.isNotEmpty && lines.last.startsWith('http')
+        ? lines.removeLast()
+        : '';
+    final head = lines.join('\n');
+    final room = kakaoTextLimit - (link.isEmpty ? 0 : link.length + 1) - 1;
+    final cut = room <= 0
+        ? ''
+        : '${head.substring(0, head.length < room ? head.length : room)}…';
+    return link.isEmpty ? cut : '$cut\n$link';
   }
 
   /// Default text template. App-execution params avoid a web domain this
@@ -222,18 +298,134 @@ abstract final class WalkingChallengeShare {
 
 enum _ShareRoute { kakao, system }
 
-/// Existing walking "오늘의 목표 달성!" dock + 자랑하기. Text share only.
-class WalkingDailyGoalCompleteCard extends StatelessWidget {
-  const WalkingDailyGoalCompleteCard({super.key});
+/// Walking "오늘의 목표 달성!" dock + 자랑하기. With [steps] it shares the image card
+/// and the brag text with the store link; without, text only.
+class WalkingDailyGoalCompleteCard extends StatefulWidget {
+  const WalkingDailyGoalCompleteCard({
+    super.key,
+    this.steps,
+    this.goalSteps = PedometerHarvestLedger.stepsForDailyCap,
+    this.badges,
+    this.now,
+  });
 
   static const cardKey = Key('walking-goal-complete');
 
+  /// Today's step count from the walking screen. Null keeps the old text-only
+  /// brag (no image), e.g. where the screen has no step value to show.
+  final int? steps;
+
+  /// Step goal printed on the image card. The dock appears when the daily
+  /// SHARE cap is reached, which is [PedometerHarvestLedger.stepsForDailyCap].
+  final int goalSteps;
+
+  /// 동물 티어·천사 등급 원. 아직 등급이 없으면 비워 둔다.
+  final RunFinishTierBadges? badges;
+
+  /// Test hook for the date printed on the card.
+  final DateTime Function()? now;
+
+  /// Off-screen capture boundary of the image card.
+  static const captureKey = Key('walking-goal-capture');
+
+  @override
+  State<WalkingDailyGoalCompleteCard> createState() =>
+      _WalkingDailyGoalCompleteCardState();
+}
+
+class _WalkingDailyGoalCompleteCardState
+    extends State<WalkingDailyGoalCompleteCard> {
+  final _captureBoundaryKey = GlobalKey();
+  var _sharing = false;
+
+  Future<void> _share(BuildContext buttonContext) async {
+    if (_sharing) return;
+    final steps = widget.steps;
+    if (steps == null) {
+      await _shareDailyGoalBrag(buttonContext);
+      return;
+    }
+    setState(() => _sharing = true);
+    try {
+      File image;
+      try {
+        image = await RunFinishImageShare.capture(_captureBoundaryKey);
+      } catch (e, st) {
+        // No image, still a share: the sentence and link go out as text.
+        debugPrint('WalkingChallengeShare.goalCardCapture: $e\n$st');
+        if (buttonContext.mounted) await _shareDailyGoalBrag(buttonContext);
+        return;
+      }
+      if (!buttonContext.mounted) return;
+      await WalkingChallengeShare.openImageChooser(
+        buttonContext,
+        image: image,
+        text: WalkingChallengeShare.dailyGoalBragText,
+        subject: WalkingChallengeShare.dailyGoalBragSubject,
+        sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
+      );
+    } catch (e, st) {
+      debugPrint('WalkingChallengeShare.dailyGoalBragImage: $e\n$st');
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final steps = widget.steps;
+    final card = _buildCard(context);
+    if (steps == null) return card;
+    // Full 1080×1350 card for export. The stack does not clip a zero-size
+    // child, so it is shifted out of view; toImage reads the boundary before
+    // the shift, at pixelRatio 1 (same trick as the run finish poster).
+    return Stack(
+      fit: StackFit.passthrough,
+      clipBehavior: Clip.none,
+      children: [
+        card,
+        Positioned(
+          left: 0,
+          top: 0,
+          width: 0,
+          height: 0,
+          child: IgnorePointer(
+            child: ExcludeSemantics(
+              child: OverflowBox(
+                alignment: Alignment.topLeft,
+                minWidth: WalkingGoalShareCard.canvasWidth,
+                maxWidth: WalkingGoalShareCard.canvasWidth,
+                minHeight: WalkingGoalShareCard.canvasHeight,
+                maxHeight: WalkingGoalShareCard.canvasHeight,
+                child: Transform.translate(
+                  offset: const Offset(
+                    -(WalkingGoalShareCard.canvasWidth + 8),
+                    -(WalkingGoalShareCard.canvasHeight + 8),
+                  ),
+                  child: RepaintBoundary(
+                    key: _captureBoundaryKey,
+                    child: WalkingGoalShareCard(
+                      key: WalkingDailyGoalCompleteCard.captureKey,
+                      steps: steps,
+                      goalSteps: widget.goalSteps,
+                      date: (widget.now ?? DateTime.now)(),
+                      badges: widget.badges,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCard(BuildContext context) {
     final tokens = context.srcTokens;
     final textTheme = Theme.of(context).textTheme;
     return Container(
-      key: cardKey,
+      key: WalkingDailyGoalCompleteCard.cardKey,
       padding: EdgeInsets.all(tokens.spacing.lg),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -279,8 +471,8 @@ class WalkingDailyGoalCompleteCard extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton.icon(
                   key: WalkingChallengeShare.dailyGoalBragKey,
-                  onPressed: () =>
-                      unawaited(_shareDailyGoalBrag(buttonContext)),
+                  onPressed:
+                      _sharing ? null : () => unawaited(_share(buttonContext)),
                   icon: const Icon(Icons.ios_share, size: 18),
                   label: Text(
                     WalkingChallengeShare.dailyGoalBragButtonLabel,

@@ -215,7 +215,7 @@ class RunFinishShareCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final palette = _CardPalette.of(style);
+    final palette = RunFinishCardPalette.of(style);
     final donation = runFinishDonationLine(donationWon);
     final media = MediaQuery.maybeOf(context) ?? const MediaQueryData();
     final paceParts = _paceParts;
@@ -252,9 +252,9 @@ class RunFinishShareCard extends StatelessWidget {
                 if (hasPhoto)
                   const _PhotoScrim(key: RunFinishShareCard.photoKey),
                 if (!hasPhoto)
-                  CustomPaint(painter: _AtmospherePainter(palette)),
+                  CustomPaint(painter: RunFinishAtmospherePainter(palette)),
                 if (!hasPhoto && !_hasRoute)
-                  CustomPaint(painter: _TrackFieldPainter(palette.decor)),
+                  CustomPaint(painter: RunFinishTrackFieldPainter(palette.decor)),
                 if (_hasRoute)
                   CustomPaint(
                     painter:
@@ -294,7 +294,7 @@ class RunFinishShareCard extends StatelessWidget {
                   Positioned(
                     top: storySafeInset + 4,
                     right: 76,
-                    child: _TierBadgeRow(
+                    child: RunFinishTierBadgeRow(
                       key: RunFinishShareCard.badgesKey,
                       badges: badges!,
                       palette: palette,
@@ -318,11 +318,11 @@ class RunFinishShareCard extends StatelessWidget {
   }
 }
 
-class _TierBadgeRow extends StatelessWidget {
-  const _TierBadgeRow({super.key, required this.badges, required this.palette});
+class RunFinishTierBadgeRow extends StatelessWidget {
+  const RunFinishTierBadgeRow({super.key, required this.badges, required this.palette});
 
   final RunFinishTierBadges badges;
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
 
   static const _size = 150.0;
 
@@ -409,7 +409,7 @@ class _RecordColumn extends StatelessWidget {
     required this.averageHeartRate,
   });
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
   final String dateLabel;
   final String distanceKm;
   final String time;
@@ -507,7 +507,7 @@ class _RecordColumn extends StatelessWidget {
           _DonationBadge(palette: palette, donation: donation!),
         ],
         const Spacer(),
-        _BrandLockup(palette: palette),
+        RunFinishBrandLockup(palette: palette),
       ],
     );
   }
@@ -517,7 +517,7 @@ class _RecordColumn extends StatelessWidget {
 class _SplitGraph extends StatelessWidget {
   const _SplitGraph({required this.palette, required this.paces});
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
   final List<int> paces;
 
   double _height(int pace, int fastest, int slowest) {
@@ -588,7 +588,7 @@ class _HeroDistance extends StatelessWidget {
   const _HeroDistance({required this.distanceKm, required this.palette});
 
   final String distanceKm;
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -637,7 +637,7 @@ class _StatRow extends StatelessWidget {
     required this.paceUnit,
   });
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
   final String time;
   final String paceNumber;
   final String paceUnit;
@@ -681,7 +681,7 @@ class _StatChip extends StatelessWidget {
     this.unit = '',
   });
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
   final _LineIconKind kind;
   final String label;
   final String value;
@@ -776,7 +776,7 @@ class _StatChip extends StatelessWidget {
 class _DonationBadge extends StatelessWidget {
   const _DonationBadge({required this.palette, required this.donation});
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
   final String donation;
 
   @override
@@ -843,10 +843,10 @@ class _DonationBadge extends StatelessWidget {
   }
 }
 
-class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({required this.palette});
+class RunFinishBrandLockup extends StatelessWidget {
+  const RunFinishBrandLockup({super.key, required this.palette});
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
 
   @override
   Widget build(BuildContext context) {
@@ -916,8 +916,8 @@ class _BrandLockup extends StatelessWidget {
   }
 }
 
-class _CardPalette {
-  const _CardPalette({
+class RunFinishCardPalette {
+  const RunFinishCardPalette({
     required this.background,
     required this.glow,
     required this.glowAlpha,
@@ -951,9 +951,9 @@ class _CardPalette {
   final Color badge;
   final Color badgeInk;
 
-  static _CardPalette of(RunFinishCardTheme style) {
+  static RunFinishCardPalette of(RunFinishCardTheme style) {
     return switch (style) {
-      RunFinishCardTheme.photo || RunFinishCardTheme.dark => const _CardPalette(
+      RunFinishCardTheme.photo || RunFinishCardTheme.dark => const RunFinishCardPalette(
           background: [Color(0xFF07110E), Color(0xFF123028), Color(0xFF0C241C)],
           glow: Color(0xFF76C8A7),
           glowAlpha: 0.42,
@@ -970,7 +970,7 @@ class _CardPalette {
           badge: Color(0xFFF6D7A8),
           badgeInk: Color(0xFF2A1C08),
         ),
-      RunFinishCardTheme.blue => const _CardPalette(
+      RunFinishCardTheme.blue => const RunFinishCardPalette(
           background: [Color(0xFF07152E), Color(0xFF14367A), Color(0xFF0E2A62)],
           glow: Color(0xFF8EB6FF),
           glowAlpha: 0.48,
@@ -987,7 +987,7 @@ class _CardPalette {
           badge: Color(0xFFFFE3B0),
           badgeInk: Color(0xFF2A1C08),
         ),
-      RunFinishCardTheme.pink => const _CardPalette(
+      RunFinishCardTheme.pink => const RunFinishCardPalette(
           background: [Color(0xFFFFF7FA), Color(0xFFFFD0E2), Color(0xFFFFB4CE)],
           glow: Color(0xFFFF7AA8),
           glowAlpha: 0.38,
@@ -1004,7 +1004,7 @@ class _CardPalette {
           badge: Color(0xFFA61E56),
           badgeInk: Color(0xFFFFFFFF),
         ),
-      RunFinishCardTheme.yellow => const _CardPalette(
+      RunFinishCardTheme.yellow => const RunFinishCardPalette(
           background: [Color(0xFFFFF8EC), Color(0xFFFFE3A0), Color(0xFFFFC44A)],
           glow: Color(0xFFFFF6D8),
           glowAlpha: 0.7,
@@ -1021,7 +1021,7 @@ class _CardPalette {
           badge: Color(0xFF2A1C08),
           badgeInk: Color(0xFFFFF6E4),
         ),
-      RunFinishCardTheme.mint => const _CardPalette(
+      RunFinishCardTheme.mint => const RunFinishCardPalette(
           background: [Color(0xFF102820), Color(0xFF1B6A56), Color(0xFF3A2770)],
           glow: Color(0xFFC9B6FF),
           glowAlpha: 0.4,
@@ -1069,10 +1069,10 @@ class _PhotoScrim extends StatelessWidget {
   }
 }
 
-class _AtmospherePainter extends CustomPainter {
-  const _AtmospherePainter(this.palette);
+class RunFinishAtmospherePainter extends CustomPainter {
+  const RunFinishAtmospherePainter(this.palette);
 
-  final _CardPalette palette;
+  final RunFinishCardPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -1100,13 +1100,13 @@ class _AtmospherePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _AtmospherePainter oldDelegate) =>
+  bool shouldRepaint(covariant RunFinishAtmospherePainter oldDelegate) =>
       oldDelegate.palette != palette;
 }
 
 /// Abstract track, used when this run has no route so the poster is not empty.
-class _TrackFieldPainter extends CustomPainter {
-  const _TrackFieldPainter(this.color);
+class RunFinishTrackFieldPainter extends CustomPainter {
+  const RunFinishTrackFieldPainter(this.color);
 
   final Color color;
 
@@ -1196,7 +1196,7 @@ class _TrackFieldPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _TrackFieldPainter oldDelegate) =>
+  bool shouldRepaint(covariant RunFinishTrackFieldPainter oldDelegate) =>
       oldDelegate.color != color;
 }
 

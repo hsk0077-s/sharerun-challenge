@@ -37,6 +37,7 @@ object RunFinishImageShare {
                         activity.shareToTarget(
                             call.argument("id"),
                             call.argument("path"),
+                            call.argument("text"),
                         ),
                     )
                     else -> result.notImplemented()
@@ -101,7 +102,7 @@ private fun MainActivity.installedShareTargets(): List<String> {
     return ids
 }
 
-private fun MainActivity.shareToTarget(id: String?, path: String?): Boolean {
+private fun MainActivity.shareToTarget(id: String?, path: String?, text: String? = null): Boolean {
     if (id == "story") return shareInstagramStory(path)
     val pkg = when (id) {
         "feed" -> "com.instagram.android"
@@ -123,6 +124,7 @@ private fun MainActivity.shareToTarget(id: String?, path: String?): Boolean {
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "image/png"
         putExtra(Intent.EXTRA_STREAM, uri)
+        if (!text.isNullOrBlank()) putExtra(Intent.EXTRA_TEXT, text)
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         clipData = ClipData.newRawUri("share_run", uri)
         setPackage(pkg)

@@ -32,6 +32,8 @@ import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/pedometer/walking_challenge_share.dart';
 import '../features/pedometer/walking_look.dart';
+import '../features/pedometer/walking_goal_share_card.dart';
+import '../features/run_result/run_finish_share_card.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_walk_banner.dart';
@@ -1902,6 +1904,12 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                     ),
                   ),
                   _WalkingHarvestDock(
+                    steps: _steps,
+                    badges: walkingGoalBadges(
+                      context,
+                      tier: running,
+                      angel: ref.watch(userAngelTierProvider),
+                    ),
                     isMaxDailyReached: isMaxDailyReached,
                     hasPendingCoins: hasPendingCoins,
                     pendingCoinsInt: pendingCoinsInt,
@@ -2448,12 +2456,16 @@ class _HeroStatChip extends StatelessWidget {
 
 class _WalkingHarvestDock extends StatelessWidget {
   const _WalkingHarvestDock({
+    required this.steps,
+    required this.badges,
     required this.isMaxDailyReached,
     required this.hasPendingCoins,
     required this.pendingCoinsInt,
     required this.onClaim,
   });
 
+  final int steps;
+  final RunFinishTierBadges badges;
   final bool isMaxDailyReached;
   final bool hasPendingCoins;
   final int pendingCoinsInt;
@@ -2473,7 +2485,7 @@ class _WalkingHarvestDock extends StatelessWidget {
             tokens.spacing.page,
             tokens.spacing.sm,
           ),
-          child: const WalkingDailyGoalCompleteCard(),
+          child: WalkingDailyGoalCompleteCard(steps: steps, badges: badges),
         ),
       );
     }

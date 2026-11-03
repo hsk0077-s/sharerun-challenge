@@ -38825,6 +38825,29 @@
       "th": "ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ $costs$free $week $claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้",
       "id": "Pindah ke turnamen berhadiah operator? Biayanya $costs.$free $week $claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.",
       "native_review": "pending"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.goal",
+      "ko": "목표 ${goal}걸음",
+      "file": "lib/features/pedometer/walking_goal_share_card.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "context": "오늘의 목표 달성 자랑 카드의 목표 걸음 수 줄. goal은 천 단위 쉼표가 있는 숫자.",
+      "placeholders": [
+        {
+          "name": "goal",
+          "format": "${goal}"
+        }
+      ],
+      "en": "Goal ${goal} steps",
+      "ja": "目標 ${goal}歩",
+      "zh-TW": "目標 ${goal} 步",
+      "es": "Objetivo: ${goal} pasos",
+      "pt-BR": "Meta: ${goal} passos",
+      "de": "Ziel: ${goal} Schritte",
+      "fr": "Objectif : ${goal} pas",
+      "vi": "Mục tiêu: ${goal} bước",
+      "th": "เป้าหมาย ${goal} ก้าว",
+      "id": "Target ${goal} langkah"
     }
   ]
 }

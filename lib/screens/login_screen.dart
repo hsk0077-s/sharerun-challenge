@@ -9,6 +9,7 @@ import '../app/router/route_names.dart';
 import '../core/auth/local_auth_session.dart';
 import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
+import '../features/invite/install_referrer.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
@@ -40,6 +41,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _referralController = TextEditingController();
   var _socialBusy = false;
   var _referralFieldVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_fillInviteFromInstall());
+  }
+
+  /// A friend's brag card link leaves its sender's invite code in the Play
+  /// Install Referrer. It only fills the field (and opens it): linking and any
+  /// reward still go through [_redeemEnteredReferral] and the server rules.
+  Future<void> _fillInviteFromInstall() async {
+    final code = await InstallReferrer.takeInviteCode();
+    if (code == null || !mounted) return;
+    if (_referralController.text.trim().isNotEmpty) return;
+    setState(() {
+      _referralController.text = code;
+      _referralFieldVisible = true;
+    });
+  }
 
   @override
   void dispose() {

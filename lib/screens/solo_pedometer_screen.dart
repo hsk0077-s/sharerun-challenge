@@ -32,6 +32,9 @@ import '../features/pedometer/today_steps.dart';
 import '../features/pedometer/walking_challenge_notification_service.dart';
 import '../features/pedometer/walking_challenge_share.dart';
 import '../features/pedometer/walking_look.dart';
+import '../features/profile/widgets/my_page_invite_code_card.dart' show myPageInviteCodeLoaderProvider;
+import '../features/pedometer/walking_goal_share_card.dart';
+import '../features/run_result/run_finish_share_card.dart';
 import '../features/voice_coaching/voice_coaching_controller.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import '../features/voice_coaching/widgets/voice_coaching_walk_banner.dart';
@@ -1800,6 +1803,7 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
     );
     final isMaxDailyReached =
         serverMined >= PedometerHarvestLedger.dailyShareCap;
+    final streak = ref.watch(practiceStreakProvider);
 
     return Theme(
       data: SrcTheme.night,
@@ -1902,6 +1906,24 @@ class _SoloPedometerScreenState extends ConsumerState<SoloPedometerScreen>
                     ),
                   ),
                   _WalkingHarvestDock(
+                    steps: _steps,
+                    // Only what the server has confirmed: no profile yet, or
+                    // nothing mined, means no SHARE line on the card.
+                    shareToday: harvestProfile == null ? null : serverMined,
+                    streakDays: streak.ready ? streak.count : null,
+                    loadInviteCode: () async {
+                      try {
+                        return await ref
+                            .read(myPageInviteCodeLoaderProvider)();
+                      } catch (_) {
+                        return null;
+                      }
+                    },
+                    badges: walkingGoalBadges(
+                      context,
+                      tier: running,
+                      angel: ref.watch(userAngelTierProvider),
+                    ),
                     isMaxDailyReached: isMaxDailyReached,
                     hasPendingCoins: hasPendingCoins,
                     pendingCoinsInt: pendingCoinsInt,
@@ -2448,12 +2470,22 @@ class _HeroStatChip extends StatelessWidget {
 
 class _WalkingHarvestDock extends StatelessWidget {
   const _WalkingHarvestDock({
+    required this.steps,
+    required this.badges,
+    required this.shareToday,
+    required this.streakDays,
+    required this.loadInviteCode,
     required this.isMaxDailyReached,
     required this.hasPendingCoins,
     required this.pendingCoinsInt,
     required this.onClaim,
   });
 
+  final int steps;
+  final RunFinishTierBadges badges;
+  final int? shareToday;
+  final int? streakDays;
+  final Future<String?> Function() loadInviteCode;
   final bool isMaxDailyReached;
   final bool hasPendingCoins;
   final int pendingCoinsInt;
@@ -2473,7 +2505,13 @@ class _WalkingHarvestDock extends StatelessWidget {
             tokens.spacing.page,
             tokens.spacing.sm,
           ),
-          child: const WalkingDailyGoalCompleteCard(),
+          child: WalkingDailyGoalCompleteCard(
+            steps: steps,
+            badges: badges,
+            shareToday: shareToday,
+            streakDays: streakDays,
+            loadInviteCode: loadInviteCode,
+          ),
         ),
       );
     }

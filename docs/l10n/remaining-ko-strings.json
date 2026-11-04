@@ -38825,6 +38825,193 @@
       "th": "ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ $costs$free $week $claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้",
       "id": "Pindah ke turnamen berhadiah operator? Biayanya $costs.$free $week $claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.",
       "native_review": "pending"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.goal",
+      "ko": "목표 ${goal}걸음",
+      "file": "lib/features/pedometer/walking_goal_share_card.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "context": "자랑 카드 목표 걸음 수.",
+      "placeholders": [
+        {
+          "name": "goal",
+          "format": "${goal}"
+        }
+      ],
+      "en": "Goal ${goal} Steps",
+      "ja": "目標 ${goal}歩",
+      "zh-TW": "目標 ${goal}步",
+      "es": "Meta ${goal} pasos",
+      "pt-BR": "Meta ${goal} passos",
+      "de": "Ziel ${goal} Schritte",
+      "fr": "Objectif ${goal} pas",
+      "vi": "Mục tiêu ${goal} bước",
+      "th": "เป้าหมาย ${goal} ก้าว",
+      "id": "Target ${goal} langkah"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.feed_title",
+      "ko": "오늘의 목표 달성! ${steps}걸음",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_challenge_share",
+      "context": "카카오톡 피드 카드 제목.",
+      "placeholders": [
+        {
+          "name": "steps",
+          "format": "${steps}"
+        }
+      ],
+      "en": "Goal Achieved! · ${steps} Steps",
+      "ja": "目標達成！ · ${steps}歩",
+      "zh-TW": "目標達成！ · ${steps}步",
+      "es": "¡Meta lograda! · ${steps} pasos",
+      "pt-BR": "Meta concluída! · ${steps} passos",
+      "de": "Ziel erreicht! · ${steps} Schritte",
+      "fr": "Objectif atteint ! · ${steps} pas",
+      "vi": "Hoàn thành! · ${steps} bước",
+      "th": "สำเร็จเป้าหมาย! · ${steps} ก้าว",
+      "id": "Target Tercapai! · ${steps} langkah"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.feed_description",
+      "ko": "걷고 SHARE 모으는 쉐어런",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_challenge_share",
+      "context": "카카오톡 피드 카드 설명.",
+      "placeholders": [],
+      "en": "ShareRun: walk and collect SHARE",
+      "ja": "ShareRun：歩いてSHAREを貯めよう",
+      "zh-TW": "ShareRun：走路賺取 SHARE",
+      "es": "ShareRun: camina y reúne SHARE",
+      "pt-BR": "ShareRun: caminhe e junte SHARE",
+      "de": "ShareRun: gehen und SHARE sammeln",
+      "fr": "ShareRun : marchez et récoltez des SHARE",
+      "vi": "ShareRun: đi bộ và gom SHARE",
+      "th": "ShareRun เดินแล้วสะสม SHARE",
+      "id": "ShareRun: berjalan dan kumpulkan SHARE"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.feed_button",
+      "ko": "함께 시작하기",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_challenge_share",
+      "context": "카카오톡 피드 카드 버튼(초대 코드가 붙은 스토어 링크).",
+      "placeholders": [],
+      "en": "Join in",
+      "ja": "一緒に始める",
+      "zh-TW": "一起開始",
+      "es": "Únete",
+      "pt-BR": "Participe também",
+      "de": "Mitmachen",
+      "fr": "Rejoindre",
+      "vi": "Cùng bắt đầu",
+      "th": "มาเริ่มด้วยกัน",
+      "id": "Mulai bersama"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.headline",
+      "file": "lib/features/pedometer/walking_goal_share_card.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "ko": "오늘의 목표 달성!",
+      "context": "자랑 카드 리본 문구.",
+      "placeholders": [],
+      "en": "Goal Achieved!",
+      "ja": "目標達成！",
+      "zh-TW": "目標達成！",
+      "es": "¡Meta lograda!",
+      "pt-BR": "Meta concluída!",
+      "de": "Ziel erreicht!",
+      "fr": "Objectif atteint !",
+      "vi": "Hoàn thành!",
+      "th": "สำเร็จเป้าหมาย!",
+      "id": "Target Tercapai!"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.brag_steps",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "ko": "오늘의 목표 달성! 🎉\n쉐어런 워킹챌린지에서 오늘 ${steps}걸음을 채웠어요.\n걷고 SHARE 모으고, 내일도 같이 걸어요!\n#쉐어런 #워킹챌린지 #오늘의목표달성",
+      "context": "자랑하기 공유 글(걸음 수 포함, 해시태그 포함, 링크 제외). 줄바꿈 유지.",
+      "placeholders": [
+        {
+          "name": "steps",
+          "format": "${steps}"
+        }
+      ],
+      "en": "Goal achieved! 🎉\nWalked ${steps} steps in ShareRun today. Walk, earn SHARE, and let's keep going tomorrow!\n#ShareRun #WalkingChallenge",
+      "ja": "今日の目標達成！🎉\nShareRunで${steps}歩クリアしました。歩いてSHAREを集めよう！明日も一緒に歩こう！\n#ShareRun #ウォーキング",
+      "zh-TW": "今日目標達成！🎉\n在ShareRun走了${steps}步。邊走邊賺SHARE，明天繼續一起走！\n#ShareRun #健步挑戰",
+      "es": "¡Meta del día! 🎉\nLogré ${steps} pasos en ShareRun. ¡Camina, gana SHARE y sigamos mañana!\n#ShareRun #RetoDePasos",
+      "pt-BR": "Meta de hoje concluída! 🎉\nDei ${steps} passos no ShareRun. Caminhe, ganhe SHARE e vamos juntos amanhã!\n#ShareRun #DesafioDeCaminhada",
+      "de": "Tagesziel erreicht! 🎉\n${steps} Schritte in ShareRun geschafft. Gehen, SHARE sammeln und morgen weiterlaufen!\n#ShareRun #SchrittChallenge",
+      "fr": "Objectif atteint ! 🎉\n${steps} pas faits sur ShareRun. Marchez, gagnez des SHARE et continuons demain !\n#ShareRun #DefiMarche",
+      "vi": "Hoàn thành mục tiêu! 🎉\nĐã đi ${steps} bước cùng ShareRun. Đi bộ, nhận SHARE, ngày mai đi tiếp nhé!\n#ShareRun #ThuthachDibo",
+      "th": "สำเร็จเป้าหมายวันนี้! 🎉\nเดินครบ ${steps} ก้าวใน ShareRun เดินสะสม SHARE แล้วพรุ่งนี้มาเดินด้วยกันต่อ!\n#ShareRun #เดินออกกำลังกาย",
+      "id": "Target hari ini tercapai! 🎉\nBerjalan ${steps} langkah di ShareRun. Jalan, kumpulkan SHARE, & lanjut besok!\n#ShareRun #TantanganJalan"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.tagline",
+      "file": "lib/features/pedometer/walking_goal_share_card.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "ko": "걸음으로 리워드를 모으고 기부에 함께해요",
+      "context": "받는 사람에게 건네는 카드 맨 아래 한 줄.",
+      "placeholders": [],
+      "en": "Collect rewards with every step and join in giving back",
+      "ja": "歩いてリワードを集め、寄付にも参加しよう",
+      "zh-TW": "用步數累積回饋，一起參與捐贈",
+      "es": "Reúne recompensas caminando y súmate a donar",
+      "pt-BR": "Junte recompensas caminhando e participe das doações",
+      "de": "Mit jedem Schritt Belohnungen sammeln und beim Spenden mitmachen",
+      "fr": "Gagnez des récompenses en marchant et rejoignez les dons",
+      "vi": "Đi bộ nhận thưởng và cùng tham gia quyên góp",
+      "th": "เดินสะสมรางวัลและร่วมบริจาคไปด้วยกัน",
+      "id": "Kumpulkan hadiah dari langkahmu dan ikut berdonasi"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.streak",
+      "file": "lib/features/pedometer/walking_goal_share_card.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "ko": "${days}일 연속",
+      "context": "자랑 카드 연속 달성 일수.",
+      "placeholders": [
+        {
+          "name": "days",
+          "format": "${days}"
+        }
+      ],
+      "en": "${days}-day streak",
+      "ja": "${days}日連続",
+      "zh-TW": "連續 ${days} 天",
+      "es": "${days} días seguidos",
+      "pt-BR": "${days} dias seguidos",
+      "de": "${days} Tage in Folge",
+      "fr": "${days} jours de suite",
+      "vi": "${days} ngày liên tiếp",
+      "th": "${days} วันติดต่อกัน",
+      "id": "${days} hari berturut-turut"
+    },
+    {
+      "key": "pedometer.walking_goal_share_card.invite_line",
+      "file": "lib/features/pedometer/walking_challenge_share.dart",
+      "screen": "pedometer.walking_goal_share_card",
+      "ko": "함께 시작해요! 초대 코드 ${code}",
+      "context": "공유 글 끝의 초대 코드 줄.",
+      "placeholders": [
+        {
+          "name": "code",
+          "format": "${code}"
+        }
+      ],
+      "en": "Join me! Invite code ${code}",
+      "ja": "一緒に始めよう！招待コード ${code}",
+      "zh-TW": "一起開始吧！邀請碼 ${code}",
+      "es": "¡Únete! Código de invitación ${code}",
+      "pt-BR": "Venha comigo! Código de convite ${code}",
+      "de": "Mach mit! Einladungscode ${code}",
+      "fr": "Rejoignez-moi ! Code d'invitation ${code}",
+      "vi": "Cùng bắt đầu nhé! Mã mời ${code}",
+      "th": "มาเริ่มด้วยกัน! รหัสเชิญ ${code}",
+      "id": "Yuk mulai bareng! Kode undangan ${code}"
     }
   ]
 }

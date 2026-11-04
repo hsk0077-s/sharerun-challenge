@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Walking Challenge brag card: one public PNG per share.
+//   share_cards/{random 32 hex}.png
+// The path holds no user id and no date. Who uploaded it is in the object's
+// custom metadata (`uid`), which only the rules and the owner can see.
+//   - get:    anyone with the link (KakaoTalk fetches the image unsigned)
+//   - list:   nobody, so the folder cannot be browsed
+//   - create: a signed-in user, PNG, at most 5 MB, metadata uid == own uid
+//   - update: nobody (a new share is a new file)
+//   - delete: the uploader only
+// Files are removed after 30 days by a bucket lifecycle rule, see
+// docs/share-card-storage.md. Everything else is closed.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /share_cards/{file} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.auth != null
+        && request.resource.metadata.uid == request.auth.uid
+        && request.resource.size <= 5 * 1024 * 1024
+        && request.resource.contentType == 'image/png'
+        && file.matches('[0-9a-f]{32}\\.png');
+      allow update: if false;
+      allow delete: if request.auth != null
+        && resource.metadata.uid == request.auth.uid;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

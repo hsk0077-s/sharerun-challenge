@@ -187,4 +187,6 @@ dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
     // Play Integrity: device/app verdict, recorded by the server only.
     implementation("com.google.android.play:integrity:1.4.0")
+    // Play Install Referrer: invite code from a brag card link (see InstallReferrerChannel).
+    implementation("com.android.installreferrer:installreferrer:2.2")
 }

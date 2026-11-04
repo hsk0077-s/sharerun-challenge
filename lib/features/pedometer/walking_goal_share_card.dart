@@ -450,20 +450,30 @@ class _GoalCircle extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
+          // "목표 10,000걸음" -> "목표" over "10,000걸음". Each line is scaled to
+          // fit the ring, so a long word in another language shrinks instead of
+          // breaking in the middle.
           Flexible(
-            child: Text(
-              WalkingGoalShareCard.keepWordsTogether(text),
-              key: WalkingGoalShareCard.goalKey,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: RunFinishShareCard.fontFamily,
-                fontSize: size < 200 ? 24 : 30,
-                fontWeight: FontWeight.w800,
-                color: WalkingGoalShareCard.palette.hero,
-                height: 1.25,
-              ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (index, line) in _goalLines(text).indexed)
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      line,
+                      key: index == 0 ? WalkingGoalShareCard.goalKey : null,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontFamily: RunFinishShareCard.fontFamily,
+                        fontSize: size < 200 ? 28 : 32,
+                        fontWeight: FontWeight.w800,
+                        color: WalkingGoalShareCard.palette.hero,
+                        height: 1.25,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],
@@ -474,6 +484,14 @@ class _GoalCircle extends StatelessWidget {
 
 /// A bold pill for what the sender earned: filled and large, so the friend
 /// who receives the card reads it first after the step count.
+/// First word, then the rest: `['목표', '10,000걸음']`. One line when there is
+/// no space (a language that writes without spaces).
+List<String> _goalLines(String text) {
+  final i = text.indexOf(' ');
+  if (i <= 0) return [text];
+  return [text.substring(0, i), text.substring(i + 1)];
+}
+
 class _Chip extends StatelessWidget {
   const _Chip({
     super.key,

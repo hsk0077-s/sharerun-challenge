@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../l10n/remaining_surface.dart';
+import '../../l10n/surface_rest.dart' show animalLabel;
 import '../onboarding/src_onboarding_controller.dart';
 import '../profile/widgets/tier_circle_badge.dart';
 import '../run_result/run_finish_share_card.dart';
@@ -49,6 +50,11 @@ class WalkingGoalShareCard extends StatelessWidget {
   static const streakKey = Key('walking-goal-card-streak');
   static const taglineKey = Key('walking-goal-card-tagline');
 
+  /// The goal the card is about: 10,000 steps (the ring and the ribbon). The
+  /// 6,000 steps behind the daily SHARE cap is a different thing and never
+  /// appears on the ring.
+  static const dailyGoalSteps = 10000;
+
   /// Streaks shorter than this are not worth showing ("1 day" is not a streak).
   static const minStreakShown = 2;
 
@@ -66,7 +72,7 @@ class WalkingGoalShareCard extends StatelessWidget {
       );
   static String get tagline => RemainingSurface.trNow(
         'pedometer.walking_goal_share_card.tagline',
-        '나도 걸으면 리워드와 기부가 쌓여요',
+        '걸음으로 리워드를 모으고 기부에 함께해요',
       );
   static String goalLine(int goalSteps) => RemainingSurface.trNow(
         'pedometer.walking_goal_share_card.goal',
@@ -204,8 +210,10 @@ class WalkingGoalShareCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      SizedBox(height: square ? 20 : 30),
-                      _Ribbon(text: headline, compact: square),
+                      if (steps >= goalSteps) ...[
+                        SizedBox(height: square ? 20 : 30),
+                        _Ribbon(text: headline, compact: square),
+                      ],
                       const Spacer(),
                       Text(
                         stepsLabel,
@@ -277,15 +285,21 @@ class WalkingGoalShareCard extends StatelessWidget {
                                     key: shareKey,
                                     text: '+${commaSteps(shareToday!)} SHARE',
                                     leading: const _Dot(),
+                                    fill: palette.unit,
+                                    ink: const Color(0xFF06142E),
+                                    fontSize: square ? 40 : 46,
                                   ),
                                 if (showStreak)
                                   _Chip(
                                     key: streakKey,
                                     text: streakLine(streakDays!),
                                     leading: const CustomPaint(
-                                      size: Size(34, 40),
+                                      size: Size(36, 42),
                                       painter: _FlamePainter(),
                                     ),
+                                    fill: const Color(0xFFFFB347),
+                                    ink: const Color(0xFF06142E),
+                                    fontSize: square ? 40 : 46,
                                   ),
                               ],
                             ),
@@ -458,38 +472,49 @@ class _GoalCircle extends StatelessWidget {
   }
 }
 
+/// A bold pill for what the sender earned: filled and large, so the friend
+/// who receives the card reads it first after the step count.
 class _Chip extends StatelessWidget {
-  const _Chip({super.key, required this.text, required this.leading});
+  const _Chip({
+    super.key,
+    required this.text,
+    required this.leading,
+    required this.fill,
+    required this.ink,
+    required this.fontSize,
+  });
 
   final String text;
   final Widget leading;
+  final Color fill;
+  final Color ink;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: WalkingGoalShareCard.palette.chip,
+        color: fill,
         borderRadius: BorderRadius.circular(60),
-        border: Border.all(
-          color: WalkingGoalShareCard.palette.unit.withValues(alpha: 0.7),
-          width: 2,
-        ),
+        boxShadow: [
+          BoxShadow(color: fill.withValues(alpha: 0.45), blurRadius: 30),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             leading,
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Text(
               text,
               style: TextStyle(
                 fontFamily: RunFinishShareCard.fontFamily,
-                fontSize: 36,
-                fontWeight: FontWeight.w800,
-                color: WalkingGoalShareCard.palette.hero,
-                height: 1.3,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w900,
+                color: ink,
+                height: 1.25,
               ),
             ),
           ],
@@ -507,9 +532,9 @@ class _Dot extends StatelessWidget {
     return Container(
       width: 30,
       height: 30,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        color: WalkingGoalShareCard.palette.unit,
+        color: Color(0xFF06142E),
       ),
     );
   }
@@ -774,16 +799,22 @@ class _FlamePainter extends CustomPainter {
 }
 
 /// Tier circles for the goal card. A user with no animal tier yet (snail)
-/// gets the default snail character, not an empty spot. The angel circle is
-/// left out until the user has an angel tier.
+/// gets the first tier animal, the turtle, not an empty spot: the tiers are
+/// turtle, beagle, wolf, zebra, cheetah. The angel circle is left out until
+/// the user has an angel tier.
+/// Default character for a user with no tier yet.
+const defaultAnimalAsset = 'assets/images/characters/tier_turtle.png';
+
 RunFinishTierBadges walkingGoalBadges(
   BuildContext context, {
   required UserTier tier,
   required AngelTier angel,
 }) {
   return RunFinishTierBadges(
-    animalImage: tier.avatarAssetPath,
-    animalLabel: tier.animalName(Localizations.localeOf(context)),
+    animalImage: tier.isSnail ? defaultAnimalAsset : tier.avatarAssetPath,
+    animalLabel: tier.isSnail
+        ? animalLabel(Localizations.localeOf(context), 'turtle')
+        : tier.animalName(Localizations.localeOf(context)),
     angelImage: angel == AngelTier.preAngel ? null : angel.avatarAssetPath,
     angelLabel:
         angel == AngelTier.preAngel ? null : angel.circleLabelFor(context),

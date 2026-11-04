@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -14,7 +15,6 @@ import '../invite/invite_link.dart';
 import '../../l10n/remaining_surface.dart';
 import '../run_result/run_finish_image_share.dart';
 import '../run_result/run_finish_share_card.dart';
-import 'pedometer_harvest_ledger.dart';
 import 'walking_goal_share_card.dart';
 import 'walking_look.dart';
 
@@ -272,13 +272,15 @@ abstract final class WalkingChallengeShare {
 
   /// Test hook. Null uploads with Firebase Storage.
   @visibleForTesting
-  static Future<Uri> Function(File image, String uid, DateTime date)?
-      debugUploadOverride;
+  static Future<Uri> Function(File image, String uid)? debugUploadOverride;
+
+  /// Test hook for the random file name.
+  @visibleForTesting
+  static String Function()? debugRandomIdOverride;
 
   /// Test hook. Null sends a Kakao FeedTemplate with [ShareClient].
   @visibleForTesting
-  static Future<void> Function(Uri imageUrl, int steps)?
-      debugKakaoFeedOverride;
+  static Future<void> Function(Uri imageUrl, int steps)? debugKakaoFeedOverride;
 
   /// Test hook for the Kakao feed link (the store URL with the invite code).
   @visibleForTesting
@@ -294,31 +296,47 @@ abstract final class WalkingChallengeShare {
     }
   }
 
-  /// `20261103`. One card per user per day: a second share the same day
-  /// overwrites the first instead of piling up files.
-  static String goalCardDay(DateTime date) {
-    String two(int v) => v.toString().padLeft(2, '0');
-    return '${date.year}${two(date.month)}${two(date.day)}';
+  /// 32 random hex characters from the secure generator. The Storage object
+  /// is `share_cards/{id}.png`: no user id and no date in the path, so the
+  /// public link says nothing about who or when and cannot be guessed.
+  static String newGoalCardId() {
+    final hook = debugRandomIdOverride;
+    if (hook != null) return hook();
+    final random = math.Random.secure();
+    return List.generate(
+      16,
+      (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+    ).join();
   }
 
-  /// Uploads the square card to `share_cards/{uid}/{date}.png` and returns
-  /// its public download URL. Rules: only the owner writes, anyone reads,
-  /// PNG up to 5 MB (see `storage.rules`).
+  /// `share_cards/{id}.png`
+  static String goalCardObjectPath(String id) => '$goalCardStorageRoot/$id.png';
+
+  /// Uploads the square card and returns its public download URL. The owner
+  /// is recorded in the object's custom metadata (`uid`), which the Storage
+  /// rules check; it is not in the path. Rules: create only, PNG up to 5 MB,
+  /// get without list (see `storage.rules`). Files are removed after 30 days
+  /// by a bucket lifecycle rule (see `docs/share-card-storage.md`).
   static Future<Uri> uploadGoalCard(
     File image, {
     required String uid,
-    required DateTime date,
   }) async {
     final hook = debugUploadOverride;
-    if (hook != null) return hook(image, uid, date);
+    if (hook != null) return hook(image, uid);
     final size = await image.length();
     if (size > goalCardMaxBytes) {
       throw StateError('goal card is $size bytes, over $goalCardMaxBytes');
     }
-    final ref = FirebaseStorage.instance
-        .ref('$goalCardStorageRoot/$uid/${goalCardDay(date)}.png');
+    final ref =
+        FirebaseStorage.instance.ref(goalCardObjectPath(newGoalCardId()));
     await ref
-        .putFile(image, SettableMetadata(contentType: 'image/png'))
+        .putFile(
+          image,
+          SettableMetadata(
+            contentType: 'image/png',
+            customMetadata: {'uid': uid},
+          ),
+        )
         .timeout(goalCardUploadTimeout);
     return Uri.parse(await ref.getDownloadURL().timeout(goalCardUploadTimeout));
   }
@@ -368,12 +386,14 @@ abstract final class WalkingChallengeShare {
   static Future<void> shareGoalCard(
     BuildContext context, {
     required int steps,
-    required DateTime date,
     required Future<File> Function() capturePortrait,
     required Future<File> Function() captureSquare,
     Future<String?> Function()? loadInviteCode,
     Rect? sharePositionOrigin,
   }) async {
+    // The brag is about reaching the 10,000-step goal. The dock hides the
+    // button below it, so this is only a guard.
+    if (steps < WalkingGoalShareCard.dailyGoalSteps) return;
     final kakaoInstalled = await isKakaoTalkInstalled();
     if (!context.mounted) return;
     var route = _ShareRoute.system;
@@ -399,7 +419,7 @@ abstract final class WalkingChallengeShare {
         final uid = _signedInUid();
         if (uid == null || uid.isEmpty) throw StateError('not signed in');
         final image = await captureSquare();
-        final url = await uploadGoalCard(image, uid: uid, date: date);
+        final url = await uploadGoalCard(image, uid: uid);
         await _shareKakaoFeed(url, steps, inviteCode);
         return;
       } catch (e, st) {
@@ -474,7 +494,7 @@ class WalkingDailyGoalCompleteCard extends StatefulWidget {
   const WalkingDailyGoalCompleteCard({
     super.key,
     this.steps,
-    this.goalSteps = PedometerHarvestLedger.stepsForDailyCap,
+    this.goalSteps = WalkingGoalShareCard.dailyGoalSteps,
     this.badges,
     this.shareToday,
     this.streakDays,
@@ -488,8 +508,9 @@ class WalkingDailyGoalCompleteCard extends StatefulWidget {
   /// brag (no image), e.g. where the screen has no step value to show.
   final int? steps;
 
-  /// Step goal printed on the image card. The dock appears when the daily
-  /// SHARE cap is reached, which is [PedometerHarvestLedger.stepsForDailyCap].
+  /// Step goal on the image card's ring: 10,000. The 자랑하기 button shows
+  /// only once [steps] reaches it. (The dock itself still appears at the daily
+  /// SHARE cap, 6,000 steps, as before.)
   final int goalSteps;
 
   /// 동물 티어·천사 등급 원. 아직 등급이 없으면 비워 둔다.
@@ -535,7 +556,6 @@ class _WalkingDailyGoalCompleteCardState
       await WalkingChallengeShare.shareGoalCard(
         buttonContext,
         steps: steps,
-        date: _today,
         capturePortrait: () => RunFinishImageShare.capture(_portraitKey),
         captureSquare: () => RunFinishImageShare.capture(_squareKey),
         loadInviteCode: widget.loadInviteCode,
@@ -670,33 +690,35 @@ class _WalkingDailyGoalCompleteCardState
             ),
           ),
           SizedBox(height: tokens.spacing.md),
-          Builder(
-            builder: (buttonContext) {
-              return SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  key: WalkingChallengeShare.dailyGoalBragKey,
-                  onPressed:
-                      _sharing ? null : () => unawaited(_share(buttonContext)),
-                  icon: const Icon(Icons.ios_share, size: 18),
-                  label: Text(
-                    WalkingChallengeShare.dailyGoalBragButtonLabel,
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: WalkingLook.onHero,
-                    foregroundColor: WalkingLook.heroMid,
-                    disabledBackgroundColor: WalkingLook.onHero,
-                    shadowColor: Colors.transparent,
-                    elevation: 0,
-                    minimumSize: const Size.fromHeight(48),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: tokens.radii.capsule,
+          if (widget.steps == null || widget.steps! >= widget.goalSteps)
+            Builder(
+              builder: (buttonContext) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    key: WalkingChallengeShare.dailyGoalBragKey,
+                    onPressed: _sharing
+                        ? null
+                        : () => unawaited(_share(buttonContext)),
+                    icon: const Icon(Icons.ios_share, size: 18),
+                    label: Text(
+                      WalkingChallengeShare.dailyGoalBragButtonLabel,
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: WalkingLook.onHero,
+                      foregroundColor: WalkingLook.heroMid,
+                      disabledBackgroundColor: WalkingLook.onHero,
+                      shadowColor: Colors.transparent,
+                      elevation: 0,
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: tokens.radii.capsule,
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
       ),
     );

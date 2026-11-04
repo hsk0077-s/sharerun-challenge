@@ -4131,12 +4131,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Goal \${goal} Steps',
     'pedometer.walking_goal_share_card.feed_title': 'Goal Achieved! · \${steps} Steps',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun: walk and collect SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'Start too',
+    'pedometer.walking_goal_share_card.feed_button': 'Join in',
     'pedometer.walking_goal_share_card.headline': 'Goal Achieved!',
     'pedometer.walking_goal_share_card.brag_steps': 'Goal achieved! 🎉\nWalked \${steps} steps in ShareRun today. Walk, earn SHARE, and let\'s keep going tomorrow!\n#ShareRun #WalkingChallenge',
-    'pedometer.walking_goal_share_card.tagline': 'Walk too, and earn rewards while giving back',
+    'pedometer.walking_goal_share_card.tagline': 'Collect rewards with every step and join in giving back',
     'pedometer.walking_goal_share_card.streak': '\${days}-day streak',
-    'pedometer.walking_goal_share_card.invite_line': 'Invite code \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'Join me! Invite code \${code}',
   };
 
   static const _ja = <String, String>{
@@ -6157,12 +6157,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': '目標 \${goal}歩',
     'pedometer.walking_goal_share_card.feed_title': '目標達成！ · \${steps}歩',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun：歩いてSHAREを貯めよう',
-    'pedometer.walking_goal_share_card.feed_button': '私も始める',
+    'pedometer.walking_goal_share_card.feed_button': '一緒に始める',
     'pedometer.walking_goal_share_card.headline': '目標達成！',
     'pedometer.walking_goal_share_card.brag_steps': '今日の目標達成！🎉\nShareRunで\${steps}歩クリアしました。歩いてSHAREを集めよう！明日も一緒に歩こう！\n#ShareRun #ウォーキング',
-    'pedometer.walking_goal_share_card.tagline': '私も歩けば、リワードと寄付が貯まります',
+    'pedometer.walking_goal_share_card.tagline': '歩いてリワードを集め、寄付にも参加しよう',
     'pedometer.walking_goal_share_card.streak': '\${days}日連続',
-    'pedometer.walking_goal_share_card.invite_line': '招待コード \${code}',
+    'pedometer.walking_goal_share_card.invite_line': '一緒に始めよう！招待コード \${code}',
   };
 
   static const _zh = <String, String>{
@@ -8183,12 +8183,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': '目標 \${goal}步',
     'pedometer.walking_goal_share_card.feed_title': '目標達成！ · \${steps}步',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun：走路賺取 SHARE',
-    'pedometer.walking_goal_share_card.feed_button': '我也要開始',
+    'pedometer.walking_goal_share_card.feed_button': '一起開始',
     'pedometer.walking_goal_share_card.headline': '目標達成！',
     'pedometer.walking_goal_share_card.brag_steps': '今日目標達成！🎉\n在ShareRun走了\${steps}步。邊走邊賺SHARE，明天繼續一起走！\n#ShareRun #健步挑戰',
-    'pedometer.walking_goal_share_card.tagline': '我也走路，累積回饋與捐贈',
+    'pedometer.walking_goal_share_card.tagline': '用步數累積回饋，一起參與捐贈',
     'pedometer.walking_goal_share_card.streak': '連續 \${days} 天',
-    'pedometer.walking_goal_share_card.invite_line': '邀請碼 \${code}',
+    'pedometer.walking_goal_share_card.invite_line': '一起開始吧！邀請碼 \${code}',
   };
 
   static const _es = <String, String>{
@@ -10209,12 +10209,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Meta \${goal} pasos',
     'pedometer.walking_goal_share_card.feed_title': '¡Meta lograda! · \${steps} pasos',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun: camina y reúne SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'Empieza tú también',
+    'pedometer.walking_goal_share_card.feed_button': 'Únete',
     'pedometer.walking_goal_share_card.headline': '¡Meta lograda!',
     'pedometer.walking_goal_share_card.brag_steps': '¡Meta del día! 🎉\nLogré \${steps} pasos en ShareRun. ¡Camina, gana SHARE y sigamos mañana!\n#ShareRun #RetoDePasos',
-    'pedometer.walking_goal_share_card.tagline': 'Camina tú también y gana recompensas mientras ayudas',
+    'pedometer.walking_goal_share_card.tagline': 'Reúne recompensas caminando y súmate a donar',
     'pedometer.walking_goal_share_card.streak': '\${days} días seguidos',
-    'pedometer.walking_goal_share_card.invite_line': 'Código de invitación \${code}',
+    'pedometer.walking_goal_share_card.invite_line': '¡Únete! Código de invitación \${code}',
   };
 
   static const _pt = <String, String>{
@@ -12235,12 +12235,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Meta \${goal} passos',
     'pedometer.walking_goal_share_card.feed_title': 'Meta concluída! · \${steps} passos',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun: caminhe e junte SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'Comece também',
+    'pedometer.walking_goal_share_card.feed_button': 'Participe também',
     'pedometer.walking_goal_share_card.headline': 'Meta concluída!',
     'pedometer.walking_goal_share_card.brag_steps': 'Meta de hoje concluída! 🎉\nDei \${steps} passos no ShareRun. Caminhe, ganhe SHARE e vamos juntos amanhã!\n#ShareRun #DesafioDeCaminhada',
-    'pedometer.walking_goal_share_card.tagline': 'Caminhe também e ganhe recompensas ajudando',
+    'pedometer.walking_goal_share_card.tagline': 'Junte recompensas caminhando e participe das doações',
     'pedometer.walking_goal_share_card.streak': '\${days} dias seguidos',
-    'pedometer.walking_goal_share_card.invite_line': 'Código de convite \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'Venha comigo! Código de convite \${code}',
   };
 
   static const _de = <String, String>{
@@ -14261,12 +14261,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Ziel \${goal} Schritte',
     'pedometer.walking_goal_share_card.feed_title': 'Ziel erreicht! · \${steps} Schritte',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun: gehen und SHARE sammeln',
-    'pedometer.walking_goal_share_card.feed_button': 'Auch starten',
+    'pedometer.walking_goal_share_card.feed_button': 'Mitmachen',
     'pedometer.walking_goal_share_card.headline': 'Ziel erreicht!',
     'pedometer.walking_goal_share_card.brag_steps': 'Tagesziel erreicht! 🎉\n\${steps} Schritte in ShareRun geschafft. Gehen, SHARE sammeln und morgen weiterlaufen!\n#ShareRun #SchrittChallenge',
-    'pedometer.walking_goal_share_card.tagline': 'Geh auch mit: Belohnungen sammeln und Gutes tun',
+    'pedometer.walking_goal_share_card.tagline': 'Mit jedem Schritt Belohnungen sammeln und beim Spenden mitmachen',
     'pedometer.walking_goal_share_card.streak': '\${days} Tage in Folge',
-    'pedometer.walking_goal_share_card.invite_line': 'Einladungscode \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'Mach mit! Einladungscode \${code}',
   };
 
   static const _fr = <String, String>{
@@ -16287,12 +16287,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Objectif \${goal} pas',
     'pedometer.walking_goal_share_card.feed_title': 'Objectif atteint ! · \${steps} pas',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun : marchez et récoltez des SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'Commencer aussi',
+    'pedometer.walking_goal_share_card.feed_button': 'Rejoindre',
     'pedometer.walking_goal_share_card.headline': 'Objectif atteint !',
     'pedometer.walking_goal_share_card.brag_steps': 'Objectif atteint ! 🎉\n\${steps} pas faits sur ShareRun. Marchez, gagnez des SHARE et continuons demain !\n#ShareRun #DefiMarche',
-    'pedometer.walking_goal_share_card.tagline': 'Marchez aussi : gagnez des récompenses en aidant',
+    'pedometer.walking_goal_share_card.tagline': 'Gagnez des récompenses en marchant et rejoignez les dons',
     'pedometer.walking_goal_share_card.streak': '\${days} jours de suite',
-    'pedometer.walking_goal_share_card.invite_line': 'Code d\'invitation \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'Rejoignez-moi ! Code d\'invitation \${code}',
   };
 
   static const _vi = <String, String>{
@@ -18313,12 +18313,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Mục tiêu \${goal} bước',
     'pedometer.walking_goal_share_card.feed_title': 'Hoàn thành! · \${steps} bước',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun: đi bộ và gom SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'Bắt đầu cùng',
+    'pedometer.walking_goal_share_card.feed_button': 'Cùng bắt đầu',
     'pedometer.walking_goal_share_card.headline': 'Hoàn thành!',
     'pedometer.walking_goal_share_card.brag_steps': 'Hoàn thành mục tiêu! 🎉\nĐã đi \${steps} bước cùng ShareRun. Đi bộ, nhận SHARE, ngày mai đi tiếp nhé!\n#ShareRun #ThuthachDibo',
-    'pedometer.walking_goal_share_card.tagline': 'Đi bộ cùng, nhận thưởng và đóng góp',
+    'pedometer.walking_goal_share_card.tagline': 'Đi bộ nhận thưởng và cùng tham gia quyên góp',
     'pedometer.walking_goal_share_card.streak': '\${days} ngày liên tiếp',
-    'pedometer.walking_goal_share_card.invite_line': 'Mã mời \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'Cùng bắt đầu nhé! Mã mời \${code}',
   };
 
   static const _th = <String, String>{
@@ -20339,12 +20339,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'เป้าหมาย \${goal} ก้าว',
     'pedometer.walking_goal_share_card.feed_title': 'สำเร็จเป้าหมาย! · \${steps} ก้าว',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun เดินแล้วสะสม SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'เริ่มด้วยกัน',
+    'pedometer.walking_goal_share_card.feed_button': 'มาเริ่มด้วยกัน',
     'pedometer.walking_goal_share_card.headline': 'สำเร็จเป้าหมาย!',
     'pedometer.walking_goal_share_card.brag_steps': 'สำเร็จเป้าหมายวันนี้! 🎉\nเดินครบ \${steps} ก้าวใน ShareRun เดินสะสม SHARE แล้วพรุ่งนี้มาเดินด้วยกันต่อ!\n#ShareRun #เดินออกกำลังกาย',
-    'pedometer.walking_goal_share_card.tagline': 'เดินด้วยกัน รับรางวัลและร่วมบริจาค',
+    'pedometer.walking_goal_share_card.tagline': 'เดินสะสมรางวัลและร่วมบริจาคไปด้วยกัน',
     'pedometer.walking_goal_share_card.streak': '\${days} วันติดต่อกัน',
-    'pedometer.walking_goal_share_card.invite_line': 'รหัสเชิญ \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'มาเริ่มด้วยกัน! รหัสเชิญ \${code}',
   };
 
   static const _id = <String, String>{
@@ -22365,12 +22365,12 @@ class RemainingSurface {
     'pedometer.walking_goal_share_card.goal': 'Target \${goal} langkah',
     'pedometer.walking_goal_share_card.feed_title': 'Target Tercapai! · \${steps} langkah',
     'pedometer.walking_goal_share_card.feed_description': 'ShareRun: berjalan dan kumpulkan SHARE',
-    'pedometer.walking_goal_share_card.feed_button': 'Ikut mulai',
+    'pedometer.walking_goal_share_card.feed_button': 'Mulai bersama',
     'pedometer.walking_goal_share_card.headline': 'Target Tercapai!',
     'pedometer.walking_goal_share_card.brag_steps': 'Target hari ini tercapai! 🎉\nBerjalan \${steps} langkah di ShareRun. Jalan, kumpulkan SHARE, & lanjut besok!\n#ShareRun #TantanganJalan',
-    'pedometer.walking_goal_share_card.tagline': 'Ikut berjalan, dapatkan hadiah sambil berdonasi',
+    'pedometer.walking_goal_share_card.tagline': 'Kumpulkan hadiah dari langkahmu dan ikut berdonasi',
     'pedometer.walking_goal_share_card.streak': '\${days} hari berturut-turut',
-    'pedometer.walking_goal_share_card.invite_line': 'Kode undangan \${code}',
+    'pedometer.walking_goal_share_card.invite_line': 'Yuk mulai bareng! Kode undangan \${code}',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

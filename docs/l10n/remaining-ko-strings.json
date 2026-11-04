@@ -38892,21 +38892,21 @@
     },
     {
       "key": "pedometer.walking_goal_share_card.feed_button",
-      "ko": "나도 시작하기",
+      "ko": "함께 시작하기",
       "file": "lib/features/pedometer/walking_challenge_share.dart",
       "screen": "pedometer.walking_challenge_share",
       "context": "카카오톡 피드 카드 버튼(초대 코드가 붙은 스토어 링크).",
       "placeholders": [],
-      "en": "Start too",
-      "ja": "私も始める",
-      "zh-TW": "我也要開始",
-      "es": "Empieza tú también",
-      "pt-BR": "Comece também",
-      "de": "Auch starten",
-      "fr": "Commencer aussi",
-      "vi": "Bắt đầu cùng",
-      "th": "เริ่มด้วยกัน",
-      "id": "Ikut mulai"
+      "en": "Join in",
+      "ja": "一緒に始める",
+      "zh-TW": "一起開始",
+      "es": "Únete",
+      "pt-BR": "Participe também",
+      "de": "Mitmachen",
+      "fr": "Rejoindre",
+      "vi": "Cùng bắt đầu",
+      "th": "มาเริ่มด้วยกัน",
+      "id": "Mulai bersama"
     },
     {
       "key": "pedometer.walking_goal_share_card.headline",
@@ -38953,19 +38953,19 @@
       "key": "pedometer.walking_goal_share_card.tagline",
       "file": "lib/features/pedometer/walking_goal_share_card.dart",
       "screen": "pedometer.walking_goal_share_card",
-      "ko": "나도 걸으면 리워드와 기부가 쌓여요",
+      "ko": "걸음으로 리워드를 모으고 기부에 함께해요",
       "context": "받는 사람에게 건네는 카드 맨 아래 한 줄.",
       "placeholders": [],
-      "en": "Walk too, and earn rewards while giving back",
-      "ja": "私も歩けば、リワードと寄付が貯まります",
-      "zh-TW": "我也走路，累積回饋與捐贈",
-      "es": "Camina tú también y gana recompensas mientras ayudas",
-      "pt-BR": "Caminhe também e ganhe recompensas ajudando",
-      "de": "Geh auch mit: Belohnungen sammeln und Gutes tun",
-      "fr": "Marchez aussi : gagnez des récompenses en aidant",
-      "vi": "Đi bộ cùng, nhận thưởng và đóng góp",
-      "th": "เดินด้วยกัน รับรางวัลและร่วมบริจาค",
-      "id": "Ikut berjalan, dapatkan hadiah sambil berdonasi"
+      "en": "Collect rewards with every step and join in giving back",
+      "ja": "歩いてリワードを集め、寄付にも参加しよう",
+      "zh-TW": "用步數累積回饋，一起參與捐贈",
+      "es": "Reúne recompensas caminando y súmate a donar",
+      "pt-BR": "Junte recompensas caminhando e participe das doações",
+      "de": "Mit jedem Schritt Belohnungen sammeln und beim Spenden mitmachen",
+      "fr": "Gagnez des récompenses en marchant et rejoignez les dons",
+      "vi": "Đi bộ nhận thưởng và cùng tham gia quyên góp",
+      "th": "เดินสะสมรางวัลและร่วมบริจาคไปด้วยกัน",
+      "id": "Kumpulkan hadiah dari langkahmu dan ikut berdonasi"
     },
     {
       "key": "pedometer.walking_goal_share_card.streak",
@@ -38994,7 +38994,7 @@
       "key": "pedometer.walking_goal_share_card.invite_line",
       "file": "lib/features/pedometer/walking_challenge_share.dart",
       "screen": "pedometer.walking_goal_share_card",
-      "ko": "초대 코드 ${code}",
+      "ko": "함께 시작해요! 초대 코드 ${code}",
       "context": "공유 글 끝의 초대 코드 줄.",
       "placeholders": [
         {
@@ -39002,16 +39002,16 @@
           "format": "${code}"
         }
       ],
-      "en": "Invite code ${code}",
-      "ja": "招待コード ${code}",
-      "zh-TW": "邀請碼 ${code}",
-      "es": "Código de invitación ${code}",
-      "pt-BR": "Código de convite ${code}",
-      "de": "Einladungscode ${code}",
-      "fr": "Code d'invitation ${code}",
-      "vi": "Mã mời ${code}",
-      "th": "รหัสเชิญ ${code}",
-      "id": "Kode undangan ${code}"
+      "en": "Join me! Invite code ${code}",
+      "ja": "一緒に始めよう！招待コード ${code}",
+      "zh-TW": "一起開始吧！邀請碼 ${code}",
+      "es": "¡Únete! Código de invitación ${code}",
+      "pt-BR": "Venha comigo! Código de convite ${code}",
+      "de": "Mach mit! Einladungscode ${code}",
+      "fr": "Rejoignez-moi ! Code d'invitation ${code}",
+      "vi": "Cùng bắt đầu nhé! Mã mời ${code}",
+      "th": "มาเริ่มด้วยกัน! รหัสเชิญ ${code}",
+      "id": "Yuk mulai bareng! Kode undangan ${code}"
     }
   ]
 }

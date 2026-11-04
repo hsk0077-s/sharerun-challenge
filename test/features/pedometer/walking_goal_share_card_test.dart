@@ -10,6 +10,7 @@ import 'package:share_run_challenge/core/constants/store_links.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/core/widgets/src_logo_header.dart';
 import 'package:share_run_challenge/features/invite/invite_link.dart';
+import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/pedometer/walking_goal_share_card.dart';
 import 'package:share_run_challenge/features/run_result/run_finish_image_share.dart';
@@ -18,9 +19,11 @@ import 'package:share_run_challenge/features/run_result/run_finish_share_card.da
 import '../../support/golden_helper.dart';
 import '../../support/ko_localization.dart';
 
-const _snail = RunFinishTierBadges(
-  animalImage: 'assets/images/characters/chibi_snail_smiling.png',
-  animalLabel: '달팽이',
+// A user with no tier yet: walkingGoalBadges hands the card the first tier
+// animal, the turtle (the five tiers are turtle, beagle, wolf, zebra, cheetah).
+const _turtle = RunFinishTierBadges(
+  animalImage: defaultAnimalAsset,
+  animalLabel: '거북이',
 );
 
 const _badges = RunFinishTierBadges(
@@ -65,7 +68,7 @@ void main() {
     test('step counts get thousands separators and never go negative', () {
       expect(WalkingGoalShareCard.commaSteps(0), '0');
       expect(WalkingGoalShareCard.commaSteps(999), '999');
-      expect(WalkingGoalShareCard.commaSteps(8421), '8,421');
+      expect(WalkingGoalShareCard.commaSteps(8421), '12,845');
       expect(WalkingGoalShareCard.commaSteps(1234567), '1,234,567');
       expect(WalkingGoalShareCard.commaSteps(-5), '0');
     });
@@ -96,7 +99,7 @@ void main() {
     test('brag text with steps and an invite code: code line, then the link',
         () {
       final text = WalkingChallengeShare.dailyGoalBragTextFor(
-        steps: 8421,
+        steps: 12845,
         inviteCode: 'abcd2345',
       );
       expect(text, contains('오늘 8,421걸음을 채웠어요'));
@@ -104,13 +107,13 @@ void main() {
       expect(text, contains('초대 코드 ABCD2345'));
       final lines = text.split('\n');
       expect(lines.last, '$kPlayStoreUrl&referrer=invite%3DABCD2345');
-      expect(lines[lines.length - 2], '초대 코드 ABCD2345');
+      expect(lines[lines.length - 2], '함께 시작해요! 초대 코드 ABCD2345');
     });
 
     test('no invite code (or a bad one): the plain store link only', () {
       for (final code in [null, '', '  ', 'bad code!', 'a' * 40]) {
         final text = WalkingChallengeShare.dailyGoalBragTextFor(
-          steps: 100,
+          steps: 10100,
           inviteCode: code,
         );
         expect(text.split('\n').last, kPlayStoreUrl, reason: '$code');
@@ -199,7 +202,7 @@ void main() {
       for (final path in [
         _badges.animalImage!,
         _badges.angelImage!,
-        _snail.animalImage!,
+        _turtle.animalImage!,
         SRCLogoHeader.assetPath,
       ]) {
         await precacheImage(AssetImage(path), context);
@@ -238,22 +241,22 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await tester.pumpWidget(_app(WalkingGoalShareCard(
-        steps: 8421,
-        goalSteps: 6000,
+        steps: 12845,
+        goalSteps: 10000,
         date: DateTime(2026, 11, 3),
         badges: _badges,
       )));
       await tester.pump();
 
       expect(find.byKey(WalkingGoalShareCard.stepsKey), findsOneWidget);
-      expect(find.text('8,421'), findsOneWidget);
+      expect(find.text('12,845'), findsOneWidget);
       expect(find.text('오늘의 목표 달성!'), findsOneWidget);
       expect(
         tester
             .widget<Text>(find.byKey(WalkingGoalShareCard.goalKey))
             .data!
             .replaceAll('\u2060', ''),
-        '목표 6,000걸음',
+        '목표 10,000걸음',
       );
       expect(find.text('11월 3일 화요일'), findsOneWidget);
       expect(find.text('쉐어런'), findsOneWidget);
@@ -274,8 +277,8 @@ void main() {
 
       Future<void> pumpCard({int? share, int? streak}) async {
         await tester.pumpWidget(_app(WalkingGoalShareCard(
-          steps: 8421,
-          goalSteps: 6000,
+          steps: 12845,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
           badges: _badges,
           shareToday: share,
@@ -299,6 +302,48 @@ void main() {
       expect(find.text('7일 연속'), findsOneWidget);
     });
 
+    testWidgets('the ribbon says 목표 달성 only when 10,000 steps are reached',
+        (tester) async {
+      tester.view.physicalSize = const Size(1080, 1350);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      Future<void> pumpSteps(int steps) async {
+        await tester.pumpWidget(_app(WalkingGoalShareCard(
+          steps: steps,
+          goalSteps: WalkingGoalShareCard.dailyGoalSteps,
+          date: DateTime(2026, 11, 3),
+          badges: _badges,
+        )));
+        await tester.pump();
+      }
+
+      expect(WalkingGoalShareCard.dailyGoalSteps, 10000);
+      await pumpSteps(9999);
+      expect(find.byKey(WalkingGoalShareCard.headlineKey), findsNothing);
+      expect(find.text('오늘의 목표 달성!'), findsNothing);
+      await pumpSteps(10000);
+      expect(find.byKey(WalkingGoalShareCard.headlineKey), findsOneWidget);
+      expect(find.text('오늘의 목표 달성!'), findsOneWidget);
+    });
+
+    testWidgets(
+        'walkingGoalBadges: no tier yet means the turtle, not the snail',
+        (tester) async {
+      late RunFinishTierBadges result;
+      await tester.pumpWidget(_app(Builder(builder: (context) {
+        result = walkingGoalBadges(
+          context,
+          tier: UserTier.unratedFallback,
+          angel: AngelTier.preAngel,
+        );
+        return const SizedBox();
+      })));
+      expect(result.animalImage, 'assets/images/characters/tier_turtle.png');
+      expect(result.animalLabel, '거북이');
+      expect(result.hasAngel, isFalse); // no angel tier yet: no angel circle
+    });
+
     testWidgets('no animal given: no hero and no gap, the tagline stays',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 1350);
@@ -306,8 +351,8 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(_app(WalkingGoalShareCard(
-        steps: 100,
-        goalSteps: 6000,
+        steps: 10100,
+        goalSteps: 10000,
         date: DateTime(2026, 11, 3),
       )));
       await tester.pump();
@@ -317,12 +362,16 @@ void main() {
     });
 
     testWidgets(
-        'a user with no tier yet gets the default snail, never donation wording that claims a payment',
+        'a user with no tier yet gets the default turtle, never donation wording that claims a payment',
         (tester) async {
       // walkingGoalBadges hands the snail asset to the card (see the helper).
-      expect(_snail.hasAnimal, isTrue);
-      expect(WalkingGoalShareCard.tagline, isNot(contains('기부 완료')));
-      expect(WalkingGoalShareCard.tagline, contains('기부가 쌓여요'));
+      expect(_turtle.hasAnimal, isTrue);
+      expect(WalkingGoalShareCard.tagline, '걸음으로 리워드를 모으고 기부에 함께해요');
+      for (final banned in ['기부 완료', '기부가 쌓', '쌓여요', '기부했']) {
+        expect(WalkingGoalShareCard.tagline, isNot(contains(banned)),
+            reason: banned);
+        expect(WalkingChallengeShare.goalFeedButton, isNot(contains(banned)));
+      }
     });
 
     // Representative cards. Combinations: SHARE yes/no, streak 1/7 days,
@@ -333,8 +382,8 @@ void main() {
         tester,
         file: 'walking_goal_card_a_share_streak7_tier.png',
         card: WalkingGoalShareCard(
-          steps: 8421,
-          goalSteps: 6000,
+          steps: 12845,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
           badges: _badges,
           shareToday: 600,
@@ -343,16 +392,16 @@ void main() {
       );
     });
 
-    goldenTest('golden 4:5 B - no SHARE, 1-day streak, default snail',
+    goldenTest('golden 4:5 B - no SHARE, 1-day streak, default turtle',
         (tester) async {
       await goldenCard(
         tester,
-        file: 'walking_goal_card_b_noshare_streak1_snail.png',
+        file: 'walking_goal_card_b_noshare_streak1_turtle.png',
         card: WalkingGoalShareCard(
-          steps: 6120,
-          goalSteps: 6000,
+          steps: 10120,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
-          badges: _snail,
+          badges: _turtle,
           streakDays: 1,
         ),
       );
@@ -364,7 +413,7 @@ void main() {
         file: 'walking_goal_card_c_share_streak1_tier.png',
         card: WalkingGoalShareCard(
           steps: 10432,
-          goalSteps: 6000,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
           badges: const RunFinishTierBadges(
             animalImage: 'assets/images/characters/tier_wolf.png',
@@ -382,8 +431,8 @@ void main() {
         tester,
         file: 'walking_goal_card_d_noshare_streak7_tier.png',
         card: WalkingGoalShareCard(
-          steps: 12345,
-          goalSteps: 6000,
+          steps: 14210,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
           badges: _badges,
           streakDays: 7,
@@ -397,8 +446,8 @@ void main() {
         tester,
         file: 'walking_goal_card_e_square_share_streak7_tier.png',
         card: WalkingGoalShareCard(
-          steps: 8421,
-          goalSteps: 6000,
+          steps: 12845,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
           badges: _badges,
           shareToday: 600,
@@ -408,15 +457,15 @@ void main() {
       );
     });
 
-    goldenTest('golden 1:1 F - nothing extra, default snail', (tester) async {
+    goldenTest('golden 1:1 F - nothing extra, default turtle', (tester) async {
       await goldenCard(
         tester,
-        file: 'walking_goal_card_f_square_plain_snail.png',
+        file: 'walking_goal_card_f_square_plain_turtle.png',
         card: WalkingGoalShareCard(
-          steps: 6120,
-          goalSteps: 6000,
+          steps: 10120,
+          goalSteps: 10000,
           date: DateTime(2026, 11, 3),
-          badges: _snail,
+          badges: _turtle,
           square: true,
         ),
       );
@@ -424,25 +473,52 @@ void main() {
   });
 
   group('rules', () {
-    test('storage.rules: owner-only write, public read, PNG up to 5 MB', () {
+    test(
+        'storage.rules: get only, no list, create-only PNG up to 5 MB, owner delete',
+        () {
       final rules = File('storage.rules').readAsStringSync();
-      expect(rules, contains('match /share_cards/{uid}/{file}'));
-      expect(rules, contains('allow read: if true;'));
-      expect(rules, contains('request.auth.uid == uid'));
+      expect(rules, contains('match /share_cards/{file}'));
+      expect(rules, isNot(contains('{uid}')));
+      expect(rules, contains('allow get: if true;'));
+      expect(rules, contains('allow list: if false;'));
+      expect(rules, isNot(contains('allow read: if true')));
+      expect(rules, contains('allow create: if request.auth != null'));
+      expect(
+          rules, contains('request.resource.metadata.uid == request.auth.uid'));
       expect(rules, contains('request.resource.size <= 5 * 1024 * 1024'));
       expect(rules, contains("request.resource.contentType == 'image/png'"));
+      expect(rules, contains(r"file.matches('[0-9a-f]{32}\\.png')"));
+      expect(rules, contains('allow update: if false;'));
+      expect(rules, contains('resource.metadata.uid == request.auth.uid'));
       expect(rules, contains('allow read, write: if false;'));
-      expect(rules, contains(r"file.matches('[0-9]{8}\\.png')"));
       final firebaseJson = File('firebase.json').readAsStringSync();
       expect(firebaseJson, contains('"storage"'));
       expect(firebaseJson, contains('storage.rules'));
     });
 
-    test('card path is one file per user per day', () {
-      expect(
-          WalkingChallengeShare.goalCardDay(DateTime(2026, 11, 3)), '20261103');
-      expect(
-          WalkingChallengeShare.goalCardDay(DateTime(2026, 1, 9)), '20260109');
+    test('lifecycle rule: delete after 30 days, only under share_cards/', () {
+      final rule = jsonDecode(
+        File('docs/share-card-lifecycle.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      final first = (rule['rule'] as List).single as Map<String, dynamic>;
+      expect(first['action'], {'type': 'Delete'});
+      expect((first['condition'] as Map)['age'], 30);
+      expect((first['condition'] as Map)['matchesPrefix'], ['share_cards/']);
+    });
+
+    test('the object name is random hex: no user id, no date', () {
+      final ids = {
+        for (var i = 0; i < 50; i++) WalkingChallengeShare.newGoalCardId()
+      };
+      expect(ids, hasLength(50));
+      for (final id in ids) {
+        expect(RegExp(r'^[0-9a-f]{32}$').hasMatch(id), isTrue, reason: id);
+        final path = WalkingChallengeShare.goalCardObjectPath(id);
+        expect(path, 'share_cards/$id.png');
+        expect(path.split('/'), hasLength(2));
+      }
+      WalkingChallengeShare.debugRandomIdOverride = () => 'a' * 32;
+      expect(WalkingChallengeShare.newGoalCardId(), 'a' * 32);
     });
   });
 
@@ -455,8 +531,8 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await tester.pumpWidget(_app(WalkingGoalShareCard(
-        steps: 123456,
-        goalSteps: 6000,
+        steps: 142106,
+        goalSteps: 10000,
         date: DateTime(2026, 11, 3),
         badges: _badges,
         shareToday: 600,
@@ -490,7 +566,7 @@ void main() {
 
     Future<void> pumpDock(
       WidgetTester tester, {
-      int? steps = 8421,
+      int? steps = 12845,
       Future<String?> Function()? loadInviteCode,
     }) async {
       tester.view.physicalSize = const Size(390, 1200);
@@ -541,7 +617,7 @@ void main() {
       expect(sent!.files!.single.mimeType, 'image/png');
       expect(sent!.files!.single.path, portrait.path);
       expect(
-          sent!.text, WalkingChallengeShare.dailyGoalBragTextFor(steps: 8421));
+          sent!.text, WalkingChallengeShare.dailyGoalBragTextFor(steps: 12845));
       expect(sent!.text, endsWith(kPlayStoreUrl));
       expect(sent!.subject, WalkingChallengeShare.dailyGoalBragSubject);
     });
@@ -569,7 +645,7 @@ void main() {
       expect(captured, ['portrait']);
       expect(sent!.files, hasLength(1));
       expect(
-          sent!.text, WalkingChallengeShare.dailyGoalBragTextFor(steps: 8421));
+          sent!.text, WalkingChallengeShare.dailyGoalBragTextFor(steps: 12845));
     });
 
     testWidgets('capture failure on the sheet still shares text and link',
@@ -588,7 +664,7 @@ void main() {
 
       expect(sent!.files, isNull);
       expect(
-          sent!.text, WalkingChallengeShare.dailyGoalBragTextFor(steps: 8421));
+          sent!.text, WalkingChallengeShare.dailyGoalBragTextFor(steps: 12845));
     });
 
     testWidgets('without a step value the old text-only share is kept',
@@ -614,11 +690,9 @@ void main() {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
       File? uploaded;
       String? uploadUid;
-      DateTime? uploadDate;
-      WalkingChallengeShare.debugUploadOverride = (file, uid, date) async {
+      WalkingChallengeShare.debugUploadOverride = (file, uid) async {
         uploaded = file;
         uploadUid = uid;
-        uploadDate = date;
         return Uri.parse('https://firebasestorage.example/card.png');
       };
       Uri? feedUrl;
@@ -643,9 +717,8 @@ void main() {
       expect(captured, ['square']);
       expect(uploaded!.path, square.path);
       expect(uploadUid, 'uid-1');
-      expect(uploadDate, DateTime(2026, 11, 3));
       expect(feedUrl, Uri.parse('https://firebasestorage.example/card.png'));
-      expect(feedSteps, 8421);
+      expect(feedSteps, 12845);
       expect(textSends, 0);
       expect(sent, isNull);
     });
@@ -653,14 +726,14 @@ void main() {
     testWidgets('feed title, description and one store button', (tester) async {
       expect(WalkingChallengeShare.goalFeedTitle(8421), '오늘의 목표 달성! 8,421걸음');
       expect(WalkingChallengeShare.goalFeedDescription, '걷고 SHARE 모으는 쉐어런');
-      expect(WalkingChallengeShare.goalFeedButton, '나도 시작하기');
+      expect(WalkingChallengeShare.goalFeedButton, '함께 시작하기');
     });
 
     testWidgets('upload failure falls back to the Kakao text template',
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
       WalkingChallengeShare.debugUploadOverride =
-          (file, uid, date) async => throw StateError('offline');
+          (file, uid) async => throw StateError('offline');
       var feeds = 0;
       WalkingChallengeShare.debugKakaoFeedOverride = (url, steps) async {
         feeds++;
@@ -685,7 +758,7 @@ void main() {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
       WalkingChallengeShare.debugUidOverride = () => null;
       var uploads = 0;
-      WalkingChallengeShare.debugUploadOverride = (file, uid, date) async {
+      WalkingChallengeShare.debugUploadOverride = (file, uid) async {
         uploads++;
         return Uri.parse('https://example.com/x.png');
       };
@@ -705,7 +778,7 @@ void main() {
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
       WalkingChallengeShare.debugUploadOverride =
-          (file, uid, date) async => Uri.parse('https://example.com/x.png');
+          (file, uid) async => Uri.parse('https://example.com/x.png');
       WalkingChallengeShare.debugKakaoFeedOverride =
           (url, steps) async => throw StateError('kakao refused');
       String? kakaoText;
@@ -717,6 +790,38 @@ void main() {
       await chooseKakao(tester);
 
       expect(kakaoText, isNotNull);
+    });
+
+    testWidgets(
+        'below 10,000 steps the dock has no 자랑하기 button; from 10,000 it does',
+        (tester) async {
+      await pumpDock(tester, steps: 9999);
+      expect(find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsNothing);
+      await pumpDock(tester, steps: 10000);
+      expect(
+          find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsOneWidget);
+      await pumpDock(tester,
+          steps: 6000); // the daily SHARE cap is not the goal
+      expect(find.byKey(WalkingChallengeShare.dailyGoalBragKey), findsNothing);
+    });
+
+    testWidgets('a share asked for under the goal sends nothing',
+        (tester) async {
+      WalkingChallengeShare.debugKakaoInstalledOverride = () async => false;
+      var sends = 0;
+      WalkingChallengeShare.debugShareOverride = (params) async {
+        sends++;
+        return const ShareResult('', ShareResultStatus.success);
+      };
+      await pumpDock(tester, steps: 12845);
+      final context = tester.element(find.byType(WalkingDailyGoalCompleteCard));
+      await WalkingChallengeShare.shareGoalCard(
+        context,
+        steps: 9999,
+        capturePortrait: () async => portrait,
+        captureSquare: () async => square,
+      );
+      expect(sends, 0);
     });
 
     testWidgets(
@@ -769,7 +874,7 @@ void main() {
         (tester) async {
       WalkingChallengeShare.debugKakaoInstalledOverride = () async => true;
       WalkingChallengeShare.debugUploadOverride =
-          (file, uid, date) async => Uri.parse('https://example.com/c.png');
+          (file, uid) async => Uri.parse('https://example.com/c.png');
       Uri? link;
       WalkingChallengeShare.debugKakaoFeedLinkSink = (value) => link = value;
       // Let the real feed builder run up to the SDK call, which we stub by

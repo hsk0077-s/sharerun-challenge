@@ -68,7 +68,7 @@ void main() {
     test('step counts get thousands separators and never go negative', () {
       expect(WalkingGoalShareCard.commaSteps(0), '0');
       expect(WalkingGoalShareCard.commaSteps(999), '999');
-      expect(WalkingGoalShareCard.commaSteps(8421), '12,845');
+      expect(WalkingGoalShareCard.commaSteps(8421), '8,421');
       expect(WalkingGoalShareCard.commaSteps(1234567), '1,234,567');
       expect(WalkingGoalShareCard.commaSteps(-5), '0');
     });
@@ -102,7 +102,7 @@ void main() {
         steps: 12845,
         inviteCode: 'abcd2345',
       );
-      expect(text, contains('오늘 8,421걸음을 채웠어요'));
+      expect(text, contains('오늘 12,845걸음을 채웠어요'));
       expect(text, contains('#쉐어런 #워킹챌린지 #오늘의목표달성'));
       expect(text, contains('초대 코드 ABCD2345'));
       final lines = text.split('\n');
@@ -531,7 +531,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       await tester.pumpWidget(_app(WalkingGoalShareCard(
-        steps: 142106,
+        steps: 123456,
         goalSteps: 10000,
         date: DateTime(2026, 11, 3),
         badges: _badges,

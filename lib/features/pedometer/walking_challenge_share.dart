@@ -258,7 +258,7 @@ abstract final class WalkingChallengeShare {
       );
   static String get goalFeedButton => RemainingSurface.trNow(
         'pedometer.walking_goal_share_card.feed_button',
-        '나도 시작하기',
+        '함께 시작하기',
       );
   static String goalFeedTitle(int steps) => RemainingSurface.trNow(
         'pedometer.walking_goal_share_card.feed_title',

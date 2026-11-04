@@ -86,7 +86,7 @@ abstract final class WalkingChallengeShare {
 
   static String inviteLine(String code) => RemainingSurface.trNow(
         'pedometer.walking_goal_share_card.invite_line',
-        '초대 코드 $code',
+        '함께 시작해요! 초대 코드 $code',
         {'code': code},
       );
 

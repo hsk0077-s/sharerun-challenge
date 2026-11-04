@@ -113,7 +113,7 @@
         android:allowBackup="false"
         tools:replace="android:usesCleartextTraffic,android:allowBackup">
 
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyA-qQCDl1affyv8CPF6RWSHHxyw32618E0"/>
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyCeK4CUCswGAuy4jclEX8du_RF0CayNmdk"/>
 
         <activity
             android:name=".MainActivity"

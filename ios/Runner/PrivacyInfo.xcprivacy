@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  쉐어런(Runner) 개인정보 매니페스트 — 근거가 확인된 부분만 담은 초안.
+  Mac에서 Xcode의 Runner 타깃(Copy Bundle Resources)에 추가해야 효력이 있다. 아직 프로젝트에 연결돼 있지 않다.
+  근거와 미해결 항목은 docs/ios-privacy-manifest.md 참고.
+
+  넣지 않은 것(일부러):
+  - NSPrivacyAccessedAPICategorySystemBootTime: pedometer 플러그인(PedometerPlugin.swift:92)이 쓰지만 Apple의 사유 코드
+    설명(35F9.1, 8FFB.1, 3D61.1)에 맞는 것을 찾지 못했다. 임의 코드를 넣지 않는다.
+  - NSPrivacyCollectedDataTypes: App Store Connect 앱 개인정보 답변과 같아야 하므로 대표님 확정 뒤에 넣는다.
+    비워 두면(빈 배열) "수집 없음"이라는 거짓 선언이 되어 키 자체를 생략했다.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<!-- CA92.1: 앱 자신만 접근하는 정보를 읽고 쓰기. 쓰는 곳: flutter_foreground_task
+				     (ios/Classes/models/*.swift, UserDefaults.standard에 플러그인이 정한 키만 읽고 씀, App Group 없음) -->
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -85,11 +85,28 @@ SPM과 CocoaPods 중 무엇으로 연결되는지는 3.44.3의 기본 설정에 
 | 앱 | `Runner.entitlements`에 Sign in with Apple capability(`com.apple.developer.applesignin`) 추가 | Mac 필요 |
 | 앱 | 빌드 값 `APPLE_LOGIN_ENABLED=true`(`.env.release`나 `--dart-define`). 켜면 `AppleLoginButton`이 `_onApple`로 연결됨 | 코드 변경 없음, 값만 |
 | 앱 | iOS에서는 `SignInWithApple.getAppleIDCredential`로 identity token을 받아 서버에 보냄(`auth_service.dart:98-120`). 이메일 숨기기(릴레이 주소)로 이메일이 비어도 계정이 만들어지는지 실기기에서 확인 | Mac·실기기 |
-| 서버 | Cloud Run 환경 변수 **`APPLE_CLIENT_ID`를 iOS 번들 ID `com.sharerun.shareRunChallenge`로 설정.** 비어 있으면 서버는 서명·만료·발급자만 확인하고 **audience(어느 앱용 토큰인지)를 확인하지 않는다**(`backend/jena_ai/app/services/identities.py:297-306`). 켜기 전에 반드시 설정 | 계정 필요(서버 배포) |
+| 서버 | Cloud Run 환경 변수 **`APPLE_CLIENT_ID`를 iOS 번들 ID `com.sharerun.shareRunChallenge`로 설정.** **고침(`2b5f32f`)**: 이전에는 이 값이 비어 있으면 서버가 서명·만료·발급자만 확인하고 audience(어느 앱용 토큰인지)를 확인하지 않아, Apple이 다른 앱용으로 서명한 토큰도 통과했다(실제 RS256 서명 토큰으로 재현). 이제 값이 없으면 Apple 발급 토큰은 **503 `apple_login_not_configured`로 거부**하고(`identities.py` `verify_apple_id_token`), Android의 Firebase 경로와 구글·카카오·네이버 검증은 영향이 없다. **배포 전에 Cloud Run에 이 값을 넣어야 iOS 애플 로그인이 동작한다.** 배포는 하지 않았다 | 계정 필요(서버 배포) |
 | 서버 | 로그인 처리 코드는 이미 있음(`identities.py:59-292`, 앱 `identity_api_client.dart` `appleLogin`) | 준비됨 |
 | Apple 포털 | 번들 ID(App ID)에서 **Sign in with Apple** 사용 체크. iOS 네이티브 로그인만이면 Services ID와 키(.p8)는 필요 없음. Android의 웹 로그인(`signInWithProvider('apple.com')`, `auth_service.dart:98` 아래 분기)을 쓰려면 Services ID, Return URL, 키가 필요하고 Firebase에 등록(이미 했는지 미확인) | 승인 필요(포털 설정), 계정 필요 |
 | Firebase 콘솔 | Authentication > 로그인 방법 > Apple 사용 설정(Android 경로가 쓰므로 이미 되어 있을 수 있음, 미확인) | 계정 필요 |
-| 계정 삭제 | 앱 안 계정 삭제는 있다(`secured_action_api_client.dart:354`, 서버 `/actions/account/delete`, `secured_action_router.py:210`). 지침 5.1.1(v) 원문은 "앱이 계정 생성을 지원하면 앱 안에서 계정 삭제를 제공해야 한다"이다. **애플 로그인 사용자의 Apple 토큰 취소(revoke) 처리는 코드에 없다**(서버 검색 결과 없음). Apple이 이를 요구하는지와 방법은 Apple 개발자 문서에서 확인해야 한다(미확인). 필요하면 앱 키(.p8)로 만든 클라이언트 시크릿이 필요해 발급 승인이 따른다 | 미확인, 승인 필요 가능 |
+| 계정 삭제 | 아래 3-1절 | |
+
+### 3-1. 계정 삭제와 Apple 토큰 취소 — 공식 요건과 현재 구현의 차이
+**Apple 공식 문서**(developer.apple.com/help/app-review/guideline-reference/5-1-1-account-deletion, 2026-11-08에 읽음, 영문 그대로):
+> "Apps that support Sign in with Apple should use the Sign in with Apple REST API to revoke user tokens."
+> "Use server-to-server notification endpoints to process changes for Sign in with Apple accounts."
+> "Offer to delete the entire account record, along with associated personal data. You may include additional options, but only offering to temporarily deactivate or disable an account is insufficient."
+토큰 취소 REST API 자체의 문서 본문(주소, 매개변수)은 읽지 못했다(페이지가 비어 보임, 미확인). 표현은 "should"(권장)이고, 필수인지는 심사 지침의 별도 문구로는 확인하지 못했다.
+| 항목 | Apple 요건 | 현재 구현 | 차이 |
+|---|---|---|---|
+| 앱 안 계정 삭제 | 계정 생성을 지원하면 앱 안에서 삭제 제공 | 있음. `secured_action_api_client.dart:354` → 서버 `POST /actions/account/delete`(`secured_action_router.py:210`) → `delete_account`(`secured_action_service.py:5113-5151`)가 프로필 익명화, Firebase 사용자 삭제, 연결 신원 삭제 | 없음(전체 계정 기록 삭제가 아니라 익명화인 부분은 별도 검토 필요: Apple은 "entire account record along with associated personal data" 삭제를 요구) |
+| Apple 토큰 취소 | REST API로 사용자 토큰 취소 권장 | **없음.** 앱은 identity token만 서버로 보내고(`auth_service.dart:98-120`), 서버는 Apple 사용자 `sub`만 저장한다. 취소할 refresh/access token을 가진 적이 없다 | 있음 |
+| 서버 간 알림 | Apple의 서버 간 알림 엔드포인트로 계정 변경 처리 | 없음(서버에 해당 엔드포인트 검색 결과 없음) | 있음 |
+**취소를 하려면 필요한 것(외부 설정이 필요한 부분과 아닌 부분)**
+1. 로그인 때 앱이 `authorizationCode`도 서버로 보내고 서버가 Apple과 토큰 교환 → refresh token을 받아 저장. (앱·서버 코드 변경. **Apple 키(.p8), Team ID, Key ID, 번들 ID가 필요한 외부 발급물**이 있다.) 5.1.1(v) 원문에는 소셜 로그인 토큰을 기기 밖에 저장하지 말라는 문장도 있어서 저장 방식은 **결정이 필요**하다(Apple 개발자 포럼의 Apple 직원 답변은 토큰이 없으면 계정 데이터를 삭제하고 사용자가 직접 해제하도록 안내하라는 방법을 제시했다. 공식 문서가 아닌 포럼 답변이라 참고만).
+2. 계정 삭제 때 서버가 취소 요청: **준비해 둔 코드** `backend/jena_ai/app/services/apple_revoke.py`와 테스트 11개(`tests/test_apple_revoke.py`)가 client_secret 생성과 취소 요청을 로컬 키와 가짜 HTTP로 검증한다. **`delete_account`에는 연결하지 않았고 배포하지 않았다.** 요청 형식(주소, 매개변수, JWT 클레임)은 문서 본문을 읽지 못해 기억에 근거하므로 **사용 전에 Apple 문서로 확인해야 한다**(코드 머리말에도 적음).
+3. 서버 간 알림 엔드포인트를 쓰려면 Apple 포털에서 URL 등록(승인 필요).
+위 1번이 결정되기 전에는 2번을 켜도 취소할 토큰이 없다.
 
 **심사용 접근 방법 제안** (인증 우회, 공용 비밀번호 하드코딩 금지)
 Apple 지침 원문(2.1): *"include demo account info (and turn on your back-end service!) if your app includes a login. If you are unable to provide a demo account due to legal or security obligations, you may include a built-in demo mode in lieu of a demo account with prior approval by Apple."* 그리고 제출 전 안내: *"Provide App Review with full access to your app. If your app includes account-based features, provide either an active demo account or fully-featured demo mode … Enable backend services so that they're live and accessible during review."*
@@ -103,8 +120,8 @@ Apple 지침 원문(2.1): *"include demo account info (and turn on your back-end
 |---|---|---|
 | `Runner.xcodeproj`, `Podfile`, `Main.storyboard` | Mac 필요 | 저장소에 없음. `Info.plist`는 `UIMainStoryboardFile=Main`을 가리킨다. 생성 절차와 보존 확인은 런북 4절 |
 | iOS 번들 ID | 계정 필요 | `com.sharerun.shareRunChallenge`(`lib/firebase_options.dart`, 워치 `Info.plist`). Android(`com.sharerun.share_run_challenge`, `android/app/build.gradle.kts:100`)와 다르다(iOS는 밑줄 불가). Apple에 등록했는지 미확인이라 **임의로 바꾸지 않는다** |
-| Apple Developer Program | 승인 필요 | 11월 11일 가입 예정(대표님). 가입 전에는 서명·업로드 불가 |
-| 팀 ID, 인증서, 프로비저닝, App Store Connect 앱 레코드 | 승인 필요 | 가입 뒤 발급·생성 |
+| Apple Developer Program | 승인 필요 | 11월 11일 가입 예정(대표님). **가입 전에도 무료 Personal Team으로 개인 기기 서명·설치·실행은 가능**하다(App ID 10개, 기기 3대, 기기당 앱 3개, 프로파일 7일 만료). **TestFlight·App Store 업로드, 푸시, Apple 로그인은 유료 필요**(런북 0-3절, Apple 공식 표). HealthKit과 Background modes는 무료도 가능 |
+| 팀 ID, 배포 인증서, 프로비저닝, App Store Connect 앱 레코드 | 승인 필요 | 가입 뒤 발급·생성(개발용 서명은 무료 Personal Team도 Xcode가 자동 처리) |
 | 테스트용 iPhone | 계정 필요 | 대여 예정(소유자 동의, iOS 버전 확인 필요) |
 | 앱 아이콘 | 준비됨 | 1024 포함, 알파 채널 없음 |
 | 지원 기기(iPad) | 계정 필요(결정) | `Info.plist`에 iPad 방향 선언. 아이폰 전용이면 iPad 스크린샷 생략 가능 |
@@ -137,7 +154,10 @@ Apple 지침 원문(2.1): *"include demo account info (and turn on your back-end
 4. `tool/ios/check_ios_config.py`: `Info.plist`, entitlements, URL 스킴, 백그라운드 모드, 번들 ID, 권한 문구 11개 언어를 점검(비밀값 출력 없음). 정상 파일에서 통과 69·실패 0·건너뜀 4, 일부러 망가뜨린 복사본에서는 실패를 잡는 것을 확인했다.
 5. `tool/ios/scan_required_reason_apis.py`: 필수 사유 API를 쓰는 곳을 글자 검색(사유 코드는 정하지 않음).
 6. 문서: 이 문서, `docs/ios-privacy-manifest.md`, `docs/ios-device-test-plan.md`, `docs/ios-mac-runbook.md`.
-앱 Dart 코드, Android 파일, 번들 ID, 지도 키는 바꾸지 않았다. 개인정보 매니페스트 파일(`PrivacyInfo.xcprivacy`)은 사유 코드를 확인하지 못해 `ios/`에 넣지 않았다(`docs/ios-privacy-manifest.md`).
+7. `ios/Runner/PrivacyInfo.xcprivacy`: UserDefaults `CA92.1`만 담은 초안(근거는 `docs/ios-privacy-manifest.md`). Xcode 프로젝트에는 아직 연결되지 않았다.
+8. 서버 `backend/jena_ai/app/services/identities.py`: `APPLE_CLIENT_ID`가 비면 Apple 발급 토큰 거부(커밋 `2b5f32f`). 회귀 테스트 `tests/test_apple_audience.py`(정상 audience, 다른 audience, 누락 설정, Firebase 경로·다른 로그인 무영향, 로그에 토큰 없음).
+9. 서버 `app/services/apple_revoke.py`와 `tests/test_apple_revoke.py`: Apple 토큰 취소 준비 코드(**연결·배포 안 함**).
+앱 Dart 코드, Android 파일, 번들 ID, 지도 키는 바꾸지 않았다.
 
 ## 7. 분석·테스트 재실행 결과 (이 환경)
 환경: Linux 컨테이너(Windows·Mac 아님), Flutter **3.44.3**(노트북과 같은 버전), Dart 3.12.2. 기준: `main` `ac2e95e` + 이 브랜치.
@@ -146,7 +166,8 @@ Apple 지침 원문(2.1): *"include demo account info (and turn on your back-end
 | `flutter pub get` | 성공. `pubspec.lock`이 달라지지만 **커밋하지 않고 되돌렸다**(이 환경과 노트북의 해석 차이로 보임) |
 | `flutter analyze lib test` | **종료 코드 1**(이슈가 있어서). 오류 0, 경고 22, 정보 178(총 200건). **전체 통과가 아니다** |
 | `flutter test --exclude-tags golden --no-pub` | 1095개 모두 통과, 종료 코드 0 |
-| `python3 tool/ios/check_ios_config.py` | 통과 69(권한 문구 파일 11개 포함), 실패 0, 건너뜀 4 |
+| `python3 tool/ios/check_ios_config.py` | 통과 73(권한 문구 파일 11개, 개인정보 매니페스트 초안 포함), 실패 0, 건너뜀 4 |
+| 백엔드 `pytest -q`(`backend/jena_ai`, Python 3.13) | **901개 모두 통과**(이전 890 + 새 11). Apple audience 회귀 테스트 8개(`test_apple_audience.py`)와 취소 도우미 테스트 11개(`test_apple_revoke.py`)가 포함 |
 | iOS 빌드, `pod install`, 서명, 시뮬레이터·실기기 | **실행하지 않음(Mac 필요)** |
 - 지난 보고(Flutter 3.47.7)의 분석 203건(경고 25)과 차이 3건은 Flutter·Dart 버전 차이로 추정(개별 대조 안 함). 오류는 양쪽 0, 정보 178건 동일.
 - 지난 "1,095개 통과"와 개수가 같다. 이 브랜치는 Dart를 바꾸지 않았고 병합한 #385는 매니페스트와 버전뿐이다. (PR #384 브랜치는 같은 명령으로 1140개였다. 새 테스트 45개 차이이며 이 브랜치와 무관.)
@@ -188,12 +209,22 @@ Apple 지침 원문(2.1): *"include demo account info (and turn on your back-end
 | 알림 권한 | 예(런타임) | `firebase_messaging`, `flutter_local_notifications` | `Info.plist` 문구 키가 없다. 시스템 창이 뜬다 |
 | 백그라운드 모드 | `location`, `bluetooth-central`, `fetch` 사용. `processing`은 쓰는 코드를 못 찾음. `audio`는 필요 여부 미확인 | | `processing` 제거는 Mac 검증 뒤 결정 |
 
-## 10. 지도 키 (iOS) — 교체하지 않았다
-| 확인한 것 | 내용 |
+## 10. 지도 키 (iOS) — 교체하지 않았다. 콘솔 최종 점검표
+| 확인한 것(코드) | 내용 |
 |---|---|
-| 키 위치 | `ios/Runner/AppDelegate.swift:11` `GMSServices.provideAPIKey(...)`. 값은 이 문서에 쓰지 않는다(길이 39, 앞 4자 `AIza`) |
-| 쓰는 서비스 | **Maps SDK for iOS**(`google_maps_flutter_ios` 2.18.3, 최소 iOS 14). 지도를 쓰는 화면 6곳: `live_running_screen.dart`, `run_result_screen.dart`, `in_challenge_screen.dart`, `challenge_detail_screen.dart`, `stamp_tour_screen.dart`, `lib/features/map_crew/widgets/safe_map_panel.dart` |
-| Android 키와의 관계 | #385 이후 **값이 다르다**(SHA-256 앞 8자리가 달라 서로 다른 키). 값이 다르다는 이유로 교체하지 않았다. iOS 키가 옛 프로젝트의 키인지, 지금도 유효한지는 이 환경에서 알 수 없다(미확인) |
-| 보안 | 키가 첫 커밋부터 저장소에 평문으로 있다. 제한이 걸려 있다면 노출 피해가 작고, 제한이 없다면 교체와 주입 방식 변경이 필요하다 |
-| **콘솔에서 대표님이 확인할 것(클릭 순서)** | ① Google Cloud 콘솔 > API 및 서비스 > 사용자 인증 정보에서 이 iOS 키를 키 문자열로 검색해 어느 프로젝트의 키인지 확인 ② 같은 프로젝트의 사용 설정된 API에 **Maps SDK for iOS**가 있는지(라이브러리에서 사용 설정) ③ 키 상세의 "API 제한"에 Maps SDK for iOS가 들어 있는지 ④ "애플리케이션 제한"이 "iOS 앱"이면 **번들 ID `com.sharerun.shareRunChallenge`**가 있는지, "없음"이면 제한 추가를 검토 ⑤ 결제 계정 연결 여부 ⑥ 이 키로 쓸지, 새 iOS 전용 키를 만들지 결정 |
-| 실기기 확인 | 지도가 회색·베이지로 나오면 안드로이드에서 겪은 것과 같은 유형(키 제한, 서비스 미사용 설정)일 가능성이 높다. 시험표에 있다 |
+| 키 위치 | `ios/Runner/AppDelegate.swift:11` `GMSServices.provideAPIKey(...)`. 값은 이 문서에 쓰지 않는다(길이 39) |
+| 쓰는 서비스 | **Maps SDK for iOS**(`google_maps_flutter_ios` 2.18.3, 최소 iOS 14). 지도 화면 6곳: `live_running_screen.dart`, `run_result_screen.dart`, `in_challenge_screen.dart`, `challenge_detail_screen.dart`, `stamp_tour_screen.dart`, `lib/features/map_crew/widgets/safe_map_panel.dart` |
+| Android 키와의 관계 | #385 이후 **값이 다르다**(SHA-256 앞 8자리가 달라 서로 다른 키). 값이 다르다는 이유로 교체하지 않았다 |
+| 보안 | 키가 첫 커밋부터 저장소에 평문으로 있다. 제한이 걸려 있으면 노출 피해가 작고, 없으면 교체와 주입 방식 변경이 필요하다(별도 PR) |
+
+**콘솔에서 대표님이 확인할 항목 (체크리스트, 앞에서부터)**
+| # | 확인 항목 | 경로 | 정상 상태 | 확인 결과(대표님 기입) |
+|---|---|---|---|---|
+| 1 | 이 iOS 키가 어느 프로젝트의 키인가 | Google Cloud 콘솔 > API 및 서비스 > 사용자 인증 정보 > 위쪽 검색창에 키 문자열 붙여넣기 | 키가 검색되고 프로젝트 이름이 나온다. 안 나오면 삭제됐거나 다른 계정의 키 | |
+| 2 | 그 프로젝트에서 **Maps SDK for iOS**가 사용 설정됨 | API 및 서비스 > 사용 설정된 API 및 서비스 | 목록에 "Maps SDK for iOS" | |
+| 3 | 키의 **API 제한** | 사용자 인증 정보 > 해당 키 > API 제한 | "키 제한"이면 목록에 Maps SDK for iOS 포함. "제한 안함"이면 보안상 제한 권장 | |
+| 4 | 키의 **애플리케이션 제한** | 같은 화면 > 애플리케이션 제한사항 | "iOS 앱"이면 **번들 ID `com.sharerun.shareRunChallenge`**가 목록에 있다. "없음"이면 제한 추가 검토. 번들 ID가 다르면 지도가 안 나온다 | |
+| 5 | 결제 계정 연결 | 결제 > 프로젝트에 연결된 계정 | 연결됨 | |
+| 6 | 어느 키를 쓸지 결정 | — | 현재 키 유지 / 새 iOS 전용 키 발급(승인 필요). 새 키는 `AppDelegate.swift` 교체(별도 PR) | |
+| 7 | Android 키와 같은 프로젝트인가 | #385에서 교체한 Android 키와 비교(키 문자열 검색) | 같은 프로젝트면 결제·사용 설정을 한 번에 관리 가능 | |
+실기기에서 지도가 회색·베이지로 나오면 안드로이드에서 겪은 것과 같은 유형(키 제한, 서비스 미사용 설정)일 가능성이 높다. 시험표 E8에 있다.

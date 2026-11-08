@@ -105,6 +105,7 @@ def main() -> int:
             skip("구글 로그인 GIDClientID", "Firebase iOS 앱 등록 뒤 추가(아직 없음)")
 
     check_strings(info if info_path.exists() else {}, check)
+    check_privacy_manifest(check)
 
     ent_path = IOS / "Runner" / "Runner.entitlements"
     if not ent_path.exists():
@@ -144,6 +145,30 @@ def main() -> int:
     if "--json" in sys.argv:
         print(json.dumps([{"status": s, "name": n, "detail": d} for s, n, d in results], ensure_ascii=False))
     return 1 if failed else 0
+
+
+def check_privacy_manifest(check) -> None:
+    """`ios/Runner/PrivacyInfo.xcprivacy` 초안: 사유 코드가 비어 있거나 근거 없는 범주가 없는지."""
+    path = IOS / "Runner" / "PrivacyInfo.xcprivacy"
+    if not path.exists():
+        check("PrivacyInfo.xcprivacy 존재", False)
+        return
+    data = load_plist(path)
+    check("PrivacyInfo.xcprivacy 추적 안 함(NSPrivacyTracking=false)", data.get("NSPrivacyTracking") is False)
+    types = data.get("NSPrivacyAccessedAPITypes", [])
+    empty = [t.get("NSPrivacyAccessedAPIType") for t in types if not t.get("NSPrivacyAccessedAPITypeReasons")]
+    check("PrivacyInfo.xcprivacy 사유 코드가 빈 범주 없음", not empty, f"빈 범주 {empty}")
+    declared = {t.get("NSPrivacyAccessedAPIType"): t.get("NSPrivacyAccessedAPITypeReasons") for t in types}
+    # 근거가 확인된 것만: UserDefaults=CA92.1. 부팅 시간은 사유 미해결이라 넣지 않는다(docs/ios-privacy-manifest.md).
+    check(
+        "PrivacyInfo.xcprivacy UserDefaults = CA92.1",
+        declared.get("NSPrivacyAccessedAPICategoryUserDefaults") == ["CA92.1"],
+    )
+    check(
+        "PrivacyInfo.xcprivacy 근거 없는 범주 없음",
+        set(declared) <= {"NSPrivacyAccessedAPICategoryUserDefaults"},
+        f"선언된 범주 {sorted(declared)}",
+    )
 
 
 def check_strings(info: dict, check) -> None:

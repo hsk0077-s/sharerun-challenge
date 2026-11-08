@@ -7,7 +7,7 @@
 ## 0. 일정과 이미 정해진 것 (2026-11-08 기준)
 | 항목 | 상태 |
 |---|---|
-| Apple Developer Program 가입 | **11월 11일(수) 가입 예정**(대표님, 결제 포함). 가입 전에는 서명·업로드 불가 |
+| Apple Developer Program 가입 | **11월 11일(수) 가입 예정**(대표님, 결제 포함). **가입(승인) 전에도 무료 Apple Account(Xcode의 Personal Team)로 대여 아이폰에 개발용 앱을 서명·설치해 실행할 수 있다(제한 있음, 0-3절).** TestFlight·App Store Connect 업로드, 푸시, Apple 로그인은 유료 가입이 필요하다 |
 | 맥 | **M2 맥북, 11월 12일(목)부터 일주일 대여**(조카) |
 | 아이폰 | **실제 아이폰을 11월 12일부터 일주일 대여**. 모델과 iOS 버전은 수령 당일 확인(아직 모름) |
 | 기기 사용 규칙 | 조카의 허락을 받은 별도 macOS 사용자 계정만 쓴다(아래 1절) |
@@ -22,11 +22,11 @@
 | 4 | App Store Connect > 앱 > 새 앱 만들기(이름 "쉐어런", 기본 언어, 번들 ID 선택, SKU) | 대표님 | 승인 필요 |
 | 5 | Firebase 콘솔에서 **iOS 앱 추가**(번들 ID 동일) 후 `GoogleService-Info.plist` 내려받기. 안전한 곳에 보관(Git 금지). 구글 로그인용 `REVERSED_CLIENT_ID`, `CLIENT_ID`가 여기 있다 | 대표님 | 계정 필요 |
 | 6 | 푸시를 1차에 넣을 경우: Apple에서 APNs 인증 키(.p8) 발급 > Firebase 프로젝트 설정 > 클라우드 메시징에 업로드. 키 파일은 안전한 곳에만 | 대표님 | 승인 필요 |
-| 7 | 서버 Cloud Run 환경 변수 `APPLE_CLIENT_ID=com.sharerun.shareRunChallenge` 설정과 배포(애플 로그인을 켜기 전에). 비어 있으면 audience를 확인하지 않는다(`identities.py:297-306`) | 대표님 또는 서버 담당 | 승인 필요 |
+| 7 | 서버 Cloud Run 환경 변수 `APPLE_CLIENT_ID=com.sharerun.shareRunChallenge` 설정과 배포(애플 로그인을 켜기 전에). 비어 있으면 서버가 Apple 로그인 토큰을 503으로 거부한다(`identities.py`, 커밋 `2b5f32f`로 고침. 이전에는 audience를 확인하지 않고 통과시켰다) | 대표님 또는 서버 담당 | 승인 필요 |
 | 8 | 카카오 개발자 콘솔 > 플랫폼 > iOS 번들 ID 등록. 네이버 개발자 센터 iOS 설정. 구글 지도 iOS 키 확인(`ios-readiness.md` 10절) | 대표님 | 계정 필요 |
 | 9 | 결정: 애플 로그인을 1차에 켤지, iPad 포함 여부, 애플워치 1차 제외(권장), 암호 수출 규정 답변, 심사용 접근 방법(`ios-readiness.md` 3절) | 대표님 | 계정 필요(결정) |
 | 10 | 수령 전에 제가 준비해 둘 것: 이 런북, `tool/ios/check_ios_config.py`, `InfoPlist.strings`, 시험표(`docs/ios-device-test-plan.md`). **발급·가입·결제·콘솔 설정 변경은 대표님만** | 참모 | 준비됨 |
-막혀도 3번(앱 ID)이 되어 있으면 서명 설정까지는 맥에서 진행할 수 있다. 4번(앱 레코드)은 TestFlight 업로드 직전까지 미뤄도 된다.
+가입 승인이 늦어져도 **맥에서 무료 Personal Team으로 서명하고 실기기 실행까지는 할 수 있다**(0-3절의 제한 안에서). 승인에 걸리는 시간은 확인하지 못했다(미확인). 승인 전에 막히는 것은 2·3·4·6·7번 중 Apple 포털이 필요한 일(앱 ID 등록, 앱 레코드, APNs 키)이고, 5번(Firebase iOS 앱)과 8번(카카오·네이버·지도 콘솔)은 Apple 가입과 무관하게 할 수 있다. 4번(앱 레코드)은 TestFlight 업로드 직전까지 미뤄도 된다.
 
 ## 0-2. 목요일(11/12) 맥·아이폰 수령 후 할 일 (순서대로, 막히면 멈추고 원문 기록)
 | 순서 | 할 일 | 문서 |
@@ -36,11 +36,31 @@
 | 3 | 아이폰 개발자 모드·기기 신뢰는 **대표님 동의 후**(아이폰 소유자) | 2절 |
 | 4 | 환경 설치(Flutter 3.44.3, CocoaPods, 저장소), `flutter pub get` | 3절 |
 | 5 | 기준선 점검 `python3 tool/ios/check_ios_config.py` > iOS 프로젝트 생성 > 생성 후 diff와 재점검 | 4절 |
-| 6 | Xcode: 서명(우리 팀), Capability, `GoogleService-Info.plist`, `InfoPlist.strings`·`PrivacyInfo.xcprivacy` 연결, `pod install` | 5절 |
+| 6 | Xcode: 서명(유료 승인 전이면 Personal Team. 푸시·Apple 로그인 Capability는 유료 팀에서만), Capability, `GoogleService-Info.plist`, `InfoPlist.strings`·`PrivacyInfo.xcprivacy` 연결, `pod install` | 5절 |
 | 7 | **첫 실행 → 로그인 → 걸음·건강 권한 → 러닝·백그라운드 → 저장·동기화 → 배포 빌드**(시험표 `docs/ios-device-test-plan.md`) | 6-1절 |
 | 8 | 개인정보 Privacy Report, 배포용 빌드, 대표님 승인 뒤 TestFlight 업로드 | 6절, `docs/ios-privacy-manifest.md` |
 | 9 | 인수인계서 작성, 반납 전 정리(로컬 삭제와 원격 폐기 구분) | 8절 |
 첫 이틀(11/12~13) 안에 7번의 첫 실행과 8번의 첫 업로드 시도까지 간다. 나머지는 오류 수정과 재검증에 쓴다.
+
+## 0-3. 유료 가입 전·후에 할 수 있는 일 (Apple 공식 자료 기준)
+출처: Apple "Compare memberships"(developer.apple.com/support/compare-memberships)와 "Supported capabilities (iOS)"(developer.apple.com/help/account/reference/supported-capabilities-ios), 2026-11-08에 읽은 내용. 능력 표의 "Apple Developer" 열(무료 계정, 배포 불가)을 무료 Personal Team으로 해석했다. 두 페이지가 이 대응을 직접 적어 놓지는 않았으므로 실제 Xcode에서 확인한다(미확인).
+| 구분 | 무료 Apple Account (Personal Team) | 유료 Apple Developer Program |
+|---|---|---|
+| 내 기기에 개발용 설치·실행 | **가능.** Xcode에 Apple Account로 로그인하면 Personal Team으로 설치·테스트 | 가능 |
+| 기기 제한 | App ID 10개(7일 뒤 만료), 기기 3대(7일 뒤 만료), **기기당 앱 3개**, 프로비저닝 프로파일은 **발급 7일 뒤 만료 → 다시 빌드·설치** | 별도 한도(이 문서에서는 확인하지 않음) |
+| TestFlight, App Store Connect, App Store 배포 | **불가.** "developers can't distribute apps" | 가능 |
+| Certificates, Identifiers & Profiles(포털) | 사용 불가("paid-program resource") | 가능 |
+| Background modes(위치, 블루투스) | **가능** | 가능 |
+| HealthKit | **가능** | 가능 |
+| Push notifications | **불가** | 가능 |
+| Sign in with Apple | **불가** | 가능 |
+| Associated domains | 불가 | 가능 |
+이 앱에 대입하면:
+- **무료로 가능한 시험**: 로그인(구글·카카오·네이버는 Capability가 필요 없음. 구글은 Firebase iOS 앱 등록과 `GoogleService-Info.plist`가 필요하고 이는 Apple 가입과 무관), 위치와 백그라운드 위치, 블루투스 심박 센서, 모션 걸음 수, HealthKit 읽기, 지도, 카메라·사진, 알림 권한 창(로컬 알림), 러닝 기록 저장·동기화, 계정 삭제.
+- **무료로 불가능한 시험**: 푸시 알림(APNs), Apple 로그인, TestFlight 업로드와 배포용 빌드의 업로드, 심사 제출.
+- **무료 팀으로 서명할 때 주의**: `Runner.entitlements`에 Sign in with Apple(`com.apple.developer.applesignin`)이나 푸시(`aps-environment`)를 넣으면 프로비저닝이 실패한다. 이 두 Capability는 **유료 팀으로 바꾼 뒤에** 추가한다. 지금 저장소의 `Runner.entitlements`에는 HealthKit만 있어서 무료 팀에서 그대로 쓸 수 있다.
+- 일주일 대여라 7일 만료는 거의 문제가 되지 않지만, 11/12 설치분은 11/19쯤 만료될 수 있다(프로파일 발급 시각 기준).
+- 무료로 쌓은 서명 설정(번들 ID 자동 등록 등)이 나중에 유료 팀에서 같은 번들 ID를 등록할 때 충돌하는지는 확인하지 못했다(미확인). 유료 승인 뒤에는 Xcode에서 팀을 유료 팀으로 바꾸고 번들 ID를 다시 확인한다.
 
 ## 1. 지켜야 할 규칙
 - 조카의 Apple ID를 로그아웃하지 않는다. 조카 자료를 열거나 바꾸지 않는다. 우리 작업은 **우리가 만든 별도 macOS 사용자 계정**에서만 한다(조카가 동의한 뒤).
@@ -150,7 +170,7 @@ cd ios && pod install --repo-update && cd ..
 |---|---|---|
 | D0 (11/12) | 2절 점검, 3절 환경, 4절 프로젝트 생성, `pod install` | `flutter doctor`에서 iOS 오류 없음, `pod install` 성공 |
 | D1 오전 | 시뮬레이터 실행: `flutter run -d "iPhone" --dart-define-from-file=.env.release` | 앱이 뜬다. 첫 오류는 원문 기록 |
-| D1 오후 | 서명 설정, 실기기 실행(개발자 모드 켠 iPhone): `flutter run --release -d <기기ID> --dart-define-from-file=.env.release` | 로그인 화면 표시 |
+| D1 오후 | 서명 설정(유료 승인 전이면 무료 Personal Team, 0-3절), 실기기 실행(개발자 모드 켠 iPhone): `flutter run --release -d <기기ID> --dart-define-from-file=.env.release` | 로그인 화면 표시 |
 | D2 | 배포용 빌드: `flutter build ipa --release --dart-define-from-file=.env.release` (또는 Xcode Product > Archive). 대표님 승인 뒤 **TestFlight 업로드**(Transporter 앱 또는 Xcode Organizer) | App Store Connect에 빌드가 "처리 중"으로 뜸 |
 | D3~D6 | 빌드·업로드 오류 수정, 권한 문구 11개 언어, `PrivacyInfo.xcprivacy`, 실기기 검증(위치 백그라운드, HealthKit, 블루투스, 푸시, 애플 로그인) | 항목별 체크, 수정은 작은 커밋으로 |
 | D6 오후 | 최종 빌드 업로드, 인수인계서 작성 | 아래 8절 완료 |

@@ -235,11 +235,20 @@ class OpsService:
         )
 
         purged_users: list[str] = []
+        failed_users: list[str] = []
         for user_snapshot in snapshots:
             user = user_snapshot.to_dict() or {}
             if user.get("accountPurgedAt") is not None:
                 continue
-            result = self.purge_user_data(user_snapshot.id)
+            try:
+                result = self.purge_user_data(user_snapshot.id)
+            except Exception as error:  # one stuck account must not block the others
+                # Not marked purged until the end of purge_user_data, so tomorrow's run retries it.
+                logger.error(
+                    "Account purge failed for %s (%s)", user_snapshot.id, type(error).__name__
+                )
+                failed_users.append(user_snapshot.id)
+                continue
             if result.accepted:
                 purged_users.append(user_snapshot.id)
 

@@ -1,0 +1,12 @@
+/* 쉐어런 권한 안내 문구 초안. 원어민 검수 전. 값은 Info.plist의 같은 키를 이 언어로 덮어쓴다. */
+"CFBundleDisplayName" = "ShareRun";
+"NSBluetoothAlwaysUsageDescription" = "ShareRun usa Bluetooth para conectar un smartwatch o un sensor de pulso compatible y verificar tus carreras al aire libre.";
+"NSHealthShareUsageDescription" = "ShareRun lee tus pasos del día en Salud para dar recompensas y medir tu actividad.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ShareRun necesita la ubicación en segundo plano para seguir registrando la distancia con la pantalla apagada y evitar registros falsos.";
+"NSLocationWhenInUseUsageDescription" = "ShareRun usa tu ubicación para registrar y verificar la ruta y la distancia de tus carreras al aire libre.";
+"NSMotionUsageDescription" = "ShareRun accede a los datos de movimiento y actividad física para contar tus pasos con precisión.";
+"NSMicrophoneUsageDescription" = "Necesitas el micrófono para hablar con el Bot Caracol. También puedes escribir en lugar de hablar.";
+"NSSpeechRecognitionUsageDescription" = "Se usa el reconocimiento de voz para convertir lo que dices en texto. No participa en retos ni realiza pagos.";
+"NSCameraUsageDescription" = "Se necesita la cámara para tomar una foto de tu lugar de carrera para el fondo de la tarjeta de meta.";
+"NSPhotoLibraryUsageDescription" = "ShareRun accede a tus fotos para que elijas imágenes para tu avatar, el fondo de la tarjeta de meta y las pruebas de una apelación.";
+"NSFaceIDUsageDescription" = "Se usa Face ID para confirmar que eres tú antes de un pago.";

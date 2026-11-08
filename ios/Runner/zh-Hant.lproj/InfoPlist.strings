@@ -1,0 +1,12 @@
+/* 쉐어런 권한 안내 문구 초안. 원어민 검수 전. 값은 Info.plist의 같은 키를 이 언어로 덮어쓴다. */
+"CFBundleDisplayName" = "ShareRun";
+"NSBluetoothAlwaysUsageDescription" = "ShareRun 會使用藍牙連接支援的智慧手錶或心率感測器，以確認你的戶外跑步。";
+"NSHealthShareUsageDescription" = "ShareRun 會從「健康」讀取你今天的步數，用於發放獎勵與計算運動量。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ShareRun 需要背景定位，才能在螢幕關閉時持續記錄距離並防止造假記錄。";
+"NSLocationWhenInUseUsageDescription" = "ShareRun 會使用你的位置來記錄並確認戶外跑步的路線與距離。";
+"NSMotionUsageDescription" = "ShareRun 會存取動作與健身資料，以準確計算步數。";
+"NSMicrophoneUsageDescription" = "需要麥克風才能用說話的方式詢問蝸牛機器人。你也可以不說話，改用文字輸入。";
+"NSSpeechRecognitionUsageDescription" = "使用語音辨識將你說的話轉成文字。不會參加挑戰或進行付款。";
+"NSCameraUsageDescription" = "需要相機來拍攝跑步地點的照片，作為完賽卡片的背景。";
+"NSPhotoLibraryUsageDescription" = "ShareRun 會存取你的照片，讓你選擇頭像、完賽卡片背景與申訴佐證用的圖片。";
+"NSFaceIDUsageDescription" = "付款前使用 Face ID 確認是你本人。";

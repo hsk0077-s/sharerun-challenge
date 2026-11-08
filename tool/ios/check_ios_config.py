@@ -36,6 +36,24 @@ REQUIRED_BACKGROUND = {"location", "bluetooth-central", "fetch"}
 REQUIRED_BG_TASK = "com.pravera.flutter_foreground_task.refresh"
 KAKAO_SCHEME = re.compile(r"^kakao[0-9a-f]{20,}$")
 
+# 권한 문구 현지화(`ios/Runner/<언어>.lproj/InfoPlist.strings`). 앱이 지원하는 11개 언어.
+STRINGS_LANGS = ["ko", "en", "ja", "zh-Hant", "es", "pt-BR", "de", "fr", "vi", "th", "id"]
+STRINGS_KEYS = [
+    "CFBundleDisplayName",
+    "NSBluetoothAlwaysUsageDescription",
+    "NSHealthShareUsageDescription",
+    "NSLocationAlwaysAndWhenInUseUsageDescription",
+    "NSLocationWhenInUseUsageDescription",
+    "NSMotionUsageDescription",
+    "NSMicrophoneUsageDescription",
+    "NSSpeechRecognitionUsageDescription",
+    "NSCameraUsageDescription",
+    "NSPhotoLibraryUsageDescription",
+    "NSFaceIDUsageDescription",
+]
+STRINGS_LINE = re.compile(r'^"([A-Za-z0-9_]+)" = "((?:[^"\\]|\\.)*)";$')
+HANGUL = re.compile(r"[가-힣]")
+
 
 def load_plist(path: Path):
     with path.open("rb") as handle:
@@ -86,6 +104,8 @@ def main() -> int:
         else:
             skip("구글 로그인 GIDClientID", "Firebase iOS 앱 등록 뒤 추가(아직 없음)")
 
+    check_strings(info if info_path.exists() else {}, check)
+
     ent_path = IOS / "Runner" / "Runner.entitlements"
     if not ent_path.exists():
         check("Runner.entitlements 존재", False)
@@ -124,6 +144,40 @@ def main() -> int:
     if "--json" in sys.argv:
         print(json.dumps([{"status": s, "name": n, "detail": d} for s, n, d in results], ensure_ascii=False))
     return 1 if failed else 0
+
+
+def check_strings(info: dict, check) -> None:
+    """11개 언어 InfoPlist.strings가 모두 있고, 같은 키를 갖고, 이름 규칙을 지키는지."""
+    declared = set(info.get("CFBundleLocalizations", []))
+    check("CFBundleLocalizations 11개 언어", declared == set(STRINGS_LANGS), f"선언: {sorted(declared)}")
+    for lang in STRINGS_LANGS:
+        path = IOS / "Runner" / f"{lang}.lproj" / "InfoPlist.strings"
+        if not path.exists():
+            check(f"{lang}.lproj/InfoPlist.strings 존재", False)
+            continue
+        values: dict[str, str] = {}
+        bad_lines = 0
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("/*") or line.startswith("//"):
+                continue
+            match = STRINGS_LINE.match(line)
+            if not match:
+                bad_lines += 1
+                continue
+            values[match.group(1)] = match.group(2)
+        check(f"{lang} 문법(한 줄 \"키\" = \"값\";)", bad_lines == 0, f"이상한 줄 {bad_lines}")
+        missing = [k for k in STRINGS_KEYS if not values.get(k, "").strip()]
+        extra = [k for k in values if k not in STRINGS_KEYS]
+        check(f"{lang} 키 {len(STRINGS_KEYS)}개", not missing and not extra, f"빠짐 {missing} 추가 {extra}")
+        name = values.get("CFBundleDisplayName", "")
+        if lang == "ko":
+            check("ko 앱 이름 쉐어런", name == "쉐어런")
+        else:
+            check(f"{lang} 앱 이름 ShareRun, 한글 없음", name == "ShareRun" and not any(HANGUL.search(v) for v in values.values()))
+        # Info.plist에도 있는 키여야 한다(문구만 바꾸는 것이지 새 권한을 만들지 않는다)
+        unknown = [k for k in values if k != "CFBundleDisplayName" and k not in info]
+        check(f"{lang} 모든 권한 키가 Info.plist에 있음", not unknown, f"없는 키 {unknown}")
 
 
 def _deployment_ok(pbx_text: str) -> bool:

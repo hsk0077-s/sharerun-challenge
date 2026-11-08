@@ -1,0 +1,12 @@
+/* 쉐어런 권한 안내 문구 초안. 원어민 검수 전. 값은 Info.plist의 같은 키를 이 언어로 덮어쓴다. */
+"CFBundleDisplayName" = "ShareRun";
+"NSBluetoothAlwaysUsageDescription" = "ShareRun dùng Bluetooth để kết nối đồng hồ thông minh hoặc cảm biến nhịp tim được hỗ trợ nhằm xác minh các buổi chạy ngoài trời của bạn.";
+"NSHealthShareUsageDescription" = "ShareRun đọc số bước chân trong ngày của bạn từ Sức khỏe để trao thưởng và đo mức vận động.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ShareRun cần vị trí nền để tiếp tục ghi quãng đường khi màn hình tắt và ngăn ghi nhận gian lận.";
+"NSLocationWhenInUseUsageDescription" = "ShareRun dùng vị trí của bạn để ghi lại và xác minh lộ trình và quãng đường chạy ngoài trời.";
+"NSMotionUsageDescription" = "ShareRun truy cập dữ liệu chuyển động và thể dục để đếm bước chân chính xác.";
+"NSMicrophoneUsageDescription" = "Cần micro để bạn nói chuyện với Bot Ốc Sên. Bạn cũng có thể gõ chữ thay vì nói.";
+"NSSpeechRecognitionUsageDescription" = "Nhận dạng giọng nói được dùng để chuyển lời bạn nói thành văn bản. Không tham gia thử thách hay thanh toán.";
+"NSCameraUsageDescription" = "Cần máy ảnh để chụp ảnh nơi chạy của bạn làm nền cho thẻ hoàn thành.";
+"NSPhotoLibraryUsageDescription" = "ShareRun truy cập ảnh của bạn để bạn chọn hình cho ảnh đại diện, nền thẻ hoàn thành và bằng chứng khiếu nại.";
+"NSFaceIDUsageDescription" = "Face ID được dùng để xác nhận đúng là bạn trước khi thanh toán.";

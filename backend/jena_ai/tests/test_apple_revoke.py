@@ -129,3 +129,36 @@ def test_nothing_secret_reaches_the_logs(key_pair, caplog) -> None:
     assert captured["client_secret"] not in text
     assert "BEGIN" not in text
     assert "KEY1234567" not in text and "TEAM123456" not in text
+
+
+def test_client_secret_lifetime_is_within_apples_documented_limit(key_pair) -> None:
+    pem, public = key_pair
+    secret = apple_revoke.build_client_secret(_env(pem), now=1_700_000_000)
+    claims = jwt.decode(secret, public, algorithms=["ES256"], audience="https://appleid.apple.com",
+                        options={"verify_exp": False})
+    assert 0 < claims["exp"] - claims["iat"] <= apple_revoke.MAX_CLIENT_SECRET_LIFETIME_SECONDS
+    assert claims["iss"] == "TEAM123456" and claims["sub"] == "com.sharerun.shareRunChallenge"
+
+
+def test_client_id_is_never_the_team_id(key_pair) -> None:
+    pem, _ = key_pair
+    seen = {}
+    apple_revoke.revoke_token(TOKEN, environ=_env(pem), post=lambda u, d, t: seen.update(d) or 200)
+    assert seen["client_id"] != "TEAM123456"
+
+
+@pytest.mark.parametrize("hint", ["access_token", "refresh_token"])
+def test_both_documented_hints_are_sent(key_pair, hint) -> None:
+    pem, _ = key_pair
+    seen = {}
+    ok = apple_revoke.revoke_token(TOKEN, token_type_hint=hint, environ=_env(pem),
+                                   post=lambda u, d, t: seen.update(d) or 200)
+    assert ok and seen["token_type_hint"] == hint
+
+
+def test_undocumented_hint_is_refused_without_calling_apple(key_pair) -> None:
+    pem, _ = key_pair
+    calls = []
+    assert apple_revoke.revoke_token(TOKEN, token_type_hint="id_token", environ=_env(pem),
+                                     post=lambda *a: calls.append(a) or 200) is False
+    assert calls == []

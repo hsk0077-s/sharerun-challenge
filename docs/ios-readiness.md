@@ -96,7 +96,7 @@ SPM과 CocoaPods 중 무엇으로 연결되는지는 3.44.3의 기본 설정에 
 > "Apps that support Sign in with Apple should use the Sign in with Apple REST API to revoke user tokens."
 > "Use server-to-server notification endpoints to process changes for Sign in with Apple accounts."
 > "Offer to delete the entire account record, along with associated personal data. You may include additional options, but only offering to temporarily deactivate or disable an account is insufficient."
-토큰 취소 REST API 자체의 문서 본문(주소, 매개변수)은 읽지 못했다(페이지가 비어 보임, 미확인). 표현은 "should"(권장)이고, 필수인지는 심사 지침의 별도 문구로는 확인하지 못했다.
+토큰 취소 REST API 문서 본문은 DocC 데이터로 다시 읽어 주소·매개변수·client_secret 형식을 확인했다(상세와 URL은 `docs/ios-apple-auth.md`). 표현은 "should"(권장)이고, 필수인지는 심사 지침의 별도 문구로는 확인하지 못했다.
 | 항목 | Apple 요건 | 현재 구현 | 차이 |
 |---|---|---|---|
 | 앱 안 계정 삭제 | 계정 생성을 지원하면 앱 안에서 삭제 제공 | 있음. `secured_action_api_client.dart:354` → 서버 `POST /actions/account/delete`(`secured_action_router.py:210`) → `delete_account`(`secured_action_service.py:5113-5151`)가 프로필 익명화, Firebase 사용자 삭제, 연결 신원 삭제 | 없음(전체 계정 기록 삭제가 아니라 익명화인 부분은 별도 검토 필요: Apple은 "entire account record along with associated personal data" 삭제를 요구) |
@@ -104,7 +104,7 @@ SPM과 CocoaPods 중 무엇으로 연결되는지는 3.44.3의 기본 설정에 
 | 서버 간 알림 | Apple의 서버 간 알림 엔드포인트로 계정 변경 처리 | 없음(서버에 해당 엔드포인트 검색 결과 없음) | 있음 |
 **취소를 하려면 필요한 것(외부 설정이 필요한 부분과 아닌 부분)**
 1. 로그인 때 앱이 `authorizationCode`도 서버로 보내고 서버가 Apple과 토큰 교환 → refresh token을 받아 저장. (앱·서버 코드 변경. **Apple 키(.p8), Team ID, Key ID, 번들 ID가 필요한 외부 발급물**이 있다.) 5.1.1(v) 원문에는 소셜 로그인 토큰을 기기 밖에 저장하지 말라는 문장도 있어서 저장 방식은 **결정이 필요**하다(Apple 개발자 포럼의 Apple 직원 답변은 토큰이 없으면 계정 데이터를 삭제하고 사용자가 직접 해제하도록 안내하라는 방법을 제시했다. 공식 문서가 아닌 포럼 답변이라 참고만).
-2. 계정 삭제 때 서버가 취소 요청: **준비해 둔 코드** `backend/jena_ai/app/services/apple_revoke.py`와 테스트 11개(`tests/test_apple_revoke.py`)가 client_secret 생성과 취소 요청을 로컬 키와 가짜 HTTP로 검증한다. **`delete_account`에는 연결하지 않았고 배포하지 않았다.** 요청 형식(주소, 매개변수, JWT 클레임)은 문서 본문을 읽지 못해 기억에 근거하므로 **사용 전에 Apple 문서로 확인해야 한다**(코드 머리말에도 적음).
+2. 계정 삭제 때 서버가 취소 요청: **준비해 둔 코드** `backend/jena_ai/app/services/apple_revoke.py`와 테스트 15개(`tests/test_apple_revoke.py`)가 client_secret 생성과 취소 요청을 로컬 키와 가짜 HTTP로 검증한다. 요청 형식은 Apple 공식 문서와 대조해 일치함을 확인했다(`docs/ios-apple-auth.md` 2절). **`delete_account`에는 연결하지 않았고 배포하지 않았으며 실제 Apple 호출은 시험하지 않았다(미확인).** 익명화 후 남는 데이터와 audience·배포 절차도 같은 문서에 정리했다.
 3. 서버 간 알림 엔드포인트를 쓰려면 Apple 포털에서 URL 등록(승인 필요).
 위 1번이 결정되기 전에는 2번을 켜도 취소할 토큰이 없다.
 

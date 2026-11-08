@@ -61,3 +61,18 @@
 1. `flutter build ipa --release …` 뒤 Xcode Organizer > Archive > **Generate Privacy Report**로 앱과 모든 SDK의 매니페스트를 합친 결과를 본다. 앱 쪽에 빠진 선언은 여기에 드러난다.
 2. App Store Connect 업로드에서 "ITMS-91053(필수 사유 API 선언 누락)" 같은 경고가 나오면 오류 원문을 기록하고 해당 범주의 사유를 공식 표에서 골라 추가한다.
 3. `tool/ios/scan_required_reason_apis.py`를 `pod install` 뒤 Pods 폴더에도 돌려 보고(경로를 바꿔 쓰면 됨) 바이너리가 아닌 소스 SDK의 후보를 더 찾는다.
+
+## 7. U1(pedometer 부팅 시간) 대안과 최소 수정안 (조사 2026-11-08)
+**현재 사용**: `pedometer` 4.2.0 `PedometerPlugin.swift:92-95`가 `systemUptime`으로 마지막 부팅 시각을 구해 `CMPedometer.startUpdates(from:)`의 시작 시각으로 쓴다. Apple 허용 사유(35F9.1, 8FFB.1, 3D61.1)와 맞지 않는다(3절). 임의 코드로 채우지 않는다.
+
+**Archive 통과와 정책 적합성은 다르다**: 매니페스트에 `SystemBootTime`을 아무 코드로나 선언하면 업로드 검증(선언 누락 경고)은 통과할 수 있다. 그러나 그것은 사실과 다른 선언이므로 정책 적합이 아니다(이 판단은 위 사유 설명문과 코드를 대조한 해석이며 Apple의 검증 방식 자체는 미확인). 선언하지 않고 두면 업로드에서 경고/거부가 나올 수 있다 — 결과는 Mac의 첫 업로드에서만 알 수 있다(미실행).
+
+**패키지 상황**: `pedometer` 4.2.0이 최신이고 자체 매니페스트가 없다. 더 새 버전 해결책은 없다.
+
+**우리 앱이 이 값을 쓰는 방식**(코드 읽기): `solo_pedometer_engine.dart:157-166`은 구독 후 첫 이벤트 값을 기준(baseline)으로 삼아 이후 증가분만 쓰고, `today_steps.dart:60-97`도 첫 값을 기준으로 증가분을 계산하며 `raw < previousRaw`는 무시한다. 즉 **시작 시각 자체가 아니라 구독 중 값의 증가분**이 걸음 수가 된다. 단 `main.dart:153`(테스트 초기화)과 저장된 `stepOffset`은 절대값을 쓴다.
+
+**최소 수정안(권장 순서)**
+1. **플러그인 포크/패치**: `systemUptime` 3줄을 지우고 `startUpdates(from: Calendar.current.startOfDay(for: Date()))`(오늘 0시, 기기 시간대)로 바꾼다. `dependency_overrides`로 포크를 가리킨다. 부팅 시간 API를 아예 쓰지 않으므로 SystemBootTime 선언이 필요 없다. 걸음 집계가 증가분 기반이라 정확도는 유지될 것으로 보이나 **다음이 미확인이라 실기기 시험이 필요**하다: (a) 0시로 시작하면 구독 직후 누적 값이 바로 오는지(오지 않으면 첫 이벤트 기준이 늦어져 구독 직전 걸음이 빠짐), (b) 자정을 넘겨 구독이 유지될 때와 새 구독 때 값의 의미 변화, (c) `main.dart:153`·`stepOffset`처럼 절대값을 쓰는 곳(iOS 첫 출시라 과거 저장값은 없음). 시험표 `ios-device-test-plan.md`에 항목 추가 필요.
+2. **앱 쪽 얇은 채널**: Runner에 CMPedometer 채널을 직접 구현(부팅 시간 없이). 수정 범위가 크고 Dart 쪽 교체까지 필요해 1번보다 무겁다.
+3. **업로드 결과를 보고 결정**: 아무것도 바꾸지 않고 첫 업로드의 검증 결과를 확인. 경고가 나오면 1번.
+대표님 결정이 필요한 것: 1번 진행 여부(포크 유지 부담 vs. 업로드 위험). 구현은 하지 않았다.

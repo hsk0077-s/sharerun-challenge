@@ -17,11 +17,20 @@ Why this is not called from `delete_account` yet (see docs/ios-readiness.md, sec
   environment, and nothing logs them.
 
 What it does when the pieces exist: build the short-lived `client_secret` (an ES256 JWT
-signed with the Apple key) and post the revoke request. The request shape below (URL,
-parameter names, JWT claims) is written from memory of Apple's REST API documentation:
-**the official pages' body text could not be read when this was written (the 5.1.1(v)
-guideline reference page could), so these must be checked against Apple's current
-"Revoke tokens" and "Generate and validate tokens" pages before this is ever switched on.**
+signed with the Apple key) and post the revoke request.
+
+Checked against Apple's official pages on 2026-11-08 (read as DocC JSON):
+- Revoke tokens: https://developer.apple.com/documentation/signinwithapplerestapi/revoke-tokens
+  POST https://appleid.apple.com/auth/revoke, form fields client_id, client_secret, token,
+  token_type_hint (`access_token` or `refresh_token`); HTTP 200 on success.
+- Generate and validate tokens (client_id = App ID or Services ID, code single-use and
+  valid 5 minutes): https://developer.apple.com/documentation/signinwithapplerestapi/generate-and-validate-tokens
+- Client secret JWT (ES256, header kid; claims iss=Team ID, iat, exp <= 15777000 s after iat,
+  aud=https://appleid.apple.com, sub=client_id):
+  https://developer.apple.com/documentation/accountorganizationaldatasharing/creating-a-client-secret
+Not confirmed (미확인): behaviour for an already-revoked/invalid token (treated here as
+"not accepted" unless HTTP 200), and anything that needs the real Apple endpoint — nothing
+here has been run against Apple. Do not switch on before a real-token test by the owner.
 """
 
 from __future__ import annotations
@@ -36,10 +45,11 @@ from collections.abc import Callable, Mapping
 _logger = logging.getLogger(__name__)
 
 APPLE_AUDIENCE = "https://appleid.apple.com"
-# UNCONFIRMED against Apple's page text. Verify before use.
 APPLE_REVOKE_URL = "https://appleid.apple.com/auth/revoke"
 REQUIRED_SETTINGS = ("APPLE_CLIENT_ID", "APPLE_TEAM_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY")
 CLIENT_SECRET_LIFETIME_SECONDS = 300
+MAX_CLIENT_SECRET_LIFETIME_SECONDS = 15777000  # Apple's documented ceiling
+TOKEN_TYPE_HINTS = ("refresh_token", "access_token")
 
 Post = Callable[[str, Mapping[str, str], float], int]
 
@@ -96,7 +106,7 @@ def revoke_token(
     """True when Apple accepted the revoke request (HTTP 200). Never raises, never
     logs the token, the client secret or the key. Returns False when not configured."""
     env = os.environ if environ is None else environ
-    if not token or not is_configured(env):
+    if not token or token_type_hint not in TOKEN_TYPE_HINTS or not is_configured(env):
         return False
     try:
         secret = build_client_secret(env, now)

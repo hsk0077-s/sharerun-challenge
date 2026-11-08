@@ -4,21 +4,48 @@
 이 문서의 명령은 한 번도 실행해 보지 않았다(Mac이 없음). 막히면 오류 원문을 기록하고 근거 없이 같은 시도를 반복하지 않는다.
 점검 결과와 근거는 `docs/ios-readiness.md`.
 
-## 0. 받기 전에 대표님이 정할 것 (필수)
-1. Apple Developer Program 가입과 결제 여부(개인/법인). 가입 전에는 TestFlight 업로드가 불가능하다. 가입은 대표님만 할 수 있다.
-2. 번들 ID `com.sharerun.shareRunChallenge`를 Apple Developer에 등록했는지, App Store Connect에 앱 레코드를 만들었는지.
-3. 테스트용 iPhone이 있는지(없으면 HealthKit, 블루투스 센서, 푸시, 위치 백그라운드는 검증하지 못하고 시뮬레이터 확인과 빌드 업로드까지만).
-4. Firebase에 iOS 앱을 등록하고 `GoogleService-Info.plist`를 받았는지. 구글 로그인 `REVERSED_CLIENT_ID`가 여기서 나온다.
-5. APNs 인증 키(.p8)를 만들어 Firebase에 올렸는지(푸시를 1차에 포함할지도 결정).
-6. 애플 로그인: 서버 `APPLE_CLIENT_ID` 설정과 `APPLE_LOGIN_ENABLED` 빌드 값을 켤지(소셜 로그인을 쓰므로 심사에는 필요).
-7. 카카오·네이버 개발자 콘솔에 iOS 번들 ID 등록, 지도 API 키의 iOS 번들 ID 제한.
-8. 암호 수출 규정 답변(`ITSAppUsesNonExemptEncryption`), iPad 포함 여부, 애플워치를 1차에서 뺄지(권장: 뺀다).
-9. 심사용 로그인 방법(데모 계정).
-10. 조카에게: 별도 macOS 사용자 계정 생성 동의, 기기 macOS 버전과 디스크 여유 확인.
+## 0. 일정과 이미 정해진 것 (2026-11-08 기준)
+| 항목 | 상태 |
+|---|---|
+| Apple Developer Program 가입 | **11월 11일(수) 가입 예정**(대표님, 결제 포함). 가입 전에는 서명·업로드 불가 |
+| 맥 | **M2 맥북, 11월 12일(목)부터 일주일 대여**(조카) |
+| 아이폰 | **실제 아이폰을 11월 12일부터 일주일 대여**. 모델과 iOS 버전은 수령 당일 확인(아직 모름) |
+| 기기 사용 규칙 | 조카의 허락을 받은 별도 macOS 사용자 계정만 쓴다(아래 1절) |
+이미 답이 나온 질문(가입 여부, 테스트 아이폰 확보)은 위 표로 대체했다. 아직 답이 필요한 질문은 4절 끝의 "남은 질문"에 모았다.
+
+## 0-1. 수요일(11/11) 가입 후, 맥을 받기 전에 할 일 (Mac 불필요, 순서대로)
+| 순서 | 할 일 | 누가 | 분류 |
+|---|---|---|---|
+| 1 | Apple Developer Program 가입, 결제 | 대표님 | 승인 필요 |
+| 2 | 가입 승인 상태 확인(승인에 시간이 걸릴 수 있음. 승인 전이면 아래 3~8번은 막힌다) | 대표님 | 계정 필요 |
+| 3 | Certificates, Identifiers & Profiles > Identifiers에서 **앱 ID 등록: `com.sharerun.shareRunChallenge`** 후 Capability 체크: HealthKit, Push Notifications, Sign in with Apple, Background Modes 계열(필요 시) | 대표님 | 승인 필요 |
+| 4 | App Store Connect > 앱 > 새 앱 만들기(이름 "쉐어런", 기본 언어, 번들 ID 선택, SKU) | 대표님 | 승인 필요 |
+| 5 | Firebase 콘솔에서 **iOS 앱 추가**(번들 ID 동일) 후 `GoogleService-Info.plist` 내려받기. 안전한 곳에 보관(Git 금지). 구글 로그인용 `REVERSED_CLIENT_ID`, `CLIENT_ID`가 여기 있다 | 대표님 | 계정 필요 |
+| 6 | 푸시를 1차에 넣을 경우: Apple에서 APNs 인증 키(.p8) 발급 > Firebase 프로젝트 설정 > 클라우드 메시징에 업로드. 키 파일은 안전한 곳에만 | 대표님 | 승인 필요 |
+| 7 | 서버 Cloud Run 환경 변수 `APPLE_CLIENT_ID=com.sharerun.shareRunChallenge` 설정과 배포(애플 로그인을 켜기 전에). 비어 있으면 audience를 확인하지 않는다(`identities.py:297-306`) | 대표님 또는 서버 담당 | 승인 필요 |
+| 8 | 카카오 개발자 콘솔 > 플랫폼 > iOS 번들 ID 등록. 네이버 개발자 센터 iOS 설정. 구글 지도 iOS 키 확인(`ios-readiness.md` 10절) | 대표님 | 계정 필요 |
+| 9 | 결정: 애플 로그인을 1차에 켤지, iPad 포함 여부, 애플워치 1차 제외(권장), 암호 수출 규정 답변, 심사용 접근 방법(`ios-readiness.md` 3절) | 대표님 | 계정 필요(결정) |
+| 10 | 수령 전에 제가 준비해 둘 것: 이 런북, `tool/ios/check_ios_config.py`, `InfoPlist.strings`, 시험표(`docs/ios-device-test-plan.md`). **발급·가입·결제·콘솔 설정 변경은 대표님만** | 참모 | 준비됨 |
+막혀도 3번(앱 ID)이 되어 있으면 서명 설정까지는 맥에서 진행할 수 있다. 4번(앱 레코드)은 TestFlight 업로드 직전까지 미뤄도 된다.
+
+## 0-2. 목요일(11/12) 맥·아이폰 수령 후 할 일 (순서대로, 막히면 멈추고 원문 기록)
+| 순서 | 할 일 | 문서 |
+|---|---|---|
+| 1 | 조카의 허락으로 **별도 macOS 사용자 계정** 만들기. 조카 Apple ID·자료는 건드리지 않는다 | 1절 |
+| 2 | 도착 직후 점검: macOS, Xcode, 디스크, **Apple의 당일 업로드 요건**, 아이폰 iOS와 Xcode 호환 | 2절 |
+| 3 | 아이폰 개발자 모드·기기 신뢰는 **대표님 동의 후**(아이폰 소유자) | 2절 |
+| 4 | 환경 설치(Flutter 3.44.3, CocoaPods, 저장소), `flutter pub get` | 3절 |
+| 5 | 기준선 점검 `python3 tool/ios/check_ios_config.py` > iOS 프로젝트 생성 > 생성 후 diff와 재점검 | 4절 |
+| 6 | Xcode: 서명(우리 팀), Capability, `GoogleService-Info.plist`, `InfoPlist.strings`·`PrivacyInfo.xcprivacy` 연결, `pod install` | 5절 |
+| 7 | **첫 실행 → 로그인 → 걸음·건강 권한 → 러닝·백그라운드 → 저장·동기화 → 배포 빌드**(시험표 `docs/ios-device-test-plan.md`) | 6-1절 |
+| 8 | 개인정보 Privacy Report, 배포용 빌드, 대표님 승인 뒤 TestFlight 업로드 | 6절, `docs/ios-privacy-manifest.md` |
+| 9 | 인수인계서 작성, 반납 전 정리(로컬 삭제와 원격 폐기 구분) | 8절 |
+첫 이틀(11/12~13) 안에 7번의 첫 실행과 8번의 첫 업로드 시도까지 간다. 나머지는 오류 수정과 재검증에 쓴다.
 
 ## 1. 지켜야 할 규칙
 - 조카의 Apple ID를 로그아웃하지 않는다. 조카 자료를 열거나 바꾸지 않는다. 우리 작업은 **우리가 만든 별도 macOS 사용자 계정**에서만 한다(조카가 동의한 뒤).
 - 우리 Apple ID는 그 사용자 계정 안의 Xcode에만 로그인한다.
+- **아이폰은 대표님 소유가 아니라 대여한 기기다.** 개발자 모드 켜기와 "이 컴퓨터 신뢰", 개발용 앱 설치는 아이폰 소유자의 동의를 받은 뒤에 하고, 반납 전에 우리가 설치한 앱을 지운다. 그 기기의 Apple ID와 자료는 건드리지 않는다.
 - 비밀(.p8 키, 인증서, `.env.release`, `GoogleService-Info.plist`)은 Git, 메신저, 보고서에 넣지 않는다. USB나 안전한 전송으로 옮기고, 반납 전에 지운다.
 - 유료 가입·결제, 인증서·키 발급이나 폐기, App Store Connect 제출, 외부 설정 변경은 대표님 승인 뒤에만 한다.
 
@@ -99,6 +126,14 @@ cd ios && pod install --repo-update && cd ..
 ```
 `pod install` 오류는 원문을 기록한다. SPM과 CocoaPods 중 무엇이 쓰이는지는 `flutter config`와 빌드 로그로 확인(미확인).
 
+**남은 질문 (답이 필요한 것만)**
+1. 번들 ID `com.sharerun.shareRunChallenge`를 쓸 것인가(밑줄 때문에 Android ID와 다르다). 기본은 이 값을 유지하고 임의로 바꾸지 않는다.
+2. 푸시를 1차에 포함하는가(APNs 키 발급이 필요).
+3. 애플 로그인을 1차에 켜는가(서버 `APPLE_CLIENT_ID` 필요).
+4. iOS 지도 키: 현재 키를 쓸지, 새 키를 만들지.
+5. 암호 수출 규정 답변, iPad 포함 여부, 워치 1차 제외 여부, 심사용 접근 방법.
+6. 아이폰 모델과 iOS 버전(수령 당일 확인), 맥의 macOS와 Xcode 버전(수령 당일 확인).
+
 ## 5. Xcode 설정 (`open ios/Runner.xcworkspace`)
 1. Runner 타깃, Signing & Capabilities: Team은 **우리 Apple Developer 팀**(조카 아님). Bundle Identifier 확인.
 2. Capabilities 추가: HealthKit, Push Notifications, Sign in with Apple, Background Modes(Location updates, Uses Bluetooth LE accessories, Background fetch, Remote notifications). 오디오 안내가 화면 꺼짐에서도 나와야 하면 Audio도(확인 후).
@@ -106,6 +141,8 @@ cd ios && pod install --repo-update && cd ..
 4. 다음 파일이 Runner 타깃에 포함됐는지 확인: `BleHeartRatePlugin.swift`, `WatchBridgePlugin.swift`(`AppDelegate.swift`가 쓴다).
 5. `GoogleService-Info.plist`를 `ios/Runner`에 넣고 타깃에 포함한다. `Info.plist`에 `GIDClientID`와 `REVERSED_CLIENT_ID` URL 스킴을 추가한다(구글 로그인). 네이버 로그인 항목은 플러그인 README대로 추가한다.
 6. 지도 키 제한 확인(콘솔), 지도가 나오는지 시뮬레이터에서 확인.
+6-1. `ios/Runner/<언어>.lproj/InfoPlist.strings` 11개를 Runner 타깃에 **Localized 변형 그룹**으로 추가한다(저장소에 파일은 이미 있고 아직 프로젝트에 연결돼 있지 않다). 기기 언어를 바꿔 권한 창이 그 언어로 나오는지 확인. `python3 tool/ios/check_ios_config.py`가 파일 11개와 키를 검사한다.
+6-2. `PrivacyInfo.xcprivacy`: `docs/ios-privacy-manifest.md`의 초안과 근거 표를 보고, 사유 코드는 **그날 Apple 공식 표**에서 골라 넣는다(코드를 저장소 문서에서 가져오지 않는다). 필수 사유 API 후보는 `python3 tool/ios/scan_required_reason_apis.py`로 다시 확인.
 7. 워치 타깃은 1차에서 만들지 않는다. 넣을 때는 `watchos_app/README-XCODE-SETUP.md`.
 
 ## 6. 실행 순서와 일정

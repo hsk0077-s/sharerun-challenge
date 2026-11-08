@@ -80,6 +80,11 @@
 		<string>whatsapp</string>
 		<string>tg</string>
 	</array>
+	<!-- flutter_foreground_task(iOS)의 앱 새로고침 작업 ID. README가 UIBackgroundModes fetch와 함께 요구한다. -->
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.pravera.flutter_foreground_task.refresh</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

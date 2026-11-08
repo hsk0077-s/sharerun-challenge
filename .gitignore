@@ -8,3 +8,16 @@ __pycache__/
 .env.*
 !.env.example
 !.env.release.example
+
+# iOS: `flutter pub get`이 Mac에서 다시 만드는 파일들. 윈도우 경로가 들어 있어 올리지 않는다.
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/ephemeral/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Pods/
+ios/.symlinks/
+**/xcuserdata/
+*.xcworkspace/xcuserdata/
+
+# Firebase iOS 설정 파일(Android의 google-services.json과 같은 취급). 대표님이 Firebase 콘솔에서 받아 Mac에 직접 넣는다.
+ios/Runner/GoogleService-Info.plist

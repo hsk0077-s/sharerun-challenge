@@ -908,13 +908,16 @@ def test_apple_identity_token_uses_the_apple_keys_and_audience(monkeypatch) -> N
 
     monkeypatch.setattr(identities, "_unverified_issuer", lambda token: identities.APPLE_ISSUER)
     monkeypatch.setattr(identities, "_apple_claims", claims)
+    # No audience configured: Apple-issued tokens are refused, never accepted unchecked.
     monkeypatch.delenv("APPLE_CLIENT_ID", raising=False)
+    with pytest.raises(HTTPException) as refused:
+        identities.verify_apple_id_token("t" * 20)
+    assert refused.value.status_code == 503
+    assert "audience" not in seen
+    monkeypatch.setenv("APPLE_CLIENT_ID", "com.sharerun.app")
     assert identities.verify_apple_id_token("t" * 20) == identities.ProviderIdentity(
         "ios-sub", "b@x.com"
     )
-    assert seen["audience"] is None
-    monkeypatch.setenv("APPLE_CLIENT_ID", "com.sharerun.app")
-    identities.verify_apple_id_token("t" * 20)
     assert seen["audience"] == "com.sharerun.app"
 
     def expired(token, audience):

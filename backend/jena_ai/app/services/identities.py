@@ -37,6 +37,7 @@ address, so a second account with the same address blocks a later auto-link.
 
 import hashlib
 import json
+import logging
 import os
 import urllib.error
 import urllib.request
@@ -55,6 +56,8 @@ VERIFIED_EMAILS = "authVerifiedEmails"
 USERS = "users"
 REWARD_TOMBSTONES = "rewardTombstones"
 REWARD_BLOCKS = "rewardBlocks"
+_logger = logging.getLogger(__name__)
+
 PROVIDERS = ("kakao", "naver", "google", "apple")
 APPLE_ISSUER = "https://appleid.apple.com"
 APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys"
@@ -294,13 +297,21 @@ def verify_apple_id_token(token: str) -> ProviderIdentity:
     Apple sign-in, and the provider user id is `firebase.identities["apple.com"]`,
     which is the same `sub` Apple puts in its own token.
 
-    `APPLE_CLIENT_ID` (bundle id or services id) checks the audience of Apple's
-    own token. If it is unset signature, expiry and issuer are still checked.
+    `APPLE_CLIENT_ID` (bundle id or services id) is the audience Apple's own token
+    must carry. Apple signs a token for every app that uses Sign in with Apple, so a
+    token minted for ANOTHER app verifies against Apple's keys too; only the audience
+    tells them apart. If the setting is missing, Apple-issued tokens are refused
+    (503 `apple_login_not_configured`) instead of being accepted without the check.
+    The Firebase path (Android) is checked by Firebase and does not need it.
     """
     try:
         if _unverified_issuer(token) == APPLE_ISSUER:
             audience = os.getenv("APPLE_CLIENT_ID", "").strip()
-            info = _apple_claims(token, audience or None)
+            if not audience:
+                # Names the setting only. Never log the token, its claims or any key.
+                _logger.error("APPLE_CLIENT_ID is not set: Apple identity tokens are refused")
+                raise HTTPException(status_code=503, detail="apple_login_not_configured")
+            info = _apple_claims(token, audience)
             subject = info.get("sub")
             claim_email = info.get("email")
             verified = _is_true(info.get("email_verified"))

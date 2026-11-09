@@ -2102,6 +2102,8 @@ class RemainingSurface {
     'prize.tier_ticket_join',
     'mini_bot.copy.prize_race_pending',
     'mini_bot.copy.prize_race',
+    'accessories.accessory_catalog.slot_outfit',
+    'accessories.accessory_catalog.slot_costume',
   ];
 
   static const _en = <String, String>{
@@ -4119,6 +4121,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Join with a \$tier ticket',
     'mini_bot.copy.prize_race_pending': 'I\'m still checking the operator prize tournament entry fees. Please check the server fee in the tournament list. I don\'t enter you from here.',
     'mini_bot.copy.prize_race': 'Go to the operator prize tournament? The entry fees are \$costs.\$free \$week \$claim I only take you there; I don\'t confirm entry.',
+    'accessories.accessory_catalog.slot_outfit': 'Sportswear',
+    'accessories.accessory_catalog.slot_costume': 'Costumes',
   };
 
   static const _ja = <String, String>{
@@ -6136,6 +6140,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': '\$tier参加券で参加',
     'mini_bot.copy.prize_race_pending': '運営者賞金大会の参加費を確認中です。大会一覧でサーバーの参加費を確認してください。ここでは参加しません。',
     'mini_bot.copy.prize_race': '運営者賞金大会に移動しますか? 参加費は\$costsです。\$free \$week \$claim 移動するだけで、参加は確定しません。',
+    'accessories.accessory_catalog.slot_outfit': 'スポーツウェア',
+    'accessories.accessory_catalog.slot_costume': 'キャラ衣装',
   };
 
   static const _zh = <String, String>{
@@ -8153,6 +8159,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': '使用\$tier參賽券參加',
     'mini_bot.copy.prize_race_pending': '正在確認營運者獎金賽事的參加費。請在賽事列表中確認伺服器上的參加費。這裡不會替您報名。',
     'mini_bot.copy.prize_race': '要前往營運者獎金賽事嗎?參加費為 \$costs。\$free \$week \$claim 只會帶您前往,不會確認報名。',
+    'accessories.accessory_catalog.slot_outfit': '運動服',
+    'accessories.accessory_catalog.slot_costume': '角色服裝',
   };
 
   static const _es = <String, String>{
@@ -10170,6 +10178,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Unirse con boleto \$tier',
     'mini_bot.copy.prize_race_pending': 'Sigo comprobando las cuotas del torneo con premios del operador. Revisa la cuota del servidor en la lista de torneos. Desde aquí no te inscribo.',
     'mini_bot.copy.prize_race': '¿Ir al torneo con premios del operador? Las cuotas son \$costs.\$free \$week \$claim Solo te llevo allí; no confirmo la inscripción.',
+    'accessories.accessory_catalog.slot_outfit': 'Ropa deportiva',
+    'accessories.accessory_catalog.slot_costume': 'Trajes',
   };
 
   static const _pt = <String, String>{
@@ -12187,6 +12197,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Participar com ingresso \$tier',
     'mini_bot.copy.prize_race_pending': 'Ainda estou verificando as taxas do torneio com prêmios do operador. Confira a taxa do servidor na lista de torneios. Não inscrevo você por aqui.',
     'mini_bot.copy.prize_race': 'Ir para o torneio com prêmios do operador? As taxas são \$costs.\$free \$week \$claim Só levo você até lá; não confirmo a inscrição.',
+    'accessories.accessory_catalog.slot_outfit': 'Roupa esportiva',
+    'accessories.accessory_catalog.slot_costume': 'Fantasias',
   };
 
   static const _de = <String, String>{
@@ -14204,6 +14216,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Mit \$tier-Ticket teilnehmen',
     'mini_bot.copy.prize_race_pending': 'Ich prüfe noch die Teilnahmegebühren des Preisturniers des Betreibers. Bitte sieh die Server-Gebühr in der Turnierliste nach. Von hier aus melde ich dich nicht an.',
     'mini_bot.copy.prize_race': 'Zum Preisturnier des Betreibers wechseln? Die Teilnahmegebühren betragen \$costs.\$free \$week \$claim Ich bringe dich nur dorthin und bestätige keine Anmeldung.',
+    'accessories.accessory_catalog.slot_outfit': 'Sportkleidung',
+    'accessories.accessory_catalog.slot_costume': 'Kostüme',
   };
 
   static const _fr = <String, String>{
@@ -16221,6 +16235,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Participer avec un ticket \$tier',
     'mini_bot.copy.prize_race_pending': 'Je vérifie encore les frais de participation du tournoi à lots de l\'opérateur. Consultez les frais du serveur dans la liste des tournois. Je ne vous inscris pas d\'ici.',
     'mini_bot.copy.prize_race': 'Aller au tournoi à lots de l\'opérateur ? Les frais sont de \$costs.\$free \$week \$claim Je vous y emmène seulement ; je ne confirme pas l\'inscription.',
+    'accessories.accessory_catalog.slot_outfit': 'Tenue de sport',
+    'accessories.accessory_catalog.slot_costume': 'Costumes',
   };
 
   static const _vi = <String, String>{
@@ -18238,6 +18254,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Tham gia bằng vé \$tier',
     'mini_bot.copy.prize_race_pending': 'Mình vẫn đang kiểm tra phí tham gia giải thưởng của bên vận hành. Hãy xem phí từ máy chủ trong danh sách giải đấu. Mình không đăng ký thay bạn ở đây.',
     'mini_bot.copy.prize_race': 'Đến giải thưởng của bên vận hành nhé? Phí tham gia là \$costs.\$free \$week \$claim Mình chỉ đưa bạn tới đó, không xác nhận đăng ký.',
+    'accessories.accessory_catalog.slot_outfit': 'Đồ thể thao',
+    'accessories.accessory_catalog.slot_costume': 'Trang phục',
   };
 
   static const _th = <String, String>{
@@ -20255,6 +20273,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'เข้าร่วมด้วยตั๋ว\$tier',
     'mini_bot.copy.prize_race_pending': 'ฉันกำลังตรวจสอบค่าสมัครของการแข่งขันชิงรางวัลของผู้ให้บริการ โปรดดูค่าสมัครจากเซิร์ฟเวอร์ในรายการแข่งขัน ฉันไม่สมัครให้จากตรงนี้',
     'mini_bot.copy.prize_race': 'ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ \$costs\$free \$week \$claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้',
+    'accessories.accessory_catalog.slot_outfit': 'ชุดกีฬา',
+    'accessories.accessory_catalog.slot_costume': 'ชุดตัวละคร',
   };
 
   static const _id = <String, String>{
@@ -22272,6 +22292,8 @@ class RemainingSurface {
     'prize.tier_ticket_join': 'Ikut dengan tiket \$tier',
     'mini_bot.copy.prize_race_pending': 'Saya masih memeriksa biaya turnamen berhadiah operator. Silakan cek biaya dari server di daftar turnamen. Saya tidak mendaftarkan Anda dari sini.',
     'mini_bot.copy.prize_race': 'Pindah ke turnamen berhadiah operator? Biayanya \$costs.\$free \$week \$claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.',
+    'accessories.accessory_catalog.slot_outfit': 'Pakaian olahraga',
+    'accessories.accessory_catalog.slot_costume': 'Kostum',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

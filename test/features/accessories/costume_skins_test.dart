@@ -248,11 +248,11 @@ void main() {
             userGenderProvider.overrideWithValue(gender),
             accessoryInventoryProvider.overrideWith((ref) => Stream.value(inventory)),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             locale: koTestLocale,
             supportedLocales: koTestSupportedLocales,
             localizationsDelegates: koTestDelegates,
-            home: const Scaffold(body: Center(child: GenderProfileAvatar())),
+            home: Scaffold(body: Center(child: GenderProfileAvatar())),
           ),
         ),
       );

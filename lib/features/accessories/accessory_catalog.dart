@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../l10n/remaining_surface.dart';
 import '../onboarding/src_onboarding_controller.dart';
+import '../../l10n/accessory_names.dart' as shop_names;
 import 'accessory_names.dart';
 
 /// 캐릭터를 꾸미는 소품·스킨 46종. 디자인팀 납품 세트(2026-10-14)를 옮긴 것이다.
@@ -20,10 +21,10 @@ enum AccessorySlot {
   skin('스킨'),
 
   /// 동물이 입는 운동복 세트. 상의·하의·신발·머리 그림 여러 장을 한 상품이 함께 낸다.
-  outfit('운동복'),
+  outfit('outfit'),
 
   /// 남녀 캐릭터(홈 아바타)의 의상. 상반신 그림을 통째로 바꿔 끼운다.
-  costume('캐릭터 의상');
+  costume('costume');
 
   const AccessorySlot(this.labelKo);
 
@@ -31,15 +32,21 @@ enum AccessorySlot {
 
   /// 화면 언어로 된 이름. 한국어는 [labelKo] 그대로다.
   ///
-  /// 운동복·캐릭터 의상은 번역 키 번호가 등급 이름(body.9~)과 겹치므로 자기 표를 쓴다.
+  /// 운동복·캐릭터 의상은 번역 키 번호가 등급 이름(body.9~)과 겹치므로 자기 키를 쓴다.
   String label([BuildContext? context]) {
-    if (this == AccessorySlot.outfit || this == AccessorySlot.costume) {
-      final locale = context == null
-          ? RemainingSurface.currentLocale
-          : (Localizations.maybeLocaleOf(context) ??
-              RemainingSurface.currentLocale);
-      final row = _newSlotLabels[this]!;
-      return row[locale.languageCode] ?? row['en']!;
+    if (this == AccessorySlot.outfit) {
+      return RemainingSurface.tr(
+        context,
+        'accessories.accessory_catalog.slot_outfit',
+        '운동복',
+      );
+    }
+    if (this == AccessorySlot.costume) {
+      return RemainingSurface.tr(
+        context,
+        'accessories.accessory_catalog.slot_costume',
+        '캐릭터 의상',
+      );
     }
     return RemainingSurface.tr(
       context,
@@ -57,35 +64,6 @@ enum AccessorySlot {
         _ => name,
       };
 }
-
-const _newSlotLabels = <AccessorySlot, Map<String, String>>{
-  AccessorySlot.outfit: {
-    'ko': '운동복',
-    'en': 'Sportswear',
-    'ja': 'スポーツウェア',
-    'zh': '運動服',
-    'es': 'Ropa deportiva',
-    'pt': 'Roupa esportiva',
-    'de': 'Sportkleidung',
-    'fr': 'Tenue de sport',
-    'vi': 'Đồ thể thao',
-    'th': 'ชุดกีฬา',
-    'id': 'Pakaian olahraga',
-  },
-  AccessorySlot.costume: {
-    'ko': '캐릭터 의상',
-    'en': 'Costumes',
-    'ja': 'キャラ衣装',
-    'zh': '角色服裝',
-    'es': 'Trajes',
-    'pt': 'Fantasias',
-    'de': 'Kostüme',
-    'fr': 'Costumes',
-    'vi': 'Trang phục',
-    'th': 'ชุดตัวละคร',
-    'id': 'Kostum',
-  },
-};
 
 /// 누가 입는가. 동물(티어 마스코트), 캐릭터(홈 아바타), 둘 다(세트 상품).
 enum AccessoryTarget { animal, character, both }
@@ -118,7 +96,7 @@ enum AccessoryRarity {
 class Accessory {
   const Accessory({
     required this.id,
-    required this.nameKo,
+    String nameKo = '',
     required this.slot,
     required this.file,
     required this.rarity,
@@ -132,10 +110,15 @@ class Accessory {
     this.gender = AccessoryGender.unisex,
     this.bundle = const [],
     this.parts = const [],
-  });
+  }) : _nameKo = nameKo;
 
   final String id;
-  final String nameKo;
+  final String _nameKo;
+
+  /// 한국어 이름. 의상 스킨처럼 목록에 한국어를 적지 않은 상품은 이름표(ko 칸)에서 읽는다.
+  String get nameKo => _nameKo.isNotEmpty
+      ? _nameKo
+      : shop_names.accessoryName(id, id, const Locale('ko'));
   final AccessorySlot slot;
 
   /// 동물 이름을 뺀 그림 파일 이름(확장자 제외).
@@ -657,7 +640,6 @@ const accessoryCatalog = <Accessory>[
   // ---- 의상 스킨 1차(자리표시 그림). 가격: 운동복 60 · 동물+캐릭터 세트 90 · 전통의상 120 · 남녀 세트 200 DIA.
   Accessory(
     id: 'W1A',
-    nameKo: '축구 유니폼 (동물)',
     slot: AccessorySlot.outfit,
     file: 'soccer',
     rarity: AccessoryRarity.rare,
@@ -668,7 +650,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W1C',
-    nameKo: '축구 유니폼 (캐릭터)',
     slot: AccessorySlot.costume,
     file: 'soccer',
     rarity: AccessoryRarity.rare,
@@ -678,7 +659,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W1B',
-    nameKo: '축구 유니폼 (동물+캐릭터 세트)',
     slot: AccessorySlot.outfit,
     file: 'soccer',
     rarity: AccessoryRarity.hero,
@@ -689,7 +669,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W2A',
-    nameKo: '육상 러닝 싱글렛 (동물)',
     slot: AccessorySlot.outfit,
     file: 'singlet',
     rarity: AccessoryRarity.rare,
@@ -700,7 +679,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W2C',
-    nameKo: '육상 러닝 싱글렛 (캐릭터)',
     slot: AccessorySlot.costume,
     file: 'singlet',
     rarity: AccessoryRarity.rare,
@@ -710,7 +688,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W2B',
-    nameKo: '육상 러닝 싱글렛 (동물+캐릭터 세트)',
     slot: AccessorySlot.outfit,
     file: 'singlet',
     rarity: AccessoryRarity.hero,
@@ -721,7 +698,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W3A',
-    nameKo: '농구 유니폼 (동물)',
     slot: AccessorySlot.outfit,
     file: 'basketball',
     rarity: AccessoryRarity.rare,
@@ -732,7 +708,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W3C',
-    nameKo: '농구 유니폼 (캐릭터)',
     slot: AccessorySlot.costume,
     file: 'basketball',
     rarity: AccessoryRarity.rare,
@@ -742,7 +717,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W3B',
-    nameKo: '농구 유니폼 (동물+캐릭터 세트)',
     slot: AccessorySlot.outfit,
     file: 'basketball',
     rarity: AccessoryRarity.hero,
@@ -753,7 +727,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W4A',
-    nameKo: '야구 유니폼 (동물)',
     slot: AccessorySlot.outfit,
     file: 'baseball',
     rarity: AccessoryRarity.rare,
@@ -764,7 +737,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W4C',
-    nameKo: '야구 유니폼 (캐릭터)',
     slot: AccessorySlot.costume,
     file: 'baseball',
     rarity: AccessoryRarity.rare,
@@ -774,7 +746,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W4B',
-    nameKo: '야구 유니폼 (동물+캐릭터 세트)',
     slot: AccessorySlot.outfit,
     file: 'baseball',
     rarity: AccessoryRarity.hero,
@@ -785,7 +756,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W5A',
-    nameKo: '배드민턴 유니폼 (동물)',
     slot: AccessorySlot.outfit,
     file: 'badminton',
     rarity: AccessoryRarity.rare,
@@ -796,7 +766,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W5C',
-    nameKo: '배드민턴 유니폼 (캐릭터)',
     slot: AccessorySlot.costume,
     file: 'badminton',
     rarity: AccessoryRarity.rare,
@@ -806,7 +775,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W5B',
-    nameKo: '배드민턴 유니폼 (동물+캐릭터 세트)',
     slot: AccessorySlot.outfit,
     file: 'badminton',
     rarity: AccessoryRarity.hero,
@@ -817,7 +785,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W6A',
-    nameKo: '태권도 도복 (동물)',
     slot: AccessorySlot.outfit,
     file: 'taekwondo',
     rarity: AccessoryRarity.rare,
@@ -828,7 +795,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W6C',
-    nameKo: '태권도 도복 (캐릭터)',
     slot: AccessorySlot.costume,
     file: 'taekwondo',
     rarity: AccessoryRarity.rare,
@@ -838,7 +804,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'W6B',
-    nameKo: '태권도 도복 (동물+캐릭터 세트)',
     slot: AccessorySlot.outfit,
     file: 'taekwondo',
     rarity: AccessoryRarity.hero,
@@ -849,7 +814,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T1M',
-    nameKo: '한국 한복 (캐릭터·남)',
     slot: AccessorySlot.costume,
     file: 'hanbok',
     rarity: AccessoryRarity.hero,
@@ -860,7 +824,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T1F',
-    nameKo: '한국 한복 (캐릭터·여)',
     slot: AccessorySlot.costume,
     file: 'hanbok',
     rarity: AccessoryRarity.hero,
@@ -871,7 +834,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T1S',
-    nameKo: '한국 한복 (캐릭터·남녀 세트)',
     slot: AccessorySlot.costume,
     file: 'hanbok',
     rarity: AccessoryRarity.hero,
@@ -882,7 +844,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T2M',
-    nameKo: '일본 유카타 (캐릭터·남)',
     slot: AccessorySlot.costume,
     file: 'yukata',
     rarity: AccessoryRarity.hero,
@@ -893,7 +854,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T2F',
-    nameKo: '일본 유카타 (캐릭터·여)',
     slot: AccessorySlot.costume,
     file: 'yukata',
     rarity: AccessoryRarity.hero,
@@ -904,7 +864,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T2S',
-    nameKo: '일본 유카타 (캐릭터·남녀 세트)',
     slot: AccessorySlot.costume,
     file: 'yukata',
     rarity: AccessoryRarity.hero,
@@ -915,7 +874,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T3M',
-    nameKo: '베트남 아오자이 (캐릭터·남)',
     slot: AccessorySlot.costume,
     file: 'aodai',
     rarity: AccessoryRarity.hero,
@@ -926,7 +884,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T3F',
-    nameKo: '베트남 아오자이 (캐릭터·여)',
     slot: AccessorySlot.costume,
     file: 'aodai',
     rarity: AccessoryRarity.hero,
@@ -937,7 +894,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T3S',
-    nameKo: '베트남 아오자이 (캐릭터·남녀 세트)',
     slot: AccessorySlot.costume,
     file: 'aodai',
     rarity: AccessoryRarity.hero,
@@ -948,7 +904,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T4M',
-    nameKo: '독일 바이에른 축제복 (캐릭터·남)',
     slot: AccessorySlot.costume,
     file: 'bavaria',
     rarity: AccessoryRarity.hero,
@@ -959,7 +914,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T4F',
-    nameKo: '독일 바이에른 축제복 (캐릭터·여)',
     slot: AccessorySlot.costume,
     file: 'bavaria',
     rarity: AccessoryRarity.hero,
@@ -970,7 +924,6 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'T4S',
-    nameKo: '독일 바이에른 축제복 (캐릭터·남녀 세트)',
     slot: AccessorySlot.costume,
     file: 'bavaria',
     rarity: AccessoryRarity.hero,

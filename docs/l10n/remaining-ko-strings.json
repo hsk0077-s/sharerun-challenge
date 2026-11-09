@@ -38825,6 +38825,44 @@
       "th": "ไปที่การแข่งขันชิงรางวัลของผู้ให้บริการไหม? ค่าสมัครคือ $costs$free $week $claim ฉันพาไปเท่านั้น ไม่ยืนยันการสมัครให้",
       "id": "Pindah ke turnamen berhadiah operator? Biayanya $costs.$free $week $claim Saya hanya mengantar ke sana; tidak mengonfirmasi pendaftaran.",
       "native_review": "pending"
+    },
+    {
+      "key": "accessories.accessory_catalog.slot_outfit",
+      "ko": "운동복",
+      "file": "lib/features/accessories/accessory_catalog.dart",
+      "screen": "accessories.accessory_catalog",
+      "context": "상점 꾸미기 칸 이름: 동물에게 입히는 운동복 세트",
+      "placeholders": [],
+      "en": "Sportswear",
+      "ja": "スポーツウェア",
+      "zh-TW": "運動服",
+      "es": "Ropa deportiva",
+      "pt-BR": "Roupa esportiva",
+      "de": "Sportkleidung",
+      "fr": "Tenue de sport",
+      "vi": "Đồ thể thao",
+      "th": "ชุดกีฬา",
+      "id": "Pakaian olahraga",
+      "native_review": "pending"
+    },
+    {
+      "key": "accessories.accessory_catalog.slot_costume",
+      "ko": "캐릭터 의상",
+      "file": "lib/features/accessories/accessory_catalog.dart",
+      "screen": "accessories.accessory_catalog",
+      "context": "상점 꾸미기 칸 이름: 남녀 캐릭터(홈 아바타)에게 입히는 의상",
+      "placeholders": [],
+      "en": "Costumes",
+      "ja": "キャラ衣装",
+      "zh-TW": "角色服裝",
+      "es": "Trajes",
+      "pt-BR": "Fantasias",
+      "de": "Kostüme",
+      "fr": "Costumes",
+      "vi": "Trang phục",
+      "th": "ชุดตัวละคร",
+      "id": "Kostum",
+      "native_review": "pending"
     }
   ]
 }

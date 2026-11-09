@@ -30,9 +30,10 @@ void main() {
 
   Accessory byId(String id) => accessoryCatalog.firstWhere((a) => a.id == id);
 
-  test('the catalog has 46 items with unique ids', () {
-    expect(accessoryCatalog, hasLength(46));
-    expect(accessoryCatalog.map((a) => a.id).toSet(), hasLength(46));
+  test('the catalog has 76 items with unique ids', () {
+    // 46 소품·스킨 + 의상 스킨 1차 30(운동복 18 + 전통의상 12).
+    expect(accessoryCatalog, hasLength(76));
+    expect(accessoryCatalog.map((a) => a.id).toSet(), hasLength(76));
     expect(
       accessoryCatalog.where((a) => a.slot == AccessorySlot.skin),
       hasLength(9),
@@ -40,8 +41,19 @@ void main() {
   });
 
   test('every ready picture exists for all five animals', () {
-    for (final acc in accessoryCatalog.where((a) => a.ready)) {
+    // 동물에게 입히는 상품만. 세트와 캐릭터 의상은 아래 의상 스킨 테스트가 본다.
+    for (final acc in accessoryCatalog.where((a) => a.ready && a.wornOnAnimal)) {
       for (final animal in dressable) {
+        if (acc.slot == AccessorySlot.outfit) {
+          for (final part in acc.parts) {
+            expect(
+              File(acc.partAssetPath(part, animal)).existsSync(),
+              isTrue,
+              reason: '${acc.id} ${part.name} for ${animal.code}',
+            );
+          }
+          continue;
+        }
         expect(
           File(acc.assetPath(animal)).existsSync(),
           isTrue,
@@ -75,6 +87,8 @@ void main() {
       AccessorySlot.eyes: 5,
       AccessorySlot.head: 10,
       AccessorySlot.skin: 9,
+      AccessorySlot.outfit: 12, // 동물용 6 + 동물+캐릭터 세트 6
+      AccessorySlot.costume: 18, // 운동복 캐릭터용 6 + 전통의상 남·여·세트 12
     });
   });
 

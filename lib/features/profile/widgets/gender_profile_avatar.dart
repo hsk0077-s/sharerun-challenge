@@ -11,7 +11,10 @@ import '../../onboarding/widgets/nickname_change_sheet.dart';
 import '../../onboarding/widgets/nickname_setup_sheet.dart';
 import '../../accessories/accessory_catalog.dart';
 import '../../accessories/accessory_inventory.dart';
+import '../../accessories/costume_picture.dart';
 import '../../accessories/dressed_mascot.dart';
+import '../../../l10n/accessory_names.dart';
+import '../../crew/crew_membership.dart';
 import '../avatar_choice.dart';
 import '../avatar_choice_provider.dart';
 import '../user_profile_notifier.dart';
@@ -307,6 +310,7 @@ class _GenderCustomizeSheet extends ConsumerWidget {
                 );
               },
             ),
+            const _CostumeSection(),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -342,7 +346,7 @@ class _GenderCustomizeSheet extends ConsumerWidget {
   }
 }
 
-class _AvatarImage extends StatelessWidget {
+class _AvatarImage extends ConsumerWidget {
   const _AvatarImage({
     required this.choice,
     required this.genderFallback,
@@ -352,7 +356,7 @@ class _AvatarImage extends StatelessWidget {
   final String genderFallback;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final bytes = choice.photoBytes;
     if (choice.isPhoto && bytes != null) {
       return Image.memory(
@@ -365,6 +369,21 @@ class _AvatarImage extends StatelessWidget {
       );
     }
     final preset = AvatarPresets.byId(choice.presetId);
+    // 남녀 기본 그림을 고른 경우에만, 산 의상 중 현재 성별에 맞는 것을 입혀 보여 준다.
+    if (preset.id == AvatarChoice.maleId || preset.id == AvatarChoice.femaleId) {
+      final inventory =
+          ref.watch(accessoryInventoryProvider).asData?.value;
+      final costume = inventory == null
+          ? null
+          : wornCostumeFor(inventory, genderFallback);
+      if (costume != null) {
+        return CostumePicture(
+          key: Key('avatar-costume-${costume.id}'),
+          accessory: costume,
+          gender: genderFallback == 'female' ? 'female' : 'male',
+        );
+      }
+    }
     return _assetOrBust(preset.asset, genderFallback);
   }
 
@@ -494,4 +513,151 @@ class _GenderBustPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _GenderBustPainter oldDelegate) =>
       oldDelegate.isFemale != isFemale;
+}
+
+
+/// 아바타 고르기 창의 "의상" 칸. 산 의상만 보인다. 현재 성별과 맞지 않는 버전은
+/// 잠금으로 보이고(보유는 그대로), 맞는 버전을 누르면 입고, 입은 것을 다시 누르면 벗는다.
+class _CostumeSection extends ConsumerWidget {
+  const _CostumeSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final inventory =
+        ref.watch(accessoryInventoryProvider).asData?.value ??
+            const AccessoryInventory();
+    final gender = ref.watch(userGenderProvider);
+    final owned = [
+      for (final a in characterCostumes())
+        if (inventory.owns(a.id)) a,
+    ];
+    if (owned.isEmpty) return const SizedBox.shrink();
+    final locale = Localizations.localeOf(context);
+    final wornId = wornCostumeFor(inventory, gender)?.id;
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AccessorySlot.costume.label(context),
+            style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final a in owned)
+                _CostumeChoice(
+                  accessory: a,
+                  gender: gender,
+                  worn: a.id == wornId,
+                  name: accessoryName(a.id, a.nameKo, locale),
+                  onTap: () async {
+                    if (!a.fitsGender(gender)) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content:
+                            Text(accessoryPhrase(locale, 'otherGender')),
+                      ));
+                      return;
+                    }
+                    final api = ref.read(crewApiProvider);
+                    if (api == null) return;
+                    try {
+                      await api.equipAccessory(
+                        slot: 'costume',
+                        itemId: a.id == wornId ? '' : a.id,
+                      );
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(RemainingSurface.trNow(
+                          'crew_manager.toast.28',
+                          '바꾸지 못했어요. 잠시 뒤 다시 해 주세요.',
+                        )),
+                      ));
+                    }
+                  },
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CostumeChoice extends StatelessWidget {
+  const _CostumeChoice({
+    required this.accessory,
+    required this.gender,
+    required this.worn,
+    required this.name,
+    required this.onTap,
+  });
+
+  final Accessory accessory;
+  final String gender;
+  final bool worn;
+  final String name;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final fits = accessory.fitsGender(gender);
+    final shown = accessory.gender == AccessoryGender.female
+        ? 'female'
+        : accessory.gender == AccessoryGender.male
+            ? 'male'
+            : (gender == 'female' ? 'female' : 'male');
+    return InkWell(
+      key: Key('avatar-costume-choice-${accessory.id}'),
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 76,
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color:
+                          worn ? AppColors.tealAccent : AppColors.borderLight,
+                      width: worn ? 2.5 : 1,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Opacity(
+                      opacity: fits ? 1 : 0.4,
+                      child: CostumePicture(
+                        accessory: accessory,
+                        gender: shown,
+                      ),
+                    ),
+                  ),
+                ),
+                if (!fits)
+                  const Icon(Icons.lock_rounded, size: 22, color: Colors.black54),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              name,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.caption.copyWith(fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

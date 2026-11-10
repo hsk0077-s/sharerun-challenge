@@ -56,6 +56,10 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # 아이콘 자리표시. 그림 파일은 나중에 같은 이름(icon_tier_turtle.png …)으로 이 폴더에 넣는다.
+  assets:
+    - assets/images/watch/
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

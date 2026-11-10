@@ -4,6 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
@@ -15,6 +18,7 @@ import io.flutter.plugin.common.MethodChannel
  * - requestPermissions: 심박·걸음·위치(·알림) 권한을 묻고 허용된 센서 이름 목록을 돌려준다.
  * - startTracking / stopTracking: 포그라운드 서비스와 센서 수집을 켜고 끈다.
  * - readSnapshot: 지금까지 모인 심박(bpm)·걸음 수·거리(km).
+ * - vibrate: `pattern`(밀리초 목록: 기다림, 진동, 쉼, 진동 …)대로 한 번 울린다. 1km 통과·일시정지·종료 알림.
  * - getString / putString / remove: 로그인 토큰과 기록 대기열을 앱 전용 저장소에 둔다.
  */
 class MainActivity : FlutterActivity() {
@@ -49,6 +53,10 @@ class MainActivity : FlutterActivity() {
                 result.success(null)
             }
             "readSnapshot" -> result.success(WatchTracker.snapshot())
+            "vibrate" -> {
+                vibrate(call.argument<List<Int>>("pattern").orEmpty())
+                result.success(null)
+            }
             "getString" -> {
                 val key = call.argument<String>("key")
                 val stored = prefs().getString(key, null)
@@ -78,6 +86,23 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun prefs() = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    /** 진동을 못 내는 기기에서도 앱이 멈추지 않도록 실패는 삼킨다. */
+    private fun vibrate(pattern: List<Int>) {
+        if (pattern.size < 2) return
+        try {
+            val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                getSystemService(VibratorManager::class.java)?.defaultVibrator
+            } else {
+                @Suppress("DEPRECATION")
+                getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+            if (vibrator == null || !vibrator.hasVibrator()) return
+            val timings = LongArray(pattern.size) { pattern[it].toLong().coerceIn(0L, 2000L) }
+            vibrator.vibrate(VibrationEffect.createWaveform(timings, -1))
+        } catch (_: Exception) {
+        }
+    }
 
     private fun granted(permission: String) =
         checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED

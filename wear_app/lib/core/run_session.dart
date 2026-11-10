@@ -127,3 +127,25 @@ String formatPace(int secondsPerKm) {
 }
 
 String formatKm(double km) => km.toStringAsFixed(km >= 10 ? 1 : 2);
+
+/// 경과 시간. 한 시간 미만은 `12:05`, 이상은 `1:02:03`.
+String formatElapsed(Duration d) {
+  final total = d.inSeconds < 0 ? 0 : d.inSeconds;
+  final h = total ~/ 3600;
+  final m = (total % 3600) ~/ 60;
+  final s = total % 60;
+  final ss = s.toString().padLeft(2, '0');
+  if (h > 0) return '$h:${m.toString().padLeft(2, '0')}:$ss';
+  return '$m:$ss';
+}
+
+/// 서버가 인증된 러닝 1km마다 쌓는 기부 풀(원). 서버 값과 같아야 한다:
+/// `backend/jena_ai/app/services/secured_action_service.py`의 `VERIFIED_RUN_DONATION_KRW_PER_KM`.
+/// 실제 적립은 서버가 인증한 뒤 월 한도(`donation_cap.py`) 안에서 정한다. 워치는 예정액만 보여 준다.
+const verifiedRunDonationKrwPerKm = 100;
+
+/// 이 거리로 인증되면 쌓일 기부 예정액(원). 서버의 `verified_run_donation_won`과 같은 계산이다.
+int plannedDonationWon(double distanceKm) {
+  if (distanceKm <= 0 || distanceKm.isNaN || distanceKm.isInfinite) return 0;
+  return (distanceKm * verifiedRunDonationKrwPerKm).round();
+}

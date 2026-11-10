@@ -72,6 +72,13 @@ class _RecordingPoster implements JsonPoster {
   }
 }
 
+/// 달리는 중 화면을 옆으로 밀어 조작 화면(일시정지됨)을 연다.
+Future<void> swipeToControls(WidgetTester tester) async {
+  await tester.fling(find.byType(PageView), const Offset(-400, 0), 2000);
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
 Future<void> _tapDigits(WidgetTester tester, String digits) async {
   for (final d in digits.split('')) {
     await tester.tap(find.byKey(PairingFace.digitKey(int.parse(d))));
@@ -131,7 +138,7 @@ void main() {
     await tester.tap(find.byKey(PairingFace.skipKey));
     await tester.pump();
     expect(find.byKey(PairingFace.codeKey), findsNothing);
-    expect(find.text('탭해서 시작'), findsOneWidget);
+    expect(find.byKey(StartFace.buttonKey), findsOneWidget);
   });
 
   testWidgets('sensor values become distance, heart rate, steps and a queued run',
@@ -149,7 +156,7 @@ void main() {
       ),
     ));
 
-    await tester.tap(find.text('탭해서 시작'));
+    await tester.tap(find.byKey(StartFace.buttonKey));
     await tester.pump();
     expect(sensors.started, 1);
 
@@ -167,11 +174,11 @@ void main() {
       hasGps: true,
     );
     await tester.pump(const Duration(milliseconds: 150));
-    expect(find.textContaining('♥ 152'), findsOneWidget);
-    expect(find.textContaining('0.50km'), findsOneWidget);
+    // 거리는 달리는 중 화면의 큰 숫자로 보인다(심박은 기록에만 들어간다).
+    expect(find.text('0.50'), findsOneWidget);
 
-    await tester.tap(find.text('달리는 중'));
-    await tester.pump();
+    await swipeToControls(tester);
+    expect(find.byKey(ControlsFace.stopKey), findsOneWidget);
     // 일시정지 중에 센서가 거리를 더 재도 기록에는 넣지 않는다.
     sensors.snapshot = const SensorSnapshot(
       heartRate: 100,
@@ -181,12 +188,12 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 150));
 
-    await tester.longPress(find.text('일시정지').first);
+    await tester.tap(find.byKey(ControlsFace.stopKey));
     await tester.pump();
     await tester.pump();
 
     expect(sensors.stopped, greaterThanOrEqualTo(1));
-    expect(find.text('끝'), findsOneWidget);
+    expect(find.byKey(SummaryFace.confirmKey), findsOneWidget);
     expect(queue.length, 1);
     final run = queue.runs.single;
     expect(run.activityId, 'watch_sensor_test');
@@ -225,13 +232,12 @@ void main() {
       ),
     ));
 
-    await tester.tap(find.text('탭해서 시작'));
+    await tester.tap(find.byKey(StartFace.buttonKey));
     await tester.pump();
     sensors.snapshot = const SensorSnapshot(distanceKm: 1.0);
     await tester.pump(const Duration(milliseconds: 150));
-    await tester.tap(find.text('달리는 중'));
-    await tester.pump();
-    await tester.longPress(find.text('일시정지').first);
+    await swipeToControls(tester);
+    await tester.tap(find.byKey(ControlsFace.stopKey));
     await tester.pumpAndSettle();
 
     final uploaded = poster.calls.firstWhere(

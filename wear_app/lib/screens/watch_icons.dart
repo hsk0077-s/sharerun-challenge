@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+
+/// 아이콘 자리표시. 그림 파일(`assets/images/watch/<이름>.png`)이 아직 없으면 기본 아이콘을 그린다.
+/// 그림이 들어오면 코드 수정 없이 이 이름으로 바뀐다.
+abstract final class WatchIconNames {
+  static const tierTurtle = 'icon_tier_turtle';
+  static const tierBeagle = 'icon_tier_beagle';
+  static const tierWolf = 'icon_tier_wolf';
+  static const tierZebra = 'icon_tier_zebra';
+  static const tierCheetah = 'icon_tier_cheetah';
+  static const diamond = 'icon_diamond';
+  static const play = 'btn_play';
+  static const pause = 'btn_pause';
+  static const stop = 'btn_stop';
+  static const gps = 'icon_gps';
+  static const heartRate = 'icon_hr';
+
+  /// 티어 동물 코드(`turtle` …)의 아이콘 이름. 모르는 코드면 null.
+  static String? tier(String? code) => switch (code) {
+        'turtle' => tierTurtle,
+        'beagle' => tierBeagle,
+        'wolf' => tierWolf,
+        'zebra' => tierZebra,
+        'cheetah' => tierCheetah,
+        _ => null,
+      };
+}
+
+class WatchIcon extends StatelessWidget {
+  const WatchIcon(
+    this.name, {
+    required this.size,
+    required this.fallback,
+    this.color = Colors.white,
+    super.key,
+  });
+
+  final String name;
+  final double size;
+  final IconData fallback;
+  final Color color;
+
+  static String path(String name) => 'assets/images/watch/$name.png';
+
+  @override
+  Widget build(BuildContext context) => Image.asset(
+        path(name),
+        width: size,
+        height: size,
+        errorBuilder: (_, __, ___) => Icon(fallback, size: size, color: color),
+      );
+}

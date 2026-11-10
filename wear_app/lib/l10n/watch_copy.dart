@@ -242,6 +242,136 @@ const watchLanguageOrder = <String>[
   'id',
 ];
 
+/// 2차 화면 개편(페어링·달리는 중·조작·결과)에 쓰는 문구. 줄 순서는 [watchLanguageOrder].
+/// `{n}`은 숫자로 바뀐다. 원어민 검수 전.
+const watchUiRows = <String, List<String>>{
+  'pairTop': [
+    '폰에서 코드 입력',
+    'Enter code from phone',
+    'スマホのコードを入力',
+    '輸入手機上的代碼',
+    'Código del móvil',
+    'Código do celular',
+    'Code vom Handy',
+    'Code du téléphone',
+    'Nhập mã từ điện thoại',
+    'ใส่รหัสจากโทรศัพท์',
+    'Masukkan kode dari ponsel',
+  ],
+  'pausedTitle': [
+    '일시정지됨',
+    'Paused',
+    '一時停止中',
+    '已暫停',
+    'En pausa',
+    'Pausado',
+    'Pausiert',
+    'En pause',
+    'Đã tạm dừng',
+    'หยุดชั่วคราว',
+    'Dijeda',
+  ],
+  'resume': [
+    '재개',
+    'Resume',
+    '再開',
+    '繼續',
+    'Reanudar',
+    'Retomar',
+    'Weiter',
+    'Reprendre',
+    'Tiếp tục',
+    'ต่อ',
+    'Lanjut',
+  ],
+  'stop': [
+    '종료',
+    'Stop',
+    '終了',
+    '結束',
+    'Detener',
+    'Parar',
+    'Beenden',
+    'Arrêter',
+    'Dừng',
+    'จบ',
+    'Selesai',
+  ],
+  'runEnded': [
+    '러닝 종료',
+    'Run ended',
+    'ランニング終了',
+    '跑步結束',
+    'Carrera terminada',
+    'Corrida encerrada',
+    'Lauf beendet',
+    'Course terminée',
+    'Kết thúc chạy',
+    'จบการวิ่ง',
+    'Lari selesai',
+  ],
+  'confirm': [
+    '확인',
+    'OK',
+    'OK',
+    '確認',
+    'OK',
+    'OK',
+    'OK',
+    'OK',
+    'OK',
+    'ตกลง',
+    'OK',
+  ],
+  'kmPassed': [
+    '{n}km 통과',
+    '{n} km passed',
+    '{n}km 通過',
+    '通過 {n} 公里',
+    '{n} km completados',
+    '{n} km concluídos',
+    '{n} km geschafft',
+    '{n} km parcourus',
+    'Qua {n} km',
+    'ผ่าน {n} กม.',
+    'Lewat {n} km',
+  ],
+  'donationPlanned': [
+    '{n}원 기부 예정',
+    '{n} KRW to be donated',
+    '{n}ウォン寄付予定',
+    '預計捐出 {n} 韓元',
+    'Se donarán {n} KRW',
+    'Serão doados {n} KRW',
+    '{n} KRW Spende geplant',
+    '{n} KRW de don prévu',
+    'Dự kiến quyên góp {n} KRW',
+    'จะบริจาค {n} KRW',
+    'Rencana donasi {n} KRW',
+  ],
+  'afterVerify': [
+    '인증 후',
+    'after verification',
+    '認証後',
+    '驗證後',
+    'tras verificación',
+    'após verificação',
+    'nach Prüfung',
+    'après vérification',
+    'sau khi xác minh',
+    'หลังตรวจสอบ',
+    'setelah verifikasi',
+  ],
+};
+
+/// [watchUiRows]의 한 문구. `{n}` 자리에 [n]을 넣는다.
+String watchUi(Locale locale, String key, {Object? n}) {
+  final row = watchUiRows[key]!;
+  final index = watchLanguageOrder.indexOf(locale.languageCode);
+  final text = row[index < 0 ? 1 : index];
+  return n == null ? text : text.replaceAll('{n}', '$n');
+}
+
 const minutePatterns = <String>[
   '{n}분',
   '{n} min',
@@ -442,6 +572,21 @@ List<String> missingWatchCopyKeys() {
         missing.add('watch.${table.key}.${watchLanguageOrder[i]}');
       } else if (i != 0 && table.value[i] == table.value.first) {
         missing.add('watch.${table.key}.${watchLanguageOrder[i]}=ko');
+      }
+    }
+  }
+  for (final entry in watchUiRows.entries) {
+    if (entry.value.length != watchLanguageOrder.length) {
+      missing.add('watch.ui.${entry.key}.length');
+      continue;
+    }
+    for (var i = 0; i < entry.value.length; i++) {
+      if (entry.value[i].trim().isEmpty) {
+        missing.add('watch.ui.${entry.key}.${watchLanguageOrder[i]}');
+      } else if (i != 0 &&
+          entry.value[i] == entry.value.first &&
+          entry.key != 'confirm') {
+        missing.add('watch.ui.${entry.key}.${watchLanguageOrder[i]}=ko');
       }
     }
   }

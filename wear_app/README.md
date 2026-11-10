@@ -14,6 +14,15 @@
 | 올리기 | 연결된 계정의 ID 토큰으로 `POST /actions/runs/validate`. 성공이거나 서버가 본문을 거부(400·409·413·422)하면 대기열에서 빼고, 네트워크·401·429·5xx는 남겨 다시 올림. 같은 `activity_id`는 서버가 한 번만 인정 | 구현, 단위 테스트 있음 |
 | 오프라인 대기열 | 기록마다 한 번 만든 `activity_id`, 최대 50건, 앱 재시작 후 복원(걸음 수 포함) | 구현, 단위 테스트 있음 |
 
+## 2단계(feat/watch-ui-phase2)에서 더한 것
+- 시작 때 3·2·1 카운트다운(숫자마다 아주 짧은 진동, 시작 때 길게 한 번, 탭하면 취소), 길게 눌러서만 종료, 달리는 화면을 탭하면 큰 숫자가 거리 → 시간 → 페이스로 바뀜.
+- 달리는 화면 왼쪽: GPS 경로 선 화면(지도 없음, 현재 위치 점). 종료 요약: 거리·시간·평균 페이스·경로 썸네일·"자세한 건 폰에서 보기".
+- 오프라인: 기록은 끝낼 때 워치 저장소(암호화)에 담기고, 달리는 중에는 15초마다 임시 기록을 저장해 앱이 죽어도 다시 켜면 올릴 기록으로 되살아남. 인터넷이 연결되면(안드로이드 연결 알림), 앱이 앞으로 나올 때, 켜져 있는 동안 1분마다 올림. 기록마다 고유 `activity_id`, 대기열 중복 거름, 동시 올리기 잠금, 서버 중복 거름. 시작 화면에 올릴 기록 수를 작게 표시.
+- GPS 경로가 400점에서 멈추던 문제 수정: 점이 많아지면 처음 점을 남기고 솎아 기록하며(최대 2400점), 기록·화면에는 처음과 끝을 남기고 고르게 줄인 600점을 씀.
+- 연결 만료: Firebase가 `TOKEN_EXPIRED`·`USER_DISABLED`·`USER_NOT_FOUND`·`INVALID_REFRESH_TOKEN`을 알려 줄 때만 연결을 지우고 "다시 연결" 안내를 띄움(키 제한·잘못된 요청·네트워크·5xx는 연결을 그대로 둠).
+- 시계 타일 "쉐어런 달리기"(누르면 앱이 열리고 바로 카운트다운), 런처·알림 아이콘 자리표시(벡터).
+- 폰 승인 로그인은 서버·폰 앱 변경이 필요해 이번에 넣지 않음: `docs/phone-approval-login-design.md`.
+
 ## 아직 없는 것
 - **대회 순위 데이터**: ④ 화면은 값을 받아 그릴 뿐, 순위를 워치에서 계산하지 않습니다. 중계 경로가 아직 없습니다.
 - **서버 쪽 남은 일**: 워치에는 자이로 점수가 없어 서버 필수 필드를 임시값(`kUnknownGyroScore`)으로 채웁니다. 케이던스 배열은 보내지 않고, 서버가 `device_info.watch_used`와 `total_steps`로 평균 케이던스를 계산합니다.
@@ -37,14 +46,13 @@
 ## 빌드
 ```
 cd wear_app
-flutter pub get
-flutter analyze
-flutter test
-flutter build apk --release   --dart-define=JENA_BASE_URL=https://<서버 주소>   --dart-define=FIREBASE_API_KEY=<Firebase 웹 API 키>
+(의존성 받기·분석·테스트: pub get, analyze, test)
+# 릴리스: 값은 명령줄이나 로그에 찍히지 않게 파일로 넘긴다
+# (dart-defines.example.json을 dart-defines.json으로 복사해 채운다. git에 올리지 않는다).
+build apk --release --dart-define-from-file=dart-defines.json
 ```
 `JENA_BASE_URL`과 `FIREBASE_API_KEY`가 없는 빌드는 연결 단계에서 "서버 설정이 없는 빌드예요."를 보여 줍니다.
-
-서명: `wear_app/android/key.properties`가 있으면 그 키로, 없으면 휴대폰 앱의 `android/key.properties`(업로드 키)로, 둘 다 없으면 debug 키로 서명합니다. 키 파일은 저장소에 올리지 않습니다.
+서명은 업로드 키(`android/key.properties`)로 합니다. 디버그 키로 빌드하면 기존 앱 위에 설치되지 않습니다.
 
 ## 파일 구조
 ```

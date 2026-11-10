@@ -18,6 +18,17 @@ class GpsFix {
       };
 }
 
+/// 경로 점을 [max]개 이하로 줄인다. 처음과 끝 점을 남기고 나머지는 고르게 뽑는다
+/// (끝부분만 남기면 긴 달리기의 앞부분 경로가 사라진다).
+List<GpsFix> downsampleFixes(List<GpsFix> fixes, int max) {
+  if (max < 2 || fixes.length <= max) return List.of(fixes);
+  final out = <GpsFix>[];
+  for (var i = 0; i < max; i++) {
+    out.add(fixes[(i * (fixes.length - 1) / (max - 1)).round()]);
+  }
+  return out;
+}
+
 /// 센서가 한 번 읽어 준 값. 없는 값은 0이다(만들어 내지 않는다).
 class SensorSnapshot {
   const SensorSnapshot({

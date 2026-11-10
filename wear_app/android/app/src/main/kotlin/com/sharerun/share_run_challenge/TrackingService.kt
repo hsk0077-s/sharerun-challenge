@@ -28,7 +28,7 @@ class TrackingService : Service() {
         val notification = Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("쉐어런")
             .setContentText("러닝을 기록하고 있어요")
-            .setSmallIcon(applicationInfo.icon)
+            .setSmallIcon(R.drawable.ic_stat_run)
             .setOngoing(true)
             .build()
         try {

@@ -10,31 +10,10 @@ import 'package:share_run_wear/l10n/watch_copy.dart';
 import 'package:share_run_wear/main.dart';
 import 'package:share_run_wear/screens/watch_screens.dart';
 
+import 'support/watch_helpers.dart';
+
 /// 원형 워치(갤럭시 워치5: 40mm 396px, 44mm 450px)용 화면 5개.
 const _sizes = [Size(396, 396), Size(450, 450), Size(300, 300)];
-
-class _FakeHaptics implements WatchHaptics {
-  final patterns = <List<int>>[];
-
-  @override
-  Future<void> pattern(List<int> millis) async => patterns.add(millis);
-}
-
-class _FakeSensors implements WatchSensors {
-  var snapshot = const SensorSnapshot();
-
-  @override
-  Future<Set<String>> requestPermissions() async => {'gps'};
-
-  @override
-  Future<void> start() async {}
-
-  @override
-  Future<void> stop() async {}
-
-  @override
-  Future<SensorSnapshot> read() async => snapshot;
-}
 
 RunSession _runningSession({double km = 1.37, int seconds = 600}) {
   var now = DateTime.utc(2026, 11, 10, 6);
@@ -153,15 +132,74 @@ void main() {
         expect(find.text('일시정지됨'), findsOneWidget);
       });
 
+      testWidgets('② 대기·시작(올릴 기록 표시) $label', (tester) async {
+        await _pumpFace(
+          tester,
+          StartFace(onStart: () {}, tierName: '치타 골드', tierCode: 'cheetah', pendingCount: 12),
+          size,
+        );
+        _expectInsideCircle(tester, size);
+        expect(find.text('올릴 기록 12'), findsOneWidget);
+      });
+
+      testWidgets('3·2·1 카운트다운 $label', (tester) async {
+        await _pumpFace(tester, CountdownFace(count: 3, onCancel: () {}), size);
+        _expectInsideCircle(tester, size);
+      });
+
+      testWidgets('③ 달리는 중(시간·페이스가 큰 숫자일 때) $label', (tester) async {
+        for (final focus in [1, 2]) {
+          await _pumpFace(
+            tester,
+            RunningFace(
+              session: _runningSession(km: 12.34, seconds: 4000),
+              now: DateTime(2026, 11, 10, 15, 7),
+              focus: focus,
+            ),
+            size,
+          );
+          _expectInsideCircle(tester, size);
+        }
+      });
+
+      testWidgets('경로 화면(선·GPS 대기) $label', (tester) async {
+        final session = _runningSession(km: 1.2);
+        await _pumpFace(tester, RouteFace(session: session), size);
+        expect(find.byKey(RouteFace.waitingKey), findsOneWidget);
+        _expectInsideCircle(tester, size);
+        // 대각선으로 달린 경로(모서리까지 닿기 쉬운 모양)도 원 안에 그려진다.
+        session.replaceRoute([
+          for (var i = 0; i < 40; i++)
+            GpsFix(
+              latitude: 37.5 + i * 0.0001,
+              longitude: 127.0 + i * 0.00013,
+              recordedAt: DateTime.utc(2026, 11, 10, 6, 0, i).toIso8601String(),
+            ),
+        ]);
+        await _pumpFace(tester, RouteFace(session: session), size);
+        expect(find.byKey(RouteFace.paintKey), findsOneWidget);
+        final box = tester.getRect(find.byKey(RouteFace.paintKey));
+        final pts = RoutePainter.project(routePoints(session.route), box.size);
+        final center = Offset(size.width / 2, size.height / 2);
+        for (final p in pts) {
+          expect((box.topLeft + p - center).distance, lessThanOrEqualTo(size.width / 2));
+        }
+      });
+
       testWidgets('⑤ 결과 요약 $label', (tester) async {
         await _pumpFace(
           tester,
-          SummaryFace(session: _runningSession(km: 5.43), pendingCount: 1, onDone: () {}),
+          SummaryFace(session: _runningSession(km: 5.43), onDone: () {}),
           size,
         );
         _expectInsideCircle(tester, size);
         expect(find.text('러닝 종료'), findsOneWidget);
-        expect(find.text('543원 기부 예정'), findsOneWidget);
+        // 경로 썸네일까지 있는 요약도 원 안에 든다.
+        final withRoute = _runningSession(km: 5.43)..replaceRoute(fakeRoute(50));
+        await _pumpFace(tester, SummaryFace(session: withRoute, onDone: () {}), size);
+        expect(find.byKey(SummaryFace.thumbKey), findsOneWidget);
+        _expectInsideCircle(tester, size);
+        expect(find.byKey(SummaryFace.confirmKey), findsOneWidget);
       });
     }
   });
@@ -221,7 +259,10 @@ void main() {
       expect(tester.widget<Material>(find.byKey(ControlsFace.resumeKey)).color, watchGreen);
       expect(find.byKey(ControlsFace.dotsKey), findsOneWidget);
       await tester.tap(find.byKey(ControlsFace.resumeKey));
+      // 종료는 한 번 탭해서는 끝나지 않고, 길게 눌러야 끝난다.
       await tester.tap(find.byKey(ControlsFace.stopKey));
+      expect(stopped, 0);
+      await tester.longPress(find.byKey(ControlsFace.stopKey));
       expect((resumed, stopped), (1, 1));
     });
 
@@ -247,25 +288,26 @@ void main() {
       expect(plannedDonationWon(double.infinity), 0);
     });
 
-    testWidgets('거리가 없으면 결과 화면에 기부 줄이 없다', (tester) async {
+    testWidgets('거리가 없는 결과 화면도 깨지지 않는다', (tester) async {
       await _pumpFace(
         tester,
-        SummaryFace(session: RunSession(), pendingCount: 0, onDone: () {}),
+        SummaryFace(session: RunSession(), onDone: () {}),
         const Size(396, 396),
       );
-      expect(find.byKey(SummaryFace.donationKey), findsNothing);
       expect(find.text('0.00'), findsOneWidget);
+      expect(find.byKey(SummaryFace.thumbKey), findsNothing);
     });
 
-    testWidgets('결과 화면은 "인증 후"라고 밝히고, 다이아 지급 문구는 없다', (tester) async {
+    testWidgets('결과 화면에는 기부·다이아 문구가 없다(거리·시간·페이스·경로·폰 안내만)', (tester) async {
       await _pumpFace(
         tester,
-        SummaryFace(session: _runningSession(km: 3), pendingCount: 0, onDone: () {}),
+        SummaryFace(session: _runningSession(km: 3), onDone: () {}),
         const Size(396, 396),
       );
-      expect(find.text('인증 후'), findsOneWidget);
+      expect(find.textContaining('기부'), findsNothing);
       expect(find.textContaining('다이아'), findsNothing);
       expect(find.textContaining('DIA'), findsNothing);
+      expect(find.text('자세한 건 폰에서 보기'), findsOneWidget);
     });
   });
 
@@ -283,8 +325,8 @@ void main() {
     });
 
     testWidgets('1km를 지나면 긴 진동과 안내, 일시정지·재개·종료 때 진동', (tester) async {
-      final haptics = _FakeHaptics();
-      final sensors = _FakeSensors();
+      final haptics = FakeHaptics();
+      final sensors = FakeSensors();
       var now = DateTime.utc(2026, 11, 10, 6);
       await tester.pumpWidget(MaterialApp(
         home: RunFlow(
@@ -296,24 +338,30 @@ void main() {
           newId: () => 'haptics_test',
         ),
       ));
-      await tester.tap(find.byKey(StartFace.buttonKey));
-      await tester.pump();
-      expect(haptics.patterns, isEmpty);
+      await startRun(tester);
+      // 카운트다운 3번 짧게, 시작할 때 한 번 길게.
+      const start = [
+        WatchHaptics.countdown,
+        WatchHaptics.countdown,
+        WatchHaptics.countdown,
+        WatchHaptics.go,
+      ];
+      expect(haptics.patterns, start);
 
       sensors.snapshot = const SensorSnapshot(distanceKm: 0.6);
       await tester.pump(const Duration(milliseconds: 150));
-      expect(haptics.patterns, isEmpty);
+      expect(haptics.patterns, start);
 
       sensors.snapshot = const SensorSnapshot(distanceKm: 1.05);
       await tester.pump(const Duration(milliseconds: 150));
-      expect(haptics.patterns, [WatchHaptics.kmPassed]);
+      expect(haptics.patterns, [...start, WatchHaptics.kmPassed]);
       expect(find.text('1km 통과'), findsOneWidget);
       expect(find.text('100원 기부 예정'), findsOneWidget);
 
       // 같은 km에서는 다시 울리지 않는다.
       sensors.snapshot = const SensorSnapshot(distanceKm: 1.4);
       await tester.pump(const Duration(milliseconds: 150));
-      expect(haptics.patterns, [WatchHaptics.kmPassed]);
+      expect(haptics.patterns, [...start, WatchHaptics.kmPassed]);
 
       // 안내는 몇 초 뒤 사라지고 현재 시각이 돌아온다.
       now = now.add(const Duration(seconds: 6));
@@ -321,47 +369,35 @@ void main() {
       expect(find.text('1km 통과'), findsNothing);
       expect(find.byKey(RunningFace.timeKey), findsOneWidget);
 
-      await tester.fling(find.byType(PageView), const Offset(-400, 0), 2000);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
+      await swipeToControls(tester);
       expect(haptics.patterns.last, WatchHaptics.tick);
-      expect(haptics.patterns.length, 2);
+      expect(haptics.patterns.length, start.length + 2);
 
       await tester.tap(find.byKey(ControlsFace.resumeKey));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
-      expect(haptics.patterns.length, 3);
+      await tester.pump(const Duration(milliseconds: 900));
+      expect(haptics.patterns.length, start.length + 3);
       expect(haptics.patterns.last, WatchHaptics.tick);
       expect(find.byKey(RunningFace.distanceKey), findsOneWidget);
 
-      await tester.fling(find.byType(PageView), const Offset(-400, 0), 2000);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byKey(ControlsFace.stopKey));
-      await tester.pump();
-      await tester.pump();
+      await swipeToControls(tester);
+      await holdToStop(tester);
       expect(haptics.patterns.last, WatchHaptics.finished);
       expect(find.byKey(SummaryFace.confirmKey), findsOneWidget);
-      expect(find.text('140원 기부 예정'), findsOneWidget);
+      expect(find.text('1.40'), findsOneWidget);
     });
 
     testWidgets('재개 버튼을 누르면 달리는 화면으로 돌아간다', (tester) async {
       await tester.pumpWidget(MaterialApp(home: RunFlow(queue: SyncQueue())));
-      await tester.tap(find.byKey(StartFace.buttonKey));
-      await tester.pump();
-      await tester.fling(find.byType(PageView), const Offset(-400, 0), 2000);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
+      await startRun(tester);
+      await swipeToControls(tester);
       await tester.tap(find.byKey(ControlsFace.resumeKey));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 900));
       expect(find.byKey(RunningFace.distanceKey), findsOneWidget);
       // 정리: 끝낸다.
-      await tester.fling(find.byType(PageView), const Offset(-400, 0), 2000);
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 400));
-      await tester.tap(find.byKey(ControlsFace.stopKey));
-      await tester.pump();
+      await swipeToControls(tester);
+      await holdToStop(tester);
     });
   });
 

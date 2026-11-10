@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../core/run_session.dart';
+import '../core/watch_platform.dart';
 import '../l10n/watch_copy.dart';
 import 'watch_icons.dart';
 
@@ -100,8 +101,12 @@ class StartFace extends StatelessWidget {
     this.onLongPress,
     this.tierName,
     this.tierCode,
+    this.pendingCount = 0,
     super.key,
   });
+
+  /// 아직 서버에 올라가지 못한 기록 수. 0이면 아무것도 보이지 않는다.
+  final int pendingCount;
 
   final VoidCallback onStart;
   final VoidCallback? onLongPress;
@@ -115,6 +120,7 @@ class StartFace extends StatelessWidget {
   static const buttonKey = Key('watch-start-button');
   static const gpsKey = Key('watch-start-gps');
   static const tierKey = Key('watch-start-tier');
+  static const pendingKey = Key('watch-start-pending');
 
   /// START 버튼 지름 비율(화면 지름 대비). 40% 이상이어야 한다.
   static const buttonFraction = 0.46;
@@ -132,14 +138,25 @@ class StartFace extends StatelessWidget {
             children: [
               zone(
                 s,
-                0.08,
+                0.07,
                 0.21,
-                WatchIcon(
-                  WatchIconNames.gps,
-                  key: gpsKey,
-                  size: s * 0.1,
-                  fallback: Icons.gps_fixed,
-                  color: watchMuted,
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    WatchIcon(
+                      WatchIconNames.gps,
+                      key: gpsKey,
+                      size: s * 0.085,
+                      fallback: Icons.gps_fixed,
+                      color: watchMuted,
+                    ),
+                    if (pendingCount > 0)
+                      Text(
+                        watchUi(_locale(), 'pendingUpload', n: pendingCount),
+                        key: pendingKey,
+                        style: _text(s, 0.045, color: watchMuted, weight: FontWeight.w500),
+                      ),
+                  ],
                 ),
               ),
               Positioned(
@@ -196,7 +213,15 @@ class StartFace extends StatelessWidget {
 /// 위 안내(소), 가운데 6자리(대), 숫자판, 아래 진행 점과 취소("나중에").
 /// 여섯 자리가 차면 바로 확인한다.
 class PairingFace extends StatefulWidget {
-  const PairingFace({required this.onSubmit, required this.onSkip, super.key});
+  const PairingFace({
+    required this.onSubmit,
+    required this.onSkip,
+    this.notice,
+    super.key,
+  });
+
+  /// 위 안내 대신 보여 줄 문구(연결이 만료돼 다시 연결할 때). 없으면 기본 안내.
+  final String? notice;
 
   /// 오류 메시지를 돌려주면 보여 주고, null이면 연결 성공.
   final Future<String?> Function(String code) onSubmit;
@@ -277,7 +302,7 @@ class _PairingFaceState extends State<PairingFace> {
     final shown = _code.padRight(_length, '•');
     final display = '${shown.substring(0, 3)} ${shown.substring(3)}';
     final message = _message == null
-        ? (_busy ? copy.checking : watchUi(locale, 'pairTop'))
+        ? (_busy ? copy.checking : (widget.notice ?? watchUi(locale, 'pairTop')))
         : WatchCopy.pairingError(locale, _message!);
     return RoundFace(
       builder: (context, s) {
@@ -377,13 +402,16 @@ class _PairingFaceState extends State<PairingFace> {
 
 // ───────────────────────── ③ 달리는 중 ─────────────────────────
 
-/// 위 현재 시각(소), 가운데 거리 km(대·굵게), 아래 왼쪽 페이스 분/km·오른쪽 경과 시간(중),
-/// 최하단 곡선 진행 바(다음 1km까지). 1km를 막 지났으면 위 줄에 잠깐 안내가 뜬다.
+/// 달리는 중. 큰 숫자는 하나(처음엔 거리), 작은 숫자는 둘(시간·페이스). 화면을 탭하면
+/// 큰 숫자가 거리 → 시간 → 페이스 순서로 바뀐다. 최하단 곡선은 다음 1km까지의 진행 바.
+/// 1km를 막 지났으면 위 줄에 잠깐 안내가 뜬다.
 class RunningFace extends StatelessWidget {
   const RunningFace({
     required this.session,
     required this.now,
     this.passedKm,
+    this.focus = 0,
+    this.onCycle,
     super.key,
   });
 
@@ -395,6 +423,13 @@ class RunningFace extends StatelessWidget {
   /// 방금 지난 km(안내를 보여 주는 동안만 값이 있다). 없으면 현재 시각을 보여 준다.
   final int? passedKm;
 
+  /// 큰 숫자로 보여 줄 값: 0 거리, 1 시간, 2 페이스.
+  final int focus;
+
+  /// 화면을 탭했을 때(다음 값으로 넘긴다).
+  final VoidCallback? onCycle;
+
+  static const metricCount = 3;
   static const timeKey = Key('watch-run-time');
   static const bannerKey = Key('watch-run-banner');
   static const distanceKey = Key('watch-run-distance');
@@ -411,82 +446,95 @@ class RunningFace extends StatelessWidget {
   static String clockText(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+  Widget _value(double s, int metric, {required bool big}) {
+    final size = big ? 0.27 : 0.105;
+    final weight = big ? FontWeight.w900 : FontWeight.w700;
+    final unitSize = big ? 0.085 : 0.055;
+    switch (metric) {
+      case 0:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(formatKm(session.distanceKm),
+                key: distanceKey, style: _text(s, size, weight: weight)),
+            Text(' km', style: _text(s, unitSize, color: watchMuted)),
+          ],
+        );
+      case 1:
+        return Text(formatElapsed(session.movingTime),
+            key: elapsedKey, style: _text(s, size, weight: weight));
+      default:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Text(formatPace(session.paceSecondsPerKm),
+                key: paceKey, style: _text(s, size, weight: weight)),
+            Text('/km', style: _text(s, unitSize, color: watchMuted)),
+          ],
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final locale = _locale();
     final km = session.distanceKm;
     final banner = passedKm;
     final won = banner == null ? 0 : plannedDonationWon(banner.toDouble());
-    return RoundFace(
-      builder: (context, s) => Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              key: arcKey,
-              painter: KmArcPainter(progress: kmProgress(km)),
-            ),
-          ),
-          if (banner == null)
-            zone(
-              s,
-              0.09,
-              0.21,
-              Text(clockText(now),
-                  key: timeKey,
-                  style: _text(s, 0.075, color: watchMuted, weight: FontWeight.w500)),
-            )
-          else
-            zone(
-              s,
-              0.07,
-              0.22,
-              Column(
-                key: bannerKey,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(watchUi(locale, 'kmPassed', n: banner),
-                      style: _text(s, 0.07, weight: FontWeight.w800)),
-                  if (won > 0)
-                    Text(watchUi(locale, 'donationPlanned', n: won),
-                        style: _text(s, 0.05, color: watchMuted, weight: FontWeight.w500)),
-                ],
+    final main = focus % metricCount;
+    final others = [for (var i = 0; i < metricCount; i++) if (i != main) i];
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onCycle,
+      child: RoundFace(
+        builder: (context, s) => Stack(
+          children: [
+            Positioned.fill(
+              child: CustomPaint(
+                key: arcKey,
+                painter: KmArcPainter(progress: kmProgress(km)),
               ),
             ),
-          zone(
-            s,
-            0.23,
-            0.53,
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(formatKm(km),
-                    key: distanceKey,
-                    style: _text(s, 0.27, weight: FontWeight.w900)),
-                SizedBox(width: s * 0.02),
-                Text('km', style: _text(s, 0.085, color: watchMuted)),
-              ],
+            if (banner == null)
+              zone(
+                s,
+                0.09,
+                0.21,
+                Text(clockText(now),
+                    key: timeKey,
+                    style: _text(s, 0.075, color: watchMuted, weight: FontWeight.w500)),
+              )
+            else
+              zone(
+                s,
+                0.07,
+                0.22,
+                Column(
+                  key: bannerKey,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(watchUi(locale, 'kmPassed', n: banner),
+                        style: _text(s, 0.07, weight: FontWeight.w800)),
+                    if (won > 0)
+                      Text(watchUi(locale, 'donationPlanned', n: won),
+                          style: _text(s, 0.05, color: watchMuted, weight: FontWeight.w500)),
+                  ],
+                ),
+              ),
+            zone(s, 0.23, 0.53, _value(s, main, big: true)),
+            zoneRow(
+              s,
+              0.56,
+              0.71,
+              _value(s, others[0], big: false),
+              _value(s, others[1], big: false),
             ),
-          ),
-          zoneRow(
-            s,
-            0.56,
-            0.71,
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(formatPace(session.paceSecondsPerKm),
-                    key: paceKey, style: _text(s, 0.105, weight: FontWeight.w700)),
-                Text('/km', style: _text(s, 0.055, color: watchMuted)),
-              ],
-            ),
-            Text(formatElapsed(session.movingTime),
-                key: elapsedKey, style: _text(s, 0.105, weight: FontWeight.w700)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -529,8 +577,8 @@ class KmArcPainter extends CustomPainter {
 
 // ───────────────────────── ④ 일시정지·조작 ─────────────────────────
 
-/// 달리는 중 화면에서 옆으로 밀면 나온다. 위 "일시정지됨"(소), 가운데 종료(빨강)·재개(초록) 큰 버튼,
-/// 아래 페이지 점. 이 화면에 있는 동안 달리기는 멈춰 있다.
+/// 달리는 중 화면에서 옆으로 밀면 나온다. 위 "일시정지됨"(소), 가운데 종료(빨강, 길게 눌러야 끝남)·
+/// 재개(초록, 탭) 큰 버튼, 아래 페이지 점. 이 화면에 있는 동안 달리기는 멈춰 있다.
 class ControlsFace extends StatelessWidget {
   const ControlsFace({required this.onResume, required this.onFinish, super.key});
 
@@ -545,7 +593,7 @@ class ControlsFace extends StatelessWidget {
   static const buttonFraction = 0.30;
 
   Widget _button(double s, Key key, Color color, String icon, IconData fallback,
-      String label, VoidCallback onTap) {
+      String label, {VoidCallback? onTap, VoidCallback? onLongPress}) {
     final d = s * buttonFraction;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -560,6 +608,7 @@ class ControlsFace extends StatelessWidget {
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: onTap,
+              onLongPress: onLongPress,
               child: Center(
                 child: WatchIcon(icon, size: d * 0.5, fallback: fallback),
               ),
@@ -567,7 +616,13 @@ class ControlsFace extends StatelessWidget {
           ),
         ),
         SizedBox(height: s * 0.02),
-        Text(label, style: _text(s, 0.065)),
+        SizedBox(
+          width: d * 1.25,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(label, textAlign: TextAlign.center, style: _text(s, 0.062)),
+          ),
+        ),
       ],
     );
   }
@@ -593,11 +648,14 @@ class ControlsFace extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 실수로 끝나지 않게 길게 눌러야 끝난다.
                 _button(s, stopKey, watchRed, WatchIconNames.stop,
-                    Icons.stop_rounded, watchUi(locale, 'stop'), onFinish),
+                    Icons.stop_rounded, watchUi(locale, 'holdToStop'),
+                    onLongPress: onFinish),
                 SizedBox(width: s * 0.07),
                 _button(s, resumeKey, watchGreen, WatchIconNames.play,
-                    Icons.play_arrow_rounded, watchUi(locale, 'resume'), onResume),
+                    Icons.play_arrow_rounded, watchUi(locale, 'resume'),
+                    onTap: onResume),
               ],
             ),
           ),
@@ -609,7 +667,7 @@ class ControlsFace extends StatelessWidget {
               key: dotsKey,
               mainAxisSize: MainAxisSize.min,
               children: [
-                for (var i = 0; i < 2; i++)
+                for (var i = 0; i < 3; i++)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: s * 0.015),
                     child: Container(
@@ -617,7 +675,7 @@ class ControlsFace extends StatelessWidget {
                       height: s * 0.035,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: i == 1 ? watchInk : const Color(0xFF3A3A3A),
+                        color: i == 2 ? watchInk : const Color(0xFF3A3A3A),
                       ),
                     ),
                   ),
@@ -660,84 +718,282 @@ class RankAlertFace extends StatelessWidget {
   }
 }
 
+// ───────────────────────── 카운트다운 ─────────────────────────
+
+/// 시작을 누른 뒤 3·2·1. 화면을 탭하면 취소하고 시작 화면으로 돌아간다.
+class CountdownFace extends StatelessWidget {
+  const CountdownFace({required this.count, required this.onCancel, super.key});
+
+  final int count;
+  final VoidCallback onCancel;
+
+  static const numberKey = Key('watch-countdown-number');
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = _locale();
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onCancel,
+      child: RoundFace(
+        builder: (context, s) => Stack(
+          children: [
+            zone(
+              s,
+              0.18,
+              0.78,
+              Text('$count',
+                  key: numberKey, style: _text(s, 0.5, weight: FontWeight.w900)),
+            ),
+            zone(
+              s,
+              0.80,
+              0.90,
+              Text(watchUi(locale, 'cancelHint'),
+                  style: _text(s, 0.05, color: watchMuted, weight: FontWeight.w500)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ───────────────────────── 경로 선 ─────────────────────────
+
+/// 위도·경도 점을 정사각형 안에 맞춰 그리는 단순한 선. 지도는 없다.
+/// 현재 위치(마지막 점)는 점으로 표시한다.
+class RoutePainter extends CustomPainter {
+  const RoutePainter({
+    required this.points,
+    this.stroke = 4,
+    this.showCurrent = true,
+  });
+
+  /// (위도, 경도) 순서.
+  final List<(double, double)> points;
+  final double stroke;
+  final bool showCurrent;
+
+  /// [points]를 [size]에 맞춘 화면 좌표. 점이 둘 미만이면 빈 목록.
+  /// 위도 1도와 경도 1도의 실제 길이가 달라 경도에 cos(위도)를 곱해 모양을 맞춘다.
+  static List<Offset> project(List<(double, double)> points, Size size, {double inset = 0.08}) {
+    if (points.length < 2) return const [];
+    final lat0 = points.map((p) => p.$1).reduce((a, b) => a + b) / points.length;
+    final k = math.cos(lat0 * math.pi / 180);
+    final xs = [for (final p in points) p.$2 * k];
+    final ys = [for (final p in points) -p.$1];
+    final minX = xs.reduce(math.min), maxX = xs.reduce(math.max);
+    final minY = ys.reduce(math.min), maxY = ys.reduce(math.max);
+    final w = math.max(maxX - minX, 1e-9);
+    final h = math.max(maxY - minY, 1e-9);
+    final avail = math.min(size.width, size.height) * (1 - 2 * inset);
+    final scale = avail / math.max(w, h);
+    final dx = (size.width - w * scale) / 2;
+    final dy = (size.height - h * scale) / 2;
+    final raw = [
+      for (var i = 0; i < points.length; i++)
+        Offset(dx + (xs[i] - minX) * scale, dy + (ys[i] - minY) * scale),
+    ];
+    // 대각선으로 뛴 경로는 정사각형 모서리까지 닿아 원형 화면 밖으로 나간다.
+    // 가운데에서 가장 먼 점이 원 안에 들도록 가운데를 기준으로 줄인다.
+    final center = Offset(size.width / 2, size.height / 2);
+    final limit = math.min(size.width, size.height) / 2 * (1 - inset);
+    final far = raw.map((p) => (p - center).distance).reduce(math.max);
+    if (far <= limit || far <= 0) return raw;
+    final k2 = limit / far;
+    return [for (final p in raw) center + (p - center) * k2];
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final pts = project(points, size);
+    if (pts.isEmpty) return;
+    final path = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (final p in pts.skip(1)) {
+      path.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..strokeWidth = stroke
+        ..color = watchInk,
+    );
+    canvas.drawCircle(pts.first, stroke * 0.9, Paint()..color = watchMuted);
+    if (showCurrent) {
+      canvas.drawCircle(pts.last, stroke * 1.9, Paint()..color = watchInk);
+      canvas.drawCircle(pts.last, stroke * 1.3, Paint()..color = watchGreen);
+    } else {
+      canvas.drawCircle(pts.last, stroke * 1.2, Paint()..color = watchGreen);
+    }
+  }
+
+  @override
+  bool shouldRepaint(RoutePainter old) =>
+      old.points != points || old.stroke != stroke || old.showCurrent != showCurrent;
+}
+
+List<(double, double)> routePoints(List<GpsFix> fixes) =>
+    [for (final f in fixes) (f.latitude, f.longitude)];
+
+/// 달리는 중 화면의 왼쪽에 있는 경로 화면. 점이 둘 미만이면 GPS를 기다린다는 문구.
+class RouteFace extends StatelessWidget {
+  const RouteFace({required this.session, super.key});
+
+  final RunSession session;
+
+  static const paintKey = Key('watch-route-paint');
+  static const waitingKey = Key('watch-route-waiting');
+
+  @override
+  Widget build(BuildContext context) {
+    final points = routePoints(session.route);
+    return RoundFace(
+      builder: (context, s) => Stack(
+        children: [
+          if (points.length >= 2)
+            Positioned(
+              left: s * 0.12,
+              top: s * 0.12,
+              width: s * 0.76,
+              height: s * 0.76,
+              child: CustomPaint(
+                key: paintKey,
+                painter: RoutePainter(points: points, stroke: s * 0.012),
+              ),
+            )
+          else
+            zone(
+              s,
+              0.42,
+              0.58,
+              Text(watchUi(_locale(), 'waitingGps'),
+                  key: waitingKey,
+                  textAlign: TextAlign.center,
+                  style: _text(s, 0.06, color: watchMuted, weight: FontWeight.w500)),
+            ),
+          zone(
+            s,
+            0.86,
+            0.93,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < 3; i++)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: s * 0.015),
+                    child: Container(
+                      width: s * 0.03,
+                      height: s * 0.03,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: i == 0 ? watchInk : const Color(0xFF3A3A3A),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ───────────────────────── ⑤ 결과 요약 ─────────────────────────
 
-/// 위 "러닝 종료"(소), 가운데 총 거리(대)와 기부 예정(중), 아래 확인 버튼.
-/// 기부 예정액은 서버 규칙(인증된 러닝 1km당 100원, 월 한도 안)으로 계산한 값이며 인증 뒤에 쌓인다.
+/// 위 "러닝 종료"(소), 총 거리(대), 시간과 평균 페이스(중), 경로 선 썸네일,
+/// "자세한 건 폰에서 보기", 아래 확인 버튼.
 class SummaryFace extends StatelessWidget {
   const SummaryFace({
     required this.session,
-    required this.pendingCount,
     required this.onDone,
     super.key,
   });
 
   final RunSession session;
-  final int pendingCount;
   final VoidCallback onDone;
 
   static const distanceKey = Key('watch-summary-distance');
-  static const donationKey = Key('watch-summary-donation');
+  static const timeKey = Key('watch-summary-time');
+  static const paceKey = Key('watch-summary-pace');
+  static const thumbKey = Key('watch-summary-route');
+  static const phoneHintKey = Key('watch-summary-phone');
   static const confirmKey = Key('watch-summary-confirm');
 
   @override
   Widget build(BuildContext context) {
     final locale = _locale();
-    final copy = WatchCopy.of(locale);
-    final won = plannedDonationWon(session.distanceKm);
+    final points = routePoints(session.route);
     return RoundFace(
       builder: (context, s) => Stack(
         children: [
-          zone(s, 0.08, 0.19,
+          zone(s, 0.07, 0.16,
               Text(watchUi(locale, 'runEnded'),
-                  style: _text(s, 0.07, color: watchMuted, weight: FontWeight.w500))),
+                  style: _text(s, 0.06, color: watchMuted, weight: FontWeight.w500))),
           zone(
             s,
-            0.20,
-            0.45,
+            0.17,
+            0.36,
             Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(formatKm(session.distanceKm),
-                    key: distanceKey, style: _text(s, 0.24, weight: FontWeight.w900)),
-                SizedBox(width: s * 0.02),
-                Text('km', style: _text(s, 0.08, color: watchMuted)),
+                    key: distanceKey, style: _text(s, 0.2, weight: FontWeight.w900)),
+                Text(' km', style: _text(s, 0.07, color: watchMuted)),
               ],
             ),
           ),
-          if (won > 0)
-            zone(
-              s,
-              0.47,
-              0.62,
-              Column(
-                key: donationKey,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(watchUi(locale, 'donationPlanned', n: won),
-                      style: _text(s, 0.075, weight: FontWeight.w700)),
-                  Text(watchUi(locale, 'afterVerify'),
-                      style: _text(s, 0.048, color: watchMuted, weight: FontWeight.w500)),
-                ],
+          zoneRow(
+            s,
+            0.37,
+            0.47,
+            Text(formatElapsed(session.movingTime),
+                key: timeKey, style: _text(s, 0.085, weight: FontWeight.w700)),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(formatPace(session.paceSecondsPerKm),
+                    key: paceKey, style: _text(s, 0.085, weight: FontWeight.w700)),
+                Text('/km', style: _text(s, 0.045, color: watchMuted)),
+              ],
+            ),
+          ),
+          if (points.length >= 2)
+            Positioned(
+              left: s * 0.33,
+              top: s * 0.49,
+              width: s * 0.34,
+              height: s * 0.22,
+              child: CustomPaint(
+                key: thumbKey,
+                painter: RoutePainter(
+                  points: points,
+                  stroke: s * 0.008,
+                  showCurrent: false,
+                ),
               ),
             ),
           zone(
             s,
-            0.64,
-            0.72,
-            Text(
-              pendingCount > 0 ? copy.uploadPending(pendingCount) : copy.nothingToUpload,
-              textAlign: TextAlign.center,
-              style: _text(s, 0.045, color: watchMuted, weight: FontWeight.w500),
-            ),
+            0.73,
+            0.80,
+            Text(watchUi(locale, 'seeOnPhone'),
+                key: phoneHintKey,
+                style: _text(s, 0.048, color: watchMuted, weight: FontWeight.w500)),
           ),
           Positioned(
-            top: 0.76 * s,
-            left: s * 0.25,
-            width: s * 0.5,
-            height: s * 0.13,
+            top: 0.82 * s,
+            left: s * 0.3,
+            width: s * 0.4,
+            height: s * 0.11,
             child: Material(
               key: confirmKey,
               color: watchGreen,
@@ -747,7 +1003,7 @@ class SummaryFace extends StatelessWidget {
                 onTap: onDone,
                 child: Center(
                   child: Text(watchUi(locale, 'confirm'),
-                      style: _text(s, 0.07, weight: FontWeight.w800)),
+                      style: _text(s, 0.06, weight: FontWeight.w800)),
                 ),
               ),
             ),

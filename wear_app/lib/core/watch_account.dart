@@ -100,6 +100,17 @@ class WatchAccount {
   static const _refreshKey = 'watch.refresh_token';
   static const _nicknameKey = 'watch.nickname';
   static const _deviceKey = 'watch.device_id';
+  static const _reconnectKey = 'watch.reconnect_needed';
+
+  /// Firebase가 "이 갱신 토큰은 더 못 쓴다"고 알려 주는 오류 이름. 이때만 다시 연결하게 한다.
+  /// 그 밖의 400·401(키 제한, 잘못된 요청 등)은 연결 문제가 아니므로 연결을 지우지 않는다.
+  static const deadTokenErrors = {
+    'TOKEN_EXPIRED',
+    'USER_DISABLED',
+    'USER_NOT_FOUND',
+    'INVALID_REFRESH_TOKEN',
+    'CREDENTIAL_TOO_OLD_LOGIN_AGAIN',
+  };
 
   final KeyValueStore _store;
   final JsonPoster _poster;
@@ -111,6 +122,10 @@ class WatchAccount {
   String? _idToken;
   DateTime _idTokenExpires = DateTime.fromMillisecondsSinceEpoch(0);
   String nickname = '';
+  var _reconnectNeeded = false;
+
+  /// 연결이 정말 만료돼 다시 연결해야 하는 상태.
+  bool get reconnectNeeded => _reconnectNeeded && !isPaired;
 
   bool get isPaired => _refreshToken != null && _refreshToken!.isNotEmpty;
 
@@ -119,6 +134,13 @@ class WatchAccount {
   Future<void> load() async {
     _refreshToken = await _store.read(_refreshKey);
     nickname = await _store.read(_nicknameKey) ?? '';
+    _reconnectNeeded = (await _store.read(_reconnectKey)) == '1';
+  }
+
+  /// "나중에"를 눌러 이번에는 다시 연결하라고 하지 않는다.
+  Future<void> dismissReconnect() async {
+    _reconnectNeeded = false;
+    await _store.delete(_reconnectKey);
   }
 
   /// 이 워치의 고유 번호. 한 번 만들어 계속 쓰므로 다시 연결해도 자리를 더 쓰지 않는다.
@@ -189,6 +211,8 @@ class WatchAccount {
     nickname = (paired.body['nickname'] as String?) ?? '';
     await _store.write(_refreshKey, refresh);
     await _store.write(_nicknameKey, nickname);
+    _reconnectNeeded = false;
+    await _store.delete(_reconnectKey);
   }
 
   void _remember(String idToken, Object? expiresIn) {
@@ -215,9 +239,12 @@ class WatchAccount {
     }
     final fresh = reply.body['id_token'];
     if (!reply.ok || fresh is! String) {
-      // 계정이 지워졌거나 로그아웃됐다면 갱신 토큰은 더 못 쓴다.
-      if (reply.status == 400 || reply.status == 401) {
+      // 갱신 토큰이 정말 만료·폐기됐을 때만 연결을 지우고 다시 연결하게 한다.
+      // 네트워크 오류, 5xx, 429, 키·요청 문제(다른 오류 이름)는 연결을 그대로 두고 나중에 다시 시도한다.
+      if (_tokenIsDead(reply)) {
         await unpair();
+        _reconnectNeeded = true;
+        await _store.write(_reconnectKey, '1');
       }
       return null;
     }
@@ -228,6 +255,16 @@ class WatchAccount {
     }
     _remember(fresh, reply.body['expires_in']);
     return fresh;
+  }
+
+  /// 오류 이름이 없는 400·401은 예전 동작대로 죽은 토큰으로 본다.
+  static bool _tokenIsDead(HttpReply reply) {
+    if (reply.status != 400 && reply.status != 401) return false;
+    final error = reply.body['error'];
+    final message = error is Map ? error['message'] : null;
+    if (message is! String || message.trim().isEmpty) return true;
+    final name = message.split(' ').first.toUpperCase();
+    return deadTokenErrors.contains(name);
   }
 
   /// 로그인된 계정으로 서버에 본문을 보낸다. 토큰이 만료돼 401이면 한 번 새로 받아 다시 보낸다.

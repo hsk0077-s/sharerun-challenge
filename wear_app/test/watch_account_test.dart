@@ -88,7 +88,7 @@ void main() {
 
     await expectLater(account.pair('000000'), throwsA(isA<PairingRejected>()));
     expect(account.isPaired, isFalse);
-    expect(store.values.keys, ['watch.device_id']); // 같은 번호로 다시 연결하려고 남긴다
+    expect(store.values.keys, ['watch.device_id']);
     await expectLater(account.pair('12'), throwsA(isA<PairingRejected>()));
   });
 
@@ -137,7 +137,9 @@ void main() {
 
     expect(await account.idToken(), isNull);
     expect(account.isPaired, isFalse);
-    expect(store.values.keys, ['watch.device_id']); // 같은 번호로 다시 연결하려고 남긴다
+    // 같은 번호로 다시 연결하려고 번호를 남기고, 다시 연결해야 한다는 표시도 남긴다.
+    expect(store.values.keys.toSet(), {'watch.device_id', 'watch.reconnect_needed'});
+    expect(account.reconnectNeeded, isTrue);
   });
 
   test('a 401 refreshes the token once and sends the request again', () async {

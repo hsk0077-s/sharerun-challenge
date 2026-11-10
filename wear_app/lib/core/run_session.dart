@@ -1,5 +1,8 @@
 import 'watch_platform.dart';
 
+/// 기록과 화면에 쓰는 경로 점 수의 상한. 넘으면 처음·끝을 남기고 고르게 줄인다.
+const kMaxRoutePoints = 600;
+
 /// 워치 러닝 한 번의 상태와 숫자. 화면과 동기화 큐가 같은 값을 쓴다.
 enum RunPhase { idle, running, paused, finished }
 
@@ -88,7 +91,7 @@ class RunSession {
   void replaceRoute(List<GpsFix> fixes) {
     _route
       ..clear()
-      ..addAll(fixes.length > 400 ? fixes.sublist(fixes.length - 400) : fixes);
+      ..addAll(downsampleFixes(fixes, kMaxRoutePoints));
   }
 
   void _samplePace() {

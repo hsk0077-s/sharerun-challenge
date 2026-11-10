@@ -2,7 +2,10 @@ package com.sharerun.share_run_challenge
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Network
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -19,15 +22,59 @@ import io.flutter.plugin.common.MethodChannel
  * - startTracking / stopTracking: 포그라운드 서비스와 센서 수집을 켜고 끈다.
  * - readSnapshot: 지금까지 모인 심박(bpm)·걸음 수·거리(km).
  * - vibrate: `pattern`(밀리초 목록: 기다림, 진동, 쉼, 진동 …)대로 한 번 울린다. 1km 통과·일시정지·종료 알림.
+ * - consumeAutostart: 시계 타일로 열렸으면 한 번만 true. 앱이 이미 떠 있을 때 타일을 누르면 `autostartRequested`를 보낸다.
+ * - `networkAvailable`(앱 쪽으로 보내는 알림): 인터넷이 (다시) 연결됐다.
  * - getString / putString / remove: 로그인 토큰과 기록 대기열을 앱 전용 저장소에 둔다.
  */
 class MainActivity : FlutterActivity() {
     private var pendingPermissionResult: MethodChannel.Result? = null
+    private var channel: MethodChannel? = null
+    private var autostart = false
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
-            .setMethodCallHandler(::onMethodCall)
+        val methods = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        methods.setMethodCallHandler(::onMethodCall)
+        channel = methods
+        autostart = intent?.getBooleanExtra(EXTRA_AUTOSTART, false) == true
+        watchNetwork()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra(EXTRA_AUTOSTART, false)) {
+            // 앱이 이미 떠 있는 채로 타일을 눌렀다.
+            channel?.invokeMethod("autostartRequested", null)
+        }
+    }
+
+    override fun onDestroy() {
+        networkCallback?.let {
+            try {
+                getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it)
+            } catch (_: Exception) {
+            }
+        }
+        networkCallback = null
+        super.onDestroy()
+    }
+
+    /** 인터넷이 연결될 때마다 앱에 알려 올리지 못한 기록을 다시 올리게 한다. */
+    private fun watchNetwork() {
+        if (networkCallback != null) return
+        try {
+            val manager = getSystemService(ConnectivityManager::class.java) ?: return
+            val callback = object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    runOnUiThread { channel?.invokeMethod("networkAvailable", null) }
+                }
+            }
+            manager.registerDefaultNetworkCallback(callback)
+            networkCallback = callback
+        } catch (_: Exception) {
+            // 연결 상태를 못 받아도 주기적 재시도와 앱을 다시 켤 때의 올리기가 있다.
+        }
     }
 
     private fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -53,6 +100,11 @@ class MainActivity : FlutterActivity() {
                 result.success(null)
             }
             "readSnapshot" -> result.success(WatchTracker.snapshot())
+            "consumeAutostart" -> {
+                val requested = autostart
+                autostart = false
+                result.success(requested)
+            }
             "vibrate" -> {
                 vibrate(call.argument<List<Int>>("pattern").orEmpty())
                 result.success(null)
@@ -146,6 +198,9 @@ class MainActivity : FlutterActivity() {
 
     companion object {
         private const val CHANNEL = "sharerun/watch_sensors"
+
+        /** 시계 타일이 앱을 열 때 붙이는 값. 있으면 시작 화면에서 바로 카운트다운을 한다. */
+        const val EXTRA_AUTOSTART = "sharerun.autostart"
         private const val PREFS = "sharerun_watch"
         private const val PERMISSION_REQUEST = 7100
     }

@@ -46,3 +46,6 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# 릴리스 빌드용 dart-define 파일(값이 들어 있으므로 올리지 않는다)
+dart-defines.json

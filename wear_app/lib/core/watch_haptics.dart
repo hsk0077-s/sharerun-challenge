@@ -12,6 +12,12 @@ abstract class WatchHaptics {
   /// 일시정지·재개: 짧은 진동 1회.
   static const tick = [0, 120];
 
+  /// 카운트다운 시작(3·2·1): 아주 짧은 진동.
+  static const countdown = [0, 80];
+
+  /// 달리기 시작: 한 번 길게.
+  static const go = [0, 450];
+
   /// 종료: 진동 2회.
   static const finished = [0, 180, 120, 180];
 }

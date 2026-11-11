@@ -11,7 +11,9 @@ from app.services.firebase_service import FirebaseService
 # else. A lost or copied watch then cannot spend currency, change the profile or delete
 # the account.
 WATCH_PROVIDER = "watch"
-WATCH_ALLOWED_PATHS = frozenset({"/actions/runs/validate", "/actions/daily-steps"})
+WATCH_ALLOWED_PATHS = frozenset(
+    {"/actions/runs/validate", "/actions/daily-steps", "/actions/watch/tier"}
+)
 
 _CHECK_SECONDS = 30.0
 _valid_after: dict[str, tuple[float, int]] = {}

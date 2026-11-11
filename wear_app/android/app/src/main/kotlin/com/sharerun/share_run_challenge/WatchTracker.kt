@@ -41,6 +41,13 @@ object WatchTracker : SensorEventListener, LocationListener {
     private var hasGps = false
     private val route = mutableListOf<Map<String, Any>>()
 
+    // 경로가 너무 길어지면 점을 절반으로 솎고 간격을 두 배로 한다. 앞부분 경로가 사라지지 않게
+    // 처음 점은 남기고, 거리 계산은 모든 점으로 한다(이 목록은 그림·기록용이다).
+    private const val MAX_ROUTE_POINTS = 2400
+    private var routeStride = 1
+    private var routeSeen = 0
+    private var latestPoint: Map<String, Any>? = null
+
     val isActive: Boolean
         @Synchronized get() = active
 
@@ -56,6 +63,9 @@ object WatchTracker : SensorEventListener, LocationListener {
         lastLocation = null
         hasGps = false
         route.clear()
+        routeStride = 1
+        routeSeen = 0
+        latestPoint = null
 
         val power = app.getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = power.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "sharerun:tracking").apply {
@@ -106,8 +116,15 @@ object WatchTracker : SensorEventListener, LocationListener {
         "steps" to steps,
         "distanceKm" to distanceMeters / 1000.0,
         "hasGps" to hasGps,
-        "route" to route.toList(),
+        "route" to routeWithLatest(),
     )
+
+    /** 솎아 낸 경로의 끝에 가장 최근 위치를 붙여, 화면의 현재 위치 점이 늦지 않게 한다. */
+    private fun routeWithLatest(): List<Map<String, Any>> {
+        val latest = latestPoint ?: return route.toList()
+        if (route.isNotEmpty() && route.last() == latest) return route.toList()
+        return route.toList() + latest
+    }
 
     @Synchronized
     override fun onSensorChanged(event: SensorEvent) {
@@ -151,15 +168,22 @@ object WatchTracker : SensorEventListener, LocationListener {
     }
 
     private fun remember(location: Location) {
-        if (route.size >= 400) return
         val stamp = java.time.Instant.ofEpochMilli(location.time).toString()
-        route.add(
-            mapOf(
-                "latitude" to location.latitude,
-                "longitude" to location.longitude,
-                "recordedAt" to stamp,
-            ),
+        val point = mapOf(
+            "latitude" to location.latitude,
+            "longitude" to location.longitude,
+            "recordedAt" to stamp,
         )
+        latestPoint = point
+        routeSeen++
+        if ((routeSeen - 1) % routeStride != 0) return
+        route.add(point)
+        if (route.size > MAX_ROUTE_POINTS) {
+            val kept = route.filterIndexed { index, _ -> index % 2 == 0 }
+            route.clear()
+            route.addAll(kept)
+            routeStride *= 2
+        }
     }
 
     @Deprecated("Required on API < 29")

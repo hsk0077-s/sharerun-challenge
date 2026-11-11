@@ -38,6 +38,7 @@ import '../../screens/preliminary_eval_screen.dart';
 import '../../screens/pro_tools_screen.dart';
 import '../../screens/refund_screen.dart';
 import '../../screens/run_result_screen.dart';
+import '../../screens/watch_run_record_screen.dart';
 import '../../screens/run_tracking_screen.dart';
 import '../../screens/running_crew_screen.dart';
 import '../../screens/settings_screen.dart';
@@ -330,6 +331,17 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
             totalSteps: args?.totalSteps,
             playerName: args?.playerName,
           ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouteNames.watchRunRecord,
+      pageBuilder: (context, state) {
+        final id = state.uri.queryParameters['id'] ??
+            state.uri.queryParameters['activityId'];
+        return NoTransitionPage<void>(
+          key: state.pageKey,
+          child: WatchRunRecordScreen(activityId: id),
         );
       },
     ),

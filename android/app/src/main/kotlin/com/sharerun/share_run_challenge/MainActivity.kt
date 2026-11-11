@@ -12,9 +12,13 @@ import com.google.android.play.core.integrity.IntegrityTokenRequest
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterFragmentActivity() {
+    private var linkChannel: MethodChannel? = null
+    private var pendingLink: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Health Connect permission UI requires FragmentActivity (health package).
+        pendingLink = shareRunLinkOf(intent)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -104,6 +108,24 @@ class MainActivity : FlutterFragmentActivity() {
         }
         RunFinishImageShare.register(this, flutterEngine)
         BleHeartRatePlugin.register(this, flutterEngine)
+        val links = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            "share_run/links",
+        )
+        links.setMethodCallHandler { call, result ->
+            if (call.method != "getInitialLink") {
+                result.notImplemented()
+                return@setMethodCallHandler
+            }
+            val link = pendingLink ?: shareRunLinkOf(intent)
+            pendingLink = null
+            if (link != null) {
+                // 같은 주소를 다시 열지 않도록 인텐트에서 지운다.
+                setIntent(Intent(intent).setData(null))
+            }
+            result.success(link)
+        }
+        linkChannel = links
     }
 
     override fun getInitialRoute(): String? {
@@ -117,5 +139,26 @@ class MainActivity : FlutterFragmentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        val link = shareRunLinkOf(intent)
+        if (link != null) {
+            // Dart가 아직 듣고 있지 않으면(로그인 전 등) 남겨 두었다가 나중에 getInitialLink로 넘긴다.
+            pendingLink = link
+            setIntent(Intent(intent).setData(null))
+            linkChannel?.invokeMethod("onLink", link, object : MethodChannel.Result {
+                override fun success(result: Any?) {
+                    if (pendingLink == link) pendingLink = null
+                }
+
+                override fun error(code: String, message: String?, details: Any?) {}
+
+                override fun notImplemented() {}
+            })
+        }
+    }
+
+    private fun shareRunLinkOf(intent: Intent?): String? {
+        val data = intent?.data ?: return null
+        if (data.scheme != "sharerun") return null
+        return data.toString()
     }
 }

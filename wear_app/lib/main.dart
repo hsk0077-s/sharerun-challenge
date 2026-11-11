@@ -6,14 +6,17 @@ import 'core/run_session.dart';
 import 'core/sync_queue.dart';
 import 'core/sync_uploader.dart';
 import 'core/watch_account.dart';
+import 'core/run_draft.dart';
+import 'core/watch_events.dart';
 import 'core/watch_haptics.dart';
 import 'core/watch_platform.dart';
+import 'l10n/watch_copy.dart';
 import 'screens/watch_screens.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final store = MethodChannelStore();
-  final account = WatchAccount(store: store);
+  final account = WatchAccount(store: store, signingCert: readSigningCertSha1);
   await account.load();
   final queueStore = QueueStore(store);
   final queue = await queueStore.load();
@@ -24,6 +27,9 @@ Future<void> main() async {
       account: account,
       queueStore: queueStore,
       haptics: MethodChannelWatchHaptics(),
+      events: MethodChannelWatchEvents(),
+      phoneOpener: MethodChannelWatchPhoneOpener(),
+      returnControl: MethodChannelRunReturnControl(),
     ),
   ));
 }
@@ -55,8 +61,15 @@ class RunFlow extends StatefulWidget {
     this.pollInterval = const Duration(seconds: 1),
     this.clock,
     this.haptics,
+    this.events,
     this.tierName,
     this.tierCode,
+    this.shareEarned,
+    this.countdownStep = const Duration(seconds: 1),
+    this.draftEvery = 15,
+    this.retryEvery = const Duration(minutes: 1),
+    this.phoneOpener,
+    this.returnControl,
   });
 
   final SyncQueue? queue;
@@ -76,52 +89,200 @@ class RunFlow extends StatefulWidget {
   /// 진동. 없으면 진동 없이 돈다(시험).
   final WatchHaptics? haptics;
 
-  /// 내 동물 티어 이름과 코드. 아직 워치에 티어 값을 내려 주는 길이 없어 지금은 비어 있고,
-  /// 비어 있으면 시작 화면의 티어 줄은 숨긴다.
+  /// 인터넷 연결 알림, 타일에서 바로 시작. 없으면 없는 대로 돈다(시험).
+  final WatchEvents? events;
+
+  /// 내 동물 티어 이름과 코드(시험용). 없으면 계정이 서버에서 받아 둔 티어 코드를 쓰고,
+  /// 그것도 없으면(등급 전) 시작 화면의 티어 줄은 숨긴다.
   final String? tierName;
   final String? tierCode;
+
+  /// 이번 달리기로 쌓인 SHARE. 워치에 SHARE 값을 내려 주는 길이 아직 없어 지금은 null이고,
+  /// null이면 화면의 SHARE 표시는 숨긴다. 가짜 숫자를 넣지 않는다.
+  final int? shareEarned;
+
+  /// 시작을 누른 뒤 3·2·1 사이의 간격.
+  final Duration countdownStep;
+
+  /// 달리는 중 임시 기록을 저장하는 간격(초).
+  final int draftEvery;
+
+  /// 올리지 못한 기록이 있으면 이 간격으로 다시 올려 본다(앱이 켜져 있는 동안).
+  final Duration retryEvery;
+
+  /// 결과 화면에서 폰의 이 기록 화면을 연다. 없으면 안내만 실패로 보여 준다(시험).
+  final WatchPhoneOpener? phoneOpener;
+
+  /// 달리는 중에 시계 화면으로 나가면 잠시 뒤 달리기 화면으로 돌아오게 하는 네이티브 쪽. 없으면 없는 대로 돈다(시험).
+  final RunReturnControl? returnControl;
 
   @override
   State<RunFlow> createState() => _RunFlowState();
 }
 
-class _RunFlowState extends State<RunFlow> {
+class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   late final SyncQueue _queue = widget.queue ?? SyncQueue();
   late RunSession _session = RunSession(clock: widget.clock);
   Timer? _poller;
   Timer? _ticker;
+  Timer? _retry;
+  Timer? _countdownTimer;
+  int? _countdown;
   double _lastKm = 0;
   int _wholeKm = 0;
   int? _bannerKm;
   DateTime? _bannerUntil;
+  int _focus = 0;
+  int _tickCount = 0;
+  String? _runId;
   var _pairing = false;
   var _skippedPairing = false;
   var _polling = false;
 
+  /// 이 시간보다 오래 전에 저장된 임시 기록은 이어 달리지 않는다.
+  static const _staleDraftAge = Duration(hours: 6);
+
+  /// 이어 달리기 직후 첫 센서 값을 읽을 때까지 들고 있는 저장 기록.
+  RunDraft? _restoreBase;
+  List<GpsFix> _routePrefix = const [];
+  int _stepOffset = 0;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final account = widget.account;
     if (account != null && account.isPaired) {
       unawaited(_upload());
+      unawaited(_refreshTier());
     }
+    widget.events?.onNetworkAvailable(() => unawaited(_upload()));
+    widget.events?.onAutostartRequested(_beginCountdown);
+    unawaited(_boot());
+    _retry = Timer.periodic(widget.retryEvery, (_) {
+      if (_queue.length > 0) unawaited(_upload());
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _poller?.cancel();
     _ticker?.cancel();
-    unawaited(widget.sensors?.stop());
+    _retry?.cancel();
+    _countdownTimer?.cancel();
+    // 달리기가 끝나지 않았으면 센서·포그라운드 서비스를 끄지 않는다.
+    // 화면이 사라져도 기록이 이어지고, 다시 열면 달리는 화면으로 돌아온다.
+    if (_session.phase != RunPhase.running && _session.phase != RunPhase.paused) {
+      unawaited(widget.sensors?.stop());
+    }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 다시 앞으로 나오면 올리지 못한 기록을 올려 보고 등급도 다시 받는다.
+    if (state != AppLifecycleState.resumed) return;
+    if (_queue.length > 0) unawaited(_upload());
+    unawaited(_refreshTier());
+  }
+
+  /// 등급 동물을 서버에서 다시 받아, 바뀌었으면 화면을 고친다.
+  Future<void> _refreshTier() async {
+    final account = widget.account;
+    if (account == null || !account.isPaired) return;
+    final before = account.tierCode;
+    await account.refreshTier();
+    if (mounted && account.tierCode != before) setState(() {});
   }
 
   DateTime _now() => (widget.clock ?? DateTime.now)();
 
-  void _buzz(List<int> pattern) => unawaited(widget.haptics?.pattern(pattern) ?? Future<void>.value());
+  void _buzz(List<int> pattern) =>
+      unawaited(widget.haptics?.pattern(pattern) ?? Future<void>.value());
 
-  /// 1초마다 화면의 시각·경과 시간을 갱신하고, 1km 안내가 끝나면 지운다.
+  /// 임시 기록을 먼저 되살린 뒤에만 타일 자동 시작을 받는다.
+  Future<void> _boot() async {
+    await _recoverDraft();
+    if (!mounted) return;
+    if (_session.phase == RunPhase.idle) {
+      await _checkAutostart();
+    }
+  }
+
+  /// 달리는 중에 화면이 사라졌다가 다시 켜지면, 임시 기록을 이어서 달린다.
+  Future<void> _recoverDraft() async {
+    final store = widget.queueStore;
+    if (store == null) return;
+    final draft = await store.loadDraft();
+    if (draft == null || _runId != null) return;
+    if (_session.phase != RunPhase.idle) return;
+    // 이미 종료되어 대기열에 들어간 기록이면 이어 달리지 않는다.
+    if (_queue.runs.any((run) => run.activityId == draft.activityId)) {
+      await store.clearDraft();
+      if (mounted) setState(() {});
+      return;
+    }
+    // 오래전에 멈춘 기록(저장 뒤 한참 지남)은 이어 달리지 않고, 여기까지를 올릴 기록으로 남긴다.
+    if (_now().difference(draft.savedAt) > _staleDraftAge) {
+      final run = draft.toPendingRun();
+      if (run != null) {
+        _queue.add(run);
+        await store.save(_queue);
+      }
+      await store.clearDraft();
+      if (!mounted) return;
+      setState(() {});
+      unawaited(_upload());
+      return;
+    }
+    _runId = draft.activityId;
+    _restoreBase = draft;
+    _lastKm = draft.distanceKm;
+    _wholeKm = draft.distanceKm.floor();
+    _session.restore(
+      startedAt: draft.startedAt,
+      moving: Duration(seconds: draft.movingSeconds),
+      distanceKm: draft.distanceKm,
+      steps: draft.steps,
+      heartRates: draft.heartRates,
+      route: draft.route,
+      paceSamples: draft.paceSamples,
+    );
+    await _resumeSensors();
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  Future<void> _resumeSensors() async {
+    final sensors = widget.sensors;
+    if (sensors == null) {
+      _startTicker();
+      return;
+    }
+    try {
+      await sensors.requestPermissions();
+      await sensors.start();
+    } catch (_) {
+      // 센서를 못 켜도 저장된 거리·시간은 이어서 보여 준다.
+    }
+    _poller?.cancel();
+    _poller = Timer.periodic(widget.pollInterval, (_) => _poll());
+    _startTicker();
+  }
+
+  /// 시계 타일로 열렸으면 바로 카운트다운을 시작한다.
+  Future<void> _checkAutostart() async {
+    final events = widget.events;
+    if (events == null) return;
+    final requested = await events.consumeAutostart();
+    if (requested && mounted) _beginCountdown();
+  }
+
+  /// 1초마다 화면의 시각·경과 시간을 갱신하고, 1km 안내가 끝나면 지우고, 임시 기록을 저장한다.
   void _startTicker() {
     _ticker?.cancel();
+    _tickCount = 0;
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       final until = _bannerUntil;
@@ -129,8 +290,31 @@ class _RunFlowState extends State<RunFlow> {
         _bannerKm = null;
         _bannerUntil = null;
       }
+      _tickCount++;
+      if (widget.draftEvery > 0 && _tickCount % widget.draftEvery == 0) {
+        unawaited(_saveDraft());
+      }
       setState(() {});
     });
+  }
+
+  Future<void> _saveDraft() async {
+    final store = widget.queueStore;
+    final id = _runId;
+    final started = _session.startedAt;
+    if (store == null || id == null || started == null) return;
+    if (_session.phase != RunPhase.running && _session.phase != RunPhase.paused) return;
+    await store.saveDraft(RunDraft(
+      activityId: id,
+      startedAt: started,
+      savedAt: _now(),
+      movingSeconds: _session.movingTime.inSeconds,
+      distanceKm: _session.distanceKm,
+      steps: _session.steps,
+      heartRates: _session.heartRates,
+      route: _session.route,
+      paceSamples: _session.paceSamples,
+    ));
   }
 
   void _pause() {
@@ -148,6 +332,33 @@ class _RunFlowState extends State<RunFlow> {
   String _id() =>
       widget.newId?.call() ?? 'watch_${DateTime.now().microsecondsSinceEpoch}';
 
+  /// 시작을 누르면 3·2·1을 센다. 숫자마다 아주 짧은 진동, 시작 때 길게 한 번.
+  void _beginCountdown() {
+    if (_session.phase != RunPhase.idle || _countdown != null) return;
+    setState(() => _countdown = 3);
+    _buzz(WatchHaptics.countdown);
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(widget.countdownStep, (timer) {
+      final next = (_countdown ?? 1) - 1;
+      if (next <= 0) {
+        timer.cancel();
+        _countdownTimer = null;
+        if (!mounted) return;
+        setState(() => _countdown = null);
+        unawaited(_start());
+      } else {
+        setState(() => _countdown = next);
+        _buzz(WatchHaptics.countdown);
+      }
+    });
+  }
+
+  void _cancelCountdown() {
+    _countdownTimer?.cancel();
+    _countdownTimer = null;
+    setState(() => _countdown = null);
+  }
+
   Future<void> _start() async {
     final sensors = widget.sensors;
     if (sensors != null) {
@@ -162,10 +373,16 @@ class _RunFlowState extends State<RunFlow> {
       _poller = Timer.periodic(widget.pollInterval, (_) => _poll());
     }
     if (!mounted) return;
+    _runId = _id();
+    _restoreBase = null;
+    _routePrefix = const [];
+    _stepOffset = 0;
     _wholeKm = 0;
     _bannerKm = null;
     _bannerUntil = null;
+    _focus = 0;
     setState(_session.start);
+    _buzz(WatchHaptics.go);
     _startTicker();
   }
 
@@ -176,13 +393,24 @@ class _RunFlowState extends State<RunFlow> {
     try {
       final snap = await sensors.read();
       if (!mounted) return;
+      final restored = _restoreBase;
+      if (restored != null) {
+        _restoreBase = null;
+        // 이어 달릴 때 센서가 새로 시작돼 0부터 세고 있으면(앱 프로세스가 죽었던 경우),
+        // 저장해 둔 거리·걸음·경로 뒤에 이어 붙인다. 센서가 계속 돌고 있었으면 그대로 쓴다.
+        if (snap.distanceKm + 1e-6 < restored.distanceKm) {
+          _lastKm = 0;
+          _routePrefix = restored.route;
+          _stepOffset = restored.steps;
+        }
+      }
       setState(() {
         // 일시정지 중에 늘어난 거리는 기준만 옮기고 버린다.
-        _session.replaceRoute(snap.route);
+        _session.replaceRoute([..._routePrefix, ...snap.route]);
         _session.addDistance(snap.distanceKm - _lastKm);
         _lastKm = snap.distanceKm;
         if (snap.heartRate > 0) _session.addHeartRate(snap.heartRate);
-        _session.setSteps(snap.steps);
+        _session.setSteps(_stepOffset + snap.steps);
         // 1km를 지날 때마다 긴 진동 1회와 잠깐 안내.
         final whole = _session.distanceKm.floor();
         if (whole > _wholeKm) {
@@ -212,7 +440,7 @@ class _RunFlowState extends State<RunFlow> {
     } catch (_) {}
     _session.finish();
     final run = buildPendingRun(
-      activityId: _id(),
+      activityId: _runId ?? _id(),
       distanceKm: _session.distanceKm,
       movingTime: _session.movingTime,
       heartRates: _session.heartRates,
@@ -226,6 +454,8 @@ class _RunFlowState extends State<RunFlow> {
       _queue.add(run);
       await widget.queueStore?.save(_queue);
     }
+    // 올릴 기록으로 안전하게 저장했으니 임시 기록은 지운다.
+    await widget.queueStore?.clearDraft();
     if (mounted) setState(() {});
     unawaited(_upload());
   }
@@ -239,7 +469,7 @@ class _RunFlowState extends State<RunFlow> {
       onChanged: () async => widget.queueStore?.save(_queue),
     );
     final sent = await uploader.flush(deviceId: await account.deviceId());
-    if (sent > 0 && mounted) setState(() {});
+    if (mounted && (sent > 0 || account.reconnectNeeded)) setState(() {});
   }
 
   Future<String?> _pair(String code) async {
@@ -257,24 +487,49 @@ class _RunFlowState extends State<RunFlow> {
     return null;
   }
 
+  bool? _returnActive;
+
+  /// 달리는 중일 때만 자동 복귀를 켠다. 단계가 바뀔 때 한 번만 네이티브에 알린다.
+  void _syncAutoReturn() {
+    final control = widget.returnControl;
+    if (control == null) return;
+    final running = _session.phase == RunPhase.running;
+    if (_returnActive == running) return;
+    _returnActive = running;
+    unawaited(control.setActive(running));
+  }
+
   @override
   Widget build(BuildContext context) {
+    _syncAutoReturn();
     final account = widget.account;
+    final countdown = _countdown;
+    if (countdown != null && _session.phase == RunPhase.idle) {
+      return CountdownFace(count: countdown, onCancel: _cancelCountdown);
+    }
     switch (_session.phase) {
       case RunPhase.idle:
-        if (account != null && (_pairing || (!account.isPaired && !_skippedPairing))) {
+        if (account != null &&
+            (_pairing || account.reconnectNeeded || (!account.isPaired && !_skippedPairing))) {
           return PairingFace(
             onSubmit: _pair,
-            onSkip: () => setState(() {
-              _pairing = false;
-              _skippedPairing = true;
-            }),
+            notice: account.reconnectNeeded
+                ? watchUi(WidgetsBinding.instance.platformDispatcher.locale, 'reconnect')
+                : null,
+            onSkip: () {
+              unawaited(account.dismissReconnect());
+              setState(() {
+                _pairing = false;
+                _skippedPairing = true;
+              });
+            },
           );
         }
         return StartFace(
-          onStart: _start,
+          onStart: _beginCountdown,
           tierName: widget.tierName,
-          tierCode: widget.tierCode,
+          tierCode: widget.tierCode ?? account?.tierCode,
+          pendingCount: _queue.length,
           onLongPress: account == null ? null : () => setState(() => _pairing = true),
         );
       case RunPhase.running:
@@ -284,6 +539,10 @@ class _RunFlowState extends State<RunFlow> {
           paused: _session.phase == RunPhase.paused,
           now: _now(),
           passedKm: _bannerKm,
+          focus: _focus,
+          shareEarned: widget.shareEarned,
+          tierCode: widget.tierCode ?? account?.tierCode,
+          onCycle: () => setState(() => _focus = (_focus + 1) % RunningFace.metricCount),
           onPause: _pause,
           onResume: _resume,
           onFinish: _finish,
@@ -291,18 +550,22 @@ class _RunFlowState extends State<RunFlow> {
       case RunPhase.finished:
         return SummaryFace(
           session: _session,
-          pendingCount: _queue.length,
+          shareEarned: widget.shareEarned,
+          activityId: _runId,
+          phoneOpener: widget.phoneOpener,
           onDone: () => setState(() {
             _session = RunSession(clock: widget.clock);
             _bannerKm = null;
             _bannerUntil = null;
+            _runId = null;
           }),
         );
     }
   }
 }
 
-/// 달리는 중 화면과 조작 화면을 옆으로 넘긴다. 조작 화면으로 넘어가면 일시정지,
+/// 가운데가 달리는 화면이고, 오른쪽으로 밀면(왼쪽 가장자리에서 오른쪽으로) 경로 화면,
+/// 왼쪽으로 밀면 조작 화면이다. 조작 화면으로 넘어가면 일시정지,
 /// 달리는 화면으로 돌아오거나 재개를 누르면 다시 달린다.
 class RunPager extends StatefulWidget {
   const RunPager({
@@ -314,30 +577,43 @@ class RunPager extends StatefulWidget {
     required this.onResume,
     required this.onFinish,
     this.passedKm,
+    this.focus = 0,
+    this.onCycle,
+    this.shareEarned,
+    this.tierCode,
   });
 
+  final int? shareEarned;
+  final String? tierCode;
   final RunSession session;
   final bool paused;
   final DateTime now;
   final int? passedKm;
+  final int focus;
+  final VoidCallback? onCycle;
   final VoidCallback onPause;
   final VoidCallback onResume;
   final VoidCallback onFinish;
+
+  static const routePage = 0;
+  static const runPage = 1;
+  static const controlsPage = 2;
 
   @override
   State<RunPager> createState() => _RunPagerState();
 }
 
 class _RunPagerState extends State<RunPager> {
-  late final PageController _controller =
-      PageController(initialPage: widget.paused ? 1 : 0);
+  late final PageController _controller = PageController(
+    initialPage: widget.paused ? RunPager.controlsPage : RunPager.runPage,
+  );
 
   @override
   void didUpdateWidget(RunPager old) {
     super.didUpdateWidget(old);
     if (old.paused != widget.paused && _controller.hasClients) {
       unawaited(_controller.animateToPage(
-        widget.paused ? 1 : 0,
+        widget.paused ? RunPager.controlsPage : RunPager.runPage,
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
       ));
@@ -354,14 +630,19 @@ class _RunPagerState extends State<RunPager> {
   Widget build(BuildContext context) => PageView(
         controller: _controller,
         onPageChanged: (page) {
-          if (page == 1 && !widget.paused) widget.onPause();
-          if (page == 0 && widget.paused) widget.onResume();
+          if (page == RunPager.controlsPage && !widget.paused) widget.onPause();
+          if (page != RunPager.controlsPage && widget.paused) widget.onResume();
         },
         children: [
+          RouteFace(session: widget.session),
           RunningFace(
             session: widget.session,
             now: widget.now,
             passedKm: widget.passedKm,
+            focus: widget.focus,
+            onCycle: widget.onCycle,
+            shareEarned: widget.shareEarned,
+            tierCode: widget.tierCode,
           ),
           ControlsFace(onResume: widget.onResume, onFinish: widget.onFinish),
         ],

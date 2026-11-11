@@ -7,6 +7,7 @@ import '../app/router/route_names.dart';
 import '../core/theme/app_colors.dart';
 import '../l10n/surface_copy.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
+import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/run_tracking/utils/run_start_preflight.dart';
 
 /// 등급 배정 안내. 횟수와 등급은 모두 서버가 정한 값이다.
@@ -20,6 +21,9 @@ class PreliminaryEvalScreen extends ConsumerWidget {
 
   static const startRunKey = Key('grade-start-run');
   static const goHomeKey = Key('grade-go-home');
+  static const currentGradeKey = Key('grade-current');
+  static const currentGradeAvatarKey = Key('grade-current-avatar');
+  static const upgradeHowKey = Key('grade-upgrade-how');
 
   /// 가입 직후(GoRouter 없음)에 정상 홈으로 나간다. 뒤로 돌아올 곳을 남기지 않는다.
   void _goHome(BuildContext context) {
@@ -76,38 +80,76 @@ class PreliminaryEvalScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
             children: [
-              const SizedBox(height: 16),
-              Text(
-                guide.intro,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.nightMuted,
-                  fontSize: 14,
-                  height: 1.45,
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      if (tier != null) ...[
+                        // 등급이 이미 있는 사람: 지금 등급(동물 + 이름)을 먼저 보여 준다.
+                        ChibiTierAvatar(
+                          key: currentGradeAvatarKey,
+                          tier: tier,
+                          size: 96,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          guide.assigned(
+                              tier.gradeTitle(Localizations.localeOf(context))),
+                          key: currentGradeKey,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                            color: AppColors.nightInk,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // 서버가 "다음 등급까지 남은 조건"을 내려 주지 않으므로 숫자 없이 규칙만 안내한다.
+                        Text(
+                          guide.upgradeHow,
+                          key: upgradeHowKey,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.nightMuted,
+                            fontSize: 14,
+                            height: 1.45,
+                          ),
+                        ),
+                      ] else ...[
+                        Text(
+                          guide.intro,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: AppColors.nightMuted,
+                            fontSize: 14,
+                            height: 1.45,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          guide.progress,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: AppColors.nightInk,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 16),
+                      Text(
+                        guide.sameDay,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.nightMuted,
+                          fontSize: 12,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                tier == null
-                    ? guide.progress
-                    : guide.assigned(tier.koreanName),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: AppColors.nightInk,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                guide.sameDay,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.nightMuted,
-                  fontSize: 12,
-                  height: 1.45,
-                ),
-              ),
-              const Spacer(),
               if (!hasRouter) ...[
                 Text(
                   guide.skipNote,
@@ -120,8 +162,7 @@ class PreliminaryEvalScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
               ],
-              if (!hasRouter || tier == null)
-                SizedBox(
+              SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: FilledButton(

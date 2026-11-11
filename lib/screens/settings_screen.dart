@@ -44,6 +44,7 @@ import '../features/support/contact_support.dart';
 import '../features/mini_bot/mini_bot_dock.dart';
 import '../features/voice_coaching/voice_coaching_providers.dart';
 import 'pro_tools_screen.dart';
+import 'preliminary_eval_screen.dart';
 import 'login_connections_screen.dart';
 import 'security_privacy_center_screen.dart';
 
@@ -200,6 +201,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context,
       RouteNames.watchSettings,
       materialBuilder: (_) => const DeviceConnectionScreen(),
+    );
+  }
+
+  /// 내 동물 티어 칸: 등급 안내 화면을 연다. 거기서 바로 달리기를 시작할 수 있다.
+  void _openGradeGuide() {
+    AppRouteNav.push<void>(
+      context,
+      RouteNames.preliminaryEval,
+      materialBuilder: (_) => const PreliminaryEvalScreen(),
     );
   }
 
@@ -470,6 +480,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
+                  key: const Key('settings-tier-row'),
+                  onTap: _openGradeGuide,
+                  trailing: const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: AppColors.textGreyLight,
+                  ),
                   leading: ChibiTierAvatar(
                     tier: tier ?? UserTier.unratedFallback,
                     size: 40,

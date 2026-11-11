@@ -18,6 +18,17 @@ class GpsFix {
       };
 }
 
+/// 경로 점을 [max]개 이하로 줄인다. 처음과 끝 점을 남기고 나머지는 고르게 뽑는다
+/// (끝부분만 남기면 긴 달리기의 앞부분 경로가 사라진다).
+List<GpsFix> downsampleFixes(List<GpsFix> fixes, int max) {
+  if (max < 2 || fixes.length <= max) return List.of(fixes);
+  final out = <GpsFix>[];
+  for (var i = 0; i < max; i++) {
+    out.add(fixes[(i * (fixes.length - 1) / (max - 1)).round()]);
+  }
+  return out;
+}
+
 /// 센서가 한 번 읽어 준 값. 없는 값은 0이다(만들어 내지 않는다).
 class SensorSnapshot {
   const SensorSnapshot({
@@ -131,4 +142,57 @@ class MemoryStore implements KeyValueStore {
 
   @override
   Future<void> delete(String key) async => values.remove(key);
+}
+
+/// 설치된 앱의 서명 인증서 SHA-1. 못 읽으면 null(로그인 요청에 앱 제한 머리말을 못 붙인다).
+Future<String?> readSigningCertSha1() async {
+  try {
+    return await const MethodChannel(watchSensorsChannel).invokeMethod<String>('signingCertSha1');
+  } catch (_) {
+    return null;
+  }
+}
+
+/// 페어링된 폰에서 주소를 연다. 시험에서는 가짜로 바꾼다.
+abstract class WatchPhoneOpener {
+  Future<bool> open(String uri);
+}
+
+/// 달리는 중에 시계 화면 등으로 나가면 잠시 뒤 달리기 화면으로 돌아오게 할지 네이티브에 알린다.
+/// 달리는 중(일시정지·종료 아님)일 때만 true. 시험에서는 가짜로 바꾼다.
+abstract class RunReturnControl {
+  Future<void> setActive(bool active);
+}
+
+class MethodChannelRunReturnControl implements RunReturnControl {
+  MethodChannelRunReturnControl([MethodChannel? channel])
+      : _channel = channel ?? const MethodChannel(watchSensorsChannel);
+
+  final MethodChannel _channel;
+
+  @override
+  Future<void> setActive(bool active) async {
+    try {
+      await _channel.invokeMethod<void>('setRunActive', {'active': active});
+    } catch (_) {
+      // 알리지 못해도 달리기는 그대로 이어진다.
+    }
+  }
+}
+
+class MethodChannelWatchPhoneOpener implements WatchPhoneOpener {
+  MethodChannelWatchPhoneOpener([MethodChannel? channel])
+      : _channel = channel ?? const MethodChannel(watchSensorsChannel);
+
+  final MethodChannel _channel;
+
+  @override
+  Future<bool> open(String uri) async {
+    try {
+      final ok = await _channel.invokeMethod<bool>('openOnPhone', {'uri': uri});
+      return ok == true;
+    } catch (_) {
+      return false;
+    }
+  }
 }

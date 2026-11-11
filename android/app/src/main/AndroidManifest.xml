@@ -145,7 +145,16 @@
                     android:scheme="kakaoc45c63710e60f98b3fe617ae0b75c274"
                     android:host="kakaolink" />
             </intent-filter>
-            <!-- 이 주소는 앱만 열고, 화면 이동에는 쓰지 않는다. -->
+            <!-- 워치 결과 화면의 "폰에서 자세히 보기"가 이 달리기를 열 때 쓰는 주소(sharerun://run/<id>). -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="sharerun"
+                    android:host="run" />
+            </intent-filter>
+            <!-- 카카오 주소는 앱만 열고, 화면 이동에는 쓰지 않는다. 워치 링크는 Dart 채널로 직접 보낸다. -->
             <meta-data android:name="flutter_deeplinking_enabled" android:value="false" />
         </activity>
 

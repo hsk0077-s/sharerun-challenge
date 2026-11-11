@@ -26,6 +26,8 @@ import '../l10n/app_localizations.dart';
 import '../l10n/remaining_surface.dart';
 import '../screens/solo_pedometer_screen.dart';
 import 'router/dashboard_router.dart';
+import '../features/watch_link/incoming_watch_run_links.dart';
+import '../features/watch_link/watch_run_link.dart';
 
 /// Dashboard shell (tabs + sub-routes) shown after local guest login.
 ///
@@ -41,6 +43,7 @@ class AuthenticatedApp extends ConsumerStatefulWidget {
 class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
   GoRouter? _router;
   WalkingStepKeepAlive? _stepKeepAlive;
+  IncomingWatchRunLinks? _watchRunLinks;
 
   @override
   void initState() {
@@ -96,6 +99,23 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     unawaited(registerThisDevice(ref));
     unawaited(_syncProfileLanguage());
     unawaited(reportDeviceIntegrity(ref));
+    _watchRunLinks = IncomingWatchRunLinks();
+    unawaited(_openWatchRunLinks());
+  }
+
+  Future<void> _openWatchRunLinks() async {
+    final links = _watchRunLinks;
+    if (links == null) return;
+    void open(String raw) {
+      final parsed = WatchRunLink.parse(raw);
+      if (parsed == null || !mounted) return;
+      _router?.go(parsed.location);
+    }
+
+    final initial = await links.getInitialLink();
+    if (!mounted) return;
+    if (initial != null) open(initial);
+    links.listen(open);
   }
 
   /// Lets the server know which language this runner uses (for the admin).
@@ -140,6 +160,8 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     _stepKeepAlive = null;
     if (keepAlive != null) unawaited(keepAlive.detach());
     SoloPedometerForeground.attachRouter(null);
+    _watchRunLinks?.dispose();
+    _watchRunLinks = null;
     super.dispose();
   }
 

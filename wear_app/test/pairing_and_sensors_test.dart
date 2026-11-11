@@ -6,6 +6,8 @@ import 'package:share_run_wear/core/watch_platform.dart';
 import 'package:share_run_wear/main.dart';
 import 'package:share_run_wear/screens/watch_screens.dart';
 
+import 'support/watch_helpers.dart';
+
 class _FakeSensors implements WatchSensors {
   var snapshot = const SensorSnapshot();
   var started = 0;
@@ -72,12 +74,6 @@ class _RecordingPoster implements JsonPoster {
   }
 }
 
-/// 달리는 중 화면을 옆으로 밀어 조작 화면(일시정지됨)을 연다.
-Future<void> swipeToControls(WidgetTester tester) async {
-  await tester.fling(find.byType(PageView), const Offset(-400, 0), 2000);
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 400));
-}
 
 Future<void> _tapDigits(WidgetTester tester, String digits) async {
   for (final d in digits.split('')) {
@@ -156,8 +152,7 @@ void main() {
       ),
     ));
 
-    await tester.tap(find.byKey(StartFace.buttonKey));
-    await tester.pump();
+    await startRun(tester);
     expect(sensors.started, 1);
 
     sensors.snapshot = const SensorSnapshot(
@@ -188,9 +183,7 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 150));
 
-    await tester.tap(find.byKey(ControlsFace.stopKey));
-    await tester.pump();
-    await tester.pump();
+    await holdToStop(tester);
 
     expect(sensors.stopped, greaterThanOrEqualTo(1));
     expect(find.byKey(SummaryFace.confirmKey), findsOneWidget);
@@ -232,12 +225,11 @@ void main() {
       ),
     ));
 
-    await tester.tap(find.byKey(StartFace.buttonKey));
-    await tester.pump();
+    await startRun(tester);
     sensors.snapshot = const SensorSnapshot(distanceKm: 1.0);
     await tester.pump(const Duration(milliseconds: 150));
     await swipeToControls(tester);
-    await tester.tap(find.byKey(ControlsFace.stopKey));
+    await holdToStop(tester);
     await tester.pumpAndSettle();
 
     final uploaded = poster.calls.firstWhere(

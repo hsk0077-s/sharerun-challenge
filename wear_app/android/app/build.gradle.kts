@@ -83,3 +83,13 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // 시계 화면의 "달리기 시작" 타일
+    implementation("androidx.wear.tiles:tiles:1.4.1")
+    implementation("androidx.wear.protolayout:protolayout:1.2.1")
+    implementation("com.google.guava:guava:33.3.1-android")
+    implementation("androidx.wear:wear:1.3.0")
+    implementation("androidx.wear:wear-remote-interactions:1.1.0")
+    implementation("androidx.wear:wear-ongoing:1.0.0")
+}

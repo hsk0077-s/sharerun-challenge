@@ -88,7 +88,7 @@ void main() {
 
     await expectLater(account.pair('000000'), throwsA(isA<PairingRejected>()));
     expect(account.isPaired, isFalse);
-    expect(store.values.keys, ['watch.device_id']); // 같은 번호로 다시 연결하려고 남긴다
+    expect(store.values.keys, ['watch.device_id']);
     await expectLater(account.pair('12'), throwsA(isA<PairingRejected>()));
   });
 
@@ -137,7 +137,9 @@ void main() {
 
     expect(await account.idToken(), isNull);
     expect(account.isPaired, isFalse);
-    expect(store.values.keys, ['watch.device_id']); // 같은 번호로 다시 연결하려고 남긴다
+    // 같은 번호로 다시 연결하려고 번호를 남기고, 다시 연결해야 한다는 표시도 남긴다.
+    expect(store.values.keys.toSet(), {'watch.device_id', 'watch.reconnect_needed'});
+    expect(account.reconnectNeeded, isTrue);
   });
 
   test('a 401 refreshes the token once and sends the request again', () async {
@@ -271,6 +273,82 @@ void main() {
       throwsA(isA<PairingRejected>().having((e) => e.message, 'message', 'watch_limit')),
     );
     expect(account.isPaired, isFalse);
+  });
+
+  test('pairing remembers the tier animal and unpairing forgets it', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', const HttpReply(200, {
+        'uid': 'u1',
+        'nickname': '달림이',
+        'custom_token': 'custom-1',
+        'tier_code': 'wolf',
+      }))
+      ..on('signInWithCustomToken', _signedIn);
+    final store = MemoryStore();
+    final account = _account(poster, store);
+    await account.pair('482910');
+    expect(account.tierCode, 'wolf');
+
+    final again = _account(_FakePoster(), store);
+    await again.load();
+    expect(again.tierCode, 'wolf');
+
+    await again.rememberTier(null);
+    expect(again.tierCode, 'wolf');
+    await again.unpair();
+    expect(again.tierCode, isNull);
+    expect(store.values.containsKey('watch.tier_code'), isFalse);
+  });
+
+  test('an unrated account pairs without a tier', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn);
+    final account = _account(poster, MemoryStore());
+    await account.pair('482910');
+    expect(account.tierCode, isNull);
+  });
+
+  test('Firebase sign-in and refresh carry the Android app name and signing SHA-1', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn)
+      ..on('securetoken', const HttpReply(200, {'id_token': 'id-2', 'expires_in': '3600'}));
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: poster,
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+      signingCert: () async => 'E3D412ABE2178B6F771A38F63A09D8F36C568AB4',
+    );
+    await account.pair('482910');
+    await account.idToken(forceRefresh: true);
+
+    final firebase = poster.calls.where((c) => c.uri.host.endsWith('googleapis.com')).toList();
+    expect(firebase, hasLength(2));
+    for (final call in firebase) {
+      expect(call.headers['X-Android-Package'], 'com.sharerun.share_run_challenge');
+      expect(call.headers['X-Android-Cert'], 'E3D412ABE2178B6F771A38F63A09D8F36C568AB4');
+    }
+    final server = poster.calls.firstWhere((c) => c.uri.path == '/auth/watch-pair');
+    expect(server.headers.containsKey('X-Android-Cert'), isFalse);
+  });
+
+  test('refreshTier stores the tier the server returns now', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn)
+      ..on('/actions/watch/tier', const HttpReply(200, {'tier_code': 'snail'}));
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: poster,
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+    );
+    await account.pair('482910');
+    await account.refreshTier();
+    expect(account.tierCode, 'snail');
+    expect(poster.calls.any((c) => c.uri.path == '/actions/watch/tier'), isTrue);
   });
 }
 

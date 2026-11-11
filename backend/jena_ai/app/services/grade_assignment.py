@@ -343,3 +343,28 @@ def sandbag_pace(paces: list[int], finish_pace: int | None = None) -> bool:
     middle = ordered[len(ordered) // 2]
     fastest = ordered[0]
     return fastest < TURTLE_FAST_PACE_SEC and middle - fastest >= 90
+
+
+TIER_ANIMALS = ("turtle", "beagle", "wolf", "zebra", "cheetah")
+
+
+UNRATED_TIER = "snail"
+
+
+def tier_animal(grade_code, grade_rank=None) -> str | None:
+    """The watch's tier animal: the prefix of a ``gradeCode`` such as ``wolf_gold``.
+
+    An account with no grade yet is ``snail``, the same "not rated yet" the phone
+    shows. A missing code falls back to ``gradeRank`` (1..25). An unknown code
+    (an old animal name, junk) is None so the watch shows nothing made up.
+    """
+    if isinstance(grade_code, str) and grade_code.strip():
+        animal = grade_code.strip().lower().split("_", 1)[0]
+        if animal in TIER_ANIMALS:
+            return animal
+        return UNRATED_TIER if animal == UNRATED_TIER else None
+    if grade_code is not None and not isinstance(grade_code, str):
+        return None
+    if isinstance(grade_rank, (int, float)) and not isinstance(grade_rank, bool) and grade_rank >= 1:
+        return rank_code(int(grade_rank))[0].split("_", 1)[0]
+    return UNRATED_TIER

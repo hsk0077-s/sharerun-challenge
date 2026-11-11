@@ -143,3 +143,12 @@ class MemoryStore implements KeyValueStore {
   @override
   Future<void> delete(String key) async => values.remove(key);
 }
+
+/// 설치된 앱의 서명 인증서 SHA-1. 못 읽으면 null(로그인 요청에 앱 제한 머리말을 못 붙인다).
+Future<String?> readSigningCertSha1() async {
+  try {
+    return await const MethodChannel(watchSensorsChannel).invokeMethod<String>('signingCertSha1');
+  } catch (_) {
+    return null;
+  }
+}

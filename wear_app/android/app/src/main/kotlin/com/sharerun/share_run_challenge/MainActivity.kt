@@ -25,6 +25,7 @@ import io.flutter.plugin.common.MethodChannel
  * - consumeAutostart: 시계 타일로 열렸으면 한 번만 true. 앱이 이미 떠 있을 때 타일을 누르면 `autostartRequested`를 보낸다.
  * - `networkAvailable`(앱 쪽으로 보내는 알림): 인터넷이 (다시) 연결됐다.
  * - getString / putString / remove: 로그인 토큰과 기록 대기열을 앱 전용 저장소에 둔다.
+ * - signingCertSha1: 이 앱 서명 인증서의 SHA-1. Firebase 키의 안드로이드 앱 제한을 통과하려고 로그인 요청에 붙인다.
  */
 class MainActivity : FlutterActivity() {
     private var pendingPermissionResult: MethodChannel.Result? = null
@@ -133,11 +134,32 @@ class MainActivity : FlutterActivity() {
                 prefs().edit().remove(call.argument<String>("key")).apply()
                 result.success(null)
             }
+            "signingCertSha1" -> result.success(signingCertSha1())
             else -> result.notImplemented()
         }
     }
 
     private fun prefs() = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    /** 지금 설치된 앱의 서명 인증서 SHA-1(대문자 16진수). 못 읽으면 null. */
+    private fun signingCertSha1(): String? {
+        return try {
+            val signing = packageManager
+                .getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                .signingInfo ?: return null
+            val certs = if (signing.hasMultipleSigners()) {
+                signing.apkContentsSigners
+            } else {
+                signing.signingCertificateHistory
+            }
+            val cert = certs?.lastOrNull() ?: return null
+            java.security.MessageDigest.getInstance("SHA-1")
+                .digest(cert.toByteArray())
+                .joinToString("") { "%02X".format(it) }
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     /** 진동을 못 내는 기기에서도 앱이 멈추지 않도록 실패는 삼킨다. */
     private fun vibrate(pattern: List<Int>) {

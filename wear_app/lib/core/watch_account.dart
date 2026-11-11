@@ -91,11 +91,33 @@ class WatchAccount {
     DateTime Function()? clock,
     String baseUrl = kJenaBaseUrl,
     String apiKey = kFirebaseApiKey,
+    Future<String?> Function()? signingCert,
   })  : _store = store,
         _poster = poster ?? IoJsonPoster(),
         _clock = clock ?? DateTime.now,
         _baseUrl = baseUrl,
-        _apiKey = apiKey;
+        _apiKey = apiKey,
+        _signingCert = signingCert;
+
+  /// Firebase 키가 "이 안드로이드 앱만" 쓰도록 묶여 있어, 로그인 요청에 앱 이름과
+  /// 서명 SHA-1을 붙여야 Google이 받아 준다. 휴대폰 앱과 같은 패키지 이름이다.
+  static const androidPackage = 'com.sharerun.share_run_challenge';
+
+  final Future<String?> Function()? _signingCert;
+  String? _cert;
+
+  Future<Map<String, String>> _firebaseHeaders() async {
+    if (_cert == null && _signingCert != null) {
+      try {
+        _cert = await _signingCert();
+      } catch (_) {
+        _cert = null;
+      }
+    }
+    final cert = _cert;
+    if (cert == null || cert.isEmpty) return const {};
+    return {'X-Android-Package': androidPackage, 'X-Android-Cert': cert};
+  }
 
   static const _refreshKey = 'watch.refresh_token';
   static const _nicknameKey = 'watch.nickname';
@@ -211,6 +233,7 @@ class WatchAccount {
           'https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=$_apiKey',
         ),
         {'token': custom, 'returnSecureToken': true},
+        headers: await _firebaseHeaders(),
       );
     } catch (_) {
       throw const PairingUnavailable('offline');
@@ -248,6 +271,7 @@ class WatchAccount {
       reply = await _poster.post(
         Uri.parse('https://securetoken.googleapis.com/v1/token?key=$_apiKey'),
         {'grant_type': 'refresh_token', 'refresh_token': _refreshToken},
+        headers: await _firebaseHeaders(),
       );
     } catch (_) {
       return null;

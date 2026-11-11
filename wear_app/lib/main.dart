@@ -16,7 +16,7 @@ import 'screens/watch_screens.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final store = MethodChannelStore();
-  final account = WatchAccount(store: store);
+  final account = WatchAccount(store: store, signingCert: readSigningCertSha1);
   await account.load();
   final queueStore = QueueStore(store);
   final queue = await queueStore.load();

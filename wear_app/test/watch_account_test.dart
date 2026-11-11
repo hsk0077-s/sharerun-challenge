@@ -308,5 +308,30 @@ void main() {
     await account.pair('482910');
     expect(account.tierCode, isNull);
   });
+
+  test('Firebase sign-in and refresh carry the Android app name and signing SHA-1', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn)
+      ..on('securetoken', const HttpReply(200, {'id_token': 'id-2', 'expires_in': '3600'}));
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: poster,
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+      signingCert: () async => 'E3D412ABE2178B6F771A38F63A09D8F36C568AB4',
+    );
+    await account.pair('482910');
+    await account.idToken(forceRefresh: true);
+
+    final firebase = poster.calls.where((c) => c.uri.host.endsWith('googleapis.com')).toList();
+    expect(firebase, hasLength(2));
+    for (final call in firebase) {
+      expect(call.headers['X-Android-Package'], 'com.sharerun.share_run_challenge');
+      expect(call.headers['X-Android-Cert'], 'E3D412ABE2178B6F771A38F63A09D8F36C568AB4');
+    }
+    final server = poster.calls.firstWhere((c) => c.uri.path == '/auth/watch-pair');
+    expect(server.headers.containsKey('X-Android-Cert'), isFalse);
+  });
 }
 

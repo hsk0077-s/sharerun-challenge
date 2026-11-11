@@ -246,8 +246,15 @@ void main() {
         find.descendant(of: find.byKey(StartFace.tierKey), matching: find.byType(WatchIcon)),
         findsOneWidget,
       );
-      await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'snail'), const Size(396, 396));
+      await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'maltese'), const Size(396, 396));
       expect(find.byKey(StartFace.tierKey), findsNothing);
+    });
+
+    testWidgets('등급이 없으면(snail) 달팽이 그림과 "평가 전"을 보여 준다', (tester) async {
+      await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'snail'), const Size(396, 396));
+      expect(find.byKey(StartFace.tierKey), findsOneWidget);
+      expect(find.text('평가 전'), findsOneWidget);
+      expect(WatchIconNames.tier('snail'), 'icon_tier_snail');
     });
 
     testWidgets('GPS·티어 그림이 화면에 붙는다(그림 파일을 쓴다)', (tester) async {

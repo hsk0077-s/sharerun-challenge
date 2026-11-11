@@ -1887,7 +1887,8 @@ class SecuredActionService:
             donation_reason=donation_reason,
             donation_cap_reached=cap_reached,
             tier_code=tier_animal(
-                user_updates.get("gradeCode") or user.get("gradeCode")
+                user_updates.get("gradeCode") or user.get("gradeCode"),
+                user_updates.get("gradeRank") or user.get("gradeRank"),
             ),
         )
 

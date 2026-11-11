@@ -127,7 +127,11 @@ class StartFace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tier = tierName?.trim();
+    final named = tierName?.trim();
+    // 등급이 아직 없으면(달팽이) 휴대폰과 같이 "평가 전"이라고 쓴다.
+    final tier = (named != null && named.isNotEmpty)
+        ? named
+        : (tierCode == 'snail' ? watchUi(_locale(), 'unrated') : null);
     return RoundFace(
       builder: (context, s) {
         final d = buttonFraction * s;

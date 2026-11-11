@@ -228,11 +228,24 @@ def test_tier_animals_cover_the_ladder() -> None:
     assert codes == {"turtle", "beagle", "wolf", "zebra", "cheetah"}
 
 
-def test_tier_animal_is_the_grade_prefix_and_unrated_is_none() -> None:
+def test_tier_animal_is_the_grade_prefix_and_unrated_is_snail() -> None:
     from app.services.grade_assignment import tier_animal
 
     assert tier_animal("wolf_gold") == "wolf"
     assert tier_animal("cheetah_master") == "cheetah"
     assert tier_animal(" Turtle_Bronze ") == "turtle"
-    for unrated in (None, "", "snail", "snail_bronze", "horse_gold", 3):
-        assert tier_animal(unrated) is None
+    for unrated in (None, "", "  ", "snail", "snail_bronze"):
+        assert tier_animal(unrated) == "snail"
+    for unknown in ("horse_gold", "maltese_silver", 3):
+        assert tier_animal(unknown) is None
+
+
+def test_tier_animal_falls_back_to_grade_rank_when_code_is_missing() -> None:
+    from app.services.grade_assignment import tier_animal
+
+    assert tier_animal(None, 1) == "turtle"
+    assert tier_animal(None, 7) == "beagle"
+    assert tier_animal("", 25) == "cheetah"
+    assert tier_animal(None, 0) == "snail"
+    assert tier_animal(None, True) == "snail"
+    assert tier_animal("zebra_gold", 1) == "zebra"

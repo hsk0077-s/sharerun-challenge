@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
@@ -93,11 +94,14 @@ class MainActivity : FlutterActivity() {
                 } catch (_: Exception) {
                     // 서비스를 못 켜도 앞에 떠 있는 동안은 수집이 이어진다.
                 }
+                // 달리는 동안 화면이 꺼지며 시계 화면으로 돌아가지 않게 켜 둔다. 끝나면 푼다.
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 result.success(WatchTracker.snapshot())
             }
             "stopTracking" -> {
                 WatchTracker.stop()
                 TrackingService.stop(this)
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                 result.success(null)
             }
             "readSnapshot" -> result.success(WatchTracker.snapshot())

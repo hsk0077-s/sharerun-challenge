@@ -204,7 +204,11 @@ def pair(
 
     profile = identities._user_profile(db, uid)
     nickname = identities._nickname(profile)
-    tier = tier_animal(profile.get("gradeCode")) if isinstance(profile, dict) else None
+    tier = (
+        tier_animal(profile.get("gradeCode"), profile.get("gradeRank"))
+        if isinstance(profile, dict)
+        else None
+    )
     return {
         "uid": uid,
         "nickname": nickname,

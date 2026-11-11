@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 /// 파일이 없을 때만 기본 아이콘을 그린다(그림을 빼도 화면이 깨지지 않게).
 /// 달리며 쌓이는 표시는 SHARE뿐이다. 다이아 아이콘은 없다.
 abstract final class WatchIconNames {
+  static const tierSnail = 'icon_tier_snail';
   static const tierTurtle = 'icon_tier_turtle';
   static const tierBeagle = 'icon_tier_beagle';
   static const tierWolf = 'icon_tier_wolf';
@@ -18,6 +19,7 @@ abstract final class WatchIconNames {
 
   /// 티어 동물 코드(`turtle` …)의 아이콘 이름. 모르는 코드면 null.
   static String? tier(String? code) => switch (code) {
+        'snail' => tierSnail,
         'turtle' => tierTurtle,
         'beagle' => tierBeagle,
         'wolf' => tierWolf,

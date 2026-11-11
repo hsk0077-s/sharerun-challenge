@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../data/models/activity_model.dart';
-import '../features/watch_link/watch_run_link_copy.dart';
+import '../l10n/watch_run_link_copy.dart';
 
 /// 워치에서 "폰에서 자세히 보기"로 연 달리기 기록.
 ///

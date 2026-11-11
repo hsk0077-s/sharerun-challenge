@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_challenge/app/router/route_names.dart';
 import 'package:share_run_challenge/features/watch_link/watch_run_link.dart';
-import 'package:share_run_challenge/features/watch_link/watch_run_link_copy.dart';
+import 'package:share_run_challenge/l10n/watch_run_link_copy.dart';
 
 void main() {
   group('WatchRunLink.parse', () {

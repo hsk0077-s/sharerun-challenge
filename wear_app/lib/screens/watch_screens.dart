@@ -412,10 +412,19 @@ class RunningFace extends StatelessWidget {
     this.passedKm,
     this.focus = 0,
     this.onCycle,
+    this.shareEarned,
+    this.tierCode,
     super.key,
   });
 
   final RunSession session;
+
+  /// 이번 달리기로 쌓인 SHARE. 값을 만들어 내는 곳이 아직 없으면 null이고, 그러면 숫자는 숨긴다.
+  /// (휴대폰 앱의 VALUE 계산이나 만보기 SHARE 공식은 쓰지 않는다.)
+  final int? shareEarned;
+
+  /// 내 티어 동물 코드(`turtle` …). 없으면 티어 얼굴은 숨긴다.
+  final String? tierCode;
 
   /// 화면에 보여 줄 현재 시각.
   final DateTime now;
@@ -436,6 +445,8 @@ class RunningFace extends StatelessWidget {
   static const paceKey = Key('watch-run-pace');
   static const elapsedKey = Key('watch-run-elapsed');
   static const arcKey = Key('watch-run-arc');
+  static const shareRowKey = Key('watch-run-share-row');
+  static const shareKey = Key('watch-run-share');
 
   /// 다음 1km까지의 진행(0~1).
   static double kmProgress(double distanceKm) {
@@ -533,6 +544,39 @@ class RunningFace extends StatelessWidget {
               _value(s, others[0], big: false),
               _value(s, others[1], big: false),
             ),
+            // 작은 숫자와 아래 호 사이: [티어 얼굴] [SHARE 동전] [숫자]. 값이 없으면 줄째 숨긴다.
+            if (shareEarned != null || WatchIconNames.tier(tierCode) != null)
+              zone(
+                s,
+                0.725,
+                0.82,
+                Row(
+                  key: shareRowKey,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (WatchIconNames.tier(tierCode) != null) ...[
+                      WatchIcon(
+                        WatchIconNames.tier(tierCode)!,
+                        size: s * 0.075,
+                        fallback: Icons.pets,
+                      ),
+                      SizedBox(width: s * 0.03),
+                    ],
+                    if (shareEarned != null) ...[
+                      WatchIcon(
+                        WatchIconNames.share,
+                        size: s * 0.075,
+                        fallback: Icons.monetization_on_outlined,
+                        color: const Color(0xFFFFC83D),
+                      ),
+                      SizedBox(width: s * 0.015),
+                      Text('$shareEarned',
+                          key: shareKey,
+                          style: _text(s, 0.07, weight: FontWeight.w700)),
+                    ],
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -593,28 +637,38 @@ class ControlsFace extends StatelessWidget {
   static const buttonFraction = 0.30;
 
   Widget _button(double s, Key key, Color color, String icon, IconData fallback,
-      String label, {VoidCallback? onTap, VoidCallback? onLongPress}) {
+      String label, {VoidCallback? onTap, VoidCallback? onHoldComplete}) {
     final d = s * buttonFraction;
+    final circle = SizedBox(
+      width: d,
+      height: d,
+      child: Material(
+        key: key,
+        color: color,
+        shape: const CircleBorder(),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: Center(
+            child: WatchIcon(icon, size: d * 0.5, fallback: fallback),
+          ),
+        ),
+      ),
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(
-          width: d,
-          height: d,
-          child: Material(
-            key: key,
-            color: color,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: onTap,
-              onLongPress: onLongPress,
-              child: Center(
-                child: WatchIcon(icon, size: d * 0.5, fallback: fallback),
-              ),
-            ),
+        if (onHoldComplete == null)
+          // 고리가 있는 종료 버튼과 높이를 맞추려고 같은 바깥 여백을 둔다.
+          Padding(padding: EdgeInsets.all(s * HoldRingButton.gapFraction), child: circle)
+        else
+          HoldRingButton(
+            diameter: d,
+            ringWidth: s * 0.012,
+            ringGap: s * HoldRingButton.gapFraction,
+            onComplete: onHoldComplete,
+            child: circle,
           ),
-        ),
         SizedBox(height: s * 0.02),
         SizedBox(
           width: d * 1.25,
@@ -651,7 +705,7 @@ class ControlsFace extends StatelessWidget {
                 // 실수로 끝나지 않게 길게 눌러야 끝난다.
                 _button(s, stopKey, watchRed, WatchIconNames.stop,
                     Icons.stop_rounded, watchUi(locale, 'holdToStop'),
-                    onLongPress: onFinish),
+                    onHoldComplete: onFinish),
                 SizedBox(width: s * 0.07),
                 _button(s, resumeKey, watchGreen, WatchIconNames.play,
                     Icons.play_arrow_rounded, watchUi(locale, 'resume'),
@@ -686,6 +740,129 @@ class ControlsFace extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 길게 눌러야 끝나는 버튼. 누르고 있는 동안 [holdDuration]에 걸쳐 바깥 고리가 0 → 1로 차고,
+/// 다 차면 [onComplete]를 한 번만 부른다. 다 차기 전에 손가락을 떼면 고리가 0으로 돌아가고
+/// 아무 일도 일어나지 않는다. 탭만으로는 끝나지 않는다.
+class HoldRingButton extends StatefulWidget {
+  const HoldRingButton({
+    required this.diameter,
+    required this.ringWidth,
+    required this.ringGap,
+    required this.onComplete,
+    required this.child,
+    this.holdDuration = const Duration(milliseconds: 800),
+    super.key,
+  });
+
+  /// 안쪽 버튼 지름.
+  final double diameter;
+  final double ringWidth;
+
+  /// 버튼과 고리 사이 바깥 여백(고리가 차지하는 폭 포함).
+  final double ringGap;
+  final VoidCallback onComplete;
+  final Widget child;
+  final Duration holdDuration;
+
+  /// 버튼 지름 대비 고리 바깥 여백 비율.
+  static const gapFraction = 0.022;
+  static const ringKey = Key('watch-hold-ring');
+
+  @override
+  State<HoldRingButton> createState() => _HoldRingButtonState();
+}
+
+class _HoldRingButtonState extends State<HoldRingButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: widget.holdDuration)
+        ..addStatusListener((status) {
+          if (status == AnimationStatus.completed && !_fired) {
+            _fired = true;
+            widget.onComplete();
+          }
+        });
+  var _fired = false;
+
+  /// 현재 고리 진행(0~1). 시험에서 읽는다.
+  double get progress => _controller.value;
+
+  void _down(PointerDownEvent _) {
+    _fired = false;
+    _controller.forward(from: 0);
+  }
+
+  void _release([PointerEvent? _]) {
+    // 끝나서 화면이 바뀐 뒤에 손가락을 떼면 이미 정리된 버튼이다.
+    if (!mounted) return;
+    _controller.value = 0;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final outer = widget.diameter + widget.ringGap * 2;
+    return Listener(
+      onPointerDown: _down,
+      onPointerUp: _release,
+      onPointerCancel: _release,
+      child: SizedBox(
+        width: outer,
+        height: outer,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) => CustomPaint(
+            key: HoldRingButton.ringKey,
+            foregroundPainter: _HoldRingPainter(
+              progress: _controller.value,
+              stroke: widget.ringWidth,
+            ),
+            child: child,
+          ),
+          child: Center(child: widget.child),
+        ),
+      ),
+    );
+  }
+}
+
+class _HoldRingPainter extends CustomPainter {
+  const _HoldRingPainter({required this.progress, required this.stroke});
+
+  final double progress;
+  final double stroke;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Rect.fromCircle(
+      center: size.center(Offset.zero),
+      radius: size.width / 2 - stroke / 2,
+    );
+    final track = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = stroke
+      ..color = const Color(0xFF2E2E2E);
+    final fill = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = stroke
+      ..color = watchInk;
+    canvas.drawArc(rect, 0, math.pi * 2, false, track);
+    if (progress > 0) {
+      canvas.drawArc(rect, -math.pi / 2, math.pi * 2 * progress.clamp(0.0, 1.0), false, fill);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HoldRingPainter old) => old.progress != progress || old.stroke != stroke;
 }
 
 // ───────────────────────── 대회 순위 알림 ─────────────────────────
@@ -911,12 +1088,17 @@ class SummaryFace extends StatelessWidget {
   const SummaryFace({
     required this.session,
     required this.onDone,
+    this.shareEarned,
     super.key,
   });
 
   final RunSession session;
   final VoidCallback onDone;
 
+  /// 이번 달리기로 쌓인 SHARE. 값이 없으면(null) 줄을 숨긴다. 공식을 워치에서 만들지 않는다.
+  final int? shareEarned;
+
+  static const shareKey = Key('watch-summary-share');
   static const distanceKey = Key('watch-summary-distance');
   static const timeKey = Key('watch-summary-time');
   static const paceKey = Key('watch-summary-pace');
@@ -966,12 +1148,33 @@ class SummaryFace extends StatelessWidget {
               ],
             ),
           ),
+          if (shareEarned != null)
+            zone(
+              s,
+              0.475,
+              0.545,
+              Row(
+                key: shareKey,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  WatchIcon(
+                    WatchIconNames.share,
+                    size: s * 0.06,
+                    fallback: Icons.monetization_on_outlined,
+                    color: const Color(0xFFFFC83D),
+                  ),
+                  SizedBox(width: s * 0.015),
+                  Text('+$shareEarned',
+                      style: _text(s, 0.06, weight: FontWeight.w700)),
+                ],
+              ),
+            ),
           if (points.length >= 2)
             Positioned(
               left: s * 0.33,
-              top: s * 0.49,
+              top: s * 0.555,
               width: s * 0.34,
-              height: s * 0.22,
+              height: s * 0.17,
               child: CustomPaint(
                 key: thumbKey,
                 painter: RoutePainter(

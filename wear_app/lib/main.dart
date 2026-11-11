@@ -62,6 +62,7 @@ class RunFlow extends StatefulWidget {
     this.events,
     this.tierName,
     this.tierCode,
+    this.shareEarned,
     this.countdownStep = const Duration(seconds: 1),
     this.draftEvery = 15,
     this.retryEvery = const Duration(minutes: 1),
@@ -91,6 +92,10 @@ class RunFlow extends StatefulWidget {
   /// 비어 있으면 시작 화면의 티어 줄은 숨긴다.
   final String? tierName;
   final String? tierCode;
+
+  /// 이번 달리기로 쌓인 SHARE. 워치에 SHARE 값을 내려 주는 길이 아직 없어 지금은 null이고,
+  /// null이면 화면의 SHARE 표시는 숨긴다. 가짜 숫자를 넣지 않는다.
+  final int? shareEarned;
 
   /// 시작을 누른 뒤 3·2·1 사이의 간격.
   final Duration countdownStep;
@@ -424,6 +429,8 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
           now: _now(),
           passedKm: _bannerKm,
           focus: _focus,
+          shareEarned: widget.shareEarned,
+          tierCode: widget.tierCode,
           onCycle: () => setState(() => _focus = (_focus + 1) % RunningFace.metricCount),
           onPause: _pause,
           onResume: _resume,
@@ -432,6 +439,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
       case RunPhase.finished:
         return SummaryFace(
           session: _session,
+          shareEarned: widget.shareEarned,
           onDone: () => setState(() {
             _session = RunSession(clock: widget.clock);
             _bannerKm = null;
@@ -458,8 +466,12 @@ class RunPager extends StatefulWidget {
     this.passedKm,
     this.focus = 0,
     this.onCycle,
+    this.shareEarned,
+    this.tierCode,
   });
 
+  final int? shareEarned;
+  final String? tierCode;
   final RunSession session;
   final bool paused;
   final DateTime now;
@@ -516,6 +528,8 @@ class _RunPagerState extends State<RunPager> {
             passedKm: widget.passedKm,
             focus: widget.focus,
             onCycle: widget.onCycle,
+            shareEarned: widget.shareEarned,
+            tierCode: widget.tierCode,
           ),
           ControlsFace(onResume: widget.onResume, onFinish: widget.onFinish),
         ],

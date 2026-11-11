@@ -31,7 +31,11 @@ Future<void> swipeToRoute(WidgetTester tester) async {
 
 /// 길게 눌러 종료한다(조작 화면에서).
 Future<void> holdToStop(WidgetTester tester) async {
-  await tester.longPress(find.byKey(ControlsFace.stopKey));
+  final gesture = await tester.startGesture(tester.getCenter(find.byKey(ControlsFace.stopKey)));
+  // 고리가 다 차려면 약 800ms 누르고 있어야 한다(첫 프레임은 시작 시각만 잡는다).
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 900));
+  await gesture.up();
   await tester.pump();
   await tester.pump();
 }

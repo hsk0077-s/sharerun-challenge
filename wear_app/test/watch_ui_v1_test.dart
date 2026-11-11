@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:share_run_wear/core/watch_haptics.dart';
 import 'package:share_run_wear/core/watch_platform.dart';
 import 'package:share_run_wear/l10n/watch_copy.dart';
 import 'package:share_run_wear/main.dart';
+import 'package:share_run_wear/screens/watch_icons.dart';
 import 'package:share_run_wear/screens/watch_screens.dart';
 
 import 'support/watch_helpers.dart';
@@ -237,14 +239,43 @@ void main() {
       expect(find.text('비글 실버'), findsOneWidget);
     });
 
-    testWidgets('그림이 없으면 아이콘 자리표시가 그려진다', (tester) async {
+    testWidgets('GPS·티어 그림이 화면에 붙는다(그림 파일을 쓴다)', (tester) async {
       await _pumpFace(
         tester,
         StartFace(onStart: () {}, tierName: '늑대 브론즈', tierCode: 'wolf'),
         const Size(396, 396),
       );
-      expect(find.byIcon(Icons.pets), findsOneWidget);
-      expect(find.byIcon(Icons.gps_fixed), findsOneWidget);
+      expect(find.byKey(StartFace.gpsKey), findsOneWidget);
+      expect(find.byKey(StartFace.tierKey), findsOneWidget);
+      expect(find.descendant(of: find.byKey(StartFace.gpsKey), matching: find.byType(Image)), findsOneWidget);
+      expect(
+        find.descendant(of: find.byKey(StartFace.tierKey), matching: find.byType(WatchIcon)),
+        findsOneWidget,
+      );
+    });
+
+    test('그림 파일이 모두 있고 이름이 약속과 같다(다이아 그림은 없다)', () {
+      const files = [
+        'icon_tier_turtle', 'icon_tier_beagle', 'icon_tier_wolf', 'icon_tier_zebra',
+        'icon_tier_cheetah', 'icon_share', 'btn_play', 'btn_pause', 'btn_stop', 'icon_gps',
+      ];
+      for (final name in files) {
+        expect(File('assets/images/watch/$name.png').existsSync(), isTrue, reason: name);
+      }
+      expect(File('assets/images/watch/icon_diamond.png').existsSync(), isFalse);
+      expect(File('assets/images/watch/icon_hr.png').existsSync(), isFalse);
+      expect(WatchIconNames.share, 'icon_share');
+      expect(WatchIconNames.tier('turtle'), 'icon_tier_turtle');
+      expect(WatchIconNames.tier('beagle'), 'icon_tier_beagle');
+      expect(WatchIconNames.tier('wolf'), 'icon_tier_wolf');
+      expect(WatchIconNames.tier('zebra'), 'icon_tier_zebra');
+      expect(WatchIconNames.tier('cheetah'), 'icon_tier_cheetah');
+      expect(WatchIconNames.tier('maltese'), isNull);
+    });
+
+    test('그림이 없을 때의 대체 아이콘은 WatchIcon에 남아 있다', () {
+      const icon = WatchIcon('no_such_file', size: 10, fallback: Icons.pets);
+      expect(icon.fallback, Icons.pets);
     });
 
     testWidgets('조작 화면: 종료는 빨강, 재개는 초록, 페이지 점 두 개', (tester) async {
@@ -259,10 +290,22 @@ void main() {
       expect(tester.widget<Material>(find.byKey(ControlsFace.resumeKey)).color, watchGreen);
       expect(find.byKey(ControlsFace.dotsKey), findsOneWidget);
       await tester.tap(find.byKey(ControlsFace.resumeKey));
-      // 종료는 한 번 탭해서는 끝나지 않고, 길게 눌러야 끝난다.
+      // 종료는 한 번 탭해서는 끝나지 않고, 고리가 다 찰 때까지 누르고 있어야 끝난다.
       await tester.tap(find.byKey(ControlsFace.stopKey));
       expect(stopped, 0);
-      await tester.longPress(find.byKey(ControlsFace.stopKey));
+      final center = tester.getCenter(find.byKey(ControlsFace.stopKey));
+      var gesture = await tester.startGesture(center);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await gesture.up(); // 중간에 떼면 아무 일도 없다
+      await tester.pump();
+      expect(stopped, 0);
+      gesture = await tester.startGesture(center);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 900));
+      expect(stopped, 1); // 다 차는 순간 한 번
+      await tester.pump(const Duration(seconds: 2));
+      await gesture.up();
       expect((resumed, stopped), (1, 1));
     });
 
@@ -275,6 +318,74 @@ void main() {
       expect(formatElapsed(const Duration(seconds: 3723)), '1:02:03');
       expect(formatElapsed(const Duration(seconds: -5)), '0:00');
       expect(RunningFace.clockText(DateTime(2026, 1, 1, 7, 5)), '07:05');
+    });
+  });
+
+  group('SHARE 표시(다이아 아님)', () {
+    testWidgets('달리는 중: 값이 있으면 [티어][동전][숫자] 한 줄, 없으면 숨긴다', (tester) async {
+      await _pumpFace(
+        tester,
+        RunningFace(
+          session: _runningSession(km: 2.3),
+          now: DateTime(2026, 11, 10, 15, 7),
+          shareEarned: 120,
+          tierCode: 'cheetah',
+        ),
+        const Size(396, 396),
+      );
+      expect(find.byKey(RunningFace.shareRowKey), findsOneWidget);
+      expect(find.text('120'), findsOneWidget);
+      expect(find.descendant(of: find.byKey(RunningFace.shareRowKey), matching: find.byType(WatchIcon)), findsNWidgets(2));
+      expect(find.textContaining('다이아'), findsNothing);
+      expect(find.textContaining('DIA'), findsNothing);
+      expect(find.byIcon(Icons.diamond), findsNothing);
+      _expectInsideCircle(tester, const Size(396, 396));
+
+      await _pumpFace(
+        tester,
+        RunningFace(session: _runningSession(km: 2.3), now: DateTime(2026, 11, 10, 15, 7)),
+        const Size(396, 396),
+      );
+      expect(find.byKey(RunningFace.shareRowKey), findsNothing);
+      expect(find.byKey(RunningFace.shareKey), findsNothing);
+    });
+
+    testWidgets('달리는 중: 티어만 있고 SHARE 값이 없으면 숫자 없이 티어 얼굴만 보인다', (tester) async {
+      await _pumpFace(
+        tester,
+        RunningFace(session: _runningSession(), now: DateTime(2026, 11, 10, 15, 7), tierCode: 'wolf'),
+        const Size(396, 396),
+      );
+      expect(find.byKey(RunningFace.shareRowKey), findsOneWidget);
+      expect(find.byKey(RunningFace.shareKey), findsNothing);
+    });
+
+    testWidgets('요약: SHARE 값이 있으면 [동전][+숫자], 없으면 숨긴다. 기부·다이아 문구는 계속 없다', (tester) async {
+      await _pumpFace(
+        tester,
+        SummaryFace(session: _runningSession(km: 3)..replaceRoute(fakeRoute(30)), shareEarned: 340, onDone: () {}),
+        const Size(396, 396),
+      );
+      expect(find.byKey(SummaryFace.shareKey), findsOneWidget);
+      expect(find.text('+340'), findsOneWidget);
+      expect(find.textContaining('기부'), findsNothing);
+      expect(find.textContaining('다이아'), findsNothing);
+      expect(find.textContaining('DIA'), findsNothing);
+      expect(find.byKey(SummaryFace.thumbKey), findsOneWidget);
+      _expectInsideCircle(tester, const Size(396, 396));
+
+      await _pumpFace(tester, SummaryFace(session: _runningSession(km: 3), onDone: () {}), const Size(396, 396));
+      expect(find.byKey(SummaryFace.shareKey), findsNothing);
+    });
+
+    testWidgets('RunFlow는 SHARE 값을 만들어 내지 않는다: 값을 넘기지 않으면 어느 화면에도 숫자가 없다',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(home: RunFlow(queue: SyncQueue())));
+      await startRun(tester);
+      expect(find.byKey(RunningFace.shareKey), findsNothing);
+      await swipeToControls(tester);
+      await holdToStop(tester);
+      expect(find.byKey(SummaryFace.shareKey), findsNothing);
     });
   });
 

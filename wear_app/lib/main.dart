@@ -136,6 +136,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     final account = widget.account;
     if (account != null && account.isPaired) {
       unawaited(_upload());
+      unawaited(_refreshTier());
     }
     unawaited(_recoverDraft());
     widget.events?.onNetworkAvailable(() => unawaited(_upload()));
@@ -159,10 +160,19 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // 다시 앞으로 나오면 올리지 못한 기록을 올려 본다.
-    if (state == AppLifecycleState.resumed && _queue.length > 0) {
-      unawaited(_upload());
-    }
+    // 다시 앞으로 나오면 올리지 못한 기록을 올려 보고 등급도 다시 받는다.
+    if (state != AppLifecycleState.resumed) return;
+    if (_queue.length > 0) unawaited(_upload());
+    unawaited(_refreshTier());
+  }
+
+  /// 등급 동물을 서버에서 다시 받아, 바뀌었으면 화면을 고친다.
+  Future<void> _refreshTier() async {
+    final account = widget.account;
+    if (account == null || !account.isPaired) return;
+    final before = account.tierCode;
+    await account.refreshTier();
+    if (mounted && account.tierCode != before) setState(() {});
   }
 
   DateTime _now() => (widget.clock ?? DateTime.now)();

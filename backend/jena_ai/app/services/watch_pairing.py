@@ -216,3 +216,16 @@ def pair(
         "device_id": device,
         "tier_code": tier,
     }
+
+
+def current_tier(db, uid: str) -> dict:
+    """The tier animal the watch shows, read fresh from the account (read-only)."""
+    from app.services.grade_assignment import tier_animal
+
+    profile = identities._user_profile(db, uid)
+    tier = (
+        tier_animal(profile.get("gradeCode"), profile.get("gradeRank"))
+        if isinstance(profile, dict)
+        else None
+    )
+    return {"tier_code": tier}

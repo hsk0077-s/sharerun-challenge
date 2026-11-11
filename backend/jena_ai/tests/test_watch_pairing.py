@@ -226,3 +226,16 @@ def test_pair_tells_the_watch_its_tier_animal_and_snail_when_unrated() -> None:
     code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
     out = watch_pairing.pair(db, code, fb_auth=fb, now=NOW + timedelta(seconds=30))
     assert out["tier_code"] == "zebra"
+
+
+def test_current_tier_reads_the_account_fresh() -> None:
+    db, _ = _db_with_user()
+    assert watch_pairing.current_tier(db, "u1") == {"tier_code": "snail"}
+    db.store["users/u1"]["gradeCode"] = "beagle_gold"
+    assert watch_pairing.current_tier(db, "u1") == {"tier_code": "beagle"}
+
+
+def test_watch_token_may_ask_for_its_tier() -> None:
+    from app.services.auth_service import WATCH_ALLOWED_PATHS
+
+    assert "/actions/watch/tier" in WATCH_ALLOWED_PATHS

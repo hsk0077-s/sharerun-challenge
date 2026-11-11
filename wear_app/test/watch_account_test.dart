@@ -333,5 +333,22 @@ void main() {
     final server = poster.calls.firstWhere((c) => c.uri.path == '/auth/watch-pair');
     expect(server.headers.containsKey('X-Android-Cert'), isFalse);
   });
+
+  test('refreshTier stores the tier the server returns now', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn)
+      ..on('/actions/watch/tier', const HttpReply(200, {'tier_code': 'snail'}));
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: poster,
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+    );
+    await account.pair('482910');
+    await account.refreshTier();
+    expect(account.tierCode, 'snail');
+    expect(poster.calls.any((c) => c.uri.path == '/actions/watch/tier'), isTrue);
+  });
 }
 

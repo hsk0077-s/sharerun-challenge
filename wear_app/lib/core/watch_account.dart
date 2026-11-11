@@ -200,6 +200,15 @@ class WatchAccount {
   }
 
   /// 6자리 코드를 계정으로 바꾼다. 성공하면 [isPaired]가 true.
+  /// 앱을 열 때 서버에서 지금 등급 동물을 다시 받아 둔다. 실패하면 이전 값을 그대로 둔다.
+  Future<void> refreshTier() async {
+    if (!isPaired) return;
+    try {
+      final reply = await postSigned('/actions/watch/tier', const {});
+      if (reply != null && reply.ok) await rememberTier(reply.body['tier_code']);
+    } catch (_) {}
+  }
+
   Future<void> pair(String code) async {
     if (!configured) {
       throw const PairingUnavailable('no_server');

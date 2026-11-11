@@ -358,6 +358,12 @@ def submit_report(request: ReportRequest, uid: str = Depends(require_uid)) -> di
     )
 
 
+@router.post("/watch/tier")
+def watch_tier(uid: str = Depends(require_uid)) -> dict:
+    """The watch asks for its tier animal when it opens (the one call besides runs it may make)."""
+    return watch_pairing.current_tier(service.firebase_service.db, uid)
+
+
 @router.get("/watch-pairing/devices")
 def watch_pairing_devices(uid: str = Depends(require_uid)) -> dict:
     return watch_pairing.list_devices(service.firebase_service.db, uid)

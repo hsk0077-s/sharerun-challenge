@@ -29,6 +29,7 @@ Future<void> main() async {
       haptics: MethodChannelWatchHaptics(),
       events: MethodChannelWatchEvents(),
       phoneOpener: MethodChannelWatchPhoneOpener(),
+      returnControl: MethodChannelRunReturnControl(),
     ),
   ));
 }
@@ -68,6 +69,7 @@ class RunFlow extends StatefulWidget {
     this.draftEvery = 15,
     this.retryEvery = const Duration(minutes: 1),
     this.phoneOpener,
+    this.returnControl,
   });
 
   final SyncQueue? queue;
@@ -110,6 +112,9 @@ class RunFlow extends StatefulWidget {
 
   /// 결과 화면에서 폰의 이 기록 화면을 연다. 없으면 안내만 실패로 보여 준다(시험).
   final WatchPhoneOpener? phoneOpener;
+
+  /// 달리는 중에 시계 화면으로 나가면 잠시 뒤 달리기 화면으로 돌아오게 하는 네이티브 쪽. 없으면 없는 대로 돈다(시험).
+  final RunReturnControl? returnControl;
 
   @override
   State<RunFlow> createState() => _RunFlowState();
@@ -482,8 +487,21 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     return null;
   }
 
+  bool? _returnActive;
+
+  /// 달리는 중일 때만 자동 복귀를 켠다. 단계가 바뀔 때 한 번만 네이티브에 알린다.
+  void _syncAutoReturn() {
+    final control = widget.returnControl;
+    if (control == null) return;
+    final running = _session.phase == RunPhase.running;
+    if (_returnActive == running) return;
+    _returnActive = running;
+    unawaited(control.setActive(running));
+  }
+
   @override
   Widget build(BuildContext context) {
+    _syncAutoReturn();
     final account = widget.account;
     final countdown = _countdown;
     if (countdown != null && _session.phase == RunPhase.idle) {

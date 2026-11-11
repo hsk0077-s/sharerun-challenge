@@ -55,6 +55,17 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        RunReturn.onForeground(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // 달리는 중에 화면에서 사라졌다. 잠시 뒤 아직 나가 있으면 달리기 화면으로 돌아온다.
+        if (!isChangingConfigurations) RunReturn.onBackground(this)
+    }
+
     override fun onDestroy() {
         networkCallback?.let {
             try {
@@ -106,6 +117,15 @@ class MainActivity : FlutterActivity() {
                 WatchTracker.stop()
                 TrackingService.stop(this)
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                result.success(null)
+            }
+            "setRunActive" -> {
+                // 달리는 중일 때만 자동 복귀한다. 일시정지·종료·대기에서는 끈다.
+                if (call.argument<Boolean>("active") == true) {
+                    RunReturn.enabled = true
+                } else {
+                    RunReturn.reset(this)
+                }
                 result.success(null)
             }
             "readSnapshot" -> result.success(WatchTracker.snapshot())

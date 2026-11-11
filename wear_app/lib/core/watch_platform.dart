@@ -158,6 +158,28 @@ abstract class WatchPhoneOpener {
   Future<bool> open(String uri);
 }
 
+/// 달리는 중에 시계 화면 등으로 나가면 잠시 뒤 달리기 화면으로 돌아오게 할지 네이티브에 알린다.
+/// 달리는 중(일시정지·종료 아님)일 때만 true. 시험에서는 가짜로 바꾼다.
+abstract class RunReturnControl {
+  Future<void> setActive(bool active);
+}
+
+class MethodChannelRunReturnControl implements RunReturnControl {
+  MethodChannelRunReturnControl([MethodChannel? channel])
+      : _channel = channel ?? const MethodChannel(watchSensorsChannel);
+
+  final MethodChannel _channel;
+
+  @override
+  Future<void> setActive(bool active) async {
+    try {
+      await _channel.invokeMethod<void>('setRunActive', {'active': active});
+    } catch (_) {
+      // 알리지 못해도 달리기는 그대로 이어진다.
+    }
+  }
+}
+
 class MethodChannelWatchPhoneOpener implements WatchPhoneOpener {
   MethodChannelWatchPhoneOpener([MethodChannel? channel])
       : _channel = channel ?? const MethodChannel(watchSensorsChannel);

@@ -490,15 +490,16 @@ void main() {
       expect((await queueStore.load()).runs.single.activityId, 'draft_run');
     });
 
-    testWidgets('죽은 뒤 다시 켜면 임시 기록이 올릴 기록으로 되살아난다', (tester) async {
+    testWidgets('죽은 뒤 다시 켜면 달리는 화면으로 이어진다', (tester) async {
       final server = _Server()..online = true;
       final store = MemoryStore();
       final account = await _paired(server, store);
       final queueStore = QueueStore(store);
+      final savedAt = DateTime.now().toUtc().subtract(const Duration(seconds: 30));
       await queueStore.saveDraft(RunDraft(
         activityId: 'crashed_run',
-        startedAt: DateTime.utc(2026, 11, 10, 6),
-        savedAt: DateTime.utc(2026, 11, 10, 6, 20),
+        startedAt: savedAt.subtract(const Duration(seconds: 1180)),
+        savedAt: savedAt,
         movingSeconds: 1180,
         distanceKm: 3.1,
         route: fakeRoute(20),
@@ -507,15 +508,84 @@ void main() {
       await tester.pumpWidget(MaterialApp(
         home: RunFlow(account: account, queue: queue, queueStore: queueStore),
       ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(RunningFace.distanceKey), findsOneWidget);
+      expect(find.text('3.10'), findsOneWidget);
+      expect(queue.length, 0);
+      expect(server.validated, isEmpty);
+      expect(await queueStore.loadDraft(), isNotNull);
+
+      await swipeToControls(tester);
+      await holdToStop(tester);
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(SummaryFace.confirmKey), findsOneWidget);
       expect(server.validated, hasLength(1));
       final body = server.validated.single;
       expect(body['activity_id'], 'crashed_run');
       expect(body['distance_km'], 3.1);
-      expect(body['duration_seconds'], 1180);
       expect((body['gps_route']! as List), hasLength(20));
       expect(await queueStore.loadDraft(), isNull);
+    });
+
+    testWidgets('오래전에 멈춘 임시 기록은 이어 달리지 않고 올릴 기록으로 남는다', (tester) async {
+      final server = _Server()..online = true;
+      final store = MemoryStore();
+      final account = await _paired(server, store);
+      final queueStore = QueueStore(store);
+      await queueStore.saveDraft(RunDraft(
+        activityId: 'old_run',
+        startedAt: DateTime.utc(2026, 11, 10, 6),
+        savedAt: DateTime.utc(2026, 11, 10, 6, 20),
+        movingSeconds: 1180,
+        distanceKm: 3.1,
+        route: fakeRoute(20),
+      ));
+      final queue = SyncQueue();
+      await tester.pumpWidget(MaterialApp(
+        home: RunFlow(
+          account: account,
+          queue: queue,
+          queueStore: queueStore,
+          clock: () => DateTime.utc(2026, 11, 11, 6),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(find.byKey(RunningFace.distanceKey), findsNothing);
+      expect(server.validated, hasLength(1));
+      expect(server.validated.single['activity_id'], 'old_run');
+      expect(await queueStore.loadDraft(), isNull);
+    });
+
+    testWidgets('센서가 0부터 다시 시작해도 저장된 거리에 이어서 쌓는다', (tester) async {
+      final store = MemoryStore();
+      final queueStore = QueueStore(store);
+      final savedAt = DateTime.now().toUtc().subtract(const Duration(seconds: 20));
+      await queueStore.saveDraft(RunDraft(
+        activityId: 'resumed_run',
+        startedAt: savedAt.subtract(const Duration(seconds: 600)),
+        savedAt: savedAt,
+        movingSeconds: 600,
+        distanceKm: 2,
+        steps: 100,
+        route: fakeRoute(10),
+      ));
+      final sensors = FakeSensors()
+        ..snapshot = SensorSnapshot(distanceKm: 0.3, steps: 40, hasGps: true, route: fakeRoute(3));
+      await tester.pumpWidget(MaterialApp(
+        home: RunFlow(
+          queue: SyncQueue(),
+          queueStore: queueStore,
+          sensors: sensors,
+          pollInterval: const Duration(milliseconds: 100),
+        ),
+      ));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.text('2.30'), findsOneWidget);
     });
 
     test('거리가 없는 임시 기록은 올릴 기록이 되지 않고, 깨진 저장값은 무시한다', () {

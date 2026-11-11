@@ -55,4 +55,24 @@ void main() {
       ..resume();
     expect(session.phase, RunPhase.finished);
   });
+
+  test('restore brings back a mid-run session so the clock keeps moving', () {
+    final started = DateTime.utc(2026, 11, 10, 6);
+    session.restore(
+      startedAt: started,
+      moving: const Duration(seconds: 1180),
+      distanceKm: 3.1,
+      steps: 90,
+      heartRates: const [150],
+    );
+    expect(session.phase, RunPhase.running);
+    expect(session.distanceKm, 3.1);
+    expect(session.steps, 90);
+    expect(session.startedAt, started);
+    expect(session.movingTime, const Duration(seconds: 1180));
+    now = now.add(const Duration(seconds: 20));
+    expect(session.movingTime, const Duration(seconds: 1200));
+    session.addDistance(0.2);
+    expect(session.distanceKm, closeTo(3.3, 1e-9));
+  });
 }

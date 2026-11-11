@@ -28,6 +28,15 @@ abstract final class RouteNames {
   /// 실전 라이브 러닝 트래커 (Jena 검증 파이프라인).
   static const inChallenge = '/in-challenge';
   static const runResult = '/run-result';
+
+  /// 워치에서 연 달리기 기록 (`sharerun://run/<id>`).
+  static const watchRunRecord = '/watch-run';
+
+  static String watchRunRecordFor(String activityId) {
+    final id = activityId.trim();
+    if (id.isEmpty) return watchRunRecord;
+    return '$watchRunRecord?id=${Uri.encodeComponent(id)}';
+  }
   static const onboardingMyPage = '/onboarding-my-page';
   static const onboardingStoreFunding = '/onboarding-store-funding';
   static const tournament = '/tournament';

@@ -28,6 +28,7 @@ Future<void> main() async {
       queueStore: queueStore,
       haptics: MethodChannelWatchHaptics(),
       events: MethodChannelWatchEvents(),
+      phoneOpener: MethodChannelWatchPhoneOpener(),
     ),
   ));
 }
@@ -66,6 +67,7 @@ class RunFlow extends StatefulWidget {
     this.countdownStep = const Duration(seconds: 1),
     this.draftEvery = 15,
     this.retryEvery = const Duration(minutes: 1),
+    this.phoneOpener,
   });
 
   final SyncQueue? queue;
@@ -106,6 +108,9 @@ class RunFlow extends StatefulWidget {
   /// 올리지 못한 기록이 있으면 이 간격으로 다시 올려 본다(앱이 켜져 있는 동안).
   final Duration retryEvery;
 
+  /// 결과 화면에서 폰의 이 기록 화면을 연다. 없으면 안내만 실패로 보여 준다(시험).
+  final WatchPhoneOpener? phoneOpener;
+
   @override
   State<RunFlow> createState() => _RunFlowState();
 }
@@ -129,6 +134,14 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   var _skippedPairing = false;
   var _polling = false;
 
+  /// 이 시간보다 오래 전에 저장된 임시 기록은 이어 달리지 않는다.
+  static const _staleDraftAge = Duration(hours: 6);
+
+  /// 이어 달리기 직후 첫 센서 값을 읽을 때까지 들고 있는 저장 기록.
+  RunDraft? _restoreBase;
+  List<GpsFix> _routePrefix = const [];
+  int _stepOffset = 0;
+
   @override
   void initState() {
     super.initState();
@@ -138,10 +151,9 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
       unawaited(_upload());
       unawaited(_refreshTier());
     }
-    unawaited(_recoverDraft());
     widget.events?.onNetworkAvailable(() => unawaited(_upload()));
     widget.events?.onAutostartRequested(_beginCountdown);
-    unawaited(_checkAutostart());
+    unawaited(_boot());
     _retry = Timer.periodic(widget.retryEvery, (_) {
       if (_queue.length > 0) unawaited(_upload());
     });
@@ -154,7 +166,11 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     _ticker?.cancel();
     _retry?.cancel();
     _countdownTimer?.cancel();
-    unawaited(widget.sensors?.stop());
+    // 달리기가 끝나지 않았으면 센서·포그라운드 서비스를 끄지 않는다.
+    // 화면이 사라져도 기록이 이어지고, 다시 열면 달리는 화면으로 돌아온다.
+    if (_session.phase != RunPhase.running && _session.phase != RunPhase.paused) {
+      unawaited(widget.sensors?.stop());
+    }
     super.dispose();
   }
 
@@ -180,21 +196,74 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   void _buzz(List<int> pattern) =>
       unawaited(widget.haptics?.pattern(pattern) ?? Future<void>.value());
 
-  /// 달리는 도중 앱이 죽었다면 임시 기록을 올릴 기록으로 되살린다.
+  /// 임시 기록을 먼저 되살린 뒤에만 타일 자동 시작을 받는다.
+  Future<void> _boot() async {
+    await _recoverDraft();
+    if (!mounted) return;
+    if (_session.phase == RunPhase.idle) {
+      await _checkAutostart();
+    }
+  }
+
+  /// 달리는 중에 화면이 사라졌다가 다시 켜지면, 임시 기록을 이어서 달린다.
   Future<void> _recoverDraft() async {
     final store = widget.queueStore;
     if (store == null) return;
     final draft = await store.loadDraft();
     if (draft == null || _runId != null) return;
-    final run = draft.toPendingRun();
-    if (run != null) {
-      _queue.add(run);
-      await store.save(_queue);
+    if (_session.phase != RunPhase.idle) return;
+    // 이미 종료되어 대기열에 들어간 기록이면 이어 달리지 않는다.
+    if (_queue.runs.any((run) => run.activityId == draft.activityId)) {
+      await store.clearDraft();
+      if (mounted) setState(() {});
+      return;
     }
-    await store.clearDraft();
+    // 오래전에 멈춘 기록(저장 뒤 한참 지남)은 이어 달리지 않고, 여기까지를 올릴 기록으로 남긴다.
+    if (_now().difference(draft.savedAt) > _staleDraftAge) {
+      final run = draft.toPendingRun();
+      if (run != null) {
+        _queue.add(run);
+        await store.save(_queue);
+      }
+      await store.clearDraft();
+      if (!mounted) return;
+      setState(() {});
+      unawaited(_upload());
+      return;
+    }
+    _runId = draft.activityId;
+    _restoreBase = draft;
+    _lastKm = draft.distanceKm;
+    _wholeKm = draft.distanceKm.floor();
+    _session.restore(
+      startedAt: draft.startedAt,
+      moving: Duration(seconds: draft.movingSeconds),
+      distanceKm: draft.distanceKm,
+      steps: draft.steps,
+      heartRates: draft.heartRates,
+      route: draft.route,
+      paceSamples: draft.paceSamples,
+    );
+    await _resumeSensors();
     if (!mounted) return;
     setState(() {});
-    unawaited(_upload());
+  }
+
+  Future<void> _resumeSensors() async {
+    final sensors = widget.sensors;
+    if (sensors == null) {
+      _startTicker();
+      return;
+    }
+    try {
+      await sensors.requestPermissions();
+      await sensors.start();
+    } catch (_) {
+      // 센서를 못 켜도 저장된 거리·시간은 이어서 보여 준다.
+    }
+    _poller?.cancel();
+    _poller = Timer.periodic(widget.pollInterval, (_) => _poll());
+    _startTicker();
   }
 
   /// 시계 타일로 열렸으면 바로 카운트다운을 시작한다.
@@ -300,6 +369,9 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     }
     if (!mounted) return;
     _runId = _id();
+    _restoreBase = null;
+    _routePrefix = const [];
+    _stepOffset = 0;
     _wholeKm = 0;
     _bannerKm = null;
     _bannerUntil = null;
@@ -316,13 +388,24 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     try {
       final snap = await sensors.read();
       if (!mounted) return;
+      final restored = _restoreBase;
+      if (restored != null) {
+        _restoreBase = null;
+        // 이어 달릴 때 센서가 새로 시작돼 0부터 세고 있으면(앱 프로세스가 죽었던 경우),
+        // 저장해 둔 거리·걸음·경로 뒤에 이어 붙인다. 센서가 계속 돌고 있었으면 그대로 쓴다.
+        if (snap.distanceKm + 1e-6 < restored.distanceKm) {
+          _lastKm = 0;
+          _routePrefix = restored.route;
+          _stepOffset = restored.steps;
+        }
+      }
       setState(() {
         // 일시정지 중에 늘어난 거리는 기준만 옮기고 버린다.
-        _session.replaceRoute(snap.route);
+        _session.replaceRoute([..._routePrefix, ...snap.route]);
         _session.addDistance(snap.distanceKm - _lastKm);
         _lastKm = snap.distanceKm;
         if (snap.heartRate > 0) _session.addHeartRate(snap.heartRate);
-        _session.setSteps(snap.steps);
+        _session.setSteps(_stepOffset + snap.steps);
         // 1km를 지날 때마다 긴 진동 1회와 잠깐 안내.
         final whole = _session.distanceKm.floor();
         if (whole > _wholeKm) {
@@ -450,6 +533,8 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
         return SummaryFace(
           session: _session,
           shareEarned: widget.shareEarned,
+          activityId: _runId,
+          phoneOpener: widget.phoneOpener,
           onDone: () => setState(() {
             _session = RunSession(clock: widget.clock);
             _bannerKm = null;

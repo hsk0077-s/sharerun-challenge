@@ -11,6 +11,10 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.WindowManager
+import android.net.Uri
+import androidx.core.content.ContextCompat
+import androidx.wear.remote.interactions.RemoteActivityHelper
+import androidx.wear.widget.ConfirmationOverlay
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
@@ -139,11 +143,54 @@ class MainActivity : FlutterActivity() {
                 result.success(null)
             }
             "signingCertSha1" -> result.success(signingCertSha1())
+            "openOnPhone" -> openOnPhone(call.argument("uri"), result)
             else -> result.notImplemented()
         }
     }
 
     private fun prefs() = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    /** 페어링된 폰에서 [uriString]을 연다. 실패해도 앱은 멈추지 않는다. */
+    private fun openOnPhone(uriString: String?, result: MethodChannel.Result) {
+        if (uriString.isNullOrBlank()) {
+            result.success(false)
+            return
+        }
+        val uri = try {
+            Uri.parse(uriString)
+        } catch (_: Exception) {
+            result.success(false)
+            return
+        }
+        if (uri.scheme != "sharerun") {
+            result.success(false)
+            return
+        }
+        try {
+            val intent = Intent(Intent.ACTION_VIEW)
+                .addCategory(Intent.CATEGORY_BROWSABLE)
+                .setData(uri)
+            val future = RemoteActivityHelper(this).startRemoteActivity(intent)
+            future.addListener({
+                try {
+                    future.get()
+                    runOnUiThread {
+                        try {
+                            ConfirmationOverlay()
+                                .setType(ConfirmationOverlay.OPEN_ON_PHONE_ANIMATION)
+                                .showOn(this)
+                        } catch (_: Exception) {
+                        }
+                        result.success(true)
+                    }
+                } catch (_: Exception) {
+                    runOnUiThread { result.success(false) }
+                }
+            }, ContextCompat.getMainExecutor(this))
+        } catch (_: Exception) {
+            result.success(false)
+        }
+    }
 
     /** 지금 설치된 앱의 서명 인증서 SHA-1(대문자 16진수). 못 읽으면 null. */
     private fun signingCertSha1(): String? {

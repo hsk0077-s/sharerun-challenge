@@ -152,3 +152,25 @@ Future<String?> readSigningCertSha1() async {
     return null;
   }
 }
+
+/// 페어링된 폰에서 주소를 연다. 시험에서는 가짜로 바꾼다.
+abstract class WatchPhoneOpener {
+  Future<bool> open(String uri);
+}
+
+class MethodChannelWatchPhoneOpener implements WatchPhoneOpener {
+  MethodChannelWatchPhoneOpener([MethodChannel? channel])
+      : _channel = channel ?? const MethodChannel(watchSensorsChannel);
+
+  final MethodChannel _channel;
+
+  @override
+  Future<bool> open(String uri) async {
+    try {
+      final ok = await _channel.invokeMethod<bool>('openOnPhone', {'uri': uri});
+      return ok == true;
+    } catch (_) {
+      return false;
+    }
+  }
+}

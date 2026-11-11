@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/run_session.dart';
 import '../core/watch_platform.dart';
+import '../core/watch_run_link.dart';
 import '../l10n/watch_copy.dart';
 import 'watch_icons.dart';
 
@@ -1087,12 +1088,14 @@ class RouteFace extends StatelessWidget {
 // ───────────────────────── ⑤ 결과 요약 ─────────────────────────
 
 /// 위 "러닝 종료"(소), 총 거리(대), 시간과 평균 페이스(중), 경로 선 썸네일,
-/// "자세한 건 폰에서 보기", 아래 확인 버튼.
-class SummaryFace extends StatelessWidget {
+/// "자세한 건 폰에서 보기"(누르면 폰에서 이 기록을 연다), 아래 확인 버튼.
+class SummaryFace extends StatefulWidget {
   const SummaryFace({
     required this.session,
     required this.onDone,
     this.shareEarned,
+    this.activityId,
+    this.phoneOpener,
     super.key,
   });
 
@@ -1102,18 +1105,57 @@ class SummaryFace extends StatelessWidget {
   /// 이번 달리기로 쌓인 SHARE. 값이 없으면(null) 줄을 숨긴다. 공식을 워치에서 만들지 않는다.
   final int? shareEarned;
 
+  /// 방금 끝낸 달리기의 activity id. 폰에서 같은 기록을 열 때 쓴다.
+  final String? activityId;
+
+  /// 페어링된 폰에서 주소를 연다. 없으면 실패 안내만 보여 준다.
+  final WatchPhoneOpener? phoneOpener;
+
   static const shareKey = Key('watch-summary-share');
   static const distanceKey = Key('watch-summary-distance');
   static const timeKey = Key('watch-summary-time');
   static const paceKey = Key('watch-summary-pace');
   static const thumbKey = Key('watch-summary-route');
   static const phoneHintKey = Key('watch-summary-phone');
+  static const phoneMessageKey = Key('watch-summary-phone-msg');
   static const confirmKey = Key('watch-summary-confirm');
+
+  @override
+  State<SummaryFace> createState() => _SummaryFaceState();
+}
+
+class _SummaryFaceState extends State<SummaryFace> {
+  String? _phoneMessage;
+  var _opening = false;
+
+  Future<void> _openOnPhone() async {
+    if (_opening) return;
+    setState(() => _opening = true);
+    final opener = widget.phoneOpener;
+    final locale = _locale();
+    var ok = false;
+    if (opener != null) {
+      try {
+        ok = await opener.open(buildWatchRunUri(widget.activityId));
+      } catch (_) {
+        ok = false;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _opening = false;
+      _phoneMessage =
+          watchUi(locale, ok ? 'openedOnPhone' : 'openOnPhoneFailed');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final locale = _locale();
+    final session = widget.session;
+    final shareEarned = widget.shareEarned;
     final points = routePoints(session.route);
+    final phoneLabel = _phoneMessage ?? watchUi(locale, 'seeOnPhone');
     return RoundFace(
       builder: (context, s) => Stack(
         children: [
@@ -1130,7 +1172,7 @@ class SummaryFace extends StatelessWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(formatKm(session.distanceKm),
-                    key: distanceKey, style: _text(s, 0.2, weight: FontWeight.w900)),
+                    key: SummaryFace.distanceKey, style: _text(s, 0.2, weight: FontWeight.w900)),
                 Text(' km', style: _text(s, 0.07, color: watchMuted)),
               ],
             ),
@@ -1140,14 +1182,14 @@ class SummaryFace extends StatelessWidget {
             0.37,
             0.47,
             Text(formatElapsed(session.movingTime),
-                key: timeKey, style: _text(s, 0.085, weight: FontWeight.w700)),
+                key: SummaryFace.timeKey, style: _text(s, 0.085, weight: FontWeight.w700)),
             Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(formatPace(session.paceSecondsPerKm),
-                    key: paceKey, style: _text(s, 0.085, weight: FontWeight.w700)),
+                    key: SummaryFace.paceKey, style: _text(s, 0.085, weight: FontWeight.w700)),
                 Text('/km', style: _text(s, 0.045, color: watchMuted)),
               ],
             ),
@@ -1158,7 +1200,7 @@ class SummaryFace extends StatelessWidget {
               0.475,
               0.545,
               Row(
-                key: shareKey,
+                key: SummaryFace.shareKey,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   WatchIcon(
@@ -1180,7 +1222,7 @@ class SummaryFace extends StatelessWidget {
               width: s * 0.34,
               height: s * 0.17,
               child: CustomPaint(
-                key: thumbKey,
+                key: SummaryFace.thumbKey,
                 painter: RoutePainter(
                   points: points,
                   stroke: s * 0.008,
@@ -1192,9 +1234,23 @@ class SummaryFace extends StatelessWidget {
             s,
             0.73,
             0.80,
-            Text(watchUi(locale, 'seeOnPhone'),
-                key: phoneHintKey,
-                style: _text(s, 0.048, color: watchMuted, weight: FontWeight.w500)),
+            GestureDetector(
+              key: SummaryFace.phoneHintKey,
+              behavior: HitTestBehavior.opaque,
+              onTap: _openOnPhone,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.smartphone, size: s * 0.05, color: watchMuted),
+                  SizedBox(width: s * 0.015),
+                  Text(
+                    phoneLabel,
+                    key: _phoneMessage == null ? null : SummaryFace.phoneMessageKey,
+                    style: _text(s, 0.048, color: watchMuted, weight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
           ),
           Positioned(
             top: 0.82 * s,
@@ -1202,12 +1258,12 @@ class SummaryFace extends StatelessWidget {
             width: s * 0.4,
             height: s * 0.11,
             child: Material(
-              key: confirmKey,
+              key: SummaryFace.confirmKey,
               color: watchGreen,
               shape: const StadiumBorder(),
               child: InkWell(
                 customBorder: const StadiumBorder(),
-                onTap: onDone,
+                onTap: widget.onDone,
                 child: Center(
                   child: Text(watchUi(locale, 'confirm'),
                       style: _text(s, 0.06, weight: FontWeight.w800)),

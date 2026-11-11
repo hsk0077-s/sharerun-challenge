@@ -126,6 +126,15 @@ class StartFace extends StatelessWidget {
   /// START 버튼 지름 비율(화면 지름 대비). 40% 이상이어야 한다.
   static const buttonFraction = 0.46;
 
+  /// START 버튼 윗변 위치(화면 지름 대비). 아래 티어 줄이 커진 만큼 버튼을 위로 올렸다.
+  static const buttonTop = 0.16;
+
+  /// 내 동물 아이콘 지름 비율(화면 지름 대비). 원형 화면 지름의 20%(450px 화면에서 90px).
+  static const tierIconFraction = 0.20;
+
+  /// 등급 이름 글자 크기 비율.
+  static const tierTextFraction = 0.10;
+
   @override
   Widget build(BuildContext context) {
     final named = tierName?.trim();
@@ -143,8 +152,8 @@ class StartFace extends StatelessWidget {
             children: [
               zone(
                 s,
-                0.07,
-                0.21,
+                0.03,
+                0.14,
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -166,7 +175,7 @@ class StartFace extends StatelessWidget {
               ),
               Positioned(
                 left: (s - d) / 2,
-                top: (s - d) / 2,
+                top: buttonTop * s,
                 width: d,
                 height: d,
                 child: Material(
@@ -186,8 +195,8 @@ class StartFace extends StatelessWidget {
               if ((tier != null && tier.isNotEmpty) || WatchIconNames.tier(tierCode) != null)
                 zone(
                   s,
-                  0.76,
-                  0.89,
+                  0.65,
+                  0.91,
                   Row(
                     key: tierKey,
                     mainAxisSize: MainAxisSize.min,
@@ -195,12 +204,13 @@ class StartFace extends StatelessWidget {
                       if (WatchIconNames.tier(tierCode) != null) ...[
                         WatchIcon(
                           WatchIconNames.tier(tierCode)!,
-                          size: s * 0.1,
+                          size: s * tierIconFraction,
                           fallback: Icons.pets,
                         ),
-                        SizedBox(width: s * 0.025),
+                        SizedBox(width: s * 0.03),
                       ],
-                      if (tier != null && tier.isNotEmpty) Text(tier, style: _text(s, 0.085)),
+                      if (tier != null && tier.isNotEmpty)
+                        Text(tier, style: _text(s, tierTextFraction, weight: FontWeight.w700)),
                     ],
                   ),
                 ),
@@ -444,6 +454,9 @@ class RunningFace extends StatelessWidget {
   final VoidCallback? onCycle;
 
   static const metricCount = 3;
+
+  /// 달리는 중 화면의 동물 아이콘 지름 비율. 거리·시간·페이스 숫자 칸은 그대로 두고 그 아래 빈 곳만 쓴다.
+  static const runningTierIconFraction = 0.11;
   static const timeKey = Key('watch-run-time');
   static const bannerKey = Key('watch-run-banner');
   static const distanceKey = Key('watch-run-distance');
@@ -553,8 +566,8 @@ class RunningFace extends StatelessWidget {
             if (shareEarned != null || WatchIconNames.tier(tierCode) != null)
               zone(
                 s,
-                0.725,
-                0.82,
+                0.72,
+                0.85,
                 Row(
                   key: shareRowKey,
                   mainAxisSize: MainAxisSize.min,
@@ -562,7 +575,7 @@ class RunningFace extends StatelessWidget {
                     if (WatchIconNames.tier(tierCode) != null) ...[
                       WatchIcon(
                         WatchIconNames.tier(tierCode)!,
-                        size: s * 0.075,
+                        size: s * runningTierIconFraction,
                         fallback: Icons.pets,
                       ),
                       SizedBox(width: s * 0.03),

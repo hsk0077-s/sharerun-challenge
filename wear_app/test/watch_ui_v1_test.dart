@@ -225,6 +225,35 @@ void main() {
       expect(started, 1);
     });
 
+    testWidgets('동물 아이콘은 화면 지름의 약 20%, 등급 글자는 한 단계 크고, 버튼은 잘리지 않는다', (tester) async {
+      for (final side in [396.0, 450.0]) {
+        await _pumpFace(
+          tester,
+          StartFace(onStart: () {}, tierName: '평가 전', tierCode: 'snail'),
+          Size(side, side),
+        );
+        final icon = tester.getSize(
+          find.descendant(of: find.byKey(StartFace.tierKey), matching: find.byType(WatchIcon)),
+        );
+        expect(icon.width / side, inInclusiveRange(0.18, 0.22));
+        final text = tester.widget<Text>(find.text('평가 전'));
+        expect(text.style!.fontSize! / side, closeTo(StartFace.tierTextFraction, 0.002));
+        expect(StartFace.tierTextFraction, greaterThan(0.085), reason: '이전보다 한 단계 큼');
+
+        // START 버튼은 40% 이상이고 화면 안에 완전히 들어온다.
+        final button = tester.getRect(find.byKey(StartFace.buttonKey));
+        expect(button.width / side, greaterThanOrEqualTo(0.4));
+        final center = Offset(side / 2, side / 2);
+        for (final corner in [button.topCenter, button.bottomCenter, button.centerLeft, button.centerRight]) {
+          expect((corner - center).distance, lessThan(side / 2));
+        }
+        // 버튼과 아래 동물 줄은 서로 겹치지 않는다.
+        final tierRect = tester.getRect(find.byKey(StartFace.tierKey));
+        expect(tierRect.top, greaterThanOrEqualTo(button.bottom));
+        expect(tierRect.bottom, lessThan(side * 0.95));
+      }
+    });
+
     testWidgets('티어 값이 없으면 아래 줄을 숨기고, 있으면 이름을 보여 준다', (tester) async {
       await _pumpFace(tester, StartFace(onStart: () {}), const Size(396, 396));
       expect(find.byKey(StartFace.tierKey), findsNothing);

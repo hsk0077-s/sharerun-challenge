@@ -1,9 +1,9 @@
 package com.sharerun.share_run_challenge
 
 import android.Manifest
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -11,10 +11,13 @@ import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import androidx.wear.ongoing.OngoingActivity
 
 /**
  * 달리는 동안 프로세스가 죽지 않게 붙들어 두는 포그라운드 서비스.
  * 화면이 꺼져도 [WatchTracker]의 심박·걸음·GPS 수집이 이어진다.
+ * Ongoing Activity를 달아, 시계 화면으로 나갔다가 다시 들어오면 쉐어런 러닝 화면으로 돌아온다.
  * 데이터는 여기서 다루지 않는다.
  */
 class TrackingService : Service() {
@@ -25,12 +28,36 @@ class TrackingService : Service() {
         manager.createNotificationChannel(
             NotificationChannel(CHANNEL_ID, "러닝 기록", NotificationManager.IMPORTANCE_LOW)
         )
-        val notification = Notification.Builder(this, CHANNEL_ID)
+        val touchIntent = PendingIntent.getActivity(
+            this,
+            0,
+            Intent(this, MainActivity::class.java).apply {
+                addFlags(
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                        Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT,
+                )
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("쉐어런")
             .setContentText("러닝을 기록하고 있어요")
-            .setSmallIcon(applicationInfo.icon)
+            .setSmallIcon(R.drawable.ic_stat_run)
             .setOngoing(true)
-            .build()
+            .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+            .setContentIntent(touchIntent)
+        try {
+            val ongoing = OngoingActivity.Builder(applicationContext, NOTIFICATION_ID, notificationBuilder)
+                .setStaticIcon(R.drawable.ic_stat_run)
+                .setTouchIntent(touchIntent)
+                .setCategory(NotificationCompat.CATEGORY_WORKOUT)
+                .build()
+            ongoing.apply(applicationContext)
+        } catch (_: Exception) {
+            // Ongoing Activity를 못 달아도, 알림을 누르면 앱이 다시 열린다.
+        }
+        val notification = notificationBuilder.build()
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(NOTIFICATION_ID, notification, foregroundTypes())

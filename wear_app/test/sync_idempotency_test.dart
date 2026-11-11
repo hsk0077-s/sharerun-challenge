@@ -196,4 +196,19 @@ void main() {
     expect(inner.postedIds, ['only']);
     expect(queue.length, 0);
   });
+
+  test('an accepted run updates the tier animal from the server reply', () async {
+    final poster = _ScriptedPoster();
+    final account = await _paired(poster);
+    expect(account.tierCode, isNull);
+    final queue = SyncQueue()..add(_run('run-t1'));
+    poster.validateReplies(const [HttpReply(200, {'verified': true, 'tier_code': 'beagle'})]);
+    expect(await SyncUploader(account: account, queue: queue).flush(), 1);
+    expect(account.tierCode, 'beagle');
+
+    queue.add(_run('run-t2'));
+    poster.validateReplies(const [HttpReply(200, {'verified': true})]);
+    await SyncUploader(account: account, queue: queue).flush();
+    expect(account.tierCode, 'beagle');
+  });
 }

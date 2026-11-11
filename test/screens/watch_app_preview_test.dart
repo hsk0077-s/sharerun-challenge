@@ -61,13 +61,35 @@ Future<void> _pump(WidgetTester tester, _PairingApi api) async {
   ));
 }
 
+/// 연결된 워치 목록까지 보이도록 화면을 길게 잡는다.
+void _tall(WidgetTester tester) {
+  tester.view.physicalSize = const Size(1080, 4000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
 void main() {
-  testWidgets('watch preview lists every platform marked 예정', (tester) async {
+  testWidgets('a connected Galaxy Watch shows 연결됨, the rest 예정', (tester) async {
+    _tall(tester);
     await _pump(tester, _PairingApi());
+    await tester.pumpAndSettle();
     for (final n in ['갤럭시 워치', '안드로이드 워치 (Wear OS)', '스마트 밴드 (샤오미 등)', '가민', '애플 워치']) {
       expect(find.text(n), findsOneWidget);
     }
-    expect(find.text('예정'), findsNWidgets(5));
+    expect(find.text('연결됨'), findsOneWidget);
+    expect(find.text('예정'), findsNWidgets(4));
+    expect(find.textContaining('시안'), findsNothing);
+    expect(find.byKey(const Key('watch-face-carousel')), findsNothing);
+  });
+
+  testWidgets('with no watch connected the Galaxy row has no 예정 chip',
+      (tester) async {
+    _tall(tester);
+    final api = _PairingApi()..watches = [];
+    await _pump(tester, api);
+    await tester.pumpAndSettle();
+    expect(find.text('연결됨'), findsNothing);
+    expect(find.text('예정'), findsNWidgets(4));
   });
 
   testWidgets('the pairing button shows the 6-digit code and a countdown',

@@ -19,6 +19,9 @@ class ValidationResult(BaseModel):
     donation_counted: bool = False
     donation_reason: str = ""
     donation_cap_reached: bool = False
+    # The runner's tier animal (turtle..cheetah) for the watch face. None when
+    # unrated. Read-only; no reward is derived from it.
+    tier_code: str | None = None
 
 
 _DECISION_REASON_CODES = {

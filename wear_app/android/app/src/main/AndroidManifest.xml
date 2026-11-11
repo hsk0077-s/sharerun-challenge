@@ -10,9 +10,14 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 시계 화면으로 나간 뒤 달리기 화면으로 돌아오게 하는 전체 화면 인텐트 알림 -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 6자리 코드 연결과 기록 올리기 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 인터넷이 다시 연결되면 올리지 못한 기록을 올린다 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:label="쉐어런"
@@ -45,6 +50,19 @@
             android:name=".TrackingService"
             android:exported="false"
             android:foregroundServiceType="health|location" />
+        <!-- 시계 화면에서 바로 달리기를 시작하는 타일 -->
+        <service
+            android:name=".RunTileService"
+            android:exported="true"
+            android:label="쉐어런 달리기"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/tile_preview" />
+        </service>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <!-- 휴대폰 없이도 단독으로 동작하는 워치 앱 -->

@@ -1155,6 +1155,40 @@ const gradeGuideRows = <String, List<String>>{
     'บันทึกจะนับหลังเซิร์ฟเวอร์ยืนยัน การวิ่งในวันเดียวกันนับเป็นหนึ่งวัน',
     'Catatan dihitung setelah server mengonfirmasi. Lari di hari yang sama dihitung satu hari.',
   ],
+  // 이미 등급이 있는 사람용. 서버 규칙(grade_assignment.py) 그대로: 따로 재심사는 없고,
+  // 1km 이상 인증된 달리기가 하루에 한 번 반영되며, 최근 페이스 중간값이 지금 등급보다 빠르면
+  // 한 단계씩 오른다. 등급은 내려가지 않는다. 남은 조건 숫자는 서버가 내려 주지 않아 쓰지 않는다.
+  'upgradeHow': [
+    '따로 재심사는 없어요. 1km 이상 인증된 달리기가 하루에 한 번씩 등급에 반영되고, '
+        '최근 달리기 페이스의 중간값이 지금 등급보다 빠르면 한 단계씩 올라가요. 등급은 내려가지 않아요.',
+    'There is no separate re-evaluation. A verified run of 1 km or more counts once per day, '
+        'and when the median pace of your recent runs is faster than your current grade, '
+        'you move up one step. Grades never go down.',
+    '再審査はありません。1km以上の認証済みの走りが1日1回反映され、'
+        '最近の走りのペースの中央値が今のグレードより速いと1段階上がります。グレードは下がりません。',
+    '沒有另外的重新審核。每天最多計入一次 1 公里以上的已驗證跑步，'
+        '當近期跑步配速的中位數比目前等級更快時，就會升一階。等級不會下降。',
+    'No hay una reevaluación aparte. Una carrera verificada de 1 km o más cuenta una vez al día y, '
+        'si la mediana del ritmo de tus carreras recientes es más rápida que tu grado actual, '
+        'subes un escalón. El grado nunca baja.',
+    'Não há reavaliação separada. Uma corrida verificada de 1 km ou mais conta uma vez por dia e, '
+        'se a mediana do ritmo das corridas recentes for mais rápida que o seu grau atual, '
+        'você sobe um degrau. O grau nunca desce.',
+    'Es gibt keine separate Neubewertung. Ein geprüfter Lauf ab 1 km zählt einmal pro Tag, '
+        'und ist der Median deines Tempos der letzten Läufe schneller als deine aktuelle Stufe, '
+        'steigst du eine Stufe auf. Die Stufe sinkt nie.',
+    'Il n’y a pas de réévaluation séparée. Une course vérifiée d’au moins 1 km compte une fois par jour et, '
+        'si la médiane de l’allure de vos courses récentes est plus rapide que votre grade actuel, '
+        'vous montez d’un cran. Le grade ne baisse jamais.',
+    'Không có đợt đánh giá lại riêng. Mỗi ngày tính một lần lần chạy đã xác minh từ 1 km trở lên, '
+        'và nếu trung vị tốc độ các lần chạy gần đây nhanh hơn hạng hiện tại thì bạn lên một bậc. '
+        'Hạng không bao giờ bị hạ.',
+    'ไม่มีการประเมินใหม่แยกต่างหาก การวิ่งที่ยืนยันแล้วตั้งแต่ 1 กม. ขึ้นไปนับวันละครั้ง '
+        'และถ้าค่ากลางของเพซการวิ่งล่าสุดเร็วกว่าระดับปัจจุบัน คุณจะขึ้นหนึ่งขั้น ระดับจะไม่ลดลง',
+    'Tidak ada penilaian ulang terpisah. Lari terverifikasi 1 km atau lebih dihitung sekali sehari, '
+        'dan jika median kecepatan lari terbaru lebih cepat dari tingkat saat ini, '
+        'kamu naik satu tingkat. Tingkat tidak pernah turun.',
+  ],
   'skipNote': [
     '등급은 홈에서 달리면서 정해져요. 지금 건너뛰어도 괜찮아요.',
     'Your grade is set by running from Home. Skipping now is fine.',
@@ -1229,6 +1263,9 @@ class GradeGuide {
   String get skipNote => _at('skipNote');
   String get startRun => _at('startRun');
   String get goHome => _at('goHome');
+
+  /// 등급이 이미 있는 사람에게 더 높은 등급으로 가는 방법(서버 규칙 그대로).
+  String get upgradeHow => _at('upgradeHow');
 
   String get progress => _at('progress');
 

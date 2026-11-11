@@ -200,5 +200,15 @@ def pair(
     except Exception as error:
         raise HTTPException(status_code=500, detail="custom_token_unavailable") from error
     token = custom.decode("utf-8") if isinstance(custom, bytes) else str(custom)
-    nickname = identities._nickname(identities._user_profile(db, uid))
-    return {"uid": uid, "nickname": nickname, "custom_token": token, "device_id": device}
+    from app.services.grade_assignment import tier_animal
+
+    profile = identities._user_profile(db, uid)
+    nickname = identities._nickname(profile)
+    tier = tier_animal(profile.get("gradeCode")) if isinstance(profile, dict) else None
+    return {
+        "uid": uid,
+        "nickname": nickname,
+        "custom_token": token,
+        "device_id": device,
+        "tier_code": tier,
+    }

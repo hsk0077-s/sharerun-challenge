@@ -274,5 +274,39 @@ void main() {
     );
     expect(account.isPaired, isFalse);
   });
+
+  test('pairing remembers the tier animal and unpairing forgets it', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', const HttpReply(200, {
+        'uid': 'u1',
+        'nickname': '달림이',
+        'custom_token': 'custom-1',
+        'tier_code': 'wolf',
+      }))
+      ..on('signInWithCustomToken', _signedIn);
+    final store = MemoryStore();
+    final account = _account(poster, store);
+    await account.pair('482910');
+    expect(account.tierCode, 'wolf');
+
+    final again = _account(_FakePoster(), store);
+    await again.load();
+    expect(again.tierCode, 'wolf');
+
+    await again.rememberTier(null);
+    expect(again.tierCode, 'wolf');
+    await again.unpair();
+    expect(again.tierCode, isNull);
+    expect(store.values.containsKey('watch.tier_code'), isFalse);
+  });
+
+  test('an unrated account pairs without a tier', () async {
+    final poster = _FakePoster()
+      ..on('/auth/watch-pair', _pairedOk)
+      ..on('signInWithCustomToken', _signedIn);
+    final account = _account(poster, MemoryStore());
+    await account.pair('482910');
+    expect(account.tierCode, isNull);
+  });
 }
 

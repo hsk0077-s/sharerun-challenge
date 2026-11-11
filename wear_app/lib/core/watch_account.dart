@@ -101,6 +101,7 @@ class WatchAccount {
   static const _nicknameKey = 'watch.nickname';
   static const _deviceKey = 'watch.device_id';
   static const _reconnectKey = 'watch.reconnect_needed';
+  static const _tierKey = 'watch.tier_code';
 
   /// Firebase가 "이 갱신 토큰은 더 못 쓴다"고 알려 주는 오류 이름. 이때만 다시 연결하게 한다.
   /// 그 밖의 400·401(키 제한, 잘못된 요청 등)은 연결 문제가 아니므로 연결을 지우지 않는다.
@@ -122,6 +123,9 @@ class WatchAccount {
   String? _idToken;
   DateTime _idTokenExpires = DateTime.fromMillisecondsSinceEpoch(0);
   String nickname = '';
+
+  /// 서버가 알려 준 내 티어 동물(turtle·beagle·wolf·zebra·cheetah). 모르면 null.
+  String? tierCode;
   var _reconnectNeeded = false;
 
   /// 연결이 정말 만료돼 다시 연결해야 하는 상태.
@@ -134,6 +138,7 @@ class WatchAccount {
   Future<void> load() async {
     _refreshToken = await _store.read(_refreshKey);
     nickname = await _store.read(_nicknameKey) ?? '';
+    tierCode = await _store.read(_tierKey);
     _reconnectNeeded = (await _store.read(_reconnectKey)) == '1';
   }
 
@@ -159,8 +164,17 @@ class WatchAccount {
     _refreshToken = null;
     _idToken = null;
     nickname = '';
+    tierCode = null;
     await _store.delete(_refreshKey);
     await _store.delete(_nicknameKey);
+    await _store.delete(_tierKey);
+  }
+
+  /// 연결·기록 올리기 응답의 `tier_code`를 기억한다. 값이 없으면 전에 받은 값을 둔다.
+  Future<void> rememberTier(Object? code) async {
+    if (code is! String || code.isEmpty || code == tierCode) return;
+    tierCode = code;
+    await _store.write(_tierKey, code);
   }
 
   /// 6자리 코드를 계정으로 바꾼다. 성공하면 [isPaired]가 true.
@@ -211,6 +225,7 @@ class WatchAccount {
     nickname = (paired.body['nickname'] as String?) ?? '';
     await _store.write(_refreshKey, refresh);
     await _store.write(_nicknameKey, nickname);
+    await rememberTier(paired.body['tier_code']);
     _reconnectNeeded = false;
     await _store.delete(_reconnectKey);
   }

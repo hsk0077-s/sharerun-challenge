@@ -215,3 +215,14 @@ def test_re_pairing_a_revoked_watch_clears_the_revocation_cache() -> None:
     _pair(db, fb, "watch-repaired", n=5)
     assert ("u1", "watch-repaired") not in auth_service._watch_device
 
+
+def test_pair_tells_the_watch_its_tier_animal_only_when_rated() -> None:
+    db, fb = _db_with_user()
+    code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
+    out = watch_pairing.pair(db, code, fb_auth=fb, now=NOW + timedelta(seconds=30))
+    assert out["tier_code"] is None
+
+    db.store["users/u1"]["gradeCode"] = "zebra_silver"
+    code = watch_pairing.issue_code(db, "u1", now=NOW)["code"]
+    out = watch_pairing.pair(db, code, fb_auth=fb, now=NOW + timedelta(seconds=30))
+    assert out["tier_code"] == "zebra"

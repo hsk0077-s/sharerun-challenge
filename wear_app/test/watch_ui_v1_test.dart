@@ -239,6 +239,17 @@ void main() {
       expect(find.text('비글 실버'), findsOneWidget);
     });
 
+    testWidgets('티어 이름이 없어도 아는 동물 코드면 동물 그림만 보여 준다', (tester) async {
+      await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'zebra'), const Size(396, 396));
+      expect(find.byKey(StartFace.tierKey), findsOneWidget);
+      expect(
+        find.descendant(of: find.byKey(StartFace.tierKey), matching: find.byType(WatchIcon)),
+        findsOneWidget,
+      );
+      await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'snail'), const Size(396, 396));
+      expect(find.byKey(StartFace.tierKey), findsNothing);
+    });
+
     testWidgets('GPS·티어 그림이 화면에 붙는다(그림 파일을 쓴다)', (tester) async {
       await _pumpFace(
         tester,

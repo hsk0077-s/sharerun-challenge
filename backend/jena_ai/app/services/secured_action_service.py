@@ -107,6 +107,7 @@ from app.services.grade_assignment import (
     run_pace_sec_per_km,
     sandbag_pace,
     step_signup_grade,
+    tier_animal,
 )
 from app.services.twin_run import is_twin_run, run_signature
 from app.services.donation_cap import (
@@ -1885,6 +1886,9 @@ class SecuredActionService:
             donation_counted=donation_counted,
             donation_reason=donation_reason,
             donation_cap_reached=cap_reached,
+            tier_code=tier_animal(
+                user_updates.get("gradeCode") or user.get("gradeCode")
+            ),
         )
 
     SHOP_CATALOG: dict[str, dict] = {

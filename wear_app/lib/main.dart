@@ -88,8 +88,8 @@ class RunFlow extends StatefulWidget {
   /// 인터넷 연결 알림, 타일에서 바로 시작. 없으면 없는 대로 돈다(시험).
   final WatchEvents? events;
 
-  /// 내 동물 티어 이름과 코드. 아직 워치에 티어 값을 내려 주는 길이 없어 지금은 비어 있고,
-  /// 비어 있으면 시작 화면의 티어 줄은 숨긴다.
+  /// 내 동물 티어 이름과 코드(시험용). 없으면 계정이 서버에서 받아 둔 티어 코드를 쓰고,
+  /// 그것도 없으면(등급 전) 시작 화면의 티어 줄은 숨긴다.
   final String? tierName;
   final String? tierCode;
 
@@ -417,7 +417,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
         return StartFace(
           onStart: _beginCountdown,
           tierName: widget.tierName,
-          tierCode: widget.tierCode,
+          tierCode: widget.tierCode ?? account?.tierCode,
           pendingCount: _queue.length,
           onLongPress: account == null ? null : () => setState(() => _pairing = true),
         );
@@ -430,7 +430,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
           passedKm: _bannerKm,
           focus: _focus,
           shareEarned: widget.shareEarned,
-          tierCode: widget.tierCode,
+          tierCode: widget.tierCode ?? account?.tierCode,
           onCycle: () => setState(() => _focus = (_focus + 1) % RunningFace.metricCount),
           onPause: _pause,
           onResume: _resume,

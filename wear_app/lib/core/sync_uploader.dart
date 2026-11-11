@@ -55,6 +55,7 @@ class SyncUploader {
           run.toValidateRunBody(deviceId: deviceId),
         );
         if (reply == null) break;
+        if (reply.ok) await account.rememberTier(reply.body['tier_code']);
         if (reply.ok || _final(reply.status)) {
           queue.acknowledge(run.activityId);
           done++;

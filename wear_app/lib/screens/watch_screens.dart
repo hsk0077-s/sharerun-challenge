@@ -178,7 +178,7 @@ class StartFace extends StatelessWidget {
                   ),
                 ),
               ),
-              if (tier != null && tier.isNotEmpty)
+              if ((tier != null && tier.isNotEmpty) || WatchIconNames.tier(tierCode) != null)
                 zone(
                   s,
                   0.76,
@@ -195,7 +195,7 @@ class StartFace extends StatelessWidget {
                         ),
                         SizedBox(width: s * 0.025),
                       ],
-                      Text(tier, style: _text(s, 0.085)),
+                      if (tier != null && tier.isNotEmpty) Text(tier, style: _text(s, 0.085)),
                     ],
                   ),
                 ),

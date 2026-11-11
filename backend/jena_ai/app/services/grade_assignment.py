@@ -343,3 +343,18 @@ def sandbag_pace(paces: list[int], finish_pace: int | None = None) -> bool:
     middle = ordered[len(ordered) // 2]
     fastest = ordered[0]
     return fastest < TURTLE_FAST_PACE_SEC and middle - fastest >= 90
+
+
+TIER_ANIMALS = ("turtle", "beagle", "wolf", "zebra", "cheetah")
+
+
+def tier_animal(grade_code) -> str | None:
+    """The animal part of a ``gradeCode`` such as ``wolf_gold``.
+
+    None for an unrated account (no code, or the phone's ``snail`` placeholder),
+    so the watch hides its tier row instead of showing a made-up animal.
+    """
+    if not isinstance(grade_code, str):
+        return None
+    animal = grade_code.strip().lower().split("_", 1)[0]
+    return animal if animal in TIER_ANIMALS else None

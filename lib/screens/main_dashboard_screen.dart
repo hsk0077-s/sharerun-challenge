@@ -16,6 +16,7 @@ import '../features/onboarding/widgets/nickname_setup_sheet.dart';
 import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/retention_widgets.dart';
 import '../features/stamp/providers/stamp_tour_enabled_provider.dart';
+import '../features/world_tour/widgets/world_tour_widgets.dart';
 import 'donation_settlement_screen.dart';
 import 'notification_center_screen.dart';
 import 'personal_sponsor_screen.dart';
@@ -169,6 +170,8 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
                                 ? null
                                 : nickname,
                           ),
+                          SizedBox(height: tokens.spacing.md),
+                          const WorldTourEntryCard(),
                           SizedBox(height: tokens.spacing.sm),
                           SoloQuickStartBanner(
                             onTap: _onOpenSoloQuickStart,

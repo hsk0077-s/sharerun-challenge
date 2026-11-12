@@ -8,7 +8,6 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/auth/health_data_consent_store.dart';
 import '../core/strings/app_strings.dart';
-import '../features/world_tour/widgets/world_tour_widgets.dart';
 import '../l10n/surface_copy.dart';
 import '../l10n/surface_rest.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -209,8 +208,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: EdgeInsets.all(tokens.spacing.page),
       children: [
         const HomeUserIdentityHeader(),
-        SizedBox(height: tokens.spacing.md),
-        const WorldTourEntryCard(),
         SizedBox(height: tokens.spacing.md),
         Align(
           alignment: Alignment.centerRight,

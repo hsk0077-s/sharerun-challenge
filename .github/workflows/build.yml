@@ -24,6 +24,8 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          # 새 Flutter가 나올 때마다 Gradle 요구 버전이 바뀌어 빌드가 깨지지 않도록 고정한다.
+          flutter-version: '3.44.3'
 
       - name: 4. 패키지 다운로드
         run: flutter pub get

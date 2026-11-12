@@ -18,6 +18,7 @@ import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../../features/shop/cosmetics_catalog.dart';
 import '../../features/shop/shop_request_ids.dart';
+import '../../features/world_tour/world_tour_models.dart';
 import '../models/company_tournament_config.dart';
 import '../models/pedometer_harvest_result.dart';
 import '../models/personal_sponsor_donation.dart';
@@ -912,6 +913,24 @@ class SecuredActionApiClient {
       throw StateError('Invite code missing from server response.');
     }
     return code;
+  }
+
+  /// World Tour: the mission list with this user's progress, and the passport.
+  Future<WorldTourMe> fetchWorldTourMe() async {
+    final json = await _get('/actions/world-tour/me');
+    return WorldTourMe.fromJson(json);
+  }
+
+  /// World Tour: link one verified run to one mission. Repeating it is safe.
+  Future<WorldTourAttachResult> attachWorldTourRun({
+    required String missionId,
+    required String activityId,
+  }) async {
+    final json = await _post('/actions/world-tour/attach', {
+      'mission_id': missionId,
+      'activity_id': activityId,
+    });
+    return WorldTourAttachResult.fromJson(json);
   }
 
   Future<Map<String, dynamic>> _post(

@@ -8,6 +8,7 @@ import '../../../l10n/remaining_surface.dart';
 Future<void> startRunWithPreflight({
   required BuildContext context,
   required UserModel? profile,
+  Object? extra,
 }) async {
   if (profile == null || profile.uid.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -71,6 +72,6 @@ Future<void> startRunWithPreflight({
   }
 
   if (context.mounted) {
-    context.push(RouteNames.runTracking);
+    context.push(RouteNames.runTracking, extra: extra);
   }
 }

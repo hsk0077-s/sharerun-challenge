@@ -569,6 +569,23 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // World Tour. The server writes everything; a signed-in user reads the
+    // catalog and only their own progress and run links.
+    match /worldTourMissions/{missionId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /users/{uid}/worldTour/{missionId} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /users/{uid}/worldTourRuns/{activityId} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow create, update, delete: if false;

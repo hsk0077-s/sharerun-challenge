@@ -18,11 +18,17 @@ import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
+import '../features/world_tour/widgets/world_tour_widgets.dart';
+import '../features/world_tour/world_tour_run_end.dart';
 import '../l10n/remaining_surface.dart';
 import 'run_result_screen.dart';
 
 class RunTrackingScreen extends ConsumerStatefulWidget {
-  const RunTrackingScreen({super.key});
+  const RunTrackingScreen({super.key, this.worldTourRun});
+
+  /// Set only when the run was started from World Tour. Null for every
+  /// ordinary run, which behaves exactly as before.
+  final WorldTourRunArgs? worldTourRun;
 
   @override
   ConsumerState<RunTrackingScreen> createState() => _RunTrackingScreenState();
@@ -181,6 +187,13 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
                 ],
               ),
             ),
+            if (widget.worldTourRun != null) ...[
+              const SizedBox(height: 12),
+              WorldTourRunChip(
+                args: widget.worldTourRun!,
+                runKm: telemetry.distanceKm,
+              ),
+            ],
             const Spacer(),
             const MusicControls(),
             const SizedBox(height: 8),
@@ -316,6 +329,24 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
         await showVerificationRejectedDialog(context, result);
         if (!mounted) return;
       }
+      // World Tour only: link this run to the chosen mission. The server
+      // decides; a failure here never changes the ordinary run result.
+      final tourArgs = widget.worldTourRun;
+      final tourEnd = tourArgs == null
+          ? null
+          : await WorldTourRunEnd.settle(
+              ref: ref,
+              args: tourArgs,
+              uid: userId,
+              activityId: activityId,
+              verified: result.verified,
+              pending: result.decision == JenaDecision.pending,
+              distanceKm: completedRun.telemetry.distanceKm,
+              durationSeconds: completedRun.telemetry.durationSeconds,
+            );
+      if (!mounted) return;
+      final router = GoRouter.of(context);
+      final messenger = ScaffoldMessenger.of(context);
       context.go(
         RouteNames.runResult,
         extra: RunResultArgs(
@@ -324,6 +355,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
           routePoints: completedRun.routePoints,
         ),
       );
+      tourEnd?.announce(router: router, messenger: messenger);
     } catch (error) {
       if (!mounted) {
         return;

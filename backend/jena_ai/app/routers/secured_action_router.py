@@ -74,6 +74,12 @@ from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
 from app.services import client_errors, rate_limit, run_times, watch_pairing
 from app.services.secured_action_service import SecuredActionService
+from app.models.world_tour import (
+    WorldTourAttachRequest,
+    WorldTourAttachResult,
+    WorldTourMe,
+)
+from app.services import world_tour
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
 service = SecuredActionService()
@@ -92,6 +98,22 @@ def validate_run(
         required=bool(getattr(http_request.state, "is_watch", False)),
     )
     return service.validate_run(uid=uid, request=request)
+
+
+@router.post("/world-tour/attach", response_model=WorldTourAttachResult)
+def world_tour_attach(
+    request: WorldTourAttachRequest,
+    uid: str = Depends(require_uid),
+) -> WorldTourAttachResult:
+    """Link one verified run to one mission. Repeating the call is safe."""
+    return world_tour.attach(
+        service.firebase_service.db, uid, request.mission_id, request.activity_id
+    )
+
+
+@router.get("/world-tour/me", response_model=WorldTourMe)
+def world_tour_me(uid: str = Depends(require_uid)) -> WorldTourMe:
+    return world_tour.read_me(service.firebase_service.db, uid)
 
 
 @router.post("/tournaments/join", response_model=SecuredActionResult)

@@ -95,6 +95,14 @@ abstract final class RouteNames {
   static const crews = crew;
 
   static const runTracking = '/run-tracking';
+
+  /// World Tour: virtual trips powered by verified runs.
+  static const worldTour = '/world-tour';
+  static const worldTourPassport = '/world-tour/passport';
+  static const worldTourArrival = '/world-tour/arrival';
+  static const worldTourMissionPattern = '/world-tour/mission/:missionId';
+  static String worldTourMission(String missionId) =>
+      '/world-tour/mission/${Uri.encodeComponent(missionId)}';
   static const paymentWebView = '/payment-webview';
   /// 대회 스폰서 결제. [SponsorPaymentArgs] extra 필수. src-17과 혼동 금지.
   static const sponsorPayment = '/sponsor-payment';

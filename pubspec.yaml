@@ -82,6 +82,8 @@ flutter:
     - assets/images/crew_emblem/paid/
     - assets/images/villages/
     - assets/images/villages/thumbs/
+    - assets/images/world_tour/
+    - assets/village/
     - assets/images/kakao/
     - assets/images/naver/
     - assets/images/accessories/back/

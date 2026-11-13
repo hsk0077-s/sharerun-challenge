@@ -2,47 +2,56 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/remaining_surface.dart';
 
-/// Display data for one landmark: a flat colour with an icon for now, and the
-/// translated names and story lines. The mission list itself (ids, targets,
-/// progress) comes from the server.
+/// Display data for one landmark: the illustration, a flat colour with an icon
+/// as the fallback, and the translated names and story lines. The mission list
+/// itself (ids, targets, progress) comes from the server.
 ///
-/// TODO(art): replace [WorldTourLandmarkArt] with the hand-drawn illustrations
-/// (see docs/world-tour-mvp.md for the list). No photo is used.
+/// The illustrations live in `assets/images/world_tour/`. They are drawn
+/// originals (no photo is used).
 class WorldTourLandmark {
   const WorldTourLandmark({
     required this.id,
     required this.icon,
     required this.color,
+    this.asset,
   });
 
   final String id;
   final IconData icon;
   final Color color;
 
+  /// The drawn illustration, or null to show the flat colour with [icon].
+  final String? asset;
+
   static const eiffel = WorldTourLandmark(
     id: 'eiffel_tower',
     icon: Icons.cell_tower,
     color: Color(0xFF3B5B8C),
+    asset: 'assets/images/world_tour/landmark_eiffel.png',
   );
   static const taj = WorldTourLandmark(
     id: 'taj_mahal',
     icon: Icons.account_balance,
     color: Color(0xFFB5626B),
+    asset: 'assets/images/world_tour/landmark_tajmahal.png',
   );
   static const fuji = WorldTourLandmark(
     id: 'mount_fuji',
     icon: Icons.terrain,
     color: Color(0xFF4F8FA3),
+    asset: 'assets/images/world_tour/landmark_fuji.png',
   );
   static const pyramids = WorldTourLandmark(
     id: 'pyramids',
     icon: Icons.change_history,
     color: Color(0xFFC9954C),
+    asset: 'assets/images/world_tour/landmark_pyramids.png',
   );
   static const liberty = WorldTourLandmark(
     id: 'statue_of_liberty',
     icon: Icons.emoji_flags,
     color: Color(0xFF3E8E7E),
+    asset: 'assets/images/world_tour/landmark_liberty.png',
   );
   static const unknown = WorldTourLandmark(
     id: '',
@@ -147,8 +156,14 @@ class WorldTourLandmark {
   }
 }
 
-/// Placeholder card: a flat colour with the landmark icon. Swapped for the
-/// drawn illustration later; the size and corners stay the same.
+/// The landmark card picture. The size and corners are set by the caller.
+///
+/// The illustrations are 1024x1024 with a pale sky-to-grass backdrop around the
+/// drawing. The card is filled with that same backdrop so the picture blends
+/// in. A wide card shows the whole picture ([BoxFit.contain]); a tall one fills
+/// the card and trims the sides ([BoxFit.cover]). The files are not edited.
+/// A landmark without an illustration (or a file that fails to load) keeps the
+/// flat colour with its icon.
 class WorldTourLandmarkArt extends StatelessWidget {
   const WorldTourLandmarkArt({
     required this.landmark,
@@ -158,6 +173,11 @@ class WorldTourLandmarkArt extends StatelessWidget {
     super.key,
   });
 
+  /// The backdrop colours measured from the top and bottom edge of every
+  /// illustration (they share one gradient).
+  static const backdropTop = Color(0xFFC5E5F9);
+  static const backdropBottom = Color(0xFFECF2E2);
+
   final WorldTourLandmark landmark;
   final double height;
   final bool dimmed;
@@ -165,6 +185,46 @@ class WorldTourLandmarkArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final asset = landmark.asset;
+    if (asset == null) return _placeholder();
+    return ExcludeSemantics(
+      child: Opacity(
+        opacity: dimmed ? 0.5 : 1,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: SizedBox(
+            height: height,
+            width: double.infinity,
+            child: DecoratedBox(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [backdropTop, backdropBottom],
+                ),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final wide = !constraints.hasBoundedHeight ||
+                      !constraints.hasBoundedWidth ||
+                      constraints.maxWidth >= constraints.maxHeight;
+                  return Image.asset(
+                    asset,
+                    fit: wide ? BoxFit.contain : BoxFit.cover,
+                    alignment: Alignment.center,
+                    filterQuality: FilterQuality.medium,
+                    errorBuilder: (_, __, ___) => _placeholder(),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder() {
     final base = landmark.color;
     return ExcludeSemantics(
       child: Container(

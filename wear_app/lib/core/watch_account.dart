@@ -91,15 +91,49 @@ class WatchAccount {
     DateTime Function()? clock,
     String baseUrl = kJenaBaseUrl,
     String apiKey = kFirebaseApiKey,
+    Future<String?> Function()? signingCert,
   })  : _store = store,
         _poster = poster ?? IoJsonPoster(),
         _clock = clock ?? DateTime.now,
         _baseUrl = baseUrl,
-        _apiKey = apiKey;
+        _apiKey = apiKey,
+        _signingCert = signingCert;
+
+  /// Firebase 키가 "이 안드로이드 앱만" 쓰도록 묶여 있어, 로그인 요청에 앱 이름과
+  /// 서명 SHA-1을 붙여야 Google이 받아 준다. 휴대폰 앱과 같은 패키지 이름이다.
+  static const androidPackage = 'com.sharerun.share_run_challenge';
+
+  final Future<String?> Function()? _signingCert;
+  String? _cert;
+
+  Future<Map<String, String>> _firebaseHeaders() async {
+    if (_cert == null && _signingCert != null) {
+      try {
+        _cert = await _signingCert();
+      } catch (_) {
+        _cert = null;
+      }
+    }
+    final cert = _cert;
+    if (cert == null || cert.isEmpty) return const {};
+    return {'X-Android-Package': androidPackage, 'X-Android-Cert': cert};
+  }
 
   static const _refreshKey = 'watch.refresh_token';
   static const _nicknameKey = 'watch.nickname';
   static const _deviceKey = 'watch.device_id';
+  static const _reconnectKey = 'watch.reconnect_needed';
+  static const _tierKey = 'watch.tier_code';
+
+  /// Firebase가 "이 갱신 토큰은 더 못 쓴다"고 알려 주는 오류 이름. 이때만 다시 연결하게 한다.
+  /// 그 밖의 400·401(키 제한, 잘못된 요청 등)은 연결 문제가 아니므로 연결을 지우지 않는다.
+  static const deadTokenErrors = {
+    'TOKEN_EXPIRED',
+    'USER_DISABLED',
+    'USER_NOT_FOUND',
+    'INVALID_REFRESH_TOKEN',
+    'CREDENTIAL_TOO_OLD_LOGIN_AGAIN',
+  };
 
   final KeyValueStore _store;
   final JsonPoster _poster;
@@ -112,6 +146,13 @@ class WatchAccount {
   DateTime _idTokenExpires = DateTime.fromMillisecondsSinceEpoch(0);
   String nickname = '';
 
+  /// 서버가 알려 준 내 티어 동물(turtle·beagle·wolf·zebra·cheetah). 모르면 null.
+  String? tierCode;
+  var _reconnectNeeded = false;
+
+  /// 연결이 정말 만료돼 다시 연결해야 하는 상태.
+  bool get reconnectNeeded => _reconnectNeeded && !isPaired;
+
   bool get isPaired => _refreshToken != null && _refreshToken!.isNotEmpty;
 
   bool get configured => _baseUrl.isNotEmpty && _apiKey.isNotEmpty;
@@ -119,6 +160,14 @@ class WatchAccount {
   Future<void> load() async {
     _refreshToken = await _store.read(_refreshKey);
     nickname = await _store.read(_nicknameKey) ?? '';
+    tierCode = await _store.read(_tierKey);
+    _reconnectNeeded = (await _store.read(_reconnectKey)) == '1';
+  }
+
+  /// "나중에"를 눌러 이번에는 다시 연결하라고 하지 않는다.
+  Future<void> dismissReconnect() async {
+    _reconnectNeeded = false;
+    await _store.delete(_reconnectKey);
   }
 
   /// 이 워치의 고유 번호. 한 번 만들어 계속 쓰므로 다시 연결해도 자리를 더 쓰지 않는다.
@@ -137,11 +186,29 @@ class WatchAccount {
     _refreshToken = null;
     _idToken = null;
     nickname = '';
+    tierCode = null;
     await _store.delete(_refreshKey);
     await _store.delete(_nicknameKey);
+    await _store.delete(_tierKey);
+  }
+
+  /// 연결·기록 올리기 응답의 `tier_code`를 기억한다. 값이 없으면 전에 받은 값을 둔다.
+  Future<void> rememberTier(Object? code) async {
+    if (code is! String || code.isEmpty || code == tierCode) return;
+    tierCode = code;
+    await _store.write(_tierKey, code);
   }
 
   /// 6자리 코드를 계정으로 바꾼다. 성공하면 [isPaired]가 true.
+  /// 앱을 열 때 서버에서 지금 등급 동물을 다시 받아 둔다. 실패하면 이전 값을 그대로 둔다.
+  Future<void> refreshTier() async {
+    if (!isPaired) return;
+    try {
+      final reply = await postSigned('/actions/watch/tier', const {});
+      if (reply != null && reply.ok) await rememberTier(reply.body['tier_code']);
+    } catch (_) {}
+  }
+
   Future<void> pair(String code) async {
     if (!configured) {
       throw const PairingUnavailable('no_server');
@@ -175,6 +242,7 @@ class WatchAccount {
           'https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=$_apiKey',
         ),
         {'token': custom, 'returnSecureToken': true},
+        headers: await _firebaseHeaders(),
       );
     } catch (_) {
       throw const PairingUnavailable('offline');
@@ -189,6 +257,9 @@ class WatchAccount {
     nickname = (paired.body['nickname'] as String?) ?? '';
     await _store.write(_refreshKey, refresh);
     await _store.write(_nicknameKey, nickname);
+    await rememberTier(paired.body['tier_code']);
+    _reconnectNeeded = false;
+    await _store.delete(_reconnectKey);
   }
 
   void _remember(String idToken, Object? expiresIn) {
@@ -209,15 +280,19 @@ class WatchAccount {
       reply = await _poster.post(
         Uri.parse('https://securetoken.googleapis.com/v1/token?key=$_apiKey'),
         {'grant_type': 'refresh_token', 'refresh_token': _refreshToken},
+        headers: await _firebaseHeaders(),
       );
     } catch (_) {
       return null;
     }
     final fresh = reply.body['id_token'];
     if (!reply.ok || fresh is! String) {
-      // 계정이 지워졌거나 로그아웃됐다면 갱신 토큰은 더 못 쓴다.
-      if (reply.status == 400 || reply.status == 401) {
+      // 갱신 토큰이 정말 만료·폐기됐을 때만 연결을 지우고 다시 연결하게 한다.
+      // 네트워크 오류, 5xx, 429, 키·요청 문제(다른 오류 이름)는 연결을 그대로 두고 나중에 다시 시도한다.
+      if (_tokenIsDead(reply)) {
         await unpair();
+        _reconnectNeeded = true;
+        await _store.write(_reconnectKey, '1');
       }
       return null;
     }
@@ -228,6 +303,16 @@ class WatchAccount {
     }
     _remember(fresh, reply.body['expires_in']);
     return fresh;
+  }
+
+  /// 오류 이름이 없는 400·401은 예전 동작대로 죽은 토큰으로 본다.
+  static bool _tokenIsDead(HttpReply reply) {
+    if (reply.status != 400 && reply.status != 401) return false;
+    final error = reply.body['error'];
+    final message = error is Map ? error['message'] : null;
+    if (message is! String || message.trim().isEmpty) return true;
+    final name = message.split(' ').first.toUpperCase();
+    return deadTokenErrors.contains(name);
   }
 
   /// 로그인된 계정으로 서버에 본문을 보낸다. 토큰이 만료돼 401이면 한 번 새로 받아 다시 보낸다.

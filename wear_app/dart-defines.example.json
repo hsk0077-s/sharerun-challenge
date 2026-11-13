@@ -1,0 +1,4 @@
+{
+  "JENA_BASE_URL": "https://<서버 주소>",
+  "FIREBASE_API_KEY": "<Firebase 웹 API 키>"
+}

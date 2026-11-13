@@ -242,6 +242,253 @@ const watchLanguageOrder = <String>[
   'id',
 ];
 
+/// 2차 화면 개편(페어링·달리는 중·조작·결과)에 쓰는 문구. 줄 순서는 [watchLanguageOrder].
+/// `{n}`은 숫자로 바뀐다. 원어민 검수 전.
+const watchUiRows = <String, List<String>>{
+  'pairTop': [
+    '폰에서 코드 입력',
+    'Enter code from phone',
+    'スマホのコードを入力',
+    '輸入手機上的代碼',
+    'Código del móvil',
+    'Código do celular',
+    'Code vom Handy',
+    'Code du téléphone',
+    'Nhập mã từ điện thoại',
+    'ใส่รหัสจากโทรศัพท์',
+    'Masukkan kode dari ponsel',
+  ],
+  'pausedTitle': [
+    '일시정지됨',
+    'Paused',
+    '一時停止中',
+    '已暫停',
+    'En pausa',
+    'Pausado',
+    'Pausiert',
+    'En pause',
+    'Đã tạm dừng',
+    'หยุดชั่วคราว',
+    'Dijeda',
+  ],
+  'resume': [
+    '재개',
+    'Resume',
+    '再開',
+    '繼續',
+    'Reanudar',
+    'Retomar',
+    'Weiter',
+    'Reprendre',
+    'Tiếp tục',
+    'ต่อ',
+    'Lanjut',
+  ],
+  'stop': [
+    '종료',
+    'Stop',
+    '終了',
+    '結束',
+    'Detener',
+    'Parar',
+    'Beenden',
+    'Arrêter',
+    'Dừng',
+    'จบ',
+    'Selesai',
+  ],
+  'runEnded': [
+    '러닝 종료',
+    'Run ended',
+    'ランニング終了',
+    '跑步結束',
+    'Carrera terminada',
+    'Corrida encerrada',
+    'Lauf beendet',
+    'Course terminée',
+    'Kết thúc chạy',
+    'จบการวิ่ง',
+    'Lari selesai',
+  ],
+  'confirm': [
+    '확인',
+    'OK',
+    'OK',
+    '確認',
+    'OK',
+    'OK',
+    'OK',
+    'OK',
+    'OK',
+    'ตกลง',
+    'OK',
+  ],
+  'kmPassed': [
+    '{n}km 통과',
+    '{n} km passed',
+    '{n}km 通過',
+    '通過 {n} 公里',
+    '{n} km completados',
+    '{n} km concluídos',
+    '{n} km geschafft',
+    '{n} km parcourus',
+    'Qua {n} km',
+    'ผ่าน {n} กม.',
+    'Lewat {n} km',
+  ],
+  'donationPlanned': [
+    '{n}원 기부 예정',
+    '{n} KRW to be donated',
+    '{n}ウォン寄付予定',
+    '預計捐出 {n} 韓元',
+    'Se donarán {n} KRW',
+    'Serão doados {n} KRW',
+    '{n} KRW Spende geplant',
+    '{n} KRW de don prévu',
+    'Dự kiến quyên góp {n} KRW',
+    'จะบริจาค {n} KRW',
+    'Rencana donasi {n} KRW',
+  ],
+  'afterVerify': [
+    '인증 후',
+    'after verification',
+    '認証後',
+    '驗證後',
+    'tras verificación',
+    'após verificação',
+    'nach Prüfung',
+    'après vérification',
+    'sau khi xác minh',
+    'หลังตรวจสอบ',
+    'setelah verifikasi',
+  ],
+  'holdToStop': [
+    '길게 눌러 종료',
+    'Hold to stop',
+    '長押しで終了',
+    '長按結束',
+    'Mantén para detener',
+    'Segure para parar',
+    'Halten zum Beenden',
+    'Maintenir pour arrêter',
+    'Giữ để dừng',
+    'กดค้างเพื่อจบ',
+    'Tahan untuk berhenti',
+  ],
+  'pendingUpload': [
+    '올릴 기록 {n}',
+    'To upload: {n}',
+    'アップロード待ち {n}',
+    '待上傳 {n}',
+    'Por subir: {n}',
+    'Para enviar: {n}',
+    'Zu senden: {n}',
+    'À envoyer : {n}',
+    'Chờ tải lên: {n}',
+    'รออัปโหลด {n}',
+    'Menunggu unggah: {n}',
+  ],
+  'seeOnPhone': [
+    '자세한 건 폰에서 보기',
+    'See details on phone',
+    '詳細はスマホで',
+    '詳情請在手機查看',
+    'Detalles en el móvil',
+    'Detalhes no celular',
+    'Details am Handy',
+    'Détails sur le téléphone',
+    'Xem chi tiết trên điện thoại',
+    'ดูรายละเอียดในโทรศัพท์',
+    'Lihat detail di ponsel',
+  ],
+  'openedOnPhone': [
+    '폰에서 열었어요',
+    'Opened on phone',
+    'スマホで開きました',
+    '已在手機開啟',
+    'Abierto en el móvil',
+    'Aberto no celular',
+    'Auf dem Handy geöffnet',
+    'Ouvert sur le téléphone',
+    'Đã mở trên điện thoại',
+    'เปิดบนโทรศัพท์แล้ว',
+    'Terbuka di ponsel',
+  ],
+  'openOnPhoneFailed': [
+    '폰을 열 수 없어요',
+    "Couldn't open the phone",
+    'スマホを開けません',
+    '無法開啟手機',
+    'No se pudo abrir el móvil',
+    'Não foi possível abrir o celular',
+    'Handy konnte nicht geöffnet werden',
+    "Impossible d'ouvrir le téléphone",
+    'Không mở được điện thoại',
+    'เปิดโทรศัพท์ไม่ได้',
+    'Tidak bisa membuka ponsel',
+  ],
+  'waitingGps': [
+    'GPS 신호 기다리는 중',
+    'Waiting for GPS',
+    'GPS信号を待っています',
+    '等待 GPS 訊號',
+    'Esperando GPS',
+    'Aguardando GPS',
+    'Warte auf GPS',
+    'En attente du GPS',
+    'Đang chờ GPS',
+    'รอสัญญาณ GPS',
+    'Menunggu GPS',
+  ],
+  'reconnect': [
+    '연결이 만료됐어요. 다시 연결해 주세요',
+    'Connection expired. Pair again',
+    '接続の期限が切れました。再接続してください',
+    '連線已過期，請重新連線',
+    'La conexión caducó. Vuelve a conectar',
+    'A conexão expirou. Conecte de novo',
+    'Verbindung abgelaufen. Neu verbinden',
+    'Connexion expirée. Reconnectez',
+    'Kết nối đã hết hạn. Hãy kết nối lại',
+    'การเชื่อมต่อหมดอายุ โปรดเชื่อมต่อใหม่',
+    'Koneksi kedaluwarsa. Hubungkan lagi',
+  ],
+  'unrated': [
+    '평가 전',
+    'Not rated yet',
+    '評価前',
+    '尚未評級',
+    'Sin evaluar',
+    'Sem avaliação',
+    'Noch nicht bewertet',
+    'Pas encore évalué',
+    'Chưa xếp hạng',
+    'ยังไม่ประเมิน',
+    'Belum dinilai',
+  ],
+  'cancelHint': [
+    '눌러서 취소',
+    'Tap to cancel',
+    'タップで取消',
+    '點一下取消',
+    'Toca para cancelar',
+    'Toque para cancelar',
+    'Tippen zum Abbrechen',
+    'Touchez pour annuler',
+    'Chạm để hủy',
+    'แตะเพื่อยกเลิก',
+    'Ketuk untuk batal',
+  ],
+};
+
+/// [watchUiRows]의 한 문구. `{n}` 자리에 [n]을 넣는다.
+String watchUi(Locale locale, String key, {Object? n}) {
+  final row = watchUiRows[key]!;
+  final index = watchLanguageOrder.indexOf(locale.languageCode);
+  final text = row[index < 0 ? 1 : index];
+  return n == null ? text : text.replaceAll('{n}', '$n');
+}
+
 const minutePatterns = <String>[
   '{n}분',
   '{n} min',
@@ -442,6 +689,21 @@ List<String> missingWatchCopyKeys() {
         missing.add('watch.${table.key}.${watchLanguageOrder[i]}');
       } else if (i != 0 && table.value[i] == table.value.first) {
         missing.add('watch.${table.key}.${watchLanguageOrder[i]}=ko');
+      }
+    }
+  }
+  for (final entry in watchUiRows.entries) {
+    if (entry.value.length != watchLanguageOrder.length) {
+      missing.add('watch.ui.${entry.key}.length');
+      continue;
+    }
+    for (var i = 0; i < entry.value.length; i++) {
+      if (entry.value[i].trim().isEmpty) {
+        missing.add('watch.ui.${entry.key}.${watchLanguageOrder[i]}');
+      } else if (i != 0 &&
+          entry.value[i] == entry.value.first &&
+          entry.key != 'confirm') {
+        missing.add('watch.ui.${entry.key}.${watchLanguageOrder[i]}=ko');
       }
     }
   }

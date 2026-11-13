@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'run_session.dart' show kMaxRoutePoints;
 import 'watch_platform.dart';
 
 /// 워치에는 자이로 안정도 점수가 없다. 서버 필수 필드를 채우는 임시 값이며,
@@ -206,7 +207,7 @@ PendingRun? buildPendingRun({
     startedAt: startedAt,
     endedAt: endedAt,
     totalSteps: totalSteps < 0 ? 0 : totalSteps,
-    gpsRoute: gpsRoute.length > 400 ? gpsRoute.sublist(gpsRoute.length - 400) : gpsRoute,
+    gpsRoute: downsampleFixes(gpsRoute, kMaxRoutePoints),
     paceSamples: paceSamples.length > 2000
         ? paceSamples.sublist(paceSamples.length - 2000)
         : paceSamples,

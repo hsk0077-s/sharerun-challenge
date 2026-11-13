@@ -1,5 +1,8 @@
 import 'watch_platform.dart';
 
+/// 기록과 화면에 쓰는 경로 점 수의 상한. 넘으면 처음·끝을 남기고 고르게 줄인다.
+const kMaxRoutePoints = 600;
+
 /// 워치 러닝 한 번의 상태와 숫자. 화면과 동기화 큐가 같은 값을 쓴다.
 enum RunPhase { idle, running, paused, finished }
 
@@ -76,6 +79,35 @@ class RunSession {
     _phase = RunPhase.finished;
   }
 
+  /// 임시 기록으로 달리는 중 상태를 되살린다. 이미 시작된 세션에는 아무것도 하지 않는다.
+  void restore({
+    required DateTime startedAt,
+    required Duration moving,
+    required double distanceKm,
+    int steps = 0,
+    List<int> heartRates = const [],
+    List<GpsFix> route = const [],
+    List<Map<String, Object>> paceSamples = const [],
+  }) {
+    if (_phase != RunPhase.idle) return;
+    _phase = RunPhase.running;
+    _startedAt = startedAt;
+    _moving = moving.isNegative ? Duration.zero : moving;
+    _distanceKm =
+        distanceKm < 0 || distanceKm.isNaN || distanceKm.isInfinite ? 0 : distanceKm;
+    _steps = steps < 0 ? 0 : steps;
+    _heartRates
+      ..clear()
+      ..addAll(heartRates);
+    if (heartRates.isNotEmpty) _lastHeartRate = heartRates.last;
+    replaceRoute(route);
+    _paceSamples
+      ..clear()
+      ..addAll(paceSamples);
+    _lastPaceKm = _distanceKm;
+    _resumedAt = _clock();
+  }
+
   void addDistance(double km) {
     if (_phase != RunPhase.running || km <= 0 || km.isNaN || km.isInfinite) {
       return;
@@ -88,7 +120,7 @@ class RunSession {
   void replaceRoute(List<GpsFix> fixes) {
     _route
       ..clear()
-      ..addAll(fixes.length > 400 ? fixes.sublist(fixes.length - 400) : fixes);
+      ..addAll(downsampleFixes(fixes, kMaxRoutePoints));
   }
 
   void _samplePace() {
@@ -127,3 +159,25 @@ String formatPace(int secondsPerKm) {
 }
 
 String formatKm(double km) => km.toStringAsFixed(km >= 10 ? 1 : 2);
+
+/// 경과 시간. 한 시간 미만은 `12:05`, 이상은 `1:02:03`.
+String formatElapsed(Duration d) {
+  final total = d.inSeconds < 0 ? 0 : d.inSeconds;
+  final h = total ~/ 3600;
+  final m = (total % 3600) ~/ 60;
+  final s = total % 60;
+  final ss = s.toString().padLeft(2, '0');
+  if (h > 0) return '$h:${m.toString().padLeft(2, '0')}:$ss';
+  return '$m:$ss';
+}
+
+/// 서버가 인증된 러닝 1km마다 쌓는 기부 풀(원). 서버 값과 같아야 한다:
+/// `backend/jena_ai/app/services/secured_action_service.py`의 `VERIFIED_RUN_DONATION_KRW_PER_KM`.
+/// 실제 적립은 서버가 인증한 뒤 월 한도(`donation_cap.py`) 안에서 정한다. 워치는 예정액만 보여 준다.
+const verifiedRunDonationKrwPerKm = 100;
+
+/// 이 거리로 인증되면 쌓일 기부 예정액(원). 서버의 `verified_run_donation_won`과 같은 계산이다.
+int plannedDonationWon(double distanceKm) {
+  if (distanceKm <= 0 || distanceKm.isNaN || distanceKm.isInfinite) return 0;
+  return (distanceKm * verifiedRunDonationKrwPerKm).round();
+}

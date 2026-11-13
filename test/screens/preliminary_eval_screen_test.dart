@@ -135,6 +135,61 @@ void main() {
     expect(find.text('건강정보 동의 필요'), findsOneWidget);
   });
 
+  Future<void> pumpWithRank(WidgetTester tester, int rank) async {
+    final profile =
+        UserModel.dashboardDefault(uid: 'u1').copyWith(gradeRank: rank);
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, __) => const PreliminaryEvalScreen()),
+      ],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          activeUserProfileProvider.overrideWith(
+            (ref) => Stream<UserModel>.value(profile),
+          ),
+        ],
+        child: MaterialApp.router(
+          locale: koTestLocale,
+          supportedLocales: koTestSupportedLocales,
+          localizationsDelegates: koTestDelegates,
+          routerConfig: router,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('no grade yet: shows the first-1km guide and the start button, no upgrade text',
+      (tester) async {
+    await pumpWithRank(tester, 0);
+
+    expect(find.byKey(PreliminaryEvalScreen.currentGradeKey), findsNothing);
+    expect(find.byKey(PreliminaryEvalScreen.upgradeHowKey), findsNothing);
+    expect(find.textContaining('아직 등급이 없어요'), findsOneWidget);
+    expect(find.byKey(PreliminaryEvalScreen.startRunKey), findsOneWidget);
+  });
+
+  testWidgets(
+      'has a grade: shows the current grade, the server rule without invented numbers, and the start button',
+      (tester) async {
+    // rank 6 = beagle bronze (the server ladder: 1-5 turtle, 6-10 beagle ...).
+    await pumpWithRank(tester, 6);
+
+    expect(find.byKey(PreliminaryEvalScreen.currentGradeAvatarKey), findsOneWidget);
+    expect(find.byKey(PreliminaryEvalScreen.currentGradeKey), findsOneWidget);
+    expect(find.textContaining('비글'), findsWidgets);
+    expect(find.byKey(PreliminaryEvalScreen.upgradeHowKey), findsOneWidget);
+    expect(find.textContaining('재심사는 없어요'), findsOneWidget);
+    expect(find.textContaining('내려가지 않아요'), findsOneWidget);
+    // The server does not send "what is left to the next grade", so no such number is shown.
+    expect(find.textContaining('남았'), findsNothing);
+    expect(find.textContaining('남은'), findsNothing);
+    expect(find.byKey(PreliminaryEvalScreen.startRunKey), findsOneWidget);
+    expect(find.text('아직 등급이 없어요. 첫 인증 1km를 달리면 시작해요'), findsNothing);
+  });
+
   testWidgets('shows no 0/3 progress bar: the grade starts at the first 1 km',
       (tester) async {
     await tester.pumpWidget(

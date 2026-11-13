@@ -64,8 +64,22 @@ class ActivityRepository {
     );
   }
 
+  Future<ActivityModel?> getActivity(String activityId) async {
+    final id = activityId.trim();
+    if (id.isEmpty) return null;
+    final snapshot =
+        await _firestoreService.doc(FirestorePaths.activity(id)).get();
+    if (!snapshot.exists) return null;
+    return _fromDocument(snapshot);
+  }
+
   ActivityModel _fromSnapshot(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
+    return _fromDocument(doc)!;
+  }
+
+  ActivityModel? _fromDocument(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data();
+    if (data == null) return null;
     final statusCode = data['activityStatus'] as String?;
     final appealStatus = data['appealStatus'] as String?;
     final verified = data['jenaVerified'] as bool? ??

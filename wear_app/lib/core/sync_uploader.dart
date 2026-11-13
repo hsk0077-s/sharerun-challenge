@@ -1,8 +1,10 @@
+import 'run_draft.dart';
 import 'sync_queue.dart';
 import 'watch_account.dart';
 import 'watch_platform.dart';
 
 const _queueKey = 'watch.sync_queue';
+const _draftKey = 'watch.run_draft';
 
 /// 대기열을 저장소에 넣고 꺼낸다. 앱을 다시 켜도 올리지 못한 기록이 남는다.
 class QueueStore {
@@ -16,6 +18,13 @@ class QueueStore {
   }
 
   Future<void> save(SyncQueue queue) => _store.write(_queueKey, queue.encode());
+
+  /// 달리는 중 임시 기록. [RunDraft] 참고.
+  Future<RunDraft?> loadDraft() async => RunDraft.decode(await _store.read(_draftKey));
+
+  Future<void> saveDraft(RunDraft draft) => _store.write(_draftKey, draft.encode());
+
+  Future<void> clearDraft() => _store.delete(_draftKey);
 }
 
 /// 대기열의 기록을 계정으로 서버에 올린다.
@@ -46,6 +55,7 @@ class SyncUploader {
           run.toValidateRunBody(deviceId: deviceId),
         );
         if (reply == null) break;
+        if (reply.ok) await account.rememberTier(reply.body['tier_code']);
         if (reply.ok || _final(reply.status)) {
           queue.acknowledge(run.activityId);
           done++;

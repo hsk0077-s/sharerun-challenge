@@ -24,6 +24,9 @@ import '../../screens/item_inventory_screen.dart';
 import '../../screens/in_challenge_screen.dart';
 import '../../screens/live_running_screen.dart';
 import '../../screens/main_dashboard_screen.dart';
+import '../../features/world_tour/screens/world_tour_arrival_screen.dart';
+import '../../features/world_tour/screens/world_tour_screens.dart';
+import '../../features/world_tour/world_tour_run_end.dart';
 import '../../screens/my_wallet_screen.dart';
 import '../../screens/my_tournaments_screen.dart';
 import '../../screens/notification_center_screen.dart';
@@ -38,6 +41,7 @@ import '../../screens/preliminary_eval_screen.dart';
 import '../../screens/pro_tools_screen.dart';
 import '../../screens/refund_screen.dart';
 import '../../screens/run_result_screen.dart';
+import '../../screens/watch_run_record_screen.dart';
 import '../../screens/run_tracking_screen.dart';
 import '../../screens/running_crew_screen.dart';
 import '../../screens/settings_screen.dart';
@@ -313,7 +317,39 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     ),
     GoRoute(
       path: RouteNames.runTracking,
-      pageBuilder: _fadePage(const RunTrackingScreen()),
+      pageBuilder: (context, state) {
+        final tour = state.extra is WorldTourRunArgs
+            ? state.extra as WorldTourRunArgs
+            : null;
+        return _fadePage(RunTrackingScreen(worldTourRun: tour))(context, state);
+      },
+    ),
+    GoRoute(
+      path: RouteNames.worldTour,
+      pageBuilder: _fadePage(const WorldTourListScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.worldTourPassport,
+      pageBuilder: _fadePage(const WorldTourPassportScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.worldTourArrival,
+      pageBuilder: (context, state) {
+        final args = state.extra;
+        return _fadePage(
+          args is WorldTourArrivalArgs
+              ? WorldTourArrivalScreen(args: args)
+              : const WorldTourListScreen(),
+        )(context, state);
+      },
+    ),
+    GoRoute(
+      path: RouteNames.worldTourMissionPattern,
+      pageBuilder: (context, state) => _fadePage(
+        WorldTourDetailScreen(
+          missionId: state.pathParameters['missionId'] ?? '',
+        ),
+      )(context, state),
     ),
     GoRoute(
       path: RouteNames.runResult,
@@ -330,6 +366,17 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
             totalSteps: args?.totalSteps,
             playerName: args?.playerName,
           ),
+        );
+      },
+    ),
+    GoRoute(
+      path: RouteNames.watchRunRecord,
+      pageBuilder: (context, state) {
+        final id = state.uri.queryParameters['id'] ??
+            state.uri.queryParameters['activityId'];
+        return NoTransitionPage<void>(
+          key: state.pageKey,
+          child: WatchRunRecordScreen(activityId: id),
         );
       },
     ),

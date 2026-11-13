@@ -90,6 +90,8 @@ flutter:
     - assets/images/accessories/hand/
     - assets/images/accessories/head/
     - assets/images/accessories/skin/
+    - assets/images/accessories/outfit/
+    - assets/images/characters/costume/
     - assets/faq/
     - assets/voice/
     - assets/images/wings/

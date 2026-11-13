@@ -2159,6 +2159,8 @@ class RemainingSurface {
     'wt.run.left_toast',
     'wt.not_counted',
     'wt.retry_later',
+    'accessories.accessory_catalog.slot_outfit',
+    'accessories.accessory_catalog.slot_costume',
   ];
 
   static const _en = <String, String>{
@@ -4233,6 +4235,8 @@ class RemainingSurface {
     'wt.run.left_toast': '\$km km left to \$name',
     'wt.not_counted': 'This run wasn\'t added to your trip distance',
     'wt.retry_later': 'We\'ll add this to your trip again in a moment',
+    'accessories.accessory_catalog.slot_outfit': 'Sportswear',
+    'accessories.accessory_catalog.slot_costume': 'Costumes',
   };
 
   static const _ja = <String, String>{
@@ -6307,6 +6311,8 @@ class RemainingSurface {
     'wt.run.left_toast': '\$nameまであと \$km km です',
     'wt.not_counted': '今回の記録は旅の距離に反映されませんでした',
     'wt.retry_later': '旅の距離は少し後にもう一度反映します',
+    'accessories.accessory_catalog.slot_outfit': 'スポーツウェア',
+    'accessories.accessory_catalog.slot_costume': 'キャラ衣装',
   };
 
   static const _zh = <String, String>{
@@ -8381,6 +8387,8 @@ class RemainingSurface {
     'wt.run.left_toast': '距離\$name還有 \$km km',
     'wt.not_counted': '這次紀錄沒有計入旅行距離',
     'wt.retry_later': '稍後會再次計入旅行距離',
+    'accessories.accessory_catalog.slot_outfit': '運動服',
+    'accessories.accessory_catalog.slot_costume': '角色服裝',
   };
 
   static const _es = <String, String>{
@@ -10455,6 +10463,8 @@ class RemainingSurface {
     'wt.run.left_toast': 'Faltan \$km km para \$name',
     'wt.not_counted': 'Esta carrera no se sumó a la distancia del viaje',
     'wt.retry_later': 'Volveremos a sumarlo a tu viaje en un momento',
+    'accessories.accessory_catalog.slot_outfit': 'Ropa deportiva',
+    'accessories.accessory_catalog.slot_costume': 'Trajes',
   };
 
   static const _pt = <String, String>{
@@ -12529,6 +12539,8 @@ class RemainingSurface {
     'wt.run.left_toast': 'Faltam \$km km para \$name',
     'wt.not_counted': 'Esta corrida não foi somada à distância da viagem',
     'wt.retry_later': 'Vamos tentar somar à sua viagem de novo em instantes',
+    'accessories.accessory_catalog.slot_outfit': 'Roupa esportiva',
+    'accessories.accessory_catalog.slot_costume': 'Fantasias',
   };
 
   static const _de = <String, String>{
@@ -14603,6 +14615,8 @@ class RemainingSurface {
     'wt.run.left_toast': 'Noch \$km km bis \$name',
     'wt.not_counted': 'Dieser Lauf zählt nicht für die Reisedistanz',
     'wt.retry_later': 'Wir tragen es gleich erneut in deine Reise ein',
+    'accessories.accessory_catalog.slot_outfit': 'Sportkleidung',
+    'accessories.accessory_catalog.slot_costume': 'Kostüme',
   };
 
   static const _fr = <String, String>{
@@ -16677,6 +16691,8 @@ class RemainingSurface {
     'wt.run.left_toast': 'Encore \$km km jusqu\'à \$name',
     'wt.not_counted': 'Cette course n\'a pas été ajoutée à la distance du voyage',
     'wt.retry_later': 'Nous l\'ajouterons à votre voyage dans un instant',
+    'accessories.accessory_catalog.slot_outfit': 'Tenue de sport',
+    'accessories.accessory_catalog.slot_costume': 'Costumes',
   };
 
   static const _vi = <String, String>{
@@ -18751,6 +18767,8 @@ class RemainingSurface {
     'wt.run.left_toast': 'Còn \$km km tới \$name',
     'wt.not_counted': 'Lần chạy này không được tính vào quãng đường chuyến đi',
     'wt.retry_later': 'Chúng tôi sẽ cộng vào chuyến đi lại sau ít phút',
+    'accessories.accessory_catalog.slot_outfit': 'Đồ thể thao',
+    'accessories.accessory_catalog.slot_costume': 'Trang phục',
   };
 
   static const _th = <String, String>{
@@ -20825,6 +20843,8 @@ class RemainingSurface {
     'wt.run.left_toast': 'อีก \$km กม. ถึง\$name',
     'wt.not_counted': 'การวิ่งครั้งนี้ไม่ถูกนับเป็นระยะทางการเดินทาง',
     'wt.retry_later': 'เราจะนับระยะทางการเดินทางอีกครั้งในอีกสักครู่',
+    'accessories.accessory_catalog.slot_outfit': 'ชุดกีฬา',
+    'accessories.accessory_catalog.slot_costume': 'ชุดตัวละคร',
   };
 
   static const _id = <String, String>{
@@ -22899,6 +22919,8 @@ class RemainingSurface {
     'wt.run.left_toast': '\$km km lagi ke \$name',
     'wt.not_counted': 'Lari ini tidak dihitung ke jarak perjalanan',
     'wt.retry_later': 'Akan kami tambahkan lagi ke perjalananmu sebentar lagi',
+    'accessories.accessory_catalog.slot_outfit': 'Pakaian olahraga',
+    'accessories.accessory_catalog.slot_costume': 'Kostum',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

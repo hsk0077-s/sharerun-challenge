@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../l10n/remaining_surface.dart';
 import '../onboarding/src_onboarding_controller.dart';
+import '../../l10n/accessory_names.dart' as shop_names;
 import 'accessory_names.dart';
 
 /// 캐릭터를 꾸미는 소품·스킨 46종. 디자인팀 납품 세트(2026-10-14)를 옮긴 것이다.
@@ -17,18 +18,42 @@ enum AccessorySlot {
   hand('손'),
   eyes('눈'),
   head('머리'),
-  skin('스킨');
+  skin('스킨'),
+
+  /// 동물이 입는 운동복 세트. 상의·하의·신발·머리 그림 여러 장을 한 상품이 함께 낸다.
+  outfit('outfit'),
+
+  /// 남녀 캐릭터(홈 아바타)의 의상. 상반신 그림을 통째로 바꿔 끼운다.
+  costume('costume');
 
   const AccessorySlot(this.labelKo);
 
   final String labelKo;
 
   /// 화면 언어로 된 이름. 한국어는 [labelKo] 그대로다.
-  String label([BuildContext? context]) => RemainingSurface.tr(
+  ///
+  /// 운동복·캐릭터 의상은 번역 키 번호가 등급 이름(body.9~)과 겹치므로 자기 키를 쓴다.
+  String label([BuildContext? context]) {
+    if (this == AccessorySlot.outfit) {
+      return RemainingSurface.tr(
         context,
-        'accessories.accessory_catalog.body${index == 0 ? '' : '.${index + 1}'}',
-        labelKo,
+        'accessories.accessory_catalog.slot_outfit',
+        '운동복',
       );
+    }
+    if (this == AccessorySlot.costume) {
+      return RemainingSurface.tr(
+        context,
+        'accessories.accessory_catalog.slot_costume',
+        '캐릭터 의상',
+      );
+    }
+    return RemainingSurface.tr(
+      context,
+      'accessories.accessory_catalog.body${index == 0 ? '' : '.${index + 1}'}',
+      labelKo,
+    );
+  }
 
   /// 그림이 들어 있는 폴더. 상의·하의·발은 한 폴더(body)에 있다.
   String get folder => switch (this) {
@@ -39,6 +64,12 @@ enum AccessorySlot {
         _ => name,
       };
 }
+
+/// 누가 입는가. 동물(티어 마스코트), 캐릭터(홈 아바타), 둘 다(세트 상품).
+enum AccessoryTarget { animal, character, both }
+
+/// 남녀 버전. 운동복처럼 하나로 남녀 그림을 모두 쓰는 상품은 [unisex].
+enum AccessoryGender { unisex, male, female }
 
 enum AccessoryCurrency { share, dia, none }
 
@@ -65,7 +96,7 @@ enum AccessoryRarity {
 class Accessory {
   const Accessory({
     required this.id,
-    required this.nameKo,
+    String nameKo = '',
     required this.slot,
     required this.file,
     required this.rarity,
@@ -75,10 +106,19 @@ class Accessory {
     this.frontFile,
     this.ready = true,
     this.provisional = false,
-  });
+    this.target = AccessoryTarget.animal,
+    this.gender = AccessoryGender.unisex,
+    this.bundle = const [],
+    this.parts = const [],
+  }) : _nameKo = nameKo;
 
   final String id;
-  final String nameKo;
+  final String _nameKo;
+
+  /// 한국어 이름. 의상 스킨처럼 목록에 한국어를 적지 않은 상품은 이름표(ko 칸)에서 읽는다.
+  String get nameKo => _nameKo.isNotEmpty
+      ? _nameKo
+      : shop_names.accessoryName(id, id, const Locale('ko'));
   final AccessorySlot slot;
 
   /// 동물 이름을 뺀 그림 파일 이름(확장자 제외).
@@ -99,7 +139,47 @@ class Accessory {
   /// 납품 카탈로그에 값이 없거나 확인이 필요해서 임시로 넣은 항목.
   final bool provisional;
 
-  String assetPath(TierAnimal animal) => _path(slot.folder, file, animal);
+  /// 입는 대상. 세트 상품([bundle])은 구매용이라 직접 입지 않는다.
+  final AccessoryTarget target;
+
+  /// 남녀 버전. 캐릭터 의상은 이 값이 현재 성별과 맞아야 입을 수 있다.
+  final AccessoryGender gender;
+
+  /// 세트 상품이 함께 열어 주는 상품 id들. 비어 있으면 단품.
+  final List<String> bundle;
+
+  /// 동물 운동복이 내는 그림 칸(상의·하의·신발·머리 중).
+  final List<AccessorySlot> parts;
+
+  bool get isBundle => bundle.isNotEmpty;
+
+  /// 동물 몸에 겹치는 상품인가(운동복·소품·동물 스킨).
+  bool get wornOnAnimal => !isBundle && target == AccessoryTarget.animal;
+
+  /// 홈 아바타에 입히는 의상인가.
+  bool get wornOnCharacter => !isBundle && target == AccessoryTarget.character;
+
+  /// 운동복 한 칸의 그림.
+  String partAssetPath(AccessorySlot part, TierAnimal animal) =>
+      'assets/images/accessories/outfit/$file-${part.name}-${animal.code}.webp';
+
+  /// 캐릭터 의상 그림. [gender]는 'male' 또는 'female'.
+  String characterAssetPath(String gender) =>
+      'assets/images/characters/costume/$file-$gender.webp';
+
+  /// 이 상품의 캐릭터 그림을 [userGender]('male'|'female')로 쓸 수 있는가.
+  bool fitsGender(String userGender) {
+    if (!wornOnCharacter) return false;
+    return switch (gender) {
+      AccessoryGender.unisex => true,
+      AccessoryGender.male => userGender != 'female',
+      AccessoryGender.female => userGender == 'female',
+    };
+  }
+
+  String assetPath(TierAnimal animal) => slot == AccessorySlot.outfit && parts.isNotEmpty
+      ? partAssetPath(parts.first, animal)
+      : _path(slot.folder, file, animal);
 
   String? frontAssetPath(TierAnimal animal) =>
       frontFile == null ? null : _path('body', frontFile!, animal);
@@ -539,7 +619,7 @@ const accessoryCatalog = <Accessory>[
   ),
   Accessory(
     id: 'S008',
-    nameKo: '한복',
+    nameKo: '한복(동물)',
     slot: AccessorySlot.skin,
     file: 'S008-hanbok',
     rarity: AccessoryRarity.hero,
@@ -555,6 +635,302 @@ const accessoryCatalog = <Accessory>[
     currency: AccessoryCurrency.dia,
     price: 250,
     tierLock: TierAnimal.zebra,
+  ),
+
+  // ---- 의상 스킨 1차(자리표시 그림). 가격: 운동복 60 · 동물+캐릭터 세트 90 · 전통의상 120 · 남녀 세트 200 DIA.
+  Accessory(
+    id: 'W1A',
+    slot: AccessorySlot.outfit,
+    file: 'soccer',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.animal,
+    parts: [AccessorySlot.top, AccessorySlot.bottom, AccessorySlot.feet],
+  ),
+  Accessory(
+    id: 'W1C',
+    slot: AccessorySlot.costume,
+    file: 'soccer',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.character,
+  ),
+  Accessory(
+    id: 'W1B',
+    slot: AccessorySlot.outfit,
+    file: 'soccer',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 90,
+    target: AccessoryTarget.both,
+    bundle: ['W1A', 'W1C'],
+  ),
+  Accessory(
+    id: 'W2A',
+    slot: AccessorySlot.outfit,
+    file: 'singlet',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.animal,
+    parts: [AccessorySlot.top, AccessorySlot.bottom, AccessorySlot.feet, AccessorySlot.head],
+  ),
+  Accessory(
+    id: 'W2C',
+    slot: AccessorySlot.costume,
+    file: 'singlet',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.character,
+  ),
+  Accessory(
+    id: 'W2B',
+    slot: AccessorySlot.outfit,
+    file: 'singlet',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 90,
+    target: AccessoryTarget.both,
+    bundle: ['W2A', 'W2C'],
+  ),
+  Accessory(
+    id: 'W3A',
+    slot: AccessorySlot.outfit,
+    file: 'basketball',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.animal,
+    parts: [AccessorySlot.top, AccessorySlot.bottom, AccessorySlot.feet],
+  ),
+  Accessory(
+    id: 'W3C',
+    slot: AccessorySlot.costume,
+    file: 'basketball',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.character,
+  ),
+  Accessory(
+    id: 'W3B',
+    slot: AccessorySlot.outfit,
+    file: 'basketball',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 90,
+    target: AccessoryTarget.both,
+    bundle: ['W3A', 'W3C'],
+  ),
+  Accessory(
+    id: 'W4A',
+    slot: AccessorySlot.outfit,
+    file: 'baseball',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.animal,
+    parts: [AccessorySlot.top, AccessorySlot.bottom, AccessorySlot.feet, AccessorySlot.head],
+  ),
+  Accessory(
+    id: 'W4C',
+    slot: AccessorySlot.costume,
+    file: 'baseball',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.character,
+  ),
+  Accessory(
+    id: 'W4B',
+    slot: AccessorySlot.outfit,
+    file: 'baseball',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 90,
+    target: AccessoryTarget.both,
+    bundle: ['W4A', 'W4C'],
+  ),
+  Accessory(
+    id: 'W5A',
+    slot: AccessorySlot.outfit,
+    file: 'badminton',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.animal,
+    parts: [AccessorySlot.top, AccessorySlot.bottom, AccessorySlot.feet, AccessorySlot.head],
+  ),
+  Accessory(
+    id: 'W5C',
+    slot: AccessorySlot.costume,
+    file: 'badminton',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.character,
+  ),
+  Accessory(
+    id: 'W5B',
+    slot: AccessorySlot.outfit,
+    file: 'badminton',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 90,
+    target: AccessoryTarget.both,
+    bundle: ['W5A', 'W5C'],
+  ),
+  Accessory(
+    id: 'W6A',
+    slot: AccessorySlot.outfit,
+    file: 'taekwondo',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.animal,
+    parts: [AccessorySlot.top, AccessorySlot.bottom],
+  ),
+  Accessory(
+    id: 'W6C',
+    slot: AccessorySlot.costume,
+    file: 'taekwondo',
+    rarity: AccessoryRarity.rare,
+    currency: AccessoryCurrency.dia,
+    price: 60,
+    target: AccessoryTarget.character,
+  ),
+  Accessory(
+    id: 'W6B',
+    slot: AccessorySlot.outfit,
+    file: 'taekwondo',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 90,
+    target: AccessoryTarget.both,
+    bundle: ['W6A', 'W6C'],
+  ),
+  Accessory(
+    id: 'T1M',
+    slot: AccessorySlot.costume,
+    file: 'hanbok',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.male,
+  ),
+  Accessory(
+    id: 'T1F',
+    slot: AccessorySlot.costume,
+    file: 'hanbok',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.female,
+  ),
+  Accessory(
+    id: 'T1S',
+    slot: AccessorySlot.costume,
+    file: 'hanbok',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 200,
+    target: AccessoryTarget.character,
+    bundle: ['T1M', 'T1F'],
+  ),
+  Accessory(
+    id: 'T2M',
+    slot: AccessorySlot.costume,
+    file: 'yukata',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.male,
+  ),
+  Accessory(
+    id: 'T2F',
+    slot: AccessorySlot.costume,
+    file: 'yukata',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.female,
+  ),
+  Accessory(
+    id: 'T2S',
+    slot: AccessorySlot.costume,
+    file: 'yukata',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 200,
+    target: AccessoryTarget.character,
+    bundle: ['T2M', 'T2F'],
+  ),
+  Accessory(
+    id: 'T3M',
+    slot: AccessorySlot.costume,
+    file: 'aodai',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.male,
+  ),
+  Accessory(
+    id: 'T3F',
+    slot: AccessorySlot.costume,
+    file: 'aodai',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.female,
+  ),
+  Accessory(
+    id: 'T3S',
+    slot: AccessorySlot.costume,
+    file: 'aodai',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 200,
+    target: AccessoryTarget.character,
+    bundle: ['T3M', 'T3F'],
+  ),
+  Accessory(
+    id: 'T4M',
+    slot: AccessorySlot.costume,
+    file: 'bavaria',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.male,
+  ),
+  Accessory(
+    id: 'T4F',
+    slot: AccessorySlot.costume,
+    file: 'bavaria',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 120,
+    target: AccessoryTarget.character,
+    gender: AccessoryGender.female,
+  ),
+  Accessory(
+    id: 'T4S',
+    slot: AccessorySlot.costume,
+    file: 'bavaria',
+    rarity: AccessoryRarity.hero,
+    currency: AccessoryCurrency.dia,
+    price: 200,
+    target: AccessoryTarget.character,
+    bundle: ['T4M', 'T4F'],
   ),
 ];
 
@@ -579,13 +955,43 @@ const accessoryDrawOrder = <AccessorySlot>[
 /// 입힐 수 있는 동물. 달팽이(등급 없음)는 소품 그림이 없어서 제외한다.
 bool canDress(TierAnimal animal) => animal != TierAnimal.snail;
 
+/// id로 찾는다. 없으면 null.
+Accessory? accessoryById(String id) {
+  for (final a in accessoryCatalog) {
+    if (a.id == id) return a;
+  }
+  return null;
+}
+
+/// 목록에 보여 줄 대표 그림을 내는 상품. 세트는 첫 번째 구성품, 나머지는 자기 자신.
+Accessory previewSourceOf(Accessory a) =>
+    a.isBundle ? (accessoryById(a.bundle.first) ?? a) : a;
+
+/// 옷 칸. 운동복을 입으면 이 칸의 낱개 소품이 빠지고, 낱개 옷을 입으면 운동복이 빠진다.
+const _clothingSlots = {
+  AccessorySlot.top,
+  AccessorySlot.bottom,
+  AccessorySlot.feet,
+};
+
 /// [pick]을 입히면 같은 칸에 있던 것은 빠진다. 이미 입은 것이면 벗는다.
 /// 스킨은 동물 전체를 바꾸므로 입으면 나머지가 모두 빠지고, 다른 소품을 입으면 스킨이 벗겨진다.
+/// 세트 상품과 캐릭터 의상은 동물에게 입히지 않으므로 아무것도 바꾸지 않는다.
 Set<Accessory> toggleAccessory(Set<Accessory> worn, Accessory pick) {
+  if (!pick.wornOnAnimal) return {...worn};
   if (worn.contains(pick)) return {...worn}..remove(pick);
   if (pick.slot == AccessorySlot.skin) return {pick};
-  return {
-    ...worn.where((a) => a.slot != pick.slot && a.slot != AccessorySlot.skin),
-    pick,
-  };
+  bool keep(Accessory a) {
+    if (a.slot == AccessorySlot.skin) return false;
+    if (a.slot == pick.slot) return false;
+    if (pick.slot == AccessorySlot.outfit && _clothingSlots.contains(a.slot)) {
+      return false;
+    }
+    if (a.slot == AccessorySlot.outfit && _clothingSlots.contains(pick.slot)) {
+      return false;
+    }
+    return true;
+  }
+
+  return {...worn.where(keep), pick};
 }

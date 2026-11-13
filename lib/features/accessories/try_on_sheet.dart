@@ -46,7 +46,7 @@ class _TryOnSheetState extends State<TryOnSheet> {
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final stage = (width - 40).clamp(200.0, 340.0);
-    final items = accessoriesIn(_slot);
+    final items = accessoriesIn(_slot).where((a) => a.wornOnAnimal).toList();
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -75,7 +75,9 @@ class _TryOnSheetState extends State<TryOnSheet> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  for (final slot in AccessorySlot.values)
+                  for (final slot in AccessorySlot.values.where(
+                      (s) => s != AccessorySlot.costume,
+                  ))
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
@@ -238,5 +240,7 @@ class _ItemCard extends StatelessWidget {
     AccessorySlot.bottom => (cx: 0.50, cy: 0.70, zoom: 2.2),
     AccessorySlot.feet => (cx: 0.50, cy: 0.76, zoom: 1.7),
     AccessorySlot.skin => (cx: 0.50, cy: 0.50, zoom: 1.0),
+    AccessorySlot.outfit => (cx: 0.50, cy: 0.58, zoom: 1.3),
+    AccessorySlot.costume => (cx: 0.50, cy: 0.50, zoom: 1.0),
   };
 }

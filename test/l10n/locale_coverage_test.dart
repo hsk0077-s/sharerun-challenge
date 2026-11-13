@@ -171,7 +171,7 @@ void main() {
       expect(line, contains('1,000'));
       expect(line, contains('Ada'));
     }
-    expect(accessoryCatalog, hasLength(46));
+    expect(accessoryCatalog, hasLength(76));
     for (final item in accessoryCatalog) {
       expect(item.displayName(ko), item.nameKo);
       for (final code in accessoryNameLanguages) {

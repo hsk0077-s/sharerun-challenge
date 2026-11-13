@@ -19,6 +19,13 @@ class AccessoryInventory {
   bool owns(String id) => owned.contains(id);
   bool isWorn(String id) => worn.containsValue(id);
 
+  /// 세트는 구성품을 모두 가졌을 때만 "보유"로 본다. 단품은 자기 자신.
+  bool ownsAll(Accessory a) =>
+      a.isBundle ? a.bundle.every(owned.contains) : owns(a.id);
+
+  /// 세트의 구성품을 하나라도 가졌는가(그러면 세트는 살 수 없고 나머지를 따로 산다).
+  bool ownsAnyPart(Accessory a) => a.isBundle && a.bundle.any(owned.contains);
+
   static const loadoutDocId = 'accessory_loadout';
 
   static AccessoryInventory fromDocs(Map<String, Map<String, dynamic>> docs) {
@@ -84,3 +91,19 @@ Set<Accessory> wornFrom(AccessoryInventory inventory) {
   }
   return out;
 }
+
+/// 지금 입고 있는 캐릭터 의상. 산 것이고 [userGender]('male'|'female')에 맞는 버전일 때만 돌려준다.
+/// 성별을 바꾸면 맞지 않는 버전은 보유 목록에 남은 채 입혀지지 않는다.
+Accessory? wornCostumeFor(AccessoryInventory inventory, String userGender) {
+  final id = inventory.worn['costume'];
+  if (id == null || !inventory.owns(id)) return null;
+  final item = accessoryById(id);
+  if (item == null || !item.ready || !item.fitsGender(userGender)) return null;
+  return item;
+}
+
+/// 캐릭터 의상 목록(세트 제외). 아바타 고르기 화면에서 쓴다.
+List<Accessory> characterCostumes() => [
+      for (final a in accessoryCatalog)
+        if (a.ready && a.wornOnCharacter) a,
+    ];

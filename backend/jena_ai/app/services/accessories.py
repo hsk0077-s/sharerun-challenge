@@ -20,7 +20,11 @@ from app.services.wallet_funding import move_currency
 
 CATEGORY = "accessory"
 LOADOUT_ID = "accessory_loadout"
-SLOTS = frozenset({"back", "bottom", "top", "feet", "hand", "eyes", "head", "skin"})
+SLOTS = frozenset(
+    {"back", "bottom", "top", "feet", "hand", "eyes", "head", "skin", "outfit", "costume"}
+)
+# An outfit replaces loose clothes and loose clothes replace an outfit.
+_CLOTHING = frozenset({"top", "bottom", "feet"})
 # 0 = snail (no grade yet), then turtle .. cheetah, the order of the app's tier ladder.
 _ANIMAL_RANK = {"turtle": 1, "beagle": 2, "wolf": 3, "zebra": 4, "cheetah": 5}
 
@@ -51,6 +55,13 @@ def animal_rank(user: dict) -> int:
     if isinstance(raw, bool) or not isinstance(raw, (int, float)) or raw <= 0:
         return 0
     return min(5, (int(raw) - 1) // 5 + 1)
+
+
+# Court costumes are planned for the second release and are NOT in the catalog or on sale.
+# Prices are fixed here so the later work starts from the agreed numbers.
+COURT_COSTUME_PRICE_DIA = {"single": 250, "pair": 420}
+# Whole-animal skin price (same as the existing hanbok skin S008).
+ANIMAL_SKIN_PRICE_DIA = 180
 
 
 def _balances(wallet: dict) -> tuple[int, int, int]:
@@ -88,10 +99,22 @@ def purchase(service, transaction, uid: str, item_id: str, request_id: str, user
     wallet = user.get("wallet") if isinstance(user.get("wallet"), dict) else {}
     if ledger_ref.get(transaction=transaction).exists:
         return _result(wallet, "already_purchased", "Purchase already recorded.")
-    inventory_ref = user_ref.collection("shopInventory").document(item_id)
-    owned = inventory_ref.get(transaction=transaction)
-    if owned.exists and int((owned.to_dict() or {}).get("quantity") or 0) >= 1:
-        raise HTTPException(status_code=400, detail="Item already owned.")
+    # A set opens every version it holds (one inventory document each); a single item opens itself.
+    # A set is refused when any part is already owned, so nobody pays the set price for a part they have.
+    grants = [find(part) for part in item["bundle"]] if item["bundle"] else [item]
+    if any(part is None for part in grants):
+        raise HTTPException(status_code=500, detail="Set is misconfigured.")
+    owned_docs = [
+        (part, user_ref.collection("shopInventory").document(part["id"]))
+        for part in grants
+    ]
+    snapshots = [(part, ref, ref.get(transaction=transaction)) for part, ref in owned_docs]
+    for _, _, snap in snapshots:
+        if snap.exists and int((snap.to_dict() or {}).get("quantity") or 0) >= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Part of this set is already owned." if item["bundle"] else "Item already owned.",
+            )
     lock = item["tier_lock"]
     if lock is not None and animal_rank(user) < _ANIMAL_RANK[lock]:
         raise HTTPException(status_code=403, detail="This item needs a higher tier.")
@@ -103,16 +126,18 @@ def purchase(service, transaction, uid: str, item_id: str, request_id: str, user
         moved = move_currency(wallet, share=-price)
         ledger_amount = {"shareAmount": -price}
     transaction.update(user_ref, {**moved["updates"], "updatedAt": SERVER_TIMESTAMP})
-    transaction.set(
-        inventory_ref,
-        {
-            "itemId": item_id,
-            "quantity": 1,
-            "category": CATEGORY,
-            "slot": item["slot"],
-            "purchasedAt": SERVER_TIMESTAMP,
-        },
-    )
+    for part, ref, _ in snapshots:
+        transaction.set(
+            ref,
+            {
+                "itemId": part["id"],
+                "quantity": 1,
+                "category": CATEGORY,
+                "slot": part["slot"],
+                **({"fromBundle": item_id} if item["bundle"] else {}),
+                "purchasedAt": SERVER_TIMESTAMP,
+            },
+        )
     transaction.set(
         ledger_ref,
         {
@@ -144,12 +169,24 @@ def equip(service, transaction, uid: str, slot: str, item_id: str, user_ref) -> 
         item = find(item_id)
         if item is None or item["slot"] != slot:
             raise HTTPException(status_code=400, detail="That item does not go in this slot.")
+        if item["bundle"]:
+            raise HTTPException(status_code=400, detail="A set is worn one version at a time.")
+        # The animal loadout takes animal items; the costume slot takes character costumes.
+        if (slot == "costume") != (item["target"] == "character"):
+            raise HTTPException(status_code=400, detail="That item is not for this wearer.")
+        if slot == "costume" and not _fits_gender(user, item):
+            raise HTTPException(status_code=400, detail="That costume is the other gender's version.")
         inventory = user_ref.collection("shopInventory").document(item_id).get(transaction=transaction)
         owned = inventory.exists and int((inventory.to_dict() or {}).get("quantity") or 0) >= 1
         # A tier-reward item (the laurel) is given by the tier, not bought: allow it by tier.
         if not owned and not (item["rarity"] == "tierReward" and _reward_unlocked(user, item)):
             raise HTTPException(status_code=400, detail="You do not own this item.")
         slots[slot] = item_id
+        if slot == "outfit":
+            for clothing in _CLOTHING:
+                slots.pop(clothing, None)
+        elif slot in _CLOTHING:
+            slots.pop("outfit", None)
     else:
         slots.pop(slot, None)
     transaction.set(
@@ -158,6 +195,18 @@ def equip(service, transaction, uid: str, slot: str, item_id: str, user_ref) -> 
         merge=False,
     )
     return _result(wallet, "equipped" if item_id else "unequipped", f"{slot} updated.")
+
+
+def _fits_gender(user: dict, item: dict) -> bool:
+    """A male or female costume is worn by that gender only; a unisex one by anyone.
+
+    The profile gender is ``users/{uid}.gender`` ("male" or "female"; missing counts as male,
+    like the app's default). Owning the other version is fine, it just stays unworn."""
+    gender = item["gender"]
+    if gender == "unisex":
+        return True
+    mine = "female" if user.get("gender") == "female" else "male"
+    return gender == mine
 
 
 def _reward_unlocked(user: dict, item: dict) -> bool:

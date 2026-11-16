@@ -42,8 +42,8 @@ def test_the_server_list_matches_the_apps_list() -> None:
 
 def test_what_is_for_sale() -> None:
     sale = [i for i in ACCESSORIES if acc.for_sale(i)]
-    assert len(sale) == 44  # 46 less the tier-reward laurel and the unfinished angel wings
-    assert sum(1 for i in sale if i["currency"] == "dia") == 34
+    assert len(sale) == 74  # 76 less the tier-reward laurel and the unfinished angel wings
+    assert sum(1 for i in sale if i["currency"] == "dia") == 64  # 34 before the costume skins, plus their 30
     assert sum(1 for i in sale if i["currency"] == "share") == 10
     assert not acc.for_sale(acc.find("P047"))
 

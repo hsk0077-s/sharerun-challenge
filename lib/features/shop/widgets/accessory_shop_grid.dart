@@ -7,10 +7,12 @@ import '../../../l10n/remaining_surface.dart';
 import '../../../core/api/api_exception.dart';
 import '../../accessories/accessory_catalog.dart';
 import '../../accessories/accessory_inventory.dart';
+import '../../accessories/costume_picture.dart';
 import '../../accessories/dressed_mascot.dart';
 import '../../accessories/try_on_sheet.dart';
 import '../../crew/crew_membership.dart';
 import '../../onboarding/src_onboarding_controller.dart';
+import '../../profile/user_profile_notifier.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import 'store_look.dart';
 
@@ -111,7 +113,7 @@ class _AccessoryShopGridState extends ConsumerState<AccessoryShopGrid> {
                   accessory: a,
                   animal: widget.animal,
                   locked: _locked(a),
-                  owned: inventory.owns(a.id),
+                  owned: inventory.ownsAll(a),
                   onTap: () => AccessoryDetailSheet.show(
                     context,
                     accessory: a,
@@ -160,6 +162,21 @@ class _AccessoryCard extends StatelessWidget {
     );
   }
 
+  Widget _setBadge(BuildContext context) {
+    final c = context.srcTokens.colors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: c.accent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        accessoryPhrase(Localizations.localeOf(context), 'setBadge'),
+        style: storeText(10, c.onPrimary, w: FontWeight.w900),
+      ),
+    );
+  }
+
   Widget _price(BuildContext context) {
     final c = context.srcTokens.colors;
     final a = accessory;
@@ -199,7 +216,7 @@ class _AccessoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
-    final focus = accessoryFocus(accessory.slot);
+    final focus = accessoryFocus(previewSourceOf(accessory).slot);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(22),
@@ -235,9 +252,9 @@ class _AccessoryCard extends StatelessWidget {
                                   1,
                                 )
                                 ..scaleByDouble(focus.zoom, focus.zoom, 1, 1),
-                              child: DressedMascot(
+                              child: AccessoryPicture(
+                                accessory: accessory,
                                 animal: animal,
-                                worn: {accessory},
                                 size: s,
                                 detail: focus.zoom,
                               ),
@@ -246,6 +263,8 @@ class _AccessoryCard extends StatelessWidget {
                         ),
                       ),
                       Positioned(top: 6, left: 6, child: _rarity(context)),
+                      if (accessory.isBundle)
+                        Positioned(top: 6, right: 6, child: _setBadge(context)),
                       if (locked && accessory.tierLock != null)
                         Positioned(
                           bottom: 6,
@@ -326,6 +345,8 @@ class AccessoryDetailSheet extends ConsumerStatefulWidget {
   static const buyKey = Key('accessory-buy');
   static const buyConfirmKey = Key('accessory-buy-confirm');
   static const wearKey = Key('accessory-wear');
+  static const otherGenderKey = Key('accessory-other-gender');
+  static const partOwnedKey = Key('accessory-part-owned');
   static const tryOnKey = Key('accessory-try-on');
 
   static Future<void> show(
@@ -470,8 +491,10 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
     final a = widget.accessory;
     final inventory =
         ref.watch(accessoryInventoryProvider).asData?.value ?? const AccessoryInventory();
-    final owned = inventory.owns(a.id);
+    final owned = inventory.ownsAll(a);
+    final partOwned = inventory.ownsAnyPart(a) && !owned;
     final worn = inventory.isWorn(a.id);
+    final gender = ref.watch(userGenderProvider);
     final rewardReady =
         a.rarity == AccessoryRarity.tierReward && widget.tier.animalUnlockRank >= 1;
     final stage = (MediaQuery.sizeOf(context).width - 80).clamp(180.0, 300.0);
@@ -485,9 +508,9 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
               child: SizedBox(
                 width: stage,
                 height: stage,
-                child: DressedMascot(
+                child: AccessoryPicture(
+                  accessory: a,
                   animal: widget.animal,
-                  worn: {a},
                   size: stage,
                 ),
               ),
@@ -516,6 +539,7 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
                 ),
               ),
             const SizedBox(height: 16),
+            if (a.wornOnAnimal || (a.isBundle && a.target == AccessoryTarget.both))
             OutlinedButton(
               key: AccessoryDetailSheet.tryOnKey,
               onPressed: () => TryOnSheet.show(
@@ -530,7 +554,25 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
               )),
             ),
             const SizedBox(height: 8),
-            if (owned || rewardReady)
+            if (a.isBundle && owned)
+              FilledButton(
+                onPressed: null,
+                child: Text(RemainingSurface.tr(
+                  context,
+                  'shop.accessory_shop_grid.owned',
+                  '보유',
+                )),
+              )
+            else if (a.wornOnCharacter && owned && !a.fitsGender(gender))
+              FilledButton(
+                key: AccessoryDetailSheet.otherGenderKey,
+                onPressed: null,
+                child: Text(accessoryPhrase(
+                  Localizations.localeOf(context),
+                  'otherGender',
+                )),
+              )
+            else if (!a.isBundle && (owned || rewardReady))
               FilledButton(
                 key: AccessoryDetailSheet.wearKey,
                 onPressed: _busy ? null : () => _wear(!worn),
@@ -545,6 +587,15 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
                         'shop.accessory_shop_grid.button.4',
                         '입기',
                       )),
+              )
+            else if (partOwned)
+              FilledButton(
+                key: AccessoryDetailSheet.partOwnedKey,
+                onPressed: null,
+                child: Text(accessoryPhrase(
+                  Localizations.localeOf(context),
+                  'partOwned',
+                )),
               )
             else if (_forSale && _locked)
               FilledButton(
@@ -579,6 +630,45 @@ class _AccessoryDetailSheetState extends ConsumerState<AccessoryDetailSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+/// 상품 그림 한 장. 동물 소품·운동복은 동물에게 입혀서, 캐릭터 의상은 상반신 그림으로,
+/// 세트는 대표 구성품의 그림으로 보여 준다.
+class AccessoryPicture extends StatelessWidget {
+  const AccessoryPicture({
+    super.key,
+    required this.accessory,
+    required this.animal,
+    required this.size,
+    this.detail = 1,
+  });
+
+  final Accessory accessory;
+  final TierAnimal animal;
+  final double size;
+  final double detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final source = previewSourceOf(accessory);
+    if (source.wornOnCharacter) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: CostumePicture(
+          accessory: source,
+          gender: source.gender == AccessoryGender.female ? 'female' : 'male',
+        ),
+      );
+    }
+    return DressedMascot(
+      animal: animal,
+      worn: {source},
+      size: size,
+      detail: detail,
     );
   }
 }

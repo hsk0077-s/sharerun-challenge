@@ -20,6 +20,12 @@ def parse(text: str) -> list[dict]:
             m = re.search(rf"\b{name}:\s*([^,\n]+)", block)
             return m.group(1).strip() if m else None
 
+        def names(name):
+            m = re.search(rf"\b{name}:\s*\[([^\]]*)\]", block)
+            if not m:
+                return []
+            return [x.strip().strip("'").split(".")[-1] for x in m.group(1).split(",") if x.strip()]
+
         items.append(
             {
                 "id": field("id").strip("'"),
@@ -30,6 +36,10 @@ def parse(text: str) -> list[dict]:
                 "tier_lock": field("tierLock").split(".")[1] if field("tierLock") else None,
                 "ready": field("ready") != "false",
                 "provisional": field("provisional") == "true",
+                "target": field("target").split(".")[1] if field("target") else "animal",
+                "gender": field("gender").split(".")[1] if field("gender") else "unisex",
+                "bundle": names("bundle"),
+                "parts": names("parts"),
             }
         )
     return items

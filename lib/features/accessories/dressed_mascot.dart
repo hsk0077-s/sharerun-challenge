@@ -7,6 +7,7 @@ import 'accessory_catalog.dart';
 ///
 /// 모든 그림이 같은 1024 판이라 위치를 계산하지 않고 순서대로 겹친다.
 /// 순서: 등 → 동물 → 하의 → 상의(+백팩 끈) → 신발 → 손 → 눈 → 머리.
+/// 운동복은 칸마다 그림이 따로 있어 같은 순서에 끼운다. 머리 칸은 낱개 소품(모자 등)이 운동복 머리 그림보다 앞선다.
 /// 스킨을 입으면 동물 그림 대신 스킨 그림 한 장만 그린다.
 class DressedMascot extends StatelessWidget {
   const DressedMascot({
@@ -48,6 +49,19 @@ class DressedMascot extends StatelessWidget {
 
     final skin = at(AccessorySlot.skin);
     final back = at(AccessorySlot.back);
+    final outfit = at(AccessorySlot.outfit);
+
+    // 한 칸의 그림: 낱개 소품이 있으면 그것, 없으면 운동복이 내는 그림.
+    String? pathFor(AccessorySlot slot) {
+      final single = at(slot);
+      if (single != null && single.slot == slot) {
+        return single.assetPath(animal);
+      }
+      if (outfit != null && outfit.parts.contains(slot)) {
+        return outfit.partAssetPath(slot, animal);
+      }
+      return null;
+    }
 
     return SizedBox(
       width: size,
@@ -62,7 +76,7 @@ class DressedMascot extends StatelessWidget {
             layer('assets/images/characters/tier_${animal.code}.png'),
             for (final slot in accessoryDrawOrder)
               if (slot != AccessorySlot.back) ...[
-                if (at(slot) case final acc?) layer(acc.assetPath(animal)),
+                if (pathFor(slot) case final path?) layer(path),
                 // 백팩 끈은 상의 위에 한 번 더 겹친다.
                 if (slot == AccessorySlot.top &&
                     back?.frontAssetPath(animal) != null)

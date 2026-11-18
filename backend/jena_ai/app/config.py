@@ -58,6 +58,16 @@ def payments_enabled() -> bool:
     return os.getenv("PAYMENTS_ENABLED", "").strip().lower() in {"1", "true", "yes"}
 
 
+def sponsorship_enabled() -> bool:
+    """True only when SPONSORSHIP_ENABLED is explicitly on.
+
+    Version 1.0 has no personal sponsorship, so ``POST /actions/sponsorship/donate``
+    refuses with 403 ``sponsorship_disabled`` and records nothing. Existing data is
+    left alone, and read-only summary routes are unaffected.
+    """
+    return os.getenv("SPONSORSHIP_ENABLED", "").strip().lower() in {"1", "true", "yes"}
+
+
 def test_wallet_grant_uids() -> frozenset[str]:
     from app.constants.economy_constants import TEST_WALLET_GRANT_UIDS
 

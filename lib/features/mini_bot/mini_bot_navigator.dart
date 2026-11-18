@@ -97,6 +97,7 @@ abstract final class MiniBotNavigator {
           (_) => const InAppBillingScreen(),
         );
       case MiniBotDestination.personalSponsor:
+        if (!AppEnv.sponsorPaymentsVisible) return;
         _push(
           context,
           RouteNames.personalSponsor,

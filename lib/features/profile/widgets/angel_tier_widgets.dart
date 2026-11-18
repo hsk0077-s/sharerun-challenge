@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/config/app_env.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router/route_names.dart';
@@ -16,6 +17,7 @@ import '../../../l10n/remaining_surface.dart';
 
 /// src-17 개인스폰서 후원결제. 도감을 거치지 않고 직행한다.
 void openPersonalSponsor(BuildContext context) {
+  if (!AppEnv.sponsorPaymentsVisible) return;
   final router = GoRouter.maybeOf(context);
   if (router != null) {
     try {

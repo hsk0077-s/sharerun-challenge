@@ -56,6 +56,9 @@ abstract final class AppEnv {
 
   /// Tests only. Release and profile ignore this.
   static bool? debugInAppPurchasesOverride;
+
+  /// Tests only. Overrides [sponsorPaymentsVisible]. Release and profile ignore this.
+  static bool? debugSponsorPaymentsOverride;
   static const _useFirebaseEmulatorDefine =
       String.fromEnvironment('USE_FIREBASE_EMULATOR');
   static const _androidEmulatorDefine =
@@ -139,8 +142,13 @@ abstract final class AppEnv {
   }
 
   /// 후원 결제 화면. 출시 스위치와 후원 스위치가 모두 켜져 있을 때만 보인다.
-  static bool get sponsorPaymentsVisible =>
-      inAppPurchasesEnabled && sponsorshipEnabled;
+  static bool get sponsorPaymentsVisible {
+    if (kDebugMode) {
+      final override = debugSponsorPaymentsOverride;
+      if (override != null) return override;
+    }
+    return inAppPurchasesEnabled && sponsorshipEnabled;
+  }
 
   /// DIA 팩(돈으로 사는 DIA)을 보여 줄지. 출시 스위치가 꺼져 있으면 보이지 않고,
   /// 켜져 있어도 `DIA_PACKS_ENABLED=true`일 때만 보인다.

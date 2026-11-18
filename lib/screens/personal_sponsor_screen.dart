@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/router/route_names.dart';
+import '../core/config/app_env.dart';
 import '../core/api/api_exception.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../core/strings/app_strings.dart';
@@ -178,6 +179,9 @@ class _PersonalSponsorScreenState extends ConsumerState<PersonalSponsorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!AppEnv.sponsorPaymentsVisible) {
+      return const _SponsorClosedPage();
+    }
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -811,6 +815,34 @@ class MySponsorshipSheet extends ConsumerWidget {
                 ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 후원 스위치가 꺼진 빌드에서 이 화면이 열렸을 때. 후원 버튼도, 서버 호출도 없다.
+class _SponsorClosedPage extends StatelessWidget {
+  const _SponsorClosedPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          key: const Key('sponsor-closed-back'),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => AppRouteNav.popOrHome(context),
+        ),
+      ),
+      body: const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            '지금은 이용할 수 없는 기능이에요.',
+            key: Key('sponsor-closed-message'),
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
     );

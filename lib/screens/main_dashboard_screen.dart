@@ -102,6 +102,7 @@ class _MainDashboardScreenState extends ConsumerState<MainDashboardScreen> {
   }
 
   void _onOpenPersonalSponsor() {
+    if (!AppEnv.sponsorPaymentsVisible) return;
     final router = GoRouter.maybeOf(context);
     if (router != null) {
       try {

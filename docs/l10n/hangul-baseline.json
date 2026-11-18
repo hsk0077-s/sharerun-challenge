@@ -28,6 +28,7 @@
  "lib/screens/challenge_detail_screen.dart": 1,
  "lib/screens/challenge_lobby_screen.dart": 1,
  "lib/screens/level_test_running_screen.dart": 1,
+ "lib/screens/personal_sponsor_screen.dart": 1,
  "lib/screens/pro_tools_screen.dart": 1,
  "lib/screens/refund_screen.dart": 1,
  "lib/screens/smart_watch_sync_screen.dart": 2,

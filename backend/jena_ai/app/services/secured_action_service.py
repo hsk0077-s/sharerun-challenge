@@ -182,6 +182,7 @@ from app.services.streak_protection import (
     require_request_id,
     use_streak_item,
 )
+from app.config import sponsorship_enabled
 from app.services.personal_sponsor import donate_personal_sponsor as _donate_personal_sponsor
 from app.services.value_items import (
     COMPANY_SPONSOR_NAME,
@@ -1160,6 +1161,11 @@ class SecuredActionService:
         request_id: str,
         purpose: str,
     ) -> PersonalSponsorResult:
+        if not sponsorship_enabled():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={"code": "sponsorship_disabled"},
+            )
         transaction = self.firebase_service.db.transaction()
         user_ref = self.firebase_service.db.collection("users").document(uid)
         return _commit_personal_sponsor_tx(

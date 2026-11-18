@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/core/config/app_env.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/data/models/user_model.dart';
 import 'package:share_run_challenge/features/onboarding/src_onboarding_controller.dart';
@@ -218,6 +219,8 @@ void main() {
   testWidgets('sponsor header keeps the photo on top of the wing', (
     tester,
   ) async {
+    AppEnv.debugSponsorPaymentsOverride = true;
+    addTearDown(() => AppEnv.debugSponsorPaymentsOverride = null);
     tester.view.physicalSize = const Size(360, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);

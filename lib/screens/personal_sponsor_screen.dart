@@ -835,12 +835,12 @@ class _SponsorClosedPage extends StatelessWidget {
           onPressed: () => AppRouteNav.popOrHome(context),
         ),
       ),
-      body: Center(
+      body: const Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Text(
             '지금은 이용할 수 없는 기능이에요.',
-            key: const Key('sponsor-closed-message'),
+            key: Key('sponsor-closed-message'),
             textAlign: TextAlign.center,
           ),
         ),

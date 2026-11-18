@@ -839,10 +839,7 @@ class _SponsorClosedPage extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            RemainingSurface.trNow(
-              'personal_sponsor.closed',
-              '지금은 이용할 수 없는 기능이에요.',
-            ),
+            '지금은 이용할 수 없는 기능이에요.',
             key: const Key('sponsor-closed-message'),
             textAlign: TextAlign.center,
           ),

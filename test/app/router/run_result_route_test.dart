@@ -87,4 +87,83 @@ void main() {
       expect(screen.activityId, fallbackRunResult.activityId);
     });
   });
+
+  group('distance and time on the screen', () {
+    const verifiedArgs = ResultScreenArgs(
+      activityId: 'act-3',
+      result: _verified,
+      routePoints: [],
+      distanceKm: 5.25,
+      durationSeconds: 1800,
+    );
+
+    testWidgets('/run-result shows distance and time', (tester) async {
+      await _open(tester, verifiedArgs);
+
+      expect(tester.takeException(), isNull);
+      expect(find.textContaining('5.25 km'), findsOneWidget);
+      expect(find.textContaining('30:00'), findsOneWidget);
+    });
+
+    testWidgets('an hour or more shows h:mm:ss', (tester) async {
+      await _open(
+        tester,
+        const ResultScreenArgs(
+          activityId: 'act-4',
+          result: _verified,
+          routePoints: [],
+          distanceKm: 10.0,
+          durationSeconds: 4500,
+        ),
+      );
+
+      expect(find.textContaining('10.00 km'), findsOneWidget);
+      expect(find.textContaining('1:15:00'), findsOneWidget);
+    });
+
+    testWidgets('the fallback hides the distance and time lines',
+        (tester) async {
+      await _open(tester, null);
+
+      expect(find.byType(RunResultScreen), findsOneWidget);
+      expect(find.textContaining('km'), findsNothing);
+      expect(find.textContaining('00:00'), findsNothing);
+    });
+
+    testWidgets('the old RunResultArgs has no distance, so the lines hide',
+        (tester) async {
+      await _open(
+        tester,
+        const RunResultArgs(
+          activityId: 'act-5',
+          result: _verified,
+          routePoints: [],
+        ),
+      );
+
+      expect(find.textContaining('km'), findsNothing);
+    });
+
+    // in_challenge_screen opens ResultScreen directly with Navigator.
+    testWidgets('ResultScreen opened directly shows distance and time',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: ResultScreen(
+              activityId: 'act-6',
+              result: _verified,
+              routePoints: [],
+              distanceKm: 3.1,
+              durationSeconds: 905,
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.textContaining('3.10 km'), findsOneWidget);
+      expect(find.textContaining('15:05'), findsOneWidget);
+    });
+  });
 }

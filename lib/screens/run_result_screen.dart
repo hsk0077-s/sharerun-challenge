@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
+import '../core/strings/app_strings.dart';
 import '../app/theme/app_colors.dart';
 import '../data/models/winner_reward_action.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
@@ -31,12 +32,20 @@ class RunResultScreen extends ConsumerStatefulWidget {
     required this.activityId,
     required this.result,
     required this.routePoints,
+    this.distanceKm = 0,
+    this.durationSeconds = 0,
     super.key,
   });
 
   final String activityId;
   final JenaValidationResult result;
   final List<RoutePoint> routePoints;
+
+  /// Tracked kilometres. 0 with 0 seconds means unknown, so no line is shown.
+  final double distanceKm;
+
+  /// Tracked seconds.
+  final int durationSeconds;
 
   @override
   ConsumerState<RunResultScreen> createState() => _RunResultScreenState();
@@ -86,6 +95,17 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(verificationUserMessage(result)),
+                  if (widget.distanceKm > 0 || widget.durationSeconds > 0) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      '${RemainingSurface.tr(context, 'onboarding_run_result.body.6', '거리:')} '
+                      '${widget.distanceKm.toStringAsFixed(2)} km',
+                    ),
+                    Text(
+                      '${AppStrings.runResultFinalTimeLabel} '
+                      '${_formatResultDuration(widget.durationSeconds)}',
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Text(
                     RemainingSurface.tr(
@@ -275,6 +295,17 @@ class ResultScreenArgs {
 }
 
 /// [RunResultScreen] 라우터 별칭 (dashboard / in-challenge 호환).
+/// 1시간 미만 mm:ss, 1시간 이상 h:mm:ss.
+String _formatResultDuration(int seconds) {
+  final safe = seconds < 0 ? 0 : seconds;
+  final hours = safe ~/ 3600;
+  final minutes = (safe % 3600) ~/ 60;
+  final remain = safe % 60;
+  final mm = minutes.toString().padLeft(2, '0');
+  final ss = remain.toString().padLeft(2, '0');
+  return hours > 0 ? '$hours:$mm:$ss' : '$mm:$ss';
+}
+
 class ResultScreen extends StatelessWidget {
   const ResultScreen({
     required this.activityId,
@@ -301,6 +332,8 @@ class ResultScreen extends StatelessWidget {
       activityId: activityId,
       result: result,
       routePoints: routePoints,
+      distanceKm: distanceKm,
+      durationSeconds: durationSeconds,
     );
   }
 }

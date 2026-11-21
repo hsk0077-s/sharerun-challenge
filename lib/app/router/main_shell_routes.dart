@@ -354,8 +354,8 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.runResult,
       pageBuilder: (context, state) {
-        // run_tracking_screen sends RunResultArgs; other callers send
-        // ResultScreenArgs. Anything else falls back instead of throwing.
+        // run_tracking_screen sends ResultScreenArgs. RunResultArgs is the old
+        // form without distance and time. Anything else falls back.
         final extra = state.extra;
         final args = switch (extra) {
           ResultScreenArgs() => extra,

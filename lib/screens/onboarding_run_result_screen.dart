@@ -315,13 +315,11 @@ class _OnboardingRunResultScreenState
     }
   }
 
-  Future<File?> _capturePoster() async {
+  /// 카드 그림을 만든다. 만들지 못하면 [target]의 `failed`를 남기고 null.
+  Future<File?> _capturePoster(String target) async {
     if (_sharingImage) return null;
     setState(() => _sharingImage = true);
     try {
-      ref
-          .read(shareFunnelEventsProvider)
-          .qrIncluded(BragSurface.runFinish, included: _showQr);
       return await RunFinishImageShare.capture(_cardKey);
     } catch (e, st) {
       debugPrint('RunFinishImageShare.capture: $e\n$st');
@@ -331,10 +329,20 @@ class _OnboardingRunResultScreenState
               content: Text(RunFinishImageShare.captureFailedMessage)),
         );
       }
+      ref
+          .read(shareFunnelEventsProvider)
+          .shareResult(BragSurface.runFinish, target, BragShareStatus.failed);
       return null;
     } finally {
       if (mounted) setState(() => _sharingImage = false);
     }
+  }
+
+  /// 순서: qr_included → tapped. 그림을 만들기 전에 남긴다.
+  void _announceShare(String targetId) {
+    final events = ref.read(shareFunnelEventsProvider);
+    events.qrIncluded(BragSurface.runFinish, included: _showQr);
+    events.shareTapped(BragSurface.runFinish, targetId);
   }
 
   Future<void> _shareSheet(
@@ -368,7 +376,6 @@ class _OnboardingRunResultScreenState
     final file = _poster;
     if (file == null) return;
     final events = ref.read(shareFunnelEventsProvider);
-    events.shareTapped(BragSurface.runFinish, target.id);
     if (target == RunFinishShareTarget.more) {
       if (origin.mounted) await _shareSheet(origin, file, target.id);
       return;
@@ -382,7 +389,7 @@ class _OnboardingRunResultScreenState
       events.shareResult(
         BragSurface.runFinish,
         target.id,
-        BragShareStatus.success,
+        BragShareStatus.handedOff,
       );
     } else if (origin.mounted) {
       await _shareSheet(origin, file, target.id);
@@ -410,7 +417,8 @@ class _OnboardingRunResultScreenState
     if (mode == RunFinishShareMode.one) {
       final target = await showRunFinishOnePicker(origin, targets);
       if (target == null || !mounted) return;
-      final file = await _capturePoster();
+      _announceShare(target.id);
+      final file = await _capturePoster(target.id);
       if (file == null || !origin.mounted) return;
       _poster = file;
       await _handOff(target, origin);
@@ -425,7 +433,8 @@ class _OnboardingRunResultScreenState
     );
     if (chosen == null || chosen.isEmpty || !mounted) return;
     await RunFinishSharePrefs.saveOrder([for (final item in chosen) item.id]);
-    final file = await _capturePoster();
+    _announceShare(chosen.first.id);
+    final file = await _capturePoster(chosen.first.id);
     if (file == null || !origin.mounted) return;
     setState(() {
       _poster = file;
@@ -439,6 +448,9 @@ class _OnboardingRunResultScreenState
   Future<void> _onSequenceNext(BuildContext origin) async {
     if (_nextIndex >= _queue.length) return;
     final target = _queue[_nextIndex];
+    ref
+        .read(shareFunnelEventsProvider)
+        .shareTapped(BragSurface.runFinish, target.id);
     setState(() => _armResume = true);
     await _handOff(target, origin);
   }

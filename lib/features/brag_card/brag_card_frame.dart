@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../core/widgets/src_logo_header.dart';
 import '../../l10n/remaining_surface.dart';
-import 'brag_card_links.dart';
+import 'brag_qr_painter.dart';
 
 /// Colors the shared frame needs. Each card maps its own palette onto this.
 class BragCardInk {
@@ -196,8 +195,6 @@ class BragCardHeader extends StatelessWidget {
 class BragCardFooter extends StatelessWidget {
   const BragCardFooter({required this.ink, required this.showQr, super.key});
 
-  static const qrSize = 200.0;
-
   final BragCardInk ink;
   final bool showQr;
 
@@ -213,7 +210,7 @@ class BragCardFooter extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (showQr) ...[
-              const BragCardQr(size: qrSize),
+              const BragCardQr(),
               const SizedBox(width: 32),
             ],
             Expanded(
@@ -241,47 +238,19 @@ class BragCardFooter extends StatelessWidget {
 
 /// QR that opens the Play Store listing. It holds [bragCardInstallUrl] only.
 ///
-/// White plate with a quiet zone so a camera can read it on any card color.
-/// Error correction L keeps the code coarse and easy to scan from a story.
+/// Drawn by [BragQrPainter]: white plate with a quiet zone, whole-pixel
+/// modules, so a camera can read it on any card color.
 class BragCardQr extends StatelessWidget {
-  const BragCardQr({required this.size, super.key});
-
-  /// Outer size, including the white quiet zone.
-  final double size;
-
-  static const _quietZone = 14.0;
+  const BragCardQr({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final side = BragQr.plateSide.toDouble();
     return SizedBox(
       key: BragCardSpec.qrKey,
-      width: size,
-      height: size,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(_quietZone),
-          child: QrImageView(
-            data: bragCardInstallUrl,
-            version: QrVersions.auto,
-            errorCorrectionLevel: QrErrorCorrectLevel.L,
-            padding: EdgeInsets.zero,
-            backgroundColor: Colors.white,
-            eyeStyle: const QrEyeStyle(
-              eyeShape: QrEyeShape.square,
-              color: Colors.black,
-            ),
-            dataModuleStyle: const QrDataModuleStyle(
-              dataModuleShape: QrDataModuleShape.square,
-              color: Colors.black,
-            ),
-            gapless: true,
-          ),
-        ),
-      ),
+      width: side,
+      height: side,
+      child: CustomPaint(painter: BragQrPainter(BragQr.code)),
     );
   }
 }

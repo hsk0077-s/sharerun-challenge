@@ -38,117 +38,128 @@ class WorldTourArrivalPoster extends StatelessWidget {
   Widget build(BuildContext context) {
     final name = landmark.shortName(context);
     const ink = _ink;
-    return DefaultTextStyle(
-      style: const TextStyle(
-        decoration: TextDecoration.none,
-        fontFamily: BragCardSpec.fontFamily,
-      ),
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: DecoratedBox(
-          decoration:
-              BoxDecoration(color: landmark.color.withValues(alpha: 0.18)),
-          // Always carries the install QR. The tour card has no off switch.
-          child: BragCardLayout(
-            showQr: true,
-            ink: const BragCardInk(
-              title: _ink,
-              caption: _muted,
-              hairline: Color(0x33101820),
+    // 공유 그림이라 휴대폰 글자 크기 설정에 따라 달라지지 않게 고정한다.
+    final media = MediaQuery.maybeOf(context) ?? const MediaQueryData();
+    return MediaQuery(
+      data: media.copyWith(textScaler: TextScaler.noScaling),
+      child: DefaultTextStyle(
+        style: const TextStyle(
+          decoration: TextDecoration.none,
+          fontFamily: BragCardSpec.fontFamily,
+        ),
+        child: SizedBox(
+          width: width,
+          height: height,
+          child: DecoratedBox(
+            // 캡처 PNG가 비치지 않게 불투명 한 색(흰 바탕 위 18%)으로 둔다.
+            decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                landmark.color.withValues(alpha: 0.18),
+                Colors.white,
+              ),
             ),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Art slot: landmark picture (WorldTourLandmarkArt).
-                      WorldTourLandmarkArt(
-                        landmark: landmark,
-                        height: double.infinity,
-                        radius: 56,
-                      ),
-                      // Art slot: the runner's own avatar.
-                      Positioned(
-                        left: 48,
-                        bottom: -90,
-                        child: SizedBox(width: 240, height: 240, child: avatar),
-                      ),
-                      Positioned(
-                        right: 48,
-                        bottom: -70,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 36, vertical: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Art slot: stamp mark (placeholder check icon).
-                              const Icon(Icons.verified,
-                                  size: 56, color: Color(0xFF2E9E6B)),
-                              const SizedBox(width: 16),
-                              Text(
-                                RemainingSurface.tr(context, 'wt.arrival.stamp',
-                                    '스탬프를 받았어요'),
-                                style: const TextStyle(
-                                  fontSize: 40,
-                                  fontWeight: FontWeight.w800,
-                                  color: ink,
+            // Always carries the install QR. The tour card has no off switch.
+            child: BragCardLayout(
+              showQr: true,
+              ink: const BragCardInk(
+                title: _ink,
+                caption: _muted,
+                hairline: Color(0x33101820),
+              ),
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Art slot: landmark picture (WorldTourLandmarkArt).
+                        WorldTourLandmarkArt(
+                          landmark: landmark,
+                          height: double.infinity,
+                          radius: 56,
+                        ),
+                        // Art slot: the runner's own avatar.
+                        Positioned(
+                          left: 48,
+                          bottom: -90,
+                          child:
+                              SizedBox(width: 240, height: 240, child: avatar),
+                        ),
+                        Positioned(
+                          right: 48,
+                          bottom: -70,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 36, vertical: 20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Art slot: stamp mark (placeholder check icon).
+                                const Icon(Icons.verified,
+                                    size: 56, color: Color(0xFF2E9E6B)),
+                                const SizedBox(width: 16),
+                                Text(
+                                  RemainingSurface.tr(
+                                      context, 'wt.arrival.stamp', '스탬프를 받았어요'),
+                                  style: const TextStyle(
+                                    fontSize: 40,
+                                    fontWeight: FontWeight.w800,
+                                    color: ink,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 130),
-                Text(
-                  RemainingSurface.tr(
-                    context,
-                    'wt.arrival.title',
-                    '\$name 도착!',
-                    {'name': name},
+                  const SizedBox(height: 130),
+                  Text(
+                    RemainingSurface.tr(
+                      context,
+                      'wt.arrival.title',
+                      '\$name 도착!',
+                      {'name': name},
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 120,
+                      height: 1.1,
+                      fontWeight: FontWeight.w900,
+                      color: ink,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 120,
-                    height: 1.1,
-                    fontWeight: FontWeight.w900,
-                    color: ink,
+                  const SizedBox(height: 32),
+                  Text(
+                    '${formatTourKm(args.distanceKm)} km  ·  '
+                    '${formatTourDuration(args.durationSeconds)}',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w800,
+                      color: ink,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  '${formatTourKm(args.distanceKm)} km  ·  '
-                  '${formatTourDuration(args.durationSeconds)}',
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 72,
-                    fontWeight: FontWeight.w800,
-                    color: ink,
+                  const SizedBox(height: 16),
+                  Text(
+                    RemainingSurface.tr(context, 'wt.virtual', '가상 여행 거리'),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 36, color: _muted),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  RemainingSurface.tr(context, 'wt.virtual', '가상 여행 거리'),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 36, color: _muted),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -196,11 +207,12 @@ class _WorldTourArrivalScreenState
     setState(() => _sharing = true);
     final events = ref.read(shareFunnelEventsProvider);
     final box = context.findRenderObject() as RenderBox?;
-    final origin = box == null ? null : box.localToGlobal(Offset.zero) & box.size;
+    final origin =
+        box == null ? null : box.localToGlobal(Offset.zero) & box.size;
+    events.qrIncluded(BragSurface.worldTour, included: true);
+    events.shareTapped(BragSurface.worldTour, _systemSheetTarget);
     try {
       final file = await RunFinishImageShare.capture(_captureKey);
-      events.qrIncluded(BragSurface.worldTour, included: true);
-      events.shareTapped(BragSurface.worldTour, _systemSheetTarget);
       final result = await RunFinishImageShare.shareImageFile(
         path: file.path,
         sharePositionOrigin: origin,
@@ -290,7 +302,8 @@ class _WorldTourArrivalScreenState
             SizedBox(height: tokens.spacing.xs),
             OutlinedButton(
               key: WorldTourArrivalScreen.passportKey,
-              onPressed: () => context.pushReplacement(RouteNames.worldTourPassport),
+              onPressed: () =>
+                  context.pushReplacement(RouteNames.worldTourPassport),
               child: Text(
                 RemainingSurface.tr(context, 'wt.arrival.passport', '여권 보기'),
               ),

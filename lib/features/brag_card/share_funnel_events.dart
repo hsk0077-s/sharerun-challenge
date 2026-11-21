@@ -13,21 +13,33 @@ enum BragSurface {
 
 /// How a share ended, as far as the platform tells us.
 enum BragShareStatus {
-  success('success'),
+  /// 공유창에서 사용자가 앱을 골랐다(share_plus `success`).
+  /// 실제로 올라갔다는 뜻은 아니다.
+  appChosen('app_chosen'),
+
+  /// 공유창을 그냥 닫았다.
   dismissed('dismissed'),
-  unavailable('unavailable'),
+
+  /// 플랫폼이 결과를 알려주지 않는다(share_plus `unavailable`).
+  unknown('unknown'),
+
+  /// 직접 공유 버튼(인스타 스토리·틱톡 등)이 그 앱을 여는 데 성공했다.
+  /// 그 뒤 실제로 올렸는지는 모른다.
+  handedOff('handed_off'),
+
+  /// 그림을 만들지 못했거나, 앱이 없거나, 예외가 났다.
   failed('failed');
 
   const BragShareStatus(this.wireName);
   final String wireName;
 
-  /// `ShareResult.status` from share_plus. Some platforms always answer
-  /// `unavailable`, so this is a best effort, not proof of a post.
+  /// `ShareResult.status` from share_plus. Only the status is used; the
+  /// `raw` text (chosen app package) is never recorded.
   static BragShareStatus fromShareResult(ShareResultStatus status) {
     return switch (status) {
-      ShareResultStatus.success => BragShareStatus.success,
+      ShareResultStatus.success => BragShareStatus.appChosen,
       ShareResultStatus.dismissed => BragShareStatus.dismissed,
-      ShareResultStatus.unavailable => BragShareStatus.unavailable,
+      ShareResultStatus.unavailable => BragShareStatus.unknown,
     };
   }
 }
@@ -35,8 +47,9 @@ enum BragShareStatus {
 /// The four brag-card funnel events. Nothing here carries a person: no uid,
 /// nickname, invite code, device id or advertising id.
 ///
-/// Call order for one share: shown → qrIncluded (when the picture is made)
-/// → shareTapped (when a target is opened) → shareResult.
+/// Call order for one share: shown → qrIncluded → shareTapped → (the picture
+/// is made) → shareResult. `target` is our own id (story, kakao, more ...),
+/// never an app package name.
 abstract interface class ShareFunnelEvents {
   /// `brag_card_shown {surface}`
   void cardShown(BragSurface surface);

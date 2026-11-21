@@ -6,12 +6,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr/qr.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_run_challenge/core/theme/theme.dart';
 import 'package:share_run_challenge/features/brag_card/brag_card_frame.dart';
 import 'package:share_run_challenge/features/brag_card/brag_card_links.dart';
+import 'package:share_run_challenge/features/brag_card/brag_qr_painter.dart';
 import 'package:share_run_challenge/features/brag_card/share_funnel_events.dart';
 import 'package:share_run_challenge/features/pedometer/walking_challenge_share.dart';
 import 'package:share_run_challenge/features/profile/widgets/my_page_invite_code_card.dart';
@@ -123,6 +124,35 @@ void main() {
     });
   });
 
+  group('QR size', () {
+    test('plate is at least 280px and a module is at least 5px', () {
+      expect(BragQr.modulePixels, greaterThanOrEqualTo(5));
+      expect(BragQr.plateSide, greaterThanOrEqualTo(280));
+      expect(BragQr.quietZoneModules, 4);
+      expect(BragQr.errorCorrectLevel, QrErrorCorrectLevel.M);
+    });
+
+    testWidgets('the QR on the card is the plate size', (tester) async {
+      await _pumpRunCard(tester, _runCard());
+      final size = tester.getSize(find.byKey(BragCardSpec.qrKey));
+      expect(size, Size.square(BragQr.plateSide.toDouble()));
+    });
+  });
+
+  group('opaque picture', () {
+    testWidgets('run finish card: all four corners have alpha 255',
+        (tester) async {
+      await _pumpRunCard(tester, _runCard());
+      expect(await _cornerAlphas(tester), [255, 255, 255, 255]);
+    });
+
+    testWidgets('world tour card: all four corners have alpha 255',
+        (tester) async {
+      await _pumpPoster(tester);
+      expect(await _cornerAlphas(tester), [255, 255, 255, 255]);
+    });
+  });
+
   group('run finish card', () {
     testWidgets('carries the QR with exactly the install address',
         (tester) async {
@@ -139,7 +169,7 @@ void main() {
       await _pumpRunCard(tester, _runCard(showQr: false));
 
       expect(find.byKey(BragCardSpec.qrKey), findsNothing);
-      expect(find.byType(QrImageView), findsNothing);
+      expect(find.byType(BragCardQr), findsNothing);
       expect(find.text(BragCardSpec.scanLine), findsNothing);
       expect(find.text(BragCardSpec.plainLine), findsOneWidget);
       // The rest of the card is untouched.
@@ -184,8 +214,7 @@ void main() {
           RunFinishShareCard.distanceKey,
         ]);
         // The footer line must fit in its box, not run past three lines.
-        final line = tester.getSize(find.byKey(BragCardSpec.footerLineKey));
-        expect(line.height, lessThanOrEqualTo(38 * 1.3 * 3 + 1));
+        _expectFooterLineFits(tester);
       });
     }
   });
@@ -219,7 +248,9 @@ void main() {
       expect(poster.size, const Size(1080, 1920));
     });
 
-    for (final code in const ['en', 'de', 'th', 'vi']) {
+    for (final code in const [
+      'en', 'ja', 'zh', 'es', 'pt', 'de', 'fr', 'vi', 'th', 'id',
+    ]) {
       testWidgets('lays out without overflow in $code', (tester) async {
         RemainingSurface.currentLocale = Locale(code);
         await _pumpPoster(tester, locale: Locale(code));
@@ -229,6 +260,7 @@ void main() {
           BragCardSpec.qrKey,
           BragCardSpec.footerLineKey,
         ]);
+        _expectFooterLineFits(tester);
       });
     }
   });
@@ -250,7 +282,7 @@ void main() {
         'shown:run_finish',
         'qr:run_finish:true',
         'tapped:run_finish:more',
-        'result:run_finish:more:success',
+        'result:run_finish:more:app_chosen',
       ]);
     });
 
@@ -285,7 +317,7 @@ void main() {
         'result:run_finish:more:dismissed',
       ]);
       // The preview card (and the hidden export card) have no QR now.
-      expect(find.byType(QrImageView), findsNothing);
+      expect(find.byType(BragCardQr), findsNothing);
     });
 
     testWidgets('a share sheet that throws is reported as failed',
@@ -325,7 +357,7 @@ void main() {
         'shown:world_tour',
         'qr:world_tour:true',
         'tapped:world_tour:system_sheet',
-        'result:world_tour:system_sheet:unavailable',
+        'result:world_tour:system_sheet:unknown',
       ]);
     });
 
@@ -336,18 +368,87 @@ void main() {
       events.qrIncluded(BragSurface.worldTour, included: false);
       events.shareTapped(BragSurface.runFinish, 'more');
       events.shareResult(
-          BragSurface.runFinish, 'more', BragShareStatus.success);
+          BragSurface.runFinish, 'story', BragShareStatus.handedOff);
     });
 
-    test('share_plus statuses map to the four wire names', () {
+    test('share_plus statuses map to the five wire names', () {
       expect(
-        {
-          for (final s in ShareResultStatus.values)
-            BragShareStatus.fromShareResult(s).wireName,
-        },
-        {'success', 'dismissed', 'unavailable'},
+        BragShareStatus.fromShareResult(ShareResultStatus.success).wireName,
+        'app_chosen',
       );
+      expect(
+        BragShareStatus.fromShareResult(ShareResultStatus.dismissed).wireName,
+        'dismissed',
+      );
+      expect(
+        BragShareStatus.fromShareResult(ShareResultStatus.unavailable)
+            .wireName,
+        'unknown',
+      );
+      expect(BragShareStatus.handedOff.wireName, 'handed_off');
       expect(BragShareStatus.failed.wireName, 'failed');
+      expect(BragShareStatus.values.length, 5);
+    });
+
+    testWidgets('a direct share that opens the app is handed_off',
+        (tester) async {
+      final events = _RecordingEvents();
+      _stubShare(onSystemShare: (_) async => throw StateError('unused'));
+      RunFinishImageShare.debugInstalledTargets = () async => const ['story'];
+      RunFinishImageShare.debugShareTarget = (id, path) async => true;
+      await _pumpFinish(tester, events);
+
+      await _shareTo(tester, 'story');
+
+      expect(events.calls, [
+        'shown:run_finish',
+        'qr:run_finish:true',
+        'tapped:run_finish:story',
+        'result:run_finish:story:handed_off',
+      ]);
+    });
+
+    testWidgets('run finish: a failed picture is tapped then failed',
+        (tester) async {
+      final events = _RecordingEvents();
+      RunFinishImageShare.debugCaptureOverride =
+          (_) async => throw StateError('no picture');
+      await _pumpFinish(tester, events);
+
+      await _shareToMore(tester);
+
+      expect(events.calls, [
+        'shown:run_finish',
+        'qr:run_finish:true',
+        'tapped:run_finish:more',
+        'result:run_finish:more:failed',
+      ]);
+    });
+
+    testWidgets('world tour: a failed picture is tapped then failed',
+        (tester) async {
+      final events = _RecordingEvents();
+      RunFinishImageShare.debugCaptureOverride =
+          (_) async => throw StateError('no picture');
+      await tester.binding.setSurfaceSize(const Size(800, 2400));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        tourApp(
+          home: const WorldTourArrivalScreen(args: _args),
+          api: FakeWorldTourApi(me: meJson(done: {'wt-eiffel'})),
+          overrides: [shareFunnelEventsProvider.overrideWithValue(events)],
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(WorldTourArrivalScreen.shareKey));
+      await tester.pumpAndSettle();
+
+      expect(events.calls, [
+        'shown:world_tour',
+        'qr:world_tour:true',
+        'tapped:world_tour:system_sheet',
+        'result:world_tour:system_sheet:failed',
+      ]);
     });
   });
 }
@@ -366,9 +467,9 @@ RunFinishShareCard _runCard({bool showQr = true}) {
     averageHeartRate: 152,
     route: const [Offset(0.2, 0.3), Offset(0.5, 0.2), Offset(0.8, 0.4)],
     badges: const RunFinishTierBadges(
-      animalImage: 'assets/images/tier/none.png',
+      animalImage: 'assets/images/characters/avatar_gender_male.png',
       animalLabel: 'Cheetah',
-      angelImage: 'assets/images/tier/none.png',
+      angelImage: 'assets/images/characters/chibi_archangel_wing.png',
       angelLabel: 'Angel',
     ),
     showQr: showQr,
@@ -492,20 +593,41 @@ void _expectInsideSafeBands(WidgetTester tester, List<Key> keys) {
   }
 }
 
+void _expectFooterLineFits(WidgetTester tester) {
+  final paragraph =
+      tester.renderObject<RenderParagraph>(find.byKey(BragCardSpec.footerLineKey));
+  expect(paragraph.didExceedMaxLines, isFalse, reason: 'footer line is cut');
+}
+
+Future<List<int>> _cornerAlphas(WidgetTester tester) async {
+  final boundary =
+      tester.renderObject<RenderRepaintBoundary>(find.byKey(_boundaryKey));
+  final shot = await tester.runAsync(() async {
+    final image = boundary.toImageSync(pixelRatio: 1);
+    final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final size = (image.width, image.height);
+    image.dispose();
+    return (size, bytes!);
+  });
+  final ((w, h), bytes) = shot!;
+  int alpha(int x, int y) => bytes.getUint8((y * w + x) * 4 + 3);
+  return [alpha(0, 0), alpha(w - 1, 0), alpha(0, h - 1), alpha(w - 1, h - 1)];
+}
+
 /// Reads the painted pixels of the QR and checks every module against the
-/// QR that [expected] must produce. If this passes, a scanner reads [expected].
+/// QR that [expected] must produce (error correction M, 4-module quiet zone).
+/// If this passes, a scanner reads [expected].
 Future<void> _expectQrPixelsEncode(WidgetTester tester, String expected) async {
-  final qr = QrValidator.validate(
+  final qr = QrCode.fromData(
     data: expected,
-    version: QrVersions.auto,
-    errorCorrectionLevel: QrErrorCorrectLevel.L,
-  ).qrCode!;
+    errorCorrectLevel: QrErrorCorrectLevel.M,
+  );
   final image = QrImage(qr);
   final modules = qr.moduleCount;
   final boundary =
       tester.renderObject<RenderRepaintBoundary>(find.byKey(_boundaryKey));
   final origin = boundary.localToGlobal(Offset.zero);
-  final local = tester.getRect(find.byType(QrImageView)).shift(-origin);
+  final plate = tester.getRect(find.byKey(BragCardSpec.qrKey)).shift(-origin);
   final shot = await tester.runAsync(() async {
     final image = boundary.toImageSync(pixelRatio: 1);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
@@ -514,15 +636,33 @@ Future<void> _expectQrPixelsEncode(WidgetTester tester, String expected) async {
     return (width, bytes!);
   });
   final (width, bytes) = shot!;
-  final cell = local.width / modules;
+  const cell = BragQr.modulePixels;
+  const quiet = BragQr.quietZoneModules;
+  expect(plate.width, (modules + quiet * 2) * cell.toDouble());
+  int lum(double x, double y) => bytes.getUint8((y.floor() * width + x.floor()) * 4);
   var wrong = 0;
-  for (var row = 0; row < modules; row++) {
-    for (var col = 0; col < modules; col++) {
-      final x = (local.left + (col + 0.5) * cell).floor();
-      final y = (local.top + (row + 0.5) * cell).floor();
-      final dark = bytes.getUint8((y * width + x) * 4) < 128;
-      if (dark != image.isDark(row, col)) wrong++;
+  for (var row = -quiet; row < modules + quiet; row++) {
+    for (var col = -quiet; col < modules + quiet; col++) {
+      final inside = row >= 0 && row < modules && col >= 0 && col < modules;
+      final expectDark = inside && image.isDark(row, col);
+      final x = plate.left + (col + quiet + 0.5) * cell;
+      final y = plate.top + (row + quiet + 0.5) * cell;
+      if ((lum(x, y) < 128) != expectDark) wrong++;
     }
   }
-  expect(wrong, 0, reason: '$wrong of ${modules * modules} modules differ');
+  expect(wrong, 0, reason: '$wrong modules differ (quiet zone included)');
+}
+
+/// Card share → "one app" → [id].
+Future<void> _shareTo(WidgetTester tester, String id) async {
+  await tester.tap(find.byKey(runFinishCardShareKey));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.tap(find.byKey(runFinishModeOneKey));
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.tap(find.byKey(Key('run-finish-target-$id')));
+  await tester.pump();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 400));
 }

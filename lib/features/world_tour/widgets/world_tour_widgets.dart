@@ -106,6 +106,7 @@ class WorldTourMissionCard extends StatelessWidget {
             children: [
               WorldTourLandmarkArt(
                 landmark: landmark,
+                scene: WorldTourArtScene.forMission(mission),
                 height: 110,
                 dimmed: mission.completed,
               ),

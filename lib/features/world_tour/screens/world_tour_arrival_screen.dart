@@ -76,6 +76,7 @@ class WorldTourArrivalPoster extends StatelessWidget {
                         // Art slot: landmark picture (WorldTourLandmarkArt).
                         WorldTourLandmarkArt(
                           landmark: landmark,
+                          scene: WorldTourArtScene.poster,
                           height: double.infinity,
                           radius: 56,
                         ),

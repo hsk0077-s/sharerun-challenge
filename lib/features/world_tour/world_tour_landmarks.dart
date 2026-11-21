@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/remaining_surface.dart';
+import 'world_tour_models.dart';
 
 /// Display data for one landmark: a flat colour with an icon for now, and the
 /// translated names and story lines. The mission list itself (ids, targets,
 /// progress) comes from the server.
 ///
-/// TODO(art): replace [WorldTourLandmarkArt] with the hand-drawn illustrations
-/// (see docs/world-tour-mvp.md for the list). No photo is used.
+/// Eiffel Tower, Statue of Liberty and Mount Fuji have drawn pictures (see
+/// [WorldTourLandmark.hasArt]); Taj Mahal and the Pyramids still show the flat
+/// colour + icon until their pictures exist. No photo is used.
 class WorldTourLandmark {
   const WorldTourLandmark({
     required this.id,
@@ -51,6 +53,16 @@ class WorldTourLandmark {
   );
 
   static const all = [eiffel, taj, fuji, pyramids, liberty];
+
+  /// Landmarks that have the twelve-file picture set in
+  /// `assets/images/world_tour/`.
+  static const artIds = {'eiffel_tower', 'statue_of_liberty', 'mount_fuji'};
+
+  bool get hasArt => artIds.contains(id);
+
+  /// Asset path of [scene] for this landmark, or null when it has no picture.
+  String? artAsset(WorldTourArtScene scene) =>
+      hasArt ? 'assets/images/world_tour/${id}_${scene.fileSuffix}.webp' : null;
 
   static WorldTourLandmark of(String landmarkId) {
     for (final landmark in all) {
@@ -147,11 +159,38 @@ class WorldTourLandmark {
   }
 }
 
-/// Placeholder card: a flat colour with the landmark icon. Swapped for the
-/// drawn illustration later; the size and corners stay the same.
+/// Which picture of a landmark to show. The three approach scenes follow the
+/// three story lines (start / middle / arrival); [poster] is only the
+/// background of the arrival share card.
+enum WorldTourArtScene {
+  far('approach_far'),
+  mid('approach_mid'),
+  close('approach_close'),
+  poster('poster');
+
+  const WorldTourArtScene(this.fileSuffix);
+
+  final String fileSuffix;
+
+  /// Not started, or under a third of the way: far. Under way: mid.
+  /// Finished: close.
+  static WorldTourArtScene forMission(WorldTourMission mission) {
+    if (mission.completed) return close;
+    if (!mission.started || mission.progressKm * 3 < mission.targetKm) {
+      return far;
+    }
+    return mid;
+  }
+}
+
+/// Landmark picture card. Landmarks with a drawn picture show the WebP for
+/// [scene]; the others (and a picture that fails to load) show a flat colour
+/// with the landmark icon. Height, corners and [dimmed] behave the same either
+/// way.
 class WorldTourLandmarkArt extends StatelessWidget {
   const WorldTourLandmarkArt({
     required this.landmark,
+    this.scene = WorldTourArtScene.far,
     this.height = 120,
     this.dimmed = false,
     this.radius = 16,
@@ -159,27 +198,55 @@ class WorldTourLandmarkArt extends StatelessWidget {
   });
 
   final WorldTourLandmark landmark;
+  final WorldTourArtScene scene;
   final double height;
   final bool dimmed;
   final double radius;
 
   @override
   Widget build(BuildContext context) {
-    final base = landmark.color;
+    final asset = landmark.artAsset(scene);
     return ExcludeSemantics(
-      child: Container(
+      child: SizedBox(
         height: height,
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: dimmed ? base.withValues(alpha: 0.45) : base,
-          borderRadius: BorderRadius.circular(radius),
-        ),
-        alignment: Alignment.center,
-        child: Icon(
-          landmark.icon,
-          size: height.isFinite ? height * 0.5 : 56,
-          color: Colors.white.withValues(alpha: dimmed ? 0.7 : 0.95),
-        ),
+        child: asset == null
+            ? _placeholder()
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(radius),
+                child: ColoredBox(
+                  color: landmark.color,
+                  child: Opacity(
+                    opacity: dimmed ? 0.45 : 1,
+                    child: Image.asset(
+                      asset,
+                      key: ValueKey(asset),
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      errorBuilder: (_, __, ___) => _placeholder(),
+                    ),
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _placeholder() {
+    final base = landmark.color;
+    return Container(
+      height: height,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: dimmed ? base.withValues(alpha: 0.45) : base,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        landmark.icon,
+        size: height.isFinite ? height * 0.5 : 56,
+        color: Colors.white.withValues(alpha: dimmed ? 0.7 : 0.95),
       ),
     );
   }

@@ -161,6 +161,7 @@ class WorldTourDetailScreen extends ConsumerWidget {
             children: [
               WorldTourLandmarkArt(
                 landmark: landmark,
+                scene: WorldTourArtScene.forMission(mission),
                 height: 180,
                 dimmed: mission.completed,
               ),
@@ -356,6 +357,7 @@ class _StampSlot extends StatelessWidget {
               children: [
                 WorldTourLandmarkArt(
                   landmark: landmark,
+                  scene: WorldTourArtScene.forMission(mission),
                   height: double.infinity,
                   dimmed: !stamped,
                 ),

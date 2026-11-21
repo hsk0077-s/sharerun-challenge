@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/widgets/src_logo_header.dart';
+import '../brag_card/brag_card_frame.dart';
 import 'run_card_summary.dart';
 import '../../l10n/remaining_surface.dart';
 
@@ -147,14 +147,15 @@ class RunFinishShareCard extends StatelessWidget {
     this.photo,
     this.frameColor,
     this.badges,
+    this.showQr = true,
     super.key,
   });
 
-  static const canvasWidth = 1080.0;
-  static const canvasHeight = 1920.0;
+  static const canvasWidth = BragCardSpec.canvasWidth;
+  static const canvasHeight = BragCardSpec.canvasHeight;
 
   /// Instagram story chrome sits in roughly the top and bottom 250px.
-  static const storySafeInset = 280.0;
+  static const storySafeInset = BragCardSpec.storySafeInset;
 
   static const distanceKey = Key('run-finish-distance');
   static const timeKey = Key('run-finish-time');
@@ -197,6 +198,9 @@ class RunFinishShareCard extends StatelessWidget {
 
   /// 동물 티어·천사 등급 원. null이면 그리지 않는다.
   final RunFinishTierBadges? badges;
+
+  /// 설치 QR을 바닥에 넣을지. 기본은 켜짐.
+  final bool showQr;
 
   _PaceParts get _paceParts {
     var trimmed = pace.trim();
@@ -275,19 +279,33 @@ class RunFinishShareCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                      76, storySafeInset, 76, storySafeInset),
-                  child: _RecordColumn(
-                    palette: palette,
-                    dateLabel: runFinishDateLabel(date),
-                    distanceKm: distanceKm,
-                    time: time,
-                    paceNumber: paceParts.value,
-                    paceUnit: paceParts.unit,
-                    donation: donation,
-                    splitPaces: splitPaces,
-                    averageHeartRate: averageHeartRate,
+                BragCardLayout(
+                  ink: BragCardInk(
+                    title: palette.hero,
+                    caption: palette.unit,
+                    hairline: palette.hairline,
+                  ),
+                  showQr: showQr,
+                  logoKey: RunFinishShareCard.logoKey,
+                  appNameKey: RunFinishShareCard.appNameKey,
+                  // 기록이 많은 긴 언어에서도 넘치지 않게, 넘칠 때만 줄여 맞춘다.
+                  body: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.topLeft,
+                    child: SizedBox(
+                      width: BragCardSpec.bodyWidth,
+                      child: _RecordColumn(
+                        palette: palette,
+                        dateLabel: runFinishDateLabel(date),
+                        distanceKm: distanceKm,
+                        time: time,
+                        paceNumber: paceParts.value,
+                        paceUnit: paceParts.unit,
+                        donation: donation,
+                        splitPaces: splitPaces,
+                        averageHeartRate: averageHeartRate,
+                      ),
+                    ),
                   ),
                 ),
                 if (badges != null && !badges!.isEmpty)
@@ -424,6 +442,7 @@ class _RecordColumn extends StatelessWidget {
     final splits = splitPaces == null ? null : bucketSplitPaces(splitPaces!);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           RunFinishShareCard.headline,
@@ -506,8 +525,6 @@ class _RecordColumn extends StatelessWidget {
           const SizedBox(height: 28),
           _DonationBadge(palette: palette, donation: donation!),
         ],
-        const Spacer(),
-        _BrandLockup(palette: palette),
       ],
     );
   }
@@ -839,79 +856,6 @@ class _DonationBadge extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _BrandLockup extends StatelessWidget {
-  const _BrandLockup({required this.palette});
-
-  final _CardPalette palette;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(height: 1, color: palette.hairline),
-        const SizedBox(height: 26),
-        Row(
-          children: [
-            DecoratedBox(
-              key: RunFinishShareCard.logoKey,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(
-                    color: palette.unit.withValues(alpha: 0.85), width: 2),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.asset(
-                  SRCLogoHeader.assetPath,
-                  width: 76,
-                  height: 76,
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, error, stackTrace) => const SizedBox(
-                    width: 76,
-                    height: 76,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 18),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  RunFinishShareCard.appName,
-                  key: RunFinishShareCard.appNameKey,
-                  style: TextStyle(
-                    fontFamily: RunFinishShareCard.fontFamily,
-                    fontSize: 40,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.6,
-                    color: palette.hero,
-                    height: 1.35,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'SHARE RUN',
-                  style: TextStyle(
-                    fontFamily: RunFinishShareCard.fontFamily,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 3.4,
-                    color: palette.unit,
-                    height: 1.35,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
     );
   }
 }

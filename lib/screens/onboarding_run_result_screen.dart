@@ -18,6 +18,8 @@ import '../features/profile/user_profile_notifier.dart';
 import '../features/profile/widgets/tier_circle_badge.dart';
 import '../features/shop/cosmetics_catalog.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
+import '../features/brag_card/brag_card_frame.dart';
+import '../features/brag_card/share_funnel_events.dart';
 import '../features/pedometer/walking_challenge_share.dart';
 import '../features/run_result/run_finish_image_share.dart';
 import '../features/run_result/run_finish_share_card.dart';
@@ -98,6 +100,7 @@ class OnboardingRunResultScreen extends ConsumerStatefulWidget {
 
   static const photoGalleryKey = Key('run-finish-photo-gallery');
   static const tierBadgeSwitchKey = Key('run-finish-tier-badge-switch');
+  static const qrSwitchKey = Key('run-finish-qr-switch');
   static const photoCameraKey = Key('run-finish-photo-camera');
   static String get photoCameraLabel => RemainingSurface.trNow(
         'onboarding_run_result.body',
@@ -130,6 +133,9 @@ class _OnboardingRunResultScreenState
   /// 카드에 동물 티어·천사 등급 원을 넣을지. 공유할 때만 빼는 용도라 저장하지 않는다.
   var _showTierBadges = true;
 
+  /// 카드 바닥에 설치 QR을 넣을지. 기본 켜짐, 저장하지 않는다.
+  var _showQr = true;
+
   /// Scenery for this visit only. Never saved, never uploaded.
   ImageProvider? _photo;
   var _usingPhoto = false;
@@ -160,6 +166,12 @@ class _OnboardingRunResultScreenState
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     unawaited(_restoreTheme());
+    if (widget.serverConfirmed) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(shareFunnelEventsProvider).cardShown(BragSurface.runFinish);
+      });
+    }
   }
 
   @override
@@ -247,6 +259,7 @@ class _OnboardingRunResultScreenState
               angelEmoji: angel.emoji,
             )
           : null,
+      showQr: _showQr,
       style: style,
       distanceKm: _distanceLabel,
       time: _timeLabel,
@@ -302,7 +315,8 @@ class _OnboardingRunResultScreenState
     }
   }
 
-  Future<File?> _capturePoster() async {
+  /// 카드 그림을 만든다. 만들지 못하면 [target]의 `failed`를 남기고 null.
+  Future<File?> _capturePoster(String target) async {
     if (_sharingImage) return null;
     setState(() => _sharingImage = true);
     try {
@@ -315,20 +329,45 @@ class _OnboardingRunResultScreenState
               content: Text(RunFinishImageShare.captureFailedMessage)),
         );
       }
+      ref
+          .read(shareFunnelEventsProvider)
+          .shareResult(BragSurface.runFinish, target, BragShareStatus.failed);
       return null;
     } finally {
       if (mounted) setState(() => _sharingImage = false);
     }
   }
 
-  Future<void> _shareSheet(BuildContext buttonContext, File file) async {
+  /// 순서: qr_included → tapped. 그림을 만들기 전에 남긴다.
+  void _announceShare(String targetId) {
+    final events = ref.read(shareFunnelEventsProvider);
+    events.qrIncluded(BragSurface.runFinish, included: _showQr);
+    events.shareTapped(BragSurface.runFinish, targetId);
+  }
+
+  Future<void> _shareSheet(
+    BuildContext buttonContext,
+    File file,
+    String targetId,
+  ) async {
+    final events = ref.read(shareFunnelEventsProvider);
     try {
-      await RunFinishImageShare.shareImageFile(
+      final result = await RunFinishImageShare.shareImageFile(
         path: file.path,
         sharePositionOrigin: WalkingChallengeShare.originFrom(buttonContext),
       );
+      events.shareResult(
+        BragSurface.runFinish,
+        targetId,
+        BragShareStatus.fromShareResult(result.status),
+      );
     } catch (e, st) {
       debugPrint('RunFinishImageShare.sheet: $e\n$st');
+      events.shareResult(
+        BragSurface.runFinish,
+        targetId,
+        BragShareStatus.failed,
+      );
     }
   }
 
@@ -336,15 +375,31 @@ class _OnboardingRunResultScreenState
       RunFinishShareTarget target, BuildContext origin) async {
     final file = _poster;
     if (file == null) return;
+    final events = ref.read(shareFunnelEventsProvider);
     if (target == RunFinishShareTarget.more) {
-      if (origin.mounted) await _shareSheet(origin, file);
+      if (origin.mounted) await _shareSheet(origin, file, target.id);
       return;
     }
     final opened = await RunFinishImageShare.shareTarget(
       id: target.id,
       path: file.path,
     );
-    if (!opened && origin.mounted) await _shareSheet(origin, file);
+    if (opened) {
+      // 앱이 그림을 받았다는 뜻이다. 올렸는지는 알 수 없다.
+      events.shareResult(
+        BragSurface.runFinish,
+        target.id,
+        BragShareStatus.handedOff,
+      );
+    } else if (origin.mounted) {
+      await _shareSheet(origin, file, target.id);
+    } else {
+      events.shareResult(
+        BragSurface.runFinish,
+        target.id,
+        BragShareStatus.failed,
+      );
+    }
   }
 
   Future<void> _onCardShare(BuildContext origin) async {
@@ -362,7 +417,8 @@ class _OnboardingRunResultScreenState
     if (mode == RunFinishShareMode.one) {
       final target = await showRunFinishOnePicker(origin, targets);
       if (target == null || !mounted) return;
-      final file = await _capturePoster();
+      _announceShare(target.id);
+      final file = await _capturePoster(target.id);
       if (file == null || !origin.mounted) return;
       _poster = file;
       await _handOff(target, origin);
@@ -377,7 +433,8 @@ class _OnboardingRunResultScreenState
     );
     if (chosen == null || chosen.isEmpty || !mounted) return;
     await RunFinishSharePrefs.saveOrder([for (final item in chosen) item.id]);
-    final file = await _capturePoster();
+    _announceShare(chosen.first.id);
+    final file = await _capturePoster(chosen.first.id);
     if (file == null || !origin.mounted) return;
     setState(() {
       _poster = file;
@@ -391,6 +448,9 @@ class _OnboardingRunResultScreenState
   Future<void> _onSequenceNext(BuildContext origin) async {
     if (_nextIndex >= _queue.length) return;
     final target = _queue[_nextIndex];
+    ref
+        .read(shareFunnelEventsProvider)
+        .shareTapped(BragSurface.runFinish, target.id);
     setState(() => _armResume = true);
     await _handOff(target, origin);
   }
@@ -550,6 +610,14 @@ class _OnboardingRunResultScreenState
                             value: _showTierBadges,
                             onChanged: (v) =>
                                 setState(() => _showTierBadges = v),
+                          ),
+                          SwitchListTile(
+                            key: OnboardingRunResultScreen.qrSwitchKey,
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(BragCardSpec.qrSwitchLabel),
+                            value: _showQr,
+                            onChanged: (v) => setState(() => _showQr = v),
                           ),
                           const SizedBox(height: 12),
                           _RecordCard(

@@ -354,7 +354,18 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.runResult,
       pageBuilder: (context, state) {
-        final args = state.extra as ResultScreenArgs?;
+        // run_tracking_screen sends RunResultArgs; other callers send
+        // ResultScreenArgs. Anything else falls back instead of throwing.
+        final extra = state.extra;
+        final args = switch (extra) {
+          ResultScreenArgs() => extra,
+          RunResultArgs() => ResultScreenArgs(
+              activityId: extra.activityId,
+              result: extra.result,
+              routePoints: extra.routePoints,
+            ),
+          _ => null,
+        };
         return NoTransitionPage<void>(
           key: state.pageKey,
           child: ResultScreen(

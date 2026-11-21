@@ -349,10 +349,12 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
       final messenger = ScaffoldMessenger.of(context);
       context.go(
         RouteNames.runResult,
-        extra: RunResultArgs(
+        extra: ResultScreenArgs(
           activityId: activityId,
           result: result,
           routePoints: completedRun.routePoints,
+          distanceKm: completedRun.telemetry.distanceKm,
+          durationSeconds: completedRun.telemetry.durationSeconds,
         ),
       );
       tourEnd?.announce(router: router, messenger: messenger);

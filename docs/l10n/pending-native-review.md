@@ -19,3 +19,6 @@
 | `running_crew.card_open` | ${crew.memberCount}/${crew.maxMembers}명 · 자유 가입 | ${crew.memberCount}/${crew.maxMembers}人 · 自由参加 | ${crew.memberCount}/${crew.maxMembers} members · Open join |
 | `running_crew.card_approval` | ${crew.memberCount}/${crew.maxMembers}명 · 승인 가입 | ${crew.memberCount}/${crew.maxMembers}人 · 承認制 | ${crew.memberCount}/${crew.maxMembers} members · Approval required |
 | `profile.my_dashboard_sections.wallet` | 내 지갑 | マイウォレット | My wallet |
+| `brag_card.footer.scan` | QR을 찍어 쉐어런을 시작해요 | QRを読み取ってShareRunを始めましょう | Scan the QR to start with ShareRun |
+| `brag_card.footer.plain` | 쉐어런과 함께 달려요 | ShareRunと一緒に走っています | Running with ShareRun |
+| `brag_card.qr_switch` | QR 넣기 | QRコードを入れる | Add QR code |

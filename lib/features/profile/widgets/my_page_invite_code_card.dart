@@ -8,14 +8,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/providers/app_providers.dart';
 import '../../../core/theme/theme.dart';
 import '../../../core/widgets/social_brand_icons.dart';
+import '../../brag_card/brag_card_links.dart';
 import '../../pedometer/walking_challenge_share.dart';
 import '../invite_copy.dart';
 import '../../../l10n/remaining_surface.dart';
 
 /// Play Store listing. Package id is `applicationId` in
 /// `android/app/build.gradle.kts`.
-const myPageInvitePlayStoreUrl =
-    'https://play.google.com/store/apps/details?id=com.sharerun.share_run_challenge';
+const myPageInvitePlayStoreUrl = sharerunPlayStoreUrl;
 
 /// Short invite body. No reward amounts — payout copy is a later step.
 String myPageInviteShareText(String code) =>

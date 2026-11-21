@@ -2161,6 +2161,9 @@ class RemainingSurface {
     'wt.retry_later',
     'accessories.accessory_catalog.slot_outfit',
     'accessories.accessory_catalog.slot_costume',
+    'brag_card.footer.scan',
+    'brag_card.footer.plain',
+    'brag_card.qr_switch',
   ];
 
   static const _en = <String, String>{
@@ -4237,6 +4240,9 @@ class RemainingSurface {
     'wt.retry_later': 'We\'ll add this to your trip again in a moment',
     'accessories.accessory_catalog.slot_outfit': 'Sportswear',
     'accessories.accessory_catalog.slot_costume': 'Costumes',
+    'brag_card.footer.scan': 'Scan the QR to start with ShareRun',
+    'brag_card.footer.plain': 'Running with ShareRun',
+    'brag_card.qr_switch': 'Add QR code',
   };
 
   static const _ja = <String, String>{
@@ -6313,6 +6319,9 @@ class RemainingSurface {
     'wt.retry_later': '旅の距離は少し後にもう一度反映します',
     'accessories.accessory_catalog.slot_outfit': 'スポーツウェア',
     'accessories.accessory_catalog.slot_costume': 'キャラ衣装',
+    'brag_card.footer.scan': 'QRを読み取ってShareRunを始めましょう',
+    'brag_card.footer.plain': 'ShareRunと一緒に走っています',
+    'brag_card.qr_switch': 'QRコードを入れる',
   };
 
   static const _zh = <String, String>{
@@ -8389,6 +8398,9 @@ class RemainingSurface {
     'wt.retry_later': '稍後會再次計入旅行距離',
     'accessories.accessory_catalog.slot_outfit': '運動服',
     'accessories.accessory_catalog.slot_costume': '角色服裝',
+    'brag_card.footer.scan': '掃描 QR 碼，開始使用 ShareRun',
+    'brag_card.footer.plain': '和 ShareRun 一起跑步',
+    'brag_card.qr_switch': '加入 QR 碼',
   };
 
   static const _es = <String, String>{
@@ -10465,6 +10477,9 @@ class RemainingSurface {
     'wt.retry_later': 'Volveremos a sumarlo a tu viaje en un momento',
     'accessories.accessory_catalog.slot_outfit': 'Ropa deportiva',
     'accessories.accessory_catalog.slot_costume': 'Trajes',
+    'brag_card.footer.scan': 'Escanea el QR y empieza con ShareRun',
+    'brag_card.footer.plain': 'Corriendo con ShareRun',
+    'brag_card.qr_switch': 'Incluir código QR',
   };
 
   static const _pt = <String, String>{
@@ -12541,6 +12556,9 @@ class RemainingSurface {
     'wt.retry_later': 'Vamos tentar somar à sua viagem de novo em instantes',
     'accessories.accessory_catalog.slot_outfit': 'Roupa esportiva',
     'accessories.accessory_catalog.slot_costume': 'Fantasias',
+    'brag_card.footer.scan': 'Escaneie o QR e comece com o ShareRun',
+    'brag_card.footer.plain': 'Correndo com o ShareRun',
+    'brag_card.qr_switch': 'Incluir QR code',
   };
 
   static const _de = <String, String>{
@@ -14617,6 +14635,9 @@ class RemainingSurface {
     'wt.retry_later': 'Wir tragen es gleich erneut in deine Reise ein',
     'accessories.accessory_catalog.slot_outfit': 'Sportkleidung',
     'accessories.accessory_catalog.slot_costume': 'Kostüme',
+    'brag_card.footer.scan': 'QR scannen und mit ShareRun starten',
+    'brag_card.footer.plain': 'Laufen mit ShareRun',
+    'brag_card.qr_switch': 'QR-Code einfügen',
   };
 
   static const _fr = <String, String>{
@@ -16693,6 +16714,9 @@ class RemainingSurface {
     'wt.retry_later': 'Nous l\'ajouterons à votre voyage dans un instant',
     'accessories.accessory_catalog.slot_outfit': 'Tenue de sport',
     'accessories.accessory_catalog.slot_costume': 'Costumes',
+    'brag_card.footer.scan': 'Scannez le QR code pour démarrer avec ShareRun',
+    'brag_card.footer.plain': 'On court avec ShareRun',
+    'brag_card.qr_switch': 'Ajouter le QR code',
   };
 
   static const _vi = <String, String>{
@@ -18769,6 +18793,9 @@ class RemainingSurface {
     'wt.retry_later': 'Chúng tôi sẽ cộng vào chuyến đi lại sau ít phút',
     'accessories.accessory_catalog.slot_outfit': 'Đồ thể thao',
     'accessories.accessory_catalog.slot_costume': 'Trang phục',
+    'brag_card.footer.scan': 'Quét mã QR để bắt đầu với ShareRun',
+    'brag_card.footer.plain': 'Cùng chạy với ShareRun',
+    'brag_card.qr_switch': 'Thêm mã QR',
   };
 
   static const _th = <String, String>{
@@ -20845,6 +20872,9 @@ class RemainingSurface {
     'wt.retry_later': 'เราจะนับระยะทางการเดินทางอีกครั้งในอีกสักครู่',
     'accessories.accessory_catalog.slot_outfit': 'ชุดกีฬา',
     'accessories.accessory_catalog.slot_costume': 'ชุดตัวละคร',
+    'brag_card.footer.scan': 'สแกน QR เพื่อเริ่มใช้ ShareRun',
+    'brag_card.footer.plain': 'วิ่งไปกับ ShareRun',
+    'brag_card.qr_switch': 'ใส่ QR โค้ด',
   };
 
   static const _id = <String, String>{
@@ -22921,6 +22951,9 @@ class RemainingSurface {
     'wt.retry_later': 'Akan kami tambahkan lagi ke perjalananmu sebentar lagi',
     'accessories.accessory_catalog.slot_outfit': 'Pakaian olahraga',
     'accessories.accessory_catalog.slot_costume': 'Kostum',
+    'brag_card.footer.scan': 'Pindai QR untuk mulai dengan ShareRun',
+    'brag_card.footer.plain': 'Berlari bersama ShareRun',
+    'brag_card.qr_switch': 'Sertakan kode QR',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

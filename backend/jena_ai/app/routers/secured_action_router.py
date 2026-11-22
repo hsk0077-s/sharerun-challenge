@@ -1,3 +1,4 @@
+import logging
 import time
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
@@ -91,7 +92,18 @@ from app.models.friends import (
     FriendRemoveResult,
 )
 from app.services import friends
+from app.models.friend_cheers import (
+    CheerInbox,
+    CheerSeenResult,
+    CheerSendRequest,
+    CheerSendResult,
+    CheerSettings,
+    CheerSettingsRequest,
+    FriendRunList,
+)
+from app.services import friend_cheers
 
+_log = logging.getLogger(__name__)
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
 service = SecuredActionService()
 
@@ -108,7 +120,21 @@ def validate_run(
         request.duration_seconds,
         required=bool(getattr(http_request.state, "is_watch", False)),
     )
-    return service.validate_run(uid=uid, request=request)
+    result = service.validate_run(uid=uid, request=request)
+    if result.verified:
+        # A small friend record for verified runs only. A failure here must
+        # never change the validation answer.
+        try:
+            friend_cheers.record_friend_run(
+                service.firebase_service.db,
+                uid,
+                request.activity_id,
+                request.distance_km,
+                request.duration_seconds,
+            )
+        except Exception:
+            _log.warning("friend run record failed", exc_info=True)
+    return result
 
 
 @router.post("/world-tour/attach", response_model=WorldTourAttachResult)
@@ -161,6 +187,54 @@ def friends_block(
 ) -> FriendBlockResult:
     return friends.block(
         service.firebase_service.db, uid, request.target_uid, request.report_reason
+    )
+
+
+@router.get("/friends/runs", response_model=FriendRunList)
+def friends_runs(uid: str = Depends(require_uid)) -> FriendRunList:
+    return friend_cheers.list_friend_runs(service.firebase_service.db, uid)
+
+
+@router.post("/cheers/send", response_model=CheerSendResult)
+def cheers_send(
+    request: CheerSendRequest,
+    uid: str = Depends(require_uid),
+) -> CheerSendResult:
+    return friend_cheers.send(
+        service.firebase_service.db,
+        uid,
+        request.friend_uid,
+        request.activity_id,
+        request.reaction,
+    )
+
+
+@router.get("/cheers/inbox", response_model=CheerInbox)
+def cheers_inbox(uid: str = Depends(require_uid)) -> CheerInbox:
+    return friend_cheers.list_inbox(service.firebase_service.db, uid)
+
+
+@router.post("/cheers/inbox/seen", response_model=CheerSeenResult)
+def cheers_inbox_seen(uid: str = Depends(require_uid)) -> CheerSeenResult:
+    return friend_cheers.mark_seen(service.firebase_service.db, uid)
+
+
+@router.get("/cheers/settings", response_model=CheerSettings)
+def cheers_settings(uid: str = Depends(require_uid)) -> CheerSettings:
+    return friend_cheers.get_settings(service.firebase_service.db, uid)
+
+
+@router.post("/cheers/settings", response_model=CheerSettings)
+def cheers_settings_update(
+    request: CheerSettingsRequest,
+    uid: str = Depends(require_uid),
+) -> CheerSettings:
+    return friend_cheers.update_settings(
+        service.firebase_service.db,
+        uid,
+        request.mute_all,
+        request.friend_uid,
+        request.muted,
     )
 
 

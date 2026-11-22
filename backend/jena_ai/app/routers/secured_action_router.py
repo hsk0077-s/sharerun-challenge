@@ -80,6 +80,17 @@ from app.models.world_tour import (
     WorldTourMe,
 )
 from app.services import world_tour
+from app.models.friends import (
+    FriendAcceptRequest,
+    FriendAcceptResult,
+    FriendBlockRequest,
+    FriendBlockResult,
+    FriendInviteResult,
+    FriendList,
+    FriendRemoveRequest,
+    FriendRemoveResult,
+)
+from app.services import friends
 
 router = APIRouter(prefix="/actions", tags=["secured-actions"])
 service = SecuredActionService()
@@ -114,6 +125,43 @@ def world_tour_attach(
 @router.get("/world-tour/me", response_model=WorldTourMe)
 def world_tour_me(uid: str = Depends(require_uid)) -> WorldTourMe:
     return world_tour.read_me(service.firebase_service.db, uid)
+
+
+@router.post("/friends/invite", response_model=FriendInviteResult)
+def friends_invite(uid: str = Depends(require_uid)) -> FriendInviteResult:
+    """A one-time friend invite token (24 hours). No reward."""
+    return friends.create_invite(service.firebase_service.db, uid)
+
+
+@router.post("/friends/accept", response_model=FriendAcceptResult)
+def friends_accept(
+    request: FriendAcceptRequest,
+    uid: str = Depends(require_uid),
+) -> FriendAcceptResult:
+    return friends.accept(service.firebase_service.db, uid, request.token)
+
+
+@router.get("/friends/list", response_model=FriendList)
+def friends_list(uid: str = Depends(require_uid)) -> FriendList:
+    return friends.list_friends(service.firebase_service.db, uid)
+
+
+@router.post("/friends/remove", response_model=FriendRemoveResult)
+def friends_remove(
+    request: FriendRemoveRequest,
+    uid: str = Depends(require_uid),
+) -> FriendRemoveResult:
+    return friends.remove(service.firebase_service.db, uid, request.friend_uid)
+
+
+@router.post("/friends/block", response_model=FriendBlockResult)
+def friends_block(
+    request: FriendBlockRequest,
+    uid: str = Depends(require_uid),
+) -> FriendBlockResult:
+    return friends.block(
+        service.firebase_service.db, uid, request.target_uid, request.report_reason
+    )
 
 
 @router.post("/tournaments/join", response_model=SecuredActionResult)

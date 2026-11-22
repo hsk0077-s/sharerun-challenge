@@ -1,6 +1,6 @@
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
 import { readFileSync } from 'fs';
-import { collectionGroup, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
+import { collection, collectionGroup, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 const env = await initializeTestEnvironment({ projectId: 'demo-sr', firestore: { rules: readFileSync(new URL('../../firestore.rules', import.meta.url),'utf8'), host:'127.0.0.1', port: 8085 }});
 await env.withSecurityRulesDisabled(async (ctx) => {
   const db = ctx.firestore();
@@ -9,6 +9,11 @@ await env.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(db,'tournaments/t1/participants/a'), {uid:'a'});
   await setDoc(doc(db,'tournaments/t1/participants/b'), {uid:'b'});
   await setDoc(doc(db,'users/a'), {nickname:'a', gradeRank:2, wallet:{shareBalance:1}});
+  await setDoc(doc(db,'users/a/friends/b'), {createdAt:1});
+  await setDoc(doc(db,'users/b/friends/a'), {createdAt:1});
+  await setDoc(doc(db,'users/a/blocks/c'), {createdAt:1});
+  await setDoc(doc(db,'friendInvites/tok1'), {fromUid:'a', usedBy:null});
+  await setDoc(doc(db,'friendInviteDays/a_20261120'), {count:1});
 });
 const a = env.authenticatedContext('a').firestore();
 const anon = env.unauthenticatedContext().firestore();
@@ -26,5 +31,18 @@ await t('user cannot write participant challengedUp', assertFails(setDoc(doc(a,'
 await t('owner lists own participations by collection group', assertSucceeds(getDocs(query(collectionGroup(a,'participants'), where('uid','==','a')))));
 await t('owner cannot list others participations by collection group', assertFails(getDocs(query(collectionGroup(a,'participants'), where('uid','==','b')))));
 await t('anon cannot list participations by collection group', assertFails(getDocs(query(collectionGroup(anon,'participants'), where('uid','==','a')))));
+await t('owner reads own friends', assertSucceeds(getDoc(doc(a,'users/a/friends/b'))));
+await t('owner lists own friends', assertSucceeds(getDocs(collection(a,'users/a/friends'))));
+await t('owner cannot read others friends', assertFails(getDoc(doc(a,'users/b/friends/a'))));
+await t('anon cannot read friends', assertFails(getDoc(doc(anon,'users/a/friends/b'))));
+await t('owner cannot write own friends', assertFails(setDoc(doc(a,'users/a/friends/z'), {createdAt:1})));
+await t('owner cannot write a friend doc on the other side', assertFails(setDoc(doc(a,'users/b/friends/a'), {createdAt:2})));
+await t('owner cannot delete own friend doc', assertFails(deleteDoc(doc(a,'users/a/friends/b'))));
+await t('owner cannot read friend invites', assertFails(getDoc(doc(a,'friendInvites/tok1'))));
+await t('owner cannot write friend invites', assertFails(setDoc(doc(a,'friendInvites/tok2'), {fromUid:'a'})));
+await t('owner cannot read invite day counters', assertFails(getDoc(doc(a,'friendInviteDays/a_20261120'))));
+await t('owner cannot write invite day counters', assertFails(setDoc(doc(a,'friendInviteDays/a_20261120'), {count:0})));
+await t('owner cannot read own blocks', assertFails(getDoc(doc(a,'users/a/blocks/c'))));
+await t('owner cannot write blocks', assertFails(setDoc(doc(a,'users/a/blocks/d'), {createdAt:1})));
 console.log(res.join('\n'));
 await env.cleanup();

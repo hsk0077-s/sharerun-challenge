@@ -586,6 +586,26 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Friend connections. The server writes everything. A signed-in user reads
+    // only their own friend list; invites, daily counters and blocks are not
+    // readable by any client.
+    match /friendInvites/{token} {
+      allow read, write: if false;
+    }
+
+    match /friendInviteDays/{dayId} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/friends/{friendUid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /users/{uid}/blocks/{blockedUid} {
+      allow read, write: if false;
+    }
+
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow create, update, delete: if false;

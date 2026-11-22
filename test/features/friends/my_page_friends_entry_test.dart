@@ -56,4 +56,13 @@ void main() {
         .toSet();
     expect(paths, contains(RouteNames.friends));
   });
+
+  test('the app router registers the cheer inbox screen', () {
+    expect(RouteNames.cheerInbox, '/friends/cheers');
+    final paths = buildMainShellAndDetailRoutes()
+        .whereType<GoRoute>()
+        .map((r) => r.path)
+        .toSet();
+    expect(paths, contains(RouteNames.cheerInbox));
+  });
 }

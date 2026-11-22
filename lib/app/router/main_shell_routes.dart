@@ -24,6 +24,7 @@ import '../../screens/item_inventory_screen.dart';
 import '../../screens/in_challenge_screen.dart';
 import '../../screens/live_running_screen.dart';
 import '../../screens/main_dashboard_screen.dart';
+import '../../features/friends/screens/cheer_inbox_screen.dart';
 import '../../features/friends/screens/friends_screen.dart';
 import '../../features/world_tour/screens/world_tour_arrival_screen.dart';
 import '../../features/world_tour/screens/world_tour_screens.dart';
@@ -328,6 +329,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
     GoRoute(
       path: RouteNames.friends,
       pageBuilder: _fadePage(const FriendsScreen()),
+    ),
+    GoRoute(
+      path: RouteNames.cheerInbox,
+      pageBuilder: _fadePage(const CheerInboxScreen()),
     ),
     GoRoute(
       path: RouteNames.worldTour,

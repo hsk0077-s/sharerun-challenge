@@ -24,6 +24,7 @@ import '../../screens/item_inventory_screen.dart';
 import '../../screens/in_challenge_screen.dart';
 import '../../screens/live_running_screen.dart';
 import '../../screens/main_dashboard_screen.dart';
+import '../../features/friends/screens/friends_screen.dart';
 import '../../features/world_tour/screens/world_tour_arrival_screen.dart';
 import '../../features/world_tour/screens/world_tour_screens.dart';
 import '../../features/world_tour/world_tour_run_end.dart';
@@ -323,6 +324,10 @@ List<RouteBase> buildMainShellAndDetailRoutes() {
             : null;
         return _fadePage(RunTrackingScreen(worldTourRun: tour))(context, state);
       },
+    ),
+    GoRoute(
+      path: RouteNames.friends,
+      pageBuilder: _fadePage(const FriendsScreen()),
     ),
     GoRoute(
       path: RouteNames.worldTour,

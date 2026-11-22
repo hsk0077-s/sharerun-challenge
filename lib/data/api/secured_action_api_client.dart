@@ -18,6 +18,7 @@ import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../../features/shop/cosmetics_catalog.dart';
 import '../../features/shop/shop_request_ids.dart';
+import '../../features/friends/cheers_models.dart';
 import '../../features/friends/friends_models.dart';
 import '../../features/world_tour/world_tour_models.dart';
 import '../models/company_tournament_config.dart';
@@ -966,6 +967,52 @@ class SecuredActionApiClient {
       'target_uid': targetUid,
       'report_reason': reportReason,
     });
+  }
+
+  /// Friend cheers: friends' verified runs of the last 7 days.
+  Future<List<FriendRun>> fetchFriendRuns() async {
+    final json = await _get('/actions/friends/runs');
+    return FriendRun.listFromJson(json);
+  }
+
+  Future<void> sendCheer({
+    required String friendUid,
+    required String activityId,
+    required String reaction,
+  }) async {
+    await _post('/actions/cheers/send', {
+      'friend_uid': friendUid,
+      'activity_id': activityId,
+      'reaction': reaction,
+    });
+  }
+
+  Future<CheerInbox> fetchCheerInbox() async {
+    final json = await _get('/actions/cheers/inbox');
+    return CheerInbox.fromJson(json);
+  }
+
+  Future<void> markCheerInboxSeen() async {
+    await _post('/actions/cheers/inbox/seen', const {});
+  }
+
+  Future<CheerSettings> fetchCheerSettings() async {
+    final json = await _get('/actions/cheers/settings');
+    return CheerSettings.fromJson(json);
+  }
+
+  /// Either [muteAll], or [friendUid] together with [muted].
+  Future<CheerSettings> updateCheerSettings({
+    bool? muteAll,
+    String? friendUid,
+    bool? muted,
+  }) async {
+    final json = await _post('/actions/cheers/settings', {
+      if (muteAll != null) 'mute_all': muteAll,
+      if (friendUid != null) 'friend_uid': friendUid,
+      if (muted != null) 'muted': muted,
+    });
+    return CheerSettings.fromJson(json);
   }
 
   Future<Map<String, dynamic>> _post(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:share_run_challenge/features/friends/cheers_models.dart';
 import 'package:share_run_challenge/features/friends/friends_models.dart';
 import 'package:share_run_challenge/features/friends/screens/friends_screen.dart';
 
@@ -8,10 +9,16 @@ import 'friends_support.dart';
 Friend _friend(String uid, String nickname) =>
     Friend(uid: uid, nickname: nickname, createdAt: DateTime.utc(2026, 11, 20));
 
-Future<void> _pump(WidgetTester tester, FakeFriendsApi api) async {
+Future<void> _pump(
+  WidgetTester tester,
+  FakeFriendsApi api, {
+  FakeCheersApi? cheers,
+}) async {
   await tester.binding.setSurfaceSize(const Size(800, 1600));
   addTearDown(() => tester.binding.setSurfaceSize(null));
-  await tester.pumpWidget(friendsApp(home: const FriendsScreen(), api: api));
+  await tester.pumpWidget(
+    friendsApp(home: const FriendsScreen(), api: api, cheers: cheers),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -172,6 +179,99 @@ void main() {
     }
     expect(find.byIcon(Icons.map), findsNothing);
     expect(find.byIcon(Icons.location_on), findsNothing);
+  });
+
+  testWidgets('the menu keeps its three items and adds a mute line',
+      (tester) async {
+    await _pump(tester, FakeFriendsApi(friends: [_friend('u1', '토끼')]));
+
+    await tester.tap(find.byKey(FriendsScreen.menuKey('u1')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(FriendsScreen.removeItemKey), findsOneWidget);
+    expect(find.byKey(FriendsScreen.blockItemKey), findsOneWidget);
+    expect(find.byKey(FriendsScreen.reportItemKey), findsOneWidget);
+    expect(find.text('이 친구 응원 알림 끄기'), findsOneWidget);
+    expect(find.text('이 친구 응원 알림 켜기'), findsNothing);
+  });
+
+  testWidgets('the mute line mutes, then shows the turn-on wording',
+      (tester) async {
+    final cheers = FakeCheersApi();
+    await _pump(tester, FakeFriendsApi(friends: [_friend('u1', '토끼')]),
+        cheers: cheers);
+
+    await _openMenu(tester, 'u1', FriendsScreen.muteItemKey);
+    expect(cheers.updateCalls, [(null, 'u1', true)]);
+
+    await tester.tap(find.byKey(FriendsScreen.menuKey('u1')));
+    await tester.pumpAndSettle();
+    expect(find.text('이 친구 응원 알림 켜기'), findsOneWidget);
+    expect(find.text('이 친구 응원 알림 끄기'), findsNothing);
+
+    await tester.tap(find.byKey(FriendsScreen.muteItemKey));
+    await tester.pumpAndSettle();
+    expect(cheers.updateCalls.last, (null, 'u1', false));
+  });
+
+  testWidgets('a muted friend starts with the turn-on wording',
+      (tester) async {
+    final cheers = FakeCheersApi(
+      settings: const CheerSettings(muteAll: false, mutedFriends: ['u1']),
+    );
+    await _pump(tester, FakeFriendsApi(friends: [_friend('u1', '토끼')]),
+        cheers: cheers);
+
+    await tester.tap(find.byKey(FriendsScreen.menuKey('u1')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('이 친구 응원 알림 켜기'), findsOneWidget);
+  });
+
+  testWidgets('a failed mute says why and changes nothing', (tester) async {
+    final cheers = FakeCheersApi()..settingsError = apiError(400, 'invalid');
+    await _pump(tester, FakeFriendsApi(friends: [_friend('u1', '토끼')]),
+        cheers: cheers);
+
+    await _openMenu(tester, 'u1', FriendsScreen.muteItemKey);
+
+    expect(find.text('잠시 후 다시 시도해 주세요.'), findsOneWidget);
+    await tester.tap(find.byKey(FriendsScreen.menuKey('u1')));
+    await tester.pumpAndSettle();
+    expect(find.text('이 친구 응원 알림 끄기'), findsOneWidget);
+  });
+
+  testWidgets('the friend runs section sits above the friend list',
+      (tester) async {
+    final cheers = FakeCheersApi(runs: [testRun()]);
+    await _pump(tester, FakeFriendsApi(friends: [_friend('u1', '토끼')]),
+        cheers: cheers);
+
+    expect(find.text('친구 달리기'), findsOneWidget);
+    expect(find.text('Mina'), findsOneWidget);
+    final runsY = tester.getTopLeft(find.text('친구 달리기')).dy;
+    final listY = tester.getTopLeft(find.byKey(FriendsScreen.rowKey('u1'))).dy;
+    expect(runsY, lessThan(listY));
+  });
+
+  testWidgets('pull to refresh reloads the friends and their runs',
+      (tester) async {
+    final friends = FakeFriendsApi(friends: [_friend('u1', '토끼')]);
+    final cheers = FakeCheersApi(runs: [testRun()]);
+    await _pump(tester, friends, cheers: cheers);
+    final before = cheers.runsCalls;
+
+    await tester.fling(find.byKey(FriendsScreen.listKey), const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+
+    expect(cheers.runsCalls, before + 1);
+  });
+
+  testWidgets('both header icons are there', (tester) async {
+    await _pump(tester, FakeFriendsApi());
+
+    expect(find.byKey(FriendsScreen.inboxButtonKey), findsOneWidget);
+    expect(find.byKey(FriendsScreen.settingsButtonKey), findsOneWidget);
   });
 
   testWidgets('create and enter buttons open their sheets', (tester) async {

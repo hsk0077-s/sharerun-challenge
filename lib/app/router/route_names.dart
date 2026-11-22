@@ -98,6 +98,7 @@ abstract final class RouteNames {
 
   /// World Tour: virtual trips powered by verified runs.
   static const friends = '/friends';
+  static const cheerInbox = '/friends/cheers';
   static const worldTour = '/world-tour';
   static const worldTourPassport = '/world-tour/passport';
   static const worldTourArrival = '/world-tour/arrival';

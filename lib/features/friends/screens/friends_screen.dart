@@ -7,11 +7,15 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router/route_names.dart';
 import '../../../core/theme/theme.dart';
 import '../../../l10n/remaining_surface.dart';
+import '../cheer_errors.dart';
+import '../cheers_providers.dart';
 import '../friend_errors.dart';
 import '../friends_models.dart';
 import '../friends_providers.dart';
 import 'friend_accept_sheet.dart';
+import 'cheer_settings_sheet.dart';
 import 'friend_invite_sheet.dart';
+import 'friend_runs_section.dart';
 
 /// The small "Friends" row on the My tab. It only opens the friends screen.
 class MyPageFriendsEntry extends StatelessWidget {
@@ -53,7 +57,7 @@ class MyPageFriendsEntry extends StatelessWidget {
   }
 }
 
-enum _RowAction { remove, block, reportAndBlock }
+enum _RowAction { remove, block, reportAndBlock, toggleMute }
 
 /// The friend list. A friend shows as the default avatar and a nickname only;
 /// the server gives no place, route or run record and none is shown.
@@ -64,6 +68,10 @@ class FriendsScreen extends ConsumerWidget {
   static const enterKey = Key('friends-enter-code');
   static const listKey = Key('friends-list');
   static const emptyKey = Key('friends-empty');
+  static const inboxButtonKey = Key('friends-cheer-inbox');
+  static const inboxBadgeKey = Key('friends-cheer-badge');
+  static const settingsButtonKey = Key('friends-cheer-settings');
+  static const muteItemKey = Key('friend-menu-mute');
   static const retryKey = Key('friends-retry');
   static const confirmKey = Key('friends-confirm');
   static const cancelKey = Key('friends-cancel');
@@ -84,6 +92,16 @@ class FriendsScreen extends ConsumerWidget {
         title: Text(
           RemainingSurface.tr(context, 'friends.screen.title', '친구'),
         ),
+        actions: [
+          const _InboxButton(),
+          IconButton(
+            key: settingsButtonKey,
+            tooltip: RemainingSurface.tr(
+                context, 'cheers.settings.title', '응원 설정'),
+            icon: const Icon(Icons.tune),
+            onPressed: () => unawaited(showCheerSettingsSheet(context)),
+          ),
+        ],
       ),
       body: friends.when(
         skipLoadingOnReload: true,
@@ -94,7 +112,15 @@ class FriendsScreen extends ConsumerWidget {
         data: (rows) => RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(friendsListProvider);
+            ref.invalidate(friendRunsProvider);
+            ref.invalidate(cheerInboxProvider);
+            ref.invalidate(cheerSettingsProvider);
             await ref.read(friendsListProvider.future);
+            try {
+              await ref.read(friendRunsProvider.future);
+            } catch (_) {
+              // The section shows its own retry.
+            }
           },
           child: ListView(
             key: listKey,
@@ -131,6 +157,8 @@ class FriendsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              SizedBox(height: tokens.spacing.md),
+              const FriendRunsSection(),
               SizedBox(height: tokens.spacing.md),
               if (rows.isEmpty)
                 Padding(
@@ -190,6 +218,26 @@ class _FriendRow extends ConsumerWidget {
         final picked = await _pickReason(context);
         if (picked == null) return;
         reason = picked.wire;
+      case _RowAction.toggleMute:
+        final muted = ref
+                .read(cheerSettingsProvider)
+                .value
+                ?.mutedFriends
+                .contains(friend.uid) ??
+            false;
+        try {
+          await ref.read(cheersApiProvider).updateSettings(
+                friendUid: friend.uid,
+                muted: !muted,
+              );
+          ref.invalidate(cheerSettingsProvider);
+        } catch (error) {
+          if (!context.mounted) return;
+          messenger.showSnackBar(
+            SnackBar(content: Text(cheerErrorMessage(context, error))),
+          );
+        }
+        return;
     }
     if (!context.mounted) return;
     final done = switch (action) {
@@ -281,6 +329,12 @@ class _FriendRow extends ConsumerWidget {
     final name = friend.nickname.trim().isEmpty
         ? RemainingSurface.tr(context, 'friends.nameless', '이름 없는 러너')
         : friend.nickname;
+    final muted = ref
+            .watch(cheerSettingsProvider)
+            .value
+            ?.mutedFriends
+            .contains(friend.uid) ??
+        false;
     return ListTile(
       key: FriendsScreen.rowKey(friend.uid),
       contentPadding: EdgeInsets.zero,
@@ -310,8 +364,40 @@ class _FriendRow extends ConsumerWidget {
             child: Text(RemainingSurface.tr(
                 menuContext, 'friends.menu.report_block', '신고하고 차단')),
           ),
+          PopupMenuItem(
+            key: FriendsScreen.muteItemKey,
+            value: _RowAction.toggleMute,
+            child: Text(muted
+                ? RemainingSurface.tr(menuContext, 'cheers.menu.unmute',
+                    '이 친구 응원 알림 켜기')
+                : RemainingSurface.tr(menuContext, 'cheers.menu.mute',
+                    '이 친구 응원 알림 끄기')),
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// The inbox icon. A small number shows how many cheers are unread; with
+/// none there is no badge.
+class _InboxButton extends ConsumerWidget {
+  const _InboxButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unread = ref.watch(cheerInboxProvider).value?.unreadCount ?? 0;
+    return IconButton(
+      key: FriendsScreen.inboxButtonKey,
+      tooltip: RemainingSurface.tr(context, 'cheers.inbox.title', '받은 응원'),
+      icon: unread > 0
+          ? Badge(
+              key: FriendsScreen.inboxBadgeKey,
+              label: Text(unread > 99 ? '99+' : '$unread'),
+              child: const Icon(Icons.favorite_border),
+            )
+          : const Icon(Icons.favorite_border),
+      onPressed: () => context.push(RouteNames.cheerInbox),
     );
   }
 }

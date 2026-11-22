@@ -27,6 +27,7 @@ from app.models.secured_actions import (
 )
 from app.services import content_filter
 from app.services import identities
+from app.services import friend_cheers
 from app.services.firebase_service import FirebaseService
 from app.services.route_privacy import trim_route
 from app.constants.economy_constants import (
@@ -5151,6 +5152,9 @@ class SecuredActionService:
 
         for device in user_ref.collection("watchDevices").get():
             device.reference.delete()
+
+        # Friend-cheer data that belongs to this person alone.
+        friend_cheers.delete_user_cheer_data(db, uid)
 
         try:
             firebase_auth.delete_user(uid)

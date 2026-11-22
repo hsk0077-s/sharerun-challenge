@@ -606,6 +606,32 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Friend cheers. The server writes and reads everything; no client may
+    // read or write any of these, so the app uses the server API only.
+    match /friendCheers/{cheerId} {
+      allow read, write: if false;
+    }
+
+    match /friendCheerPairDays/{pairDayId} {
+      allow read, write: if false;
+    }
+
+    match /friendCheerDays/{dayId} {
+      allow read, write: if false;
+    }
+
+    match /cheerSettings/{uid} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/friendRuns/{activityId} {
+      allow read, write: if false;
+    }
+
+    match /users/{uid}/cheersInbox/{cheerId} {
+      allow read, write: if false;
+    }
+
     match /tournaments/{tournamentId} {
       allow read: if true;
       allow create, update, delete: if false;

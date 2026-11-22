@@ -19,6 +19,7 @@ import '../features/profile/widgets/angel_tier_widgets.dart';
 import '../features/profile/widgets/my_dashboard_sections.dart';
 import '../features/profile/widgets/my_page_invite_code_card.dart';
 import '../features/profile/widgets/my_watch_card.dart';
+import '../features/friends/screens/friends_screen.dart';
 import '../features/profile/widgets/my_page_referral_code_entry.dart';
 import '../features/profile/widgets/my_village_hero.dart';
 import '../features/profile/widgets/retention_widgets.dart';
@@ -120,6 +121,7 @@ class _OnboardingMyPageScreenState extends State<OnboardingMyPageScreen> {
                       const SizedBox(height: 6),
                       const MyPageInviteCodeCard(),
                       const MyPageReferralCodeEntry(),
+                      const MyPageFriendsEntry(),
                       // 천사 연대기 카드의 버튼은 후원 화면으로 간다. 1.0은 후원이
                       // 보류라 후원 배너와 같은 스위치를 따른다.
                       if (AppEnv.sponsorPaymentsVisible) ...[

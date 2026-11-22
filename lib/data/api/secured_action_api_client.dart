@@ -18,6 +18,7 @@ import '../../features/jena_validation/models/jena_validation_result.dart';
 import '../../features/run_tracking/models/route_point.dart';
 import '../../features/shop/cosmetics_catalog.dart';
 import '../../features/shop/shop_request_ids.dart';
+import '../../features/friends/friends_models.dart';
 import '../../features/world_tour/world_tour_models.dart';
 import '../models/company_tournament_config.dart';
 import '../models/pedometer_harvest_result.dart';
@@ -931,6 +932,40 @@ class SecuredActionApiClient {
       'activity_id': activityId,
     });
     return WorldTourAttachResult.fromJson(json);
+  }
+
+  /// Friends: a one-time invite token that lives 24 hours.
+  Future<FriendInvite> createFriendInvite() async {
+    final json = await _post('/actions/friends/invite', const {});
+    return FriendInvite.fromJson(json);
+  }
+
+  /// Friends: use somebody's invite token.
+  Future<FriendAcceptResult> acceptFriendInvite(String token) async {
+    final json = await _post('/actions/friends/accept', {'token': token});
+    return FriendAcceptResult.fromJson(json);
+  }
+
+  Future<List<Friend>> fetchFriends() async {
+    final json = await _get('/actions/friends/list');
+    final rows = json['friends'];
+    if (rows is! List) return const [];
+    return [
+      for (final row in rows)
+        if (row is Map<String, dynamic>) Friend.fromJson(row),
+    ];
+  }
+
+  Future<void> removeFriend(String friendUid) async {
+    await _post('/actions/friends/remove', {'friend_uid': friendUid});
+  }
+
+  /// [reportReason] is null for a plain block, or one of the server's five.
+  Future<void> blockFriend(String targetUid, {String? reportReason}) async {
+    await _post('/actions/friends/block', {
+      'target_uid': targetUid,
+      'report_reason': reportReason,
+    });
   }
 
   Future<Map<String, dynamic>> _post(

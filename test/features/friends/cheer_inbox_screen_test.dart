@@ -36,7 +36,7 @@ Future<void> _pump(WidgetTester tester, FakeCheersApi cheers) async {
 void main() {
   testWidgets('cheers are listed in the order given, newest first',
       (tester) async {
-    final now = DateTime.now();
+    final now = testNow();
     final api = FakeCheersApi(cheers: [
       _cheer('u1', 'Mina', CheerReaction.fire, now),
       _cheer('u2', 'Jun', CheerReaction.clap, now.subtract(const Duration(days: 1))),
@@ -80,7 +80,7 @@ void main() {
 
   testWidgets('opening marks cheers seen exactly once', (tester) async {
     final api = FakeCheersApi(unread: 3, cheers: [
-      _cheer('u1', 'Mina', CheerReaction.fire, DateTime.now()),
+      _cheer('u1', 'Mina', CheerReaction.fire, testNow()),
     ]);
     await _pump(tester, api);
 

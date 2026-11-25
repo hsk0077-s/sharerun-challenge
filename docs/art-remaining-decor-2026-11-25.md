@@ -69,3 +69,12 @@ Branch (local, not pushed): `art/remaining-decor-2026-11-25` from origin/main 28
 - World Tour costumes use the existing costume path: Accessory(file: 'wt-france' etc., target: character) gives assets/images/characters/costume/wt-france-male.webp.
 - Shop/passport art lives in new folders, so pubspec.yaml gets two asset lines (world_tour/shop/, world_tour/passport/).
 - Master-skin preview: lib/screens/store_screen.dart:675 `return tier.isSnail ? TierAnimal.wolf : tier.animal;`
+
+## 7. Animal sportswear overlays (W4A baseball / W5A badminton / W6A taekwondo + W2A singlet visor)
+These replace the grey placeholders in `assets/images/accessories/outfit/`. Each one is a 1024×1024 RGBA webp. File names are unchanged, so no code change is needed.
+- baseball-{top,bottom,feet,head}-{turtle,beagle,wolf,cheetah,zebra}.webp (20): white pinstripes, navy piping and buttons, navy shoes, navy cap
+- badminton-{top,bottom,feet,head}-*.webp (20): white top with red/navy raglan lines, navy shorts, white/red shoes, red headband
+- taekwondo-{top,bottom}-*.webp (10): white dobok-style top with a black V collar and black belt, white pants
+- singlet-head-*.webp (5): coral visor (W2A bonus; replaces the grey placeholder)
+How they were made: each overlay is drawn on the base animal's own tank/shorts/shoe masks, so it lines up pixel for pixel. No logos or text. Composite check: out/sportswear_sheet.png
+Known limitation: the bottom edge of the wolf's white taekwondo pants shows slight fur-edge roughness when zoomed in (not noticeable at app size).

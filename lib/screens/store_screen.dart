@@ -672,7 +672,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   TierAnimal _myAnimal() {
     final tier =
         ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
-    return tier.isSnail ? TierAnimal.wolf : tier.animal;
+    return tier.isSnail ? TierAnimal.turtle : tier.animal;
   }
 
   /// 꾸미기 탭: 캐릭터 소품 둘러보기. 러닝화 스킨과 결과 카드 프레임은 더 팔지 않는다.

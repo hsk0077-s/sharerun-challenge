@@ -7,9 +7,9 @@ import 'world_tour_models.dart';
 /// translated names and story lines. The mission list itself (ids, targets,
 /// progress) comes from the server.
 ///
-/// Eiffel Tower, Statue of Liberty and Mount Fuji have drawn pictures (see
-/// [WorldTourLandmark.hasArt]); Taj Mahal and the Pyramids still show the flat
-/// colour + icon until their pictures exist. No photo is used.
+/// All five landmarks (Eiffel Tower, Taj Mahal, Mount Fuji, the Pyramids and
+/// the Statue of Liberty) have drawn pictures (see [WorldTourLandmark.hasArt]);
+/// the flat colour + icon is only the fallback. No photo is used.
 class WorldTourLandmark {
   const WorldTourLandmark({
     required this.id,
@@ -56,7 +56,13 @@ class WorldTourLandmark {
 
   /// Landmarks that have the twelve-file picture set in
   /// `assets/images/world_tour/`.
-  static const artIds = {'eiffel_tower', 'statue_of_liberty', 'mount_fuji'};
+  static const artIds = {
+    'eiffel_tower',
+    'statue_of_liberty',
+    'mount_fuji',
+    'taj_mahal',
+    'pyramids',
+  };
 
   bool get hasArt => artIds.contains(id);
 

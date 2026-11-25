@@ -78,3 +78,12 @@ These replace the grey placeholders in `assets/images/accessories/outfit/`. Each
 - singlet-head-*.webp (5): coral visor (W2A bonus; replaces the grey placeholder)
 How they were made: each overlay is drawn on the base animal's own tank/shorts/shoe masks, so it lines up pixel for pixel. No logos or text. Composite check: out/sportswear_sheet.png
 Known limitation: the bottom edge of the wolf's white taekwondo pants shows slight fur-edge roughness when zoomed in (not noticeable at app size).
+
+## 8. World Tour landmark scenes: Taj Mahal, Pyramids (8 images)
+`assets/images/world_tour/` — same size, format and composition as the existing eiffel_tower / mount_fuji / statue_of_liberty sets (approach 2048×1536, poster 1440×2560, RGB WebP)
+- taj_mahal_approach_far / _mid / _close.webp, taj_mahal_poster.webp: a simplified original white domed mausoleum with minarets, reflecting pool, cypress trees, flower garden, cobblestone path
+- pyramids_approach_far / _mid / _close.webp, pyramids_poster.webp: simplified golden pyramids, sand dunes, date palms, flowering shrubs, cobblestone path
+- Daytime, pastel pink sky, same painterly style; no text, logos or calligraphy; no people
+- Preview: out/world_tour_landmarks_sheet.png
+Code change (one line): `lib/features/world_tour/world_tour_landmarks.dart` — added `'taj_mahal', 'pyramids'` to `artIds` and updated the class comment so it says all five landmarks have pictures.
+Note: in `test/features/world_tour/world_tour_art_test.dart`, the "Taj Mahal, Pyramids and unknown have no picture" test and the two placeholder tests for `taj_mahal`/`pyramids` were written for the old state, so they need updating (I did not touch the code, per instructions). Suggested fix: add the two ids to `_withArt`, change 12→20, and keep only ''/'nowhere' in the no-picture tests.

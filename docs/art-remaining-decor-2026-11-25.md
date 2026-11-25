@@ -89,3 +89,15 @@ Code change (one line): `lib/features/world_tour/world_tour_landmarks.dart` — 
 Note: in `test/features/world_tour/world_tour_art_test.dart`, the "Taj Mahal, Pyramids and unknown have no picture" test and the two placeholder tests for `taj_mahal`/`pyramids` were written for the old state, so they need updating (I did not touch the code, per instructions). Suggested fix: add the two ids to `_withArt`, change 12→20, and keep only ''/'nowhere' in the no-picture tests.
 
 - 테스트: `test/features/world_tour/world_tour_art_test.dart` 를 다섯 곳 모두 그림이 있는 기준(20장)으로 고침. 타지마할 카드는 아이콘 대신 먼 장면 그림을 기대함.
+
+## 2026-11-25 update: Pyramids → Big Ben, 8 new landmarks (art only)
+
+Removed (legal risk around Egyptian heritage imagery): `world_tour/pyramids_approach_far|mid|close.webp`, `pyramids_poster.webp`, `characters/costume/wt-egypt-female|male.webp`, `world_tour/shop/pyramids_accessory|village|passport_cover.webp`, `world_tour/passport/stamp_pyramids.webp`.
+
+Added, same sizes/formats as the existing sets:
+- Scenes `assets/images/world_tour/<id>_approach_far|approach_mid|approach_close.webp` (2048×1536) and `<id>_poster.webp` (1440×2560) for `big_ben`, `gwanghwamun`, `taroko_gorge`, `alhambra`, `iguazu_falls`, `neuschwanstein`, `ha_long_bay`, `ayutthaya`, `bali_rice_terraces` (36 files). Each country has its own palette; far ≈15–20 %, mid ≈40 %, close ≥70 % of frame height.
+- UK theme: `characters/costume/wt-uk-female|male.webp` (1024², trench coat + check scarf), `world_tour/shop/big_ben_accessory.webp` (1024² RGBA bowler hat), `big_ben_village.webp` (1080×1920), `big_ben_passport_cover.webp` (900×1200), `world_tour/passport/stamp_big_ben.webp` (512² RGBA).
+
+No text, logos, watermarks, people, statues or Buddha figures; daytime only; Gwanghwamun plaque left blank.
+
+**Code not changed on this branch.** `WorldTourLandmark.artIds` and `world_tour_art_test.dart` still list `pyramids` (from commit 5df0934/f1b9012), so on this branch alone the Pyramids card would look for scene files that no longer exist. The follow-up code PR must switch the id to `big_ben` in the app, l10n, tests and the server mission seed together.

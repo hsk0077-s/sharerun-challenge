@@ -37,8 +37,9 @@ USERS = "users"
 PROGRESS = "worldTour"
 RUNS = "worldTourRuns"
 
-# The first five missions. All are open from the start. Title is Korean for
-# admin and logs; the app shows its own translated name for each landmark.
+# The 13 missions. All are open from the start. Title is Korean for admin and
+# logs; the app shows its own translated name for each landmark. The landmarkId
+# must match the app's landmark id (lib/features/world_tour/world_tour_landmarks.dart).
 MISSION_SEED: tuple[dict[str, Any], ...] = (
     {
         "missionId": "france_eiffel",
@@ -68,10 +69,10 @@ MISSION_SEED: tuple[dict[str, Any], ...] = (
         "active": True,
     },
     {
-        "missionId": "egypt_pyramids",
-        "title": "이집트 피라미드",
-        "countryCode": "EG",
-        "landmarkId": "pyramids",
+        "missionId": "uk_big_ben",
+        "title": "영국 런던 빅벤",
+        "countryCode": "GB",
+        "landmarkId": "big_ben",
         "targetKm": 5.0,
         "order": 4,
         "active": True,
@@ -85,8 +86,93 @@ MISSION_SEED: tuple[dict[str, Any], ...] = (
         "order": 5,
         "active": True,
     },
+    {
+        "missionId": "korea_gwanghwamun",
+        "title": "한국 서울 광화문",
+        "countryCode": "KR",
+        "landmarkId": "gwanghwamun",
+        "targetKm": 2.0,
+        "order": 6,
+        "active": True,
+    },
+    {
+        "missionId": "taiwan_taroko",
+        "title": "대만 타이루거 협곡",
+        "countryCode": "TW",
+        "landmarkId": "taroko_gorge",
+        "targetKm": 3.0,
+        "order": 7,
+        "active": True,
+    },
+    {
+        "missionId": "spain_alhambra",
+        "title": "스페인 알람브라 궁전",
+        "countryCode": "ES",
+        "landmarkId": "alhambra",
+        "targetKm": 3.0,
+        "order": 8,
+        "active": True,
+    },
+    {
+        "missionId": "brazil_iguazu",
+        "title": "브라질 이구아수 폭포",
+        "countryCode": "BR",
+        "landmarkId": "iguazu_falls",
+        "targetKm": 5.0,
+        "order": 9,
+        "active": True,
+    },
+    {
+        "missionId": "germany_neuschwanstein",
+        "title": "독일 노이슈반슈타인 성",
+        "countryCode": "DE",
+        "landmarkId": "neuschwanstein",
+        "targetKm": 3.0,
+        "order": 10,
+        "active": True,
+    },
+    {
+        "missionId": "vietnam_halong",
+        "title": "베트남 하롱베이",
+        "countryCode": "VN",
+        "landmarkId": "ha_long_bay",
+        "targetKm": 3.0,
+        "order": 11,
+        "active": True,
+    },
+    {
+        "missionId": "thailand_ayutthaya",
+        "title": "태국 아유타야 유적",
+        "countryCode": "TH",
+        "landmarkId": "ayutthaya",
+        "targetKm": 2.0,
+        "order": 12,
+        "active": True,
+    },
+    {
+        "missionId": "indonesia_bali",
+        "title": "인도네시아 발리 계단식 논",
+        "countryCode": "ID",
+        "landmarkId": "bali_rice_terraces",
+        "targetKm": 3.0,
+        "order": 13,
+        "active": True,
+    },
 )
 _SEED_BY_ID = {row["missionId"]: row for row in MISSION_SEED}
+
+# Missions that were renamed. Progress saved under the old id keeps counting
+# under the new one. The Pyramids mission became Big Ben (same distance, same
+# place in the list); an old app may still send the old id.
+LEGACY_MISSION_ALIASES: dict[str, str] = {"egypt_pyramids": "uk_big_ben"}
+
+
+def canonical_mission_id(mission_id: str) -> str:
+    return LEGACY_MISSION_ALIASES.get(mission_id, mission_id)
+
+
+def _legacy_ids_for(mission_id: str) -> list[str]:
+    return [old for old, new in LEGACY_MISSION_ALIASES.items() if new == mission_id]
 
 
 def stamp_id_for(mission_id: str) -> str:
@@ -94,7 +180,7 @@ def stamp_id_for(mission_id: str) -> str:
 
 
 def seed_missions(db) -> int:
-    """Write the catalog docs. Safe to run again; it only sets these five."""
+    """Write the catalog docs. Safe to run again; it only sets the seed missions."""
     for row in MISSION_SEED:
         db.collection(MISSIONS).document(row["missionId"]).set(dict(row), merge=True)
     return len(MISSION_SEED)
@@ -161,6 +247,7 @@ def attach_in_txn(
     activity_id: str,
 ) -> WorldTourAttachResult:
     """Link one verified run to one mission. Every read happens before a write."""
+    mission_id = canonical_mission_id(mission_id)
     activity_ref = db.collection("activities").document(activity_id)
     user_ref = db.collection(USERS).document(uid)
     guard_ref = user_ref.collection(RUNS).document(activity_id)
@@ -171,6 +258,10 @@ def attach_in_txn(
     guard_snap = guard_ref.get(transaction=transaction)
     progress_snap = progress_ref.get(transaction=transaction)
     mission_snap = mission_ref.get(transaction=transaction)
+    legacy_snaps = [
+        user_ref.collection(PROGRESS).document(old).get(transaction=transaction)
+        for old in _legacy_ids_for(mission_id)
+    ]
 
     mission = _catalog_row(
         (mission_snap.to_dict() or {}) if mission_snap.exists else None, mission_id
@@ -182,11 +273,18 @@ def attach_in_txn(
         raise _http(status.HTTP_404_NOT_FOUND, "mission_not_found")
 
     progress = (progress_snap.to_dict() or {}) if progress_snap.exists else {}
+    if not progress_snap.exists:
+        # Take over what was saved under the old mission id. The old document
+        # is left as it is.
+        for legacy in legacy_snaps:
+            if legacy.exists:
+                progress = legacy.to_dict() or {}
+                break
 
     # A run that is already linked answers the same every time.
     if guard_snap.exists:
         guard = guard_snap.to_dict() or {}
-        if guard.get("missionId") == mission_id:
+        if canonical_mission_id(str(guard.get("missionId") or "")) == mission_id:
             return _result(
                 mission_id,
                 activity_id,
@@ -264,7 +362,7 @@ def read_me(db, uid: str) -> WorldTourMe:
     catalog: dict[str, dict] = {}
     for snap in db.collection(MISSIONS).get():
         data = snap.to_dict() or {}
-        if data.get("active") is False:
+        if data.get("active") is False or snap.id in LEGACY_MISSION_ALIASES:
             continue
         catalog[snap.id] = data
     if not catalog:
@@ -273,6 +371,9 @@ def read_me(db, uid: str) -> WorldTourMe:
     progress: dict[str, dict] = {}
     for snap in db.collection(USERS).document(uid).collection(PROGRESS).get():
         progress[snap.id] = snap.to_dict() or {}
+    for old, new in LEGACY_MISSION_ALIASES.items():
+        if new not in progress and old in progress:
+            progress[new] = progress[old]
 
     missions: list[WorldTourMissionView] = []
     for mission_id, row in catalog.items():

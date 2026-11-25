@@ -18,7 +18,15 @@ const _withArt = [
   'statue_of_liberty',
   'mount_fuji',
   'taj_mahal',
-  'pyramids',
+  'big_ben',
+  'gwanghwamun',
+  'taroko_gorge',
+  'alhambra',
+  'iguazu_falls',
+  'neuschwanstein',
+  'ha_long_bay',
+  'ayutthaya',
+  'bali_rice_terraces',
 ];
 const _scenes = ['approach_far', 'approach_mid', 'approach_close', 'poster'];
 
@@ -46,14 +54,14 @@ void main() {
         for (final s in _scenes) 'assets/images/world_tour/${id}_$s.webp',
     ];
 
-    test('20 paths come from the landmark ids and scenes', () {
+    test('52 paths come from the landmark ids and scenes', () {
       final built = <String>[
         for (final id in _withArt)
           for (final scene in WorldTourArtScene.values)
             WorldTourLandmark.of(id).artAsset(scene)!,
       ];
       expect(built.toSet(), expected.toSet());
-      expect(built.length, 20);
+      expect(built.length, 52);
     });
 
     test('unknown landmarks have no picture', () {
@@ -64,7 +72,7 @@ void main() {
       }
     });
 
-    testWidgets('all 20 files are in the AssetManifest', (tester) async {
+    testWidgets('all 52 files are in the AssetManifest', (tester) async {
       final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
       final listed = manifest.listAssets().toSet();
       for (final path in expected) {
@@ -72,7 +80,7 @@ void main() {
       }
     });
 
-    test('all 20 files are real WebP files', () {
+    test('all 52 files are real WebP files', () {
       for (final path in expected) {
         final bytes = File(path).readAsBytesSync();
         expect(ascii.decode(bytes.sublist(0, 4)), 'RIFF', reason: path);

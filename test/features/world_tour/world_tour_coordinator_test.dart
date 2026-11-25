@@ -31,19 +31,21 @@ void main() {
     final store = WorldTourPendingStore();
     final api = _CheckingApi(store);
 
-    final outcome = await _coordinator(api, store: store)
-        .attachAfterRun(uid: 'u1', missionId: 'france_eiffel', activityId: 'a1');
+    final outcome = await _coordinator(api, store: store).attachAfterRun(
+        uid: 'u1', missionId: 'france_eiffel', activityId: 'a1');
 
     expect(outcome, isA<WorldTourAttached>());
     expect(api.pendingWhileCalling, ['a1']);
-    expect(await store.load(), isEmpty, reason: 'answered, so nothing to retry');
+    expect(await store.load(), isEmpty,
+        reason: 'answered, so nothing to retry');
   });
 
   test('offline: the run stays pending and a restarted app sends it again',
       () async {
-    final offline = FakeWorldTourApi()..attachError = const SocketException('x');
-    final first = await _coordinator(offline)
-        .attachAfterRun(uid: 'u1', missionId: 'france_eiffel', activityId: 'a1');
+    final offline = FakeWorldTourApi()
+      ..attachError = const SocketException('x');
+    final first = await _coordinator(offline).attachAfterRun(
+        uid: 'u1', missionId: 'france_eiffel', activityId: 'a1');
     expect(first, isA<WorldTourRetryLater>());
 
     // "Restart": new store, new coordinator, same device storage.
@@ -90,6 +92,22 @@ void main() {
     expect(await store.load(now: DateTime(2026, 11, 12)), hasLength(1));
   });
 
+  test('a run saved under the old Pyramids id is sent as Big Ben', () async {
+    SharedPreferences.setMockInitialValues({
+      WorldTourPendingStore.prefsKey:
+          '[{"uid":"u1","missionId":"egypt_pyramids","activityId":"a1",'
+              '"savedAt":"2026-11-12T00:00:00.000","attempts":2}]',
+    });
+
+    final pending =
+        await WorldTourPendingStore().load(now: DateTime(2026, 11, 12));
+
+    expect(pending.single.missionId, 'uk_big_ben');
+    expect(pending.single.activityId, 'a1');
+    expect(pending.single.attempts, 2);
+    expect(worldTourLegacyMissionIds, {'egypt_pyramids': 'uk_big_ben'});
+  });
+
   test('a refusal that can never change is dropped, not retried forever',
       () async {
     for (final detail in [
@@ -134,9 +152,11 @@ void main() {
   });
 
   test('only the signed-in user\'s pending runs are sent', () async {
-    final offline = FakeWorldTourApi()..attachError = const SocketException('x');
+    final offline = FakeWorldTourApi()
+      ..attachError = const SocketException('x');
     final c = _coordinator(offline);
-    await c.attachAfterRun(uid: 'u1', missionId: 'france_eiffel', activityId: 'a1');
+    await c.attachAfterRun(
+        uid: 'u1', missionId: 'france_eiffel', activityId: 'a1');
     await c.attachAfterRun(uid: 'u2', missionId: 'india_taj', activityId: 'b1');
 
     final online = FakeWorldTourApi();
@@ -148,11 +168,14 @@ void main() {
   });
 
   test('entries older than a week are forgotten', () async {
-    final offline = FakeWorldTourApi()..attachError = const SocketException('x');
-    await _coordinator(offline, clock: () => DateTime(2026, 11, 1)).attachAfterRun(
-        uid: 'u1', missionId: 'france_eiffel', activityId: 'old');
+    final offline = FakeWorldTourApi()
+      ..attachError = const SocketException('x');
+    await _coordinator(offline, clock: () => DateTime(2026, 11, 1))
+        .attachAfterRun(
+            uid: 'u1', missionId: 'france_eiffel', activityId: 'old');
 
-    final later = await WorldTourPendingStore().load(now: DateTime(2026, 11, 20));
+    final later =
+        await WorldTourPendingStore().load(now: DateTime(2026, 11, 20));
     expect(later, isEmpty);
   });
 
@@ -177,8 +200,16 @@ void main() {
       'france_eiffel',
       'india_taj',
       'japan_fuji',
-      'egypt_pyramids',
+      'uk_big_ben',
       'usa_liberty',
+      'korea_gwanghwamun',
+      'taiwan_taroko',
+      'spain_alhambra',
+      'brazil_iguazu',
+      'germany_neuschwanstein',
+      'vietnam_halong',
+      'thailand_ayutthaya',
+      'indonesia_bali',
     ]);
     expect(fresh.hasAnyProgress, isFalse);
     expect(fresh.recommended!.missionId, 'france_eiffel');
@@ -191,16 +222,25 @@ void main() {
     expect(partway.mission('india_taj')!.remainingKm, closeTo(1.5, 1e-9));
     expect(partway.mission('india_taj')!.fraction, closeTo(0.25, 1e-9));
     expect(partway.nextAfter('france_eiffel')!.missionId, 'india_taj');
-    expect(partway.nextAfter('usa_liberty')!.missionId, 'india_taj');
+    expect(partway.nextAfter('usa_liberty')!.missionId, 'korea_gwanghwamun');
+    expect(partway.nextAfter('indonesia_bali')!.missionId, 'india_taj');
 
     final all = WorldTourMe.fromJson(meJson(done: {
       'france_eiffel',
       'india_taj',
       'japan_fuji',
-      'egypt_pyramids',
+      'uk_big_ben',
       'usa_liberty',
+      'korea_gwanghwamun',
+      'taiwan_taroko',
+      'spain_alhambra',
+      'brazil_iguazu',
+      'germany_neuschwanstein',
+      'vietnam_halong',
+      'thailand_ayutthaya',
+      'indonesia_bali',
     }));
-    expect(all.nextAfter('usa_liberty'), isNull);
+    expect(all.nextAfter('indonesia_bali'), isNull);
   });
 }
 

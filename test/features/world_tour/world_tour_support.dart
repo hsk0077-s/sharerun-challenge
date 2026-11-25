@@ -10,7 +10,7 @@ import 'package:share_run_challenge/features/world_tour/world_tour_providers.dar
 
 import '../../support/ko_localization.dart';
 
-/// The server's five missions as JSON, with optional progress overrides.
+/// The server's 13 missions as JSON, with optional progress overrides.
 Map<String, dynamic> meJson({
   Map<String, double> progress = const {},
   Set<String> done = const {},
@@ -19,8 +19,16 @@ Map<String, dynamic> meJson({
     ('france_eiffel', 'eiffel_tower', 'FR', 1.0, 1),
     ('india_taj', 'taj_mahal', 'IN', 2.0, 2),
     ('japan_fuji', 'mount_fuji', 'JP', 3.0, 3),
-    ('egypt_pyramids', 'pyramids', 'EG', 5.0, 4),
+    ('uk_big_ben', 'big_ben', 'GB', 5.0, 4),
     ('usa_liberty', 'statue_of_liberty', 'US', 3.0, 5),
+    ('korea_gwanghwamun', 'gwanghwamun', 'KR', 2.0, 6),
+    ('taiwan_taroko', 'taroko_gorge', 'TW', 3.0, 7),
+    ('spain_alhambra', 'alhambra', 'ES', 3.0, 8),
+    ('brazil_iguazu', 'iguazu_falls', 'BR', 5.0, 9),
+    ('germany_neuschwanstein', 'neuschwanstein', 'DE', 3.0, 10),
+    ('vietnam_halong', 'ha_long_bay', 'VN', 3.0, 11),
+    ('thailand_ayutthaya', 'ayutthaya', 'TH', 2.0, 12),
+    ('indonesia_bali', 'bali_rice_terraces', 'ID', 3.0, 13),
   ];
   final missions = [
     for (final (id, landmark, country, target, order) in rows)

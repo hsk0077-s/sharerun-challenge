@@ -91,7 +91,7 @@ class _CheerInboxScreenState extends ConsumerState<CheerInboxScreen> {
               ),
             );
           }
-          final now = ref.watch(cheerClockProvider)();
+          final now = ref.watch(cheerClockProvider)().toLocal();
           final today = DateTime(now.year, now.month, now.day);
           return ListView.builder(
             key: CheerInboxScreen.listKey,

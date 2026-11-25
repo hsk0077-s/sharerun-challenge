@@ -16,4 +16,16 @@ class VillageBackgrounds {
   static const bali = '${dir}village_bali.webp';
 
   static const all = [garden, namsan, centralpark, fuji, eiffel, bali];
+
+  /// World Tour village backgrounds (1080x1920) by landmark id. They are the
+  /// `*_village.webp` pictures of the World Tour shop set, so they live in
+  /// `assets/images/world_tour/shop/`. Still not shown on any screen.
+  static const worldTour = {
+    'eiffel_tower': 'assets/images/world_tour/shop/eiffel_tower_village.webp',
+    'taj_mahal': 'assets/images/world_tour/shop/taj_mahal_village.webp',
+    'mount_fuji': 'assets/images/world_tour/shop/mount_fuji_village.webp',
+    'statue_of_liberty':
+        'assets/images/world_tour/shop/statue_of_liberty_village.webp',
+    'big_ben': 'assets/images/world_tour/shop/big_ben_village.webp',
+  };
 }

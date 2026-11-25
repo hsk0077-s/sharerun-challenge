@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Mission ids that were renamed. A run saved on the phone under the old id is
+/// sent under the new one (the server maps it too, so an old app keeps working).
+const worldTourLegacyMissionIds = {'egypt_pyramids': 'uk_big_ben'};
+
 /// A finished run that is not yet linked to its mission. Kept on the device
 /// only until the server confirms (or refuses) the link. The server is
 /// idempotent per run, so sending the same entry again is safe.
@@ -48,7 +52,7 @@ class WorldTourPendingRun {
     }
     return WorldTourPendingRun(
       uid: uid,
-      missionId: mission,
+      missionId: worldTourLegacyMissionIds[mission] ?? mission,
       activityId: activity,
       savedAt: saved,
       attempts: (raw['attempts'] as num?)?.toInt() ?? 0,

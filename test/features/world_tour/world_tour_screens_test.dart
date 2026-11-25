@@ -45,8 +45,16 @@ void main() {
         _eiffel,
         'india_taj',
         'japan_fuji',
-        'egypt_pyramids',
+        'uk_big_ben',
         'usa_liberty',
+        'korea_gwanghwamun',
+        'taiwan_taroko',
+        'spain_alhambra',
+        'brazil_iguazu',
+        'germany_neuschwanstein',
+        'vietnam_halong',
+        'thailand_ayutthaya',
+        'indonesia_bali',
       ]) {
         expect(
           find.byKey(WorldTourMissionCard.cardKey(id), skipOffstage: false),
@@ -105,7 +113,8 @@ void main() {
       expect(find.byType(WorldTourMissionCard), findsWidgets);
     });
 
-    testWidgets('a card opens the mission and the passport button opens the book',
+    testWidgets(
+        'a card opens the mission and the passport button opens the book',
         (tester) async {
       await tester.pumpWidget(
         tourRouterApp(
@@ -159,7 +168,8 @@ void main() {
       expect(find.byKey(WorldTourVirtualNote.noteKey), findsOneWidget);
     });
 
-    testWidgets('start opens the ordinary run screen route with the mission only',
+    testWidgets(
+        'start opens the ordinary run screen route with the mission only',
         (tester) async {
       final profile = UserModel.dashboardDefault(uid: 'u1')
           .copyWith(healthDataConsent: true);
@@ -344,7 +354,8 @@ void main() {
       expect(find.text('여행 거리는 잠시 후 다시 반영할게요'), findsOneWidget);
     });
 
-    testWidgets('finishing the mission opens the arrival screen', (tester) async {
+    testWidgets('finishing the mission opens the arrival screen',
+        (tester) async {
       await pumpEnd(tester, FakeWorldTourApi(), verified: true);
       expect(find.text('arrival 3.02'), findsOneWidget);
     });
@@ -392,7 +403,8 @@ void main() {
       ShareParams? shared;
       RunFinishImageShare.debugCaptureOverride = (key) async {
         captured = key;
-        final file = File('${dir.path}/poster.png')..writeAsBytesSync([1, 2, 3]);
+        final file = File('${dir.path}/poster.png')
+          ..writeAsBytesSync([1, 2, 3]);
         return file;
       };
       RunFinishImageShare.debugSystemShare = (params) async {
@@ -428,27 +440,30 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(WorldTourArrivalScreen.shareKey));
       await tester.pumpAndSettle();
-      expect(find.text(RunFinishImageShare.captureFailedMessage), findsOneWidget);
+      expect(
+          find.text(RunFinishImageShare.captureFailedMessage), findsOneWidget);
     });
   });
 
   group('passport', () {
     testWidgets('stamps finished trips and leaves the rest empty',
         (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 4000));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
       final api = FakeWorldTourApi(me: meJson(done: {_eiffel, 'japan_fuji'}));
       await tester.pumpWidget(
         tourApp(home: const WorldTourPassportScreen(), api: api),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('2/5개국'), findsOneWidget);
+      expect(find.text('2/13개국'), findsOneWidget);
       expect(find.byKey(WorldTourPassportScreen.stampedKey(_eiffel)),
           findsOneWidget);
       expect(find.byKey(WorldTourPassportScreen.stampedKey('japan_fuji')),
           findsOneWidget);
       expect(find.byKey(WorldTourPassportScreen.stampedKey('india_taj')),
           findsNothing);
-      expect(find.byIcon(Icons.lock_outline), findsNWidgets(3));
+      expect(find.byIcon(Icons.lock_outline), findsNWidgets(11));
     });
 
     testWidgets('an empty book explains how to get a stamp', (tester) async {
@@ -456,7 +471,7 @@ void main() {
         tourApp(home: const WorldTourPassportScreen(), api: FakeWorldTourApi()),
       );
       await tester.pumpAndSettle();
-      expect(find.text('0/5개국'), findsOneWidget);
+      expect(find.text('0/13개국'), findsOneWidget);
       expect(find.text('여행을 마치면 스탬프가 찍혀요'), findsOneWidget);
     });
   });
@@ -523,7 +538,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text('0/5 Länder'), findsOneWidget);
+      expect(find.text('0/13 Länder'), findsOneWidget);
       expect(find.text('Reisepass'), findsOneWidget);
     });
   });

@@ -11,6 +11,7 @@ import '../widgets/world_tour_widgets.dart';
 import '../world_tour_format.dart';
 import '../world_tour_landmarks.dart';
 import '../world_tour_models.dart';
+import '../world_tour_shop_art.dart';
 import '../world_tour_providers.dart';
 import '../world_tour_run_end.dart';
 
@@ -37,8 +38,7 @@ class _LoadFailed extends StatelessWidget {
             FilledButton(
               key: const Key('world-tour-retry'),
               onPressed: onRetry,
-              child:
-                  Text(RemainingSurface.tr(context, 'wt.retry', '다시 시도')),
+              child: Text(RemainingSurface.tr(context, 'wt.retry', '다시 시도')),
             ),
           ],
         ),
@@ -87,8 +87,7 @@ class WorldTourListScreen extends ConsumerWidget {
               padding: EdgeInsets.all(tokens.spacing.page),
               children: [
                 Text(
-                  RemainingSurface.tr(
-                      context, 'wt.subtitle', '오늘은 어디로 달릴까요?'),
+                  RemainingSurface.tr(context, 'wt.subtitle', '오늘은 어디로 달릴까요?'),
                   style: Theme.of(context)
                       .textTheme
                       .headlineSmall
@@ -157,72 +156,76 @@ class WorldTourDetailScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: ListView(
-            padding: EdgeInsets.all(tokens.spacing.page),
-            children: [
-              WorldTourLandmarkArt(
-                landmark: landmark,
-                scene: WorldTourArtScene.forMission(mission),
-                height: 180,
-                dimmed: mission.completed,
-              ),
-              SizedBox(height: tokens.spacing.sm),
-              Text(
-                landmark.name(context, fallback: mission.title),
-                style: textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w900),
-              ),
-              SizedBox(height: tokens.spacing.xxs),
-              Text(
-                RemainingSurface.tr(
-                  context,
-                  'wt.goal',
-                  '목표 \$km km',
-                  {'km': formatTourKm(mission.targetKm)},
-                ),
-                style: textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
-              ),
-              SizedBox(height: tokens.spacing.xs),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: mission.completed ? 1 : mission.fraction,
-                  minHeight: 8,
-                  color: tokens.colors.primary,
-                  backgroundColor: tokens.colors.outline.withValues(alpha: 0.4),
-                ),
-              ),
-              SizedBox(height: tokens.spacing.xxs),
-              Text(
-                '${formatTourKm(mission.completed ? mission.targetKm : mission.progressKm)}'
-                ' / ${formatTourKm(mission.targetKm)} km',
-                style: textTheme.labelMedium,
-              ),
-              SizedBox(height: tokens.spacing.xxs),
-              const WorldTourVirtualNote(),
-              SizedBox(height: tokens.spacing.md),
-              for (var i = 0; i < story.length && i < headings.length; i++) ...[
-                Text(
-                  headings[i],
-                  style: textTheme.labelLarge?.copyWith(
-                    color: tokens.colors.accent,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                SizedBox(height: tokens.spacing.xxs),
-                Text(story[i], style: textTheme.bodyLarge),
-                SizedBox(height: tokens.spacing.sm),
-              ],
-              if (mission.completed)
-                Text(
-                  RemainingSurface.tr(
-                    context,
-                    'wt.detail.done_note',
-                    '이미 도착한 여행이에요. 다른 곳으로 떠나 볼까요?',
-                  ),
-                  key: doneNoteKey,
-                  style: textTheme.bodyMedium,
-                ),
-            ],
+                  padding: EdgeInsets.all(tokens.spacing.page),
+                  children: [
+                    WorldTourLandmarkArt(
+                      landmark: landmark,
+                      scene: WorldTourArtScene.forMission(mission),
+                      height: 180,
+                      dimmed: mission.completed,
+                    ),
+                    SizedBox(height: tokens.spacing.sm),
+                    Text(
+                      landmark.name(context, fallback: mission.title),
+                      style: textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w900),
+                    ),
+                    SizedBox(height: tokens.spacing.xxs),
+                    Text(
+                      RemainingSurface.tr(
+                        context,
+                        'wt.goal',
+                        '목표 \$km km',
+                        {'km': formatTourKm(mission.targetKm)},
+                      ),
+                      style: textTheme.bodyMedium
+                          ?.copyWith(color: tokens.colors.muted),
+                    ),
+                    SizedBox(height: tokens.spacing.xs),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: LinearProgressIndicator(
+                        value: mission.completed ? 1 : mission.fraction,
+                        minHeight: 8,
+                        color: tokens.colors.primary,
+                        backgroundColor:
+                            tokens.colors.outline.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    SizedBox(height: tokens.spacing.xxs),
+                    Text(
+                      '${formatTourKm(mission.completed ? mission.targetKm : mission.progressKm)}'
+                      ' / ${formatTourKm(mission.targetKm)} km',
+                      style: textTheme.labelMedium,
+                    ),
+                    SizedBox(height: tokens.spacing.xxs),
+                    const WorldTourVirtualNote(),
+                    SizedBox(height: tokens.spacing.md),
+                    for (var i = 0;
+                        i < story.length && i < headings.length;
+                        i++) ...[
+                      Text(
+                        headings[i],
+                        style: textTheme.labelLarge?.copyWith(
+                          color: tokens.colors.accent,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: tokens.spacing.xxs),
+                      Text(story[i], style: textTheme.bodyLarge),
+                      SizedBox(height: tokens.spacing.sm),
+                    ],
+                    if (mission.completed)
+                      Text(
+                        RemainingSurface.tr(
+                          context,
+                          'wt.detail.done_note',
+                          '이미 도착한 여행이에요. 다른 곳으로 떠나 볼까요?',
+                        ),
+                        key: doneNoteKey,
+                        style: textTheme.bodyMedium,
+                      ),
+                  ],
                 ),
               ),
               // Pinned, so the start button is always in reach.
@@ -270,7 +273,8 @@ class WorldTourPassportScreen extends ConsumerWidget {
 
   static const countKey = Key('world-tour-passport-count');
   static Key slotKey(String missionId) => Key('world-tour-slot-$missionId');
-  static Key stampedKey(String missionId) => Key('world-tour-stamped-$missionId');
+  static Key stampedKey(String missionId) =>
+      Key('world-tour-stamped-$missionId');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -308,8 +312,8 @@ class WorldTourPassportScreen extends ConsumerWidget {
                     'wt.passport.hint',
                     '여행을 마치면 스탬프가 찍혀요',
                   ),
-                  style:
-                      textTheme.bodyMedium?.copyWith(color: tokens.colors.muted),
+                  style: textTheme.bodyMedium
+                      ?.copyWith(color: tokens.colors.muted),
                 ),
               const WorldTourVirtualNote(),
               SizedBox(height: tokens.spacing.md),
@@ -329,6 +333,28 @@ class WorldTourPassportScreen extends ConsumerWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// The stamp picture when the landmark has one, else the plain check mark.
+class _StampMark extends StatelessWidget {
+  const _StampMark({super.key, required this.landmarkId});
+
+  final String landmarkId;
+
+  static const _icon = Icon(Icons.verified, color: Colors.white, size: 30);
+
+  @override
+  Widget build(BuildContext context) {
+    final asset = WorldTourShopArt.stamp(landmarkId);
+    if (asset == null) return _icon;
+    return Image.asset(
+      asset,
+      width: 44,
+      height: 44,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => _icon,
     );
   }
 }
@@ -365,12 +391,10 @@ class _StampSlot extends StatelessWidget {
                   right: 6,
                   bottom: 6,
                   child: stamped
-                      ? Icon(
-                          Icons.verified,
+                      ? _StampMark(
                           key: WorldTourPassportScreen.stampedKey(
                               mission.missionId),
-                          color: Colors.white,
-                          size: 30,
+                          landmarkId: landmark.id,
                         )
                       : const Icon(Icons.lock_outline,
                           color: Colors.white70, size: 24),

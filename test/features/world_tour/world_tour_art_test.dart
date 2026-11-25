@@ -13,7 +13,13 @@ import 'package:share_run_challenge/features/world_tour/world_tour_run_end.dart'
 
 import 'world_tour_support.dart';
 
-const _withArt = ['eiffel_tower', 'statue_of_liberty', 'mount_fuji'];
+const _withArt = [
+  'eiffel_tower',
+  'statue_of_liberty',
+  'mount_fuji',
+  'taj_mahal',
+  'pyramids',
+];
 const _scenes = ['approach_far', 'approach_mid', 'approach_close', 'poster'];
 
 WorldTourMission _mission({
@@ -40,25 +46,25 @@ void main() {
         for (final s in _scenes) 'assets/images/world_tour/${id}_$s.webp',
     ];
 
-    test('12 paths come from the landmark ids and scenes', () {
+    test('20 paths come from the landmark ids and scenes', () {
       final built = <String>[
         for (final id in _withArt)
           for (final scene in WorldTourArtScene.values)
             WorldTourLandmark.of(id).artAsset(scene)!,
       ];
       expect(built.toSet(), expected.toSet());
-      expect(built.length, 12);
+      expect(built.length, 20);
     });
 
-    test('Taj Mahal, Pyramids and unknown have no picture', () {
-      for (final id in ['taj_mahal', 'pyramids', '', 'nowhere']) {
+    test('unknown landmarks have no picture', () {
+      for (final id in ['', 'nowhere']) {
         final landmark = WorldTourLandmark.of(id);
         expect(landmark.hasArt, isFalse, reason: id);
         expect(landmark.artAsset(WorldTourArtScene.poster), isNull);
       }
     });
 
-    testWidgets('all 12 files are in the AssetManifest', (tester) async {
+    testWidgets('all 20 files are in the AssetManifest', (tester) async {
       final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
       final listed = manifest.listAssets().toSet();
       for (final path in expected) {
@@ -66,7 +72,7 @@ void main() {
       }
     });
 
-    test('all 12 files are real WebP files', () {
+    test('all 20 files are real WebP files', () {
       for (final path in expected) {
         final bytes = File(path).readAsBytesSync();
         expect(ascii.decode(bytes.sublist(0, 4)), 'RIFF', reason: path);
@@ -154,7 +160,7 @@ void main() {
       expect(tester.widget<Opacity>(find.byType(Opacity)).opacity, 1);
     });
 
-    for (final id in ['taj_mahal', 'pyramids', '']) {
+    for (final id in ['']) {
       testWidgets('"$id" keeps the colour + icon placeholder', (tester) async {
         await pump(tester, id, WorldTourArtScene.close);
         expect(find.byType(Image), findsNothing);
@@ -188,7 +194,7 @@ void main() {
       return (image.image as AssetImage).assetName;
     }
 
-    testWidgets('mission list: Eiffel card is far, Taj card keeps the icon',
+    testWidgets('mission list: Eiffel and Taj cards show the far scene',
         (tester) async {
       await tester.binding.setSurfaceSize(const Size(800, 3000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -202,12 +208,8 @@ void main() {
       expect(assetOf(tester, eiffel),
           'assets/images/world_tour/eiffel_tower_approach_far.webp');
       final taj = find.byKey(WorldTourMissionCard.cardKey('india_taj'));
-      expect(
-          find.descendant(of: taj, matching: find.byType(Image)), findsNothing);
-      expect(
-          find.descendant(
-              of: taj, matching: find.byIcon(Icons.account_balance)),
-          findsOneWidget);
+      expect(assetOf(tester, taj),
+          'assets/images/world_tour/taj_mahal_approach_far.webp');
     });
 
     testWidgets('mission list: a finished card shows the close scene',

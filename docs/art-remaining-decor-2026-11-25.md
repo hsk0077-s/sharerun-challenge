@@ -87,3 +87,5 @@ Known limitation: the bottom edge of the wolf's white taekwondo pants shows slig
 - Preview: out/world_tour_landmarks_sheet.png
 Code change (one line): `lib/features/world_tour/world_tour_landmarks.dart` — added `'taj_mahal', 'pyramids'` to `artIds` and updated the class comment so it says all five landmarks have pictures.
 Note: in `test/features/world_tour/world_tour_art_test.dart`, the "Taj Mahal, Pyramids and unknown have no picture" test and the two placeholder tests for `taj_mahal`/`pyramids` were written for the old state, so they need updating (I did not touch the code, per instructions). Suggested fix: add the two ids to `_withArt`, change 12→20, and keep only ''/'nowhere' in the no-picture tests.
+
+- 테스트: `test/features/world_tour/world_tour_art_test.dart` 를 다섯 곳 모두 그림이 있는 기준(20장)으로 고침. 타지마할 카드는 아이콘 대신 먼 장면 그림을 기대함.

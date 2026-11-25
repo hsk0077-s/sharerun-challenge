@@ -54,7 +54,7 @@ class WorldTourLandmark {
 
   static const all = [eiffel, taj, fuji, pyramids, liberty];
 
-  /// Landmarks that have the twelve-file picture set in
+  /// Landmarks that have their four scene pictures in
   /// `assets/images/world_tour/`.
   static const artIds = {
     'eiffel_tower',

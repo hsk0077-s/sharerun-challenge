@@ -42,6 +42,8 @@ from app.models.friend_cheers import (
 from app.services.friends import (
     BLOCKS,
     FRIENDS,
+    INVITE_DAYS,
+    INVITES,
     MAX_FRIENDS,
     USERS,
     _as_utc,
@@ -404,3 +406,99 @@ def delete_user_cheer_data(db, uid: str) -> None:
         for snap in user_ref.collection(collection).get():
             snap.reference.delete()
     db.collection(SETTINGS).document(uid).delete()
+
+
+def _ids_with_prefix(db, collection: str, prefix: str) -> list[str]:
+    """Ids of documents in ``collection`` whose id starts with ``prefix``.
+
+    The counter documents are named ``{uid}_...``, so a document-id range
+    finds them without a separate index.
+    """
+    from google.cloud.firestore_v1.field_path import FieldPath
+    from google.cloud.firestore_v1.base_query import FieldFilter
+
+    ref = db.collection(collection)
+    query = ref.where(
+        filter=FieldFilter(FieldPath.document_id(), ">=", ref.document(prefix))
+    ).where(
+        filter=FieldFilter(
+            FieldPath.document_id(), "<", ref.document(prefix + "\uf8ff")
+        )
+    )
+    return [snap.id for snap in query.get()]
+
+
+def purge_friend_data(db, uid: str) -> dict[str, int]:
+    """Remove everything about friends and cheers that involves ``uid``.
+
+    Used when an account is deleted (and again by the daily purge, so accounts
+    deleted before this existed are cleaned too). It is safe to run twice.
+
+    Removed:
+      * the friend link on both sides (``users/{friend}/friends/{uid}``) and
+        ``uid`` from each friend's muted list
+      * ``uid``'s own friends, blocks, friend runs, cheers inbox and settings
+      * every ``friendCheers`` document sent or received by ``uid``, and the
+        copies of the sent cheers in other people's inboxes
+      * friend invites made by ``uid`` (an invite ``uid`` used keeps working as
+        "used" but no longer names ``uid``)
+      * the per-day counters named after ``uid``
+
+    Not removed: another person's own block of ``uid`` (it lives on their side
+    and holds only the id and a time) and the pair-day counter whose id ends
+    with ``uid`` (it holds only a time).
+    """
+    counts = {
+        "friends": 0,
+        "cheers": 0,
+        "invites": 0,
+        "counters": 0,
+    }
+    user_ref = db.collection(USERS).document(uid)
+
+    for snap in list(user_ref.collection(FRIENDS).get()):
+        friend_uid = snap.id
+        friend_ref = db.collection(USERS).document(friend_uid)
+        friend_ref.collection(FRIENDS).document(uid).delete()
+        settings_ref = db.collection(SETTINGS).document(friend_uid)
+        settings = settings_ref.get()
+        if settings.exists:
+            muted = list((settings.to_dict() or {}).get("mutedFriends") or [])
+            if uid in muted:
+                settings_ref.set(
+                    {"mutedFriends": [item for item in muted if item != uid]},
+                    merge=True,
+                )
+        snap.reference.delete()
+        counts["friends"] += 1
+
+    for snap in list(user_ref.collection(BLOCKS).get()):
+        snap.reference.delete()
+
+    for snap in list(db.collection(CHEERS).where("fromUid", "==", uid).get()):
+        data = snap.to_dict() or {}
+        to_uid = str(data.get("toUid") or "")
+        activity_id = str(data.get("activityId") or "")
+        if to_uid and activity_id:
+            db.collection(USERS).document(to_uid).collection(INBOX).document(
+                f"{activity_id}_{uid}"
+            ).delete()
+        snap.reference.delete()
+        counts["cheers"] += 1
+    for snap in list(db.collection(CHEERS).where("toUid", "==", uid).get()):
+        snap.reference.delete()
+        counts["cheers"] += 1
+
+    for snap in list(db.collection(INVITES).where("fromUid", "==", uid).get()):
+        snap.reference.delete()
+        counts["invites"] += 1
+    for snap in list(db.collection(INVITES).where("usedBy", "==", uid).get()):
+        snap.reference.set({"usedBy": "deleted"}, merge=True)
+
+    for collection in (INVITE_DAYS, DAYS, PAIR_DAYS):
+        for doc_id in _ids_with_prefix(db, collection, f"{uid}_"):
+            db.collection(collection).document(doc_id).delete()
+            counts["counters"] += 1
+
+    delete_user_cheer_data(db, uid)
+    return counts

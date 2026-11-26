@@ -4,8 +4,9 @@ import 'app_localizations.dart';
 
 /// Donation and shop guidance that used to exist only in Korean.
 ///
-/// Amounts stay in KRW. The numbers 100 and 7 are the product rules
-/// (`VERIFIED_RUN_DONATION_KRW_PER_KM`, the DIA refund window, 1 DIA = 100 KRW).
+/// Amounts stay in KRW. The numbers 100, 50, 6,000 and 7 are the product rules
+/// (`VERIFIED_RUN_DONATION_KRW_PER_KM`, `STEP_DONATION_KRW`,
+/// `STEP_DONATION_THRESHOLD_STEPS`, the DIA refund window, 1 DIA = 100 KRW).
 class DonationGuidance {
   const DonationGuidance({
     required this.homeTitle,
@@ -16,17 +17,8 @@ class DonationGuidance {
     required this.rule,
     required this.budget,
     required this.capReachedHome,
-    required this.settlementTitle,
-    required this.intro,
-    required this.capReachedSettlement,
-    required this.disclaimer,
     required this.fail,
     required this.back,
-    required this.operatorLine,
-    required this.paidByOperator,
-    required this.monthLabel,
-    required this.currencySuffix,
-    required this.kmGaugePattern,
   });
 
   final String homeTitle;
@@ -37,24 +29,9 @@ class DonationGuidance {
   final String rule;
   final String budget;
   final String capReachedHome;
-  final String settlementTitle;
-  final String intro;
-  final String capReachedSettlement;
-  final String disclaimer;
   final String fail;
   final String back;
-  final String operatorLine;
-  final String paidByOperator;
-  final String monthLabel;
-  final String currencySuffix;
 
-  /// `{done}`, `{cap}`, `{pct}` are replaced by the screen.
-  final String kmGaugePattern;
-
-  String kmGauge(String doneKm, String capKm, int pct) => kmGaugePattern
-      .replaceAll('{done}', doneKm)
-      .replaceAll('{cap}', capKm)
-      .replaceAll('{pct}', '$pct');
 
   static DonationGuidance of(Locale locale) =>
       byLanguage[locale.languageCode] ?? byLanguage['en']!;
@@ -66,22 +43,11 @@ class DonationGuidance {
       homeEmpty: '오늘은 아직 기여가 없어요',
       homeFail: '기부 정보를 불러오지 못했어요.',
       retry: '다시 시도',
-      rule: '검증된 모든 달리기, 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.',
+      rule: '검증된 달리기 1km마다 100원, 하루 6,000보 이상 걸으면 50원을 회사(운영자) 자금으로 기부할 예정이에요.',
       budget: '운영자의 월 기부 예산 안에서 진행될 예정이에요.',
       capReachedHome: '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.',
-      settlementTitle: '내가 만든\n기부',
-      intro: '달리기 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.',
-      capReachedSettlement: '이번 달 운영자 기부 예산을 모두 사용했어요 · 넘는 거리는 기록으로 남아요',
-      disclaimer:
-          '운영자가 자기 돈으로 검증 1km당 100원(KRW)을 월 예산 안에서 기부할 예정입니다. '
-          '이용자의 기부금이 아니며 세금 공제 영수증이 발급되지 않습니다.',
       fail: '기부 정산을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.',
       back: '뒤로',
-      operatorLine: '기부는 회사(운영자) 자금으로 할 예정이에요. 앱에서는 내가 기여한 금액을 확인할 수 있어요.',
-      paidByOperator: '운영자 자금으로 기부할 예정이에요 · 내 돈은 0원',
-      monthLabel: '이번 달 기부',
-      currencySuffix: '원',
-      kmGaugePattern: '이번 달 {done} / {cap} km · {pct}%',
     ),
     'en': DonationGuidance(
       homeTitle: 'My donation today',
@@ -89,22 +55,11 @@ class DonationGuidance {
       homeEmpty: 'No contribution yet today',
       homeFail: 'Could not load the donation.',
       retry: 'Try again',
-      rule: 'Every verified run is planned to give 100 KRW per km from company (operator) funds.',
+      rule: 'Every verified run km gives 100 KRW, and a day with 6,000+ steps gives 50 KRW, planned from company (operator) funds.',
       budget: 'It is planned to stay inside the operator’s monthly budget.',
       capReachedHome: 'This month’s operator budget is used up. Extra distance stays on the record.',
-      settlementTitle: 'The donation\nI made possible',
-      intro: 'Each running kilometre is planned to add 100 KRW donated from company (operator) funds.',
-      capReachedSettlement: 'This month’s operator budget is used up · extra distance stays on the record',
-      disclaimer:
-          'The operator plans to donate 100 KRW of its own money per verified kilometre, inside the monthly budget. '
-          'This is not your donation and no tax receipt is issued.',
       fail: 'Could not load the settlement. Try again in a moment.',
       back: 'Back',
-      operatorLine: 'The company (operator) plans to donate from its own funds. The app only shows what you made possible.',
-      paidByOperator: 'Planned from the operator’s funds · your money is 0 KRW',
-      monthLabel: 'This month',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'This month {done} / {cap} km · {pct}%',
     ),
     'ja': DonationGuidance(
       homeTitle: '今日の寄付への貢献',
@@ -112,22 +67,11 @@ class DonationGuidance {
       homeEmpty: '今日はまだ貢献がありません',
       homeFail: '寄付情報を読み込めませんでした。',
       retry: 'もう一度',
-      rule: '認証されたランニングは1kmごとに、会社（運営者）の資金から100ウォンを寄付する予定です。',
+      rule: '認証されたランニング1kmごとに100ウォン、1日6,000歩以上で50ウォンを、会社（運営者）の資金から寄付する予定です。',
       budget: '運営の月間予算の範囲で行う予定です。',
       capReachedHome: '今月の運営予算は使い切りました。超えた距離は記録として残ります。',
-      settlementTitle: '私がつないだ\n寄付',
-      intro: 'ランニング1kmごとに、会社（運営者）の資金から100ウォンを寄付する予定です。',
-      capReachedSettlement: '今月の運営予算は使い切りました · 超えた距離は記録として残ります',
-      disclaimer:
-          '運営が自己資金で、認証1kmあたり100ウォン（KRW）を月間予算の中で寄付する予定です。'
-          '利用者の寄付ではなく、税額控除の領収書はありません。',
       fail: '精算を読み込めませんでした。しばらくしてからもう一度お試しください。',
       back: '戻る',
-      operatorLine: '寄付は会社（運営者）の資金で行う予定です。アプリでは自分が貢献した金額を確認できます。',
-      paidByOperator: '運営の資金で寄付する予定です · あなたの支払いは0ウォン',
-      monthLabel: '今月の寄付',
-      currencySuffix: ' KRW',
-      kmGaugePattern: '今月 {done} / {cap} km · {pct}%',
     ),
     'zh': DonationGuidance(
       homeTitle: '今天我促成的公益',
@@ -135,22 +79,11 @@ class DonationGuidance {
       homeEmpty: '今天還沒有貢獻',
       homeFail: '無法載入公益資料。',
       retry: '再試一次',
-      rule: '每一段通過驗證的跑步，每 1 公里預計由公司（營運方）資金捐出 100 韓元。',
+      rule: '每段通過驗證的跑步每 1 公里捐出 100 韓元，一天走滿 6,000 步捐出 50 韓元，預計由公司（營運方）資金支付。',
       budget: '預計只在營運方的每月預算內進行。',
       capReachedHome: '本月營運方預算已用完。超出的距離仍會留在紀錄裡。',
-      settlementTitle: '我促成的\n公益',
-      intro: '每跑 1 公里，預計以公司（營運方）資金捐出 100 韓元。',
-      capReachedSettlement: '本月營運方預算已用完 · 超出的距離仍留在紀錄裡',
-      disclaimer:
-          '營運方預計用自己的錢，為每 1 公里驗證里程捐出 100 韓元（KRW），且不超過每月預算。'
-          '這不是使用者的捐款，也不開立抵稅收據。',
       fail: '無法載入結算。請稍後再試。',
       back: '返回',
-      operatorLine: '預計由公司（營運方）出資捐款。應用程式只顯示你促成的金額。',
-      paidByOperator: '預計由營運方出資 · 你的錢是 0 韓元',
-      monthLabel: '本月公益',
-      currencySuffix: ' KRW',
-      kmGaugePattern: '本月 {done} / {cap} km · {pct}%',
     ),
     'es': DonationGuidance(
       homeTitle: 'Mi aporte de hoy',
@@ -158,22 +91,11 @@ class DonationGuidance {
       homeEmpty: 'Hoy todavía no hay aporte',
       homeFail: 'No se pudo cargar la información.',
       retry: 'Reintentar',
-      rule: 'Cada carrera verificada prevé donar 100 KRW por km con fondos de la empresa (operador).',
+      rule: 'Cada km de carrera verificada suma 100 KRW y un día con 6.000 pasos o más suma 50 KRW, previstos con fondos de la empresa (operador).',
       budget: 'Está previsto que ocurra dentro del presupuesto mensual del operador.',
       capReachedHome: 'El presupuesto del operador de este mes se agotó. La distancia de más queda en el registro.',
-      settlementTitle: 'La aportación\nque hice posible',
-      intro: 'Cada kilómetro de carrera prevé sumar 100 KRW donados con fondos de la empresa (operador).',
-      capReachedSettlement: 'El presupuesto del operador de este mes se agotó · la distancia de más queda en el registro',
-      disclaimer:
-          'El operador planea donar 100 KRW de su dinero por kilómetro verificado, dentro del presupuesto mensual. '
-          'No es tu donativo y no hay recibo fiscal.',
       fail: 'No se pudo cargar el cierre. Inténtalo de nuevo en un momento.',
       back: 'Atrás',
-      operatorLine: 'La empresa (operador) prevé donar con sus propios fondos. La app solo muestra lo que tú hiciste posible.',
-      paidByOperator: 'Prevista con fondos del operador · tu dinero es 0 KRW',
-      monthLabel: 'Este mes',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'Este mes {done} / {cap} km · {pct}%',
     ),
     'pt': DonationGuidance(
       homeTitle: 'Minha contribuição de hoje',
@@ -181,22 +103,11 @@ class DonationGuidance {
       homeEmpty: 'Ainda não há contribuição hoje',
       homeFail: 'Não foi possível carregar a doação.',
       retry: 'Tentar de novo',
-      rule: 'Cada corrida verificada prevê doar 100 KRW por km com recursos da empresa (operadora).',
+      rule: 'Cada km de corrida verificada gera 100 KRW e um dia com 6.000 passos ou mais gera 50 KRW, previstos com recursos da empresa (operadora).',
       budget: 'Está previsto acontecer dentro do orçamento mensal da operadora.',
       capReachedHome: 'O orçamento da operadora deste mês acabou. A distância extra fica no registro.',
-      settlementTitle: 'A doação\nque eu possibilitei',
-      intro: 'Cada quilômetro de corrida prevê somar 100 KRW doados com recursos da empresa (operadora).',
-      capReachedSettlement: 'O orçamento da operadora deste mês acabou · a distância extra fica no registro',
-      disclaimer:
-          'A operadora pretende doar 100 KRW do próprio dinheiro por quilômetro verificado, dentro do orçamento mensal. '
-          'Não é doação do usuário e não há recibo fiscal.',
       fail: 'Não foi possível carregar o fechamento. Tente de novo daqui a pouco.',
       back: 'Voltar',
-      operatorLine: 'A empresa (operadora) pretende doar com recursos próprios. O app só mostra o que você possibilitou.',
-      paidByOperator: 'Prevista com recursos da operadora · o seu dinheiro é 0 KRW',
-      monthLabel: 'Este mês',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'Este mês {done} / {cap} km · {pct}%',
     ),
     'de': DonationGuidance(
       homeTitle: 'Mein Beitrag heute',
@@ -204,22 +115,11 @@ class DonationGuidance {
       homeEmpty: 'Heute noch kein Beitrag',
       homeFail: 'Die Spendeninfo konnte nicht geladen werden.',
       retry: 'Nochmal versuchen',
-      rule: 'Für jeden geprüften Lauf sind 100 KRW pro km aus Mitteln des Unternehmens (Betreiber) als Spende geplant.',
+      rule: 'Jeder bestätigte Laufkilometer bringt 100 KRW, ein Tag mit mindestens 6.000 Schritten 50 KRW – geplant aus Mitteln des Unternehmens (Betreibers).',
       budget: 'Das soll im Monatsbudget des Betreibers bleiben.',
       capReachedHome: 'Das Betreiberbudget dieses Monats ist aufgebraucht. Die Extra-Distanz bleibt in der Aufzeichnung.',
-      settlementTitle: 'Die Spende,\ndie ich möglich gemacht habe',
-      intro: 'Für jeden Laufkilometer sind 100 KRW Spende aus Mitteln des Unternehmens (Betreiber) geplant.',
-      capReachedSettlement: 'Das Betreiberbudget dieses Monats ist aufgebraucht · Extra-Distanz bleibt in der Aufzeichnung',
-      disclaimer:
-          'Der Betreiber plant, 100 KRW eigenes Geld pro geprüftem Kilometer zu spenden, innerhalb des Monatsbudgets. '
-          'Das ist keine Spende der Nutzer und es gibt keine Steuerquittung.',
       fail: 'Die Abrechnung konnte nicht geladen werden. Versuch es gleich noch einmal.',
       back: 'Zurück',
-      operatorLine: 'Das Unternehmen (Betreiber) plant, aus eigenen Mitteln zu spenden. Die App zeigt nur, was du möglich gemacht hast.',
-      paidByOperator: 'Aus Mitteln des Betreibers geplant · dein Geld ist 0 KRW',
-      monthLabel: 'Dieser Monat',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'Dieser Monat {done} / {cap} km · {pct}%',
     ),
     'fr': DonationGuidance(
       homeTitle: 'Ma contribution du jour',
@@ -227,22 +127,11 @@ class DonationGuidance {
       homeEmpty: 'Pas encore de contribution aujourd’hui',
       homeFail: 'Impossible de charger le don.',
       retry: 'Réessayer',
-      rule: 'Chaque course vérifiée prévoit un don de 100 KRW par km sur les fonds de l’entreprise (opérateur).',
+      rule: 'Chaque km de course vérifiée rapporte 100 KRW et un jour à 6 000 pas ou plus rapporte 50 KRW, prévus sur les fonds de l\'entreprise (opérateur).',
       budget: 'Cela doit rester dans le budget mensuel de l’opérateur.',
       capReachedHome: 'Le budget de l’opérateur pour ce mois est épuisé. La distance en plus reste dans l’enregistrement.',
-      settlementTitle: 'Le don\nque j’ai rendu possible',
-      intro: 'Chaque kilomètre de course prévoit 100 KRW de don sur les fonds de l’entreprise (opérateur).',
-      capReachedSettlement: 'Le budget de l’opérateur pour ce mois est épuisé · la distance en plus reste dans l’enregistrement',
-      disclaimer:
-          'L’opérateur prévoit de donner 100 KRW de son argent par kilomètre vérifié, dans le budget mensuel. '
-          'Ce n’est pas un don de l’utilisateur et il n’y a pas de reçu fiscal.',
       fail: 'Impossible de charger le décompte. Réessayez dans un instant.',
       back: 'Retour',
-      operatorLine: 'L’entreprise (opérateur) prévoit de donner sur ses propres fonds. L’appli montre seulement ce que vous avez rendu possible.',
-      paidByOperator: 'Prévu sur les fonds de l’opérateur · votre argent est de 0 KRW',
-      monthLabel: 'Ce mois-ci',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'Ce mois-ci {done} / {cap} km · {pct}%',
     ),
     'vi': DonationGuidance(
       homeTitle: 'Phần tôi góp hôm nay',
@@ -250,22 +139,11 @@ class DonationGuidance {
       homeEmpty: 'Hôm nay chưa có đóng góp',
       homeFail: 'Không tải được thông tin quyên góp.',
       retry: 'Thử lại',
-      rule: 'Mỗi lần chạy đã xác minh dự kiến quyên góp 100 KRW cho mỗi km từ ngân sách công ty (đơn vị vận hành).',
+      rule: 'Mỗi km chạy đã xác thực là 100 KRW, một ngày đi từ 6.000 bước là 50 KRW, dự kiến từ nguồn tiền của công ty (nhà vận hành).',
       budget: 'Dự kiến việc này nằm trong ngân sách tháng của đơn vị vận hành.',
       capReachedHome: 'Ngân sách tháng này đã dùng hết. Quãng đường vượt mức vẫn được ghi lại.',
-      settlementTitle: 'Khoản đóng góp\ntôi tạo ra',
-      intro: 'Mỗi km chạy dự kiến cộng 100 KRW quyên góp từ ngân sách công ty (đơn vị vận hành).',
-      capReachedSettlement: 'Ngân sách tháng này đã dùng hết · quãng đường vượt mức vẫn được ghi lại',
-      disclaimer:
-          'Đơn vị vận hành dự kiến quyên góp 100 KRW tiền của mình cho mỗi km đã xác minh, trong ngân sách tháng. '
-          'Đây không phải tiền quyên góp của người dùng và không có biên lai thuế.',
       fail: 'Không tải được bảng quyết toán. Hãy thử lại sau giây lát.',
       back: 'Quay lại',
-      operatorLine: 'Công ty (đơn vị vận hành) dự kiến quyên góp từ ngân sách riêng. Ứng dụng chỉ hiện số bạn đã tạo ra.',
-      paidByOperator: 'Dự kiến dùng ngân sách của đơn vị vận hành · tiền của bạn là 0 KRW',
-      monthLabel: 'Tháng này',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'Tháng này {done} / {cap} km · {pct}%',
     ),
     'th': DonationGuidance(
       homeTitle: 'ส่วนที่ฉันทำให้เกิดวันนี้',
@@ -273,22 +151,11 @@ class DonationGuidance {
       homeEmpty: 'วันนี้ยังไม่มีการร่วม',
       homeFail: 'โหลดข้อมูลการบริจาคไม่ได้',
       retry: 'ลองอีกครั้ง',
-      rule: 'การวิ่งที่ยืนยันแล้วทุกครั้ง วางแผนบริจาค 100 วอนต่อ 1 กม. จากเงินของบริษัท (ผู้ให้บริการ)',
+      rule: 'ทุก 1 กม. ที่วิ่งผ่านการยืนยันได้ 100 วอน และวันที่เดินครบ 6,000 ก้าวขึ้นไปได้ 50 วอน โดยมีแผนใช้เงินของบริษัท (ผู้ให้บริการ)',
       budget: 'วางแผนทำภายในงบรายเดือนของผู้ให้บริการ',
       capReachedHome: 'งบของผู้ให้บริการเดือนนี้ใช้หมดแล้ว ระยะที่เกินจะยังอยู่ในบันทึก',
-      settlementTitle: 'การสมทบ\nที่ฉันทำให้เกิด',
-      intro: 'ทุก 1 กิโลเมตรที่วิ่ง วางแผนบริจาค 100 วอนจากเงินของบริษัท (ผู้ให้บริการ)',
-      capReachedSettlement: 'งบของผู้ให้บริการเดือนนี้ใช้หมดแล้ว · ระยะที่เกินยังอยู่ในบันทึก',
-      disclaimer:
-          'ผู้ให้บริการวางแผนบริจาคเงินของตนเอง 100 วอน (KRW) ต่อ 1 กม. ที่ยืนยันแล้ว ภายในงบรายเดือน '
-          'ไม่ใช่เงินบริจาคของผู้ใช้ และไม่มีใบเสร็จลดหย่อนภาษี',
       fail: 'โหลดยอดสรุปไม่ได้ ลองอีกครั้งอีกสักครู่',
       back: 'กลับ',
-      operatorLine: 'บริษัท (ผู้ให้บริการ) วางแผนบริจาคจากเงินของบริษัทเอง แอปแค่แสดงจำนวนที่คุณทำให้เกิด',
-      paidByOperator: 'วางแผนใช้เงินของผู้ให้บริการ · เงินของคุณคือ 0 วอน',
-      monthLabel: 'เดือนนี้',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'เดือนนี้ {done} / {cap} km · {pct}%',
     ),
     'id': DonationGuidance(
       homeTitle: 'Kontribusi saya hari ini',
@@ -296,22 +163,11 @@ class DonationGuidance {
       homeEmpty: 'Hari ini belum ada kontribusi',
       homeFail: 'Data donasi tidak bisa dimuat.',
       retry: 'Coba lagi',
-      rule: 'Setiap lari terverifikasi direncanakan mendonasikan 100 KRW per km dari dana perusahaan (penyelenggara).',
+      rule: 'Setiap km lari terverifikasi 100 KRW, dan sehari dengan 6.000 langkah atau lebih 50 KRW, direncanakan dari dana perusahaan (operator).',
       budget: 'Direncanakan berlangsung di dalam anggaran bulanan penyelenggara.',
       capReachedHome: 'Anggaran penyelenggara bulan ini habis. Jarak selebihnya tetap tercatat.',
-      settlementTitle: 'Donasi\nyang saya mungkinkan',
-      intro: 'Setiap kilometer lari direncanakan menambah donasi 100 KRW dari dana perusahaan (penyelenggara).',
-      capReachedSettlement: 'Anggaran penyelenggara bulan ini habis · jarak selebihnya tetap tercatat',
-      disclaimer:
-          'Operator berencana mendonasikan 100 KRW dari uangnya sendiri per kilometer terverifikasi, dalam anggaran bulanan. '
-          'Ini bukan donasi pengguna dan tidak ada bukti potong pajak.',
       fail: 'Rekap tidak bisa dimuat. Coba lagi sebentar lagi.',
       back: 'Kembali',
-      operatorLine: 'Perusahaan (penyelenggara) berencana mendonasikan dari dananya sendiri. Aplikasi hanya menampilkan apa yang Anda mungkinkan.',
-      paidByOperator: 'Direncanakan dari dana penyelenggara · uang Anda 0 KRW',
-      monthLabel: 'Bulan ini',
-      currencySuffix: ' KRW',
-      kmGaugePattern: 'Bulan ini {done} / {cap} km · {pct}%',
     ),
   };
 }
@@ -597,8 +453,8 @@ List<String> missingGuidanceKeys() {
     if (dia == null) missing.add('$tag.diaNotice');
     if (dia != null && dia.lines.length != 5) missing.add('$tag.diaNotice.lines');
     if (code == 'en') continue;
-    if (donation != null && donation.intro == DonationGuidance.byLanguage['en']!.intro) {
-      missing.add('$tag.donation.intro=en');
+    if (donation != null && donation.rule == DonationGuidance.byLanguage['en']!.rule) {
+      missing.add('$tag.donation.rule=en');
     }
     if (shop != null && shop.note == ShopFundingGuidance.byLanguage['en']!.note) {
       missing.add('$tag.shopFunding.note=en');

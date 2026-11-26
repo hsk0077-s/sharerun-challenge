@@ -161,21 +161,29 @@ void main() {
           ],
         );
 
-    testWidgets('shows today\'s server amount and the company wording',
+    testWidgets('says the activity counted, with no won amount, and states both rules',
         (tester) async {
       await tester.pumpWidget(
-        card(() async => const TodayDonation(todayWon: 1200, capReached: false)),
+        card(() async => const TodayDonation(counted: true, capReached: false)),
       );
       await tester.pumpAndSettle();
-      expect(find.text('1,200원'), findsOneWidget);
+      expect(find.text('오늘 활동이 기부에 반영됐어요'), findsOneWidget);
       expect(find.byKey(HomeDonationCard.capKey), findsNothing);
-      expect(find.textContaining('회사(운영자) 자금으로 100원'), findsOneWidget);
+      expect(find.textContaining('1km마다 100원'), findsOneWidget);
+      expect(find.textContaining('6,000보'), findsOneWidget);
+      final text = tester
+          .widgetList<Text>(find.byType(Text))
+          .map((t) => t.data ?? '')
+          .join('\n');
+      // The only won amounts on the card are the public rules, never a personal total.
+      expect(RegExp(r'\d[\d,]*원').allMatches(text).map((m) => m.group(0)).toSet(),
+          {'100원', '50원'});
     });
 
     testWidgets('says the goal is reached and handles no donation yet',
         (tester) async {
       await tester.pumpWidget(
-        card(() async => const TodayDonation(todayWon: 0, capReached: true)),
+        card(() async => const TodayDonation(counted: false, capReached: true)),
       );
       await tester.pumpAndSettle();
       expect(find.text('오늘은 아직 기여가 없어요'), findsOneWidget);
@@ -185,7 +193,7 @@ void main() {
     testWidgets('never names a beneficiary or says the user paid',
         (tester) async {
       await tester.pumpWidget(
-        card(() async => const TodayDonation(todayWon: 500, capReached: false)),
+        card(() async => const TodayDonation(counted: true, capReached: false)),
       );
       await tester.pumpAndSettle();
       final text = tester
@@ -203,7 +211,7 @@ void main() {
         card(() async {
           calls++;
           if (calls == 1) throw StateError('offline');
-          return const TodayDonation(todayWon: 300, capReached: false);
+          return const TodayDonation(counted: true, capReached: false);
         }),
       );
       await tester.pumpAndSettle();
@@ -211,7 +219,7 @@ void main() {
 
       await tester.tap(find.byKey(HomeDonationCard.retryKey));
       await tester.pumpAndSettle();
-      expect(find.text('300원'), findsOneWidget);
+      expect(find.text('오늘 활동이 기부에 반영됐어요'), findsOneWidget);
     });
   });
 }

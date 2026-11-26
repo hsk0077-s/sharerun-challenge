@@ -1,5 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 
 /**
  * SRC 앱(share-run-challenge)과 동일 프로젝트.
@@ -15,8 +16,17 @@ if (import.meta.env.DEV && !import.meta.env.VITE_FIREBASE_PROJECT_ID) {
   );
 }
 
+// The API key has no default on purpose: the key in the code used to be the Android app key, which
+// browsers cannot use. Set VITE_FIREBASE_API_KEY (see .env.example) for dev and for the build.
+const apiKey = import.meta.env.VITE_FIREBASE_API_KEY?.trim();
+if (!apiKey) {
+  throw new Error(
+    'VITE_FIREBASE_API_KEY 가 비어 있습니다. admin/.env 에 웹용 API 키를 넣으세요. (admin/.env.example 참고)'
+  );
+}
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'AIzaSyCeK4CUCswGAuy4jclEX8du_RF0CayNmdk',
+  apiKey,
   authDomain:
     import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? 'share-run-challenge.firebaseapp.com',
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? 'share-run-challenge',
@@ -32,6 +42,7 @@ const firebaseConfig = {
 
 let app: FirebaseApp;
 let db: Firestore;
+let storage: FirebaseStorage;
 
 export function getFirebaseApp(): FirebaseApp {
   if (!app) {
@@ -45,6 +56,13 @@ export function getDb(): Firestore {
     db = getFirestore(getFirebaseApp());
   }
   return db;
+}
+
+export function getStorageClient(): FirebaseStorage {
+  if (!storage) {
+    storage = getStorage(getFirebaseApp());
+  }
+  return storage;
 }
 
 /** SRC `FirestorePaths.users` 와 동일 */

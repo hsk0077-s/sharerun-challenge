@@ -17,6 +17,7 @@ export default function Sidebar() {
         <NavLink to="/users" className={navClass}>유저/크루 관리</NavLink>
         <NavLink to="/abuse" className={navClass}>Jena 어뷰징 심사</NavLink>
         <NavLink to="/finance" className={navClass}>재무/환불 관리</NavLink>
+        <NavLink to="/donation-executions" className={navClass}>기부 집행 기록</NavLink>
         <NavLink to="/referrals" className={navClass}>추천인</NavLink>
         <NavLink to="/sponsor" className={navClass}>스폰서 현황</NavLink>
         <NavLink to="/config" className={navClass}>설정 값 (조회)</NavLink>

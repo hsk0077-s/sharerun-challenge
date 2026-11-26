@@ -592,7 +592,7 @@
     "aliases": [
       "Cara kerja donasi"
     ],
-    "answer": "Untuk setiap 1 km terverifikasi yang kamu lari, perusahaan (operator) berencana mendonasikan 100 KRW dari dana sendiri. Anggaran donasi bulanan perusahaan maksimal 1.000.000 KRW. Aplikasi menampilkan kontribusi yang terkumpul dari lari kamu."
+    "answer": "Untuk setiap km lari terverifikasi, perusahaan (operator) berencana mendonasikan 100 KRW dari dana sendiri, dan 50 KRW pada hari dengan 6.000 langkah atau lebih. Donasi perusahaan tiap bulan punya batas yang ditampilkan di layar donasi. Jumlah pribadi tidak ditampilkan."
   },
   {
     "id": "DO-02",
@@ -606,15 +606,23 @@
   {
     "id": "DO-03",
     "category": "기부",
-    "question": "Berapa kontribusi donasiku hari ini?",
+    "question": "Apakah aktivitasku hari ini sudah dihitung ke donasi?",
     "aliases": [
       "Donasi hari ini berapa?",
       "Jumlah berbagi hari ini"
     ],
-    "answer": "Kontribusi donasi dari lariku hari ini adalah {오늘기부기여} KRW. Dihitung 100 KRW per km, dalam anggaran donasi bulanan perusahaan sebesar 1.000.000 KRW.",
-    "needs": [
-      "오늘기부기여"
-    ]
+    "answer": "Saat aktivitas hari ini dihitung ke donasi, kartu di beranda menampilkan \"Aktivitas hari ini sudah dihitung ke donasi\". Jumlah pribadi tidak ditampilkan. Lari bernilai 100 KRW per km dan sehari dengan 6.000 langkah atau lebih bernilai 50 KRW, dalam batas bulanan perusahaan."
+  },
+  {
+    "id": "DO-04",
+    "category": "기부",
+    "question": "Sudah berapa yang kudonasikan sejauh ini?",
+    "aliases": [
+      "Donasi kumulatif",
+      "Total donasi",
+      "Catatan donasiku"
+    ],
+    "answer": "Jumlah donasi pribadi tidak ditampilkan. Di layar donasi kamu bisa melihat total rencana bulan ini serta jumlah, tanggal, dan bukti donasi yang benar-benar dikirim."
   },
   {
     "id": "DO-05",
@@ -623,7 +631,7 @@
     "aliases": [
       "Siapa donaturnya?"
     ],
-    "answer": "Kami berencana mendonasikan 100 KRW per 1 km terverifikasi dari dana perusahaan (operator) (maksimal 10 km per orang per hari dan total 1.000.000 KRW per bulan). Penerimanya masih dibahas, dan kami akan memberi tahu di aplikasi setelah ditetapkan. Ini dicatat di aplikasi sebagai kontribusi donasimu. Donasi yang kamu berikan sendiri disalurkan atas namamu."
+    "answer": "Untuk setiap km lari terverifikasi, perusahaan (operator) berencana mendonasikan 100 KRW dari dananya, dan 50 KRW pada hari dengan 6.000 langkah atau lebih (maksimal 1.000 KRW per orang per hari). Penerima belum dipilih; setelah dipilih akan ditampilkan di layar donasi. Donasi yang kamu lakukan sendiri dikirim atas namamu."
   },
   {
     "id": "DO-06",
@@ -650,7 +658,7 @@
     "aliases": [
       "Biaya donasi"
     ],
-    "answer": "Tidak, perusahaan tidak memotong satu won pun dari donasi."
+    "answer": "ShareRun menanggung donasi sendiri dan menampilkan jumlah yang benar-benar dikirim, tanggal, dan bukti di layar donasi. Jika donasi pertama belum dikirim, hal itu juga kami sampaikan apa adanya."
   },
   {
     "id": "DO-09",
@@ -659,7 +667,7 @@
     "aliases": [
       "Muncul “target donasi tercapai”"
     ],
-    "answer": "Artinya anggaran donasi perusahaan bulan itu (1.000.000 KRW) sudah habis dipakai. Catatan larimu tetap tersimpan, dan kontribusi terkumpul lagi saat bulan baru dimulai."
+    "answer": "Artinya batas donasi perusahaan untuk bulan itu sudah penuh. Catatan lari tetap tersimpan, dan di bulan baru aktivitas kembali dihitung ke donasi."
   },
   {
     "id": "DO-10",
@@ -668,7 +676,7 @@
     "aliases": [
       "Apakah langkah dihitung untuk donasi?"
     ],
-    "answer": "Donasi dihitung dari jarak lari yang lolos verifikasi. Langkah mengumpulkan SHARE."
+    "answer": "Ya. Pada hari dengan 6.000 langkah atau lebih, perusahaan berencana mendonasikan 50 KRW (sekali sehari). Langkah juga menghasilkan SHARE. Jumlah maksimal yang dihitung ke donasi per orang per hari adalah 1.000 KRW."
   },
   {
     "id": "DO-11",
@@ -686,7 +694,7 @@
     "aliases": [
       "Transparansi donasi"
     ],
-    "answer": "Kami mempublikasikan rincian penyelesaian donasi. Periksa bersama kontribusimu di Pusat keamanan & privasi."
+    "answer": "Layar donasi menampilkan kondisi bulan ini serta jumlah, tanggal, dan bukti donasi yang benar-benar dikirim. Jika donasi pertama belum dikirim, hal itu juga kami sampaikan apa adanya."
   },
   {
     "id": "DO-13",
@@ -700,11 +708,11 @@
   {
     "id": "DO-15",
     "category": "기부",
-    "question": "Saya selesai tapi “donasi selesai” tidak muncul",
+    "question": "Larinya sudah selesai tetapi donasi tidak muncul",
     "aliases": [
       "Donasi tidak tercatat"
     ],
-    "answer": "Tanda donasi selesai hanya muncul setelah tercatat di riwayat transaksi server. Lari yang tidak lolos verifikasi tidak termasuk dalam donasi."
+    "answer": "Tanda donasi baru muncul setelah tersimpan di server. Lari yang tidak lolos verifikasi tidak dihitung."
   },
   {
     "id": "DO-16",
@@ -713,7 +721,7 @@
     "aliases": [
       "Lomba donasi virtual"
     ],
-    "answer": "Untuk setiap lari terverifikasi, perusahaan (operator) berencana mendonasikan 100 KRW per km dari dana sendiri (maksimal 10 km per orang per hari dan total 1.000.000 KRW per bulan). Setiap kali kampanye donasi bersama perusahaan dibuka, kamu juga bisa ikut dari tab Tantangan."
+    "answer": "Setiap lari terverifikasi bernilai 100 KRW per km dari dana perusahaan (operator), maksimal 1.000 KRW per orang per hari, dan sehari dengan 6.000 langkah atau lebih menambah 50 KRW. Saat kampanye donasi bersama perusahaan dibuka, kamu bisa ikut di tab Tantangan."
   },
   {
     "id": "GR-01",

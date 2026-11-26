@@ -592,7 +592,7 @@
     "aliases": [
       "How donations work"
     ],
-    "answer": "For every verified 1 km you run, the company (operator) plans to donate 100 KRW from its own funds. The company’s monthly donation budget is up to 1,000,000 KRW. The app shows the contribution built up from your runs."
+    "answer": "For every verified run km, the company (operator) plans to donate 100 KRW from its own funds, and 50 KRW on a day with 6,000+ steps. The company's donations each month have a limit, and it is shown on the donation screen. Personal amounts are not shown."
   },
   {
     "id": "DO-02",
@@ -606,15 +606,22 @@
   {
     "id": "DO-03",
     "category": "기부",
-    "question": "How much have I contributed to donations today?",
+    "question": "Did my activity count toward donations today?",
     "aliases": [
       "Today’s donation?",
       "Today’s sharing amount"
     ],
-    "answer": "Today’s donation contribution from your runs is {오늘기부기여} KRW. It is counted at 100 KRW per km run, within the company’s monthly donation budget of 1,000,000 KRW.",
-    "needs": [
-      "오늘기부기여"
-    ]
+    "answer": "When today's activity counts toward donations, the home card says \"Today's activity counted toward donations\". Personal amounts are not shown. Runs give 100 KRW per km and a day with 6,000+ steps gives 50 KRW, within the company's monthly limit."
+  },
+  {
+    "id": "DO-04",
+    "category": "기부",
+    "question": "How much have I donated so far?",
+    "aliases": [
+      "Total donations",
+      "My donation record"
+    ],
+    "answer": "Personal donation amounts are not shown. On the donation screen you can see this month's planned total and the amount, date and proof of what was actually sent."
   },
   {
     "id": "DO-05",
@@ -623,7 +630,7 @@
     "aliases": [
       "Who is the donor?"
     ],
-    "answer": "We plan to donate 100 KRW per verified 1 km from the company’s (operator’s) funds (up to 10 km per person per day and 1,000,000 KRW per month overall). The recipient is under discussion, and we’ll tell you in the app once it’s decided. It is recorded in the app as your donation contribution. Donations you make yourself are sent in your own name."
+    "answer": "For every verified run km, the company (operator) plans to donate 100 KRW from its own funds, and 50 KRW on a day with 6,000+ steps (up to 1,000 KRW per person per day). The recipient has not been chosen yet; it will be shown on the donation screen once it is. Donations you make yourself go out under your own name."
   },
   {
     "id": "DO-06",
@@ -650,7 +657,7 @@
     "aliases": [
       "Donation fee"
     ],
-    "answer": "No, the company doesn’t take a single won from donations."
+    "answer": "ShareRun pays the donations itself, and shows the amount actually sent, the date and the proof on the donation screen. If the first donation has not been sent yet, it tells you that too."
   },
   {
     "id": "DO-09",
@@ -659,7 +666,7 @@
     "aliases": [
       "“Donation goal reached” showed up"
     ],
-    "answer": "It means the company’s donation budget for that month (1,000,000 KRW) has been fully used. Your run records are still saved, and contributions build up again when the new month starts."
+    "answer": "It means the company's donation limit for that month has been filled. Your run records are saved as usual, and activity counts toward donations again in a new month."
   },
   {
     "id": "DO-10",
@@ -668,7 +675,7 @@
     "aliases": [
       "Do steps count toward donations?"
     ],
-    "answer": "Donations are calculated from the distance of runs that pass verification. Steps build up SHARE."
+    "answer": "Yes. On a day with 6,000+ steps the company plans to donate 50 KRW (once a day). Steps also earn SHARE. The most that counts toward donations for one person in a day is 1,000 KRW."
   },
   {
     "id": "DO-11",
@@ -686,7 +693,7 @@
     "aliases": [
       "Donation transparency"
     ],
-    "answer": "We publish the donation settlement records. Check them together with your own contribution in the Security & Privacy Center."
+    "answer": "The donation screen shows this month's status and the amount, date and proof of what was actually sent. If the first donation has not been sent yet, it tells you that too."
   },
   {
     "id": "DO-13",
@@ -700,11 +707,11 @@
   {
     "id": "DO-15",
     "category": "기부",
-    "question": "I finished but “donation complete” doesn’t show",
+    "question": "My run finished but no donation shows up",
     "aliases": [
       "Donation not reflected"
     ],
-    "answer": "The donation-complete mark only appears after it is recorded in the server’s transaction log. Runs that don’t pass verification are not included in the donation."
+    "answer": "The donation mark only appears after it is saved on the server. Runs that did not pass verification are not included."
   },
   {
     "id": "DO-16",
@@ -713,7 +720,7 @@
     "aliases": [
       "Virtual donation race"
     ],
-    "answer": "For every verified run, the company (operator) plans to donate 100 KRW per km from its own funds (up to 10 km per person per day and 1,000,000 KRW per month overall). Whenever a donation campaign with a company opens, you can also join it from the Challenges tab."
+    "answer": "Every verified run is planned to give 100 KRW per km from company (operator) funds (up to 1,000 KRW per person per day), and a day with 6,000+ steps adds 50 KRW. When a company donation campaign is open, you can join it in the Challenge tab."
   },
   {
     "id": "GR-01",

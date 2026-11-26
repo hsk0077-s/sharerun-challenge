@@ -103,7 +103,7 @@ void main() {
     await tester.tap(find.byKey(SponsorshipStatusCard.mineButtonKey));
     await tester.pumpAndSettle();
     expect(find.text('이 내역은 나만 볼 수 있어요.'), findsOneWidget);
-    expect(find.text('기부 후원 2번 · 100,000원'), findsOneWidget);
+    expect(find.text('기부 후원 2번'), findsOneWidget);
     expect(find.text('기부 후원'), findsNWidgets(2));
     expect(find.text('상금 후원'), findsOneWidget);
     expect(find.text('2026.10.17'), findsOneWidget);

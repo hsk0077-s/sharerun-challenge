@@ -8,7 +8,6 @@ import '../../core/config/app_env.dart';
 import '../../core/theme/theme.dart';
 import '../../app/providers/app_providers.dart';
 import '../../data/models/company_tournament_config.dart';
-import '../donation/today_donation.dart';
 import '../onboarding/src_onboarding_controller.dart' show UserTier;
 import '../tournaments/providers/company_tournament_providers.dart';
 import 'mini_bot_intent.dart';
@@ -55,7 +54,7 @@ abstract final class MiniBotFaqChips {
 
   /// 칩에 보여 줄 짧은 이름. 누르면 FAQ의 원래 질문이 그대로 전달된다.
   static String? shortLabel(String id) => switch (id) {
-        'DO-03' => RemainingSurface.trNow('mini_bot.body.7', '오늘 내 기부'),
+        'DO-03' => RemainingSurface.trNow('mini_bot.body.7', '오늘 기부 현황'),
         'SH-05' => RemainingSurface.trNow('mini_bot.body.8', '내 SHARE'),
         'GR-07' => RemainingSurface.trNow('mini_bot.body.9', '내 등급'),
         'SH-03' => RemainingSurface.trNow('mini_bot.body.10', '하루 SHARE 한도'),
@@ -199,8 +198,6 @@ class MiniBotSheet extends StatefulWidget {
             UserTier.unratedFallback;
         values[RemainingSurface.trNow('mini_bot.body.16', '등급')] = tier.koreanName;
       }
-      final donation = container.read(todayDonationProvider).asData?.value;
-      if (donation != null) values[RemainingSurface.trNow('mini_bot.body.17', '오늘기부기여')] = _grouped(donation.todayWon);
     } catch (_) {}
     return values;
   }

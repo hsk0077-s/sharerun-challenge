@@ -6,6 +6,8 @@ from app.models.admin_api import (
     AuditPingResult,
     ConfigListResult,
     DailyStepsResult,
+    DonationExecutionRequest,
+    DonationExecutionResult,
     ReferralListResult,
     ReferralReviewDecisionRequest,
     ReferralReviewDecisionResult,
@@ -16,7 +18,7 @@ from app.models.admin_api import (
     WalletLedgerResult,
     WhoAmIResult,
 )
-from app.services import appeals, reports
+from app.services import appeals, donation_executions, reports
 from app.services.admin_audit_service import admin_audit_service
 from app.services.admin_auth_service import admin_auth_service
 from app.services.admin_config_service import admin_config_service
@@ -65,6 +67,37 @@ def audit_ping(
         reason=(body.reason if body and body.reason else "ping"),
     )
     return AuditPingResult(accepted=True, log_id=log_id, action="audit_ping")
+
+
+@router.post("/donation-executions", response_model=DonationExecutionResult)
+def save_donation_execution(
+    body: DonationExecutionRequest,
+    actor: dict = Depends(require_admin_user),
+) -> DonationExecutionResult:
+    """Records the real payment of a month (amount, date, partner, proof image).
+
+    Saving also marks that month's donationLedger rows receiptIssued. Audited.
+    """
+    outcome = donation_executions.record_execution(
+        FirebaseService().db,
+        month=body.month,
+        amount_won=body.amount_won,
+        executed_at=body.executed_at,
+        partner_name=body.partner_name,
+        receipt_image_path=body.receipt_image_path,
+        note=body.note,
+        created_by=str(actor["uid"]),
+    )
+    admin_audit_service.write(
+        uid=str(actor["uid"]),
+        email=_actor_email(actor),
+        action="donation_execution",
+        target_uid=None,
+        before=None,
+        after={"month": body.month, "amountWon": body.amount_won, "partnerName": body.partner_name},
+        reason=f"{body.month}: {outcome['ledger_rows_marked']} rows marked",
+    )
+    return DonationExecutionResult(**outcome)
 
 
 @router.get("/referrals", response_model=ReferralListResult)

@@ -8,3 +8,6 @@ __pycache__/
 .env.*
 !.env.example
 !.env.release.example
+
+# Golden failure artifacts
+test/screens/failures/

@@ -192,7 +192,8 @@ class _SplitRow extends StatelessWidget {
   }
 }
 
-/// 오늘 나의 기부 기여. 기부는 회사(운영자) 자금으로 할 예정이고, 금액은 서버 기부 원장의 오늘 합계다.
+/// 오늘 나의 기부 기여. 기부는 회사(운영자) 자금으로 하고, 오늘 내 활동이 서버 기부 원장에 올랐는지만
+/// 알려 준다. 개인별 원화 금액은 쓰지 않는다.
 /// 기부처(수혜 단체)는 정해지기 전이라 쓰지 않는다.
 class HomeDonationCard extends ConsumerWidget {
   const HomeDonationCard({required this.onOpenSettlement, super.key});
@@ -204,7 +205,7 @@ class HomeDonationCard extends ConsumerWidget {
   static const detailKey = Key('home-donation-detail');
   static const retryKey = Key('home-donation-retry');
 
-  static String get rule => RemainingSurface.trNow('home.donation.rule', '검증된 모든 달리기, 1km마다 회사(운영자) 자금으로 100원을 기부할 예정이에요.');
+  static String get rule => RemainingSurface.trNow('home.donation.rule', '검증된 달리기 1km마다 100원, 하루 6,000보 이상 걸으면 50원을 회사(운영자) 자금으로 기부할 예정이에요.');
   static String get budget => RemainingSurface.trNow('home.donation.budget', '운영자의 월 기부 예산 안에서 진행될 예정이에요.');
   static String get capReachedLine => RemainingSurface.trNow('run_finish.cap_reached', '이번 달 운영자 기부 예산을 모두 사용했어요. 넘는 거리는 기록으로 남아요.');
 
@@ -246,12 +247,13 @@ class HomeDonationCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data.todayWon > 0
-                      ? '${groupedNumber(data.todayWon)}${copy.currencySuffix}'
+                  data.counted
+                      ? RemainingSurface.tr(context, 'home.donation.counted',
+                          '오늘 활동이 기부에 반영됐어요')
                       : copy.homeEmpty,
                   key: HomeDonationCard.amountKey,
-                  style: (data.todayWon > 0
-                          ? textTheme.headlineSmall
+                  style: (data.counted
+                          ? textTheme.titleMedium
                           : textTheme.titleSmall)
                       ?.copyWith(
                     fontWeight: FontWeight.w900,

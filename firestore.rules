@@ -739,6 +739,14 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // What was really paid to the receiving group, one document per KST month
+    // (amount, date, partner, proof image path). Saved by an admin through the
+    // server only. Any signed-in user may read it so the app can show it.
+    match /donationExecutions/{month} {
+      allow read: if signedIn() || isAdmin();
+      allow create, update, delete: if false;
+    }
+
     // Invite-code index. Minted only by the secured API (Admin SDK).
     match /referralCodes/{code} {
       allow read, write: if false;

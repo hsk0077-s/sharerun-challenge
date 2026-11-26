@@ -17,7 +17,6 @@ import 'package:share_run_challenge/l10n/shop_catalog_copy.dart';
 import 'package:share_run_challenge/l10n/guide_chrome.dart';
 import 'package:share_run_challenge/l10n/surface_copy.dart';
 import 'package:share_run_challenge/l10n/surface_rest.dart';
-import 'package:share_run_challenge/screens/donation_settlement_screen.dart';
 import 'package:share_run_challenge/screens/fair_earning_policy_screen.dart';
 
 void main() {
@@ -114,10 +113,6 @@ void main() {
     final donation = DonationGuidance.of(ko);
     final shop = ShopFundingGuidance.of(ko);
     final dia = DiaNoticeGuidance.of(ko);
-    expect(donation.intro, DonationSettlementScreen.intro);
-    expect(
-        donation.capReachedSettlement, DonationSettlementScreen.capReachedLine);
-    expect(donation.disclaimer, DonationSettlementScreen.disclaimer);
     expect(donation.rule, HomeDonationCard.rule);
     expect(donation.budget, HomeDonationCard.budget);
     expect(donation.capReachedHome, HomeDonationCard.capReachedLine);

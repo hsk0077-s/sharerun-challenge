@@ -32,7 +32,7 @@ void main() {
       for (final e in faq.entries)
         if (e.needs.isNotEmpty) e.id
     };
-    expect(personal, {'SH-05', 'GR-18', 'GR-07', 'DO-03'});
+    expect(personal, {'SH-05', 'GR-18', 'GR-07'});
   });
 
   test('my own values are filled in, and a missing one is never made up', () {
@@ -221,7 +221,7 @@ void main() {
   });
 
   test('all 29 previously undecided FAQ items are resolved and [미정] is 0', () {
-    expect(faq.entries.length, 157);
+    expect(faq.entries.length, 158);
     final jsonRaw = File('assets/faq/snail_bot_faq.json').readAsStringSync();
     final csvRaw = File('docs/snail-bot-faq.csv').readAsStringSync();
     expect(jsonRaw.contains('[미정]'), isFalse);

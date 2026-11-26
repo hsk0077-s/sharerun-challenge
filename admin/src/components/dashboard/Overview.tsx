@@ -16,8 +16,6 @@ import {
   type DonationMonth,
 } from '../../lib/firestoreOps';
 
-/** 서버 기본값(donation_cap.py DEFAULT_MONTHLY_CAP_WON)과 같은 월 상한. */
-const MONTHLY_DONATION_CAP_WON = 1_000_000;
 const FINISHED_TOURNAMENT = new Set([
   'completed',
   'settled',
@@ -146,7 +144,10 @@ export default function Overview() {
   }, []);
 
   const donated = donation?.totalWon ?? 0;
-  const donationPct = Math.min(100, Math.round((donated / MONTHLY_DONATION_CAP_WON) * 100));
+  // 한도는 서버가 월 합계 문서(capWon)에 적은 값이다. 문서에 없으면 모르는 상태로 보여 준다.
+  const donationCap = donation?.capWon ?? null;
+  const donationPct =
+    donationCap === null ? 0 : Math.min(100, Math.round((donated / donationCap) * 100));
   const waitingAppeals = appeals
     ? appeals.filter((a) => a.status === 'under_review' || a.status === 'pending').length
     : null;
@@ -223,7 +224,7 @@ export default function Overview() {
                 {donated.toLocaleString()}원
                 <span className="text-sm font-normal text-gray-400">
                   {' '}
-                  / {MONTHLY_DONATION_CAP_WON.toLocaleString()}원
+                  / {donationCap === null ? '한도 미확인' : `${donationCap.toLocaleString()}원`}
                 </span>
               </p>
               <div className="h-3 rounded-full bg-gray-900 overflow-hidden">
@@ -233,8 +234,16 @@ export default function Overview() {
                 />
               </div>
               <p className="text-xs text-gray-400">
-                소진율 {donationPct}%
-                {donationPct >= 100 ? ' · 상한 도달, 이후 기부는 기록되지 않습니다.' : ''}
+                {donationCap === null
+                  ? '이번 달 기부가 아직 없어서 한도가 기록되지 않았습니다.'
+                  : `소진율 ${donationPct}%`}
+                {donationCap !== null && donationPct >= 100
+                  ? ' · 상한 도달, 이후 기부는 기록되지 않습니다.'
+                  : ''}
+              </p>
+              <p className="text-xs text-gray-500">
+                걸음 {(donation.stepWon).toLocaleString()}원 · 상점 매칭 {(donation.matchWon).toLocaleString()}원 · 러닝 등{' '}
+                {Math.max(0, donated - donation.stepWon - donation.matchWon).toLocaleString()}원
               </p>
             </div>
           )}

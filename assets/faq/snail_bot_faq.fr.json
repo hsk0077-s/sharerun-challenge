@@ -592,7 +592,7 @@
     "aliases": [
       "Fonctionnement des dons"
     ],
-    "answer": "Pour chaque km vérifié que tu cours, l’entreprise (l’opérateur) prévoit de donner 100 KRW sur ses fonds propres. Le budget mensuel de dons de l’entreprise va jusqu’à 1 000 000 KRW. L’appli affiche la contribution accumulée grâce à tes courses."
+    "answer": "Pour chaque km de course vérifié, l'entreprise (opérateur) prévoit de donner 100 KRW sur ses fonds propres, et 50 KRW un jour à 6 000 pas ou plus. Les dons de l'entreprise ont un plafond mensuel, affiché sur l'écran des dons. Les montants personnels ne sont pas affichés."
   },
   {
     "id": "DO-02",
@@ -606,15 +606,23 @@
   {
     "id": "DO-03",
     "category": "기부",
-    "question": "Quelle est ma contribution aux dons aujourd’hui ?",
+    "question": "Mon activité d'aujourd'hui a-t-elle compté pour les dons ?",
     "aliases": [
       "Combien de don aujourd’hui ?",
       "Montant partagé du jour"
     ],
-    "answer": "Ta contribution aux dons grâce à tes courses aujourd’hui est de {오늘기부기여} KRW. Elle est comptée à 100 KRW par km, dans la limite du budget mensuel de dons de l’entreprise de 1 000 000 KRW.",
-    "needs": [
-      "오늘기부기여"
-    ]
+    "answer": "Quand l'activité d'aujourd'hui compte pour les dons, la carte d'accueil indique « L'activité d'aujourd'hui a été prise en compte dans les dons ». Les montants personnels ne sont pas affichés. La course rapporte 100 KRW par km et un jour à 6 000 pas ou plus rapporte 50 KRW, dans le plafond mensuel de l'entreprise."
+  },
+  {
+    "id": "DO-04",
+    "category": "기부",
+    "question": "Combien ai-je donné jusqu'ici ?",
+    "aliases": [
+      "Dons cumulés",
+      "Montant total des dons",
+      "Mon historique de dons"
+    ],
+    "answer": "Les montants de dons personnels ne sont pas affichés. Sur l'écran des dons, vous voyez le total prévu ce mois-ci ainsi que le montant, la date et le justificatif de ce qui a réellement été envoyé."
   },
   {
     "id": "DO-05",
@@ -623,7 +631,7 @@
     "aliases": [
       "Qui est le donateur ?"
     ],
-    "answer": "Nous prévoyons de donner 100 KRW par km vérifié sur les fonds de l’entreprise (opérateur) (jusqu’à 10 km par personne et par jour et 1 000 000 KRW par mois au total). Le bénéficiaire est en discussion et nous te le dirons dans l’appli dès qu’il sera choisi. Cela est enregistré dans l’appli comme ta contribution aux dons. Les dons que tu fais toi-même sont transmis en ton nom."
+    "answer": "Pour chaque km de course vérifié, l'entreprise (opérateur) prévoit de donner 100 KRW sur ses fonds, et 50 KRW un jour à 6 000 pas ou plus (jusqu'à 1 000 KRW par personne et par jour). Le bénéficiaire n'est pas encore choisi ; il sera indiqué sur l'écran des dons dès qu'il le sera. Les dons que vous faites vous-même partent en votre nom."
   },
   {
     "id": "DO-06",
@@ -650,7 +658,7 @@
     "aliases": [
       "Frais de don"
     ],
-    "answer": "Non, l’entreprise ne prélève pas un seul won sur les dons."
+    "answer": "ShareRun prend les dons à sa charge et affiche sur l'écran des dons le montant réellement envoyé, la date et le justificatif. Si le premier don n'a pas encore été envoyé, elle vous le dit aussi."
   },
   {
     "id": "DO-09",
@@ -659,7 +667,7 @@
     "aliases": [
       "« Objectif de don atteint » s’est affiché"
     ],
-    "answer": "Cela signifie que le budget de dons de l’entreprise pour ce mois (1 000 000 KRW) est entièrement utilisé. Tes courses restent enregistrées, et les contributions se cumulent de nouveau dès le nouveau mois."
+    "answer": "Cela signifie que le plafond de dons de l'entreprise pour ce mois est atteint. Vos courses restent enregistrées, et le mois suivant l'activité compte de nouveau pour les dons."
   },
   {
     "id": "DO-10",
@@ -668,7 +676,7 @@
     "aliases": [
       "Les pas comptent-ils pour les dons ?"
     ],
-    "answer": "Les dons sont calculés d’après la distance des courses qui passent la vérification. Les pas font gagner des SHARE."
+    "answer": "Oui. Un jour à 6 000 pas ou plus, l'entreprise prévoit de donner 50 KRW (une fois par jour). Les pas rapportent aussi des SHARE. Le maximum pris en compte pour les dons par personne et par jour est de 1 000 KRW."
   },
   {
     "id": "DO-11",
@@ -686,7 +694,7 @@
     "aliases": [
       "Transparence des dons"
     ],
-    "answer": "Nous publions le détail du règlement des dons. Consulte-le avec ta propre contribution dans le Centre de sécurité et de confidentialité."
+    "answer": "L'écran des dons montre la situation de ce mois-ci ainsi que le montant, la date et le justificatif de ce qui a réellement été envoyé. Si le premier don n'a pas encore été envoyé, elle vous le dit aussi."
   },
   {
     "id": "DO-13",
@@ -700,11 +708,11 @@
   {
     "id": "DO-15",
     "category": "기부",
-    "question": "J’ai terminé mais « don effectué » ne s’affiche pas",
+    "question": "J'ai terminé ma course mais aucun don n'apparaît",
     "aliases": [
       "Le don n’apparaît pas"
     ],
-    "answer": "L’indicateur « don effectué » n’apparaît qu’une fois enregistré dans l’historique des transactions du serveur. Les courses qui ne passent pas la vérification ne sont pas incluses dans le don."
+    "answer": "L'indication de don n'apparaît qu'après l'enregistrement sur le serveur. Les courses qui n'ont pas passé la vérification ne sont pas comptées."
   },
   {
     "id": "DO-16",
@@ -713,7 +721,7 @@
     "aliases": [
       "Course de don virtuelle"
     ],
-    "answer": "Pour chaque course vérifiée, l’entreprise (l’opérateur) prévoit de donner 100 KRW par km sur ses fonds (jusqu’à 10 km par personne et par jour et 1 000 000 KRW par mois au total). Chaque fois qu’une campagne de dons avec une entreprise est ouverte, tu peux aussi y participer depuis l’onglet Défis."
+    "answer": "Chaque course vérifiée rapporte 100 KRW par km sur les fonds de l'entreprise (opérateur), jusqu'à 1 000 KRW par personne et par jour, et un jour à 6 000 pas ou plus ajoute 50 KRW. Quand une campagne de dons avec une entreprise est ouverte, vous pouvez y participer dans l'onglet Défis."
   },
   {
     "id": "GR-01",

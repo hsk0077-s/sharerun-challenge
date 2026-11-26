@@ -592,7 +592,7 @@
     "aliases": [
       "Cách quyên góp hoạt động"
     ],
-    "answer": "Với mỗi 1 km đã xác minh bạn chạy, công ty (đơn vị vận hành) dự kiến quyên góp 100 KRW từ quỹ của mình. Ngân sách quyên góp hằng tháng của công ty tối đa 1.000.000 KRW. Ứng dụng hiển thị phần đóng góp tích lũy từ các lần chạy của bạn."
+    "answer": "Với mỗi km chạy đã xác thực, công ty (nhà vận hành) dự kiến quyên góp 100 KRW từ nguồn tiền của mình, và 50 KRW cho một ngày đi từ 6.000 bước. Quyên góp hằng tháng của công ty có giới hạn và được hiển thị trên màn hình quyên góp. Số tiền cá nhân không được hiển thị."
   },
   {
     "id": "DO-02",
@@ -606,15 +606,23 @@
   {
     "id": "DO-03",
     "category": "기부",
-    "question": "Hôm nay mình đóng góp quyên góp bao nhiêu?",
+    "question": "Hoạt động hôm nay của tôi đã được tính vào quyên góp chưa?",
     "aliases": [
       "Quyên góp hôm nay?",
       "Số tiền chia sẻ hôm nay"
     ],
-    "answer": "Đóng góp quyên góp từ các lần chạy hôm nay là {오늘기부기여} KRW. Tính 100 KRW cho mỗi km, trong ngân sách quyên góp hằng tháng 1.000.000 KRW của công ty.",
-    "needs": [
-      "오늘기부기여"
-    ]
+    "answer": "Khi hoạt động hôm nay được tính vào quyên góp, thẻ ở màn hình chính sẽ hiện \"Hoạt động hôm nay đã được tính vào quyên góp\". Số tiền cá nhân không được hiển thị. Chạy bộ được 100 KRW mỗi km và một ngày đi từ 6.000 bước được 50 KRW, trong giới hạn hằng tháng của công ty."
+  },
+  {
+    "id": "DO-04",
+    "category": "기부",
+    "question": "Từ trước đến nay tôi đã quyên góp bao nhiêu?",
+    "aliases": [
+      "Tổng quyên góp tích lũy",
+      "Tổng số tiền quyên góp",
+      "Lịch sử quyên góp của tôi"
+    ],
+    "answer": "Số tiền quyên góp của từng cá nhân không được hiển thị. Trên màn hình quyên góp, bạn xem được tổng dự kiến của tháng này cùng số tiền, ngày và chứng từ của khoản đã thực sự gửi."
   },
   {
     "id": "DO-05",
@@ -623,7 +631,7 @@
     "aliases": [
       "Ai là người quyên góp?"
     ],
-    "answer": "Chúng tôi dự kiến quyên góp 100 KRW cho mỗi 1 km đã xác minh từ quỹ của công ty (đơn vị vận hành) (tối đa 10 km mỗi người mỗi ngày và tổng cộng 1.000.000 KRW mỗi tháng). Nơi nhận đang được thảo luận, khi có quyết định chúng tôi sẽ báo trong ứng dụng. Khoản này được ghi trong ứng dụng là phần đóng góp quyên góp của bạn. Các khoản quyên góp bạn tự thực hiện được chuyển dưới tên của bạn."
+    "answer": "Với mỗi km chạy đã xác thực, công ty (nhà vận hành) dự kiến quyên góp 100 KRW từ nguồn tiền của mình, và 50 KRW cho một ngày đi từ 6.000 bước (tối đa 1.000 KRW mỗi người mỗi ngày). Nơi nhận chưa được chọn; khi chọn xong sẽ hiển thị trên màn hình quyên góp. Khoản bạn tự quyên góp sẽ gửi đi bằng tên của chính bạn."
   },
   {
     "id": "DO-06",
@@ -650,7 +658,7 @@
     "aliases": [
       "Phí quyên góp"
     ],
-    "answer": "Không, công ty không giữ lại một won nào từ tiền quyên góp."
+    "answer": "ShareRun tự chi trả khoản quyên góp và công khai số tiền đã thực sự gửi, ngày và chứng từ trên màn hình quyên góp. Nếu khoản đầu tiên chưa được gửi, chúng tôi cũng nói rõ điều đó."
   },
   {
     "id": "DO-09",
@@ -659,7 +667,7 @@
     "aliases": [
       "Hiện “Đạt mục tiêu quyên góp”"
     ],
-    "answer": "Nghĩa là ngân sách quyên góp tháng đó của công ty (1.000.000 KRW) đã dùng hết. Bản ghi chạy của bạn vẫn được lưu và phần đóng góp lại tích lũy khi sang tháng mới."
+    "answer": "Nghĩa là giới hạn quyên góp của công ty trong tháng đó đã đầy. Bản ghi chạy bộ của bạn vẫn được lưu, và sang tháng mới hoạt động lại được tính vào quyên góp."
   },
   {
     "id": "DO-10",
@@ -668,7 +676,7 @@
     "aliases": [
       "Số bước có tính vào quyên góp không?"
     ],
-    "answer": "Quyên góp được tính theo quãng đường các lần chạy vượt qua xác minh. Số bước tích lũy SHARE."
+    "answer": "Có. Một ngày đi từ 6.000 bước, công ty dự kiến quyên góp 50 KRW (mỗi ngày một lần). Bước chân cũng tích lũy SHARE. Mỗi người mỗi ngày được tính vào quyên góp tối đa 1.000 KRW."
   },
   {
     "id": "DO-11",
@@ -686,7 +694,7 @@
     "aliases": [
       "Tính minh bạch của quyên góp"
     ],
-    "answer": "Chúng tôi công khai chi tiết quyết toán quyên góp. Hãy xem cùng phần đóng góp của bạn trong Trung tâm bảo mật & quyền riêng tư."
+    "answer": "Màn hình quyên góp công khai tình hình tháng này cùng số tiền, ngày và chứng từ của khoản đã thực sự gửi. Nếu khoản đầu tiên chưa được gửi, chúng tôi cũng nói rõ điều đó."
   },
   {
     "id": "DO-13",
@@ -700,11 +708,11 @@
   {
     "id": "DO-15",
     "category": "기부",
-    "question": "Tôi chạy xong nhưng không thấy “hoàn tất quyên góp”",
+    "question": "Tôi đã chạy xong nhưng không thấy quyên góp được tính",
     "aliases": [
       "Quyên góp chưa được ghi nhận"
     ],
-    "answer": "Dấu hiệu hoàn tất quyên góp chỉ hiện sau khi được ghi vào nhật ký giao dịch của máy chủ. Các lần chạy không vượt qua xác minh sẽ không được tính vào quyên góp."
+    "answer": "Dấu quyên góp chỉ hiện sau khi được lưu trên máy chủ. Các buổi chạy không qua xác thực sẽ không được tính."
   },
   {
     "id": "DO-16",
@@ -713,7 +721,7 @@
     "aliases": [
       "Cuộc đua quyên góp ảo"
     ],
-    "answer": "Với mỗi lần chạy đã xác minh, công ty (đơn vị vận hành) dự kiến quyên góp 100 KRW cho mỗi km từ quỹ của mình (tối đa 10 km mỗi người mỗi ngày và tổng cộng 1.000.000 KRW mỗi tháng). Mỗi khi có chiến dịch quyên góp cùng doanh nghiệp mở ra, bạn cũng có thể tham gia ở tab Thử thách."
+    "answer": "Mỗi buổi chạy đã xác thực được 100 KRW cho mỗi km từ nguồn tiền của công ty (nhà vận hành), tối đa 1.000 KRW mỗi người mỗi ngày, và một ngày đi từ 6.000 bước cộng thêm 50 KRW. Khi có chiến dịch quyên góp cùng doanh nghiệp, bạn có thể tham gia ở tab Thử thách."
   },
   {
     "id": "GR-01",

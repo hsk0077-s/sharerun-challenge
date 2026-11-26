@@ -53,8 +53,8 @@ flutter run --release --dart-define-from-file=.env
 ```
 
 구글에 올리는 AAB는 위의 `flutter build appbundle --release --dart-define-from-file=.env.release`를 쓴다.
-구글 로그인에는 웹 클라이언트 ID가 필요하다. `.env.release`에 `GOOGLE_WEB_CLIENT_ID=…`(Firebase 콘솔 > 인증 > Google 로그인의 웹 클라이언트 ID)를 넣거나,
-Google 로그인을 켠 뒤 받은 `google-services.json`에 `"client_type": 3` 항목이 있어야 한다. 둘 다 없으면 AAB 빌드가 멈춘다(없이 올리면 앱에서 "serverClientId must be provided on Android"로 로그인에 실패한다).
+구글 로그인에는 웹 클라이언트 ID가 필요하다. **`.env.release`에 `GOOGLE_WEB_CLIENT_ID=…`(Firebase 콘솔 > Authentication > Google 로그인의 웹 클라이언트 ID, `…apps.googleusercontent.com`)를 반드시 넣는다.**
+`google-services.json`에 `"client_type": 3`이 있어도 이 값은 필요하다. 앱 코드는 이 값을 dart-define과 dotenv에서만 읽고 `google-services.json`은 읽지 않는다. 비어 있으면 AAB 빌드가 멈춘다(없이 올리면 앱에서 "serverClientId must be provided on Android"로 로그인에 실패할 수 있다).
 Gradle은 dart-define의 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`을 먼저 읽고, 없으면 `android/naver.properties`
 (같은 키 이름, git에 올라가지 않음), 그다음 프로젝트 루트 `.env`를 읽는다. 값이 비어 있어도 빌드는 된다.
 앱 Dart 코드는 secret을 읽지 않는다.

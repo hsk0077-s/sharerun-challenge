@@ -71,9 +71,13 @@ def test_purge_user_data_deletes_activities_and_marks_purged() -> None:
 
     with patch(
         "app.services.ops_service.send_tournament_topic_notification"
-    ):
+    ), patch(
+        "app.services.ops_service.friend_cheers.purge_friend_data"
+    ) as purge_friends:
         result = service.purge_user_data("uid-test")
 
+    # Friend links, cheers, invites and counters are cleaned for this account.
+    purge_friends.assert_called_once_with(db, "uid-test")
     assert result.accepted is True
     assert result.status == "purged"
     assert result.deleted_activities == 1

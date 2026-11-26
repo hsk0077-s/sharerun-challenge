@@ -16,6 +16,7 @@ from app.services.secured_action_service import SecuredActionService
 from test_redeem_referral import (
     _MemoryCollection,
     _MemoryDb,
+    _MemoryQuery,
     _MemoryTxn,
     _child_snapshots,
 )
@@ -60,6 +61,23 @@ def _fake_firestore(monkeypatch) -> None:
         lambda txn, db, uid, friend, act, reaction, now: fc.send_in_txn(
             txn, db, uid, friend, act, reaction, now
         ),
+    )
+    # The purge job streams a query; the shared fake only has get().
+    monkeypatch.setattr(_MemoryQuery, "stream", lambda self: iter(self.get()), raising=False)
+    monkeypatch.setattr(
+        _MemoryCollection, "stream", lambda self: iter(self.get()), raising=False
+    )
+    # The real helper asks Firestore for a document-id range; the fake scans keys.
+    monkeypatch.setattr(
+        fc,
+        "_ids_with_prefix",
+        lambda db, collection, prefix: [
+            key.split("/", 1)[1]
+            for key in db.store
+            if key.startswith(f"{collection}/")
+            and key.count("/") == 1
+            and key.split("/", 1)[1].startswith(prefix)
+        ],
     )
     monkeypatch.setattr(
         fc,
@@ -640,7 +658,8 @@ def test_delete_account_removes_the_new_documents_only() -> None:
     assert "users/f1/cheersInbox/r2_me" in db.store
     assert "cheerSettings/f1" in db.store
     assert db.store["users/me"]["accountStatus"] == "deleted"
-    assert "friendCheers/r2_me" in db.store
+    # Cheers this person sent are removed with the account (see purge_friend_data).
+    assert "friendCheers/r2_me" not in db.store
 
 
 def test_cheer_routes_are_registered() -> None:
@@ -659,3 +678,178 @@ def test_cheer_routes_are_registered() -> None:
         ("POST", "/actions/cheers/settings"),
     ]:
         assert expected in paths
+
+
+# --- purge_friend_data: everything about a deleted account ----------------
+
+
+def _purge_setup() -> _MemoryDb:
+    db = _db("me", "f1", "f2", "other")
+    _befriend(db, "me", "f1")
+    _befriend(db, "me", "f2")
+    _befriend(db, "f1", "other")
+    db.store["users/me/blocks/other"] = {"createdAt": NOW}
+    db.store["users/other/blocks/me"] = {"createdAt": NOW}
+    _run(db, "me", "r-me")
+    _run(db, "f1", "r-f1")
+    _run(db, "other", "r-other")
+    _send(db, uid="me", friend="f1", activity="r-f1")  # me -> f1
+    _send(db, uid="f1", friend="me", activity="r-me")  # f1 -> me
+    _send(db, uid="f1", friend="other", activity="r-other")  # unrelated
+    db.store["cheerSettings/f1"] = {"muteAll": False, "mutedFriends": ["me", "f2"]}
+    db.store["friendInvites/tok-me"] = {"fromUid": "me", "usedBy": "f2"}
+    db.store["friendInvites/tok-f1"] = {"fromUid": "f1", "usedBy": "me"}
+    db.store["friendInvites/tok-other"] = {"fromUid": "other", "usedBy": None}
+    db.store["friendInviteDays/me_20261120"] = {"count": 2}
+    db.store["friendInviteDays/f1_20261120"] = {"count": 1}
+    return db
+
+
+def test_purge_removes_the_friend_link_on_both_sides() -> None:
+    db = _purge_setup()
+
+    fc.purge_friend_data(db, "me")
+
+    assert "users/f1/friends/me" not in db.store
+    assert "users/f2/friends/me" not in db.store
+    assert not [k for k in db.store if k.startswith("users/me/friends/")]
+    # Links between other people are untouched.
+    assert "users/f1/friends/other" in db.store
+    assert "users/other/friends/f1" in db.store
+
+
+def test_purge_removes_the_deleted_person_from_other_muted_lists() -> None:
+    db = _purge_setup()
+
+    fc.purge_friend_data(db, "me")
+
+    assert db.store["cheerSettings/f1"]["mutedFriends"] == ["f2"]
+    assert "cheerSettings/me" not in db.store
+
+
+def test_purge_removes_cheers_sent_and_received_and_inbox_copies() -> None:
+    db = _purge_setup()
+    assert "friendCheers/r-f1_me" in db.store
+    assert "friendCheers/r-me_f1" in db.store
+
+    counts = fc.purge_friend_data(db, "me")
+
+    assert "friendCheers/r-f1_me" not in db.store
+    assert "friendCheers/r-me_f1" not in db.store
+    # The copy of what me sent sits in f1's inbox.
+    assert "users/f1/cheersInbox/r-f1_me" not in db.store
+    assert not [k for k in db.store if k.startswith("users/me/cheersInbox/")]
+    assert counts["cheers"] == 2
+    # Unrelated cheers stay.
+    assert "friendCheers/r-other_f1" in db.store
+    assert "users/other/cheersInbox/r-other_f1" in db.store
+
+
+def test_purge_removes_own_blocks_friend_runs_and_settings() -> None:
+    db = _purge_setup()
+
+    fc.purge_friend_data(db, "me")
+
+    assert "users/me/blocks/other" not in db.store
+    assert "users/me/friendRuns/r-me" not in db.store
+    # What other people recorded about their own side is theirs.
+    assert "users/other/friendRuns/r-other" in db.store
+    assert "users/other/blocks/me" in db.store
+
+
+def test_purge_removes_invites_and_blanks_the_name_on_used_ones() -> None:
+    db = _purge_setup()
+
+    counts = fc.purge_friend_data(db, "me")
+
+    assert "friendInvites/tok-me" not in db.store
+    assert counts["invites"] == 1
+    # An invite someone else made and me used stays used, without naming me.
+    assert db.store["friendInvites/tok-f1"] == {"fromUid": "f1", "usedBy": "deleted"}
+    assert db.store["friendInvites/tok-other"] == {"fromUid": "other", "usedBy": None}
+
+
+def test_purge_removes_the_per_day_counters_named_after_the_person() -> None:
+    db = _purge_setup()
+
+    fc.purge_friend_data(db, "me")
+
+    assert "friendInviteDays/me_20261120" not in db.store
+    assert "friendCheerDays/me_20261120" not in db.store
+    assert not [k for k in db.store if k.startswith("friendCheerPairDays/me_")]
+    assert "friendInviteDays/f1_20261120" in db.store
+    assert "friendCheerDays/f1_20261120" in db.store
+
+
+def test_purge_twice_changes_nothing_more() -> None:
+    db = _purge_setup()
+    fc.purge_friend_data(db, "me")
+    after = {k: dict(v) for k, v in db.store.items()}
+
+    counts = fc.purge_friend_data(db, "me")
+
+    assert db.store == after
+    assert counts == {"friends": 0, "cheers": 0, "invites": 0, "counters": 0}
+
+
+def test_purge_leaves_the_deleted_persons_wallet_and_profile_to_the_caller() -> None:
+    db = _purge_setup()
+    before = dict(db.store["users/me"])
+
+    fc.purge_friend_data(db, "me")
+
+    assert db.store["users/me"] == before
+    assert not [k for k in db.store if "walletTransactions" in k]
+
+
+def test_delete_account_cleans_the_other_sides_too() -> None:
+    db = _purge_setup()
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+
+    with patch(
+        "app.services.secured_action_service.firebase_auth.delete_user"
+    ), patch("app.services.secured_action_service.identities.forget_account"):
+        service.delete_account("me")
+
+    assert "users/f1/friends/me" not in db.store
+    assert "friendCheers/r-f1_me" not in db.store
+    assert "friendInvites/tok-me" not in db.store
+    assert db.store["users/me"]["accountStatus"] == "deleted"
+    # Friends who stayed still see each other.
+    assert "users/f1/friends/other" in db.store
+
+
+def test_the_daily_purge_runs_the_same_cleanup() -> None:
+    from app.services.ops_service import OpsService
+
+    db = _purge_setup()
+    db.store["users/me"]["accountStatus"] = "deleted"
+    service = OpsService(firebase_service=SimpleNamespace(db=db))
+
+    with patch("app.services.ops_service.send_tournament_topic_notification"):
+        result = service.purge_user_data("me")
+
+    assert result.status == "purged"
+    assert "users/f1/friends/me" not in db.store
+    assert "friendCheers/r-f1_me" not in db.store
+    assert "friendInvites/tok-me" not in db.store
+
+
+def test_a_failed_friend_cleanup_does_not_stop_the_account_deletion() -> None:
+    db = _purge_setup()
+    service = SecuredActionService(firebase_service=SimpleNamespace(db=db))
+
+    with patch(
+        "app.services.secured_action_service.firebase_auth.delete_user"
+    ) as delete_user, patch(
+        "app.services.secured_action_service.identities.forget_account"
+    ) as forget, patch(
+        "app.services.secured_action_service.friend_cheers.purge_friend_data",
+        side_effect=RuntimeError("firestore down"),
+    ):
+        result = service.delete_account("me")
+
+    assert result.status == "deleted"
+    delete_user.assert_called_once_with("me")
+    forget.assert_called_once()
+    assert db.store["users/me"]["accountStatus"] == "deleted"

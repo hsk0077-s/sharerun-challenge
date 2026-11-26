@@ -16,6 +16,7 @@ from app.services.company_tournament_settlement import (
     create_company_prize_race as open_company_prize_race,
     settle_company_prize_race,
 )
+from app.services import friend_cheers
 from app.services.firebase_service import FirebaseService
 from app.services.ranked_tournaments import (
     open_ranked_tournament,
@@ -186,6 +187,10 @@ class OpsService:
 
         for device_snapshot in user_ref.collection("loginDevices").stream():
             device_snapshot.reference.delete()
+
+        # Friend links, cheers, invites and counters of this account (also
+        # catches accounts deleted before delete_account did this itself).
+        friend_cheers.purge_friend_data(db, uid)
 
         # Personal records kept under the user: daily steps (with the phone model),
         # notices, queued pushes and any watch left over. Money ledgers stay: the

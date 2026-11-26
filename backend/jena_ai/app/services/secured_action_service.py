@@ -1,3 +1,4 @@
+import logging
 from datetime import date, datetime, timedelta, timezone
 from math import asin, cos, radians, sin, sqrt
 import re
@@ -5154,7 +5155,14 @@ class SecuredActionService:
             device.reference.delete()
 
         # Friend-cheer data that belongs to this person alone.
-        friend_cheers.delete_user_cheer_data(db, uid)
+        try:
+            friend_cheers.purge_friend_data(db, uid)
+        except Exception:
+            # The daily purge runs the same cleanup again, so a failure here must
+            # not stop the account from being deleted.
+            logging.getLogger(__name__).exception(
+                "Friend data cleanup failed while deleting an account"
+            )
 
         try:
             firebase_auth.delete_user(uid)

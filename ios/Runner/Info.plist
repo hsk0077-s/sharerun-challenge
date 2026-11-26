@@ -69,6 +69,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>GMSApiKey</key>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>쉐어런은 지원되는 스마트워치를 연결해 야외 달리기를 확인하기 위해 블루투스를 사용해요.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>

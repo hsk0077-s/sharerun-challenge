@@ -8,7 +8,16 @@ import GoogleMaps
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GMSServices.provideAPIKey("AIzaSyA-qQCDl1affyv8CPF6RWSHHxyw32618E0")
+    // The Maps key is not stored in the repository. It comes from the build
+    // setting GOOGLE_MAPS_API_KEY (ios/Flutter/Secrets.xcconfig, which git
+    // ignores) through the Info.plist entry GMSApiKey. See docs/ios-maps-key.md.
+    let mapsKey = (Bundle.main.object(forInfoDictionaryKey: "GMSApiKey") as? String)?
+      .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    if mapsKey.isEmpty || mapsKey.hasPrefix("$(") {
+      NSLog("GMSApiKey is not set: the map stays blank. See docs/ios-maps-key.md.")
+    } else {
+      GMSServices.provideAPIKey(mapsKey)
+    }
     GeneratedPluginRegistrant.register(with: self)
     let launched = super.application(application, didFinishLaunchingWithOptions: launchOptions)
     if let bleRegistrar = self.registrar(forPlugin: "BleHeartRatePlugin") {

@@ -150,16 +150,27 @@ gradle.taskGraph.whenReady {
                 "android/app/google-services.json 이 없습니다. Firebase 콘솔에서 받아 android/app 에 둔 뒤 다시 빌드하세요. (docs/play-release.md)",
             )
         }
-        // 구글 로그인은 웹 클라이언트 ID가 필요하다. dart-define GOOGLE_WEB_CLIENT_ID 가 있거나
-        // google-services.json 에 웹 클라이언트(client_type 3)가 있어야 한다. 둘 다 없으면
-        // 앱이 "serverClientId must be provided on Android" 로 로그인에 실패하므로 여기서 멈춘다.
+        // 구글 로그인용 웹 클라이언트 ID(dart-define GOOGLE_WEB_CLIENT_ID)가 비어 있으면 google-services.json
+        // 내용과 상관없이 여기서 멈춘다.
+        // 이유: 앱 코드(AppEnv.googleWebClientId)는 dart-define과 dotenv에서만 이 값을 읽고 google-services.json은
+        // 읽지 않는다. 값이 비어 있으면 google_sign_in_android 는 "default_web_client_id" 문자열 리소스를
+        // 이름으로 찾아 대신 쓰는데, 이 리소스는 google-services.json 에 웹 클라이언트(client_type 3)가 있어야
+        // 생기고, 코드에서 이름으로만 찾기 때문에 릴리스의 리소스 축소가 지울 수도 있다. 어느 쪽이든 없으면
+        // 앱에서 "serverClientId must be provided on Android" 로 구글 로그인이 실패한다.
+        // google-services.json 에 웹 클라이언트가 있다고 이 검사를 통과시키면 그 실패를 놓치므로,
+        // 릴리스 빌드는 항상 값을 명시해서 앱이 serverClientId 로 직접 넘기게 한다.
         val googleWebClientId = dartDefines["GOOGLE_WEB_CLIENT_ID"].orEmpty().trim()
-        val hasWebClientInJson = Regex("\"client_type\"\\s*:\\s*3")
-            .containsMatchIn(file("google-services.json").readText())
-        if (googleWebClientId.isEmpty() && !hasWebClientInJson) {
+        if (googleWebClientId.isEmpty()) {
             throw GradleException(
-                "구글 로그인용 웹 클라이언트 ID가 없습니다. .env.release 에 GOOGLE_WEB_CLIENT_ID=… 를 넣거나, " +
-                    "Firebase 에서 Google 로그인을 켜고 google-services.json 을 다시 받으세요. (docs/play-release.md)",
+                "GOOGLE_WEB_CLIENT_ID 가 비어 있습니다. .env.release 에 GOOGLE_WEB_CLIENT_ID=…(Firebase 콘솔 > Authentication > " +
+                    "Google 로그인의 웹 클라이언트 ID)를 넣고 --dart-define-from-file=.env.release 로 빌드하세요. " +
+                    "google-services.json 에 웹 클라이언트가 있어도 이 값은 필요합니다. (docs/play-release.md)",
+            )
+        }
+        if (!googleWebClientId.endsWith(".apps.googleusercontent.com")) {
+            throw GradleException(
+                "GOOGLE_WEB_CLIENT_ID 의 모양이 이상합니다(…apps.googleusercontent.com 으로 끝나야 합니다). " +
+                    "웹 클라이언트 ID를 다시 확인하세요. (docs/play-release.md)",
             )
         }
         val required = listOf("storeFile", "storePassword", "keyAlias", "keyPassword")

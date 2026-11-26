@@ -41,7 +41,7 @@ ShareRun（シェアラン）は「心臓が鼓動する限り、分かち合い
 
 • プライバシーポリシー: https://share-run-challenge.web.app/privacy.html
 • 利用規約: https://share-run-challenge.web.app/terms.html
-• お問い合わせ: src791004@gmail.com
+• お問い合わせ: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

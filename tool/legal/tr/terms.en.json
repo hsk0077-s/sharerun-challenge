@@ -1,8 +1,8 @@
 {
  "s001": "Terms of Service - ShareRun",
  "s002": "ShareRun Terms of Service",
- "s003": "Effective: 2026-10-25 · Last updated: 2026-10-23",
- "s004": "These terms set the conditions for using ShareRun (the \"Service\"), provided by 하상기 (the \"Operator\"). By using the Service you agree to these terms and to the <a href=\"privacy.html\">Privacy Policy</a>. The Privacy Policy governs how personal information is collected and used; these terms govern your use of the Service.",
+ "s003": "Effective: {{시행일}} · Last updated: {{최종수정일}}",
+ "s004": "These terms set the conditions for using ShareRun (the \"Service\"), provided by Eareon Works (the \"Operator\"). By using the Service you agree to these terms and to the <a href=\"privacy.html\">Privacy Policy</a>. The Privacy Policy governs how personal information is collected and used; these terms govern your use of the Service.",
  "s005": "1. The Service",
  "s006": "ShareRun is an app for recording walks and runs, joining challenges and tournaments, and earning and sharing virtual currency based on your activity. The Operator provides record verification, rankings, rewards, donation information and notifications. Some features may be in preparation or unavailable in certain versions. The current release may not accept cash payments inside the app.",
  "s007": "2. Accounts and linked sign-in",
@@ -47,5 +47,5 @@
  "s046": "12. Governing law and jurisdiction",
  "s047": "These terms are governed by the laws of the Republic of Korea. Disputes arising from use of the Service fall under the jurisdiction of the court determined by the Civil Procedure Act and other applicable laws.",
  "s048": "13. Contact",
- "s049": "Operator: 하상기<br> Email: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Operator: Eareon Works<br>\n    Representative: {{대표자명}}<br>\n    Business registration number: {{사업자등록번호}}<br>\n    Mail-order business report number: {{통신판매업신고번호}}<br>\n    Business address: {{사업장주소}}<br>\n    Email: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

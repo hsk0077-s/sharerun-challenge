@@ -1,8 +1,8 @@
 {
  "s001": "Politique de confidentialité - ShareRun",
  "s002": "Politique de confidentialité de ShareRun",
- "s003": "Entrée en vigueur : 2026-10-25 · Dernière modification : 2026-11-26",
- "s004": "하상기 (l'« Opérateur ») traite avec soin les données personnelles des utilisateurs en fournissant ShareRun (l'« Application ») et respecte la loi sur la protection des informations personnelles et les autres lois applicables. L'Opérateur ne traite que les données personnelles minimales nécessaires à la fourniture du service. Cette politique explique quelles données l'Opérateur collecte et pourquoi, comment elles sont utilisées et conservées, et quels droits vous avez.",
+ "s003": "Entrée en vigueur : {{시행일}} · Dernière modification : {{최종수정일}}",
+ "s004": "Eareon Works (l'« Opérateur ») traite avec soin les données personnelles des utilisateurs en fournissant ShareRun (l'« Application ») et respecte la loi sur la protection des informations personnelles et les autres lois applicables. L'Opérateur ne traite que les données personnelles minimales nécessaires à la fourniture du service. Cette politique explique quelles données l'Opérateur collecte et pourquoi, comment elles sont utilisées et conservées, et quels droits vous avez.",
  "s005": "1. Données personnelles collectées et finalités",
  "s006": "Catégorie",
  "s007": "Données collectées",
@@ -96,12 +96,13 @@
  "s095": "Le personnel ayant accès aux données personnelles est limité, et les consultations des administrateurs (par exemple des justificatifs de contestation) sont consignées.",
  "s096": "Nous ne promettons pas une sécurité parfaite, mais nous nous efforçons de protéger les données personnelles par les mesures ci-dessus.",
  "s097": "8. Responsable de la protection des données et contact",
- "s098": "Opérateur (responsable de la protection des données personnelles) : 하상기<br> E-mail : <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>",
+ "s098": "Opérateur: Eareon Works<br>\n    Responsable de la protection des données personnelles: {{개인정보보호책임자}}<br>\n    E-mail: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>",
  "s099": "Si vous avez besoin d'aide à la suite d'une atteinte aux données personnelles, vous pouvez demander conseil ou effectuer un signalement auprès de : Comité de médiation des litiges relatifs aux informations personnelles (1833-6972, sans indicatif ; www.kopico.go.kr), Centre de signalement des atteintes aux informations personnelles (118, sans indicatif ; privacy.kisa.or.kr) et Agence nationale de police (182, sans indicatif ; ecrm.police.go.kr)",
  "s100": "9. Lorsque cette politique change",
- "s101": "Cette Politique de confidentialité s'applique à compter du 2026-10-25.",
+ "s101": "Cette Politique de confidentialité s'applique à compter du {{시행일}}.",
  "s102": "Lorsque le contenu change, il est annoncé 7 jours avant son entrée en vigueur, par exemple par une notification dans l'application. Les changements qui affectent fortement vos droits, comme les données collectées ou les finalités du traitement, sont expliqués séparément en comparant avant et après, et les changements défavorables pour vous sont annoncés 30 jours avant.",
  "s103": "Les politiques précédentes sont liées ci-dessous avec leur période d'application et vous pouvez les consulter à tout moment.",
- "s104": "Politiques précédentes : aucune (entrée en vigueur initiale le 2026-10-25)",
- "s105": "Modification du 2026-11-26 (ajout des amis et des encouragements) : s'applique à partir de la version de l'application qui ajoute la fonction d'amis. Ajouté : la ligne « Amis et encouragements » de la section 1, l'élément de conservation des amis et des encouragements de la section 2 et le paragraphe sur les amis et les encouragements dans la procédure de destruction. Aucune autre donnée collectée n'a changé."
+ "s104": "Politique précédente : celle en vigueur du 2026-10-25 à la veille du {{시행일}} ({{이전방침주소}})",
+ "s105": "Modification du 2026-11-26 (ajout des amis et des encouragements) : s'applique à partir de la version de l'application qui ajoute la fonction d'amis. Ajouté : la ligne « Amis et encouragements » de la section 1, l'élément de conservation des amis et des encouragements de la section 2 et le paragraphe sur les amis et les encouragements dans la procédure de destruction. Aucune autre donnée collectée n'a changé.",
+ "s106": "Modification du {{시행일}} (changement d'opérateur) : l'opérateur du service est désormais Eareon Works. Les finalités et les données traitées ne changent pas."
 }

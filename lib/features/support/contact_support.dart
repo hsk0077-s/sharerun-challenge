@@ -8,7 +8,7 @@ import '../../l10n/remaining_surface.dart';
 import '../jena_validation/run_device_info.dart';
 
 /// 이용자가 문제를 알릴 수 있는 공식 이메일. 스토어 설명문, 개인정보처리방침, 이용약관과 같다.
-const supportEmail = 'src791004@gmail.com';
+const supportEmail = 'eareonworks@gmail.com';
 
 /// 메일 앱에 미리 채워 줄 제목과 본문 꼬리말을 만든다.
 ///

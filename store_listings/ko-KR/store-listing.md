@@ -43,7 +43,7 @@
 • 가입 연령: 만 14세 이상
 • 개인정보 처리방침: https://share-run-challenge.web.app/privacy.html
 • 이용약관: https://share-run-challenge.web.app/terms.html
-• 고객 문의: src791004@gmail.com
+• 고객 문의: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

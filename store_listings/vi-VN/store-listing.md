@@ -38,7 +38,7 @@ ShareRun ("Chừng nào trái tim còn đập, sự sẻ chia vẫn tiếp tục
 
 • Chính sách bảo mật: https://share-run-challenge.web.app/privacy.html
 • Điều khoản: https://share-run-challenge.web.app/terms.html
-• Liên hệ: src791004@gmail.com
+• Liên hệ: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

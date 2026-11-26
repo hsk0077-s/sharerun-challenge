@@ -1,8 +1,8 @@
 {
  "s001": "Kebijakan Privasi - ShareRun",
  "s002": "Kebijakan Privasi ShareRun",
- "s003": "Berlaku: 2026-10-25 · Terakhir diubah: 2026-11-26",
- "s004": "하상기 (\"Operator\") menangani data pribadi pengguna dengan hati-hati dalam menyediakan ShareRun (\"Aplikasi\") dan mematuhi Undang-Undang Perlindungan Informasi Pribadi serta hukum terkait lainnya. Operator hanya memproses data pribadi minimum yang diperlukan untuk menyediakan layanan. Kebijakan ini menjelaskan data apa yang dikumpulkan Operator dan mengapa, bagaimana digunakan dan disimpan, serta hak apa yang Anda miliki.",
+ "s003": "Berlaku: {{시행일}} · Terakhir diubah: {{최종수정일}}",
+ "s004": "Eareon Works (\"Operator\") menangani data pribadi pengguna dengan hati-hati dalam menyediakan ShareRun (\"Aplikasi\") dan mematuhi Undang-Undang Perlindungan Informasi Pribadi serta hukum terkait lainnya. Operator hanya memproses data pribadi minimum yang diperlukan untuk menyediakan layanan. Kebijakan ini menjelaskan data apa yang dikumpulkan Operator dan mengapa, bagaimana digunakan dan disimpan, serta hak apa yang Anda miliki.",
  "s005": "1. Data pribadi yang dikumpulkan dan tujuan penggunaan",
  "s006": "Kategori",
  "s007": "Data yang dikumpulkan",
@@ -96,12 +96,13 @@
  "s095": "Petugas yang dapat mengakses data pribadi dibatasi, dan akses administrator (seperti bukti banding) dicatat.",
  "s096": "Kami tidak menjanjikan keamanan yang sempurna, tetapi berusaha melindungi data pribadi dengan langkah-langkah di atas.",
  "s097": "8. Penanggung jawab perlindungan data pribadi dan kontak",
- "s098": "Operator (penanggung jawab perlindungan data pribadi): 하상기<br> Email: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>",
+ "s098": "Operator: Eareon Works<br>\n    Penanggung jawab perlindungan data pribadi: {{개인정보보호책임자}}<br>\n    Email: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>",
  "s099": "Jika Anda membutuhkan bantuan akibat pelanggaran data pribadi, Anda dapat berkonsultasi atau melapor ke: Komite Mediasi Sengketa Informasi Pribadi (1833-6972, tanpa kode area; www.kopico.go.kr), Pusat Pelaporan Pelanggaran Informasi Pribadi (118, tanpa kode area; privacy.kisa.or.kr), dan Badan Kepolisian Nasional (182, tanpa kode area; ecrm.police.go.kr)",
  "s100": "9. Saat kebijakan berubah",
- "s101": "Kebijakan Privasi ini berlaku mulai 2026-10-25.",
+ "s101": "Kebijakan Privasi ini berlaku mulai {{시행일}}.",
  "s102": "Jika isinya berubah, akan diumumkan 7 hari sebelum berlaku, misalnya melalui pemberitahuan di aplikasi. Perubahan yang sangat memengaruhi hak Anda, seperti data yang dikumpulkan atau tujuan pemrosesan, dijelaskan terpisah dengan membandingkan sebelum dan sesudah, dan perubahan yang merugikan Anda diumumkan 30 hari sebelumnya.",
  "s103": "Kebijakan sebelumnya ditautkan di bawah beserta periode berlakunya, dan dapat dilihat kapan saja.",
- "s104": "Kebijakan sebelumnya: tidak ada (mulai berlaku pertama kali pada 2026-10-25)",
- "s105": "Perubahan 2026-11-26 (teman dan semangat ditambahkan): berlaku mulai versi aplikasi yang menambahkan fitur teman. Yang ditambahkan: baris \"Teman dan semangat\" di bagian 1, butir penyimpanan teman dan semangat di bagian 2, dan paragraf teman dan semangat pada prosedur penghancuran. Data lain yang dikumpulkan tidak berubah."
+ "s104": "Kebijakan sebelumnya: kebijakan yang berlaku dari 2026-10-25 sampai sehari sebelum {{시행일}} ({{이전방침주소}})",
+ "s105": "Perubahan 2026-11-26 (teman dan semangat ditambahkan): berlaku mulai versi aplikasi yang menambahkan fitur teman. Yang ditambahkan: baris \"Teman dan semangat\" di bagian 1, butir penyimpanan teman dan semangat di bagian 2, dan paragraf teman dan semangat pada prosedur penghancuran. Data lain yang dikumpulkan tidak berubah.",
+ "s106": "Perubahan {{시행일}} (pergantian operator): operator layanan kini adalah Eareon Works. Tujuan dan jenis pemrosesan data pribadi tidak berubah."
 }

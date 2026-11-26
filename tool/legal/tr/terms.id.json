@@ -1,8 +1,8 @@
 {
  "s001": "Ketentuan Layanan - ShareRun",
  "s002": "Ketentuan Layanan ShareRun",
- "s003": "Berlaku: 2026-10-25 · Terakhir diubah: 2026-10-23",
- "s004": "Ketentuan ini mengatur syarat penggunaan ShareRun (\"Layanan\") yang disediakan oleh 하상기 (\"Operator\"). Dengan menggunakan Layanan, Anda dianggap menyetujui ketentuan ini dan <a href=\"privacy.html\">Kebijakan Privasi</a>. Kebijakan Privasi mengatur pengumpulan dan penggunaan data pribadi; ketentuan ini mengatur hubungan penggunaan Layanan.",
+ "s003": "Berlaku: {{시행일}} · Terakhir diubah: {{최종수정일}}",
+ "s004": "Ketentuan ini mengatur syarat penggunaan ShareRun (\"Layanan\") yang disediakan oleh Eareon Works (\"Operator\"). Dengan menggunakan Layanan, Anda dianggap menyetujui ketentuan ini dan <a href=\"privacy.html\">Kebijakan Privasi</a>. Kebijakan Privasi mengatur pengumpulan dan penggunaan data pribadi; ketentuan ini mengatur hubungan penggunaan Layanan.",
  "s005": "1. Layanan",
  "s006": "ShareRun adalah aplikasi untuk mencatat jalan dan lari, mengikuti tantangan dan turnamen, serta menerima dan membagikan mata uang virtual sesuai aktivitas Anda. Operator menyediakan verifikasi catatan, peringkat, hadiah, informasi donasi, dan notifikasi. Sebagian fitur mungkin masih dipersiapkan atau tidak tersedia di versi tertentu. Versi yang dirilis saat ini mungkin tidak menerima pembayaran tunai di dalam aplikasi.",
  "s007": "2. Akun dan login yang terhubung",
@@ -47,5 +47,5 @@
  "s046": "12. Hukum yang berlaku dan yurisdiksi",
  "s047": "Ketentuan ini tunduk pada hukum Republik Korea. Sengketa yang timbul dari penggunaan Layanan berada di bawah yurisdiksi pengadilan yang ditentukan oleh Undang-Undang Hukum Acara Perdata dan hukum terkait lainnya.",
  "s048": "13. Kontak",
- "s049": "Operator: 하상기<br> Email: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Operator: Eareon Works<br>\n    Perwakilan: {{대표자명}}<br>\n    Nomor registrasi usaha: {{사업자등록번호}}<br>\n    Nomor pelaporan penjualan jarak jauh: {{통신판매업신고번호}}<br>\n    Alamat usaha: {{사업장주소}}<br>\n    Email: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

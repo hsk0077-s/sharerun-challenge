@@ -23,9 +23,10 @@ LANGS = {  # app languageCode -> (html lang, native name, convenience-translatio
  "id": ("id", "Bahasa Indonesia", "Ini adalah terjemahan sebagai referensi dari naskah asli berbahasa Korea. Jika ada perbedaan, naskah asli berbahasa Korea yang berlaku."),
 }
 H = re.compile("[가-힣]")
+PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")  # {{대표자명}} etc. stay in every language until they are filled in
 def sig(s):  # things that must survive translation untouched
     s = s.replace("제3자", "")
-    toks = re.findall(r"href=\"[^\"]+\"|\d[\d,\.]*|src791004@gmail\.com|SHARE|DIA|VALUE|Health Connect", s)
+    toks = re.findall(r"href=\"[^\"]+\"|\d[\d,\.]*|eareonworks@gmail\.com|SHARE|DIA|VALUE|Health Connect", s)
     toks = [t.rstrip(",.") if t[0].isdigit() else t for t in toks]
     return sorted(t for t in toks if not (t[0].isdigit() and len(t) == 1))  # one digit may become a word
 def page(doc, lang, check):
@@ -38,7 +39,7 @@ def page(doc, lang, check):
     for sid, ko in src["segments"].items():
         t = tr.get(sid)
         if not t: errs.append(f"{doc}.{lang} missing {sid}"); continue
-        if H.search(t.replace("하상기","")): errs.append(f"{doc}.{lang} {sid} has Hangul")
+        if [w for w in re.findall("[가-힣]+", PLACEHOLDER.sub("", t)) if w not in ko]: errs.append(f"{doc}.{lang} {sid} has Hangul")  # a name that is also in the Korean text is fine
         a = [x for x in sig(ko) if not x.startswith("href")]; b = [x for x in sig(t) if not x.startswith("href")]
         if [x for x in a if x not in b]: errs.append(f"{doc}.{lang} {sid} lost {[x for x in a if x not in b]}")
         if sorted(re.findall(r"href=\"[^\"]+\"", ko)) != sorted(re.findall(r"href=\"[^\"]+\"", t)):
@@ -53,6 +54,12 @@ def page(doc, lang, check):
     html = html.replace("<main>", f'<main>\n  <p class="draft">{note}</p>\n  <nav class="muted">{nav}</nav>', 1)
     return html, errs
 def main():
+    if "--check-filled" in sys.argv:  # no {{placeholder}} may be left on a page that goes live
+        ph = re.compile(r"\{\{(?!s\d{3}\}\})[^{}]+\}\}")
+        left = {f.name: sorted(set(ph.findall(f.read_text(encoding="utf-8")))) for f in sorted(SITE.glob("*.html"))}
+        left = {k: v for k, v in left.items() if v}
+        print(("\n").join(f"{k}: {', '.join(v)}" for k, v in left.items()) or "ok: no placeholder left")
+        sys.exit(1 if left else 0)
     check = "--check" in sys.argv
     bad = []
     for doc in DOCS:

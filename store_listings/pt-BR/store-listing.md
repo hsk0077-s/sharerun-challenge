@@ -38,7 +38,7 @@ ShareRun ("Enquanto o coração bater, a solidariedade continua correndo") é o 
 
 • Privacidade: https://share-run-challenge.web.app/privacy.html
 • Termos: https://share-run-challenge.web.app/terms.html
-• Suporte: src791004@gmail.com
+• Suporte: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

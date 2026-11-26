@@ -41,7 +41,7 @@ ShareRun ("As long as your heart beats, sharing runs on") is a fair running and 
 
 • Privacy Policy: https://share-run-challenge.web.app/privacy.html
 • Terms of Service: https://share-run-challenge.web.app/terms.html
-• Support: src791004@gmail.com
+• Support: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

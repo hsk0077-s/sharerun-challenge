@@ -38,7 +38,7 @@ ShareRun (« Tant que votre cœur bat, le partage court aussi ») est l'applicat
 
 • Confidentialité : https://share-run-challenge.web.app/privacy.html
 • Conditions : https://share-run-challenge.web.app/terms.html
-• Contact : src791004@gmail.com
+• Contact : eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

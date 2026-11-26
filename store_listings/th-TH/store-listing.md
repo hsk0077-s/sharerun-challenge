@@ -38,7 +38,7 @@ ShareRun ("ตราบใดที่หัวใจยังเต้น ก�
 
 • นโยบายความเป็นส่วนตัว: https://share-run-challenge.web.app/privacy.html
 • ข้อกำหนดการใช้งาน: https://share-run-challenge.web.app/terms.html
-• ติดต่อเรา: src791004@gmail.com
+• ติดต่อเรา: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

@@ -112,7 +112,7 @@ class DonationSettlementScreen extends ConsumerStatefulWidget {
       'donation.fixed_note', '기부금은 쉐어런이 부담해요. 내 돈은 나가지 않아요.');
   static String get footer => RemainingSurface.trNow(
         'donation.footer',
-        '기부금영수증과 연말정산 공제 대상이 아니에요. 기부금은 쉐어런 운영사가 다이아 상점 수익과 자체 예산으로 부담해요. 위치 정보는 판매하지 않아요.',
+        '기부금영수증과 연말정산 공제 대상이 아니에요. 기부금은 쉐어런 운영사가 자체 예산으로 부담해요. 위치 정보는 판매하지 않아요.',
       );
 
   @override
@@ -228,7 +228,7 @@ class _DonationSettlementScreenState
                 RemainingSurface.tr(
                   context,
                   'donation.footer',
-                  '기부금영수증과 연말정산 공제 대상이 아니에요. 기부금은 쉐어런 운영사가 다이아 상점 수익과 자체 예산으로 부담해요. 위치 정보는 판매하지 않아요.',
+                  '기부금영수증과 연말정산 공제 대상이 아니에요. 기부금은 쉐어런 운영사가 자체 예산으로 부담해요. 위치 정보는 판매하지 않아요.',
                 ),
                 key: DonationSettlementScreen.footerKey,
                 style: storeText(13, c.muted, h: 1.5),

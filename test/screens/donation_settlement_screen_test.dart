@@ -282,7 +282,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(_text(tester, DonationSettlementScreen.footerKey).data,
-        '기부금영수증과 연말정산 공제 대상이 아니에요. 기부금은 쉐어런 운영사가 다이아 상점 수익과 자체 예산으로 부담해요. 위치 정보는 판매하지 않아요.');
+        '기부금영수증과 연말정산 공제 대상이 아니에요. 기부금은 쉐어런 운영사가 자체 예산으로 부담해요. 위치 정보는 판매하지 않아요.');
   });
 
   testWidgets('never names a beneficiary before there is a record, or says the user paid',

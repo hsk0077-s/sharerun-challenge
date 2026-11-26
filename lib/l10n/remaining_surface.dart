@@ -4524,7 +4524,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'Couldn\'t load the proof image.',
     'donation.partner.heading': 'Recipient and status',
     'donation.partner.pending': 'Choosing a recipient',
-    'donation.footer': 'Donations are not eligible for donation receipts or year-end tax deductions. The ShareRun operator pays for them from Dia store revenue and its own budget. We do not sell location data.',
+    'donation.footer': 'Donations are not eligible for donation receipts or year-end tax deductions. The ShareRun operator pays for them from its own budget. We do not sell location data.',
     'home.donation.counted': 'Today\'s activity counted toward donations',
     'donation.won': '\$amount KRW',
   };
@@ -6745,7 +6745,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': '証憑画像を読み込めませんでした。',
     'donation.partner.heading': '寄付先と状況',
     'donation.partner.pending': '寄付先を選定中',
-    'donation.footer': '寄付金領収書や年末調整の控除の対象ではありません。寄付金はShareRunの運営会社がダイヤショップの収益と自己予算で負担します。位置情報は販売しません。',
+    'donation.footer': '寄付金領収書や年末調整の控除の対象ではありません。寄付金はShareRunの運営会社が自己予算で負担します。位置情報は販売しません。',
     'home.donation.counted': '今日の活動が寄付に反映されました',
     'donation.won': '\$amountウォン',
   };
@@ -8966,7 +8966,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': '無法載入證明圖片。',
     'donation.partner.heading': '捐款對象與狀態',
     'donation.partner.pending': '正在挑選捐款對象',
-    'donation.footer': '不適用捐款收據與年終扣除。捐款由 ShareRun 營運公司以鑽石商店收益與自有預算負擔。我們不會販售位置資訊。',
+    'donation.footer': '不適用捐款收據與年終扣除。捐款由 ShareRun 營運公司以自有預算負擔。我們不會販售位置資訊。',
     'home.donation.counted': '今天的活動已計入捐款',
     'donation.won': '\$amount 韓元',
   };
@@ -11187,7 +11187,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'No se pudo cargar la imagen del comprobante.',
     'donation.partner.heading': 'Destinatario y estado',
     'donation.partner.pending': 'Eligiendo destinatario',
-    'donation.footer': 'No dan derecho a recibo de donación ni a deducción fiscal anual. La empresa operadora de ShareRun las paga con los ingresos de la tienda de Dia y su propio presupuesto. No vendemos datos de ubicación.',
+    'donation.footer': 'No dan derecho a recibo de donación ni a deducción fiscal anual. La empresa operadora de ShareRun las paga con su propio presupuesto. No vendemos datos de ubicación.',
     'home.donation.counted': 'La actividad de hoy se sumó a las donaciones',
     'donation.won': '\$amount KRW',
   };
@@ -13408,7 +13408,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'Não foi possível carregar a imagem do comprovante.',
     'donation.partner.heading': 'Destinatário e situação',
     'donation.partner.pending': 'Escolhendo o destinatário',
-    'donation.footer': 'Não geram recibo de doação nem dedução no imposto de renda. A empresa operadora da ShareRun paga com a receita da loja de Dia e com orçamento próprio. Não vendemos dados de localização.',
+    'donation.footer': 'Não geram recibo de doação nem dedução no imposto de renda. A empresa operadora da ShareRun paga com orçamento próprio. Não vendemos dados de localização.',
     'home.donation.counted': 'A atividade de hoje foi somada às doações',
     'donation.won': '\$amount KRW',
   };
@@ -15629,7 +15629,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'Das Nachweisbild konnte nicht geladen werden.',
     'donation.partner.heading': 'Empfänger und Status',
     'donation.partner.pending': 'Empfänger wird ausgewählt',
-    'donation.footer': 'Für Spenden gibt es keine Spendenquittung und keinen Steuerabzug zum Jahresende. Der Betreiber von ShareRun trägt sie aus den Einnahmen des Dia-Shops und dem eigenen Budget. Standortdaten verkaufen wir nicht.',
+    'donation.footer': 'Für Spenden gibt es keine Spendenquittung und keinen Steuerabzug zum Jahresende. Der Betreiber von ShareRun trägt sie aus dem eigenen Budget. Standortdaten verkaufen wir nicht.',
     'home.donation.counted': 'Die heutige Aktivität wurde den Spenden angerechnet',
     'donation.won': '\$amount KRW',
   };
@@ -17850,7 +17850,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'Impossible de charger l\'image du justificatif.',
     'donation.partner.heading': 'Bénéficiaire et état',
     'donation.partner.pending': 'Bénéficiaire en cours de sélection',
-    'donation.footer': 'Les dons ne donnent pas droit à un reçu fiscal ni à une déduction en fin d\'année. L\'opérateur de ShareRun les finance avec les revenus de la boutique Dia et son propre budget. Nous ne vendons pas les données de localisation.',
+    'donation.footer': 'Les dons ne donnent pas droit à un reçu fiscal ni à une déduction en fin d\'année. L\'opérateur de ShareRun les finance avec son propre budget. Nous ne vendons pas les données de localisation.',
     'home.donation.counted': 'L\'activité d\'aujourd\'hui a été prise en compte dans les dons',
     'donation.won': '\$amount KRW',
   };
@@ -20071,7 +20071,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'Không tải được ảnh chứng từ.',
     'donation.partner.heading': 'Nơi nhận và trạng thái',
     'donation.partner.pending': 'Đang chọn nơi nhận',
-    'donation.footer': 'Khoản quyên góp không được cấp biên lai và không được khấu trừ thuế cuối năm. Đơn vị vận hành ShareRun chi trả bằng doanh thu cửa hàng Dia và ngân sách riêng. Chúng tôi không bán dữ liệu vị trí.',
+    'donation.footer': 'Khoản quyên góp không được cấp biên lai và không được khấu trừ thuế cuối năm. Đơn vị vận hành ShareRun chi trả bằng ngân sách riêng. Chúng tôi không bán dữ liệu vị trí.',
     'home.donation.counted': 'Hoạt động hôm nay đã được tính vào quyên góp',
     'donation.won': '\$amount KRW',
   };
@@ -22292,7 +22292,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'โหลดรูปหลักฐานไม่สำเร็จ',
     'donation.partner.heading': 'ผู้รับบริจาคและสถานะ',
     'donation.partner.pending': 'กำลังคัดเลือกผู้รับบริจาค',
-    'donation.footer': 'การบริจาคนี้ไม่มีใบเสร็จรับเงินบริจาคและไม่สามารถนำไปลดหย่อนภาษีสิ้นปีได้ ผู้ให้บริการ ShareRun เป็นผู้ออกเงินจากรายได้ร้านค้า Dia และงบประมาณของตนเอง เราไม่ขายข้อมูลตำแหน่ง',
+    'donation.footer': 'การบริจาคนี้ไม่มีใบเสร็จรับเงินบริจาคและไม่สามารถนำไปลดหย่อนภาษีสิ้นปีได้ ผู้ให้บริการ ShareRun เป็นผู้ออกเงินจากงบประมาณของตนเอง เราไม่ขายข้อมูลตำแหน่ง',
     'home.donation.counted': 'กิจกรรมวันนี้ถูกนับรวมในการบริจาคแล้ว',
     'donation.won': '\$amount วอน',
   };
@@ -24513,7 +24513,7 @@ class RemainingSurface {
     'donation.exec.proof_failed': 'Gagal memuat gambar bukti.',
     'donation.partner.heading': 'Penerima dan status',
     'donation.partner.pending': 'Sedang memilih penerima',
-    'donation.footer': 'Donasi tidak memenuhi syarat untuk tanda terima donasi atau pengurangan pajak akhir tahun. Perusahaan operator ShareRun menanggungnya dari pendapatan toko Dia dan anggarannya sendiri. Kami tidak menjual data lokasi.',
+    'donation.footer': 'Donasi tidak memenuhi syarat untuk tanda terima donasi atau pengurangan pajak akhir tahun. Perusahaan operator ShareRun menanggungnya dari anggarannya sendiri. Kami tidak menjual data lokasi.',
     'home.donation.counted': 'Aktivitas hari ini sudah dihitung ke donasi',
     'donation.won': '\$amount KRW',
   };

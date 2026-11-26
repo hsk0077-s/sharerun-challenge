@@ -80,9 +80,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>결제 전에 본인 확인을 하기 위해 Face ID를 사용해요.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>쉐어런에서 오늘의 걸음 수 데이터를 가져와 보상을 지급하고 운동량을 측정하기 위해 건강 데이터 읽기 권한이 필요합니다.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>쉐어런에서 운동 목표 달성 기록을 연동하기 위해 건강 데이터 업데이트 권한이 필요합니다.</string>
+	<string>걸음 수를 읽어 오늘의 걸음과 SHARE 적립, 걸음 기부 달성을 표시하는 데 사용해요. 건강 데이터는 다른 용도로 쓰지 않아요.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>쉐어런은 달리는 동안 화면이 꺼져도 거리를 기록하고 부정 기록을 막기 위해 백그라운드 위치가 필요해요.</string>
 	<key>NSLocationAlwaysUsageDescription</key>

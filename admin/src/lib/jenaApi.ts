@@ -347,3 +347,35 @@ export async function decideReferralReview(
   }
   return response.json() as Promise<{ id: string; status: string }>;
 }
+
+export type DonationExecutionInput = {
+  month: string;
+  amount_won: number;
+  executed_at: string;
+  partner_name: string;
+  receipt_image_path: string;
+  note: string;
+};
+
+export type DonationExecutionResult = {
+  month: string;
+  amount_won: number;
+  replaced: boolean;
+  ledger_rows_marked: number;
+};
+
+/** 실제 기부 기록 저장. 같은 달을 다시 저장하면 바꿔 쓴다. 서버가 그 달 원장 행의 receiptIssued 를 True 로 한다. */
+export async function saveDonationExecution(
+  idToken: string,
+  input: DonationExecutionInput
+): Promise<DonationExecutionResult> {
+  const response = await fetch(`${jenaBaseUrl()}/admin/donation-executions`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${idToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  if (!response.ok) {
+    throw new Error(response.status === 401 || response.status === 403 ? 'forbidden' : 'jena');
+  }
+  return response.json() as Promise<DonationExecutionResult>;
+}

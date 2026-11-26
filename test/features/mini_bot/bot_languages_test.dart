@@ -113,7 +113,6 @@ void main() {
   group('FAQ per language', () {
     final values = {
       'SHARE잔액': '1,200',
-      '오늘기부기여': '300',
       '등급': 'A',
     };
 

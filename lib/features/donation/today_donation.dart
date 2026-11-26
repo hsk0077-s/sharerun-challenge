@@ -5,12 +5,13 @@ import '../../app/providers/app_providers.dart';
 import '../pedometer/kst_calendar.dart';
 import 'donation_settlement.dart';
 
-/// 홈의 "오늘 나의 기부 기여". 서버가 쓴 기부 원장 행만 더한다.
-/// 폰에서 거리 × 100원을 계산하지 않는다.
+/// 홈의 "오늘 나의 기부 기여". 오늘 내 활동이 기부 원장에 올랐는지만 안다.
+/// 폰에서 거리 × 100원을 계산하지 않고, 금액은 화면에 쓰지 않는다.
 class TodayDonation {
-  const TodayDonation({required this.todayWon, required this.capReached});
+  const TodayDonation({required this.counted, required this.capReached});
 
-  final int todayWon;
+  /// 오늘 내 활동이 기부 원장에 올랐는가. 금액은 화면에 쓰지 않는다.
+  final bool counted;
 
   /// 이번 달 운영자 기부 한도를 다 쓴 상태(서버 `donationMonthTotals`).
   final bool capReached;
@@ -38,7 +39,7 @@ final todayDonationLoaderProvider = Provider<TodayDonationLoader>((ref) {
   final firestore = ref.watch(firestoreServiceProvider);
   return () async {
     if (uid.isEmpty) {
-      return const TodayDonation(todayWon: 0, capReached: false);
+      return const TodayDonation(counted: false, capReached: false);
     }
     final month = donationMonthKey();
     // 같음 조건만 써서 별도 색인 없이 읽는다. 오늘 행만 골라 더한다.
@@ -48,9 +49,9 @@ final todayDonationLoaderProvider = Provider<TodayDonationLoader>((ref) {
         .where('monthKey', isEqualTo: month)
         .get();
     final totals = await firestore.doc('donationMonthTotals/$month').get();
-    final settlement = settlementFrom(myTotalWon: 0, monthDoc: totals.data());
+    final settlement = settlementFrom(monthDoc: totals.data());
     return TodayDonation(
-      todayWon: todayWonFrom([for (final doc in rows.docs) doc.data()]),
+      counted: todayWonFrom([for (final doc in rows.docs) doc.data()]) > 0,
       capReached: settlement.capReached,
     );
   };

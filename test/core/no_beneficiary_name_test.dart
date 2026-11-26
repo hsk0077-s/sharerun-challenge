@@ -86,7 +86,8 @@ void main() {
       expect(text, isNot(contains('우승자')), reason: text);
       expect(text, isNot(contains('1등 러너의 이름')), reason: text);
     }
-    expect(AppStrings.personalSponsorDonationDesc, contains('운영자 이름'));
+    // 5만 SHARE로 후원하면 쉐어런이 5만 원을 기부한다. 이름은 쉐어런이다.
+    expect(AppStrings.personalSponsorDonationDesc, contains('쉐어런이'));
   });
 
   // 소유자가 정한 이름이다(2026-10-17). 소유자의 폰에서 계속 쓰는 크루명이라 바꾸지 않는다.

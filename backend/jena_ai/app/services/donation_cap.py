@@ -12,6 +12,12 @@ DEFAULT_MONTHLY_CAP_WON = 1_000_000
 DEFAULT_BASE_CAP_WON = 300_000
 DAILY_USER_DONATION_CAP_KM = 10.0
 DAILY_USER_DONATION_CAP_WON = 1_000
+# Step donation: a day (KST) with at least 6,000 steps makes the company donate
+# 50 won, once a day. It counts inside the same per-person day room and the
+# same monthly cap as run donations.
+STEP_DONATION_THRESHOLD_STEPS = 6000
+STEP_DONATION_KRW = 50
+STEP_GOAL_DONATION_TYPE = "step_goal_donation"
 CAP_REACHED = "cap_reached"
 DAILY_CAP_REACHED = "daily_donation_cap"
 _SLIDING_KEYS = ("baseCapWon", "priorMonthNetRevenueWon", "sponsorAttributedWon")
@@ -78,6 +84,35 @@ def daily_donation_used(user: dict | None, day_key: str) -> tuple[float, int]:
     used_km = float(km) if isinstance(km, (int, float)) and not isinstance(km, bool) else 0.0
     used_won = int(won) if isinstance(won, (int, float)) and not isinstance(won, bool) else 0
     return max(0.0, used_km), max(0, used_won)
+
+
+def daily_step_won(user: dict | None, day_key: str) -> int:
+    """Won of step donation already counted for this user on ``day_key``."""
+    raw = user.get("donationDaily") if isinstance(user, dict) else None
+    if not isinstance(raw, dict) or raw.get("day") != day_key:
+        return 0
+    won = raw.get("stepWon")
+    if isinstance(won, bool) or not isinstance(won, (int, float)):
+        return 0
+    return max(0, int(won))
+
+
+def step_goal_doc_id(uid: str, day_key: str) -> str:
+    """``donationLedger`` id of the one step donation of a KST day (YYYY-MM-DD)."""
+    return f"step_goal_{uid}_{day_key.replace('-', '')}"
+
+
+def step_donation_requested_won(steps_today: int) -> int:
+    """50 won once the day's steps reach 6,000, else 0."""
+    if isinstance(steps_today, bool) or int(steps_today) < STEP_DONATION_THRESHOLD_STEPS:
+        return 0
+    return STEP_DONATION_KRW
+
+
+def clip_step_donation(requested_won: int, used_won_today: int) -> int:
+    """Step won that still fits in the person's 1,000 won day room."""
+    room = max(0, DAILY_USER_DONATION_CAP_WON - max(0, int(used_won_today)))
+    return max(0, min(int(requested_won), room))
 
 
 def clip_daily_donation(

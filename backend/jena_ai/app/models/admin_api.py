@@ -9,6 +9,24 @@ class WhoAmIResult(BaseModel):
     admin: bool
 
 
+class DonationExecutionRequest(BaseModel):
+    """What was really sent to the receiving group for one KST month."""
+
+    month: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    amount_won: int = Field(gt=0, le=1_000_000_000)
+    executed_at: str = Field(min_length=8, max_length=40)  # ISO date or date-time
+    partner_name: str = Field(min_length=1, max_length=100)
+    receipt_image_path: str = Field(min_length=1, max_length=200)
+    note: str = Field(default="", max_length=500)
+
+
+class DonationExecutionResult(BaseModel):
+    month: str
+    amount_won: int
+    replaced: bool
+    ledger_rows_marked: int
+
+
 class AuditPingRequest(BaseModel):
     reason: str | None = None
 

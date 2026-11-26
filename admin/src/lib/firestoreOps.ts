@@ -379,7 +379,14 @@ export function currentKstMonth(now: Date = new Date()): string {
   return new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 7);
 }
 
-export type DonationMonth = { month: string; totalWon: number };
+/** capWon 이 문서에 없으면 null: 한도를 모르는 상태이지 100만 원이 아니다. */
+export type DonationMonth = {
+  month: string;
+  totalWon: number;
+  capWon: number | null;
+  stepWon: number;
+  matchWon: number;
+};
 
 export function subscribeDonationMonth(
   month: string,
@@ -395,7 +402,14 @@ export function subscribeDonationMonth(
       doc(getDb(), 'donationMonthTotals', month),
       (snap) => {
         const data = snap.exists() ? (snap.data() as Record<string, unknown>) : {};
-        onData({ month, totalWon: Math.max(0, Math.trunc(num(data.totalWon))) });
+        const cap = Math.trunc(num(data.capWon));
+        onData({
+          month,
+          totalWon: Math.max(0, Math.trunc(num(data.totalWon))),
+          capWon: cap > 0 ? cap : null,
+          stepWon: Math.max(0, Math.trunc(num(data.stepWon))),
+          matchWon: Math.max(0, Math.trunc(num(data.matchWon))),
+        });
       },
       (err) => onError?.(err)
     );
@@ -467,4 +481,51 @@ export async function fetchTrialRunCounts(
     })
   );
   return Object.fromEntries(entries);
+}
+
+/** `donationExecutions/{YYYY-MM}`: 실제로 보낸 기부. 서버가 관리자 요청으로만 쓴다. */
+export type DonationExecution = {
+  month: string;
+  amountWon: number;
+  executedAt: string;
+  partnerName: string;
+  receiptImagePath: string;
+  note: string;
+  createdBy: string;
+};
+
+export function subscribeDonationExecutions(
+  onData: (rows: DonationExecution[]) => void,
+  onError?: (error: Error) => void
+): Unsubscribe {
+  let inner: Unsubscribe | null = null;
+  let cancelled = false;
+  void (async () => {
+    await ensureAdminAuth();
+    if (cancelled) return;
+    inner = onSnapshot(
+      collection(getDb(), 'donationExecutions'),
+      (snap) => {
+        const rows = snap.docs.map((d) => {
+          const data = d.data() as Record<string, unknown>;
+          return {
+            month: d.id,
+            amountWon: Math.max(0, Math.trunc(num(data.amountWon))),
+            executedAt: toIso(data.executedAt),
+            partnerName: readText(data.partnerName),
+            receiptImagePath: readText(data.receiptImagePath),
+            note: readText(data.note),
+            createdBy: readText(data.createdBy),
+          };
+        });
+        rows.sort((a, b) => b.month.localeCompare(a.month));
+        onData(rows);
+      },
+      (err) => onError?.(err)
+    );
+  })();
+  return () => {
+    cancelled = true;
+    inner?.();
+  };
 }

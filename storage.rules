@@ -1,0 +1,34 @@
+rules_version = '2';
+
+// Cloud Storage. Only the donation proof images are used:
+//   donation-receipts/{YYYY-MM}/{file}
+// Signed-in users may read them (the app shows the proof). Only an admin may
+// upload, and only a picture up to 10 MB. Everything else is closed.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // `admin` custom claim or an `admins/{uid}` document, like firestore.rules.
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.admin == true
+        || firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    match /donation-receipts/{month}/{file} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin()
+        && month.matches('^[0-9]{4}-(0[1-9]|1[0-2])$')
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if false;
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

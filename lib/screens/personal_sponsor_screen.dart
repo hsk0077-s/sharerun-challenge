@@ -772,11 +772,9 @@ class MySponsorshipSheet extends ConsumerWidget {
                 RemainingSurface.tr(
                   context,
                   'personal_sponsor.body.17',
-                  '기부 후원 ${mine.donationCount}번 · ${SponsorshipStatusCard.won(mine.donationWon)}원',
+                  '기부 후원 ${mine.donationCount}번',
                   {
                     'mine.donationCount': mine.donationCount,
-                    'SponsorshipStatusCard.won(mine.donationWon)':
-                        SponsorshipStatusCard.won(mine.donationWon),
                   },
                 ),
                 key: const Key('sponsorship-mine-total'),
@@ -802,12 +800,10 @@ class MySponsorshipSheet extends ConsumerWidget {
                     RemainingSurface.tr(
                       context,
                       'personal_sponsor.body.20',
-                      '${SponsorshipStatusCard.won(e.share)} SHARE\n${SponsorshipStatusCard.won(e.won)}원',
+                      '${SponsorshipStatusCard.won(e.share)} SHARE',
                       {
                         'SponsorshipStatusCard.won(e.share)':
                             SponsorshipStatusCard.won(e.share),
-                        'SponsorshipStatusCard.won(e.won)':
-                            SponsorshipStatusCard.won(e.won),
                       },
                     ),
                     textAlign: TextAlign.right,

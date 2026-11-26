@@ -592,7 +592,7 @@
     "aliases": [
       "Como funcionam as doações"
     ],
-    "answer": "A cada 1 km verificado que você corre, a empresa (administração) planeja doar 100 KRW com recursos próprios. O orçamento mensal de doações da empresa chega a 1.000.000 KRW. O app mostra a contribuição acumulada com suas corridas."
+    "answer": "Para cada km de corrida verificado, a empresa (operadora) pretende doar 100 KRW com recursos próprios, e 50 KRW em um dia com 6.000 passos ou mais. As doações da empresa em cada mês têm um limite, mostrado na tela de doações. Valores pessoais não são exibidos."
   },
   {
     "id": "DO-02",
@@ -606,15 +606,23 @@
   {
     "id": "DO-03",
     "category": "기부",
-    "question": "Quanto contribuí para as doações hoje?",
+    "question": "Minha atividade de hoje entrou nas doações?",
     "aliases": [
       "Quanto de doação hoje?",
       "Valor compartilhado hoje"
     ],
-    "answer": "Sua contribuição de doação de hoje pelas corridas é de {오늘기부기여} KRW. Ela conta 100 KRW por km, dentro do orçamento mensal de doações da empresa de 1.000.000 KRW.",
-    "needs": [
-      "오늘기부기여"
-    ]
+    "answer": "Quando a atividade de hoje entra nas doações, o cartão da tela inicial mostra «A atividade de hoje foi somada às doações». Valores pessoais não são exibidos. Corridas geram 100 KRW por km e um dia com 6.000 passos ou mais gera 50 KRW, dentro do limite mensal da empresa."
+  },
+  {
+    "id": "DO-04",
+    "category": "기부",
+    "question": "Quanto já doei até agora?",
+    "aliases": [
+      "Doações acumuladas",
+      "Total doado",
+      "Meu registro de doações"
+    ],
+    "answer": "Valores de doação pessoais não são exibidos. Na tela de doações você vê o total previsto deste mês e o valor, a data e o comprovante do que foi realmente enviado."
   },
   {
     "id": "DO-05",
@@ -623,7 +631,7 @@
     "aliases": [
       "Quem é o doador?"
     ],
-    "answer": "Planejamos doar 100 KRW por 1 km verificado com recursos da empresa (administração) (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). O destinatário está em negociação e avisaremos no app quando for definido. Ele é registrado no app como sua contribuição de doação. As doações que você faz por conta própria são entregues em seu nome."
+    "answer": "Para cada km de corrida verificado, a empresa (operadora) pretende doar 100 KRW com recursos próprios, e 50 KRW em um dia com 6.000 passos ou mais (até 1.000 KRW por pessoa por dia). O destinatário ainda não foi escolhido; quando for, aparecerá na tela de doações. As doações que você mesmo faz saem em seu nome."
   },
   {
     "id": "DO-06",
@@ -650,7 +658,7 @@
     "aliases": [
       "Taxa de doação"
     ],
-    "answer": "Não, a empresa não retém nem um won das doações."
+    "answer": "A ShareRun paga as doações por conta própria e mostra na tela de doações o valor realmente enviado, a data e o comprovante. Se a primeira doação ainda não foi enviada, ela também avisa isso."
   },
   {
     "id": "DO-09",
@@ -659,7 +667,7 @@
     "aliases": [
       "Apareceu “meta de doação atingida”"
     ],
-    "answer": "Significa que o orçamento de doações da empresa daquele mês (1.000.000 KRW) foi totalmente usado. Seus registros de corrida continuam salvos e as contribuições voltam a acumular quando o novo mês começa."
+    "answer": "Significa que o limite de doações da empresa daquele mês foi preenchido. Seus registros de corrida continuam salvos e, em um novo mês, a atividade volta a entrar nas doações."
   },
   {
     "id": "DO-10",
@@ -668,7 +676,7 @@
     "aliases": [
       "Os passos contam para as doações?"
     ],
-    "answer": "As doações são calculadas pela distância das corridas que passam na verificação. Os passos acumulam SHARE."
+    "answer": "Sim. Em um dia com 6.000 passos ou mais, a empresa pretende doar 50 KRW (uma vez por dia). Os passos também rendem SHARE. O máximo que conta para doações por pessoa em um dia é 1.000 KRW."
   },
   {
     "id": "DO-11",
@@ -686,7 +694,7 @@
     "aliases": [
       "Transparência das doações"
     ],
-    "answer": "Publicamos o detalhamento da prestação de contas das doações. Confira junto com a sua contribuição na Central de segurança e privacidade."
+    "answer": "A tela de doações mostra a situação deste mês e o valor, a data e o comprovante do que foi realmente enviado. Se a primeira doação ainda não foi enviada, ela também avisa isso."
   },
   {
     "id": "DO-13",
@@ -700,11 +708,11 @@
   {
     "id": "DO-15",
     "category": "기부",
-    "question": "Terminei mas não aparece “doação concluída”",
+    "question": "Terminei a corrida, mas a doação não aparece",
     "aliases": [
       "A doação não foi refletida"
     ],
-    "answer": "A marca de “doação concluída” só aparece depois de registrada no histórico de transações do servidor. Corridas que não passam na verificação não entram na doação."
+    "answer": "A marca de doação só aparece depois de registrada no servidor. Corridas que não passaram na verificação não entram."
   },
   {
     "id": "DO-16",
@@ -713,7 +721,7 @@
     "aliases": [
       "Corrida de doação virtual"
     ],
-    "answer": "Em cada corrida verificada, a empresa (administração) planeja doar 100 KRW por km com recursos próprios (até 10 km por pessoa por dia e 1.000.000 KRW por mês no total). Sempre que uma campanha de doação com uma empresa for aberta, você também poderá participar pela aba Desafios."
+    "answer": "Cada corrida verificada gera 100 KRW por km com recursos da empresa (operadora), até 1.000 KRW por pessoa por dia, e um dia com 6.000 passos ou mais soma 50 KRW. Quando houver uma campanha de doação com uma empresa, você pode participar na aba Desafios."
   },
   {
     "id": "GR-01",

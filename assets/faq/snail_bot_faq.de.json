@@ -592,7 +592,7 @@
     "aliases": [
       "So funktionieren Spenden"
     ],
-    "answer": "Für jeden verifizierten Kilometer, den du läufst, plant das Unternehmen (der Betreiber), 100 KRW aus eigenen Mitteln zu spenden. Das monatliche Spendenbudget des Unternehmens beträgt bis zu 1.000.000 KRW. Die App zeigt den durch deine Läufe angesammelten Beitrag."
+    "answer": "Für jeden bestätigten Laufkilometer plant das Unternehmen (der Betreiber), 100 KRW aus eigenen Mitteln zu spenden, und 50 KRW an einem Tag mit mindestens 6.000 Schritten. Die Spenden des Unternehmens haben pro Monat ein Limit, das auf dem Spendenbildschirm steht. Persönliche Beträge werden nicht angezeigt."
   },
   {
     "id": "DO-02",
@@ -606,15 +606,23 @@
   {
     "id": "DO-03",
     "category": "기부",
-    "question": "Wie hoch ist mein Spendenbeitrag heute?",
+    "question": "Wurde meine heutige Aktivität den Spenden angerechnet?",
     "aliases": [
       "Wie viel Spende heute?",
       "Heutiger Teilbetrag"
     ],
-    "answer": "Dein heutiger Spendenbeitrag durch das Laufen beträgt {오늘기부기여} KRW. Gezählt werden 100 KRW pro km im Rahmen des monatlichen Spendenbudgets des Unternehmens von 1.000.000 KRW.",
-    "needs": [
-      "오늘기부기여"
-    ]
+    "answer": "Wird die heutige Aktivität den Spenden angerechnet, steht auf der Startkarte „Die heutige Aktivität wurde den Spenden angerechnet“. Persönliche Beträge werden nicht angezeigt. Läufe bringen 100 KRW pro km, ein Tag mit mindestens 6.000 Schritten 50 KRW, innerhalb des Monatslimits des Unternehmens."
+  },
+  {
+    "id": "DO-04",
+    "category": "기부",
+    "question": "Wie viel habe ich bisher gespendet?",
+    "aliases": [
+      "Gesamtspenden",
+      "Gesamte Spendensumme",
+      "Meine Spendenübersicht"
+    ],
+    "answer": "Persönliche Spendenbeträge werden nicht angezeigt. Auf dem Spendenbildschirm siehst du die geplante Gesamtsumme dieses Monats sowie Betrag, Datum und Nachweis dessen, was tatsächlich gesendet wurde."
   },
   {
     "id": "DO-05",
@@ -623,7 +631,7 @@
     "aliases": [
       "Wer ist der Spender?"
     ],
-    "answer": "Wir planen, pro verifiziertem Kilometer 100 KRW aus Mitteln des Unternehmens (Betreibers) zu spenden (bis zu 10 km pro Person und Tag und insgesamt 1.000.000 KRW pro Monat). Der Empfänger wird noch abgestimmt; wir sagen dir in der App Bescheid, sobald er feststeht. In der App wird es als dein Spendenbeitrag erfasst. Spenden, die du selbst machst, werden in deinem eigenen Namen übermittelt."
+    "answer": "Für jeden bestätigten Laufkilometer plant das Unternehmen (der Betreiber), 100 KRW aus eigenen Mitteln zu spenden, und 50 KRW an einem Tag mit mindestens 6.000 Schritten (höchstens 1.000 KRW pro Person und Tag). Der Empfänger ist noch nicht gewählt; sobald er feststeht, wird er auf dem Spendenbildschirm gezeigt. Spenden, die du selbst machst, laufen unter deinem Namen."
   },
   {
     "id": "DO-06",
@@ -650,7 +658,7 @@
     "aliases": [
       "Spendengebühr"
     ],
-    "answer": "Nein, das Unternehmen behält keinen einzigen Won von Spenden ein."
+    "answer": "ShareRun trägt die Spenden selbst und zeigt auf dem Spendenbildschirm den tatsächlich gesendeten Betrag, das Datum und den Nachweis. Wurde die erste Spende noch nicht gesendet, sagen wir dir auch das."
   },
   {
     "id": "DO-09",
@@ -659,7 +667,7 @@
     "aliases": [
       "„Spendenziel erreicht“ wurde angezeigt"
     ],
-    "answer": "Es bedeutet, dass das Spendenbudget des Unternehmens für diesen Monat (1.000.000 KRW) vollständig aufgebraucht ist. Deine Laufaufzeichnungen bleiben gespeichert, und Beiträge sammeln sich mit dem neuen Monat wieder an."
+    "answer": "Es bedeutet, dass das Spendenlimit des Unternehmens für diesen Monat erreicht ist. Deine Laufdaten bleiben gespeichert, und in einem neuen Monat zählt die Aktivität wieder für die Spenden."
   },
   {
     "id": "DO-10",
@@ -668,7 +676,7 @@
     "aliases": [
       "Zählen Schritte für Spenden?"
     ],
-    "answer": "Spenden werden anhand der Distanz von Läufen berechnet, die die Prüfung bestehen. Schritte sammeln SHARE."
+    "answer": "Ja. An einem Tag mit mindestens 6.000 Schritten plant das Unternehmen, 50 KRW zu spenden (einmal pro Tag). Schritte bringen auch SHARE. Pro Person und Tag zählen höchstens 1.000 KRW für die Spenden."
   },
   {
     "id": "DO-11",
@@ -686,7 +694,7 @@
     "aliases": [
       "Transparenz der Spenden"
     ],
-    "answer": "Wir veröffentlichen die Abrechnung der Spenden. Sieh sie dir zusammen mit deinem eigenen Beitrag im Sicherheits- und Datenschutzzentrum an."
+    "answer": "Der Spendenbildschirm zeigt den Stand dieses Monats sowie Betrag, Datum und Nachweis dessen, was tatsächlich gesendet wurde. Wurde die erste Spende noch nicht gesendet, sagen wir dir auch das."
   },
   {
     "id": "DO-13",
@@ -700,11 +708,11 @@
   {
     "id": "DO-15",
     "category": "기부",
-    "question": "Ich bin fertig, aber „Spende abgeschlossen“ erscheint nicht",
+    "question": "Lauf beendet, aber keine Spende wird angezeigt",
     "aliases": [
       "Spende wird nicht angezeigt"
     ],
-    "answer": "Die Markierung „Spende abgeschlossen“ erscheint erst, nachdem sie im Transaktionsprotokoll des Servers erfasst wurde. Läufe, die die Prüfung nicht bestehen, werden nicht in die Spende einbezogen."
+    "answer": "Die Spendenanzeige erscheint erst, nachdem sie auf dem Server gespeichert ist. Läufe, die die Prüfung nicht bestanden haben, zählen nicht."
   },
   {
     "id": "DO-16",
@@ -713,7 +721,7 @@
     "aliases": [
       "Virtuelles Spendenrennen"
     ],
-    "answer": "Für jeden verifizierten Lauf plant das Unternehmen (der Betreiber), pro km 100 KRW aus eigenen Mitteln zu spenden (bis zu 10 km pro Person und Tag und insgesamt 1.000.000 KRW pro Monat). Sobald eine Spendenkampagne mit einem Unternehmen startet, kannst du auch über den Tab Challenges teilnehmen."
+    "answer": "Jeder bestätigte Lauf bringt 100 KRW pro km aus Mitteln des Unternehmens (Betreibers), bis zu 1.000 KRW pro Person und Tag, und ein Tag mit mindestens 6.000 Schritten bringt 50 KRW dazu. Wenn eine Spendenaktion mit einem Unternehmen läuft, kannst du im Tab „Challenges“ mitmachen."
   },
   {
     "id": "GR-01",

@@ -356,12 +356,15 @@ def test_donation_match_records_company_won_and_the_user() -> None:
     assert db.store["donationPools/2026-10"]["totalWon"] == 1000
     # 앱의 "이번 달 기부"가 읽는 월 합계에도 같이 올라간다.
     assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 1000
+    # The store match is its own part of the month, apart from runs and steps.
+    assert db.store["donationMonthTotals/2026-10"]["matchWon"] == 1000
 
     replay = _match(db, "req-match-0001")
     assert replay.status == "already_matched"
     assert db.store["users/u1"]["wallet"]["valueTokenBalance"] == 20
     assert db.store["donationPools/2026-10"]["totalWon"] == 1000
     assert db.store["donationMonthTotals/2026-10"]["totalWon"] == 1000
+    assert db.store["donationMonthTotals/2026-10"]["matchWon"] == 1000
     assert len(_donations(db)) == 1
     assert len(_wallet_rows(db)) == 1
 

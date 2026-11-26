@@ -16,6 +16,7 @@ import WalletLedger from './components/dashboard/WalletLedger';
 import Reports from './components/dashboard/Reports';
 import ConfigView from './components/dashboard/ConfigView';
 import AuditLogs from './components/dashboard/AuditLogs';
+import DonationExecutions from './components/dashboard/DonationExecutions';
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
               <Route path="/users" element={<UserManagement />} />
               <Route path="/abuse" element={<AbuseAudit />} />
               <Route path="/finance" element={<FinanceManagement />} />
+              <Route path="/donation-executions" element={<DonationExecutions />} />
               <Route path="/sponsor" element={<SponsorApproval />} />
               <Route path="/referrals" element={<Referrals />} />
               <Route path="/referral-reviews" element={<ReferralReviews />} />

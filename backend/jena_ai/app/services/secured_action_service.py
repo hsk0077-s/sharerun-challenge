@@ -116,8 +116,15 @@ from app.services.donation_cap import (
     CAP_REACHED,
     DAILY_CAP_REACHED,
     DONATION_MONTH_TOTALS,
+    STEP_DONATION_KRW,
+    STEP_DONATION_THRESHOLD_STEPS,
+    STEP_GOAL_DONATION_TYPE,
     clip_daily_donation,
+    clip_step_donation,
     daily_donation_used,
+    daily_step_won,
+    step_donation_requested_won,
+    step_goal_doc_id,
     month_total_won,
     read_monthly_cap_won,
     won_within_cap,
@@ -1776,6 +1783,7 @@ class SecuredActionService:
                 "day": donation_day,
                 "countedKm": round(used_km + paid_km, 4),
                 "countedWon": used_won + company_won,
+                "stepWon": daily_step_won(user, donation_day),
             }
 
         if result.verified and reward_tokens > 0:
@@ -4794,6 +4802,76 @@ class SecuredActionService:
             value_token_balance=value_token_balance,
         )
 
+    def _plan_step_donation(
+        self,
+        transaction,
+        uid: str,
+        user: dict,
+        day_key: str,
+        steps_today: int,
+        current: datetime,
+    ) -> dict | None:
+        """The company's 50 won for a 6,000-step day, or None when nothing is due.
+
+        Once a day (``donationLedger/step_goal_{uid}_{YYYYMMDD}``). It fits the
+        person's 1,000 won day room and the monthly cap; a request that no longer
+        fits is not written. Only reads happen here; the caller writes.
+        """
+        if step_donation_requested_won(steps_today) <= 0:
+            return None
+        db = self.firebase_service.db
+        ledger_ref = db.collection("donationLedger").document(
+            step_goal_doc_id(uid, day_key)
+        )
+        if ledger_ref.get(transaction=transaction).exists:
+            return None
+        used_km, used_won = daily_donation_used(user, day_key)
+        requested = clip_step_donation(STEP_DONATION_KRW, used_won)
+        if requested <= 0:
+            return None
+        month_key = kst_month_key(current)
+        totals_ref = db.collection(DONATION_MONTH_TOTALS).document(month_key)
+        totals_snapshot = totals_ref.get(transaction=transaction)
+        month_total = month_total_won(
+            totals_snapshot.to_dict() if totals_snapshot.exists else None
+        )
+        cap_won = read_monthly_cap_won(db, transaction)
+        won = won_within_cap(requested, month_total, cap_won)
+        if won <= 0:
+            return None
+        ledger = {
+            "uid": uid,
+            "type": STEP_GOAL_DONATION_TYPE,
+            "date": day_key,
+            "steps": int(steps_today),
+            "thresholdSteps": STEP_DONATION_THRESHOLD_STEPS,
+            "krwPerGoal": STEP_DONATION_KRW,
+            "companyWon": won,
+            **({"requestedWon": STEP_DONATION_KRW, "capped": True} if won < STEP_DONATION_KRW else {}),
+            "monthKey": month_key,
+            "sponsorName": COMPANY_SPONSOR_NAME,
+            "receiptIssued": False,
+            "createdAt": SERVER_TIMESTAMP,
+        }
+        return {
+            "ledger_ref": ledger_ref,
+            "ledger": ledger,
+            "totals_ref": totals_ref,
+            "totals": {
+                "monthKey": month_key,
+                "totalWon": month_total + won,
+                "capWon": cap_won,
+                "stepWon": firestore.Increment(won),
+                "updatedAt": SERVER_TIMESTAMP,
+            },
+            "donation_daily": {
+                "day": day_key,
+                "countedKm": round(used_km, 4),
+                "countedWon": used_won + won,
+                "stepWon": daily_step_won(user, day_key) + won,
+            },
+        }
+
     def _harvest_pedometer_share_tx(
         self,
         transaction,
@@ -4848,6 +4926,10 @@ class SecuredActionService:
                 value_token_balance=current_value,
             )
         accepted_claimed = prev_claimed + accepted_delta
+        # Reads stay ahead of every write in this transaction.
+        step_plan = self._plan_step_donation(
+            transaction, uid, user, today, accepted_claimed, current
+        )
         share = self._economy_service.pedometer_harvest_share(
             claimed_steps=accepted_claimed,
             prev_claimed_steps=prev_claimed,
@@ -4890,6 +4972,10 @@ class SecuredActionService:
             updates["boostRun"] = effect.boost_state
         if effect.incubator_state is not None:
             updates["stepIncubator"] = effect.incubator_state
+        if step_plan is not None:
+            transaction.set(step_plan["ledger_ref"], step_plan["ledger"])
+            transaction.set(step_plan["totals_ref"], step_plan["totals"], merge=True)
+            updates["donationDaily"] = step_plan["donation_daily"]
         if credit > 0:
             tx_ref = self.firebase_service.db.collection(
                 "walletTransactions"

@@ -54,7 +54,7 @@ Widget _dashboardApp(FakeWorldTourApi api) {
       worldTourApiProvider.overrideWithValue(api),
       stampTourEnabledProvider.overrideWith((ref) async => false),
       todayDonationLoaderProvider.overrideWithValue(
-        () async => const TodayDonation(todayWon: 300, capReached: false),
+        () async => const TodayDonation(counted: true, capReached: false),
       ),
       needsNicknameSetupProvider.overrideWith((ref) => false),
       userNicknameProvider.overrideWith((ref) => '테스트러너'),

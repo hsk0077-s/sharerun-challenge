@@ -18,7 +18,7 @@ rejects the request before VALUE is debited. The won also counts in
 from datetime import date, datetime, timedelta, timezone
 
 from fastapi import HTTPException
-from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+from google.cloud.firestore_v1 import SERVER_TIMESTAMP, Increment
 
 from app.models.secured_actions import SecuredActionResult
 from app.services.donation_cap import (
@@ -170,6 +170,7 @@ def apply_donation_match(
             "monthKey": month,
             "totalWon": month_total + won,
             "capWon": month_cap,
+            "matchWon": Increment(won),
             "updatedAt": SERVER_TIMESTAMP,
         },
         merge=True,

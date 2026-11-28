@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_wear/core/run_reward.dart';
@@ -177,6 +179,9 @@ void main() {
     await pump(RunReward.pending);
     expect(find.text(watchUi(en, 'rewardPending')), findsOneWidget);
 
+    await pump(RunReward.checking);
+    expect(find.text(watchUi(en, 'rewardChecking')), findsOneWidget);
+
     await pump(RunReward.fromReply(200, {'verified': true, 'value_token_reward': 40}));
     expect(find.text(watchUi(en, 'rewardConfirmed', n: 40)), findsOneWidget);
     expect(find.text('VALUE 40 confirmed'), findsOneWidget);
@@ -192,6 +197,7 @@ void main() {
   test('every reward line exists in all 11 watch languages', () {
     for (final key in [
       'rewardConfirmed',
+      'rewardChecking',
       'rewardPending',
       'rewardCapReached',
       'rewardNone',
@@ -274,4 +280,180 @@ void main() {
 
     expect(find.text(watchUi(const Locale('en'), 'rewardPending')), findsOneWidget);
   });
+
+  group('RunReward.forSummary', () {
+    const answer = RunReward.checking; // any non-null answer
+    test('hidden when nothing was queued to upload', () {
+      expect(RunReward.forSummary(queued: false, answer: null, uploading: false), isNull);
+      expect(RunReward.forSummary(queued: false, answer: null, uploading: true), isNull);
+    });
+
+    test('checking while an upload is on its way, else confirmed after upload', () {
+      expect(RunReward.forSummary(queued: true, answer: null, uploading: true),
+          RunReward.checking);
+      expect(RunReward.forSummary(queued: true, answer: null, uploading: false),
+          RunReward.pending);
+    });
+
+    test('the server answer wins', () {
+      final confirmed = RunReward.fromReply(200, {'verified': true, 'value_token_reward': 3});
+      expect(RunReward.forSummary(queued: true, answer: confirmed, uploading: true), confirmed);
+      expect(RunReward.forSummary(queued: true, answer: answer, uploading: false), answer);
+    });
+  });
+
+  test('new and changed lines', () {
+    const ko = Locale('ko');
+    expect(watchUi(ko, 'rewardChecking'), '적립 확인 중…');
+    expect(watchUi(ko, 'rewardPending'), '기록을 올리면 적립이 확인돼요');
+    expect(watchUi(ko, 'rewardNone'), '인정됐어요 · 이번엔 적립이 없어요');
+    final row = watchUiRows['rewardChecking']!;
+    expect(row, hasLength(watchLanguageOrder.length));
+    expect(row.every((t) => t.trim().isNotEmpty), isTrue);
+    expect(RunReward.checking.copyKey, 'rewardChecking');
+  });
+
+  testWidgets('a zero-distance run shows no reward line', (tester) async {
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: _Poster([]),
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+    );
+    await account.pair('482910');
+    var now = DateTime.utc(2026, 11, 28, 1);
+    await tester.pumpWidget(MaterialApp(
+      home: RunFlow(
+        account: account,
+        queue: SyncQueue(),
+        sensors: _Sensors(),
+        newId: () => 'watch_zero',
+        clock: () => now = now.add(const Duration(seconds: 20)),
+        pollInterval: const Duration(milliseconds: 100),
+      ),
+    ));
+    await startRun(tester);
+    await swipeToControls(tester);
+    await holdToStop(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SummaryFace), findsOneWidget);
+    expect(find.byKey(SummaryFace.rewardKey), findsNothing);
+  });
+
+  testWidgets('online upload shows "checking" until the server answers', (tester) async {
+    final poster = _GatedPoster([
+      const HttpReply(200, {'verified': true, 'value_token_reward': 9}),
+    ]);
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: poster,
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+    );
+    await account.pair('482910');
+    final sensors = _Sensors();
+    var now = DateTime.utc(2026, 11, 28, 1);
+    await tester.pumpWidget(MaterialApp(
+      home: RunFlow(
+        account: account,
+        queue: SyncQueue(),
+        sensors: sensors,
+        newId: () => 'watch_checking',
+        clock: () => now = now.add(const Duration(seconds: 20)),
+        pollInterval: const Duration(milliseconds: 100),
+      ),
+    ));
+    await startRun(tester);
+    sensors.snapshot = const SensorSnapshot(distanceKm: 1.2, hasGps: true);
+    await tester.pump(const Duration(milliseconds: 150));
+    await swipeToControls(tester);
+    await holdToStop(tester);
+    await tester.pump(const Duration(milliseconds: 300));
+
+    const en = Locale('en');
+    expect(find.byType(SummaryFace), findsOneWidget);
+    expect(find.text(watchUi(en, 'rewardChecking')), findsOneWidget);
+    expect(find.text(watchUi(en, 'rewardPending')), findsNothing);
+
+    poster.gate.complete();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text(watchUi(en, 'rewardConfirmed', n: 9)), findsOneWidget);
+  });
+
+  testWidgets('finish runs once: a second hold or a swipe while saving does nothing',
+      (tester) async {
+    final account = WatchAccount(
+      store: MemoryStore(),
+      poster: _Poster([]), // 503: the run stays in the queue so it can be counted
+      baseUrl: 'https://api.test',
+      apiKey: 'key',
+    );
+    await account.pair('482910');
+    final sensors = _SlowStopSensors();
+    final haptics = FakeHaptics();
+    final queue = SyncQueue();
+    var now = DateTime.utc(2026, 11, 28, 1);
+    await tester.pumpWidget(MaterialApp(
+      home: RunFlow(
+        account: account,
+        queue: queue,
+        sensors: sensors,
+        haptics: haptics,
+        newId: () => 'watch_finish_once',
+        clock: () => now = now.add(const Duration(seconds: 20)),
+        pollInterval: const Duration(milliseconds: 100),
+      ),
+    ));
+    await startRun(tester);
+    sensors.snapshot = const SensorSnapshot(distanceKm: 1.2, hasGps: true);
+    await tester.pump(const Duration(milliseconds: 150));
+    await swipeToControls(tester);
+
+    await holdToStop(tester); // finishing: waits on sensors.stop()
+    expect(sensors.stops, 1);
+    final buzzes = haptics.patterns.length;
+
+    await holdToStop(tester); // second hold while saving
+    await tester.fling(find.byType(PageView), const Offset(400, 0), 2000); // off the controls
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 900));
+    expect(sensors.stops, 1);
+    expect(haptics.patterns.length, buzzes, reason: 'no second finish, no resume');
+
+    sensors.stopGate.complete();
+    await tester.pumpAndSettle();
+    expect(find.byType(SummaryFace), findsOneWidget);
+    expect(sensors.stops, 1);
+    expect(queue.runs.map((r) => r.activityId), ['watch_finish_once']);
+  });
+}
+
+/// Holds every validate reply until [gate] completes (an upload on its way).
+class _GatedPoster extends _Poster {
+  _GatedPoster(super.replies);
+
+  final gate = Completer<void>();
+
+  @override
+  Future<HttpReply> post(
+    Uri uri,
+    Map<String, Object?> body, {
+    Map<String, String> headers = const {},
+  }) async {
+    if (uri.path == '/actions/runs/validate') await gate.future;
+    return super.post(uri, body, headers: headers);
+  }
+}
+
+/// `stop()` waits until [stopGate] completes, so finishing stays in progress.
+class _SlowStopSensors extends _Sensors {
+  final stopGate = Completer<void>();
+  var stops = 0;
+
+  @override
+  Future<void> stop() async {
+    stops++;
+    await stopGate.future;
+  }
 }

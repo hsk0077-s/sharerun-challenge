@@ -7,8 +7,11 @@
 ///   * `daily_cap_applied` — today's cap cut the reward.
 /// Until the run is uploaded the line says it will be confirmed after upload.
 enum RunRewardKind {
-  /// Not uploaded yet (offline, or the upload is still on its way).
+  /// Not uploaded yet (offline, or the last try failed).
   pending,
+
+  /// An upload is on its way; the server has not answered yet.
+  checking,
 
   /// Verified and VALUE was credited. [RunReward.value] is the amount.
   confirmed,
@@ -28,6 +31,22 @@ class RunReward {
   const RunReward._(this.kind, [this.value = 0]);
 
   static const pending = RunReward._(RunRewardKind.pending);
+  static const checking = RunReward._(RunRewardKind.checking);
+
+  /// The summary line for a finished run, or null to hide it.
+  ///
+  /// Hidden when nothing was queued to upload ([queued] false, for example a
+  /// zero-distance run). Otherwise the server's answer if there is one, else
+  /// "checking" while an upload is on its way, else "confirmed after upload".
+  static RunReward? forSummary({
+    required bool queued,
+    required RunReward? answer,
+    required bool uploading,
+  }) {
+    if (answer != null) return answer;
+    if (!queued) return null;
+    return uploading ? checking : pending;
+  }
 
   final RunRewardKind kind;
 
@@ -59,6 +78,7 @@ class RunReward {
   /// The `watchUiRows` key for this line.
   String get copyKey => switch (kind) {
         RunRewardKind.pending => 'rewardPending',
+        RunRewardKind.checking => 'rewardChecking',
         RunRewardKind.confirmed => 'rewardConfirmed',
         RunRewardKind.capReached => 'rewardCapReached',
         RunRewardKind.noReward => 'rewardNone',

@@ -119,7 +119,10 @@ struct WatchPendingSteps: Codable, Equatable {
 /// `POST /actions/runs/validate` answered (`verified`, `value_token_reward`,
 /// `daily_cap_applied`) and never estimates a reward.
 enum WatchRunReward: Equatable {
+    /// Not uploaded yet (offline, or the last try failed).
     case pending
+    /// An upload is on its way; the server has not answered yet.
+    case checking
     case confirmed(Int)
     case capReached
     case noReward
@@ -138,9 +141,20 @@ enum WatchRunReward: Equatable {
         return nil
     }
 
+    /// The summary line for a finished run, or nil to hide it (Wear OS `RunReward.forSummary`).
+    /// Hidden when nothing was queued to upload (for example a zero-distance run).
+    /// Otherwise the server's answer, else "checking" while an upload is on its way,
+    /// else "confirmed after upload".
+    static func forSummary(queued: Bool, answer: WatchRunReward?, uploading: Bool) -> WatchRunReward? {
+        if let answer { return answer }
+        guard queued else { return nil }
+        return uploading ? .checking : .pending
+    }
+
     var line: String {
         switch self {
         case .pending: return WatchCopy.ui("rewardPending")
+        case .checking: return WatchCopy.ui("rewardChecking")
         case let .confirmed(value): return WatchCopy.ui("rewardConfirmed", n: value)
         case .capReached: return WatchCopy.ui("rewardCapReached")
         case .noReward: return WatchCopy.ui("rewardNone")
@@ -156,6 +170,8 @@ final class WatchSyncQueue: ObservableObject {
     @Published private(set) var pendingSteps: WatchPendingSteps?
     /// Server decisions for runs uploaded while the app is open, by activity id.
     @Published private(set) var rewards: [String: WatchRunReward] = [:]
+    /// True while a flush is sending runs (the summary says "checking").
+    @Published private(set) var isUploading = false
 
     private let maxRuns = 50
     private let storageKey = "sharerun.watchos.sync_queue.v1"
@@ -201,6 +217,12 @@ final class WatchSyncQueue: ObservableObject {
         return reward
     }
 
+    /// The summary's reward line for this run, or nil to hide it.
+    func summaryReward(for activityId: String?, queued: Bool) -> WatchRunReward? {
+        let answer = activityId.flatMap { rewards[$0] }
+        return WatchRunReward.forSummary(queued: queued, answer: answer, uploading: isUploading)
+    }
+
     func acknowledge(activityId: String) {
         runs.removeAll { $0.activityId == activityId }
         save()
@@ -210,7 +232,11 @@ final class WatchSyncQueue: ObservableObject {
     func flush(using account: WatchAccountManager) async {
         guard account.isPaired else { return }
         guard tryBeginFlush() else { return }
-        defer { endFlush() }
+        isUploading = true
+        defer {
+            isUploading = false
+            endFlush()
+        }
 
         for run in runs {
             guard let (status, body) = await account.postSigned(

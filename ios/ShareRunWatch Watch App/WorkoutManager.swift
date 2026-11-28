@@ -10,6 +10,9 @@ enum WatchRunPhase: Equatable {
     case countdown(Int)
     case running
     case paused
+    /// Finish was pressed and the workout is being saved. Pause, resume and a
+    /// second finish all do nothing here.
+    case finishing
     case rankAlert(rank: Int, gapPeople: Int)
     case summary
 }
@@ -32,6 +35,9 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published private(set) var routePoints: [WatchRoutePoint] = []
     /// Id of the run that is running or just finished (for its server reward).
     @Published private(set) var lastActivityId: String?
+    /// The finished run went into the upload queue (false for a zero-distance run,
+    /// which hides the summary's reward line).
+    @Published private(set) var lastRunQueued = false
 
     static let metricCount = 3
 
@@ -214,7 +220,12 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     func finishRun(into queue: WatchSyncQueue, account: WatchAccountManager) async {
+        // Only once. Leave running/paused first, before any await, so a second
+        // hold returns here and a swipe off the controls cannot resume the
+        // timer or GPS while the workout is being saved.
         guard phase == .running || phase == .paused else { return }
+        phase = .finishing
+        lastRunQueued = false
         stopTicker()
         locationManager.stopUpdatingLocation()
         locationManager.allowsBackgroundLocationUpdates = false
@@ -246,6 +257,7 @@ final class WorkoutManager: NSObject, ObservableObject {
                 paceSamples: paceSamples
             )
             queue.enqueueRun(pending)
+            lastRunQueued = true
             if totalSteps > 0 {
                 let dayKey = Self.kstDayKey(for: end)
                 queue.enqueueSteps(dayKey: dayKey, steps: totalSteps)
@@ -262,6 +274,7 @@ final class WorkoutManager: NSObject, ObservableObject {
     func resetToStart() {
         phase = .start
         lastActivityId = nil
+        lastRunQueued = false
         routePoints.removeAll()
     }
 

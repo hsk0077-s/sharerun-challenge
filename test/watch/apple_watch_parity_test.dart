@@ -9,7 +9,8 @@ void main() {
   const dir = 'ios/ShareRunWatch Watch App';
   final copy = File('$dir/WatchCopy.swift').readAsStringSync();
   final screens = File('$dir/WatchScreens.swift').readAsStringSync();
-  final workout = File('$dir/WorkoutManager.swift').readAsStringSync();
+  final workout =
+      File('$dir/WorkoutManager.swift').readAsStringSync().replaceAll('\r\n', '\n');
   final queue = File('$dir/WatchSyncQueue.swift').readAsStringSync();
   final account = File('$dir/WatchAccountManager.swift').readAsStringSync();
   final wearCopy = File('wear_app/lib/l10n/watch_copy.dart')
@@ -40,6 +41,7 @@ void main() {
       'waitingGps',
       'unrated',
       'rewardConfirmed',
+      'rewardChecking',
       'rewardPending',
       'rewardCapReached',
       'rewardNone',
@@ -74,7 +76,11 @@ void main() {
     }
     expect(queue.contains('[400, 409, 413, 422].contains(status) { return .notCounted }'),
         isTrue);
-    expect(screens.contains('queue.reward(for: workout.lastActivityId).line'), isTrue);
+    expect(
+      screens.contains(
+          'queue.summaryReward(for: workout.lastActivityId, queued: workout.lastRunQueued)?.line'),
+      isTrue,
+    );
     // No reward is worked out on the watch from distance.
     expect(RegExp(r'distanceKm\s*\*').hasMatch(queue.split('enum WatchRunReward')[1]
         .split('/// Persistent offline sync queue')[0]), isFalse);
@@ -93,6 +99,57 @@ void main() {
     expect(screens.contains('onTap: { workout.cycleFocus() }'), isTrue);
     // Finishing is only on the hold button, not a plain tap or long press elsewhere.
     expect(screens.contains('WatchPausedView'), isFalse);
+  });
+
+  test('Korean lines read as full sentences', () {
+    expect(copy.contains('"rewardChecking": ["적립 확인 중…"'), isTrue);
+    expect(copy.contains('"rewardPending": ["기록을 올리면 적립이 확인돼요"'), isTrue);
+    expect(copy.contains('"rewardNone": ["인정됐어요 · 이번엔 적립이 없어요"'), isTrue);
+    expect(copy.contains('이번엔 적립 없음'), isFalse);
+  });
+
+  test('finishing runs once and cannot be resumed', () {
+    final finish = workout.substring(
+      workout.indexOf('func finishRun('),
+      workout.indexOf('func resetToStart('),
+    );
+    final guard = finish.indexOf('guard phase == .running || phase == .paused else { return }');
+    final mark = finish.indexOf('phase = .finishing');
+    final firstAwait = finish.indexOf('await ');
+    expect(guard, greaterThanOrEqualTo(0));
+    expect(mark, greaterThan(guard));
+    // The phase leaves running/paused before anything can suspend.
+    expect(firstAwait, greaterThan(mark));
+    expect(finish.contains('phase = .paused'), isFalse);
+    expect(workout.contains('case finishing'), isTrue);
+    // resume/pause only act from paused/running, so `.finishing` blocks them.
+    expect(workout.contains('func resumeRun() {\n        guard phase == .paused else { return }'),
+        isTrue);
+    expect(workout.contains('func pauseRun() {\n        guard phase == .running else { return }'),
+        isTrue);
+    expect(screens.contains('case .running, .paused, .finishing:'), isTrue);
+  });
+
+  test('summary reward line hides with nothing queued and says "checking" while uploading',
+      () {
+    expect(queue.contains('case checking'), isTrue);
+    expect(queue.contains('case .checking: return WatchCopy.ui("rewardChecking")'), isTrue);
+    expect(queue.contains('guard queued else { return nil }'), isTrue);
+    expect(queue.contains('return uploading ? .checking : .pending'), isTrue);
+    expect(queue.contains('isUploading = true'), isTrue);
+    expect(queue.contains('isUploading = false'), isTrue);
+    // Only a run that went into the queue shows the line.
+    final finish = workout.substring(workout.indexOf('func finishRun('));
+    expect(
+      finish.indexOf('lastRunQueued = true'),
+      greaterThan(finish.indexOf('queue.enqueueRun(pending)')),
+    );
+    expect(screens.contains('if let rewardLine {'), isTrue);
+  });
+
+  test('cadence is back on the running face', () {
+    expect(screens.contains('cadenceSpm: workout.cadenceSpm'), isTrue);
+    expect(screens.contains(r'Text("\(cadenceSpm) spm")'), isTrue);
   });
 
   test('GPS keeps running in the background only during a run', () {

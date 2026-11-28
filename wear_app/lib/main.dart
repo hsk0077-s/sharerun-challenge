@@ -147,6 +147,15 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   /// What the server decided for each uploaded run, by activity id.
   final _rewards = <String, RunReward>{};
 
+  /// The finished run was put in the upload queue (false for a zero-distance run).
+  var _runQueued = false;
+
+  /// Uploads on their way (the summary says "checking" until they end).
+  var _uploads = 0;
+
+  /// Finish was pressed and is still saving. Blocks a second finish and any resume.
+  var _finishing = false;
+
   /// 이 시간보다 오래 전에 저장된 임시 기록은 이어 달리지 않는다.
   static const _staleDraftAge = Duration(hours: 6);
 
@@ -358,13 +367,13 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   }
 
   void _pause() {
-    if (_session.phase != RunPhase.running) return;
+    if (_finishing || _session.phase != RunPhase.running) return;
     setState(_session.pause);
     _buzz(WatchHaptics.tick);
   }
 
   void _resume() {
-    if (_session.phase != RunPhase.paused) return;
+    if (_finishing || _session.phase != RunPhase.paused) return;
     setState(_session.resume);
     _buzz(WatchHaptics.tick);
   }
@@ -468,6 +477,18 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   }
 
   Future<void> _finish() async {
+    // Only once: a second hold, or a swipe while saving, must not finish or resume again.
+    if (_finishing) return;
+    if (_session.phase != RunPhase.running && _session.phase != RunPhase.paused) return;
+    _finishing = true;
+    try {
+      await _finishOnce();
+    } finally {
+      _finishing = false;
+    }
+  }
+
+  Future<void> _finishOnce() async {
     _poller?.cancel();
     _poller = null;
     _ticker?.cancel();
@@ -490,6 +511,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
       gpsRoute: _session.route,
       paceSamples: _session.paceSamples,
     );
+    _runQueued = run != null;
     if (run != null) {
       _queue.add(run);
       await widget.queueStore?.save(_queue);
@@ -503,6 +525,8 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   Future<void> _upload() async {
     final account = widget.account;
     if (account == null) return;
+    _uploads++;
+    if (mounted) setState(() {});
     final uploader = SyncUploader(
       account: account,
       queue: _queue,
@@ -512,8 +536,12 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
         if (mounted && id == _runId) setState(() {});
       },
     );
-    final sent = await uploader.flush(deviceId: await account.deviceId());
-    if (mounted && (sent > 0 || account.reconnectNeeded)) setState(() {});
+    try {
+      await uploader.flush(deviceId: await account.deviceId());
+    } finally {
+      _uploads--;
+      if (mounted) setState(() {});
+    }
   }
 
   Future<String?> _pair(String code) async {
@@ -608,7 +636,11 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
         return SummaryFace(
           session: _session,
           shareEarned: widget.shareEarned,
-          reward: _rewards[_runId] ?? RunReward.pending,
+          reward: RunReward.forSummary(
+            queued: _runQueued,
+            answer: _rewards[_runId],
+            uploading: _uploads > 0,
+          ),
           activityId: _runId,
           phoneOpener: widget.phoneOpener,
           onDone: () => setState(() {
@@ -616,6 +648,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
             _bannerKm = null;
             _bannerUntil = null;
             _runId = null;
+            _runQueued = false;
           }),
         );
     }

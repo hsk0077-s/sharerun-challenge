@@ -48,7 +48,9 @@ struct WatchRootView: View {
                 }
             case let .countdown(count):
                 WatchCountdownView(count: count, onCancel: { workout.cancelCountdown() })
-            case .running, .paused:
+            case .running, .paused, .finishing:
+                // `.finishing` keeps the pager on screen while the workout saves;
+                // pause/resume/finish do nothing in that phase.
                 WatchRunPager(
                     onFinish: {
                         Task { await workout.finishRun(into: queue, account: account) }
@@ -65,8 +67,8 @@ struct WatchRootView: View {
                     distanceText: Self.formatKm(workout.distanceKm),
                     paceText: Self.formatPace(workout.paceSecondsPerKm),
                     minutesText: Self.formatMinutes(workout.movingSeconds),
-                    rewardLine: queue.reward(for: workout.lastActivityId).line,
-                    rewardConfirmed: Self.isConfirmed(queue.reward(for: workout.lastActivityId)),
+                    rewardLine: queue.summaryReward(for: workout.lastActivityId, queued: workout.lastRunQueued)?.line,
+                    rewardConfirmed: Self.isConfirmed(queue.summaryReward(for: workout.lastActivityId, queued: workout.lastRunQueued)),
                     pendingCount: queue.pendingCount,
                     onDone: { workout.resetToStart() }
                 )
@@ -91,8 +93,8 @@ struct WatchRootView: View {
         return animal == "snail" ? WatchCopy.ui("unrated") : nil
     }
 
-    static func isConfirmed(_ reward: WatchRunReward) -> Bool {
-        if case .confirmed = reward { return true }
+    static func isConfirmed(_ reward: WatchRunReward?) -> Bool {
+        if case .confirmed? = reward { return true }
         return false
     }
 
@@ -286,6 +288,7 @@ struct WatchRunPager: View {
                 elapsedText: WatchRootView.formatElapsed(workout.movingSeconds),
                 paceText: WatchRootView.formatPace(workout.paceSecondsPerKm),
                 heartRate: workout.lastHeartRate,
+                cadenceSpm: workout.cadenceSpm,
                 bannerKm: workout.bannerKm,
                 kmProgress: workout.kmProgress,
                 onTap: { workout.cycleFocus() }
@@ -322,6 +325,8 @@ struct WatchRunningView: View {
     let elapsedText: String
     let paceText: String
     let heartRate: Int
+    /// Steps per minute; the line is hidden until there is a value (as before this PR).
+    let cadenceSpm: Int
     let bannerKm: Int?
     let kmProgress: Double
     let onTap: () -> Void
@@ -358,6 +363,11 @@ struct WatchRunningView: View {
             Text(heartRate > 0 ? "♥ \(heartRate)" : "♥ --")
                 .font(.system(size: 11))
                 .foregroundColor(watchMuted)
+            if cadenceSpm > 0 {
+                Text("\(cadenceSpm) spm")
+                    .font(.system(size: 10))
+                    .foregroundColor(watchMuted.opacity(0.8))
+            }
             ProgressView(value: min(1, max(0, kmProgress)))
                 .tint(watchLime)
                 .padding(.horizontal, 16)
@@ -533,8 +543,9 @@ struct WatchSummaryView: View {
     let distanceText: String
     let paceText: String
     let minutesText: String
-    /// From `WatchRunReward.line`: only what the server answered, or "confirmed after upload".
-    let rewardLine: String
+    /// From `WatchRunReward.line`: only what the server answered, "checking" while
+    /// uploading, or "confirmed after upload". Nil (nothing queued) hides the line.
+    let rewardLine: String?
     let rewardConfirmed: Bool
     let pendingCount: Int
     let onDone: () -> Void
@@ -553,12 +564,14 @@ struct WatchSummaryView: View {
             Text("\(paceText)/km · \(minutesText)")
                 .font(.system(size: 11))
                 .foregroundColor(watchMuted)
-            Text(rewardLine)
-                .font(.system(size: 12, weight: .bold))
-                .multilineTextAlignment(.center)
-                .foregroundColor(rewardConfirmed ? watchLime : watchMuted)
-                .lineLimit(2)
-                .minimumScaleFactor(0.7)
+            if let rewardLine {
+                Text(rewardLine)
+                    .font(.system(size: 12, weight: .bold))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(rewardConfirmed ? watchLime : watchMuted)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
+            }
             Text(pendingCount > 0 ? WatchCopy.current.uploadPending(pendingCount) : WatchCopy.current.nothingToUpload)
                 .font(.system(size: 10))
                 .multilineTextAlignment(.center)

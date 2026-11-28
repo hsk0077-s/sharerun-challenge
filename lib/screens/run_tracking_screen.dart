@@ -127,8 +127,10 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
       appBar: AppBar(
         title: Text(RemainingSurface.tr(context, 'run_tracking.title', '달리기 기록')),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -220,6 +222,7 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
             ),
           ],
         ),
+      ),
       ),
       ),
       ),

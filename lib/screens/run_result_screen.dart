@@ -72,8 +72,10 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
       appBar: AppBar(
         title: Text(RemainingSurface.tr(context, 'run_result.title.4', '러닝 결과')),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
             Container(
@@ -106,23 +108,19 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
                       '${_formatResultDuration(widget.durationSeconds)}',
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  Text(
-                    RemainingSurface.tr(
-                      context,
-                      'run_result.body',
-                      '판정: ${result.decision.name}',
-                      {'result.decision.name': result.decision.name},
+                  // 내부 판정 코드(enum 이름)는 보여 주지 않는다. 이유는 위의
+                  // verificationUserMessage가 이미 사용자 언어로 알려 준다.
+                  if (result.verified && result.valueTokenReward > 0) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      RemainingSurface.tr(
+                        context,
+                        'run_result.body.2',
+                        'VALUE 보상: ${result.valueTokenReward}',
+                        {'result.valueTokenReward': result.valueTokenReward},
+                      ),
                     ),
-                  ),
-                  Text(
-                    RemainingSurface.tr(
-                      context,
-                      'run_result.body.2',
-                      'VALUE 보상: ${result.valueTokenReward}',
-                      {'result.valueTokenReward': result.valueTokenReward},
-                    ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -205,6 +203,7 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

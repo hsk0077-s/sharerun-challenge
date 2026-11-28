@@ -38,7 +38,7 @@ ShareRun ("Selama jantung berdetak, berbagi terus berlari") adalah aplikasi tant
 
 • Kebijakan Privasi: https://share-run-challenge.web.app/privacy.html
 • Ketentuan Layanan: https://share-run-challenge.web.app/terms.html
-• Kontak: src791004@gmail.com
+• Kontak: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

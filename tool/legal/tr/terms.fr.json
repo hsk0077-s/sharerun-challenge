@@ -1,8 +1,8 @@
 {
  "s001": "Conditions d'utilisation - ShareRun",
  "s002": "Conditions d'utilisation de ShareRun",
- "s003": "Entrée en vigueur : 2026-10-25 · Dernière modification : 2026-10-23",
- "s004": "Les présentes conditions fixent les modalités d'utilisation de ShareRun (le « Service »), fourni par 하상기 (l'« Opérateur »). En utilisant le Service, vous acceptez ces conditions et la <a href=\"privacy.html\">Politique de confidentialité</a>. La Politique de confidentialité régit la collecte et l'usage des données personnelles ; ces conditions régissent l'utilisation du Service.",
+ "s003": "Entrée en vigueur : {{시행일}} · Dernière modification : {{최종수정일}}",
+ "s004": "Les présentes conditions fixent les modalités d'utilisation de ShareRun (le « Service »), fourni par Eareon Works (l'« Opérateur »). En utilisant le Service, vous acceptez ces conditions et la <a href=\"privacy.html\">Politique de confidentialité</a>. La Politique de confidentialité régit la collecte et l'usage des données personnelles ; ces conditions régissent l'utilisation du Service.",
  "s005": "1. Le Service",
  "s006": "ShareRun est une application pour enregistrer vos marches et courses, participer à des défis et tournois, et obtenir et partager une monnaie virtuelle selon votre activité. L'Opérateur propose la vérification des enregistrements, des classements, des récompenses, des informations sur les dons et des notifications. Certaines fonctions peuvent être en préparation ou indisponibles dans certaines versions. La version actuelle peut ne pas accepter de paiements en espèces dans l'application.",
  "s007": "2. Comptes et connexion liée",
@@ -47,5 +47,5 @@
  "s046": "12. Droit applicable et juridiction",
  "s047": "Ces conditions sont régies par le droit de la République de Corée. Les litiges découlant de l'utilisation du Service relèvent de la juridiction du tribunal déterminé par le Code de procédure civile et les autres lois applicables.",
  "s048": "13. Contact",
- "s049": "Opérateur : 하상기<br> E-mail : <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Opérateur: Eareon Works<br>\n    Représentant: {{대표자명}}<br>\n    N° d'enregistrement de l'entreprise: {{사업자등록번호}}<br>\n    N° de déclaration de vente à distance: {{통신판매업신고번호}}<br>\n    Adresse de l'établissement: {{사업장주소}}<br>\n    E-mail: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

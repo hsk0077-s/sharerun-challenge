@@ -1,8 +1,8 @@
 {
  "s001": "Điều khoản dịch vụ - ShareRun",
  "s002": "Điều khoản dịch vụ ShareRun",
- "s003": "Có hiệu lực: 2026-10-25 · Sửa đổi lần cuối: 2026-10-23",
- "s004": "Điều khoản này quy định các điều kiện sử dụng ShareRun (gọi là \"Dịch vụ\") do 하상기 (gọi là \"Bên vận hành\") cung cấp. Khi sử dụng Dịch vụ, bạn được coi là đã đồng ý với điều khoản này và <a href=\"privacy.html\">Chính sách quyền riêng tư</a>. Chính sách quyền riêng tư quy định việc thu thập và sử dụng thông tin cá nhân; điều khoản này quy định quan hệ sử dụng Dịch vụ.",
+ "s003": "Có hiệu lực: {{시행일}} · Sửa đổi lần cuối: {{최종수정일}}",
+ "s004": "Điều khoản này quy định các điều kiện sử dụng ShareRun (gọi là \"Dịch vụ\") do Eareon Works (gọi là \"Bên vận hành\") cung cấp. Khi sử dụng Dịch vụ, bạn được coi là đã đồng ý với điều khoản này và <a href=\"privacy.html\">Chính sách quyền riêng tư</a>. Chính sách quyền riêng tư quy định việc thu thập và sử dụng thông tin cá nhân; điều khoản này quy định quan hệ sử dụng Dịch vụ.",
  "s005": "1. Dịch vụ",
  "s006": "ShareRun là ứng dụng để ghi lại các lần đi bộ và chạy, tham gia thử thách và giải đấu, đồng thời nhận và chia sẻ tiền ảo theo hoạt động của bạn. Bên vận hành cung cấp xác minh bản ghi, bảng xếp hạng, phần thưởng, thông tin quyên góp và thông báo. Một số tính năng có thể đang được chuẩn bị hoặc không có ở một số phiên bản. Phiên bản hiện tại có thể không nhận thanh toán tiền mặt trong ứng dụng.",
  "s007": "2. Tài khoản và đăng nhập liên kết",
@@ -47,5 +47,5 @@
  "s046": "12. Luật áp dụng và thẩm quyền",
  "s047": "Điều khoản này tuân theo pháp luật Đại Hàn Dân Quốc. Tranh chấp phát sinh từ việc sử dụng Dịch vụ thuộc thẩm quyền của tòa án do Bộ luật Tố tụng dân sự và các luật liên quan quy định.",
  "s048": "13. Liên hệ",
- "s049": "Bên vận hành: 하상기<br> Email: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Bên vận hành: Eareon Works<br>\n    Người đại diện: {{대표자명}}<br>\n    Số đăng ký kinh doanh: {{사업자등록번호}}<br>\n    Số đăng ký bán hàng từ xa: {{통신판매업신고번호}}<br>\n    Địa chỉ cơ sở kinh doanh: {{사업장주소}}<br>\n    Email: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

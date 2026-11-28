@@ -39,7 +39,7 @@ ShareRun（享跑）「只要心跳不止，分享就持續奔跑」是一款結
 
 • 隱私權政策: https://share-run-challenge.web.app/privacy.html
 • 服務條款: https://share-run-challenge.web.app/terms.html
-• 聯絡信箱: src791004@gmail.com
+• 聯絡信箱: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

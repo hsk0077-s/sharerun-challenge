@@ -1,8 +1,8 @@
 {
  "s001": "Termos de Serviço - ShareRun",
  "s002": "Termos de Serviço do ShareRun",
- "s003": "Vigência: 2026-10-25 · Última alteração: 2026-10-23",
- "s004": "Estes termos definem as condições de uso do ShareRun (o \"Serviço\"), oferecido por 하상기 (o \"Operador\"). Ao usar o Serviço, você concorda com estes termos e com a <a href=\"privacy.html\">Política de Privacidade</a>. A Política de Privacidade rege a coleta e o uso de dados pessoais; estes termos regem o uso do Serviço.",
+ "s003": "Vigência: {{시행일}} · Última alteração: {{최종수정일}}",
+ "s004": "Estes termos definem as condições de uso do ShareRun (o \"Serviço\"), oferecido por Eareon Works (o \"Operador\"). Ao usar o Serviço, você concorda com estes termos e com a <a href=\"privacy.html\">Política de Privacidade</a>. A Política de Privacidade rege a coleta e o uso de dados pessoais; estes termos regem o uso do Serviço.",
  "s005": "1. O Serviço",
  "s006": "O ShareRun é um app para registrar caminhadas e corridas, participar de desafios e torneios e ganhar e compartilhar moeda virtual de acordo com sua atividade. O Operador oferece verificação de registros, rankings, recompensas, informações sobre doações e notificações. Alguns recursos podem estar em preparação ou indisponíveis em determinadas versões. A versão atual pode não aceitar pagamentos em dinheiro dentro do app.",
  "s007": "2. Contas e login vinculado",
@@ -47,5 +47,5 @@
  "s046": "12. Lei aplicável e foro",
  "s047": "Estes termos são regidos pelas leis da República da Coreia. Os litígios decorrentes do uso do Serviço ficam sujeitos ao foro do tribunal determinado pelo Código de Processo Civil e demais leis aplicáveis.",
  "s048": "13. Contato",
- "s049": "Operador: 하상기<br> E-mail: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Operador: Eareon Works<br>\n    Representante: {{대표자명}}<br>\n    Nº de registro empresarial: {{사업자등록번호}}<br>\n    Nº de notificação de venda a distância: {{통신판매업신고번호}}<br>\n    Endereço comercial: {{사업장주소}}<br>\n    E-mail: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

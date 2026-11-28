@@ -1,8 +1,8 @@
 {
  "s001": "Datenschutzerklärung - ShareRun",
  "s002": "ShareRun Datenschutzerklärung",
- "s003": "Gültig ab: 2026-10-25 · Zuletzt geändert: 2026-11-26",
- "s004": "하상기 (der „Betreiber“) geht bei der Bereitstellung von ShareRun (der „App“) sorgfältig mit den personenbezogenen Daten der Nutzer um und hält das Gesetz zum Schutz personenbezogener Daten und andere einschlägige Gesetze ein. Der Betreiber verarbeitet nur die für die Erbringung des Dienstes mindestens nötigen personenbezogenen Daten. Diese Erklärung beschreibt, welche Daten der Betreiber warum erhebt, wie sie verwendet und gespeichert werden und welche Rechte du hast.",
+ "s003": "Gültig ab: {{시행일}} · Zuletzt geändert: {{최종수정일}}",
+ "s004": "Eareon Works (der „Betreiber“) geht bei der Bereitstellung von ShareRun (der „App“) sorgfältig mit den personenbezogenen Daten der Nutzer um und hält das Gesetz zum Schutz personenbezogener Daten und andere einschlägige Gesetze ein. Der Betreiber verarbeitet nur die für die Erbringung des Dienstes mindestens nötigen personenbezogenen Daten. Diese Erklärung beschreibt, welche Daten der Betreiber warum erhebt, wie sie verwendet und gespeichert werden und welche Rechte du hast.",
  "s005": "1. Erhobene personenbezogene Daten und Zwecke",
  "s006": "Kategorie",
  "s007": "Erhobene Daten",
@@ -96,12 +96,13 @@
  "s095": "Der Kreis der Mitarbeitenden mit Zugriff auf personenbezogene Daten ist beschränkt, und Zugriffe von Administratoren (z. B. auf Einspruchsnachweise) werden protokolliert.",
  "s096": "Wir versprechen keine perfekte Sicherheit, bemühen uns aber, personenbezogene Daten mit den obigen Maßnahmen zu schützen.",
  "s097": "8. Datenschutzbeauftragter und Kontakt",
- "s098": "Betreiber (Datenschutzbeauftragter): 하상기<br> E-Mail: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>",
+ "s098": "Betreiber: Eareon Works<br>\n    Datenschutzbeauftragter: {{개인정보보호책임자}}<br>\n    E-Mail: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>",
  "s099": "Wenn du bei einer Verletzung des Schutzes personenbezogener Daten Hilfe brauchst, kannst du dich an folgende Stellen wenden: Schlichtungsausschuss für Streitigkeiten über personenbezogene Daten (1833-6972, ohne Vorwahl; www.kopico.go.kr), Meldestelle für Verletzungen personenbezogener Daten (118, ohne Vorwahl; privacy.kisa.or.kr) und Nationale Polizeibehörde (182, ohne Vorwahl; ecrm.police.go.kr)",
  "s100": "9. Wenn sich diese Erklärung ändert",
- "s101": "Diese Datenschutzerklärung gilt ab 2026-10-25.",
+ "s101": "Diese Datenschutzerklärung gilt ab {{시행일}}.",
  "s102": "Wenn sich der Inhalt ändert, wird dies 7 Tage vor Inkrafttreten bekanntgegeben, z. B. durch einen Hinweis in der App. Änderungen, die deine Rechte stark betreffen, wie erhobene Daten oder Verarbeitungszwecke, werden gesondert im Vorher-nachher-Vergleich erläutert, und für dich nachteilige Änderungen werden 30 Tage vorher bekanntgegeben.",
  "s103": "Frühere Erklärungen sind unten mit ihrem Geltungszeitraum verlinkt und jederzeit einsehbar.",
- "s104": "Frühere Erklärungen: keine (erstmals am 2026-10-25 in Kraft getreten)",
- "s105": "Änderung vom 2026-11-26 (Freunde und Anfeuerungen hinzugefügt): gilt ab der App-Version mit der Freunde-Funktion. Hinzugefügt: die Zeile „Freunde und Anfeuerungen“ in Abschnitt 1, der Speicherdauer-Punkt zu Freunden und Anfeuerungen in Abschnitt 2 und der Absatz zu Freunden und Anfeuerungen beim Löschverfahren. Andere erhobene Daten haben sich nicht geändert."
+ "s104": "Frühere Erklärung: die von 2026-10-25 bis zum Tag vor dem {{시행일}} geltende Erklärung ({{이전방침주소}})",
+ "s105": "Änderung vom 2026-11-26 (Freunde und Anfeuerungen hinzugefügt): gilt ab der App-Version mit der Freunde-Funktion. Hinzugefügt: die Zeile „Freunde und Anfeuerungen“ in Abschnitt 1, der Speicherdauer-Punkt zu Freunden und Anfeuerungen in Abschnitt 2 und der Absatz zu Freunden und Anfeuerungen beim Löschverfahren. Andere erhobene Daten haben sich nicht geändert.",
+ "s106": "Änderung vom {{시행일}} (Betreiberwechsel): Betreiber des Dienstes ist jetzt Eareon Works. Zwecke und Arten der Verarbeitung personenbezogener Daten ändern sich dadurch nicht."
 }

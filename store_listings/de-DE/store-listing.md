@@ -38,7 +38,7 @@ ShareRun („Solange dein Herz schlägt, läuft das Teilen weiter“) ist die fa
 
 • Datenschutz: https://share-run-challenge.web.app/privacy.html
 • AGB: https://share-run-challenge.web.app/terms.html
-• Kontakt: src791004@gmail.com
+• Kontakt: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

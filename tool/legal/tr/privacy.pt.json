@@ -1,8 +1,8 @@
 {
  "s001": "Política de Privacidade - ShareRun",
  "s002": "Política de Privacidade do ShareRun",
- "s003": "Vigência: 2026-10-25 · Última alteração: 2026-11-26",
- "s004": "하상기 (o \"Operador\") trata com cuidado os dados pessoais dos usuários ao oferecer o ShareRun (o \"App\") e cumpre a Lei de Proteção de Informações Pessoais e demais leis aplicáveis. O Operador trata apenas os dados pessoais mínimos necessários para prestar o serviço. Esta política explica quais dados o Operador coleta e por quê, como os usa e guarda, e quais direitos você tem.",
+ "s003": "Vigência: {{시행일}} · Última alteração: {{최종수정일}}",
+ "s004": "Eareon Works (o \"Operador\") trata com cuidado os dados pessoais dos usuários ao oferecer o ShareRun (o \"App\") e cumpre a Lei de Proteção de Informações Pessoais e demais leis aplicáveis. O Operador trata apenas os dados pessoais mínimos necessários para prestar o serviço. Esta política explica quais dados o Operador coleta e por quê, como os usa e guarda, e quais direitos você tem.",
  "s005": "1. Dados pessoais coletados e finalidades",
  "s006": "Categoria",
  "s007": "Itens coletados",
@@ -96,12 +96,13 @@
  "s095": "O pessoal com acesso a dados pessoais é limitado, e o acesso de administradores (como às comprovações de contestação) é registrado.",
  "s096": "Não prometemos segurança perfeita, mas nos esforçamos para proteger os dados pessoais com as medidas acima.",
  "s097": "8. Responsável pela proteção de dados e contato",
- "s098": "Operador (responsável pela proteção de dados pessoais): 하상기<br> E-mail: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>",
+ "s098": "Operador: Eareon Works<br>\n    Responsável pela proteção de dados pessoais: {{개인정보보호책임자}}<br>\n    E-mail: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>",
  "s099": "Se precisar de ajuda por violação de dados pessoais, você pode buscar orientação ou fazer uma denúncia junto a: Comitê de Mediação de Disputas de Informações Pessoais (1833-6972, sem código de área; www.kopico.go.kr), Centro de Denúncias de Violação de Informações Pessoais (118, sem código de área; privacy.kisa.or.kr) e Agência Nacional de Polícia (182, sem código de área; ecrm.police.go.kr)",
  "s100": "9. Quando esta política mudar",
- "s101": "Esta Política de Privacidade vale a partir de 2026-10-25.",
+ "s101": "Esta Política de Privacidade vale a partir de {{시행일}}.",
  "s102": "Quando o conteúdo mudar, será anunciado 7 dias antes da entrada em vigor, por exemplo por aviso no app. Alterações que afetem muito seus direitos, como os itens coletados ou as finalidades do tratamento, são explicadas à parte comparando o antes e o depois, e alterações desfavoráveis a você são anunciadas 30 dias antes.",
  "s103": "As políticas anteriores ficam vinculadas abaixo, com seu período de aplicação, e você pode consultá-las a qualquer momento.",
- "s104": "Políticas anteriores: nenhuma (entrou em vigor pela primeira vez em 2026-10-25)",
- "s105": "Alteração de 2026-11-26 (amigos e torcidas adicionados): vale a partir da versão do app que inclui o recurso de amigos. Adicionado: a linha \"Amigos e torcidas\" na seção 1, o item de retenção de amigos e torcidas na seção 2 e o parágrafo de amigos e torcidas no procedimento de destruição. Nenhum outro dado coletado mudou."
+ "s104": "Política anterior: a vigente de 2026-10-25 até o dia anterior a {{시행일}} ({{이전방침주소}})",
+ "s105": "Alteração de 2026-11-26 (amigos e torcidas adicionados): vale a partir da versão do app que inclui o recurso de amigos. Adicionado: a linha \"Amigos e torcidas\" na seção 1, o item de retenção de amigos e torcidas na seção 2 e o parágrafo de amigos e torcidas no procedimento de destruição. Nenhum outro dado coletado mudou.",
+ "s106": "Alteração de {{시행일}} (mudança de operador): o operador do serviço passa a ser a Eareon Works. As finalidades e os itens do tratamento de dados não mudam com isso."
 }

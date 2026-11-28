@@ -39,7 +39,7 @@ ShareRun ("Mientras lata tu corazón, la solidaridad sigue corriendo") es la app
 
 • Privacidad: https://share-run-challenge.web.app/privacy.html
 • Términos: https://share-run-challenge.web.app/terms.html
-• Contacto: src791004@gmail.com
+• Contacto: eareonworks@gmail.com
 ```
 
 ## Release Notes (v1.0.0)

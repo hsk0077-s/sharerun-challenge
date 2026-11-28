@@ -1,8 +1,8 @@
 {
  "s001": "Nutzungsbedingungen - ShareRun",
  "s002": "ShareRun Nutzungsbedingungen",
- "s003": "Gültig ab: 2026-10-25 · Zuletzt geändert: 2026-10-23",
- "s004": "Diese Bedingungen regeln die Nutzung von ShareRun (der „Dienst“), der von 하상기 (der „Betreiber“) bereitgestellt wird. Mit der Nutzung des Dienstes stimmst du diesen Bedingungen und der <a href=\"privacy.html\">Datenschutzerklärung</a> zu. Die Datenschutzerklärung regelt die Erhebung und Nutzung personenbezogener Daten; diese Bedingungen regeln die Nutzung des Dienstes.",
+ "s003": "Gültig ab: {{시행일}} · Zuletzt geändert: {{최종수정일}}",
+ "s004": "Diese Bedingungen regeln die Nutzung von ShareRun (der „Dienst“), der von Eareon Works (der „Betreiber“) bereitgestellt wird. Mit der Nutzung des Dienstes stimmst du diesen Bedingungen und der <a href=\"privacy.html\">Datenschutzerklärung</a> zu. Die Datenschutzerklärung regelt die Erhebung und Nutzung personenbezogener Daten; diese Bedingungen regeln die Nutzung des Dienstes.",
  "s005": "1. Der Dienst",
  "s006": "ShareRun ist eine App, mit der du Geh- und Laufaktivitäten aufzeichnest, an Challenges und Turnieren teilnimmst und je nach Aktivität virtuelle Währung erhältst und teilst. Der Betreiber bietet Verifizierung von Aufzeichnungen, Ranglisten, Belohnungen, Informationen zu Spenden und Benachrichtigungen. Einige Funktionen sind möglicherweise noch in Vorbereitung oder in bestimmten Versionen nicht verfügbar. Die aktuelle Version nimmt in der App möglicherweise keine Barzahlungen an.",
  "s007": "2. Konto und verknüpfte Anmeldung",
@@ -47,5 +47,5 @@
  "s046": "12. Anwendbares Recht und Gerichtsstand",
  "s047": "Diese Bedingungen unterliegen dem Recht der Republik Korea. Streitigkeiten aus der Nutzung des Dienstes unterliegen der Zuständigkeit des Gerichts, das sich aus der Zivilprozessordnung und anderen anwendbaren Gesetzen ergibt.",
  "s048": "13. Kontakt",
- "s049": "Betreiber: 하상기<br> E-Mail: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Betreiber: Eareon Works<br>\n    Vertreter: {{대표자명}}<br>\n    Unternehmensnummer: {{사업자등록번호}}<br>\n    Meldenummer für den Versandhandel: {{통신판매업신고번호}}<br>\n    Geschäftsadresse: {{사업장주소}}<br>\n    E-Mail: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

@@ -1,8 +1,8 @@
 {
  "s001": "Términos de servicio - ShareRun",
  "s002": "Términos de servicio de ShareRun",
- "s003": "Vigencia: 2026-10-25 · Última modificación: 2026-10-23",
- "s004": "Estos términos establecen las condiciones de uso de ShareRun (el «Servicio»), ofrecido por 하상기 (el «Operador»). Al usar el Servicio aceptas estos términos y la <a href=\"privacy.html\">Política de privacidad</a>. La Política de privacidad regula la recogida y el uso de datos personales; estos términos regulan el uso del Servicio.",
+ "s003": "Vigencia: {{시행일}} · Última modificación: {{최종수정일}}",
+ "s004": "Estos términos establecen las condiciones de uso de ShareRun (el «Servicio»), ofrecido por Eareon Works (el «Operador»). Al usar el Servicio aceptas estos términos y la <a href=\"privacy.html\">Política de privacidad</a>. La Política de privacidad regula la recogida y el uso de datos personales; estos términos regulan el uso del Servicio.",
  "s005": "1. El Servicio",
  "s006": "ShareRun es una app para registrar caminatas y carreras, participar en desafíos y torneos, y obtener y compartir moneda virtual según tu actividad. El Operador ofrece verificación de registros, clasificaciones, recompensas, información sobre donaciones y notificaciones. Algunas funciones pueden estar en preparación o no estar disponibles en ciertas versiones. La versión actual puede no aceptar pagos en efectivo dentro de la app.",
  "s007": "2. Cuentas e inicio de sesión vinculado",
@@ -47,5 +47,5 @@
  "s046": "12. Ley aplicable y jurisdicción",
  "s047": "Estos términos se rigen por las leyes de la República de Corea. Las disputas derivadas del uso del Servicio se someten a la jurisdicción del tribunal que determinen la Ley de Procedimiento Civil y demás leyes aplicables.",
  "s048": "13. Contacto",
- "s049": "Operador: 하상기<br> Correo electrónico: <a href=\"mailto:src791004@gmail.com\">src791004@gmail.com</a>"
+ "s049": "Operador: Eareon Works<br>\n    Representante: {{대표자명}}<br>\n    N.º de registro empresarial: {{사업자등록번호}}<br>\n    N.º de notificación de venta a distancia: {{통신판매업신고번호}}<br>\n    Dirección del establecimiento: {{사업장주소}}<br>\n    Correo electrónico: <a href=\"mailto:eareonworks@gmail.com\">eareonworks@gmail.com</a>"
 }

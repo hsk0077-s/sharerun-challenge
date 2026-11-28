@@ -683,45 +683,13 @@ VI: Không thể khởi động ứng dụng
 KO: 인터넷 연결을 확인한 뒤 다시 시도해 주세요. 계속 안 되면 앱을 완전히 종료했다가 다시 열어 주세요.
 VI: Vui lòng kiểm tra kết nối internet rồi thử lại. Nếu vẫn không được, hãy đóng hoàn toàn ứng dụng rồi mở lại.
 
-[app.brandSponsorBenevolentFailure]
-KO: 자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.
-VI: Thất bại nhân ái: Dù bạn thất bại trong nhiệm vụ, khoản quyên góp vẫn được thực hiện dưới tên nhà vận hành.
-
-[app.brandSponsorChallengeTitle]
-KO: Nike 주말 5km 특별 챌린지
-VI: Thử thách đặc biệt Nike 5 km cuối tuần
-
-[app.brandSponsorDisclaimer]
-KO: * 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.
-VI: * Do quy trình xử lý chi tiết, quyền lợi khấu trừ thuế cho khoản quyên góp thuộc về doanh nghiệp tài trợ.
-
-[app.brandSponsorDonationPledge]
-KO: 기부 공약: 운영자 이름으로 500만 원 기부
-VI: Cam kết quyên góp: Quyên góp 5.000.000 KRW dưới tên nhà vận hành
-
 [app.brandSponsorEntryFee]
 KO: 참가비: 0 SHARE (스폰서 100% 대납)
 VI: Phí tham gia: 0 SHARE (Nhà tài trợ chi trả 100%)
 
-[app.brandSponsorJoinCta]
-KO: 스폰서 후원받고 무료 참가하기
-VI: Tham gia miễn phí với sự tài trợ
-
 [app.brandSponsorScreenTitle]
 KO: 브랜드 스폰서 챌린지
 VI: Thử thách nhà tài trợ thương hiệu
-
-[app.brandSponsorStatus]
-KO: 남은 시간 및 모집 인원(예: 8,500명 참여 중)
-VI: Thời gian còn lại và số người tham gia (vd: 8.500 người đang tham gia)
-
-[app.brandSponsorTicker]
-KO: ✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨
-VI: ✨ Nike Korea tài trợ toàn diện cho các vận động viên của giải đấu này! ✨
-
-[app.brandSponsorWinReward]
-KO: 우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500
-VI: Phần thưởng chiến thắng: Phiếu giảm giá 30% tại cửa hàng trực tuyến Nike + 500
 
 [app.lobbySponsorRoomSub]
 KO: 지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.

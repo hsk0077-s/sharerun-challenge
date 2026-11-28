@@ -517,12 +517,6 @@ JA: DIAの購入やCoach+の決済画面を開く前に、指紋や画面ロッ�
 KO: 결제 전 본인 확인
 JA: 決済前のご本人確認
 
-[app.proToolsCushionWarning]
-KO: 쿠션 수명이 80km 남았습니다.
-부상 방지를 위해 교체 시기가 다가옵니다.
-JA: クッションの寿命が残り80kmです。
-怪我予防のため交換時期が近づいています。
-
 [app.proToolsMenuAiReport]
 KO: AI 심층 러닝 리포트 (구간별 페이스 분석)
 JA: AI詳細ランニングレポート (区間別ペース分析)
@@ -534,10 +528,6 @@ JA: 所属クルー(Crew)出席率ランキングボード
 [app.proToolsMenuPaceCalc]
 KO: 목표 거리에 따른 페이스 계산기 (VDOT)
 JA: 目標距離別ペース計算機 (VDOT)
-
-[app.proToolsRegisteredShoe]
-KO: 등록된 러닝화: 나이키 베이퍼플라이 3
-JA: 登録されたランニングシューズ：ナイキ ヴェイパーフライ 3
 
 [app.proToolsSubtitle]
 KO: 장비의 수명을 관리하고 AI 리포트로 성장하세요.

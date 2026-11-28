@@ -301,12 +301,6 @@ VI: Xác thực bằng vân tay hoặc khóa màn hình trước khi mở màn h
 KO: 결제 전 본인 확인
 VI: Xác thực danh tính trước khi thanh toán
 
-[app.proToolsCushionWarning]
-KO: 쿠션 수명이 80km 남았습니다.
-부상 방지를 위해 교체 시기가 다가옵니다.
-VI: Đệm giày còn 80 km tuổi thọ.
-Đã đến lúc cần thay thế để tránh chấn thương.
-
 [app.proToolsMenuAiReport]
 KO: AI 심층 러닝 리포트 (구간별 페이스 분석)
 VI: Báo cáo chạy bộ AI chuyên sâu (Phân tích tốc độ theo chặng)
@@ -318,10 +312,6 @@ VI: Bảng xếp hạng tỷ lệ điểm danh crew trực thuộc
 [app.proToolsMenuPaceCalc]
 KO: 목표 거리에 따른 페이스 계산기 (VDOT)
 VI: Máy tính tốc độ theo cự ly mục tiêu (VDOT)
-
-[app.proToolsRegisteredShoe]
-KO: 등록된 러닝화: 나이키 베이퍼플라이 3
-VI: Giày chạy bộ đã đăng ký: Nike Vaporfly 3
 
 [app.proToolsSubtitle]
 KO: 장비의 수명을 관리하고 AI 리포트로 성장하세요.

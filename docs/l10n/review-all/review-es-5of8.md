@@ -461,12 +461,6 @@ ES: Verifique con huella digital o bloqueo de pantalla antes de abrir la pantall
 KO: 결제 전 본인 확인
 ES: Verificación de identidad antes del pago
 
-[app.proToolsCushionWarning]
-KO: 쿠션 수명이 80km 남았습니다.
-부상 방지를 위해 교체 시기가 다가옵니다.
-ES: Quedan 80 km de vida útil de la amortiguación.
-Se acerca el momento de cambiar para prevenir lesiones.
-
 [app.proToolsMenuAiReport]
 KO: AI 심층 러닝 리포트 (구간별 페이스 분석)
 ES: Informe detallado de running con IA (análisis de ritmo por tramos)
@@ -478,10 +472,6 @@ ES: Tabla de clasificación de asistencia del crew
 [app.proToolsMenuPaceCalc]
 KO: 목표 거리에 따른 페이스 계산기 (VDOT)
 ES: Calculadora de ritmo por distancia objetivo (VDOT)
-
-[app.proToolsRegisteredShoe]
-KO: 등록된 러닝화: 나이키 베이퍼플라이 3
-ES: Zapatillas registradas: Nike Vaporfly 3
 
 [app.proToolsSubtitle]
 KO: 장비의 수명을 관리하고 AI 리포트로 성장하세요.

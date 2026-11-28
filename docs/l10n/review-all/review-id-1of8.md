@@ -683,45 +683,13 @@ ID: Gagal memulai aplikasi
 KO: 인터넷 연결을 확인한 뒤 다시 시도해 주세요. 계속 안 되면 앱을 완전히 종료했다가 다시 열어 주세요.
 ID: Periksa koneksi internet Anda dan coba lagi. Jika masalah berlanjut, tutup aplikasi sepenuhnya lalu buka kembali.
 
-[app.brandSponsorBenevolentFailure]
-KO: 자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.
-ID: Kegagalan Penuh Kebaikan: Sekalipun misi gagal, donasi tetap dilakukan atas nama operator.
-
-[app.brandSponsorChallengeTitle]
-KO: Nike 주말 5km 특별 챌린지
-ID: Tantangan Khusus Nike 5 km Akhir Pekan
-
-[app.brandSponsorDisclaimer]
-KO: * 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.
-ID: * Berdasarkan rincian pemrosesan, manfaat pengurangan pajak atas donasi menjadi hak perusahaan sponsor.
-
-[app.brandSponsorDonationPledge]
-KO: 기부 공약: 운영자 이름으로 500만 원 기부
-ID: Komitmen Donasi: Donasi 5.000.000 KRW atas nama operator
-
 [app.brandSponsorEntryFee]
 KO: 참가비: 0 SHARE (스폰서 100% 대납)
 ID: Biaya Masuk: 0 SHARE (100% ditanggung sponsor)
 
-[app.brandSponsorJoinCta]
-KO: 스폰서 후원받고 무료 참가하기
-ID: Gabung Gratis dengan Dukungan Sponsor
-
 [app.brandSponsorScreenTitle]
 KO: 브랜드 스폰서 챌린지
 ID: Tantangan Sponsor Brand
-
-[app.brandSponsorStatus]
-KO: 남은 시간 및 모집 인원(예: 8,500명 참여 중)
-ID: Sisa Waktu dan Jumlah Peserta (cth: 8.500 peserta bergabung)
-
-[app.brandSponsorTicker]
-KO: ✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨
-ID: ✨ Nike Korea sepenuhnya mensponsori para pelari di kompetisi ini! ✨
-
-[app.brandSponsorWinReward]
-KO: 우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500
-ID: Hadiah Pemenang: Kupon Diskon 30% Toko Resmi Nike + 500
 
 [app.lobbySponsorRoomSub]
 KO: 지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.

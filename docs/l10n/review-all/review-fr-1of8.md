@@ -683,45 +683,13 @@ FR: Impossible de démarrer l'application
 KO: 인터넷 연결을 확인한 뒤 다시 시도해 주세요. 계속 안 되면 앱을 완전히 종료했다가 다시 열어 주세요.
 FR: Veuillez vérifier votre connexion Internet et réessayer. Si le problème persiste, fermez complètement l'application puis rouvrez-la.
 
-[app.brandSponsorBenevolentFailure]
-KO: 자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.
-FR: Échec bienveillant : même si vous échouez à la mission, un don sera tout de même effectué au nom de l'opérateur.
-
-[app.brandSponsorChallengeTitle]
-KO: Nike 주말 5km 특별 챌린지
-FR: Défi spécial Nike 5 km du week-end
-
-[app.brandSponsorDisclaimer]
-KO: * 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.
-FR: * Pour des raisons de traitement administratif, les avantages de déduction fiscale pour les dons reviennent à l'entreprise marraine.
-
-[app.brandSponsorDonationPledge]
-KO: 기부 공약: 운영자 이름으로 500만 원 기부
-FR: Promesse de don : 5 000 000 KRW donnés au nom de l'opérateur
-
 [app.brandSponsorEntryFee]
 KO: 참가비: 0 SHARE (스폰서 100% 대납)
 FR: Frais d'inscription : 0 SHARE (100 % pris en charge par le sponsor)
 
-[app.brandSponsorJoinCta]
-KO: 스폰서 후원받고 무료 참가하기
-FR: Participer gratuitement grâce au sponsor
-
 [app.brandSponsorScreenTitle]
 KO: 브랜드 스폰서 챌린지
 FR: Défi sponsor de marque
-
-[app.brandSponsorStatus]
-KO: 남은 시간 및 모집 인원(예: 8,500명 참여 중)
-FR: Temps restant et participants inscrits (ex. : 8 500 participants)
-
-[app.brandSponsorTicker]
-KO: ✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨
-FR: ✨ Nike Korea soutient pleinement les coureurs de cette compétition ! ✨
-
-[app.brandSponsorWinReward]
-KO: 우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500
-FR: Récompense du vainqueur : coupon de réduction de 30 % sur la boutique en ligne Nike + 500
 
 [app.lobbySponsorRoomSub]
 KO: 지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.

@@ -23,6 +23,7 @@ LANGS = {  # app languageCode -> (html lang, native name, convenience-translatio
  "id": ("id", "Bahasa Indonesia", "Ini adalah terjemahan sebagai referensi dari naskah asli berbahasa Korea. Jika ada perbedaan, naskah asli berbahasa Korea yang berlaku."),
 }
 H = re.compile("[가-힣]")
+PLACEHOLDER = re.compile(r"\{\{[^{}]*\}\}")  # {{대표자명}} stays in every language until filled
 def sig(s):  # things that must survive translation untouched
     s = s.replace("제3자", "")
     toks = re.findall(r"href=\"[^\"]+\"|\d[\d,\.]*|src791004@gmail\.com|SHARE|DIA|VALUE|Health Connect", s)
@@ -38,7 +39,7 @@ def page(doc, lang, check):
     for sid, ko in src["segments"].items():
         t = tr.get(sid)
         if not t: errs.append(f"{doc}.{lang} missing {sid}"); continue
-        if H.search(t.replace("하상기","")): errs.append(f"{doc}.{lang} {sid} has Hangul")
+        if H.search(PLACEHOLDER.sub("", t).replace("하상기","")): errs.append(f"{doc}.{lang} {sid} has Hangul")
         a = [x for x in sig(ko) if not x.startswith("href")]; b = [x for x in sig(t) if not x.startswith("href")]
         if [x for x in a if x not in b]: errs.append(f"{doc}.{lang} {sid} lost {[x for x in a if x not in b]}")
         if sorted(re.findall(r"href=\"[^\"]+\"", ko)) != sorted(re.findall(r"href=\"[^\"]+\"", t)):

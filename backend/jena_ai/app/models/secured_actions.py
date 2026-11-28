@@ -272,6 +272,12 @@ class SignupFreeTicketResult(BaseModel):
     free_ticket_balance: int
 
 
+class DeleteAccountRequest(BaseModel):
+    # iPhone only: a fresh one-time Sign in with Apple code, so the server can
+    # revoke the Apple grant (Apple's account-deletion rule). Optional.
+    apple_authorization_code: str | None = Field(default=None, max_length=2048)
+
+
 class SecuredActionResult(BaseModel):
     accepted: bool
     status: str

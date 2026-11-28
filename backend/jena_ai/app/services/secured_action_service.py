@@ -27,6 +27,7 @@ from app.models.secured_actions import (
     WinnerRewardRequest,
 )
 from app.services import content_filter
+from app.services import apple_revoke
 from app.services import identities
 from app.services import friend_cheers
 from app.services.firebase_service import FirebaseService
@@ -5109,7 +5110,9 @@ class SecuredActionService:
             reason="Cash refund request recorded.",
         )
 
-    def delete_account(self, uid: str) -> SecuredActionResult:
+    def delete_account(
+        self, uid: str, apple_authorization_code: str | None = None
+    ) -> SecuredActionResult:
         db = self.firebase_service.db
         user_ref = db.collection("users").document(uid)
         user_snapshot = user_ref.get()
@@ -5156,6 +5159,11 @@ class SecuredActionService:
             pass
         # Free the Kakao (or other provider) id so it can sign up again.
         identities.forget_account(db, uid)
+        # Sign in with Apple: revoke the Apple grant with the fresh code the
+        # iPhone sent. Best effort; the account is already deleted either way.
+        if apple_authorization_code:
+            outcome = apple_revoke.revoke_with_code(apple_authorization_code)
+            logging.getLogger(__name__).info("Apple revoke on account delete: %s", outcome)
 
         return SecuredActionResult(
             accepted=True,

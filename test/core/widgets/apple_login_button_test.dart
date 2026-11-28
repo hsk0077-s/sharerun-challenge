@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart' show AppleLogoPainter;
 import 'package:share_run_challenge/core/widgets/apple_login_button.dart';
 import '../../support/ko_localization.dart';
 
@@ -31,8 +32,15 @@ void main() {
     final size = tester.getSize(find.byKey(AppleLoginButton.buttonKey));
     expect(size, const Size(324, 44));
 
-    final icon = tester.widget<Icon>(find.byIcon(Icons.apple));
-    expect(icon.color, Colors.white);
+    // Apple's own logo shape, drawn in white (not a Material icon).
+    final logo = tester.widget<CustomPaint>(
+      find.descendant(
+        of: find.byKey(AppleLoginButton.logoKey),
+        matching: find.byType(CustomPaint),
+      ),
+    );
+    expect((logo.painter! as AppleLogoPainter).color, Colors.white);
+    expect(find.byIcon(Icons.apple), findsNothing);
     final text = tester.widget<Text>(find.text('Apple로 계속하기'));
     expect(text.style!.color, Colors.white);
 

@@ -285,7 +285,22 @@ def _apple_claims(token: str, audience: str | None) -> dict:
     return info
 
 
-def verify_apple_id_token(token: str) -> ProviderIdentity:
+def _apple_nonce_ok(claim: object, raw_nonce: str | None) -> bool:
+    """The app sends SHA-256(raw nonce) to Apple and the raw nonce to us.
+
+    Apple copies what the app sent into the token's `nonce` claim. A token
+    with a nonce must come with the matching raw nonce. A token without one
+    (older builds) is accepted, but a raw nonce sent for it is a mismatch.
+    """
+    raw = (raw_nonce or "").strip()
+    if not claim:
+        return not raw
+    if not raw:
+        return False
+    return hashlib.sha256(raw.encode()).hexdigest() == str(claim)
+
+
+def verify_apple_id_token(token: str, nonce: str | None = None) -> ProviderIdentity:
     """Apple subject, plus the e-mail when Apple marked it verified.
 
     The phone sends one of two tokens. Apple's own identity token (iOS) has
@@ -296,11 +311,16 @@ def verify_apple_id_token(token: str) -> ProviderIdentity:
 
     `APPLE_CLIENT_ID` (bundle id or services id) checks the audience of Apple's
     own token. If it is unset signature, expiry and issuer are still checked.
+
+    `nonce` is the raw nonce the iPhone used for this sign-in (see
+    `_apple_nonce_ok`). It only applies to Apple's own token.
     """
     try:
         if _unverified_issuer(token) == APPLE_ISSUER:
             audience = os.getenv("APPLE_CLIENT_ID", "").strip()
             info = _apple_claims(token, audience or None)
+            if not _apple_nonce_ok(info.get("nonce"), nonce):
+                raise ValueError("nonce mismatch")
             subject = info.get("sub")
             claim_email = info.get("email")
             verified = _is_true(info.get("email_verified"))

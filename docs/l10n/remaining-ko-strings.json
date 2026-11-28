@@ -35058,6 +35058,25 @@
       "native_review": "pending"
     },
     {
+      "key": "settings.apple_revoke_notice",
+      "ko": "Apple 로그인 연결도 끊기 위해 Apple 확인을 한 번 더 받아요.",
+      "file": "lib/screens/settings_screen.dart",
+      "screen": "settings",
+      "context": "계정 삭제를 확인한 뒤, Apple 로그인이 연결된 iPhone에서 Apple 확인 창이 뜨기 직전에 잠깐 보이는 안내.",
+      "placeholders": [],
+      "en": "To also disconnect Sign in with Apple, Apple will ask you to confirm once more.",
+      "ja": "Appleでサインインの連携も解除するため、もう一度Appleで確認します。",
+      "zh-TW": "為了一併解除「使用 Apple 登入」的連結，Apple 會再請你確認一次。",
+      "es": "Para desconectar también Iniciar sesión con Apple, Apple te pedirá confirmar una vez más.",
+      "pt-BR": "Para desconectar também o Iniciar sessão com a Apple, a Apple vai pedir que você confirme mais uma vez.",
+      "de": "Damit auch „Mit Apple anmelden“ getrennt wird, bittet Apple dich noch einmal um Bestätigung.",
+      "fr": "Pour déconnecter aussi « Se connecter avec Apple », Apple vous demandera de confirmer une fois de plus.",
+      "vi": "Để ngắt cả liên kết Đăng nhập bằng Apple, Apple sẽ yêu cầu bạn xác nhận thêm một lần.",
+      "th": "เพื่อยกเลิกการเชื่อมต่อ ลงชื่อเข้าด้วย Apple ด้วย Apple จะขอให้คุณยืนยันอีกครั้ง",
+      "id": "Untuk memutus juga Masuk dengan Apple, Apple akan memintamu mengonfirmasi sekali lagi.",
+      "native_review": "pending"
+    },
+    {
       "key": "settings.title",
       "ko": "설정",
       "file": "lib/screens/settings_screen.dart",

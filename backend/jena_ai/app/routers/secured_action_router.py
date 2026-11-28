@@ -1,10 +1,11 @@
 import logging
 import time
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Request, status
 
 from app.config import debug_test_grant_enabled
 from app.models.secured_actions import (
+    DeleteAccountRequest,
     ClientErrorRequest,
     AppealRequest,
     IntegrityReportRequest,
@@ -351,8 +352,14 @@ def grant_debug_test_wallet(
 
 
 @router.post("/account/delete", response_model=SecuredActionResult)
-def delete_account(uid: str = Depends(require_uid)) -> SecuredActionResult:
-    return service.delete_account(uid=uid)
+def delete_account(
+    body: DeleteAccountRequest | None = Body(default=None),
+    uid: str = Depends(require_uid),
+) -> SecuredActionResult:
+    return service.delete_account(
+        uid=uid,
+        apple_authorization_code=body.apple_authorization_code if body else None,
+    )
 
 
 @router.post("/rewards/winner", response_model=SecuredActionResult)

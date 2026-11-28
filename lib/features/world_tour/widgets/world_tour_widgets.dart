@@ -14,6 +14,7 @@ import '../world_tour_landmarks.dart';
 import '../world_tour_models.dart';
 import '../world_tour_providers.dart';
 import '../world_tour_run_end.dart';
+import '../world_tour_run_progress.dart';
 
 /// Small reminder that the distance is a make-believe trip.
 class WorldTourVirtualNote extends StatelessWidget {
@@ -251,7 +252,10 @@ class WorldTourRunChip extends ConsumerWidget {
         {'name': name, 'km': formatTourKm(runKm)},
       );
     } else {
-      final left = mission.remainingKm - runKm;
+      final left = WorldTourRunProgress.kmLeft(
+        mission: mission,
+        runKm: runKm,
+      );
       text = left > 0
           ? RemainingSurface.tr(
               context,
@@ -377,8 +381,7 @@ class _WorldTourEntryCardState extends ConsumerState<WorldTourEntryCard> {
                       ?.copyWith(fontWeight: FontWeight.w900),
                 ),
                 Text(
-                  RemainingSurface.tr(
-                      context, 'wt.subtitle', '오늘은 어디로 달릴까요?'),
+                  RemainingSurface.tr(context, 'wt.subtitle', '오늘은 어디로 달릴까요?'),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.bodyMedium

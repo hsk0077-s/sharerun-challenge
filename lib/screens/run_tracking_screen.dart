@@ -9,10 +9,16 @@ import '../core/api/api_exception.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../core/theme/src_theme.dart';
+import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/run_tracking/models/run_telemetry.dart';
 import '../features/run_tracking/music_controls.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/services/run_session_service.dart';
+import '../features/run_tracking/widgets/run_tracking_hud.dart';
+import '../features/world_tour/world_tour_models.dart';
+import '../features/world_tour/world_tour_providers.dart';
+import '../features/world_tour/world_tour_run_progress.dart';
+import '../features/world_tour/widgets/world_tour_run_path.dart';
 import '../data/models/user_model.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/jena_validation/verification_reason.dart';
@@ -114,6 +120,15 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
   Widget build(BuildContext context) {
     ref.watch(runSessionServiceProvider);
     final sponsorBuff = ref.watch(activeSponsorBuffProvider);
+    final tour = widget.worldTourRun;
+    final mission = tour == null
+        ? null
+        : ref.watch(worldTourMeProvider).maybeWhen(
+              data: (me) => me.mission(tour.missionId),
+              orElse: () => null,
+            );
+    final tier =
+        ref.watch(activeUserTierStructProvider) ?? UserTier.unratedFallback;
 
     return PopScope(
       canPop: !_recording,
@@ -122,109 +137,99 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
         unawaited(_confirmLeave());
       },
       child: Theme(
-      data: SrcTheme.night,
-      child: Scaffold(
-      appBar: AppBar(
-        title: Text(RemainingSurface.tr(context, 'run_tracking.title', '달리기 기록')),
-      ),
-      body: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (sponsorBuff != null) ...[
-              SponsorLiveBuffBanner(buff: sponsorBuff),
-              const SizedBox(height: 16),
-            ],
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.nightCard,
-                borderRadius: BorderRadius.circular(28),
-              ),
+        data: SrcTheme.night,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(
+              RemainingSurface.tr(context, 'run_tracking.title', '달리기 기록'),
+            ),
+          ),
+          body: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    '${telemetry.distanceKm.toStringAsFixed(2)} km',
-                    style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                          color: AppColors.nightLime,
-                          fontWeight: FontWeight.w900,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(_formatDuration(telemetry.durationSeconds)),
-                  const SizedBox(height: 8),
-                  Text(
-                    RemainingSurface.trNow(
-                      'run_tracking.telemetry',
-                      '심박 \$hr BPM / 케이던스 \$spm SPM',
-                      {
-                        'hr': telemetry.currentHeartRate?.toString() ?? '--',
-                        'spm': telemetry.currentCadenceSpm?.toString() ?? '--',
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    RemainingSurface.tr(
-                      context,
-                      'run_tracking.body.3',
-                      '자이로 안정도 ${telemetry.gyroStabilityScore.toStringAsFixed(2)}',
-                      {
-                        'telemetry.gyroStabilityScore.toStringAsFixed(2)':
-                            telemetry.gyroStabilityScore.toStringAsFixed(2),
-                      },
-                    ),
-                  ),
-                  if (startError != null) ...[
+                  if (sponsorBuff != null) ...[
+                    SponsorLiveBuffBanner(buff: sponsorBuff),
                     const SizedBox(height: 16),
+                  ],
+                  Expanded(
+                    child: _RunStage(
+                      telemetry: telemetry,
+                      mission: mission,
+                      runnerAsset: tier.avatarAssetPath,
+                    ),
+                  ),
+                  if (tour != null) ...[
+                    const SizedBox(height: 12),
+                    WorldTourRunChip(
+                      args: tour,
+                      runKm: telemetry.distanceKm,
+                    ),
+                  ],
+                  RunTrackingVitals(telemetry: telemetry),
+                  if (startError != null) ...[
+                    const SizedBox(height: 12),
                     Text(
                       startError!,
                       style: const TextStyle(color: AppColors.nightDanger),
                       textAlign: TextAlign.center,
                     ),
                   ],
+                  const SizedBox(height: 8),
+                  const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: MusicControls(),
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: starting || validating || !sessionStarted
+                        ? null
+                        : () => unawaited(_confirmLeave()),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        starting || validating
+                            ? const SizedBox.square(
+                                dimension: 18,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.verified_rounded),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            starting
+                                ? RemainingSurface.tr(
+                                    context,
+                                    'run_tracking.body.4',
+                                    '센서를 시작하는 중...',
+                                  )
+                                : validating
+                                    ? RemainingSurface.tr(
+                                        context,
+                                        'run_tracking.body.5',
+                                        '러닝 검증 중...',
+                                      )
+                                    : RemainingSurface.tr(
+                                        context,
+                                        'run_tracking.body.6',
+                                        '러닝 끝내고 검증하기',
+                                      ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-            if (widget.worldTourRun != null) ...[
-              const SizedBox(height: 12),
-              WorldTourRunChip(
-                args: widget.worldTourRun!,
-                runKm: telemetry.distanceKm,
-              ),
-            ],
-            const Spacer(),
-            const MusicControls(),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: starting || validating || !sessionStarted
-                  ? null
-                  : _finishAndValidate,
-              icon: starting || validating
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.verified_rounded),
-              label: Text(
-                starting
-                    ? RemainingSurface.tr(
-                        context, 'run_tracking.body.4', '센서를 시작하는 중...')
-                    : validating
-                        ? RemainingSurface.tr(
-                            context, 'run_tracking.body.5', '러닝 검증 중...')
-                        : RemainingSurface.tr(
-                            context, 'run_tracking.body.6', '러닝 끝내고 검증하기'),
-              ),
-            ),
-          ],
+          ),
         ),
-      ),
-      ),
-      ),
       ),
     );
   }
@@ -383,11 +388,42 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
       }
     }
   }
+}
 
-  String _formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:'
-        '${remainingSeconds.toString().padLeft(2, '0')}';
+/// Big numbers, and the straight trip when this run has a landmark picture.
+class _RunStage extends StatelessWidget {
+  const _RunStage({
+    required this.telemetry,
+    required this.mission,
+    required this.runnerAsset,
+  });
+
+  final RunTelemetry telemetry;
+  final WorldTourMission? mission;
+  final String runnerAsset;
+
+  @override
+  Widget build(BuildContext context) {
+    final showPath = WorldTourRunProgress.canDraw(mission);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final pathHeight =
+            showPath ? (constraints.maxHeight * 0.36).clamp(0.0, 148.0) : 0.0;
+        return Column(
+          children: [
+            Expanded(child: RunTrackingHud(telemetry: telemetry)),
+            if (showPath && pathHeight >= 48)
+              SizedBox(
+                height: pathHeight,
+                child: WorldTourRunPath(
+                  mission: mission,
+                  runKm: telemetry.distanceKm,
+                  runnerAsset: runnerAsset,
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 }

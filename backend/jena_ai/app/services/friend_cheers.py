@@ -20,7 +20,8 @@ Collections (server-written; every client read and write is denied):
     friendCheerPairDays/{from}_{to}_{YYYYMMDD}   createdAt
     friendCheerDays/{from}_{YYYYMMDD}       count
     users/{uid}/cheersInbox/{activityId}_{fromUid}   fromUid, activityId, reaction, createdAt
-    cheerSettings/{uid}                     muteAll, mutedFriends, seenAt
+    cheerSettings/{uid}                     muteAll, mutedFriends, seenAt, pushedAt
+    cheerPushDays/{uid}_{YYYYMMDD}          uid, kstDate, friendCount, sentAt
 """
 
 from __future__ import annotations
@@ -60,6 +61,9 @@ PAIR_DAYS = "friendCheerPairDays"
 DAYS = "friendCheerDays"
 INBOX = "cheersInbox"
 SETTINGS = "cheerSettings"
+# Daily bundled push records (see cheer_push.py). Named here so account
+# deletion removes them with the other per-day counters.
+PUSH_DAYS = "cheerPushDays"
 
 REACTIONS = {"clap", "fire", "muscle", "heart", "thumbs"}
 RUN_WINDOW_DAYS = 7  # today and the 6 KST days before it
@@ -442,7 +446,8 @@ def purge_friend_data(db, uid: str) -> dict[str, int]:
         copies of the sent cheers in other people's inboxes
       * friend invites made by ``uid`` (an invite ``uid`` used keeps working as
         "used" but no longer names ``uid``)
-      * the per-day counters named after ``uid``
+      * the per-day counters named after ``uid``, including the daily cheer
+        push records
 
     Not removed: another person's own block of ``uid`` (it lives on their side
     and holds only the id and a time) and the pair-day counter whose id ends
@@ -495,7 +500,7 @@ def purge_friend_data(db, uid: str) -> dict[str, int]:
     for snap in list(db.collection(INVITES).where("usedBy", "==", uid).get()):
         snap.reference.set({"usedBy": "deleted"}, merge=True)
 
-    for collection in (INVITE_DAYS, DAYS, PAIR_DAYS):
+    for collection in (INVITE_DAYS, DAYS, PAIR_DAYS, PUSH_DAYS):
         for doc_id in _ids_with_prefix(db, collection, f"{uid}_"):
             db.collection(collection).document(doc_id).delete()
             counts["counters"] += 1

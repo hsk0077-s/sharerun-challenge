@@ -20,6 +20,7 @@ await env.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(db,'friendCheerPairDays/b_a_20261120'), {createdAt:1});
   await setDoc(doc(db,'friendCheerDays/b_20261120'), {count:1});
   await setDoc(doc(db,'cheerSettings/a'), {muteAll:false, mutedFriends:[]});
+  await setDoc(doc(db,'cheerPushDays/a_20261120'), {uid:'a', friendCount:2});
   await setDoc(doc(db,'donationExecutions/2026-11'), {month:'2026-11', amountWon:1000, partnerName:'x', receiptImagePath:'donation-receipts/2026-11/a.jpg', note:'', createdBy:'admin1'});
   await setDoc(doc(db,'donationMonthTotals/2026-11'), {totalWon:100, capWon:1000000});
 });
@@ -69,6 +70,9 @@ await t('owner cannot reset own friendCheerDays', assertFails(setDoc(doc(a,'frie
 await t('owner cannot read own cheerSettings', assertFails(getDoc(doc(a,'cheerSettings/a'))));
 await t('owner cannot write own cheerSettings', assertFails(setDoc(doc(a,'cheerSettings/a'), {muteAll:true})));
 await t('anon cannot read cheerSettings', assertFails(getDoc(doc(anon,'cheerSettings/a'))));
+await t('owner cannot read own cheerPushDays', assertFails(getDoc(doc(a,'cheerPushDays/a_20261120'))));
+await t('owner cannot reset own cheerPushDays', assertFails(deleteDoc(doc(a,'cheerPushDays/a_20261120'))));
+await t('owner cannot create cheerPushDays', assertFails(setDoc(doc(a,'cheerPushDays/a_20261121'), {uid:'a'})));
 await t('signed-in user reads donationExecutions', assertSucceeds(getDoc(doc(a,'donationExecutions/2026-11'))));
 await t('anon cannot read donationExecutions', assertFails(getDoc(doc(anon,'donationExecutions/2026-11'))));
 await t('user cannot create donationExecutions', assertFails(setDoc(doc(a,'donationExecutions/2026-12'), {amountWon:1})));

@@ -624,6 +624,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // 친구 응원 하루 1번 묶음 알림 발송 기록. 서버만 쓴다.
+    match /cheerPushDays/{pushDayId} {
+      allow read, write: if false;
+    }
+
     match /users/{uid}/friendRuns/{activityId} {
       allow read, write: if false;
     }

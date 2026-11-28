@@ -19,11 +19,12 @@ void main() {
     'match /friendCheerPairDays/{pairDayId}',
     'match /friendCheerDays/{dayId}',
     'match /cheerSettings/{uid}',
+    'match /cheerPushDays/{pushDayId}',
     'match /users/{uid}/friendRuns/{activityId}',
     'match /users/{uid}/cheersInbox/{cheerId}',
   ];
 
-  test('the six friend-cheer match blocks exist', () {
+  test('the seven friend-cheer match blocks exist', () {
     for (final header in headers) {
       expect(rules, contains(header));
     }

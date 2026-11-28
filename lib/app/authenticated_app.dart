@@ -101,6 +101,21 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     unawaited(reportDeviceIntegrity(ref));
     _watchRunLinks = IncomingWatchRunLinks();
     unawaited(_openWatchRunLinks());
+    unawaited(_openTappedPushes());
+  }
+
+  /// A tapped push (for example the daily friend-cheer one) opens its screen.
+  Future<void> _openTappedPushes() async {
+    try {
+      await ref.read(pushNotificationServiceProvider).listenForOpenedPushes(
+        (route) {
+          if (mounted) _router?.push(route);
+        },
+      );
+    } catch (error) {
+      // No Firebase (tests, a failed start): the app works without it.
+      debugPrint('Push tap handling unavailable: $error');
+    }
   }
 
   Future<void> _openWatchRunLinks() async {

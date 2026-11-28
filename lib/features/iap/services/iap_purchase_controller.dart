@@ -8,11 +8,18 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import '../../../core/config/app_env.dart';
 import '../../../data/repositories/purchase_repository.dart';
 import '../../../data/repositories/wallet_repository.dart';
-import '../models/coach_plus_product.dart';
+import '../models/dia_pack_product.dart';
 import '../models/iap_ui_event.dart';
 import '../models/share_iap_product.dart';
 import '../payment_auth.dart';
 import '../../../l10n/remaining_surface.dart';
+
+/// Sends a Play purchase token to the DIA grant endpoint.
+/// Returns true only when the server granted DIA (or already had).
+typedef DiaPackServerGrant = Future<bool> Function(
+  String productId,
+  String purchaseToken,
+);
 
 /// 앱 가동 시점부터 [purchaseStream]을 구독하는 IAP 라이프사이클 게이트웨이.
 class IapPurchaseController {
@@ -21,8 +28,7 @@ class IapPurchaseController {
     required WalletRepository walletRepository,
     required String? Function() readUid,
     void Function(int shareAmount)? onLocalProvisionFallback,
-    Future<void> Function(String productId, String purchaseToken)?
-        onCoachPlusPurchased,
+    DiaPackServerGrant? onDiaPackPurchased,
     Future<PaymentAuthResult> Function()? confirmPayment,
     InAppPurchase? iap,
     @visibleForTesting bool? simulateProvision,
@@ -32,18 +38,17 @@ class IapPurchaseController {
         _walletRepository = walletRepository,
         _readUid = readUid,
         _onLocalProvisionFallback = onLocalProvisionFallback,
-        _onCoachPlusPurchased = onCoachPlusPurchased,
+        _onDiaPackPurchased = onDiaPackPurchased,
         _iap = iap ?? InAppPurchase.instance {
     _bindPurchaseStream();
-    _refreshCoachPlusOnAndroid();
+    _restoreUnfinishedPurchasesOnAndroid();
   }
 
   final PurchaseRepository _purchaseRepository;
   final WalletRepository _walletRepository;
   final String? Function() _readUid;
   final void Function(int shareAmount)? _onLocalProvisionFallback;
-  final Future<void> Function(String productId, String purchaseToken)?
-      _onCoachPlusPurchased;
+  final DiaPackServerGrant? _onDiaPackPurchased;
   final InAppPurchase _iap;
   final bool? _simulateProvision;
 
@@ -65,29 +70,28 @@ class IapPurchaseController {
     }
   }
 
-  /// Store formatted prices for the Coach+ sheet. Empty when the store is down.
-  Future<Map<String, String>> queryCoachPlusPriceLabels() async {
+  /// Play formatted prices for the DIA packs. Empty when the store is down.
+  Future<Map<String, String>> queryDiaPackPriceLabels() async {
     final available = await isStoreAvailable();
     if (!available) return const {};
     try {
-      final response = await _iap.queryProductDetails(CoachPlusPlan.ids);
+      final response = await _iap.queryProductDetails(DiaPackProduct.productIds);
       final labels = <String, String>{};
-      for (final plan in CoachPlusPlan.catalog) {
-        final choice = chooseCoachPlusOffer(
-          productId: plan.productId,
-          details: response.productDetails,
-          fallbackPriceLabel: plan.fallbackPriceLabel,
-        );
-        if (choice != null) labels[plan.productId] = choice.priceLabel;
+      for (final details in response.productDetails) {
+        if (DiaPackProduct.isDiaPackId(details.id) && details.price.isNotEmpty) {
+          labels[details.id] = details.price;
+        }
       }
       return labels;
     } catch (error, stackTrace) {
-      debugPrint('Coach+ queryProductDetails failed: $error\n$stackTrace');
+      debugPrint('DIA pack queryProductDetails failed: $error\n$stackTrace');
       return const {};
     }
   }
 
-  Future<void> buyCoachPlus(CoachPlusPlan plan) async {
+  /// Buys one DIA pack as a consumable. The plugin must not consume it;
+  /// [_handleDiaPackPurchase] consumes only after the server grants DIA.
+  Future<void> buyDiaPack(DiaPackProduct pack) async {
     final available = await isStoreAvailable();
     if (!available) {
       _emit(
@@ -102,23 +106,23 @@ class IapPurchaseController {
     if (!await _paymentConfirmed()) return;
 
     try {
-      final response = await _iap.queryProductDetails({plan.productId});
-      final choice = chooseCoachPlusOffer(
-        productId: plan.productId,
-        details: response.productDetails,
-        fallbackPriceLabel: plan.fallbackPriceLabel,
-      );
-      if (response.error != null || choice == null) {
+      final response = await _iap.queryProductDetails({pack.productId});
+      if (response.error != null || response.productDetails.isEmpty) {
         _emit(
           IapUiEvent(
             kind: IapUiKind.error,
-            message: '상품(${plan.productId})을 찾지 못했습니다. Play Console / App Store Connect 등록을 확인해 주세요.',
+            message: '상품(${pack.productId})을 찾지 못했습니다. Play Console 등록을 확인해 주세요.',
           ),
         );
         return;
       }
-      final launched = await _iap.buyNonConsumable(
-        purchaseParam: _purchaseParam(choice.purchase),
+      final details = response.productDetails.firstWhere(
+        (item) => item.id == pack.productId,
+        orElse: () => response.productDetails.first,
+      );
+      final launched = await _iap.buyConsumable(
+        purchaseParam: _purchaseParam(details),
+        autoConsume: false,
       );
       if (!launched) {
         _emit(
@@ -129,7 +133,7 @@ class IapPurchaseController {
         );
       }
     } catch (error, stackTrace) {
-      debugPrint('IAP buyCoachPlus failed: $error\n$stackTrace');
+      debugPrint('IAP buyDiaPack failed: $error\n$stackTrace');
       _emit(
         IapUiEvent(
           kind: IapUiKind.error,
@@ -139,8 +143,8 @@ class IapPurchaseController {
     }
   }
 
-  /// Restores store purchases. Coach+ rows grant entitlement. SHARE
-  /// consumables on this restored batch are left untouched.
+  /// Restores store purchases. Unfinished DIA packs are granted again.
+  /// SHARE consumables on this restored batch are left untouched.
   Future<void> restorePurchases() async {
     final available = await isStoreAvailable();
     if (!available) {
@@ -256,12 +260,12 @@ class IapPurchaseController {
 
   Future<void> _handlePurchase(PurchaseDetails purchase) async {
     try {
-      if (purchase.status == PurchaseStatus.restored &&
-          !CoachPlusPlan.isCoachPlusId(purchase.productID)) {
+      if (DiaPackProduct.isDiaPackId(purchase.productID)) {
+        await _handleDiaPackPurchase(purchase);
         return;
       }
-      if (CoachPlusPlan.isCoachPlusId(purchase.productID)) {
-        await _handleCoachPlusPurchase(purchase);
+      // Restored SHARE consumables are not credited again.
+      if (purchase.status == PurchaseStatus.restored) {
         return;
       }
       switch (purchase.status) {
@@ -314,62 +318,78 @@ class IapPurchaseController {
     }
   }
 
-  Future<void> _handleCoachPlusPurchase(PurchaseDetails purchase) async {
-    if (purchase.status == PurchaseStatus.pending) {
-      _emit(
-        IapUiEvent(
-          kind: IapUiKind.pending,
-          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.11', 'Coach+ 결제가 진행 중입니다.'),
-        ),
-      );
-      return;
-    }
-    if (purchase.status == PurchaseStatus.purchased ||
-        purchase.status == PurchaseStatus.restored) {
-      try {
-        // On Android this is the Google Play purchase token. The server checks it with
-        // Play, so a made-up token or product id grants nothing.
-        await _onCoachPlusPurchased?.call(
-          purchase.productID,
-          purchase.verificationData.serverVerificationData,
-        );
-      } catch (error, stackTrace) {
-        debugPrint('Coach+ grant failed: $error\n$stackTrace');
-      }
-      await _completeQuietly(purchase);
-      if (purchase.status == PurchaseStatus.purchased) {
+  Future<void> _handleDiaPackPurchase(PurchaseDetails purchase) async {
+    switch (purchase.status) {
+      case PurchaseStatus.pending:
         _emit(
           IapUiEvent(
-            kind: IapUiKind.verified,
-            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.12', 'Coach+ 구독이 활성화되었습니다.'),
+            kind: IapUiKind.pending,
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.7', '결제가 진행 중입니다. Google Play 승인을 기다려 주세요.'),
           ),
         );
-      }
-      return;
+      case PurchaseStatus.purchased:
+      case PurchaseStatus.restored:
+        await _grantDiaPack(purchase);
+      case PurchaseStatus.error:
+        await _completeQuietly(purchase);
+        _emit(
+          IapUiEvent(
+            kind: IapUiKind.error,
+            message: purchase.error?.message ?? RemainingSurface.trNow('iap.iap_purchase_controller.body.8', '결제가 실패했습니다.'),
+          ),
+        );
+      case PurchaseStatus.canceled:
+        await _completeQuietly(purchase);
+        _emit(
+          IapUiEvent(
+            kind: IapUiKind.canceled,
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.9', '결제가 취소되었습니다.'),
+          ),
+        );
     }
-    if (purchase.status == PurchaseStatus.error) {
-      await _completeQuietly(purchase);
-      debugPrint(
-        'Coach+ purchase error: ${purchase.error?.code} ${purchase.error?.message}',
-      );
+  }
+
+  /// The server verifies the token and grants DIA. Consume only after that.
+  /// A thrown or refused grant leaves the purchase for the next app start.
+  Future<void> _grantDiaPack(PurchaseDetails purchase) async {
+    final grant = _onDiaPackPurchased;
+    final token = purchase.verificationData.serverVerificationData;
+    if (grant == null || token.length < 8) {
       _emit(
         IapUiEvent(
           kind: IapUiKind.error,
-          message: RemainingSurface.trNow(
-            'iap.iap_purchase_controller.body.13',
-            'Coach+ 결제가 실패했습니다. 잠시 후 다시 시도해 주세요.',
-          ),
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.10', '결제 처리 중 오류가 발생했습니다.'),
         ),
       );
       return;
     }
-    await _completeQuietly(purchase);
-    _emit(
-      IapUiEvent(
-        kind: IapUiKind.canceled,
-        message: RemainingSurface.trNow('iap.iap_purchase_controller.body.14', 'Coach+ 결제가 취소되었습니다.'),
-      ),
-    );
+    try {
+      final granted = await grant(purchase.productID, token);
+      if (!granted) {
+        _emit(
+          IapUiEvent(
+            kind: IapUiKind.error,
+            message: RemainingSurface.trNow('iap.iap_purchase_controller.body.19', '영수증 검증이 거절되었습니다. 고객센터로 문의해 주세요.'),
+          ),
+        );
+        return;
+      }
+      await _completeQuietly(purchase);
+      _emit(
+        IapUiEvent(
+          kind: IapUiKind.verified,
+          message: RemainingSurface.trNow('iap.dia_pack_grant.verified', 'DIA가 지급되었습니다.'),
+        ),
+      );
+    } catch (error, stackTrace) {
+      debugPrint('DIA pack grant failed: $error\n$stackTrace');
+      _emit(
+        IapUiEvent(
+          kind: IapUiKind.error,
+          message: RemainingSurface.trNow('iap.iap_purchase_controller.body.10', '결제 처리 중 오류가 발생했습니다.'),
+        ),
+      );
+    }
   }
 
   Future<void> _submitReceiptForBackendVerification(
@@ -522,10 +542,11 @@ class IapPurchaseController {
     }
   }
 
-  /// Silent Play refresh. Restored SHARE rows are ignored in [_handlePurchase]
-  /// so this does not re-credit consumable packs. iOS is not called here
-  /// because restore can prompt for an Apple ID.
-  void _refreshCoachPlusOnAndroid() {
+  /// Asks Play for purchases that were not consumed. Unfinished DIA packs
+  /// come back as restored and are granted. iOS is not called here because
+  /// restore can prompt for an Apple ID; unfinished iOS transactions arrive
+  /// on the purchase stream by themselves.
+  void _restoreUnfinishedPurchasesOnAndroid() {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
     unawaited(() async {
       final available = await isStoreAvailable();
@@ -533,7 +554,7 @@ class IapPurchaseController {
       try {
         await _iap.restorePurchases();
       } catch (error, stackTrace) {
-        debugPrint('Coach+ Android refresh failed: $error\n$stackTrace');
+        debugPrint('DIA pack restore failed: $error\n$stackTrace');
       }
     }());
   }

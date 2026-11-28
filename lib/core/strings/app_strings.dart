@@ -408,7 +408,6 @@ static String get createRoomScreenTitle => RemainingSurface.trNow('wallet_transa
   static const storeCosmeticLimited = '시즌 한정';
   static const storeItemCpr = '기록 심폐소생권';
   static const storeItemSafeGuard = '세이프 가드';
-  static const storeItemCoachOnePoint = '코치 원포인트권';
   static const storeItemExtraEntry = '추가 참가권';
   static const storeItemExtraEntryPack = '추가 참가권 3장';
   static const storeItemFriendGhost = '친구 고스트 페이스';
@@ -506,9 +505,7 @@ static String get runningCrewNoCrewLabel => _l.navCrew;
   // ── Item Inventory (Screen 20) ──────────────────────────────────────
   static String get itemInventoryTitle => RemainingSurface.trNow('app.itemInventoryTitle', '내 아이템 보관함');
 static String get itemInventoryCprTitle => _shop.storeName('record_cpr_ticket');
-static String get itemInventoryCoachOnePointTitle => _shop.storeName('coach_one_point_ticket');
 static String get itemInventoryExtraEntryTitle => _shop.storeName('extra_entry_ticket');
-  static String get itemInventoryCoachOnePointHint => RemainingSurface.trNow('app.itemInventoryCoachOnePointHint', '러닝을 시작하면 사용됩니다. 하루 1회.');
   static String get itemInventoryExtraEntryHint => RemainingSurface.trNow('app.itemInventoryExtraEntryHint', '모집 마감·정원 초과 참가 시 사용됩니다. 하루 2회.');
 static String get itemInventoryFriendGhostTitle => _shop.storeName('friend_ghost_pace');
   static String get itemInventoryFriendGhostHint => RemainingSurface.trNow('app.itemInventoryFriendGhostHint', '러닝 중 친구 기록과 비교합니다. 내 최고 기록은 무료입니다.');

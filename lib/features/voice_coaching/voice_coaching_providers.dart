@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../iap/providers/coach_plus_providers.dart';
-import '../shop/coach_one_point_run.dart';
 import 'recorded_voice_speaker.dart';
 import 'voice_coach_output_mute.dart';
 import 'voice_coaching_controller.dart';
@@ -9,8 +7,7 @@ import 'voice_coaching_cues.dart';
 import 'voice_coaching_preference_store.dart';
 import 'voice_coaching_speaker.dart';
 
-/// Free start / km / pep plan. Heart-rate pace lines use Coach+ or one
-/// server-confirmed 코치 원포인트권 run.
+/// Start, kilometer, pep, and heart-rate lines. Coaching is free for everyone.
 final voiceCoachPlanProvider = Provider<VoiceCoachPlan>(
   (ref) => VoiceCoachPlan.free,
 );
@@ -76,12 +73,6 @@ final voiceCoachingControllerProvider = Provider<VoiceCoachingController>(
     return VoiceCoachingController(
       isEnabled: () => ref.read(voiceCoachingEnabledProvider),
       speaker: ref.watch(voiceCoachingSpeakerProvider),
-      isCoachPlusActive: () =>
-          ref.read(coachPlusActiveProvider) ||
-          ref.read(coachOnePointRunProvider),
-      onCoachPlusUpsell: () {
-        ref.read(coachPlusUpsellCountProvider.notifier).request();
-      },
       refreshDeviceMuted: () => ref.read(voiceCoachMuteProbeProvider).isMuted(),
     );
   },

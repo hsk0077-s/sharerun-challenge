@@ -73,7 +73,6 @@ def test_invalid_price_fields_keep_defaults() -> None:
     assert prices == {
         CPR: 12,
         GUARD: 8,
-        "coach_one_point_ticket": 5,
         "extra_entry_ticket": 10,
         "extra_entry_ticket_3pack": 25,
         "friend_ghost_pace": 5,
@@ -95,6 +94,11 @@ def test_invalid_price_fields_keep_defaults() -> None:
         "challenge_ticket_dia": 1,
         "personal_sponsor_share": 50000,
         "personal_sponsor_won_per_share": 1,
+        "world_tour_costume": 120,
+        "world_tour_accessory": 60,
+        "world_tour_background": 90,
+        "world_tour_passport_cover": 70,
+        "world_tour_country_set": 270,
     }
 
     overridden = resolve_item_prices({CPR: 20, GUARD: "8"})

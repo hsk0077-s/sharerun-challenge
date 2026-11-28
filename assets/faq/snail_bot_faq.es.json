@@ -1331,7 +1331,7 @@
     "aliases": [
       "Explícame Coach+"
     ],
-    "answer": "Coach+ es un servicio de suscripción que te da entrenamiento por voz en profundidad, adaptado a tu frecuencia cardíaca y ritmo en tiempo real mientras corres. Está en preparación para la venta, así que por ahora puedes usar el entrenamiento gratuito."
+    "answer": "El coaching está abierto para todos, sin suscripción. Las indicaciones de distancia y el coaching de pulso son gratis mientras corres. No vendemos un plan de pago llamado Coach+."
   },
   {
     "id": "CP-02",
@@ -1340,7 +1340,7 @@
     "aliases": [
       "Tarifa de Coach+"
     ],
-    "answer": "Coach+ se está preparando a 6.900 KRW al mes y 59.000 KRW al año, con 7 días de prueba gratis. Los pagos aún no están abiertos, así que no se te cobrará."
+    "answer": "Coach+ no está a la venta. El coaching de voz no tiene tarifa."
   },
   {
     "id": "CP-03",
@@ -1349,7 +1349,7 @@
     "aliases": [
       "Versión de prueba"
     ],
-    "answer": "Sí, hay una prueba gratuita de 7 días."
+    "answer": "No hace falta una prueba. El coaching es gratis desde el principio."
   },
   {
     "id": "CP-04",
@@ -1358,7 +1358,7 @@
     "aliases": [
       "Cancelar suscripción"
     ],
-    "answer": "Puedes cancelar fácilmente dentro de la app. Te abro la pantalla de gestión de suscripciones."
+    "answer": "No hay un plan de pago que cancelar. El coaching sigue gratis."
   },
   {
     "id": "CP-05",
@@ -1367,7 +1367,7 @@
     "aliases": [
       "¿Cuándo sale Coach+?"
     ],
-    "answer": "Ahora mismo no vendemos Coach+. Te avisaremos primero cuando esté listo."
+    "answer": "No. Coach+ no se vende. El coaching ya es gratis."
   },
   {
     "id": "CP-06",
@@ -1376,7 +1376,7 @@
     "aliases": [
       "Diferencias de Coach+"
     ],
-    "answer": "El entrenamiento gratuito da guía básica al inicio, al final y por distancias, y Coach+ añade entrenamiento a fondo adaptado a tus zonas de frecuencia cardíaca y cambios de ritmo en tiempo real."
+    "answer": "No hay un coaching de pago aparte. Las indicaciones de distancia y el pulso son gratis."
   },
   {
     "id": "CP-07",
@@ -1412,7 +1412,7 @@
     "aliases": [
       "¿La suscripción se renueva automáticamente?"
     ],
-    "answer": "Coach+ aún no está a la venta, así que no se cobra nada automáticamente. Si te suscribes tras el lanzamiento oficial, se renueva automáticamente en el periodo elegido con tu método de pago de la tienda, y puedes cancelar en cualquier momento desde la gestión de suscripciones de la tienda."
+    "answer": "No. No hay una suscripción de coaching que se renueve sola."
   },
   {
     "id": "SYS-FALLBACK",

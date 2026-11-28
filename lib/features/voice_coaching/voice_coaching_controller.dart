@@ -19,8 +19,6 @@ class VoiceCoachingController {
     bool Function()? isSessionActive,
     bool Function()? isDeviceMuted,
     Future<bool> Function()? refreshDeviceMuted,
-    bool Function()? isCoachPlusActive,
-    void Function()? onCoachPlusUpsell,
   })  : _isEnabled = isEnabled,
         _speaker = speaker,
         session = session ?? VoiceCoachingSession(),
@@ -28,11 +26,7 @@ class VoiceCoachingController {
         _now = now ?? DateTime.now,
         _isSessionActive = isSessionActive,
         _isDeviceMuted = isDeviceMuted,
-        _refreshDeviceMuted = refreshDeviceMuted,
-        _isCoachPlusActive = isCoachPlusActive ?? _coachPlusInactive,
-        _onCoachPlusUpsell = onCoachPlusUpsell;
-
-  static bool _coachPlusInactive() => false;
+        _refreshDeviceMuted = refreshDeviceMuted;
 
   final bool Function() _isEnabled;
   final VoiceCoachingSpeaker _speaker;
@@ -40,9 +34,6 @@ class VoiceCoachingController {
   final bool Function()? _isSessionActive;
   final bool Function()? _isDeviceMuted;
   final Future<bool> Function()? _refreshDeviceMuted;
-  final bool Function() _isCoachPlusActive;
-  final void Function()? _onCoachPlusUpsell;
-  var _coachPlusUpsellShown = false;
   var _internalSession = false;
   var _liveSessionEpoch = 0;
   var _cachedMuted = false;
@@ -177,13 +168,7 @@ class VoiceCoachingController {
     await _prepareMute();
     if (!_sessionActive()) return;
     final heart = session.claimHeartRateCue(heartRateBpm);
-    final coachPlus = _isCoachPlusActive();
-    if (heart != null && !coachPlus) {
-      session.releaseHeartRateCue();
-      _requestCoachPlusUpsell();
-    }
-    if (coachPlus &&
-        heart != null &&
+    if (heart != null &&
         heart.id == VoiceCoachingCues.runHighHeartRate.id) {
       await _finishHeartRateCue(heart);
       return;
@@ -193,7 +178,7 @@ class VoiceCoachingController {
         previousKm: previousKm,
         currentKm: currentKm,
       ),
-      coachPlus: coachPlus,
+      coachPlus: true,
     );
     final nearFinish = session.approachingFinish(
       previousKm: previousKm,
@@ -201,11 +186,11 @@ class VoiceCoachingController {
       targetKm: targetKm,
     );
     if (kilometer != null || nearFinish != null) {
-      if (coachPlus && heart != null) session.releaseHeartRateCue();
+      if (heart != null) session.releaseHeartRateCue();
       await speakCue(kilometer ?? nearFinish);
       return;
     }
-    if (coachPlus && heart != null) {
+    if (heart != null) {
       await _finishHeartRateCue(heart);
       return;
     }
@@ -213,13 +198,6 @@ class VoiceCoachingController {
         ? null
         : session.crossedSparseEncouragement(elapsedSeconds);
     await speakCue(encouragement);
-  }
-
-  void _requestCoachPlusUpsell() {
-    if (_coachPlusUpsellShown) return;
-    if (!_isEnabled() || !_sessionActive() || _deviceMuted()) return;
-    _coachPlusUpsellShown = true;
-    _onCoachPlusUpsell?.call();
   }
 
   Future<void> _finishHeartRateCue(VoiceCue cue) async {

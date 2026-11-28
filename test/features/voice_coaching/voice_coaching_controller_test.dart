@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:share_run_challenge/features/iap/providers/coach_plus_providers.dart';
 import 'package:share_run_challenge/features/voice_coaching/voice_coach_output_mute.dart';
 import 'package:share_run_challenge/features/voice_coaching/voice_coach_when_to_speak.dart';
 import 'package:share_run_challenge/features/voice_coaching/voice_coaching_controller.dart';
@@ -39,8 +38,6 @@ void main() {
     container = ProviderContainer(
       overrides: [
         voiceCoachingSpeakerProvider.overrideWithValue(speaker),
-        coachPlusFromProfileProvider.overrideWithValue(false),
-        coachPlusServerGrantProvider.overrideWithValue((_, __) async {}),
       ],
     );
   });
@@ -124,8 +121,6 @@ void main() {
     bool enabled = true,
     bool sessionActive = true,
     bool deviceMuted = false,
-    bool coachPlus = true,
-    void Function()? onCoachPlusUpsell,
     required DateTime Function() now,
   }) {
     return VoiceCoachingController(
@@ -134,8 +129,6 @@ void main() {
       now: now,
       isSessionActive: () => sessionActive,
       isDeviceMuted: () => deviceMuted,
-      isCoachPlusActive: () => coachPlus,
-      onCoachPlusUpsell: onCoachPlusUpsell,
     );
   }
 
@@ -394,7 +387,6 @@ void main() {
       now: () => DateTime.utc(2026, 9, 27, 9),
       isSessionActive: () => true,
       isDeviceMuted: () => muted,
-      isCoachPlusActive: () => true,
     );
 
     await coach.onRunProgress(
@@ -600,7 +592,6 @@ void main() {
       speaker: speaker,
       now: () => DateTime.utc(2026, 9, 27, 9),
       isSessionActive: () => true,
-      isCoachPlusActive: () => true,
     );
 
     await coach.onRunProgress(
@@ -639,15 +630,9 @@ void main() {
     expect(coach.whenToSpeak.lastSpokenKind, isNull);
   });
 
-  test('without Coach+ heart-rate lines stay silent and free cues still speak',
-      () async {
-    var upsells = 0;
+  test('heart-rate lines speak for every user', () async {
     var now = DateTime.utc(2026, 9, 28, 8);
-    final coach = gatedCoach(
-      coachPlus: false,
-      onCoachPlusUpsell: () => upsells += 1,
-      now: () => now,
-    );
+    final coach = gatedCoach(now: () => now);
 
     await coach.onRunStarted();
     await coach.onRunProgress(
@@ -662,28 +647,20 @@ void main() {
       elapsedSeconds: 180,
       heartRateBpm: 158,
     );
-    await coach.onRunProgress(
-      previousKm: 1.1,
-      currentKm: 1.2,
-      heartRateBpm: 152,
-    );
     now = now.add(const Duration(seconds: 46));
     await coach.onRunFinished();
 
     expect(speaker.spoken, [
       VoiceCoachingCues.runStart.ko,
-      VoiceCoachingCues.runKm(1).ko,
+      VoiceCoachingCues.runHighHeartRate.ko,
+      VoiceCoachingCues.runKm(1, coachPlus: true).ko,
       VoiceCoachingCues.runFinish.ko,
     ]);
-    expect(upsells, 1);
   });
 
-  test('coaching off or mute does not raise the Coach+ upsell', () async {
-    var upsells = 0;
+  test('coaching off or mute stays silent', () async {
     final off = gatedCoach(
       enabled: false,
-      coachPlus: false,
-      onCoachPlusUpsell: () => upsells += 1,
       now: () => DateTime.utc(2026, 9, 28, 8),
     );
     await off.onRunProgress(
@@ -694,8 +671,6 @@ void main() {
 
     final muted = gatedCoach(
       deviceMuted: true,
-      coachPlus: false,
-      onCoachPlusUpsell: () => upsells += 1,
       now: () => DateTime.utc(2026, 9, 28, 8),
     );
     await muted.onRunProgress(
@@ -705,53 +680,20 @@ void main() {
     );
 
     expect(speaker.spoken, isEmpty);
-    expect(upsells, 0);
   });
 
-  test('provider keeps heart-rate lines silent until Coach+ is granted',
-      () async {
+  test('the provider speaks heart-rate lines without a subscription', () async {
     await container
         .read(voiceCoachingEnabledProvider.notifier)
         .setEnabled(true);
     final coach = container.read(voiceCoachingControllerProvider);
     await coach.onRunStarted();
-
     await coach.onRunProgress(
       previousKm: 0.1,
       currentKm: 0.2,
       heartRateBpm: 175,
     );
-    expect(speaker.spoken, [VoiceCoachingCues.runStart.ko]);
-    expect(container.read(coachPlusUpsellCountProvider), 1);
-
-    await container
-        .read(coachPlusActiveProvider.notifier)
-        .grant('coach_plus_monthly', 'test-purchase-token');
-    await coach.onRunProgress(
-      previousKm: 0.2,
-      currentKm: 0.3,
-      heartRateBpm: 175,
-    );
-    expect(speaker.spoken, [VoiceCoachingCues.runStart.ko]);
-
-    final confirmedSpeaker = _RecordingSpeaker();
-    final confirmed = ProviderContainer(
-      overrides: [
-        voiceCoachingSpeakerProvider.overrideWithValue(confirmedSpeaker),
-        coachPlusFromProfileProvider.overrideWithValue(true),
-        coachPlusServerGrantProvider.overrideWithValue((_, __) async {}),
-      ],
-    );
-    addTearDown(confirmed.dispose);
-    await confirmed.read(voiceCoachingEnabledProvider.notifier).ensureLoaded();
-    final confirmedCoach = confirmed.read(voiceCoachingControllerProvider);
-    await confirmedCoach.onRunStarted();
-    await confirmedCoach.onRunProgress(
-      previousKm: 0.2,
-      currentKm: 0.3,
-      heartRateBpm: 175,
-    );
-    expect(confirmedSpeaker.spoken, [
+    expect(speaker.spoken, [
       VoiceCoachingCues.runStart.ko,
       VoiceCoachingCues.runHighHeartRate.ko,
     ]);
@@ -780,7 +722,6 @@ void main() {
       isEnabled: () => true,
       speaker: speaker,
       now: () => now,
-      isCoachPlusActive: () => true,
     );
 
     await coach.onRunProgress(
@@ -853,7 +794,6 @@ void main() {
       isEnabled: () => true,
       speaker: speaker,
       now: () => DateTime.utc(2026, 9, 28, 10),
-      isCoachPlusActive: () => false,
     );
     final walk = coach.onWalkingOpened();
     final walkEpoch = coach.liveSessionEpoch;
@@ -868,25 +808,22 @@ void main() {
     expect(speaker.stopCount, 0);
 
     await coach.onRunProgress(previousKm: 0.9, currentKm: 1.05);
-    expect(speaker.spoken.last, VoiceCoachingCues.runKm(1).ko);
+    expect(speaker.spoken.last, VoiceCoachingCues.runKm(1, coachPlus: true).ko);
 
     await coach.onSessionDismissed(runEpoch);
     expect(speaker.stopCount, 1);
     await coach.onRunProgress(previousKm: 1.9, currentKm: 2.1);
-    expect(speaker.spoken.last, VoiceCoachingCues.runKm(1).ko);
+    expect(speaker.spoken.last, VoiceCoachingCues.runKm(1, coachPlus: true).ko);
   });
 
   test('media volume 0 and coaching off never speak on a live session',
       () async {
     var enabled = true;
     var volume = 0;
-    var upsells = 0;
     final coach = VoiceCoachingController(
       isEnabled: () => enabled,
       speaker: speaker,
       now: () => DateTime.utc(2026, 9, 28, 11),
-      isCoachPlusActive: () => false,
-      onCoachPlusUpsell: () => upsells += 1,
       refreshDeviceMuted: () async =>
           voiceCoachOutputMuted(mediaVolume: volume),
     );
@@ -898,7 +835,6 @@ void main() {
       heartRateBpm: 180,
     );
     expect(speaker.spoken, isEmpty);
-    expect(upsells, 0);
 
     volume = 8;
     enabled = false;
@@ -908,13 +844,12 @@ void main() {
       heartRateBpm: 180,
     );
     expect(speaker.spoken, isEmpty);
-    expect(upsells, 0);
 
     enabled = true;
     await coach.onRunProgress(
       previousKm: 0.9,
       currentKm: 1.1,
     );
-    expect(speaker.spoken, [VoiceCoachingCues.runKm(1).ko]);
+    expect(speaker.spoken, [VoiceCoachingCues.runKm(1, coachPlus: true).ko]);
   });
 }

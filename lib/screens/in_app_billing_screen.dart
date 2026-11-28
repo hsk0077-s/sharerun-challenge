@@ -5,9 +5,7 @@ import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_text_styles.dart';
-import '../features/iap/models/coach_plus_product.dart';
 import '../app/router/route_names.dart';
-import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../l10n/remaining_surface.dart';
 import 'dia_pack_store_screen.dart';
 import 'share_dia_exchange_screen.dart';
@@ -65,10 +63,6 @@ class InAppBillingScreen extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                     children: [
-                      if (AppEnv.inAppPurchasesEnabled) ...[
-                        const _CoachPlusBillingEntry(),
-                        const SizedBox(height: 14),
-                      ],
                       const _DiaExchangeEntry(),
                       if (AppEnv.diaPacksEnabled) ...[
                         const SizedBox(height: 14),
@@ -188,59 +182,7 @@ class _DiaPackStoreEntry extends StatelessWidget {
                 RemainingSurface.tr(
                   context,
                   'in_app_billing.body.2',
-                  'Play 상품 준비 중 · 결제해도 DIA가 지급되지 않습니다',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CoachPlusBillingEntry extends StatelessWidget {
-  const _CoachPlusBillingEntry();
-
-  @override
-  Widget build(BuildContext context) {
-    final monthly = CoachPlusPlan.monthly;
-    final yearly = CoachPlusPlan.yearly;
-    return Material(
-      color: AppColors.surfaceWhite.withValues(alpha: 0.78),
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        key: const Key('coach-plus-billing'),
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => CoachPlusUpsellSheet.show(context),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.tealAccent, width: 1.6),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Coach+',
-                style: AppTextStyles.agreementLabel.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                RemainingSurface.trNow('billing.free_note', '무료 기본 러닝 안내 · 심박·상황에 맞춘 심층 코칭'),
-                style: AppTextStyles.caption.copyWith(fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${monthly.periodLabel} ${monthly.fallbackPriceLabel} · '
-                '${yearly.periodLabel} ${yearly.fallbackPriceLabel}',
-                style: AppTextStyles.agreementLabel.copyWith(
-                  color: AppColors.tealAccent,
-                  fontWeight: FontWeight.w700,
+                  'Play 결제 후 서버가 확인하면 DIA가 지급됩니다',
                 ),
               ),
             ],

@@ -57,6 +57,9 @@ abstract final class AppEnv {
   /// Tests only. Release and profile ignore this.
   static bool? debugInAppPurchasesOverride;
 
+  /// Tests only. Overrides the DIA pack switch. Release and profile ignore this.
+  static bool? debugDiaPacksOverride;
+
   /// Tests only. Overrides [sponsorPaymentsVisible]. Release and profile ignore this.
   static bool? debugSponsorPaymentsOverride;
   static const _useFirebaseEmulatorDefine =
@@ -126,9 +129,8 @@ abstract final class AppEnv {
         fromDefine: _sponsorshipEnabledDefine,
       );
 
-  /// 구글 플레이 결제(Coach+, 구독, DIA 팩, 현금 환불, 후원 결제)를 보여 줄지.
-  /// 1.0은 앱 안 판매가 없어 기본값은 꺼짐이다. 다시 열 때만
-  /// `IN_APP_PURCHASES_ENABLED=true`.
+  /// 구글 플레이 결제(DIA 팩, 현금 환불, 후원 결제)를 보여 줄지.
+  /// 기본값은 꺼짐이다. 다시 열 때만 `IN_APP_PURCHASES_ENABLED=true`.
   static bool get inAppPurchasesEnabled {
     if (kDebugMode) {
       final override = debugInAppPurchasesOverride;
@@ -151,14 +153,19 @@ abstract final class AppEnv {
   }
 
   /// DIA 팩(돈으로 사는 DIA)을 보여 줄지. 출시 스위치가 꺼져 있으면 보이지 않고,
-  /// 켜져 있어도 `DIA_PACKS_ENABLED=true`일 때만 보인다.
-  static bool get diaPacksEnabled =>
-      inAppPurchasesEnabled &&
-      _bool(
-        'DIA_PACKS_ENABLED',
-        defaultValue: false,
-        fromDefine: _diaPacksEnabledDefine,
-      );
+  /// 켜져 있어도 `DIA_PACKS_ENABLED=true`일 때만 보인다. 둘 다 기본값은 꺼짐.
+  static bool get diaPacksEnabled {
+    if (!inAppPurchasesEnabled) return false;
+    if (kDebugMode) {
+      final override = debugDiaPacksOverride;
+      if (override != null) return override;
+    }
+    return _bool(
+      'DIA_PACKS_ENABLED',
+      defaultValue: false,
+      fromDefine: _diaPacksEnabledDefine,
+    );
+  }
 
   /// Garmin 연동은 아직 모의 구현이다(실제 Garmin 로그인 없음). 출시 빌드에서는 막는다.
   static bool get garminLinkEnabled => kDebugMode;

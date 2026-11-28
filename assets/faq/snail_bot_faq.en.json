@@ -1330,7 +1330,7 @@
     "aliases": [
       "Explain Coach+"
     ],
-    "answer": "Coach+ is a subscription service that gives you in-depth voice coaching tuned to your real-time heart rate and pace while you run. It’s getting ready for sale, so for now you can use the free coaching."
+    "answer": "Coaching is open to everyone without a subscription. Distance cues and heart-rate coaching are free while you run. There is no paid Coach+ plan."
   },
   {
     "id": "CP-02",
@@ -1339,7 +1339,7 @@
     "aliases": [
       "Coach+ pricing"
     ],
-    "answer": "Coach+ is being prepared at 6,900 KRW per month and 59,000 KRW per year, with a 7-day free trial. Payments are not open yet, so you won’t be charged."
+    "answer": "Coach+ is not for sale. Voice coaching has no fee."
   },
   {
     "id": "CP-03",
@@ -1348,7 +1348,7 @@
     "aliases": [
       "Trial version"
     ],
-    "answer": "Yes, there is a 7-day free trial."
+    "answer": "No trial is needed. Coaching is free from the start."
   },
   {
     "id": "CP-04",
@@ -1357,7 +1357,7 @@
     "aliases": [
       "Cancel subscription"
     ],
-    "answer": "You can easily cancel inside the app. I’ll open the subscription management screen for you."
+    "answer": "There is no paid plan to cancel. Coaching stays free."
   },
   {
     "id": "CP-05",
@@ -1366,7 +1366,7 @@
     "aliases": [
       "When does Coach+ come out?"
     ],
-    "answer": "We don’t sell Coach+ right now. We’ll let you know first when it’s ready."
+    "answer": "No. Coach+ is not sold. Coaching is already free."
   },
   {
     "id": "CP-06",
@@ -1375,7 +1375,7 @@
     "aliases": [
       "Coach+ differences"
     ],
-    "answer": "Free coaching gives basic guidance at the start, the finish and by distance, and Coach+ adds in-depth coaching tuned to your real-time heart-rate zones and pace changes."
+    "answer": "There is no separate paid coaching. Distance cues and heart-rate coaching are both free."
   },
   {
     "id": "CP-07",
@@ -1411,7 +1411,7 @@
     "aliases": [
       "Does the subscription auto-renew?"
     ],
-    "answer": "Coach+ isn’t on sale yet, so nothing is charged automatically. If you subscribe after the official launch, it renews automatically each chosen period using your store payment method, and you can cancel anytime in the store’s subscription management."
+    "answer": "No. There is no coaching subscription that renews automatically."
   },
   {
     "id": "SYS-FALLBACK",

@@ -1331,7 +1331,7 @@
     "aliases": [
       "Explique-moi Coach+"
     ],
-    "answer": "Coach+ est un service d’abonnement qui te donne un coaching vocal approfondi, adapté à ta fréquence cardiaque et à ton allure en temps réel pendant que tu cours. Il est en préparation pour la vente ; pour l’instant, tu peux utiliser le coaching gratuit."
+    "answer": "Le coaching est ouvert à tous, sans abonnement. Les indications de distance et le coaching de fréquence cardiaque sont gratuits pendant la course. Il n’y a pas d’offre payante Coach+."
   },
   {
     "id": "CP-02",
@@ -1340,7 +1340,7 @@
     "aliases": [
       "Tarifs de Coach+"
     ],
-    "answer": "Coach+ est en préparation à 6 900 KRW par mois et 59 000 KRW par an, avec 7 jours d’essai gratuit. Les paiements ne sont pas encore ouverts, tu ne seras donc pas facturé."
+    "answer": "Coach+ n’est pas en vente. Le coaching vocal est gratuit."
   },
   {
     "id": "CP-03",
@@ -1349,7 +1349,7 @@
     "aliases": [
       "Version d’essai"
     ],
-    "answer": "Oui, il y a un essai gratuit de 7 jours."
+    "answer": "Pas d’essai nécessaire. Le coaching est gratuit dès le début."
   },
   {
     "id": "CP-04",
@@ -1358,7 +1358,7 @@
     "aliases": [
       "Résilier l’abonnement"
     ],
-    "answer": "Tu peux résilier facilement dans l’appli. J’ouvre l’écran de gestion de l’abonnement."
+    "answer": "Il n’y a pas d’abonnement payant à résilier. Le coaching reste gratuit."
   },
   {
     "id": "CP-05",
@@ -1367,7 +1367,7 @@
     "aliases": [
       "Quand Coach+ sort-il ?"
     ],
-    "answer": "Nous ne vendons pas Coach+ pour le moment. Nous te préviendrons d’abord quand ce sera prêt."
+    "answer": "Non. Coach+ n’est pas vendu. Le coaching est déjà gratuit."
   },
   {
     "id": "CP-06",
@@ -1376,7 +1376,7 @@
     "aliases": [
       "Différences de Coach+"
     ],
-    "answer": "Le coaching gratuit donne des indications de base au départ, à l’arrivée et par distance, et Coach+ ajoute un coaching approfondi adapté à tes zones de fréquence cardiaque et à tes changements d’allure en temps réel."
+    "answer": "Il n’y a pas de coaching payant à part. Distance et fréquence cardiaque sont gratuits."
   },
   {
     "id": "CP-07",
@@ -1412,7 +1412,7 @@
     "aliases": [
       "L’abonnement se renouvelle-t-il automatiquement ?"
     ],
-    "answer": "Coach+ n’est pas encore en vente, rien n’est donc facturé automatiquement. Si tu t’abonnes après le lancement officiel, il se renouvelle automatiquement à la période choisie avec ton moyen de paiement du store, et tu peux résilier à tout moment dans la gestion des abonnements du store."
+    "answer": "Non. Aucun abonnement de coaching ne se renouvelle tout seul."
   },
   {
     "id": "SYS-FALLBACK",

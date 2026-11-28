@@ -1331,7 +1331,7 @@
     "aliases": [
       "Giải thích Coach+ đi"
     ],
-    "answer": "Coach+ là dịch vụ đăng ký mang đến huấn luyện bằng giọng nói chuyên sâu theo nhịp tim và tốc độ theo thời gian thực khi bạn chạy. Dịch vụ đang chuẩn bị bán nên hiện tại bạn dùng được huấn luyện miễn phí."
+    "answer": "Coaching mở cho mọi người, không cần đăng ký. Lời nhắc khoảng cách và coaching nhịp tim đều miễn phí khi chạy. Không bán gói trả phí tên Coach+."
   },
   {
     "id": "CP-02",
@@ -1340,7 +1340,7 @@
     "aliases": [
       "Giá Coach+"
     ],
-    "answer": "Coach+ đang được chuẩn bị với giá 6.900 KRW mỗi tháng và 59.000 KRW mỗi năm, kèm 7 ngày dùng thử miễn phí. Hiện chưa mở thanh toán nên bạn sẽ không bị tính phí."
+    "answer": "Coach+ không bán. Coaching giọng nói không mất phí."
   },
   {
     "id": "CP-03",
@@ -1349,7 +1349,7 @@
     "aliases": [
       "Bản dùng thử"
     ],
-    "answer": "Có, có 7 ngày dùng thử miễn phí."
+    "answer": "Không cần dùng thử. Coaching miễn phí ngay từ đầu."
   },
   {
     "id": "CP-04",
@@ -1358,7 +1358,7 @@
     "aliases": [
       "Hủy đăng ký"
     ],
-    "answer": "Bạn có thể hủy dễ dàng trong ứng dụng. Mình sẽ mở màn hình quản lý đăng ký."
+    "answer": "Không có gói trả phí để hủy. Coaching vẫn miễn phí."
   },
   {
     "id": "CP-05",
@@ -1367,7 +1367,7 @@
     "aliases": [
       "Khi nào Coach+ ra mắt?"
     ],
-    "answer": "Hiện chúng tôi không bán Coach+. Khi sẵn sàng, chúng tôi sẽ báo trước."
+    "answer": "Không. Coach+ không bán. Coaching đã miễn phí."
   },
   {
     "id": "CP-06",
@@ -1376,7 +1376,7 @@
     "aliases": [
       "Điểm khác của Coach+"
     ],
-    "answer": "Huấn luyện miễn phí đưa ra hướng dẫn cơ bản lúc bắt đầu, về đích và theo quãng đường, còn Coach+ thêm huấn luyện chuyên sâu theo vùng nhịp tim và thay đổi tốc độ theo thời gian thực."
+    "answer": "Không có coaching trả phí riêng. Khoảng cách và nhịp tim đều miễn phí."
   },
   {
     "id": "CP-07",
@@ -1412,7 +1412,7 @@
     "aliases": [
       "Đăng ký có tự động gia hạn không?"
     ],
-    "answer": "Coach+ chưa được bán nên sẽ không tự động tính phí. Nếu bạn đăng ký sau khi chính thức mở bán, gói sẽ tự động gia hạn theo chu kỳ đã chọn bằng phương thức thanh toán của cửa hàng ứng dụng, và bạn có thể hủy bất cứ lúc nào trong phần quản lý đăng ký của cửa hàng."
+    "answer": "Không. Không có gói coaching tự gia hạn."
   },
   {
     "id": "SYS-FALLBACK",

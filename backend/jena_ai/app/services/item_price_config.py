@@ -12,7 +12,6 @@ currency. Cap keys are not shop items.
 ITEM_PRICES_CONFIG_ID = "item_prices"
 CPR_ITEM_ID = "record_cpr_ticket"
 SAFEGUARD_ITEM_ID = "record_safe_guard"
-COACH_ONE_POINT_ITEM_ID = "coach_one_point_ticket"
 EXTRA_ENTRY_ITEM_ID = "extra_entry_ticket"
 EXTRA_ENTRY_PACK_ITEM_ID = "extra_entry_ticket_3pack"
 FRIEND_GHOST_ITEM_ID = "friend_ghost_pace"
@@ -35,12 +34,24 @@ CHALLENGE_TICKET_SHARE_ID = "challenge_ticket_share"
 CHALLENGE_TICKET_DIA_ID = "challenge_ticket_dia"
 PERSONAL_SPONSOR_SHARE_ID = "personal_sponsor_share"
 PERSONAL_SPONSOR_WON_PER_SHARE_ID = "personal_sponsor_won_per_share"
+WORLD_TOUR_COSTUME_ID = "world_tour_costume"
+WORLD_TOUR_ACCESSORY_ID = "world_tour_accessory"
+WORLD_TOUR_BACKGROUND_ID = "world_tour_background"
+WORLD_TOUR_PASSPORT_COVER_ID = "world_tour_passport_cover"
+WORLD_TOUR_COUNTRY_SET_ID = "world_tour_country_set"
 BATTLE_PASS_ITEM_IDS = frozenset({BATTLE_PASS_ITEM_ID, BATTLE_PASS_PLUS_ITEM_ID})
 SHARE_ACTIVITY_ITEM_IDS = frozenset({BOOST_RUN_ITEM_ID, STEP_INCUBATOR_ITEM_ID})
 VALUE_ITEM_IDS = frozenset({REST_DAY_TICKET_ID, DONATION_MATCH_ID})
 STREAK_ITEM_IDS = frozenset({CPR_ITEM_ID, SAFEGUARD_ITEM_ID})
 RUN_ACCESS_ITEM_IDS = frozenset(
-    {COACH_ONE_POINT_ITEM_ID, EXTRA_ENTRY_ITEM_ID, EXTRA_ENTRY_PACK_ITEM_ID}
+    {EXTRA_ENTRY_ITEM_ID, EXTRA_ENTRY_PACK_ITEM_ID}
+)
+WORLD_TOUR_COSMETIC_IDS = (
+    WORLD_TOUR_COSTUME_ID,
+    WORLD_TOUR_ACCESSORY_ID,
+    WORLD_TOUR_BACKGROUND_ID,
+    WORLD_TOUR_PASSPORT_COVER_ID,
+    WORLD_TOUR_COUNTRY_SET_ID,
 )
 SOCIAL_ITEM_IDS = frozenset(
     {FRIEND_GHOST_ITEM_ID, FRIEND_GHOST_PACK_ITEM_ID, CREW_CHEER_FLAG_ITEM_ID}
@@ -50,7 +61,6 @@ SOCIAL_ITEM_IDS = frozenset(
 _DEFAULTS = {
     CPR_ITEM_ID: 12,
     SAFEGUARD_ITEM_ID: 8,
-    COACH_ONE_POINT_ITEM_ID: 5,
     EXTRA_ENTRY_ITEM_ID: 10,
     EXTRA_ENTRY_PACK_ITEM_ID: 25,
     FRIEND_GHOST_ITEM_ID: 5,
@@ -72,7 +82,45 @@ _DEFAULTS = {
     CHALLENGE_TICKET_DIA_ID: 1,
     PERSONAL_SPONSOR_SHARE_ID: 50_000,
     PERSONAL_SPONSOR_WON_PER_SHARE_ID: 1,
+    WORLD_TOUR_COSTUME_ID: 120,
+    WORLD_TOUR_ACCESSORY_ID: 60,
+    WORLD_TOUR_BACKGROUND_ID: 90,
+    WORLD_TOUR_PASSPORT_COVER_ID: 70,
+    WORLD_TOUR_COUNTRY_SET_ID: 270,
 }
+
+
+_WORLD_TOUR_TITLES = {
+    WORLD_TOUR_COSTUME_ID: "월드투어 의상",
+    WORLD_TOUR_ACCESSORY_ID: "월드투어 소품",
+    WORLD_TOUR_BACKGROUND_ID: "월드투어 배경",
+    WORLD_TOUR_PASSPORT_COVER_ID: "월드투어 여권 표지",
+    WORLD_TOUR_COUNTRY_SET_ID: "월드투어 나라 세트",
+}
+
+
+def world_tour_catalog_rows(prices: dict[str, int]) -> list[dict]:
+    """Price rows the shop catalog returns. They are not a purchase path."""
+    return [
+        {
+            "id": item_id,
+            "title": _WORLD_TOUR_TITLES[item_id],
+            "diamondCost": int(prices[item_id]),
+            "shareCost": 0,
+            "valueCost": 0,
+        }
+        for item_id in WORLD_TOUR_COSMETIC_IDS
+    ]
+
+
+def world_tour_separate_dia(prices: dict[str, int]) -> int:
+    """Costume, accessory, background, and passport cover bought one by one."""
+    return (
+        prices[WORLD_TOUR_COSTUME_ID]
+        + prices[WORLD_TOUR_ACCESSORY_ID]
+        + prices[WORLD_TOUR_BACKGROUND_ID]
+        + prices[WORLD_TOUR_PASSPORT_COVER_ID]
+    )
 
 
 def resolve_item_prices(raw: dict | None) -> dict[str, int]:

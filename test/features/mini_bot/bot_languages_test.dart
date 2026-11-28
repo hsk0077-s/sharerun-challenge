@@ -84,10 +84,8 @@ void main() {
         expect(MiniBotInterpreter.interpret(chip.prompt).destination,
             koRead.destination,
             reason: '$code ${chip.id}');
-        if (chip.id != 'coach-plus') {
-          expect(_hangul.hasMatch(chip.label), isFalse,
-              reason: '$code ${chip.id}: ${chip.label}');
-        }
+        expect(_hangul.hasMatch(chip.label), isFalse,
+            reason: '$code ${chip.id}: ${chip.label}');
       }
     }
   });

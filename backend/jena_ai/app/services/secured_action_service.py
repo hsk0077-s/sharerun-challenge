@@ -74,7 +74,6 @@ from app.services.play_billing import (
     dia_pack_by_id,
     purchase_token_hash,
     verify_play_product_purchase,
-    verify_play_subscription,
 )
 from app.services.company_tournament_config import (
     COMPANY_TOURNAMENT_CONFIG_ID,
@@ -138,8 +137,8 @@ from app.services.cosmetics import (
     read_cosmetics_catalog,
 )
 from app.services.item_price_config import (
+    world_tour_catalog_rows,
     BATTLE_PASS_ITEM_IDS,
-    COACH_ONE_POINT_ITEM_ID,
     CHALLENGE_TICKET_ITEM_ID,
     CREW_CHEER_FLAG_ITEM_ID,
     CREW_CREATE_DIA_ID,
@@ -169,7 +168,6 @@ from app.services.run_access_items import (
     consume_extra_entry_ticket,
     extra_entry_opens_closed,
     purchase_run_access_item,
-    use_coach_one_point,
 )
 from app.services.social_items import (
     cheer_bonus_share,
@@ -235,13 +233,6 @@ def _stored_donation_won(value: object) -> int:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return 0
     return int(value)
-
-# Coach+ plans. Only the ids matter here: how long access lasts comes from Google Play,
-# not from this table (the numbers are kept as the plan lengths).
-_COACH_PLUS_DAYS = {
-    "coach_plus_monthly": 32,
-    "coach_plus_yearly": 370,
-}
 
 # Client detail copy has no Firestore doc. First join writes these defaults.
 # Beginner prize/donation are the shown "3만 원"; intermediate, "50만 원".
@@ -1046,14 +1037,6 @@ class SecuredActionService:
                 require_request_id(request_id),
                 user_ref,
             )
-        if item_id == COACH_ONE_POINT_ITEM_ID:
-            return _commit_coach_one_point_use_tx(
-                transaction,
-                self,
-                uid,
-                require_request_id(request_id),
-                user_ref,
-            )
         if item_id in RUN_ACCESS_ITEM_IDS:
             raise HTTPException(
                 status_code=400,
@@ -1184,86 +1167,6 @@ class SecuredActionService:
             request_id,
             purpose,
             user_ref,
-        )
-
-    def activate_coach_plus(
-        self,
-        uid: str,
-        product_id: str,
-        purchase_token: str,
-    ) -> SecuredActionResult:
-        if product_id not in _COACH_PLUS_DAYS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Unknown Coach+ product.",
-            )
-        # Nothing is written unless Play says this token is a paid subscription to this product.
-        verified = verify_play_subscription(product_id, purchase_token, uid)
-        db = self.firebase_service.db
-        transaction = db.transaction()
-        user_ref = db.collection("users").document(uid)
-        token_hash = purchase_token_hash(purchase_token)
-        subscription_ref = db.collection("playSubscriptions").document(token_hash)
-        return _commit_coach_plus_tx(
-            transaction,
-            self,
-            uid,
-            product_id,
-            user_ref,
-            subscription_ref,
-            token_hash,
-            verified["expiresAt"],
-            verified.get("orderId"),
-        )
-
-    def _activate_coach_plus_tx(
-        self,
-        transaction,
-        uid: str,
-        product_id: str,
-        user_ref,
-        subscription_ref,
-        token_hash: str,
-        active_until: datetime,
-        order_id: str | None,
-    ) -> SecuredActionResult:
-        # Every read comes before the first write.
-        user_snapshot = user_ref.get(transaction=transaction)
-        if not user_snapshot.exists:
-            raise HTTPException(status_code=404, detail="User not found.")
-        prior_snapshot = subscription_ref.get(transaction=transaction)
-        if prior_snapshot.exists and (prior_snapshot.to_dict() or {}).get("uid") != uid:
-            raise HTTPException(status_code=409, detail="Purchase token already used.")
-        existing = (user_snapshot.to_dict() or {}).get("coachPlus") or {}
-        existing_until = _parse_iso_utc(existing.get("activeUntil"))
-        transaction.set(
-            subscription_ref,
-            {
-                "uid": uid,
-                "productId": product_id,
-                "orderId": order_id,
-                "activeUntil": active_until.isoformat(),
-                "updatedAt": SERVER_TIMESTAMP,
-            },
-            merge=True,
-        )
-        # Never shorten access the user already paid for with another subscription.
-        if existing_until is None or existing_until < active_until:
-            transaction.update(
-                user_ref,
-                {
-                    "coachPlus": {
-                        "productId": product_id,
-                        "activeUntil": active_until.isoformat(),
-                        "tokenHash": token_hash,
-                    },
-                    "updatedAt": SERVER_TIMESTAMP,
-                },
-            )
-        return SecuredActionResult(
-            accepted=True,
-            status="coach_plus_active",
-            reason="Coach+ entitlement saved. Wallet was not changed.",
         )
 
     def _persist_validation_tx(
@@ -1917,10 +1820,6 @@ class SecuredActionService:
             "title": "기록 마감 세이프 가드",
             "diamondCost": 8,
         },
-        "coach_one_point_ticket": {
-            "title": "코치 원포인트권",
-            "diamondCost": 5,
-        },
         "extra_entry_ticket": {
             "title": "추가 참가권",
             "diamondCost": 10,
@@ -2006,6 +1905,7 @@ class SecuredActionService:
                     "valueCost": 0,
                 }
             )
+        rows.extend(world_tour_catalog_rows(prices))
         return rows
 
     NICKNAME_CHANGE_DIA = 100
@@ -5840,40 +5740,6 @@ def _commit_personal_sponsor_tx(
 
 
 @firestore.transactional
-def _commit_coach_plus_tx(
-    transaction,
-    service,
-    uid: str,
-    product_id: str,
-    user_ref,
-    subscription_ref,
-    token_hash: str,
-    active_until: datetime,
-    order_id: str | None,
-) -> SecuredActionResult:
-    return service._activate_coach_plus_tx(
-        transaction,
-        uid,
-        product_id,
-        user_ref,
-        subscription_ref,
-        token_hash,
-        active_until,
-        order_id,
-    )
-
-
-def _parse_iso_utc(value) -> datetime | None:
-    if not isinstance(value, str) or not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
-
-
-@firestore.transactional
 def _commit_streak_bonus_tx(
     transaction,
     service,
@@ -5965,17 +5831,6 @@ def _commit_run_access_purchase_tx(
     return purchase_run_access_item(
         service, transaction, uid, item_id, request_id, user_ref
     )
-
-
-@firestore.transactional
-def _commit_coach_one_point_use_tx(
-    transaction,
-    service,
-    uid: str,
-    request_id: str,
-    user_ref,
-) -> SecuredActionResult:
-    return use_coach_one_point(service, transaction, uid, request_id, user_ref)
 
 
 @firestore.transactional

@@ -331,22 +331,6 @@ class _ItemInventoryScreenState extends ConsumerState<ItemInventoryScreen> {
                       const SizedBox(height: 12),
                       _InventoryItemCard(
                         icon: const Icon(
-                          Icons.record_voice_over_outlined,
-                          size: 40,
-                          color: AppColors.tealAccent,
-                        ),
-                        title: AppStrings.itemInventoryCoachOnePointTitle,
-                        quantity: RemainingSurface.tr(
-                          context,
-                          'item_inventory.body.3',
-                          '보유량: ${shop.coachOnePointCount}',
-                          {'shop.coachOnePointCount': shop.coachOnePointCount},
-                        ),
-                        hint: AppStrings.itemInventoryCoachOnePointHint,
-                      ),
-                      const SizedBox(height: 12),
-                      _InventoryItemCard(
-                        icon: const Icon(
                           Icons.confirmation_number_outlined,
                           size: 40,
                           color: AppColors.progressYellow,

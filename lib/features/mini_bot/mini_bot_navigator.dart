@@ -13,7 +13,6 @@ import '../../screens/in_app_billing_screen.dart';
 import '../../screens/personal_sponsor_screen.dart';
 import '../../screens/store_screen.dart';
 import '../../screens/subscription_management_screen.dart';
-import '../iap/widgets/coach_plus_upsell_sheet.dart';
 import '../shop/providers/shop_tab_provider.dart';
 import 'mini_bot_intent.dart';
 
@@ -24,8 +23,7 @@ abstract final class MiniBotRoutes {
     return switch (destination) {
       MiniBotDestination.personalSponsor ||
       MiniBotDestination.brandSponsor ||
-      MiniBotDestination.subscription ||
-      MiniBotDestination.coachPlus =>
+      MiniBotDestination.subscription =>
         true,
       MiniBotDestination.none ||
       MiniBotDestination.beginnerRoom ||
@@ -56,7 +54,6 @@ abstract final class MiniBotRoutes {
       MiniBotDestination.personalSponsor => RouteNames.personalSponsor,
       MiniBotDestination.brandSponsor => RouteNames.brandSponsor,
       MiniBotDestination.subscription => RouteNames.subscriptionManagement,
-      MiniBotDestination.coachPlus => null,
       MiniBotDestination.battlePass => RouteNames.battlePass,
       MiniBotDestination.none => null,
     };
@@ -115,8 +112,6 @@ abstract final class MiniBotNavigator {
           RouteNames.subscriptionManagement,
           (_) => const SubscriptionManagementScreen(),
         );
-      case MiniBotDestination.coachPlus:
-        CoachPlusUpsellSheet.show(context);
       case MiniBotDestination.battlePass:
         _push(
           context,

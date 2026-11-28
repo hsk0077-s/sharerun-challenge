@@ -103,11 +103,10 @@ void main() {
         MiniBotCopy.charge,
         MiniBotCopy.brand,
         MiniBotCopy.battlePass,
-        // 1.0에서 숨긴 결제 칩(러너 후원·구독·Coach+)의 답은 아직 한국어다.
+        // 숨긴 결제 칩(러너 후원·구독)의 답은 아직 한국어다.
         for (final d in MiniBotDestination.values)
           if (d != MiniBotDestination.personalSponsor &&
-              d != MiniBotDestination.subscription &&
-              d != MiniBotDestination.coachPlus)
+              d != MiniBotDestination.subscription)
             MiniBotCopy.executed(d),
         room.recruitmentSummary,
         room.displayTitle,

@@ -4,7 +4,6 @@ import 'dart:math';
 const requestPricedShopItemIds = <String>{
   'record_cpr_ticket',
   'record_safe_guard',
-  'coach_one_point_ticket',
   'extra_entry_ticket',
   'extra_entry_ticket_3pack',
   'friend_ghost_pace',

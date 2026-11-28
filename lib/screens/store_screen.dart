@@ -14,17 +14,17 @@ import '../core/navigation/dashboard_tab_navigation.dart';
 import '../core/strings/app_strings.dart';
 import '../l10n/accessory_names.dart';
 import '../l10n/commerce_copy.dart';
+import '../l10n/shop_catalog_copy.dart';
 import '../l10n/guidance_copy.dart';
 import '../l10n/remaining_surface.dart';
 import '../l10n/surface_copy.dart';
 import '../core/theme/theme.dart';
 import '../core/widgets/src_dashboard_bottom_nav.dart';
 import '../core/widgets/src_exit_guard.dart';
-import '../features/iap/models/coach_plus_product.dart';
 import '../features/accessories/accessory_catalog.dart';
 import '../features/accessories/dressed_mascot.dart';
 import '../features/iap/models/dia_pack_product.dart';
-import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
+import '../features/world_tour/world_tour_cosmetic_prices.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/providers/shop_catalog_provider.dart';
@@ -242,19 +242,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         (m) => '${m[1]},',
       );
 
-  /// '6,900원' 같은 문구에서 숫자만 뽑는다. 못 뽑으면 0.
-  static int _digits(String label) =>
-      int.tryParse(label.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
-
-  /// 연간 요금이 월간 12개월 값보다 몇 % 싼지. 계산할 수 없으면 null.
-  static int? _yearlyDiscountPct() {
-    final monthly = _digits(CoachPlusPlan.monthly.fallbackPriceLabel);
-    final yearly = _digits(CoachPlusPlan.yearly.fallbackPriceLabel);
-    if (monthly <= 0 || yearly <= 0) return null;
-    final pct = ((1 - yearly / (monthly * 12)) * 100).round();
-    return pct > 0 ? pct : null;
-  }
-
   Widget _tile({
     required String id,
     required IconData icon,
@@ -287,7 +274,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
-  /// 추천 탭: Coach+, 다이아 충전, 러닝 아이템, 배틀런 패스, 꾸미기, 기부 펀딩.
+  /// 추천 탭: 다이아 충전, 러닝 아이템, 배틀런 패스, 꾸미기, 기부 펀딩.
   List<Widget> _recommendedTab(
       ServerShopInventory inventory, ShopTabState shop) {
     final tokens = context.srcTokens;
@@ -296,13 +283,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final packs = DiaPackProduct.catalog.where((p) => p.totalDia > 12).toList();
     final featured = packs.length >= 3 ? packs.sublist(0, 3) : packs;
     return [
-      if (AppEnv.inAppPurchasesEnabled)
-        StoreCoachCard(
-          monthlyLabel: CoachPlusPlan.monthly.fallbackPriceLabel,
-          yearlyLabel: CoachPlusPlan.yearly.fallbackPriceLabel,
-          yearlyDiscountPct: _yearlyDiscountPct(),
-          onTap: () => CoachPlusUpsellSheet.show(context),
-        ),
       if (AppEnv.diaPacksEnabled) ...[
         StoreSectionLabel(
           chrome.diaTopUp,
@@ -347,12 +327,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       const SizedBox(height: 8),
       Row(
         children: [
-          _tile(
-            id: 'coach_one_point_ticket',
-            icon: Icons.record_voice_over_rounded,
-            name: copy.coach,
-          ),
-          const SizedBox(width: 8),
           _tile(
             id: 'friend_ghost_pace',
             icon: Icons.directions_run_rounded,
@@ -522,8 +496,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           style: storeText(15, c.ink, w: FontWeight.w900),
                         ),
                         Text(
-                          chrome.preparing,
-                          style: storeText(11, c.muted, w: FontWeight.w700),
+                          RemainingSurface.tr(context, 'dia_pack_store.buy', '구매'),
+                          style: storeText(11, c.primary, w: FontWeight.w700),
                         ),
                       ],
                     ),
@@ -608,12 +582,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
       StoreSectionLabel(chrome.runTogether),
       _row(
-        id: 'coach_one_point_ticket',
-        icon: Icons.record_voice_over_rounded,
-        name: shop.coach,
-        owned: inventory.coachOnePointCount,
-      ),
-      _row(
         id: 'friend_ghost_pace',
         icon: Icons.directions_run_rounded,
         name: shop.friendGhost,
@@ -675,16 +643,27 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return tier.isSnail ? TierAnimal.turtle : tier.animal;
   }
 
-  /// 꾸미기 탭: 캐릭터 소품 둘러보기. 러닝화 스킨과 결과 카드 프레임은 더 팔지 않는다.
+  /// 꾸미기 탭: 월드투어 가격(구매 연결 전)과 캐릭터 소품.
+  /// 러닝화 스킨과 결과 카드 프레임은 더 팔지 않는다.
   List<Widget> _cosmeticsTab() {
     final tier =
         ref.read(activeUserTierStructProvider) ?? UserTier.unratedFallback;
+    final copy = ShopCatalogCopy.of(Localizations.localeOf(context));
+    final chrome = ShopChrome.of(Localizations.localeOf(context));
     return [
+      StoreSectionLabel(chrome.cosmetics),
+      for (final item in WorldTourCosmeticPrices.catalog)
+        StoreItemRow(
+          key: Key('world-tour-price-${item.id}'),
+          icon: Icons.public_rounded,
+          name: copy.storeName(item.id),
+          sub: copy.storeNote(item.id),
+          cost: '${_diaCost(item.id)}',
+          onTap: null,
+        ),
       AccessoryShopGrid(animal: _myAnimal(), tier: tier),
     ];
   }
-
-  @override
 
   /// VALUE 설명. 잔액 옆 "?"를 누르면 작은 창으로 보여 준다.
   void _showValueInfo() {
@@ -711,6 +690,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     ref.listen<StoreFocus?>(storeFocusProvider, (prev, next) {
       if (next == null || next == prev) return;

@@ -56,7 +56,6 @@ class MyWalletScreen extends ConsumerWidget {
         const ServerShopInventory();
     final itemCount = inventory.cprCount +
         inventory.safeGuardCount +
-        inventory.coachOnePointCount +
         inventory.extraEntryCount +
         inventory.friendGhostCount +
         inventory.crewCheerCount +

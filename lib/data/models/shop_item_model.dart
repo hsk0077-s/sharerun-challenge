@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../../features/world_tour/world_tour_cosmetic_prices.dart';
 import '../../l10n/shop_catalog_copy.dart';
 import '../../l10n/remaining_surface.dart';
 
@@ -46,13 +47,6 @@ class ShopItemModel {
       description: '놓친 하루를 스트릭이 끊기기 전에 막아 줍니다. 최대 2개.',
       diamondCost: 8,
       iconName: 'shield',
-    ),
-    ShopItemModel(
-      id: 'coach_one_point_ticket',
-      title: '코치 원포인트권',
-      description: '비구독 러닝 1회에 Coach+ 페이스 코칭을 엽니다. 하루 1회, 러닝 시작 시 사용.',
-      diamondCost: 5,
-      iconName: 'campaign',
     ),
     ShopItemModel(
       id: 'extra_entry_ticket',
@@ -142,5 +136,13 @@ class ShopItemModel {
       valueCost: 100,
       iconName: 'volunteer_activism',
     ),
+    for (final item in WorldTourCosmeticPrices.catalog)
+      ShopItemModel(
+        id: item.id,
+        title: item.id,
+        description: item.id,
+        diamondCost: item.dia,
+        iconName: 'public',
+      ),
   ];
 }

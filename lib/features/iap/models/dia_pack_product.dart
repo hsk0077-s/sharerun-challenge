@@ -18,6 +18,24 @@ class DiaPackProduct {
 
   String get bonusLabel => bonusDia == 0 ? RemainingSurface.trNow('iap.dia_pack_product.body', '보너스 없음') : RemainingSurface.trNow('iap.dia_pack_product.body.2', '보너스 $bonusDia DIA', {'bonusDia': bonusDia});
 
+  static const productIds = <String>{
+    'dia_pack_12',
+    'dia_pack_60',
+    'dia_pack_130',
+    'dia_pack_370',
+    'dia_pack_700',
+    'dia_pack_1500',
+  };
+
+  static DiaPackProduct? byProductId(String productId) {
+    for (final pack in catalog) {
+      if (pack.productId == productId) return pack;
+    }
+    return null;
+  }
+
+  static bool isDiaPackId(String productId) => byProductId(productId) != null;
+
   static const catalog = <DiaPackProduct>[
     DiaPackProduct(
       productId: 'dia_pack_12',

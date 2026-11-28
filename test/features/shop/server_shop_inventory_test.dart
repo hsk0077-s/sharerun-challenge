@@ -8,7 +8,6 @@ void main() {
       ServerShopInventory.safeGuardId: 1,
       ServerShopInventory.ghostPaceId: 4,
       ServerShopInventory.battlePassId: 1,
-      ServerShopInventory.coachOnePointId: 1,
       ServerShopInventory.extraEntryId: 3,
       'star_boost': 9,
     });
@@ -17,7 +16,6 @@ void main() {
     expect(inventory.safeGuardCount, 1);
     expect(inventory.ghostPaceCount, 4);
     expect(inventory.battlePassCount, 1);
-    expect(inventory.coachOnePointCount, 1);
     expect(inventory.extraEntryCount, 3);
     expect(inventory.countFor(ServerShopInventory.extraEntryId), 3);
     expect(inventory.countFor('star_boost'), 0);

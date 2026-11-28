@@ -5,6 +5,7 @@ import '../../app/providers/app_providers.dart';
 import '../../app/theme/app_colors.dart';
 import '../../core/config/app_env.dart';
 import '../../l10n/remaining_surface.dart';
+import '../ui/user_visible_failure.dart';
 
 class EmailVerificationBanner extends ConsumerStatefulWidget {
   const EmailVerificationBanner({super.key});
@@ -96,11 +97,11 @@ class _EmailVerificationBannerState extends ConsumerState<EmailVerificationBanne
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'widget.email_verification_banner.toast.2',
-              '인증 메일 발송 실패: $error',
-              {'error': error},
+              error,
+              key: 'widget.email_verification_banner.toast.2',
+              ko: '인증 메일 발송에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

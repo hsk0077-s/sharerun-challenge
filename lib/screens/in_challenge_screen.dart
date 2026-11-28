@@ -15,7 +15,7 @@ import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_shapes.dart';
 import '../core/theme/app_text_styles.dart';
-import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../data/models/user_model.dart';
 import '../features/jena_validation/models/jena_validation_result.dart';
 import '../features/jena_validation/verification_reason.dart';
@@ -408,8 +408,12 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       setState(() {
         _starting = false;
         _sessionStarted = false;
-        _startError = RemainingSurface.tr(
-            context, 'in_challenge.body.4', '센서 시작 실패: $e', {'e': e});
+        _startError = userVisibleFailure(
+          context,
+          e,
+          key: 'in_challenge.body.4',
+          ko: '센서 시작에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        );
       });
     }
   }
@@ -525,11 +529,11 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'in_challenge.toast',
-              'Jena 검증 실패: ${ApiErrorMessage.from(error)}',
-              {'ApiErrorMessage.from(error)': ApiErrorMessage.from(error)},
+              error,
+              key: 'in_challenge.toast',
+              ko: 'Jena 검증에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

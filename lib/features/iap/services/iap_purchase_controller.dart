@@ -277,10 +277,16 @@ class IapPurchaseController {
           await _submitReceiptForBackendVerification(purchase);
         case PurchaseStatus.error:
           await _completeQuietly(purchase);
+          debugPrint(
+            'IAP purchase error: ${purchase.error?.code} ${purchase.error?.message}',
+          );
           _emit(
             IapUiEvent(
               kind: IapUiKind.error,
-              message: purchase.error?.message ?? RemainingSurface.trNow('iap.iap_purchase_controller.body.8', '결제가 실패했습니다.'),
+              message: RemainingSurface.trNow(
+                'iap.iap_purchase_controller.body.8',
+                '결제가 실패했습니다. 잠시 후 다시 시도해 주세요.',
+              ),
             ),
           );
         case PurchaseStatus.canceled:
@@ -343,10 +349,16 @@ class IapPurchaseController {
     }
     if (purchase.status == PurchaseStatus.error) {
       await _completeQuietly(purchase);
+      debugPrint(
+        'Coach+ purchase error: ${purchase.error?.code} ${purchase.error?.message}',
+      );
       _emit(
         IapUiEvent(
           kind: IapUiKind.error,
-          message: purchase.error?.message ?? RemainingSurface.trNow('iap.iap_purchase_controller.body.13', 'Coach+ 결제가 실패했습니다.'),
+          message: RemainingSurface.trNow(
+            'iap.iap_purchase_controller.body.13',
+            'Coach+ 결제가 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
         ),
       );
       return;

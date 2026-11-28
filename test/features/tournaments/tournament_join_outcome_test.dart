@@ -167,6 +167,21 @@ void main() {
     expect(plan.unlockRun, isFalse);
     expect(plan.snackbarMessage, contains('참가·결제가 완료되지 않았습니다'));
     expect(plan.snackbarMessage, contains('대회 정원이 가득 찼습니다'));
+    expect(plan.snackbarMessage, isNot(contains('Tournament is full')));
+  });
+
+  test('release failures hide the raw exception', () {
+    final plan = TournamentJoinPlanner.fromJenaError(
+      error: Exception('Bad state: Internal Server Error'),
+      entryFeeShare: entryFee,
+      debugMode: false,
+      alreadyLocallyJoined: false,
+    );
+    expect(plan.kind, TournamentJoinKind.failedClosed);
+    expect(plan.snackbarMessage, contains('잠시 후 다시 시도해 주세요'));
+    expect(plan.snackbarMessage, isNot(contains('Bad state')));
+    expect(plan.snackbarMessage, isNot(contains('Exception')));
+    expect(plan.snackbarMessage, isNot(contains('Internal Server Error')));
   });
 
   test('sponsorship 50k remains a separate SHARE spend from entry fee', () {

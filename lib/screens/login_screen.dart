@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../app/router/route_names.dart';
 import '../core/auth/local_auth_session.dart';
 import '../core/config/app_env.dart';
@@ -103,7 +104,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     required String provider,
     required String providerName,
     required String successMessage,
-    required String failureMessage,
+    required String failureKey,
+    required String failureKo,
     required Future<String?> Function() askToken,
   }) async {
     if (_socialBusy) return;
@@ -120,7 +122,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$failureMessage ${ApiErrorMessage.from(e)}')),
+        SnackBar(
+          content: Text(
+            userVisibleFailure(
+              context,
+              e,
+              key: failureKey,
+              ko: failureKo,
+            ),
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _socialBusy = false);
@@ -132,8 +143,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         providerName: RemainingSurface.trNow('login_connections.body.5', '구글'),
         successMessage: RemainingSurface.tr(
             context, 'login.body', '구글 로그인에 성공했습니다!'),
-        failureMessage: RemainingSurface.tr(
-            context, 'login.body.2', '로그인 실패:'),
+        failureKey: 'login.body.2',
+        failureKo: '로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
         askToken: () => ref.read(googleIdTokenProvider)(),
       );
 
@@ -142,8 +153,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         providerName: RemainingSurface.trNow('login_connections.body.4', '애플'),
         successMessage: RemainingSurface.tr(
             context, 'login.body.3', '애플 로그인에 성공했습니다!'),
-        failureMessage: RemainingSurface.tr(
-            context, 'login.body.4', '애플 로그인 실패:'),
+        failureKey: 'login.body.4',
+        failureKo: '애플 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
         askToken: () => ref.read(appleIdTokenProvider)(),
       );
 
@@ -152,8 +163,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         providerName: RemainingSurface.trNow('login_connections.body.3', '네이버'),
         successMessage: RemainingSurface.tr(
             context, 'login.body.5', '네이버 로그인에 성공했습니다!'),
-        failureMessage: RemainingSurface.tr(
-            context, 'login.body.6', '네이버 로그인 실패:'),
+        failureKey: 'login.body.6',
+        failureKo: '네이버 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
         askToken: () => ref.read(naverAccessTokenProvider)(),
       );
 
@@ -162,8 +173,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         providerName: RemainingSurface.trNow('login_connections.body.2', '카카오'),
         successMessage: RemainingSurface.tr(
             context, 'login.body.7', '카카오 로그인에 성공했습니다!'),
-        failureMessage: RemainingSurface.tr(
-            context, 'login.body.8', '카카오 로그인 실패:'),
+        failureKey: 'login.body.8',
+        failureKo: '카카오 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
         askToken: () => ref.read(kakaoAccessTokenProvider)(),
       );
 

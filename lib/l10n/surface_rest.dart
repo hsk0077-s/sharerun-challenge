@@ -177,17 +177,17 @@ const homeSurfaceRows = <String, List<String>>{
     'Izin Health Connect ditolak atau dibatalkan.',
   ],
   'healthFail': [
-    'Health Connect 권한 요청 실패: {error}',
-    'Health Connect request failed: {error}',
-    'Health Connectの要求に失敗しました: {error}',
-    'Health Connect 請求失敗：{error}',
-    'Falló la solicitud de Health Connect: {error}',
-    'Falha ao pedir o Health Connect: {error}',
-    'Health-Connect-Anfrage fehlgeschlagen: {error}',
-    'Échec de la demande Health Connect : {error}',
-    'Yêu cầu Health Connect thất bại: {error}',
-    'ขอ Health Connect ไม่สำเร็จ: {error}',
-    'Permintaan Health Connect gagal: {error}',
+    'Health Connect 권한 요청에 실패했어요. 잠시 후 다시 시도해 주세요.',
+    'Couldn\'t request Health Connect permission. Please try again in a moment.',
+    'Health Connectの権限リクエストに失敗しました。しばらくしてからもう一度お試しください。',
+    'Health Connect 權限請求失敗。請稍後再試。',
+    'No se pudo pedir el permiso de Health Connect. Inténtalo de nuevo en un momento.',
+    'Não foi possível pedir a permissão do Health Connect. Tente de novo daqui a pouco.',
+    'Die Health-Connect-Berechtigung konnte nicht angefragt werden. Bitte versuche es gleich noch einmal.',
+    'Impossible de demander l\'autorisation Health Connect. Réessayez dans un instant.',
+    'Không xin được quyền Health Connect. Vui lòng thử lại sau giây lát.',
+    'ขอสิทธิ์ Health Connect ไม่สำเร็จ โปรดลองอีกครั้งในอีกสักครู่',
+    'Tidak dapat meminta izin Health Connect. Coba lagi sebentar lagi.',
   ],
   'diamondMine': [
     '내 다이아',
@@ -1320,8 +1320,7 @@ class HomeSurfaceCopy {
 
   String tierLocked(int tier) => restFill(_at('tierLocked'), {'tier': '$tier'});
 
-  String healthFail(Object error) =>
-      restFill(_at('healthFail'), {'error': '$error'});
+  String get healthFail => _at('healthFail');
 }
 
 class SettingsSurfaceCopy {

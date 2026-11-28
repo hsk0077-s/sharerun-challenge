@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../app/router/route_names.dart';
 import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -199,8 +200,12 @@ class _RunningCrewScreenState extends ConsumerState<RunningCrewScreen> {
     } catch (error) {
       if (!mounted) return;
       _toast(
-        RemainingSurface.tr(
-          context, 'running_crew.toast.4', '크루 창설 실패: $error', {'error': error}),
+        userVisibleFailure(
+          context,
+          error,
+          key: 'running_crew.toast.4',
+          ko: '크루 창설에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        ),
       );
     } finally {
       if (mounted) setState(() => _isSubmitting = false);

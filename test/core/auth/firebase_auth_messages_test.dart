@@ -23,5 +23,20 @@ void main() {
         'Custom',
       );
     });
+
+    test('unknown errors do not show the raw exception', () {
+      expect(
+        FirebaseAuthMessages.from(StateError('Bad state')),
+        '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+      );
+      expect(
+        FirebaseAuthMessages.from(Exception('Internal Server Error')),
+        isNot(contains('Internal Server Error')),
+      );
+      expect(
+        FirebaseAuthMessages.from(Exception('Bad state')),
+        isNot(contains('Exception')),
+      );
+    });
   });
 }

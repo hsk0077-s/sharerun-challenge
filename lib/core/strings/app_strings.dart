@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../../l10n/remaining_surface.dart';
 import '../../l10n/shop_catalog_copy.dart';
@@ -42,7 +44,13 @@ static String get loginApple => RemainingSurface.trNow('widget.apple_login_butto
   static String get loginGuestNote => RemainingSurface.trNow('app.loginGuestNote', '게스트 모드는 워치 연동·Health Connect 테스트용 임시 계정입니다.');
 
   static String loginComingSoon(String provider) => RemainingSurface.trNow('app.loginComingSoon', '\$provider 로그인은 준비 중입니다.', {'provider': provider});
-  static String loginSaveFailed(Object error) => RemainingSurface.trNow('app.loginSaveFailed', '로그인 저장 실패: \$error', {'error': error});
+  static String loginSaveFailed(Object error) {
+    debugPrint('login save failed: $error');
+    return RemainingSurface.trNow(
+      'app.loginSaveFailed',
+      '로그인 저장에 실패했어요. 잠시 후 다시 시도해 주세요.',
+    );
+  }
 
   /// 확인된 이메일로 기존 계정을 찾지 못했을 때, 계정을 만들기 전에 묻는다.
   static String get existingAccountTitle => RemainingSurface.trNow('app.existingAccountTitle', '처음 가입할 때 어떤 방법을 쓰셨나요?');
@@ -440,7 +448,6 @@ static String get createRoomScreenTitle => RemainingSurface.trNow('wallet_transa
   static String get lobbySponsorRoomTitle => RemainingSurface.trNow('app.brandSponsorScreenTitle', '브랜드 스폰서 챌린지');
   static String get lobbySponsorRoomSub => RemainingSurface.trNow('app.lobbySponsorRoomSub', '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.');
   static String get lobbySponsorPreparing => RemainingSurface.trNow('common.preparing', '준비 중');
-  static String get brandSponsorTicker => RemainingSurface.trNow('app.brandSponsorTicker', '✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨');
   static String get brandSponsorChallengeTitle => RemainingSurface.trNow('app.brandSponsorChallengeTitle', 'Nike 주말 5km 특별 챌린지');
   static String get brandSponsorEntryFee => RemainingSurface.trNow('app.brandSponsorEntryFee', '참가비: 0 SHARE (스폰서 100% 대납)');
   static String get brandSponsorWinReward => RemainingSurface.trNow('app.brandSponsorWinReward', '우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500');

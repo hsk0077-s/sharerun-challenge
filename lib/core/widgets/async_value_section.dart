@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme/app_colors.dart';
-import '../../l10n/remaining_surface.dart';
+import '../ui/user_visible_failure.dart';
 
 class AsyncValueSection<T> extends StatelessWidget {
   const AsyncValueSection({
@@ -22,7 +22,8 @@ class AsyncValueSection<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return asyncValue.when(
       data: (data) => dataBuilder(context, data),
-      loading: () => loadingBuilder?.call(context) ??
+      loading: () =>
+          loadingBuilder?.call(context) ??
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Center(child: CircularProgressIndicator()),
@@ -37,11 +38,11 @@ class AsyncValueSection<T> extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              RemainingSurface.tr(
+              userVisibleFailure(
                 context,
-                'widget.async_value_section.body',
-                '데이터를 불러오지 못했습니다: $error',
-                {'error': error},
+                error,
+                key: 'widget.async_value_section.body',
+                ko: '데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.',
               ),
               style: const TextStyle(color: AppColors.textSecondary),
             ),

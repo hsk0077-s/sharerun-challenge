@@ -106,3 +106,4 @@ iPhone 앱에 남긴 권한 문구와 쓰는 곳:
 
 - 부제(30자), 키워드(100자), 프로모션 텍스트(170자), 설명문. Play 문구를 바탕으로 Apple Watch·Apple 건강 연동을 넣어 따로 씁니다.
 - 스크린샷: 6.9인치 iPhone 필수. 워치 앱을 넣으면 Apple Watch 스크린샷도 필요합니다.
+- iPhone 전용(TARGETED_DEVICE_FAMILY=1), iPad 스크린샷 불필요.

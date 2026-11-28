@@ -144,7 +144,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         successMessage: RemainingSurface.tr(
             context, 'login.body', '구글 로그인에 성공했습니다!'),
         failureKey: 'login.body.2',
-        failureKo: '로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        failureKo: RemainingSurface.tr(
+          context,
+          'login.body.2',
+          '로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        ),
         askToken: () => ref.read(googleIdTokenProvider)(),
       );
 
@@ -154,7 +158,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         successMessage: RemainingSurface.tr(
             context, 'login.body.3', '애플 로그인에 성공했습니다!'),
         failureKey: 'login.body.4',
-        failureKo: '애플 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        failureKo: RemainingSurface.tr(
+          context,
+          'login.body.4',
+          '애플 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        ),
         askToken: () => ref.read(appleIdTokenProvider)(),
       );
 
@@ -164,7 +172,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         successMessage: RemainingSurface.tr(
             context, 'login.body.5', '네이버 로그인에 성공했습니다!'),
         failureKey: 'login.body.6',
-        failureKo: '네이버 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        failureKo: RemainingSurface.tr(
+          context,
+          'login.body.6',
+          '네이버 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        ),
         askToken: () => ref.read(naverAccessTokenProvider)(),
       );
 
@@ -174,7 +186,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         successMessage: RemainingSurface.tr(
             context, 'login.body.7', '카카오 로그인에 성공했습니다!'),
         failureKey: 'login.body.8',
-        failureKo: '카카오 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        failureKo: RemainingSurface.tr(
+          context,
+          'login.body.8',
+          '카카오 로그인에 실패했어요. 잠시 후 다시 시도해 주세요.',
+        ),
         askToken: () => ref.read(kakaoAccessTokenProvider)(),
       );
 

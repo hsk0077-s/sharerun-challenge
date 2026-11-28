@@ -9,6 +9,8 @@ final class WatchAccountManager: ObservableObject {
     @Published private(set) var nickname: String = ""
     @Published private(set) var isBusy: Bool = false
     @Published var errorMessage: String?
+    @Published private(set) var glance: WatchGlanceData?
+    @Published private(set) var glanceFailed: Bool = false
 
     private let defaults = UserDefaults.standard
     private let refreshKey = "sharerun.watch.refresh_token"
@@ -179,6 +181,21 @@ final class WatchAccountManager: ObservableObject {
         }
     }
 
+    /// Read-only board. `device_id` matches a run upload; the token picks the account.
+    func refreshGlance() async {
+        guard isPaired else { return }
+        guard let (status, body) = await postSigned(
+            path: "/actions/watch/glance",
+            payload: ["device_id": deviceId()]
+        ), (200..<300).contains(status),
+              let parsed = WatchGlanceData.parse(body) else {
+            if glance == nil { glanceFailed = true }
+            return
+        }
+        glance = parsed
+        glanceFailed = false
+    }
+
     func postSigned(path: String, payload: [String: Any]) async -> (Int, [String: Any])? {
         for attempt in 0..<2 {
             guard let token = await validIdToken(forceRefresh: attempt > 0),
@@ -217,5 +234,73 @@ final class WatchAccountManager: ObservableObject {
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         let json = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] ?? [:]
         return (status, json)
+    }
+}
+
+/// One `POST /actions/watch/glance` body. Empty pieces stay nil.
+struct WatchGlanceData {
+    var diamond: Int = 0
+    var landmarkId: String = ""
+    var title: String = ""
+    var remainingKm: Double = 0
+    var completed: Int = 0
+    var total: Int = 0
+    var allDone: Bool = false
+    var hasWorld: Bool = false
+    var todayKm: Double = 0
+    var todayTarget: Double = 0
+    var weekKm: Double = 0
+    var weekTarget: Double = 0
+    var raceRank: Int?
+    var hasRace: Bool = false
+    var crewName: String = ""
+    var crewWeekKm: Double = 0
+    var crewRank: Int?
+    var hasCrew: Bool = false
+
+    static func parse(_ json: [String: Any]) -> WatchGlanceData? {
+        guard let goals = json["goals"] as? [String: Any], goals["today_target_km"] != nil else {
+            return nil
+        }
+        var data = WatchGlanceData()
+        data.diamond = max(0, intValue(json["diamond_balance"]))
+        data.todayKm = kmValue(goals["today_km"])
+        data.todayTarget = kmValue(goals["today_target_km"])
+        data.weekKm = kmValue(goals["week_km"])
+        data.weekTarget = kmValue(goals["week_target_km"])
+        if let world = json["world_tour"] as? [String: Any],
+           let landmark = world["landmark_id"] as? String, !landmark.isEmpty {
+            data.hasWorld = true
+            data.landmarkId = landmark
+            data.title = world["title"] as? String ?? ""
+            data.remainingKm = kmValue(world["remaining_km"])
+            data.completed = intValue(world["completed_count"])
+            data.total = intValue(world["total_count"])
+            data.allDone = world["all_done"] as? Bool ?? false
+        }
+        if let race = json["race"] as? [String: Any],
+           let id = race["tournament_id"] as? String, !id.isEmpty {
+            data.hasRace = true
+            let rank = intValue(race["rank"])
+            data.raceRank = rank >= 1 ? rank : nil
+        }
+        if let crew = json["crew"] as? [String: Any] {
+            data.hasCrew = true
+            data.crewName = crew["name"] as? String ?? ""
+            data.crewWeekKm = kmValue(crew["week_km"])
+            let rank = intValue(crew["rank"])
+            data.crewRank = rank >= 1 ? rank : nil
+        }
+        return data
+    }
+
+    private static func kmValue(_ raw: Any?) -> Double {
+        let value = (raw as? NSNumber)?.doubleValue ?? 0
+        return value.isFinite && value >= 0 ? value : 0
+    }
+
+    private static func intValue(_ raw: Any?) -> Int {
+        let value = (raw as? NSNumber)?.intValue ?? 0
+        return value >= 0 ? value : 0
     }
 }

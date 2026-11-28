@@ -195,6 +195,14 @@ enum WatchCopy {
         return row[code] ?? row["en"] ?? raw
     }
 
+    /// Glance faces. `{n}` is replaced. Missing keys fall back to English.
+    static func glance(_ key: String, n: String = "") -> String {
+        let code = Locale.current.languageCode ?? "en"
+        let row = glanceRows[key] ?? [:]
+        let pattern = row[code] ?? row["en"] ?? key
+        return pattern.replacingOccurrences(of: "{n}", with: n)
+    }
+
     static func missingLocaleCodes() -> [String] {
         var missing: [String] = []
         for code in languages {
@@ -207,8 +215,32 @@ enum WatchCopy {
                 missing.append("pairing.\(key).\(code)")
             }
         }
+        for (key, row) in glanceRows {
+            for code in languages where row[code]?.isEmpty != false {
+                missing.append("glance.\(key).\(code)")
+            }
+        }
         return missing
     }
+
+    private static let glanceRows: [String: [String: String]] = [
+        "glanceWorld": ["ko": "월드투어", "en": "World Tour", "ja": "ワールドツアー", "zh": "世界巡迴", "es": "Gira mundial", "pt": "Volta ao mundo", "de": "Welttour", "fr": "Tour du monde", "vi": "Vòng quanh thế giới", "th": "ทัวร์โลก", "id": "Tur dunia"],
+        "glanceChallenge": ["ko": "챌린지", "en": "Challenge", "ja": "チャレンジ", "zh": "挑戰", "es": "Reto", "pt": "Desafio", "de": "Herausforderung", "fr": "Défi", "vi": "Thử thách", "th": "ชาเลนจ์", "id": "Tantangan"],
+        "glanceCrew": ["ko": "크루", "en": "Crew", "ja": "クルー", "zh": "隊伍", "es": "Equipo", "pt": "Equipe", "de": "Mannschaft", "fr": "Équipe", "vi": "Đội", "th": "ทีม", "id": "Kru"],
+        "glanceDia": ["ko": "DIA {n}개", "en": "DIA {n}", "ja": "DIA {n}", "zh": "DIA {n}", "es": "DIA {n}", "pt": "DIA {n}", "de": "DIA {n}", "fr": "DIA {n}", "vi": "DIA {n}", "th": "DIA {n}", "id": "DIA {n}"],
+        "glanceShopHint": ["ko": "폰에서 상점을 열어 주세요", "en": "Open the shop on your phone", "ja": "スマホでショップを開いてください", "zh": "請在手機打開商店", "es": "Abre la tienda en el móvil", "pt": "Abra a loja no celular", "de": "Öffne den Shop am Handy", "fr": "Ouvrez la boutique sur le téléphone", "vi": "Hãy mở cửa hàng trên điện thoại", "th": "เปิดร้านบนโทรศัพท์", "id": "Buka toko di ponsel"],
+        "glanceOffline": ["ko": "달팽이봇이 연결을 기다리는 중이에요", "en": "Snail Bot is waiting to connect", "ja": "カタツムリボットが接続を待っています", "zh": "蝸牛機器人正在等連線", "es": "Caracolbot espera conexión", "pt": "Caracolbot espera a ligação", "de": "Schneckenbot wartet auf Verbindung", "fr": "Escargotbot attend la connexion", "vi": "Bot ốc sên đang chờ kết nối", "th": "บอทหอยทากกำลังรอเชื่อมต่อ", "id": "Bot siput sedang menunggu koneksi"],
+        "glanceUnpaired": ["ko": "폰 앱에서 워치를 연결해 주세요", "en": "Pair this watch in the phone app", "ja": "スマホアプリでウォッチを接続してください", "zh": "請在手機 App 連接手錶", "es": "Conecta el reloj en la app del móvil", "pt": "Conecte o relógio no app do celular", "de": "Verbinde die Uhr in der Handy-App", "fr": "Reliez la montre dans l’app du téléphone", "vi": "Hãy nối đồng hồ trong app điện thoại", "th": "เชื่อมนาฬิกาในแอปโทรศัพท์", "id": "Hubungkan jam di aplikasi ponsel"],
+        "glanceNoCrew": ["ko": "참여 중인 크루가 없어요", "en": "You are not in a crew", "ja": "参加中のクルーはありません", "zh": "沒有參加中的隊伍", "es": "No estás en un equipo", "pt": "Você não está em uma equipe", "de": "Du bist in keiner Mannschaft", "fr": "Tu n’es dans aucune équipe", "vi": "Bạn chưa ở trong đội nào", "th": "คุณยังไม่ได้อยู่ในทีม", "id": "Kamu belum punya kru"],
+        "glanceNoRace": ["ko": "참여 중인 대회가 없어요", "en": "You are not in a race", "ja": "参加中の大会はありません", "zh": "沒有參加中的比賽", "es": "No estás en una carrera", "pt": "Você não está em uma prova", "de": "Du bist in keinem Rennen", "fr": "Tu n’es dans aucune course", "vi": "Bạn chưa tham gia giải nào", "th": "คุณยังไม่ได้ลงแข่ง", "id": "Kamu belum ikut lomba"],
+        "glanceInRace": ["ko": "대회 참여 중", "en": "In a race", "ja": "大会に参加中", "zh": "比賽參加中", "es": "En una carrera", "pt": "Em uma prova", "de": "Im Rennen", "fr": "Dans une course", "vi": "Đang tham gia giải", "th": "กำลังลงแข่ง", "id": "Sedang ikut lomba"],
+        "glanceRemain": ["ko": "{n} km 남음", "en": "{n} km left", "ja": "あと {n} km", "zh": "還剩 {n} 公里", "es": "Faltan {n} km", "pt": "Faltam {n} km", "de": "Noch {n} km", "fr": "Encore {n} km", "vi": "Còn {n} km", "th": "อีก {n} กม.", "id": "Sisa {n} km"],
+        "glanceOverall": ["ko": "전체 {n}", "en": "Overall {n}", "ja": "全体 {n}", "zh": "全部 {n}", "es": "Total {n}", "pt": "No total {n}", "de": "Gesamt {n}", "fr": "Au total {n}", "vi": "Tổng {n}", "th": "ทั้งหมด {n}", "id": "Keseluruhan {n}"],
+        "glanceWeekLine": ["ko": "이번 주 {n}", "en": "This week {n}", "ja": "今週 {n}", "zh": "本週 {n}", "es": "Esta semana {n}", "pt": "Esta semana {n}", "de": "Diese Woche {n}", "fr": "Cette semaine {n}", "vi": "Tuần này {n}", "th": "สัปดาห์นี้ {n}", "id": "Minggu ini {n}"],
+        "glanceMonthRank": ["ko": "이번 달 {n}위", "en": "This month #{n}", "ja": "今月 {n}位", "zh": "本月第 {n} 名", "es": "Este mes, {n}.º", "pt": "Este mês, {n}º", "de": "Diesen Monat Platz {n}", "fr": "Ce mois-ci : {n}e", "vi": "Tháng này hạng {n}", "th": "เดือนนี้ อันดับ {n}", "id": "Bulan ini peringkat {n}"],
+        "glanceUnranked": ["ko": "이번 달은 순위 밖이에요", "en": "No rank this month", "ja": "今月は順位外です", "zh": "本月未進排名", "es": "Sin puesto este mes", "pt": "Sem lugar este mês", "de": "Diesen Monat ohne Platz", "fr": "Pas de place ce mois-ci", "vi": "Tháng này chưa có hạng", "th": "เดือนนี้ยังไม่มีอันดับ", "id": "Bulan ini belum berperingkat"],
+        "glanceAllDone": ["ko": "월드투어를 다 달렸어요", "en": "World tour complete", "ja": "ワールドツアー完走", "zh": "世界巡迴跑完了", "es": "Gira mundial completa", "pt": "Volta ao mundo completa", "de": "Welttour geschafft", "fr": "Tour du monde terminé", "vi": "Đã chạy hết vòng thế giới", "th": "ทัวร์โลกครบแล้ว", "id": "Tur dunia selesai"],
+    ]
 
     private static func fill(_ patterns: [String: String], _ count: Int) -> String {
         let code = Locale.current.languageCode ?? "en"

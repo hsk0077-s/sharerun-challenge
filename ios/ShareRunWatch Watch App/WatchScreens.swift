@@ -35,24 +35,28 @@ struct WatchRootView: View {
                     onSkip: { workout.phase = .start }
                 )
             case .start:
-                WatchStartView(
-                    targetKm: workout.targetKm,
-                    linkedName: account.isPaired ? (account.nickname.isEmpty ? WatchCopy.current.linked : account.nickname) : nil,
-                    onStart: {
-                        Task { await workout.startRun() }
-                    },
-                    onLongPress: {
-                        workout.phase = .pairing
-                    }
-                )
+                WatchGlanceTabs {
+                    WatchStartView(
+                        targetKm: workout.targetKm,
+                        linkedName: account.isPaired ? (account.nickname.isEmpty ? WatchCopy.current.linked : account.nickname) : nil,
+                        onStart: {
+                            Task { await workout.startRun() }
+                        },
+                        onLongPress: {
+                            workout.phase = .pairing
+                        }
+                    )
+                }
             case .running:
-                WatchRunningView(
-                    paceText: Self.formatPace(workout.paceSecondsPerKm),
-                    heartRate: workout.lastHeartRate,
-                    distanceText: Self.formatKm(workout.distanceKm),
-                    cadenceSpm: workout.cadenceSpm,
-                    onTap: { workout.pauseRun() }
-                )
+                WatchGlanceTabs {
+                    WatchRunningView(
+                        paceText: Self.formatPace(workout.paceSecondsPerKm),
+                        heartRate: workout.lastHeartRate,
+                        distanceText: Self.formatKm(workout.distanceKm),
+                        cadenceSpm: workout.cadenceSpm,
+                        onTap: { workout.pauseRun() }
+                    )
+                }
             case .paused:
                 WatchPausedView(
                     onResume: { workout.resumeRun() },
@@ -80,6 +84,9 @@ struct WatchRootView: View {
             if let alert = connectivity.latestRankAlert {
                 workout.showRankAlert(rank: alert.rank, gapPeople: alert.gapPeople)
             }
+        }
+        .task {
+            await account.refreshGlance()
         }
     }
 
@@ -327,5 +334,186 @@ struct WatchSummaryView: View {
         .padding(12)
         .contentShape(Rectangle())
         .onTapGesture(perform: onDone)
+    }
+}
+
+/// First page is the existing start or run screen. The next four are read-only.
+struct WatchGlanceTabs<First: View>: View {
+    @ViewBuilder var first: () -> First
+
+    var body: some View {
+        TabView {
+            first()
+            WatchGlancePage(kind: .world)
+            WatchGlancePage(kind: .challenge)
+            WatchGlancePage(kind: .crew)
+            WatchGlancePage(kind: .diamond)
+        }
+        .tabViewStyle(.page)
+    }
+}
+
+enum WatchGlanceKind { case world, challenge, crew, diamond }
+
+/// One fact, large type. Diamond does not buy anything; it tells you to open the phone shop.
+struct WatchGlancePage: View {
+    @EnvironmentObject var account: WatchAccountManager
+    let kind: WatchGlanceKind
+
+    var body: some View {
+        let lines = WatchGlanceLines.make(kind: kind, account: account)
+        VStack(spacing: 4) {
+            Text(lines.title)
+                .font(.system(size: 12))
+                .foregroundColor(watchMuted)
+            Text(lines.headline)
+                .font(.system(size: 28, weight: .heavy))
+                .foregroundColor(watchInk)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.5)
+            if !lines.detail.isEmpty {
+                Text(lines.detail)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(watchInk)
+                    .multilineTextAlignment(.center)
+            }
+            if !lines.foot.isEmpty {
+                Text(lines.foot)
+                    .font(.system(size: 11))
+                    .foregroundColor(watchMuted)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .padding(8)
+    }
+}
+
+struct WatchGlanceLines {
+    var title: String
+    var headline: String
+    var detail: String = ""
+    var foot: String = ""
+
+    static func make(kind: WatchGlanceKind, account: WatchAccountManager) -> WatchGlanceLines {
+        let title: String
+        switch kind {
+        case .world: title = WatchCopy.glance("glanceWorld")
+        case .challenge: title = WatchCopy.glance("glanceChallenge")
+        case .crew: title = WatchCopy.glance("glanceCrew")
+        case .diamond: title = "DIA"
+        }
+        if !account.isPaired {
+            return WatchGlanceLines(title: title, headline: WatchCopy.glance("glanceUnpaired"))
+        }
+        guard let glance = account.glance else {
+            let headline = account.glanceFailed
+                ? WatchCopy.glance("glanceOffline")
+                : WatchCopy.current.checking
+            return WatchGlanceLines(title: title, headline: headline)
+        }
+        switch kind {
+        case .world:
+            guard glance.hasWorld else {
+                return WatchGlanceLines(title: title, headline: WatchCopy.glance("glanceOffline"))
+            }
+            let progress = WatchCopy.glance("glanceOverall", n: "\(glance.completed)/\(glance.total)")
+            if glance.allDone {
+                return WatchGlanceLines(title: title, headline: WatchCopy.glance("glanceAllDone"), detail: progress)
+            }
+            let city = WatchPlaces.name(glance.landmarkId, city: true) ?? glance.title
+            let country = WatchPlaces.name(glance.landmarkId, city: false) ?? ""
+            return WatchGlanceLines(
+                title: title,
+                headline: city,
+                detail: country,
+                foot: WatchCopy.glance("glanceRemain", n: formatGlanceKm(glance.remainingKm)) + "\n" + progress
+            )
+        case .challenge:
+            let today = "\(formatGlanceKm(glance.todayKm))/\(formatGlanceKm(glance.todayTarget)) km"
+            let week = "\(formatGlanceKm(glance.weekKm))/\(formatGlanceKm(glance.weekTarget)) km"
+            let foot: String
+            if !glance.hasRace {
+                foot = WatchCopy.glance("glanceNoRace")
+            } else if let rank = glance.raceRank {
+                foot = WatchCopy.rankPlace(rank)
+            } else {
+                foot = WatchCopy.glance("glanceInRace")
+            }
+            return WatchGlanceLines(
+                title: title,
+                headline: today,
+                detail: WatchCopy.glance("glanceWeekLine", n: week),
+                foot: foot
+            )
+        case .crew:
+            guard glance.hasCrew else {
+                return WatchGlanceLines(title: title, headline: WatchCopy.glance("glanceNoCrew"))
+            }
+            let foot = glance.crewRank.map { WatchCopy.glance("glanceMonthRank", n: "\($0)") }
+                ?? WatchCopy.glance("glanceUnranked")
+            return WatchGlanceLines(
+                title: glance.crewName.isEmpty ? title : glance.crewName,
+                headline: "\(formatGlanceKm(glance.crewWeekKm)) km",
+                detail: WatchCopy.glance("glanceWeekLine", n: "\(formatGlanceKm(glance.crewWeekKm)) km"),
+                foot: foot
+            )
+        case .diamond:
+            return WatchGlanceLines(
+                title: "",
+                headline: WatchCopy.glance("glanceDia", n: "\(glance.diamond)"),
+                detail: WatchCopy.glance("glanceShopHint")
+            )
+        }
+    }
+}
+
+func formatGlanceKm(_ km: Double) -> String {
+    guard km.isFinite, km >= 0 else { return "0" }
+    let rounded = (km * 10).rounded() / 10
+    if abs(rounded - rounded.rounded()) < 0.001 {
+        return String(Int(rounded.rounded()))
+    }
+    return String(format: "%.1f", rounded)
+}
+
+enum WatchPlaces {
+    private static let order = ["ko", "en", "ja", "zh", "es", "pt", "de", "fr", "vi", "th", "id"]
+    private static let country: [String: [String]] = [
+        "eiffel_tower": ["프랑스", "France", "フランス", "法國", "Francia", "França", "Frankreich", "France", "Pháp", "ฝรั่งเศส", "Prancis"],
+        "taj_mahal": ["인도", "India", "インド", "印度", "India", "Índia", "Indien", "Inde", "Ấn Độ", "อินเดีย", "India"],
+        "mount_fuji": ["일본", "Japan", "日本", "日本", "Japón", "Japão", "Japan", "Japon", "Nhật Bản", "ญี่ปุ่น", "Jepang"],
+        "big_ben": ["영국", "United Kingdom", "イギリス", "英國", "Reino Unido", "Reino Unido", "Vereinigtes Königreich", "Royaume-Uni", "Anh", "สหราชอาณาจักร", "Britania Raya"],
+        "statue_of_liberty": ["미국", "United States", "アメリカ", "美國", "Estados Unidos", "Estados Unidos", "Vereinigte Staaten", "États-Unis", "Mỹ", "สหรัฐ", "Amerika Serikat"],
+        "gwanghwamun": ["한국", "Korea", "韓国", "韓國", "Corea", "Coreia", "Korea", "Corée", "Hàn Quốc", "เกาหลี", "Korea"],
+        "taroko_gorge": ["대만", "Taiwan", "台湾", "台灣", "Taiwán", "Taiwan", "Taiwan", "Taïwan", "Đài Loan", "ไต้หวัน", "Taiwan"],
+        "alhambra": ["스페인", "Spain", "スペイン", "西班牙", "España", "Espanha", "Spanien", "Espagne", "Tây Ban Nha", "สเปน", "Spanyol"],
+        "iguazu_falls": ["브라질", "Brazil", "ブラジル", "巴西", "Brasil", "Brasil", "Brasilien", "Brésil", "Brazil", "บราซิล", "Brasil"],
+        "neuschwanstein": ["독일", "Germany", "ドイツ", "德國", "Alemania", "Alemanha", "Deutschland", "Allemagne", "Đức", "เยอรมนี", "Jerman"],
+        "ha_long_bay": ["베트남", "Vietnam", "ベトナム", "越南", "Vietnam", "Vietnã", "Vietnam", "Viêt Nam", "Việt Nam", "เวียดนาม", "Vietnam"],
+        "ayutthaya": ["태국", "Thailand", "タイ", "泰國", "Tailandia", "Tailândia", "Thailand", "Thaïlande", "Thái Lan", "ไทย", "Thailand"],
+        "bali_rice_terraces": ["인도네시아", "Indonesia", "インドネシア", "印尼", "Indonesia", "Indonésia", "Indonesien", "Indonésie", "Indonesia", "อินโดนีเซีย", "Indonesia"],
+    ]
+    private static let city: [String: [String]] = [
+        "eiffel_tower": ["파리", "Paris", "パリ", "巴黎", "París", "Paris", "Paris", "Paris", "Paris", "ปารีส", "Paris"],
+        "taj_mahal": ["아그라", "Agra", "アグラ", "阿格拉", "Agra", "Agra", "Agra", "Agra", "Agra", "อักรา", "Agra"],
+        "mount_fuji": ["후지", "Fuji", "富士", "富士", "Fuji", "Fuji", "Fuji", "Fuji", "Phú Sĩ", "ฟูจิ", "Fuji"],
+        "big_ben": ["런던", "London", "ロンドン", "倫敦", "Londres", "Londres", "London", "Londres", "Luân Đôn", "ลอนดอน", "London"],
+        "statue_of_liberty": ["뉴욕", "New York", "ニューヨーク", "紐約", "Nueva York", "Nova York", "New York", "New York", "New York", "นิวยอร์ก", "New York"],
+        "gwanghwamun": ["서울", "Seoul", "ソウル", "首爾", "Seúl", "Seul", "Seoul", "Séoul", "Seoul", "โซล", "Seoul"],
+        "taroko_gorge": ["화롄", "Hualien", "花蓮", "花蓮", "Hualien", "Hualien", "Hualien", "Hualien", "Hoa Liên", "ฮวาเหลียน", "Hualien"],
+        "alhambra": ["그라나다", "Granada", "グラナダ", "格拉納達", "Granada", "Granada", "Granada", "Grenade", "Granada", "กรานาดา", "Granada"],
+        "iguazu_falls": ["이구아수", "Iguazu", "イグアス", "伊瓜蘇", "Iguazú", "Iguaçu", "Iguaçu", "Iguaçu", "Iguazu", "อีกวาซู", "Iguazu"],
+        "neuschwanstein": ["슈방가우", "Schwangau", "シュヴァンガウ", "施旺高", "Schwangau", "Schwangau", "Schwangau", "Schwangau", "Schwangau", "ชวานเกา", "Schwangau"],
+        "ha_long_bay": ["하롱", "Ha Long", "ハロン", "下龍", "Ha Long", "Ha Long", "Ha Long", "Ha Long", "Hạ Long", "ฮาลอง", "Ha Long"],
+        "ayutthaya": ["아유타야", "Ayutthaya", "アユタヤ", "大城", "Ayutthaya", "Ayutthaya", "Ayutthaya", "Ayutthaya", "Ayutthaya", "อยุธยา", "Ayutthaya"],
+        "bali_rice_terraces": ["발리", "Bali", "バリ", "峇里", "Bali", "Bali", "Bali", "Bali", "Bali", "บาหลี", "Bali"],
+    ]
+
+    static func name(_ landmark: String, city wantCity: Bool) -> String? {
+        let table = wantCity ? city : country
+        guard let row = table[landmark], !row.isEmpty else { return nil }
+        let code = Locale.current.languageCode ?? "en"
+        let index = order.firstIndex(of: code) ?? 1
+        return row.indices.contains(index) ? row[index] : row[min(1, row.count - 1)]
     }
 }

@@ -6,13 +6,18 @@ from firebase_admin import auth
 from app.services.firebase_service import FirebaseService
 
 
-# A watch signs in with a custom token that carries `provider: "watch"`. The watch only
-# uploads runs and step totals, so that token is accepted on those two routes and nowhere
-# else. A lost or copied watch then cannot spend currency, change the profile or delete
+# A watch signs in with a custom token that carries `provider: "watch"`. The watch uploads
+# runs and step totals, and may read its tier plus the glance board. That token is refused
+# everywhere else, so a lost watch cannot spend currency, change the profile or delete
 # the account.
 WATCH_PROVIDER = "watch"
 WATCH_ALLOWED_PATHS = frozenset(
-    {"/actions/runs/validate", "/actions/daily-steps", "/actions/watch/tier"}
+    {
+        "/actions/runs/validate",
+        "/actions/daily-steps",
+        "/actions/watch/tier",
+        "/actions/watch/glance",
+    }
 )
 
 _CHECK_SECONDS = 30.0

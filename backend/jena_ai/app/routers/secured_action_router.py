@@ -72,7 +72,7 @@ from app.services import (
 from app.services.notification_service import send_new_device_alert
 from app.services.auth_service import forget_sign_out_cache
 from app.services import crew_membership, crew_ranking, dia_refund, funding_goal, sponsorship_records
-from app.services import client_errors, rate_limit, run_times, watch_pairing
+from app.services import client_errors, rate_limit, run_times, watch_glance, watch_pairing
 from app.services.secured_action_service import SecuredActionService
 from app.models.world_tour import (
     WorldTourAttachRequest,
@@ -491,8 +491,20 @@ def submit_report(request: ReportRequest, uid: str = Depends(require_uid)) -> di
 
 @router.post("/watch/tier")
 def watch_tier(uid: str = Depends(require_uid)) -> dict:
-    """The watch asks for its tier animal when it opens (the one call besides runs it may make)."""
+    """The watch asks for its tier animal when it opens."""
     return watch_pairing.current_tier(service.firebase_service.db, uid)
+
+
+@router.post("/watch/glance")
+def watch_glance_board(body: watch_glance.WatchGlanceRequest, uid: str = Depends(require_uid)) -> dict:
+    """World tour, goals, crew and diamond balance. Read-only.
+
+    ``body.device_id`` is the id the watch already sends on a run upload.
+    The account is the token's uid, so this id does not choose whose board
+    is read and nothing is written.
+    """
+    _ = body.device_id
+    return watch_glance.build(service.firebase_service.db, uid)
 
 
 @router.get("/watch-pairing/devices")

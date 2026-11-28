@@ -3,6 +3,10 @@
 /// `sharerun://run/<activityId>`. activityId는 서버 `activities` 문서 id와 같다.
 const watchRunLinkScheme = 'sharerun';
 const watchRunLinkHost = 'run';
+const watchShopLinkHost = 'shop';
+
+/// 다이아 화면이 폰의 상점을 열 때. 워치에서는 결제하지 않는다.
+String buildWatchShopUri() => '$watchRunLinkScheme://$watchShopLinkHost';
 
 String buildWatchRunUri(String? activityId) {
   final id = activityId?.trim() ?? '';

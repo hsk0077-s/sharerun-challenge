@@ -479,7 +479,317 @@ const watchUiRows = <String, List<String>>{
     'แตะเพื่อยกเลิก',
     'Ketuk untuk batal',
   ],
+  'glanceWorld': [
+    '월드투어',
+    'World Tour',
+    'ワールドツアー',
+    '世界巡迴',
+    'Gira mundial',
+    'Volta ao mundo',
+    'Welttour',
+    'Tour du monde',
+    'Vòng quanh thế giới',
+    'ทัวร์โลก',
+    'Tur dunia',
+  ],
+  'glanceChallenge': [
+    '챌린지',
+    'Challenge',
+    'チャレンジ',
+    '挑戰',
+    'Reto',
+    'Desafio',
+    'Herausforderung',
+    'Défi',
+    'Thử thách',
+    'ชาเลนจ์',
+    'Tantangan',
+  ],
+  'glanceCrew': [
+    '크루',
+    'Crew',
+    'クルー',
+    '隊伍',
+    'Equipo',
+    'Equipe',
+    'Mannschaft',
+    'Équipe',
+    'Đội',
+    'ทีม',
+    'Kru',
+  ],
+  'glanceDia': [
+    'DIA {n}개',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+    'DIA {n}',
+  ],
+  'glanceShopHint': [
+    '폰에서 상점을 열어 주세요',
+    'Open the shop on your phone',
+    'スマホでショップを開いてください',
+    '請在手機打開商店',
+    'Abre la tienda en el móvil',
+    'Abra a loja no celular',
+    'Öffne den Shop am Handy',
+    'Ouvrez la boutique sur le téléphone',
+    'Hãy mở cửa hàng trên điện thoại',
+    'เปิดร้านบนโทรศัพท์',
+    'Buka toko di ponsel',
+  ],
+  'glanceOpenShop': [
+    '누르면 폰 상점을 열어요',
+    'Tap to open the shop on your phone',
+    'タップでスマホのショップを開きます',
+    '點一下就在手機打開商店',
+    'Toca para abrir la tienda en el móvil',
+    'Toque para abrir a loja no celular',
+    'Tippen öffnet den Shop am Handy',
+    'Touchez pour ouvrir la boutique sur le téléphone',
+    'Chạm để mở cửa hàng trên điện thoại',
+    'แตะเพื่อเปิดร้านในโทรศัพท์',
+    'Ketuk untuk membuka toko di ponsel',
+  ],
+  'glanceShopOpened': [
+    '폰에서 상점을 열었어요',
+    'Shop opened on your phone',
+    'スマホでショップを開きました',
+    '已在手機打開商店',
+    'Tienda abierta en el móvil',
+    'Loja aberta no celular',
+    'Shop auf dem Handy geöffnet',
+    'Boutique ouverte sur le téléphone',
+    'Đã mở cửa hàng trên điện thoại',
+    'เปิดร้านบนโทรศัพท์แล้ว',
+    'Toko terbuka di ponsel',
+  ],
+  'glanceShopFailed': [
+    '폰에서 상점을 열 수 없어요',
+    "Couldn't open the shop on your phone",
+    'スマホでショップを開けません',
+    '無法在手機打開商店',
+    'No se pudo abrir la tienda',
+    'Não foi possível abrir a loja',
+    'Shop am Handy ließ sich nicht öffnen',
+    'Impossible d’ouvrir la boutique',
+    'Không mở được cửa hàng trên điện thoại',
+    'เปิดร้านบนโทรศัพท์ไม่ได้',
+    'Tidak bisa membuka toko di ponsel',
+  ],
+  'glanceOffline': [
+    '달팽이봇이 연결을 기다리는 중이에요',
+    'Snail Bot is waiting to connect',
+    'カタツムリボットが接続を待っています',
+    '蝸牛機器人正在等連線',
+    'Caracolbot espera conexión',
+    'Caracolbot espera a ligação',
+    'Schneckenbot wartet auf Verbindung',
+    'Escargotbot attend la connexion',
+    'Bot ốc sên đang chờ kết nối',
+    'บอทหอยทากกำลังรอเชื่อมต่อ',
+    'Bot siput sedang menunggu koneksi',
+  ],
+  'glanceUnpaired': [
+    '폰 앱에서 워치를 연결해 주세요',
+    'Pair this watch in the phone app',
+    'スマホアプリでウォッチを接続してください',
+    '請在手機 App 連接手錶',
+    'Conecta el reloj en la app del móvil',
+    'Conecte o relógio no app do celular',
+    'Verbinde die Uhr in der Handy-App',
+    'Reliez la montre dans l’app du téléphone',
+    'Hãy nối đồng hồ trong app điện thoại',
+    'เชื่อมนาฬิกาในแอปโทรศัพท์',
+    'Hubungkan jam di aplikasi ponsel',
+  ],
+  'glanceNoCrew': [
+    '참여 중인 크루가 없어요',
+    'You are not in a crew',
+    '参加中のクルーはありません',
+    '沒有參加中的隊伍',
+    'No estás en un equipo',
+    'Você não está em uma equipe',
+    'Du bist in keiner Mannschaft',
+    'Tu n’es dans aucune équipe',
+    'Bạn chưa ở trong đội nào',
+    'คุณยังไม่ได้อยู่ในทีม',
+    'Kamu belum punya kru',
+  ],
+  'glanceNoRace': [
+    '참여 중인 대회가 없어요',
+    'You are not in a race',
+    '参加中の大会はありません',
+    '沒有參加中的比賽',
+    'No estás en una carrera',
+    'Você não está em uma prova',
+    'Du bist in keinem Rennen',
+    'Tu n’es dans aucune course',
+    'Bạn chưa tham gia giải nào',
+    'คุณยังไม่ได้ลงแข่ง',
+    'Kamu belum ikut lomba',
+  ],
+  'glanceInRace': [
+    '대회 참여 중',
+    'In a race',
+    '大会に参加中',
+    '比賽參加中',
+    'En una carrera',
+    'Em uma prova',
+    'Im Rennen',
+    'Dans une course',
+    'Đang tham gia giải',
+    'กำลังลงแข่ง',
+    'Sedang ikut lomba',
+  ],
+  'glanceRemain': [
+    '{n} km 남음',
+    '{n} km left',
+    'あと {n} km',
+    '還剩 {n} 公里',
+    'Faltan {n} km',
+    'Faltam {n} km',
+    'Noch {n} km',
+    'Encore {n} km',
+    'Còn {n} km',
+    'อีก {n} กม.',
+    'Sisa {n} km',
+  ],
+  'glanceOverall': [
+    '전체 {n}',
+    'Overall {n}',
+    '全体 {n}',
+    '全部 {n}',
+    'Total {n}',
+    'No total {n}',
+    'Gesamt {n}',
+    'Au total {n}',
+    'Tổng {n}',
+    'ทั้งหมด {n}',
+    'Keseluruhan {n}',
+  ],
+  'glanceWeekLine': [
+    '이번 주 {n}',
+    'This week {n}',
+    '今週 {n}',
+    '本週 {n}',
+    'Esta semana {n}',
+    'Esta semana {n}',
+    'Diese Woche {n}',
+    'Cette semaine {n}',
+    'Tuần này {n}',
+    'สัปดาห์นี้ {n}',
+    'Minggu ini {n}',
+  ],
+  'glanceMonthRank': [
+    '이번 달 {n}위',
+    'This month #{n}',
+    '今月 {n}位',
+    '本月第 {n} 名',
+    'Este mes, {n}.º',
+    'Este mês, {n}º',
+    'Diesen Monat Platz {n}',
+    'Ce mois-ci : {n}e',
+    'Tháng này hạng {n}',
+    'เดือนนี้ อันดับ {n}',
+    'Bulan ini peringkat {n}',
+  ],
+  'glanceUnranked': [
+    '이번 달은 순위 밖이에요',
+    'No rank this month',
+    '今月は順位外です',
+    '本月未進排名',
+    'Sin puesto este mes',
+    'Sem lugar este mês',
+    'Diesen Monat ohne Platz',
+    'Pas de place ce mois-ci',
+    'Tháng này chưa có hạng',
+    'เดือนนี้ยังไม่มีอันดับ',
+    'Bulan ini belum berperingkat',
+  ],
+  'glanceAllDone': [
+    '월드투어를 다 달렸어요',
+    'World tour complete',
+    'ワールドツアー完走',
+    '世界巡迴跑完了',
+    'Gira mundial completa',
+    'Volta ao mundo completa',
+    'Welttour geschafft',
+    'Tour du monde terminé',
+    'Đã chạy hết vòng thế giới',
+    'ทัวร์โลกครบแล้ว',
+    'Tur dunia selesai',
+  ],
 };
+
+/// Country then city for each world-tour landmark. Order is [watchLanguageOrder].
+const watchPlaceRows = <String, List<List<String>>>{
+  'eiffel_tower': [
+    ['프랑스', 'France', 'フランス', '法國', 'Francia', 'França', 'Frankreich', 'France', 'Pháp', 'ฝรั่งเศส', 'Prancis'],
+    ['파리', 'Paris', 'パリ', '巴黎', 'París', 'Paris', 'Paris', 'Paris', 'Paris', 'ปารีส', 'Paris'],
+  ],
+  'taj_mahal': [
+    ['인도', 'India', 'インド', '印度', 'India', 'Índia', 'Indien', 'Inde', 'Ấn Độ', 'อินเดีย', 'India'],
+    ['아그라', 'Agra', 'アグラ', '阿格拉', 'Agra', 'Agra', 'Agra', 'Agra', 'Agra', 'อักรา', 'Agra'],
+  ],
+  'mount_fuji': [
+    ['일본', 'Japan', '日本', '日本', 'Japón', 'Japão', 'Japan', 'Japon', 'Nhật Bản', 'ญี่ปุ่น', 'Jepang'],
+    ['후지', 'Fuji', '富士', '富士', 'Fuji', 'Fuji', 'Fuji', 'Fuji', 'Phú Sĩ', 'ฟูจิ', 'Fuji'],
+  ],
+  'big_ben': [
+    ['영국', 'United Kingdom', 'イギリス', '英國', 'Reino Unido', 'Reino Unido', 'Vereinigtes Königreich', 'Royaume-Uni', 'Anh', 'สหราชอาณาจักร', 'Britania Raya'],
+    ['런던', 'London', 'ロンドン', '倫敦', 'Londres', 'Londres', 'London', 'Londres', 'Luân Đôn', 'ลอนดอน', 'London'],
+  ],
+  'statue_of_liberty': [
+    ['미국', 'United States', 'アメリカ', '美國', 'Estados Unidos', 'Estados Unidos', 'Vereinigte Staaten', 'États-Unis', 'Mỹ', 'สหรัฐ', 'Amerika Serikat'],
+    ['뉴욕', 'New York', 'ニューヨーク', '紐約', 'Nueva York', 'Nova York', 'New York', 'New York', 'New York', 'นิวยอร์ก', 'New York'],
+  ],
+  'gwanghwamun': [
+    ['한국', 'Korea', '韓国', '韓國', 'Corea', 'Coreia', 'Korea', 'Corée', 'Hàn Quốc', 'เกาหลี', 'Korea'],
+    ['서울', 'Seoul', 'ソウル', '首爾', 'Seúl', 'Seul', 'Seoul', 'Séoul', 'Seoul', 'โซล', 'Seoul'],
+  ],
+  'taroko_gorge': [
+    ['대만', 'Taiwan', '台湾', '台灣', 'Taiwán', 'Taiwan', 'Taiwan', 'Taïwan', 'Đài Loan', 'ไต้หวัน', 'Taiwan'],
+    ['화롄', 'Hualien', '花蓮', '花蓮', 'Hualien', 'Hualien', 'Hualien', 'Hualien', 'Hoa Liên', 'ฮวาเหลียน', 'Hualien'],
+  ],
+  'alhambra': [
+    ['스페인', 'Spain', 'スペイン', '西班牙', 'España', 'Espanha', 'Spanien', 'Espagne', 'Tây Ban Nha', 'สเปน', 'Spanyol'],
+    ['그라나다', 'Granada', 'グラナダ', '格拉納達', 'Granada', 'Granada', 'Granada', 'Grenade', 'Granada', 'กรานาดา', 'Granada'],
+  ],
+  'iguazu_falls': [
+    ['브라질', 'Brazil', 'ブラジル', '巴西', 'Brasil', 'Brasil', 'Brasilien', 'Brésil', 'Brazil', 'บราซิล', 'Brasil'],
+    ['이구아수', 'Iguazu', 'イグアス', '伊瓜蘇', 'Iguazú', 'Iguaçu', 'Iguaçu', 'Iguaçu', 'Iguazu', 'อีกวาซู', 'Iguazu'],
+  ],
+  'neuschwanstein': [
+    ['독일', 'Germany', 'ドイツ', '德國', 'Alemania', 'Alemanha', 'Deutschland', 'Allemagne', 'Đức', 'เยอรมนี', 'Jerman'],
+    ['슈방가우', 'Schwangau', 'シュヴァンガウ', '施旺高', 'Schwangau', 'Schwangau', 'Schwangau', 'Schwangau', 'Schwangau', 'ชวานเกา', 'Schwangau'],
+  ],
+  'ha_long_bay': [
+    ['베트남', 'Vietnam', 'ベトナム', '越南', 'Vietnam', 'Vietnã', 'Vietnam', 'Viêt Nam', 'Việt Nam', 'เวียดนาม', 'Vietnam'],
+    ['하롱', 'Ha Long', 'ハロン', '下龍', 'Ha Long', 'Ha Long', 'Ha Long', 'Ha Long', 'Hạ Long', 'ฮาลอง', 'Ha Long'],
+  ],
+  'ayutthaya': [
+    ['태국', 'Thailand', 'タイ', '泰國', 'Tailandia', 'Tailândia', 'Thailand', 'Thaïlande', 'Thái Lan', 'ไทย', 'Thailand'],
+    ['아유타야', 'Ayutthaya', 'アユタヤ', '大城', 'Ayutthaya', 'Ayutthaya', 'Ayutthaya', 'Ayutthaya', 'Ayutthaya', 'อยุธยา', 'Ayutthaya'],
+  ],
+  'bali_rice_terraces': [
+    ['인도네시아', 'Indonesia', 'インドネシア', '印尼', 'Indonesia', 'Indonésia', 'Indonesien', 'Indonésie', 'Indonesia', 'อินโดนีเซีย', 'Indonesia'],
+    ['발리', 'Bali', 'バリ', '峇里', 'Bali', 'Bali', 'Bali', 'Bali', 'Bali', 'บาหลี', 'Bali'],
+  ],
+};
+
+/// Localized country or city. Null when this watch build does not know the landmark.
+String? watchPlaceName(Locale locale, String? landmarkId, {required bool city}) {
+  final rows = watchPlaceRows[landmarkId];
+  if (rows == null || rows.length < 2) return null;
+  return _watchRow(rows[city ? 1 : 0], locale.languageCode);
+}
 
 /// [watchUiRows]의 한 문구. `{n}` 자리에 [n]을 넣는다.
 String watchUi(Locale locale, String key, {Object? n}) {
@@ -890,6 +1200,27 @@ List<String> missingWatchCopyKeys() {
           missing.add('watch.${table.key}.${entry.key}.${watchLanguageOrder[i]}');
         } else if (i != 0 && entry.value[i] == entry.value.first) {
           missing.add('watch.${table.key}.${entry.key}.${watchLanguageOrder[i]}=ko');
+        }
+      }
+    }
+  }
+  for (final entry in watchPlaceRows.entries) {
+    if (entry.value.length != 2) {
+      missing.add('watch.place.${entry.key}.parts');
+      continue;
+    }
+    for (var part = 0; part < entry.value.length; part++) {
+      final row = entry.value[part];
+      final which = part == 0 ? 'country' : 'city';
+      if (row.length != watchLanguageOrder.length) {
+        missing.add('watch.place.${entry.key}.$which.length');
+        continue;
+      }
+      for (var i = 0; i < row.length; i++) {
+        if (row[i].trim().isEmpty) {
+          missing.add('watch.place.${entry.key}.$which.${watchLanguageOrder[i]}');
+        } else if (i != 0 && row[i] == row.first) {
+          missing.add('watch.place.${entry.key}.$which.${watchLanguageOrder[i]}=ko');
         }
       }
     }

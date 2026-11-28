@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:share_run_wear/core/run_session.dart';
 import 'package:share_run_wear/core/watch_platform.dart';
+import 'package:share_run_wear/l10n/watch_copy.dart';
 import 'package:share_run_wear/screens/watch_screens.dart';
 
 /// Play Wear OS 스크린샷. 실제 화면 위젯을 384×384로 그려 24-bit PNG로 저장한다.
@@ -107,6 +108,12 @@ void main() {
         for (final text in shot.texts) {
           expect(find.text(text), findsOneWidget, reason: '$language ${shot.name} $text');
         }
+        if (shot.name == '01_start') {
+          expect(
+            find.text(language == 'ko' ? 'Cheetah Gold' : '치타 골드'),
+            findsNothing,
+          );
+        }
         if (shot.name == '04_route') {
           expect(find.byKey(RouteFace.paintKey), findsOneWidget);
         }
@@ -135,14 +142,16 @@ class _Shot {
 
 List<_Shot> _shots(Locale locale, RunSession session) {
   final ko = locale.languageCode == 'ko';
-  final tier = ko ? '치타 골드' : 'Cheetah Gold';
+  // 이름을 직접 넣지 않는다. 화면이 티어 코드를 그 언어로 바꿔야 한다.
+  const tierCode = 'cheetah_gold';
+  final tier = watchTierLabel(locale, tierCode)!;
   final running = RunningFace(
     session: session,
     now: DateTime(2026, 6, 1, 8, 17),
-    tierCode: 'cheetah',
+    tierCode: tierCode,
   );
   return [
-    _Shot('01_start', StartFace(onStart: () {}, tierName: tier, tierCode: 'cheetah'), [
+    _Shot('01_start', StartFace(onStart: () {}, tierCode: tierCode), [
       'START',
       tier,
     ]),

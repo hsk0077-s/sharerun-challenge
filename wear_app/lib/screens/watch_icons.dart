@@ -17,8 +17,8 @@ abstract final class WatchIconNames {
   static const gps = 'icon_gps';
   static const heartRate = 'icon_hr';
 
-  /// 티어 동물 코드(`turtle` …)의 아이콘 이름. 모르는 코드면 null.
-  static String? tier(String? code) => switch (code) {
+  /// 티어 동물 코드(`turtle`, `cheetah_gold` …)의 아이콘 이름. 메달 접미사는 무시한다.
+  static String? tier(String? code) => switch (code?.trim().toLowerCase().split('_').first) {
         'snail' => tierSnail,
         'turtle' => tierTurtle,
         'beagle' => tierBeagle,

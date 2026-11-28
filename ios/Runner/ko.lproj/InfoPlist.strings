@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "완주 카드 배경에 쓸 러닝 장소 사진을 찍을 때 사용해요.";
 "NSFaceIDUsageDescription" = "결제하기 전에 본인인지 확인하는 데 사용해요.";
 "NSHealthShareUsageDescription" = "걸음 수를 읽어 오늘의 걸음과 SHARE 적립, 걸음 기부 달성을 표시하는 데 사용해요. 건강 데이터는 다른 용도로 쓰지 않아요.";
+"NSHealthUpdateUsageDescription" = "건강 앱과 걸음·운동 기록을 연동하는 데 사용해요. iPhone 앱은 건강 앱에 기록을 쓰지 않아요.";
 "NSLocationWhenInUseUsageDescription" = "달리기를 기록하는 동안 경로와 거리를 재고 부정 기록을 막는 데 사용해요. 기록 중에는 화면이 꺼져도 이어서 기록해요.";
 "NSMicrophoneUsageDescription" = "달팽이봇에게 말로 물어볼 때만 사용해요. 글로 입력하거나 버튼을 눌러도 안내받을 수 있어요.";
 "NSMotionUsageDescription" = "휴대폰의 동작 센서로 오늘 걸음 수를 세는 데 사용해요.";

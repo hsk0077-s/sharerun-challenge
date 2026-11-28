@@ -15,6 +15,15 @@
 | 8 | 앱 프라이버시 답변, 심사 메모 | 없음 | `docs/play-data-safety.md`를 바탕으로 작성 |
 | 9 | iOS 프로젝트 파일 | 저장소에 `Runner.xcodeproj`, `Podfile` 없음 | Mac에서 `flutter create`로 만들되, HealthKit·Sign in with Apple·백그라운드 모드·워치 타깃 설정은 Xcode에서 해야 한다. 첫 설정은 클라우드 Mac 대여를 권장 |
 
+## TestFlight 업로드 거부 오류 (GitHub Actions run 46147083034) — 2026-11-28 해결
+
+| Apple 오류 | 원인 | 고친 방법 |
+|---|---|---|
+| ITMS-90379 `CFBundleVersion` 불일치 (워치 10001, iPhone 1) | 워치 앱 번호가 `Info.plist`와 프로젝트에 고정돼 있었다 | 워치 `Info.plist`를 `$(CURRENT_PROJECT_VERSION)`·`$(MARKETING_VERSION)`으로, 워치 타깃 3개 구성을 `$(FLUTTER_BUILD_NUMBER)`·`$(FLUTTER_BUILD_NAME)`으로 바꿨다. `Flutter/Watch.xcconfig`가 `Generated.xcconfig`를 읽게 해 iPhone 앱과 같은 값을 받는다 |
+| ITMS-90362 잘못된 `UIBackgroundModes` (워치) | `workout-processing`은 워치 전용 키 `WKBackgroundModes`에 넣어야 한다 | `WKBackgroundModes = [workout-processing]`, `UIBackgroundModes = [location]` |
+| ITMS-90391 / ITMS-90713 워치 아이콘 없음 | 워치 타깃에 에셋 카탈로그가 없었다 | `ShareRunWatch Watch App/Assets.xcassets/AppIcon.appiconset`(watchOS 1024×1024 한 장, iPhone 아이콘 그대로, 알파 없음)을 워치 Resources에 넣고 `ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon`, `CFBundleIconName = AppIcon` |
+| ITMS-90683 `NSHealthUpdateUsageDescription` 없음 (iPhone) | HealthKit을 쓰는 앱은 쓰기 코드가 없어도 이 키를 요구한다 | 문구 "건강 앱과 걸음·운동 기록을 연동하는 데 사용해요. iPhone 앱은 건강 앱에 기록을 쓰지 않아요."와 11개 언어 `InfoPlist.strings` 추가 |
+
 ## 필요한 것
 - Apple Developer Program 가입(연 99달러, 승인에 하루~며칠)
 - 클라우드 Mac(MacinCloud 등) 또는 빌드 서비스(Codemagic 등)

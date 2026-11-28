@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "Wird verwendet, wenn du ein Foto deiner Laufstrecke als Hintergrund für eine Zielkarte aufnimmst.";
 "NSFaceIDUsageDescription" = "Wird verwendet, um vor einer Zahlung zu bestätigen, dass du es bist.";
 "NSHealthShareUsageDescription" = "Wird verwendet, um deine Schritte zu lesen und die heutigen Schritte, verdiente SHARE und Schrittspenden-Ziele anzuzeigen. Gesundheitsdaten werden für nichts anderes verwendet.";
+"NSHealthUpdateUsageDescription" = "Wird verwendet, um deine Schritte und Trainings mit der Health-App zu verbinden. Die iPhone-App schreibt keine Einträge in Health.";
 "NSLocationWhenInUseUsageDescription" = "Wird beim Aufzeichnen eines Laufs verwendet, um Strecke und Distanz zu messen und gefälschte Einträge zu verhindern. Die Aufzeichnung läuft auch bei ausgeschaltetem Bildschirm weiter.";
 "NSMicrophoneUsageDescription" = "Wird nur verwendet, wenn du den Schnecken-Bot per Sprache etwas fragst. Du kannst auch schreiben oder auf eine Schaltfläche tippen.";
 "NSMotionUsageDescription" = "Wird verwendet, um die heutigen Schritte mit den Bewegungssensoren deines Handys zu zählen.";

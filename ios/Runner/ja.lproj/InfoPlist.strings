@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "完走カードの背景に使うランニング場所の写真を撮るときに使います。";
 "NSFaceIDUsageDescription" = "お支払いの前にご本人かどうかを確認するために使います。";
 "NSHealthShareUsageDescription" = "歩数を読み取り、今日の歩数、SHAREの獲得、歩数寄付の達成を表示するために使います。健康データはほかの目的には使いません。";
+"NSHealthUpdateUsageDescription" = "ヘルスケアアプリと歩数・運動の記録を連携するために使います。iPhoneアプリがヘルスケアに記録を書き込むことはありません。";
 "NSLocationWhenInUseUsageDescription" = "ランニングの記録中にルートと距離を測り、不正な記録を防ぐために使います。記録中は画面が消えても記録を続けます。";
 "NSMicrophoneUsageDescription" = "カタツムリボットに声で質問するときだけ使います。文字で入力したりボタンを押したりしても案内を受けられます。";
 "NSMotionUsageDescription" = "スマートフォンのモーションセンサーで今日の歩数を数えるために使います。";

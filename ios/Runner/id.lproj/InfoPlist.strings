@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "Dipakai saat kamu memotret tempat berlari untuk latar kartu finis.";
 "NSFaceIDUsageDescription" = "Dipakai untuk memastikan itu kamu sebelum pembayaran.";
 "NSHealthShareUsageDescription" = "Dipakai untuk membaca jumlah langkah dan menampilkan langkah hari ini, SHARE yang didapat, dan target donasi langkah. Data kesehatan tidak dipakai untuk hal lain.";
+"NSHealthUpdateUsageDescription" = "Dipakai untuk menghubungkan langkah dan latihanmu dengan app Kesehatan. App iPhone tidak menulis catatan ke Kesehatan.";
 "NSLocationWhenInUseUsageDescription" = "Dipakai saat merekam lari untuk mengukur rute dan jarak serta mencegah catatan palsu. Perekaman tetap berjalan walau layar mati.";
 "NSMicrophoneUsageDescription" = "Hanya dipakai saat kamu bertanya ke Bot Siput dengan suara. Kamu juga bisa mengetik atau menekan tombol.";
 "NSMotionUsageDescription" = "Dipakai untuk menghitung langkah hari ini dengan sensor gerak ponsel.";

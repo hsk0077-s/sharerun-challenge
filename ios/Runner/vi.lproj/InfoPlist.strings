@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "Dùng khi bạn chụp ảnh nơi chạy để làm nền cho thẻ hoàn thành.";
 "NSFaceIDUsageDescription" = "Dùng để xác nhận đúng là bạn trước khi thanh toán.";
 "NSHealthShareUsageDescription" = "Dùng để đọc số bước, hiển thị số bước hôm nay, SHARE nhận được và mục tiêu quyên góp theo bước. Dữ liệu sức khỏe không dùng cho việc gì khác.";
+"NSHealthUpdateUsageDescription" = "Dùng để liên kết số bước và buổi tập với ứng dụng Sức khỏe. Ứng dụng trên iPhone không ghi dữ liệu vào Sức khỏe.";
 "NSLocationWhenInUseUsageDescription" = "Dùng khi ghi lại lần chạy để đo lộ trình, quãng đường và ngăn bản ghi gian lận. Vẫn tiếp tục ghi khi màn hình tắt.";
 "NSMicrophoneUsageDescription" = "Chỉ dùng khi bạn hỏi Bot Ốc Sên bằng giọng nói. Bạn cũng có thể gõ chữ hoặc nhấn nút.";
 "NSMotionUsageDescription" = "Dùng để đếm số bước hôm nay bằng cảm biến chuyển động của điện thoại.";

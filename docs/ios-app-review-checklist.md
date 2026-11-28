@@ -100,7 +100,7 @@ iPhone 앱에 남긴 권한 문구와 쓰는 곳:
 
 - 문구는 한국어 기본(`Info.plist`)과 11개 언어 `InfoPlist.strings`(`ios/Runner/*.lproj`)에 있습니다. **번역은 원어민 검수 전**입니다.
 - 지운 키: `NSLocationAlwaysAndWhenInUseUsageDescription`, `NSLocationAlwaysUsageDescription`(항상 위치를 요청하지 않음), `NSBluetoothPeripheralUsageDescription`(iOS 13부터 쓰지 않는 옛 키), 백그라운드 모드 `processing`(쓰는 코드 없음).
-- `NSHealthUpdateUsageDescription`은 iPhone 앱에는 없습니다(쓰기 없음, PR #412). 워치 앱에는 있습니다(운동 저장).
+- `NSHealthUpdateUsageDescription`: iPhone 앱은 건강 앱에 쓰지 않지만, HealthKit을 쓰는 앱은 이 키가 없으면 업로드가 거부됩니다(ITMS-90683). 그래서 "쓰지 않는다"고 정확히 밝힌 문구로 다시 넣었습니다. 워치 앱에는 운동 저장용 문구가 있습니다.
 
 ## 7. 스토어 문구 (별도 작성 필요)
 

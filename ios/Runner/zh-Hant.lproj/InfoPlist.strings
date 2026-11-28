@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "用於拍攝跑步地點的照片，作為完賽卡的背景。";
 "NSFaceIDUsageDescription" = "用於付款前確認是你本人。";
 "NSHealthShareUsageDescription" = "用於讀取步數，以顯示今日步數、SHARE 累積與步數捐款的達成。健康資料不會用於其他用途。";
+"NSHealthUpdateUsageDescription" = "用於與「健康」App 連結步數與運動紀錄。iPhone App 不會把紀錄寫入「健康」。";
 "NSLocationWhenInUseUsageDescription" = "用於在記錄跑步時測量路線與距離並防止不實紀錄。記錄中即使螢幕關閉也會繼續記錄。";
 "NSMicrophoneUsageDescription" = "只在你用語音詢問蝸牛機器人時使用。你也可以打字或按按鈕取得說明。";
 "NSMotionUsageDescription" = "用於透過手機的動作感測器計算今日步數。";

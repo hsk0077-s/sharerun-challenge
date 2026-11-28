@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "Se usa cuando tomas una foto del lugar donde corres para el fondo de una tarjeta de meta.";
 "NSFaceIDUsageDescription" = "Se usa para confirmar que eres tú antes de un pago.";
 "NSHealthShareUsageDescription" = "Se usa para leer tus pasos y mostrar los pasos de hoy, los SHARE ganados y las metas de donación por pasos. Los datos de salud no se usan para nada más.";
+"NSHealthUpdateUsageDescription" = "Se usa para vincular tus pasos y entrenamientos con la app Salud. La app de iPhone no escribe registros en Salud.";
 "NSLocationWhenInUseUsageDescription" = "Se usa mientras grabas una carrera para medir tu ruta y distancia y evitar registros falsos. La grabación sigue aunque la pantalla se apague.";
 "NSMicrophoneUsageDescription" = "Solo se usa cuando le preguntas algo al Bot Caracol con la voz. También puedes escribir o tocar un botón.";
 "NSMotionUsageDescription" = "Se usa para contar los pasos de hoy con los sensores de movimiento del teléfono.";

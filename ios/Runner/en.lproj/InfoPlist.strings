@@ -5,6 +5,7 @@
 "NSCameraUsageDescription" = "Used when you take a photo of your running spot for a finish card background.";
 "NSFaceIDUsageDescription" = "Used to confirm it is you before a payment.";
 "NSHealthShareUsageDescription" = "Used to read your step count to show today's steps, SHARE earned and step donation goals. Health data is not used for anything else.";
+"NSHealthUpdateUsageDescription" = "Used to link your steps and workouts with the Health app. The iPhone app does not write records to Health.";
 "NSLocationWhenInUseUsageDescription" = "Used while recording a run to measure your route and distance and to stop fake records. Recording continues even when the screen is off.";
 "NSMicrophoneUsageDescription" = "Used only when you ask Snail Bot something by voice. You can also type or tap a button.";
 "NSMotionUsageDescription" = "Used to count today's steps with your phone's motion sensors.";

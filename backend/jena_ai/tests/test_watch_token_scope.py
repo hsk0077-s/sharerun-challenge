@@ -10,7 +10,12 @@ from app.services.auth_service import require_uid
 
 def _app() -> TestClient:
     app = FastAPI()
-    for path in ("/actions/runs/validate", "/actions/daily-steps", "/actions/shop/buy"):
+    for path in (
+        "/actions/runs/validate",
+        "/actions/daily-steps",
+        "/actions/watch/glance",
+        "/actions/shop/buy",
+    ):
         app.post(path)(lambda uid=Depends(require_uid): {"uid": uid})
     return TestClient(app)
 
@@ -25,8 +30,11 @@ def _sign_in_as(monkeypatch, claims: dict) -> None:
 HEADERS = {"Authorization": "Bearer token"}
 
 
-@pytest.mark.parametrize("path", ["/actions/runs/validate", "/actions/daily-steps"])
-def test_a_watch_may_upload_runs_and_steps(monkeypatch, path) -> None:
+@pytest.mark.parametrize(
+    "path",
+    ["/actions/runs/validate", "/actions/daily-steps", "/actions/watch/glance"],
+)
+def test_a_watch_may_upload_runs_and_steps_and_read_the_glance(monkeypatch, path) -> None:
     _sign_in_as(monkeypatch, {"provider": "watch"})
     response = _app().post(path, headers=HEADERS)
     assert response.status_code == 200

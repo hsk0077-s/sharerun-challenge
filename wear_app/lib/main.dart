@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'core/run_session.dart';
 import 'core/sync_queue.dart';
+import 'core/watch_glance.dart';
+import 'core/watch_run_link.dart';
 import 'core/sync_uploader.dart';
 import 'core/watch_account.dart';
 import 'core/run_draft.dart';
@@ -138,6 +140,8 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   var _pairing = false;
   var _skippedPairing = false;
   var _polling = false;
+  WatchGlance? _glance;
+  var _glanceFailed = false;
 
   /// 이 시간보다 오래 전에 저장된 임시 기록은 이어 달리지 않는다.
   static const _staleDraftAge = Duration(hours: 6);
@@ -155,6 +159,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     if (account != null && account.isPaired) {
       unawaited(_upload());
       unawaited(_refreshTier());
+      unawaited(_refreshGlance());
     }
     widget.events?.onNetworkAvailable(() => unawaited(_upload()));
     widget.events?.onAutostartRequested(_beginCountdown);
@@ -185,6 +190,37 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     if (state != AppLifecycleState.resumed) return;
     if (_queue.length > 0) unawaited(_upload());
     unawaited(_refreshTier());
+    unawaited(_refreshGlance());
+  }
+
+  /// 보기 화면(월드투어·챌린지·크루·다이아)을 서버에서 다시 읽는다. 실패하면 지난 값을 둔다.
+  Future<void> _refreshGlance() async {
+    final account = widget.account;
+    if (account == null || !account.isPaired) return;
+    final next = await account.fetchGlance();
+    if (!mounted) return;
+    setState(() {
+      if (next != null) {
+        _glance = next;
+        _glanceFailed = false;
+      } else {
+        _glanceFailed = _glance == null;
+      }
+    });
+  }
+
+  WatchGlanceState get _glanceState {
+    final account = widget.account;
+    if (account == null || !account.isPaired) return WatchGlanceState.unpaired;
+    if (_glance != null) return WatchGlanceState.ready;
+    if (_glanceFailed) return WatchGlanceState.offline;
+    return WatchGlanceState.loading;
+  }
+
+  Future<bool> _openShop() async {
+    final opener = widget.phoneOpener;
+    if (opener == null) return false;
+    return opener.open(buildWatchShopUri());
   }
 
   /// 등급 동물을 서버에서 다시 받아, 바뀌었으면 화면을 고친다.
@@ -484,6 +520,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
     if (!mounted) return null;
     setState(() => _pairing = false);
     unawaited(_upload());
+    unawaited(_refreshGlance());
     return null;
   }
 
@@ -525,12 +562,19 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
             },
           );
         }
-        return StartFace(
-          onStart: _beginCountdown,
-          tierName: widget.tierName,
-          tierCode: widget.tierCode ?? account?.tierCode,
-          pendingCount: _queue.length,
-          onLongPress: account == null ? null : () => setState(() => _pairing = true),
+        return HomePager(
+          start: StartFace(
+            onStart: _beginCountdown,
+            tierName: widget.tierName,
+            tierCode: widget.tierCode ?? account?.tierCode,
+            pendingCount: _queue.length,
+            onLongPress: account == null ? null : () => setState(() => _pairing = true),
+          ),
+          glances: glanceFaces(
+            state: _glanceState,
+            glance: _glance,
+            onOpenShop: _openShop,
+          ),
         );
       case RunPhase.running:
       case RunPhase.paused:
@@ -542,6 +586,11 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
           focus: _focus,
           shareEarned: widget.shareEarned,
           tierCode: widget.tierCode ?? account?.tierCode,
+          glances: glanceFaces(
+            state: _glanceState,
+            glance: _glance,
+            onOpenShop: _openShop,
+          ),
           onCycle: () => setState(() => _focus = (_focus + 1) % RunningFace.metricCount),
           onPause: _pause,
           onResume: _resume,
@@ -564,9 +613,9 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   }
 }
 
-/// 가운데가 달리는 화면이고, 오른쪽으로 밀면(왼쪽 가장자리에서 오른쪽으로) 경로 화면,
-/// 왼쪽으로 밀면 조작 화면이다. 조작 화면으로 넘어가면 일시정지,
-/// 달리는 화면으로 돌아오거나 재개를 누르면 다시 달린다.
+/// 가운데가 달리는 화면이고, 오른쪽으로 한 번 밀면 경로 화면, 왼쪽으로 한 번 밀면 조작 화면이다.
+/// 조작 화면으로 넘어가면 일시정지, 그 밖으로 나오면 다시 달린다.
+/// 경로 화면에서 한 번 더 오른쪽으로 밀면 월드투어·챌린지·크루·다이아 보기 화면이다.
 class RunPager extends StatefulWidget {
   const RunPager({
     super.key,
@@ -581,6 +630,7 @@ class RunPager extends StatefulWidget {
     this.onCycle,
     this.shareEarned,
     this.tierCode,
+    this.glances = const [],
   });
 
   final int? shareEarned;
@@ -595,9 +645,13 @@ class RunPager extends StatefulWidget {
   final VoidCallback onResume;
   final VoidCallback onFinish;
 
-  static const routePage = 0;
-  static const runPage = 1;
-  static const controlsPage = 2;
+  /// 월드투어, 챌린지, 크루, 다이아. 비어 있으면 경로·달리기·조작 세 장만 둔다.
+  final List<Widget> glances;
+
+  /// 경로 바로 왼쪽(더 작은 인덱스)에 보기 화면을 두므로, 달리기에서 오른쪽으로 한 번은 경로다.
+  int get routePage => glances.length;
+  int get runPage => glances.length + 1;
+  int get controlsPage => glances.length + 2;
 
   @override
   State<RunPager> createState() => _RunPagerState();
@@ -605,7 +659,7 @@ class RunPager extends StatefulWidget {
 
 class _RunPagerState extends State<RunPager> {
   late final PageController _controller = PageController(
-    initialPage: widget.paused ? RunPager.controlsPage : RunPager.runPage,
+    initialPage: widget.paused ? widget.controlsPage : widget.runPage,
   );
 
   @override
@@ -613,7 +667,7 @@ class _RunPagerState extends State<RunPager> {
     super.didUpdateWidget(old);
     if (old.paused != widget.paused && _controller.hasClients) {
       unawaited(_controller.animateToPage(
-        widget.paused ? RunPager.controlsPage : RunPager.runPage,
+        widget.paused ? widget.controlsPage : widget.runPage,
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
       ));
@@ -630,10 +684,11 @@ class _RunPagerState extends State<RunPager> {
   Widget build(BuildContext context) => PageView(
         controller: _controller,
         onPageChanged: (page) {
-          if (page == RunPager.controlsPage && !widget.paused) widget.onPause();
-          if (page != RunPager.controlsPage && widget.paused) widget.onResume();
+          if (page == widget.controlsPage && !widget.paused) widget.onPause();
+          if (page != widget.controlsPage && widget.paused) widget.onResume();
         },
         children: [
+          ...widget.glances.reversed,
           RouteFace(session: widget.session),
           RunningFace(
             session: widget.session,
@@ -647,4 +702,15 @@ class _RunPagerState extends State<RunPager> {
           ControlsFace(onResume: widget.onResume, onFinish: widget.onFinish),
         ],
       );
+}
+
+/// 시작 화면에서 왼쪽으로 밀면 보기 화면. 시작 버튼을 누르는 흐름은 그대로다.
+class HomePager extends StatelessWidget {
+  const HomePager({required this.start, required this.glances, super.key});
+
+  final Widget start;
+  final List<Widget> glances;
+
+  @override
+  Widget build(BuildContext context) => PageView(children: [start, ...glances]);
 }

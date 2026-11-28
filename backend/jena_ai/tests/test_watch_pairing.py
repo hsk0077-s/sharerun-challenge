@@ -239,3 +239,4 @@ def test_watch_token_may_ask_for_its_tier() -> None:
     from app.services.auth_service import WATCH_ALLOWED_PATHS
 
     assert "/actions/watch/tier" in WATCH_ALLOWED_PATHS
+    assert "/actions/watch/glance" in WATCH_ALLOWED_PATHS

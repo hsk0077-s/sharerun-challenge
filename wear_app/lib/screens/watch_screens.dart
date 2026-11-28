@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../core/run_session.dart';
+import '../core/watch_glance.dart';
 import '../core/watch_platform.dart';
 import '../core/watch_run_link.dart';
 import '../l10n/watch_copy.dart';
@@ -1291,3 +1292,140 @@ class _SummaryFaceState extends State<SummaryFace> {
     );
   }
 }
+
+/// 월드투어 · 챌린지 · 크루 · 다이아. 한 화면에는 그 정보만 크게 그린다.
+enum GlanceKind { world, challenge, crew, diamond }
+
+class GlanceFace extends StatefulWidget {
+  const GlanceFace({
+    required this.kind,
+    required this.state,
+    this.glance,
+    this.onOpenShop,
+    super.key,
+  });
+
+  final GlanceKind kind;
+  final WatchGlanceState state;
+  final WatchGlance? glance;
+
+  /// 다이아 화면에서 폰 상점을 연다. 결제 화면은 워치에 두지 않는다.
+  final Future<bool> Function()? onOpenShop;
+
+  static const worldKey = Key('watch-glance-world');
+  static const challengeKey = Key('watch-glance-challenge');
+  static const crewKey = Key('watch-glance-crew');
+  static const diamondKey = Key('watch-glance-dia');
+  static const shopNoteKey = Key('watch-glance-shop-note');
+
+  static Key keyFor(GlanceKind kind) => switch (kind) {
+        GlanceKind.world => worldKey,
+        GlanceKind.challenge => challengeKey,
+        GlanceKind.crew => crewKey,
+        GlanceKind.diamond => diamondKey,
+      };
+
+  @override
+  State<GlanceFace> createState() => _GlanceFaceState();
+}
+
+class _GlanceFaceState extends State<GlanceFace> {
+  String? _shopNote;
+  var _opening = false;
+
+  Future<void> _openShop() async {
+    if (widget.kind != GlanceKind.diamond || widget.state != WatchGlanceState.ready) {
+      return;
+    }
+    if (_opening) return;
+    setState(() => _opening = true);
+    final open = widget.onOpenShop;
+    var ok = false;
+    if (open != null) {
+      try {
+        ok = await open();
+      } catch (_) {
+        ok = false;
+      }
+    }
+    if (!mounted) return;
+    setState(() {
+      _opening = false;
+      _shopNote = watchUi(_locale(), ok ? 'glanceShopOpened' : 'glanceShopFailed');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = _locale();
+    final lines = switch (widget.kind) {
+      GlanceKind.world => worldLines(locale, widget.state, widget.glance),
+      GlanceKind.challenge => challengeLines(locale, widget.state, widget.glance),
+      GlanceKind.crew => crewLines(locale, widget.state, widget.glance),
+      GlanceKind.diamond => diamondLines(locale, widget.state, widget.glance),
+    };
+    final foot = _shopNote ?? lines.foot;
+    final tappable = widget.kind == GlanceKind.diamond && widget.state == WatchGlanceState.ready;
+    return RoundFace(
+      builder: (context, s) {
+        final stack = Stack(
+          children: [
+            zone(
+              s,
+              0.10,
+              0.22,
+              Text(lines.title,
+                  textAlign: TextAlign.center,
+                  style: _text(s, 0.055, color: watchMuted, weight: FontWeight.w500)),
+            ),
+            zone(
+              s,
+              0.26,
+              0.52,
+              Text(lines.headline,
+                  key: GlanceFace.keyFor(widget.kind),
+                  textAlign: TextAlign.center,
+                  style: _text(s, 0.11, weight: FontWeight.w800)),
+            ),
+            if (lines.detail.isNotEmpty)
+              zone(
+                s,
+                0.54,
+                0.68,
+                Text(lines.detail,
+                    textAlign: TextAlign.center,
+                    style: _text(s, 0.055, weight: FontWeight.w600)),
+              ),
+            if (foot.isNotEmpty)
+              zone(
+                s,
+                0.70,
+                0.88,
+                Text(foot,
+                    key: _shopNote == null ? null : GlanceFace.shopNoteKey,
+                    textAlign: TextAlign.center,
+                    style: _text(s, 0.048, color: watchMuted, weight: FontWeight.w500)),
+              ),
+          ],
+        );
+        if (!tappable) return stack;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _openShop,
+          child: stack,
+        );
+      },
+    );
+  }
+}
+
+/// 보기 화면 4장. 홈에서는 이 순서(월드투어부터), 달리는 중에는 경로 화면 너머에 거꾸로 둔다.
+List<Widget> glanceFaces({
+  required WatchGlanceState state,
+  WatchGlance? glance,
+  Future<bool> Function()? onOpenShop,
+}) =>
+    [
+      for (final kind in GlanceKind.values)
+        GlanceFace(kind: kind, state: state, glance: glance, onOpenShop: onOpenShop),
+    ];

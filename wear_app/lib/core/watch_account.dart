@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'watch_glance.dart';
 import 'watch_platform.dart';
 
 /// 서버 주소와 Firebase 웹 키. 빌드할 때 `--dart-define`으로 넣는다(저장소에 두지 않는다).
@@ -199,7 +200,23 @@ class WatchAccount {
     await _store.write(_tierKey, code);
   }
 
-  /// 6자리 코드를 계정으로 바꾼다. 성공하면 [isPaired]가 true.
+  /// 보기 화면용 읽기. 실패하면 null (지난 화면 값은 호출한 쪽이 둔다).
+  /// `device_id`는 기록 올리기와 같이 보내고, 누구의 기록인지는 로그인 토큰이 정한다.
+  Future<WatchGlance?> fetchGlance() async {
+    if (!isPaired) return null;
+    try {
+      final reply = await postSigned('/actions/watch/glance', {
+        'device_id': await deviceId(),
+      });
+      if (reply == null || !reply.ok) return null;
+      final glance = WatchGlance.tryParse(reply.body);
+      if (glance?.tierCode != null) await rememberTier(glance!.tierCode);
+      return glance;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 앱을 열 때 서버에서 지금 등급 동물을 다시 받아 둔다. 실패하면 이전 값을 그대로 둔다.
   Future<void> refreshTier() async {
     if (!isPaired) return;
@@ -209,6 +226,7 @@ class WatchAccount {
     } catch (_) {}
   }
 
+  /// 6자리 코드를 계정으로 바꾼다. 성공하면 [isPaired]가 true.
   Future<void> pair(String code) async {
     if (!configured) {
       throw const PairingUnavailable('no_server');

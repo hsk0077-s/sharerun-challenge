@@ -28,6 +28,7 @@ import '../screens/solo_pedometer_screen.dart';
 import 'router/dashboard_router.dart';
 import '../features/watch_link/incoming_watch_run_links.dart';
 import '../features/watch_link/watch_run_link.dart';
+import '../features/watch_link/watch_shop_link.dart';
 
 /// Dashboard shell (tabs + sub-routes) shown after local guest login.
 ///
@@ -122,8 +123,14 @@ class _AuthenticatedAppState extends ConsumerState<AuthenticatedApp> {
     final links = _watchRunLinks;
     if (links == null) return;
     void open(String raw) {
+      if (!mounted) return;
+      final shop = WatchShopLink.parse(raw);
+      if (shop != null) {
+        _router?.go(shop.location);
+        return;
+      }
       final parsed = WatchRunLink.parse(raw);
-      if (parsed == null || !mounted) return;
+      if (parsed == null) return;
       _router?.go(parsed.location);
     }
 

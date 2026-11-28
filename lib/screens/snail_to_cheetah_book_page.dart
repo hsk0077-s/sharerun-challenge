@@ -100,7 +100,12 @@ class SnailToCheetahBookPage extends ConsumerWidget {
           ],
         ),
       ),
-      bottomSheet: tier.isSnail ? const _UnratedGuide() : null,
+      // Scaffold는 bottomSheet 안에서 하단 inset을 지우므로 바깥 값을 넘긴다.
+      bottomSheet: tier.isSnail
+          ? _UnratedGuide(
+              bottomInset: MediaQuery.viewPaddingOf(context).bottom,
+            )
+          : null,
     );
   }
 }
@@ -195,14 +200,17 @@ class _BookGridCard extends StatelessWidget {
 
 /// 아직 티어가 없을 때(등급 심사 전) 아래에 붙는 안내.
 class _UnratedGuide extends StatelessWidget {
-  const _UnratedGuide();
+  const _UnratedGuide({required this.bottomInset});
+
+  /// 시스템 내비 바 높이. 화면 맨 아래에 붙는 시트라 그만큼 더 띄운다.
+  final double bottomInset;
 
   @override
   Widget build(BuildContext context) {
     final c = context.srcTokens.colors;
     return Container(
       key: const Key('tier-book-unrated-guide'),
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 26),
+      padding: EdgeInsets.fromLTRB(20, 14, 20, 26 + bottomInset),
       decoration: BoxDecoration(
         color: const Color(0xFF0E1512),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(34)),

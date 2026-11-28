@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_exception.dart';
+import '../firebase/apple_sign_in_handoff.dart';
 
 class ProviderLoginResult {
   const ProviderLoginResult({
@@ -96,6 +97,7 @@ class IdentityApiClient {
       );
 
   /// 애플 ID 토큰(iOS는 identityToken, 안드로이드는 Firebase ID 토큰)을 서버에 보낸다.
+  /// iPhone 로그인이면 그때 쓴 일회용 nonce(원문)도 함께 보낸다.
   Future<ProviderLoginResult> appleLogin(
     String idToken, {
     bool createAccount = false,
@@ -105,6 +107,7 @@ class IdentityApiClient {
         idToken,
         createAccount: createAccount,
         tokenField: 'id_token',
+        extra: _appleNonce(idToken),
       );
 
   Future<void> linkKakao(String accessToken) => _link('kakao', accessToken);
@@ -114,8 +117,16 @@ class IdentityApiClient {
   Future<void> linkGoogle(String idToken) =>
       _signedIn('POST', '/auth/google/link', {'id_token': idToken});
 
-  Future<void> linkApple(String idToken) =>
-      _signedIn('POST', '/auth/apple/link', {'id_token': idToken});
+  Future<void> linkApple(String idToken) => _signedIn(
+        'POST',
+        '/auth/apple/link',
+        {'id_token': idToken, ..._appleNonce(idToken)},
+      );
+
+  static Map<String, String> _appleNonce(String idToken) {
+    final nonce = AppleSignInHandoff.nonceFor(idToken);
+    return nonce == null ? const {} : {'nonce': nonce};
+  }
 
   Future<void> unlinkApple() => _unlink('apple');
 
@@ -179,6 +190,7 @@ class IdentityApiClient {
     String token, {
     bool createAccount = false,
     String tokenField = 'access_token',
+    Map<String, String> extra = const {},
   }) async {
     final response = await _httpClient
         .post(
@@ -187,6 +199,7 @@ class IdentityApiClient {
           body: jsonEncode({
             tokenField: token,
             if (createAccount) 'create_account': true,
+            ...extra,
           }),
         )
         .timeout(_timeout);

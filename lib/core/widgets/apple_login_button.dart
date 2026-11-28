@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart' show AppleLogoPainter;
 
 import '../../l10n/remaining_surface.dart';
 
@@ -16,6 +17,7 @@ class AppleLoginButton extends StatelessWidget {
   final String? label;
 
   static const buttonKey = Key('apple-login-button');
+  static const logoKey = Key('apple-login-logo');
   static const double height = 44;
   static const double radius = 12;
 
@@ -44,7 +46,16 @@ class AppleLoginButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.apple, color: Colors.white, size: 22),
+                // Apple's own logo shape (Human Interface Guidelines), not a
+                // Material icon.
+                const SizedBox(
+                  key: logoKey,
+                  width: 18,
+                  height: 22,
+                  child: CustomPaint(
+                    painter: AppleLogoPainter(color: Colors.white),
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   resolvedLabel,

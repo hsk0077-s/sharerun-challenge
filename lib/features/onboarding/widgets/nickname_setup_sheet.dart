@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/ui/user_visible_failure.dart';
+import '../../../data/firebase/apple_sign_in_handoff.dart';
 import '../../../l10n/remaining_surface.dart';
 import '../src_onboarding_controller.dart';
 
@@ -31,6 +32,15 @@ class _NicknameSetupSheetState extends ConsumerState<NicknameSetupSheet> {
   final _controller = TextEditingController();
   String? _liveError;
   var _submitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Apple sends the name only on the first sign-in. Offer it as a starting
+    // point; the person can change it, and nothing is saved until they submit.
+    final suggestion = AppleSignInHandoff.takeSuggestedNickname();
+    if (suggestion != null) _controller.text = suggestion;
+  }
 
   @override
   void dispose() {

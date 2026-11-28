@@ -5,6 +5,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import '../../core/config/app_env.dart';
 import '../../l10n/remaining_surface.dart';
+import 'apple_id_token_fetcher.dart';
 
 class AuthCancelledException implements Exception {
   const AuthCancelledException();
@@ -14,11 +15,14 @@ class AuthService {
   AuthService({
     FirebaseAuth? firebaseAuth,
     GoogleSignIn? googleSignIn,
+    AppleIdTokenFetcher? appleFetcher,
   })  : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+        _googleSignIn = googleSignIn ?? GoogleSignIn.instance,
+        _appleFetcher = appleFetcher ?? AppleIdTokenFetcher();
 
   final FirebaseAuth _firebaseAuth;
   final GoogleSignIn _googleSignIn;
+  final AppleIdTokenFetcher _appleFetcher;
   var _googleInitialized = false;
 
   Stream<User?> authStateChanges() {
@@ -92,21 +96,17 @@ class AuthService {
 
   /// 애플 로그인 창을 띄워 서버가 확인할 ID 토큰만 받는다. 닫으면 null.
   ///
-  /// iOS/macOS는 애플이 준 identityToken을 그대로 쓴다. 안드로이드에는 애플 앱이
-  /// 없어서 Firebase의 웹 로그인(signInWithProvider)을 거치고, 그 Firebase ID 토큰을
-  /// 보낸다. 서버는 두 토큰 모두 `sub`가 같은 애플 사용자 번호로 확인한다.
+  /// iOS/macOS는 애플이 준 identityToken을 그대로 쓴다(일회용 nonce 포함,
+  /// [AppleIdTokenFetcher]). 안드로이드에는 애플 앱이 없어서 Firebase의 웹 로그인
+  /// (signInWithProvider)을 거치고, 그 Firebase ID 토큰을 보낸다. 서버는 두 토큰
+  /// 모두 `sub`가 같은 애플 사용자 번호로 확인한다.
   Future<String?> obtainAppleIdToken() async {
     try {
       if (defaultTargetPlatform == TargetPlatform.iOS ||
           defaultTargetPlatform == TargetPlatform.macOS) {
-        final credential = await SignInWithApple.getAppleIDCredential(
-          scopes: [
-            AppleIDAuthorizationScopes.email,
-            AppleIDAuthorizationScopes.fullName,
-          ],
-        );
-        final token = credential.identityToken;
-        if (token == null || token.isEmpty) {
+        try {
+          return await _appleFetcher.idToken();
+        } on AppleTokenMissing {
           throw Exception(
             RemainingSurface.trNow(
               'auth_service.body',
@@ -114,7 +114,6 @@ class AuthService {
             ),
           );
         }
-        return token;
       }
       final provider = OAuthProvider('apple.com')
         ..addScope('email')

@@ -170,13 +170,28 @@ abstract final class AppEnv {
   /// Garmin 연동은 아직 모의 구현이다(실제 Garmin 로그인 없음). 출시 빌드에서는 막는다.
   static bool get garminLinkEnabled => kDebugMode;
 
-  /// 애플 로그인은 서버·콘솔 설정이 끝난 빌드에서만 켠다.
-  /// `--dart-define=APPLE_LOGIN_ENABLED=true`. 꺼져 있으면 "준비 중"으로 보인다.
-  static bool get appleLoginEnabled => _bool(
-        'APPLE_LOGIN_ENABLED',
-        defaultValue: false,
-        fromDefine: _appleLoginEnabledDefine,
+  /// 애플 로그인 버튼을 쓸 수 있는지.
+  ///
+  /// iPhone(과 Mac)에서는 **항상 켠다**. 구글·카카오·네이버 로그인이 있는 앱은
+  /// App Store 심사 지침 4.8에 따라 Apple 로그인도 있어야 해서 끌 수 없다.
+  /// 안드로이드는 예전처럼 `--dart-define=APPLE_LOGIN_ENABLED=true`일 때만 켜고,
+  /// 꺼져 있으면 "준비 중"으로 보인다.
+  static bool get appleLoginEnabled => resolveAppleLoginEnabled(
+        platform: defaultTargetPlatform,
+        configured: _bool(
+          'APPLE_LOGIN_ENABLED',
+          defaultValue: false,
+          fromDefine: _appleLoginEnabledDefine,
+        ),
       );
+
+  static bool resolveAppleLoginEnabled({
+    required TargetPlatform platform,
+    required bool configured,
+  }) =>
+      platform == TargetPlatform.iOS ||
+      platform == TargetPlatform.macOS ||
+      configured;
 
   static bool get useLocalMockData =>
       _bool('USE_LOCAL_MOCK_DATA', defaultValue: false);

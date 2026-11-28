@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +14,8 @@ import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/api/api_exception.dart';
 import '../core/config/app_env.dart';
+import '../features/auth/apple_account_deletion.dart';
+import '../features/auth/login_connection_providers.dart';
 import '../features/legal/legal_links.dart';
 import '../core/auth/firebase_auth_messages.dart';
 import '../core/constants/economy_constants.dart';
@@ -335,7 +338,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (confirmed != true) return;
 
     try {
-      await ref.read(securedActionApiClientProvider).deleteAccount();
+      // iPhone + Apple 로그인 연결: 애플 연결도 끊도록 일회용 코드를 한 번 더 받는다.
+      final appleCode = await appleCodeForAccountDeletion(
+        platform: defaultTargetPlatform,
+        fetchProviders: ref.read(identityApiClientProvider).fetchProviders,
+        askAppleCode: ref.read(appleAuthorizationCodeProvider),
+        beforeAsking: () => _showSnack(
+          RemainingSurface.trNow(
+            'settings.apple_revoke_notice',
+            'Apple 로그인 연결도 끊기 위해 Apple 확인을 한 번 더 받아요.',
+          ),
+        ),
+      );
+      await ref
+          .read(securedActionApiClientProvider)
+          .deleteAccount(appleAuthorizationCode: appleCode);
       final joined = ref.read(joinedTournamentIdsProvider).value ?? const {};
       if (joined.isNotEmpty) {
         await ref

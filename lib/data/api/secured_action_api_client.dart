@@ -354,8 +354,13 @@ class SecuredActionApiClient {
     );
   }
 
-  Future<void> deleteAccount() async {
-    await _post('/actions/account/delete', const {});
+  /// [appleAuthorizationCode]: iPhone only, a fresh Sign in with Apple code so
+  /// the server can revoke the Apple grant while it deletes the account.
+  Future<void> deleteAccount({String? appleAuthorizationCode}) async {
+    await _post('/actions/account/delete', {
+      if (appleAuthorizationCode != null && appleAuthorizationCode.isNotEmpty)
+        'apple_authorization_code': appleAuthorizationCode,
+    });
   }
 
   /// The server checks [purchaseToken] with Google Play before it grants DIA.

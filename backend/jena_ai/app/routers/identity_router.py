@@ -21,6 +21,11 @@ class GoogleTokenRequest(BaseModel):
     create_account: bool = False
 
 
+class AppleTokenRequest(GoogleTokenRequest):
+    # Raw nonce the iPhone hashed into Apple's sign-in request (optional).
+    nonce: str | None = Field(default=None, max_length=128)
+
+
 class WatchPairRequest(BaseModel):
     code: str = Field(min_length=6, max_length=6, pattern=r"^[0-9]{6}$")
     # The watch makes one random id and keeps it, so pairing again does not use a slot.
@@ -133,20 +138,30 @@ def google_unlink(request: Request, uid: str = Depends(require_uid)) -> dict:
 
 
 @router.post("/apple/login")
-def apple_login(body: GoogleTokenRequest, request: Request) -> dict:
+def apple_login(body: AppleTokenRequest, request: Request) -> dict:
     if not identities.allow_login_attempt(_client(request), time.monotonic()):
         raise HTTPException(status_code=429, detail="too_many_attempts")
     return identities.login(
-        _db(), "apple", body.id_token, create_account=body.create_account
+        _db(),
+        "apple",
+        body.id_token,
+        verify=lambda token: identities.verify_apple_id_token(token, body.nonce),
+        create_account=body.create_account,
     )
 
 
 @router.post("/apple/link")
 def apple_link(
-    body: GoogleTokenRequest, request: Request, uid: str = Depends(require_uid)
+    body: AppleTokenRequest, request: Request, uid: str = Depends(require_uid)
 ) -> dict:
     _throttle_link(request, uid)
-    return identities.link(_db(), uid, "apple", body.id_token)
+    return identities.link(
+        _db(),
+        uid,
+        "apple",
+        body.id_token,
+        verify=lambda token: identities.verify_apple_id_token(token, body.nonce),
+    )
 
 
 @router.post("/apple/unlink")

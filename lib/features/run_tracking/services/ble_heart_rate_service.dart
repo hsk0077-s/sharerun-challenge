@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/ui/user_visible_failure.dart';
 import '../../../l10n/remaining_surface.dart';
 
 /// Bluetooth SIG Heart Rate Service (0x180D) & Heart Rate Measurement (0x2A37).
@@ -327,7 +328,12 @@ class BleHeartRateService {
         _updateSnapshot(
           _snapshot.copyWith(
             state: BleConnectionState.error,
-            errorMessage: '$error',
+            errorMessage: userVisibleFailure(
+              null,
+              error,
+              key: 'run_tracking.ble_heart_rate_service.body.5',
+              ko: '센서 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+            ),
           ),
         );
       },
@@ -423,18 +429,24 @@ class BleHeartRateService {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: e.message ??
-              RemainingSurface.trNow(
-                'run_tracking.ble_heart_rate_service.body.3',
-                '블루투스 권한 또는 상태를 확인해 주세요.',
-              ),
+          errorMessage: userVisibleFailure(
+            null,
+            e,
+            key: 'run_tracking.ble_heart_rate_service.body.3',
+            ko: '블루투스 권한 또는 상태를 확인해 주세요. 잠시 후 다시 시도해 주세요.',
+          ),
         ),
       );
     } catch (e) {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: '$e',
+          errorMessage: userVisibleFailure(
+            null,
+            e,
+            key: 'run_tracking.ble_heart_rate_service.body.5',
+            ko: '센서 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
         ),
       );
     }
@@ -479,18 +491,24 @@ class BleHeartRateService {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: e.message ??
-              RemainingSurface.trNow(
-                'run_tracking.ble_heart_rate_service.body.5',
-                '센서 연결에 실패했습니다.',
-              ),
+          errorMessage: userVisibleFailure(
+            null,
+            e,
+            key: 'run_tracking.ble_heart_rate_service.body.5',
+            ko: '센서 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
         ),
       );
     } catch (e) {
       _updateSnapshot(
         _snapshot.copyWith(
           state: BleConnectionState.error,
-          errorMessage: '$e',
+          errorMessage: userVisibleFailure(
+            null,
+            e,
+            key: 'run_tracking.ble_heart_rate_service.body.5',
+            ko: '센서 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
         ),
       );
     }
@@ -623,14 +641,23 @@ class BleHeartRateService {
           _reconnectAttempts = 0;
           _reconnectTimer?.cancel();
         }
+        final hasAdapterError = err != null && err.isNotEmpty;
+        if (hasAdapterError) {
+          debugPrint('BLE adapter error: $err');
+        }
         _updateSnapshot(
           _snapshot.copyWith(
             state: nextState,
             deviceId: devId,
             deviceName: devName,
             clearBpm: nextState == BleConnectionState.disconnected,
-            errorMessage: err,
-            clearError: err == null,
+            errorMessage: hasAdapterError
+                ? RemainingSurface.trNow(
+                    'run_tracking.ble_heart_rate_service.body.5',
+                    '센서 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+                  )
+                : null,
+            clearError: !hasAdapterError,
             reconnectAttempts: _reconnectAttempts,
           ),
         );

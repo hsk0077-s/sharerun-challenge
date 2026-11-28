@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../app/providers/app_providers.dart';
 import '../app/router/route_names.dart';
 import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../core/config/app_env.dart';
 import '../core/strings/app_strings.dart';
 import '../core/theme/app_colors.dart';
@@ -227,11 +228,11 @@ class _DeviceConnectionScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'device_connection.toast',
-              '등급 배정 화면 이동 실패: $e',
-              {'e': e},
+              e,
+              key: 'device_connection.toast',
+              ko: '등급 배정 화면으로 이동하지 못했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),
@@ -269,11 +270,11 @@ class _DeviceConnectionScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'device_connection.toast.2',
-              '건너뛰기 실패: $e',
-              {'e': e},
+              e,
+              key: 'device_connection.toast.2',
+              ko: '건너뛰기에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),
@@ -538,11 +539,11 @@ class _DeviceConnectionScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              RemainingSurface.tr(
+              userVisibleFailure(
                 context,
-                'device_connection.toast.8',
-                'Garmin 연동 화면을 열 수 없습니다: $e',
-                {'e': e},
+                e,
+                key: 'device_connection.toast.8',
+                ko: 'Garmin 연동 화면을 열지 못했어요. 잠시 후 다시 시도해 주세요.',
               ),
             ),
           ),

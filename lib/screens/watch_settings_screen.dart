@@ -42,7 +42,7 @@ class _WatchSettingsScreenState extends ConsumerState<WatchSettingsScreen> {
             RemainingSurface.tr(
               context,
               'watch_settings.body',
-              '브랜드별 연동 경로를 분리해 데이터 신뢰도와 법률 방어를 강화합니다.',
+              '기록을 더 정확하게 남겨 공정한 인증에 도움이 돼요.',
             ),
             style: const TextStyle(color: AppColors.textSecondary),
           ),

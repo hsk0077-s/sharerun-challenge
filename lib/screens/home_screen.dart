@@ -236,15 +236,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                       );
-                    } catch (error) {
+                    } catch (error, stackTrace) {
+                      debugPrint(
+                        'Health Connect request failed: $error\n$stackTrace',
+                      );
                       if (!mounted) {
                         return;
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(
-                            copy.healthFail(error),
-                          ),
+                          content: Text(copy.healthFail),
                         ),
                       );
                     }

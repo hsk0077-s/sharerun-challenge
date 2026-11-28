@@ -99,8 +99,10 @@ void main() {
     });
   });
 
-  group('AsyncValueSection (locale resolved from BuildContext, with a placeholder)', () {
-    const koPrefix = '데이터를 불러오지 못했습니다:';
+  group('AsyncValueSection (locale resolved from BuildContext)', () {
+    const ko = '데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+    const en = "Couldn't load the data. Please try again in a moment.";
+    const ja = 'データを読み込めませんでした。しばらくしてからもう一度お試しください。';
 
     Future<void> pump(WidgetTester tester, Locale locale) async {
       await tester.pumpWidget(
@@ -114,7 +116,10 @@ void main() {
           ],
           home: Scaffold(
             body: AsyncValueSection<int>(
-              asyncValue: AsyncValue.error(Exception('boom'), StackTrace.empty),
+              asyncValue: AsyncValue.error(
+                Exception('Bad state: Internal Server Error'),
+                StackTrace.empty,
+              ),
               dataBuilder: (_, __) => const SizedBox.shrink(),
             ),
           ),
@@ -123,28 +128,30 @@ void main() {
       await tester.pump();
     }
 
-    testWidgets('ko renders the Korean source with the error substituted',
+    testWidgets('ko shows the retry sentence and hides the exception',
         (tester) async {
       await pump(tester, const Locale('ko', 'KR'));
-      expect(find.textContaining(koPrefix), findsOneWidget);
-      expect(find.text('$koPrefix Exception: boom'), findsOneWidget);
+      expect(find.text(ko), findsOneWidget);
+      expect(find.textContaining('Bad state'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
+      expect(find.textContaining('Internal Server Error'), findsNothing);
     });
 
     testWidgets('en renders the English translation, not the Korean source',
         (tester) async {
       await pump(tester, const Locale('en', 'US'));
-      expect(find.textContaining(koPrefix), findsNothing);
-      expect(find.text('Failed to load data: Exception: boom'), findsOneWidget);
+      expect(find.text(ko), findsNothing);
+      expect(find.text(en), findsOneWidget);
+      expect(find.textContaining('Bad state'), findsNothing);
+      expect(find.textContaining('Exception'), findsNothing);
     });
 
     testWidgets('ja renders the Japanese translation, not the Korean source',
         (tester) async {
       await pump(tester, const Locale('ja', 'JP'));
-      expect(find.textContaining(koPrefix), findsNothing);
-      expect(
-        find.text('データを読み込めませんでした: Exception: boom'),
-        findsOneWidget,
-      );
+      expect(find.text(ko), findsNothing);
+      expect(find.text(ja), findsOneWidget);
+      expect(find.textContaining('Internal Server Error'), findsNothing);
     });
   });
 

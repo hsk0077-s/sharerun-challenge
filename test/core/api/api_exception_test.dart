@@ -61,10 +61,18 @@ void main() {
       expect(ApiErrorMessage.from(exception), '대회 정원이 가득 찼습니다.');
     });
 
-    test('from stringifies non-ApiException errors', () {
+    test('from hides non-ApiException text', () {
       expect(
-        ApiErrorMessage.from(StateError('boom')),
-        contains('boom'),
+        ApiErrorMessage.from(StateError('Bad state')),
+        '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.',
+      );
+      expect(
+        ApiErrorMessage.from(Exception('Internal Server Error')),
+        isNot(contains('Internal Server Error')),
+      );
+      expect(
+        ApiErrorMessage.from(Exception('Bad state')),
+        isNot(contains('Bad state')),
       );
     });
 

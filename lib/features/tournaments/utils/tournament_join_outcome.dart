@@ -215,12 +215,17 @@ abstract final class TournamentJoinPlanner {
       );
     }
 
-    final detail = error is ApiException ? error.userMessage : error.toString();
+    final shown = error is ApiException
+        ? error.userMessage
+        : RemainingSurface.trNow(
+            'common.try_again_moment',
+            '잠시 후 다시 시도해 주세요.',
+          );
     return TournamentJoinPlan(
       kind: TournamentJoinKind.failedClosed,
       applyDebit: false,
       debitAmount: 0,
-      snackbarMessage: '${TournamentJoinMessages.joinPaymentFailed} ($detail)',
+      snackbarMessage: '${TournamentJoinMessages.joinPaymentFailed} ($shown)',
       debugLog:
           '[JOIN] status=failed_closed debit=N error=${_errorForLog(error)}',
     );

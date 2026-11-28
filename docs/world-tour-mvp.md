@@ -9,7 +9,8 @@ GPS 인증을 통과한 러닝 거리를 가상 세계여행 미션 진행률로
 - 반영 거리는 러닝 전체 거리(`distanceKm`)다. 하루 상한이 적용된 거리는 쓰지 않는다.
 - 인정 조건: `activities/{id}`의 `userId == 본인`, `validationFinalized == true`, `jenaVerified == true`.
   `validate_run`과 부정 탐지는 읽기만 한다(수정 없음). **모의 위치 탐지는 이번 범위가 아니다.**
-- 보상은 스탬프와 여권뿐이다. SHARE·DIA 등 화폐 지급과 결제는 없다.
+- 보상은 스탬프와 여권뿐이다. 미션 완주로 SHARE·DIA를 주지 않는다.
+- 꾸미기 가격(DIA)은 정해져 있다. 의상 120, 소품 60, 배경 90, 여권 표지 70, 나라 세트 270. 세트는 의상+소품+배경+여권 표지이고, 따로 사면 340이다. 가격은 `item_price_config.py`와 앱 `WorldTourCosmeticPrices`가 같이 들고, 상점 카탈로그가 그 숫자를 읽는다. 나라별 구매와 새 그림은 아직 없다.
 - 이미 완주한 미션에는 새 러닝을 붙일 수 없다(409 `mission_completed`).
 
 ## 서버 (`backend/jena_ai`)

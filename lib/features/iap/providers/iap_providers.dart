@@ -4,12 +4,12 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/providers/app_providers.dart';
+import '../../../core/config/app_env.dart';
 import '../../../data/repositories/purchase_repository.dart';
 import '../../wallet/providers/wallet_provider.dart';
 import '../models/iap_ui_event.dart';
 import '../payment_auth.dart';
 import '../services/iap_purchase_controller.dart';
-import 'coach_plus_providers.dart';
 import '../../../l10n/remaining_surface.dart';
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>(
@@ -44,10 +44,19 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
       );
     },
     confirmPayment: ref.read(paymentAuthGateProvider).confirm,
-    onCoachPlusPurchased: (productId, purchaseToken) {
-      return ref
-          .read(coachPlusActiveProvider.notifier)
-          .grant(productId, purchaseToken);
+    onDiaPackPurchased: (productId, purchaseToken) async {
+      final result = await ref
+          .read(securedActionApiClientProvider)
+          .grantDiaPack(productId, purchaseToken);
+      final granted = result.accepted &&
+          (result.status == 'granted' || result.status == 'already_granted');
+      if (!granted) return false;
+      ref.read(walletProvider.notifier).applyWalletSnapshot(
+            shareBalance: result.shareBalance,
+            diamondBalance: result.diamondBalance,
+            valueBalance: result.valueTokenBalance,
+          );
+      return true;
     },
   );
   ref.onDispose(controller.dispose);
@@ -56,4 +65,11 @@ final iapPurchaseControllerProvider = Provider<IapPurchaseController>((ref) {
 
 final iapUiEventsProvider = StreamProvider<IapUiEvent>((ref) {
   return ref.watch(iapPurchaseControllerProvider).uiEvents;
+});
+
+/// Play price labels for DIA packs. Empty when the packs switch is off
+/// or the store cannot be reached.
+final diaPackPriceLabelsProvider = FutureProvider<Map<String, String>>((ref) {
+  if (!AppEnv.diaPacksEnabled) return const {};
+  return ref.watch(iapPurchaseControllerProvider).queryDiaPackPriceLabels();
 });

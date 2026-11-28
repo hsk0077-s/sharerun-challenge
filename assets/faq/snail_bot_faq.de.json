@@ -1331,7 +1331,7 @@
     "aliases": [
       "Erkläre Coach+"
     ],
-    "answer": "Coach+ ist ein Abo-Dienst, der dir beim Laufen ausführliches Sprach-Coaching passend zu deiner Echtzeit-Herzfrequenz und deinem Tempo gibt. Er wird noch für den Verkauf vorbereitet, daher kannst du vorerst das kostenlose Coaching nutzen."
+    "answer": "Coaching ist für alle ohne Abo offen. Distanzhinweise und Puls-Coaching sind beim Laufen kostenlos. Einen kostenpflichtigen Coach+-Plan verkaufen wir nicht."
   },
   {
     "id": "CP-02",
@@ -1340,7 +1340,7 @@
     "aliases": [
       "Coach+ Preise"
     ],
-    "answer": "Coach+ ist mit 6.900 KRW pro Monat und 59.000 KRW pro Jahr in Vorbereitung, mit 7 Tagen kostenloser Testphase. Zahlungen sind noch nicht geöffnet, daher wird nichts abgebucht."
+    "answer": "Coach+ wird nicht verkauft. Sprach-Coaching kostet nichts."
   },
   {
     "id": "CP-03",
@@ -1349,7 +1349,7 @@
     "aliases": [
       "Testversion"
     ],
-    "answer": "Ja, es gibt eine 7-tägige kostenlose Testphase."
+    "answer": "Eine Probe ist nicht nötig. Coaching ist von Anfang an kostenlos."
   },
   {
     "id": "CP-04",
@@ -1358,7 +1358,7 @@
     "aliases": [
       "Abo kündigen"
     ],
-    "answer": "Du kannst ganz einfach in der App kündigen. Ich öffne den Bildschirm zur Abo-Verwaltung für dich."
+    "answer": "Es gibt kein kostenpflichtiges Abo zum Kündigen. Coaching bleibt kostenlos."
   },
   {
     "id": "CP-05",
@@ -1367,7 +1367,7 @@
     "aliases": [
       "Wann kommt Coach+?"
     ],
-    "answer": "Wir verkaufen Coach+ derzeit nicht. Wir sagen dir zuerst Bescheid, wenn es soweit ist."
+    "answer": "Nein. Coach+ wird nicht verkauft. Coaching ist schon kostenlos."
   },
   {
     "id": "CP-06",
@@ -1376,7 +1376,7 @@
     "aliases": [
       "Unterschiede bei Coach+"
     ],
-    "answer": "Das kostenlose Coaching gibt Grundhinweise zu Start, Ziel und nach Distanz, und Coach+ ergänzt ausführliches Coaching, abgestimmt auf deine Echtzeit-Herzfrequenzzonen und Tempowechsel."
+    "answer": "Es gibt kein getrenntes kostenpflichtiges Coaching. Distanz und Puls sind beide kostenlos."
   },
   {
     "id": "CP-07",
@@ -1412,7 +1412,7 @@
     "aliases": [
       "Verlängert sich das Abo automatisch?"
     ],
-    "answer": "Coach+ ist noch nicht im Verkauf, daher wird nichts automatisch abgebucht. Wenn du nach dem offiziellen Start abonnierst, verlängert es sich im gewählten Zeitraum automatisch über deine Store-Zahlungsmethode, und du kannst jederzeit in der Abo-Verwaltung des Stores kündigen."
+    "answer": "Nein. Es gibt kein Coaching-Abo, das sich automatisch verlängert."
   },
   {
     "id": "SYS-FALLBACK",

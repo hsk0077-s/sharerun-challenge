@@ -1331,7 +1331,7 @@
     "aliases": [
       "Jelaskan Coach+"
     ],
-    "answer": "Coach+ adalah layanan langganan yang memberi pelatihan suara mendalam sesuai detak jantung dan kecepatan real time saat kamu berlari. Layanan ini sedang disiapkan untuk dijual, jadi untuk sekarang kamu bisa memakai pelatihan gratis."
+    "answer": "Coaching terbuka untuk semua orang tanpa langganan. Petunjuk jarak dan coaching detak jantung gratis saat lari. Tidak ada paket berbayar bernama Coach+."
   },
   {
     "id": "CP-02",
@@ -1340,7 +1340,7 @@
     "aliases": [
       "Tarif Coach+"
     ],
-    "answer": "Coach+ sedang disiapkan dengan harga 6.900 KRW per bulan dan 59.000 KRW per tahun, dengan percobaan gratis 7 hari. Pembayaran belum dibuka, jadi kamu tidak akan ditagih."
+    "answer": "Coach+ tidak dijual. Coaching suara tidak berbayar."
   },
   {
     "id": "CP-03",
@@ -1349,7 +1349,7 @@
     "aliases": [
       "Versi percobaan"
     ],
-    "answer": "Ya, ada percobaan gratis 7 hari."
+    "answer": "Tidak perlu uji coba. Coaching gratis sejak awal."
   },
   {
     "id": "CP-04",
@@ -1358,7 +1358,7 @@
     "aliases": [
       "Batalkan langganan"
     ],
-    "answer": "Kamu bisa membatalkan dengan mudah di dalam aplikasi. Aku akan membuka layar pengelolaan langganan."
+    "answer": "Tidak ada paket berbayar untuk dibatalkan. Coaching tetap gratis."
   },
   {
     "id": "CP-05",
@@ -1367,7 +1367,7 @@
     "aliases": [
       "Kapan Coach+ keluar?"
     ],
-    "answer": "Saat ini kami tidak menjual Coach+. Kami akan memberi tahu lebih dulu saat sudah siap."
+    "answer": "Tidak. Coach+ tidak dijual. Coaching sudah gratis."
   },
   {
     "id": "CP-06",
@@ -1376,7 +1376,7 @@
     "aliases": [
       "Perbedaan Coach+"
     ],
-    "answer": "Pelatihan gratis memberi panduan dasar saat mulai, selesai, dan per jarak, sedangkan Coach+ menambah pelatihan mendalam sesuai zona detak jantung dan perubahan kecepatan secara real time."
+    "answer": "Tidak ada coaching berbayar terpisah. Jarak dan detak jantung sama-sama gratis."
   },
   {
     "id": "CP-07",
@@ -1412,7 +1412,7 @@
     "aliases": [
       "Apakah langganan diperpanjang otomatis?"
     ],
-    "answer": "Coach+ belum dijual, jadi tidak ada penagihan otomatis. Jika kamu berlangganan setelah peluncuran resmi, langganan diperpanjang otomatis setiap periode yang dipilih dengan metode pembayaran toko, dan kamu bisa membatalkan kapan saja di pengelolaan langganan toko."
+    "answer": "Tidak. Tidak ada langganan coaching yang diperpanjang sendiri."
   },
   {
     "id": "SYS-FALLBACK",

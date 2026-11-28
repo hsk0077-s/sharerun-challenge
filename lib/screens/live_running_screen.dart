@@ -24,7 +24,6 @@ import '../features/run_tracking/services/run_session_service.dart';
 import '../data/models/user_model.dart';
 import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
-import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/friend_ghost_run.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
 import '../l10n/remaining_surface.dart';
@@ -373,9 +372,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
         );
       }
     });
-    try {
-      await ref.read(coachOnePointRunProvider.notifier).claimIfNeeded();
-    } catch (_) {}
     if (!mounted || !isRunning) return;
     unawaited(_startPositionStream());
   }
@@ -440,7 +436,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       isRunning = false;
     });
     _stopTracking();
-    ref.read(coachOnePointRunProvider.notifier).endRun();
     ref.read(friendGhostPaceProvider.notifier).endRun();
     final coach = _voiceCoach ?? _voiceCoachOf();
     unawaited(coach.onRunFinished());
@@ -528,7 +523,6 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       unawaited(coach.onSessionDismissed(epoch));
     }
     try {
-      ref.read(coachOnePointRunProvider.notifier).endRun();
       ref.read(friendGhostPaceProvider.notifier).endRun();
     } catch (_) {}
     _stopTracking();

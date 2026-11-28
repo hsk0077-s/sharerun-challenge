@@ -36,7 +36,6 @@ import '../data/repositories/auth_repository.dart' show authRepositoryProvider;
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/onboarding/widgets/chibi_tier_avatar.dart';
 import '../features/onboarding/widgets/nickname_change_sheet.dart';
-import '../features/iap/widgets/coach_plus_upsell_sheet.dart';
 import '../features/launch/intro_screen.dart';
 import '../features/run_tracking/run_recording_checklist.dart';
 import '../features/run_tracking/run_recording_policy.dart';
@@ -615,25 +614,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   trailing: const Icon(Icons.arrow_forward_rounded),
                   onTap: () => unawaited(openContactEmail(context)),
                 ),
-                if (AppEnv.inAppPurchasesEnabled) ...[
-                  const Divider(height: 1, color: AppColors.nightLine),
-                  ListTile(
-                    key: const Key('coach-plus-settings'),
-                    title: Text(
-                      'Coach+',
-                      style: AppTextStyles.agreementLabel.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    subtitle: Text(
-                      copy.coachSub,
-                      style: AppTextStyles.caption,
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_rounded),
-                    onTap: () => CoachPlusUpsellSheet.show(context),
-                  ),
-                ],
                 const Divider(height: 1, color: AppColors.nightLine),
                 ListTile(
                   title: Text(

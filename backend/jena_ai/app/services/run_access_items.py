@@ -1,12 +1,8 @@
-"""코치 원포인트권 and 추가 참가권.
+"""추가 참가권.
 
 Prices come from ``config/item_prices``. Purchase is idempotent on
 ``request_id``: the ledger document id is the request, so a retry does
 not debit DIA twice. Spends take free DIA first, same as other shop buys.
-
-코치 원포인트권 (5 DIA): one use per KST day. Using it marks that run so
-the app can speak Coach+ pace cues. Consumed when the run starts. An
-active Coach+ subscription does not spend a ticket.
 
 추가 참가권 (10 DIA, or 3 for 25): two uses per KST day. There is no
 per-user daily race-join counter. A non-prize room refuses entry when
@@ -23,7 +19,6 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 
 from app.models.secured_actions import SecuredActionResult
 from app.services.item_price_config import (
-    COACH_ONE_POINT_ITEM_ID,
     EXTRA_ENTRY_ITEM_ID,
     EXTRA_ENTRY_PACK_ITEM_ID,
     read_item_prices,
@@ -31,14 +26,12 @@ from app.services.item_price_config import (
 from app.services.streak_protection import kst_today, require_request_id
 from app.services.wallet_funding import move_currency
 
-_COACH_USES_PER_DAY = 1
 _EXTRA_ENTRY_USES_PER_DAY = 2
 _PACK_QUANTITY = 3
 _TERMINAL_RACE_STATUSES = frozenset(
     {"cancelled", "cancelled_bep_not_met", "completed"}
 )
 _GRANT = {
-    COACH_ONE_POINT_ITEM_ID: (COACH_ONE_POINT_ITEM_ID, 1),
     EXTRA_ENTRY_ITEM_ID: (EXTRA_ENTRY_ITEM_ID, 1),
     EXTRA_ENTRY_PACK_ITEM_ID: (EXTRA_ENTRY_ITEM_ID, _PACK_QUANTITY),
 }
@@ -122,76 +115,6 @@ def purchase_run_access_item(
     )
 
 
-def use_coach_one_point(
-    service,
-    transaction,
-    uid: str,
-    request_id: str,
-    user_ref,
-    now: datetime | None = None,
-) -> SecuredActionResult:
-    """Spend one ticket for this run, or report that Coach+ already covers it."""
-    current = now or datetime.now(timezone.utc)
-    request_id = require_request_id(request_id)
-    ledger_ref = _ledger_ref(
-        service, _use_doc_id(uid, COACH_ONE_POINT_ITEM_ID, request_id)
-    )
-    if _exists(ledger_ref, transaction):
-        return SecuredActionResult(
-            accepted=True,
-            status="already_used",
-            reason="Coach one-point ticket already used for this run.",
-        )
-
-    user = _user(user_ref, transaction)
-    if _coach_plus_active(user, current):
-        return SecuredActionResult(
-            accepted=True,
-            status="subscriber",
-            reason="Coach+ is active. Ticket was not used.",
-        )
-
-    day = kst_today(current).isoformat()
-    uses = _day_count(user, "coachOnePointUseDay", day)
-    if uses >= _COACH_USES_PER_DAY:
-        raise HTTPException(
-            status_code=400,
-            detail="Coach one-point daily use cap is 1.",
-        )
-    inventory_ref = user_ref.collection("shopInventory").document(
-        COACH_ONE_POINT_ITEM_ID
-    )
-    quantity = _quantity(inventory_ref, transaction)
-    if quantity < 1:
-        raise HTTPException(status_code=400, detail="No item to use.")
-
-    transaction.set(inventory_ref, {"quantity": quantity - 1}, merge=True)
-    transaction.update(
-        user_ref,
-        {
-            "coachOnePointUseDay": {"dayKey": day, "count": uses + 1},
-            "coachOnePointRun": {"requestId": request_id, "dayKey": day},
-            "updatedAt": SERVER_TIMESTAMP,
-        },
-    )
-    transaction.set(
-        ledger_ref,
-        {
-            "uid": uid,
-            "type": "shop_item_use",
-            "itemId": COACH_ONE_POINT_ITEM_ID,
-            "requestId": request_id,
-            "quantityAmount": -1,
-            "createdAt": SERVER_TIMESTAMP,
-        },
-    )
-    return SecuredActionResult(
-        accepted=True,
-        status="used",
-        reason="Coach one-point ticket used for this run.",
-    )
-
-
 def consume_extra_entry_ticket(
     service,
     transaction,
@@ -240,20 +163,6 @@ def consume_extra_entry_ticket(
             "createdAt": SERVER_TIMESTAMP,
         },
     )
-
-
-def _coach_plus_active(user: dict, now: datetime) -> bool:
-    raw = (user.get("coachPlus") or {}).get("activeUntil")
-    if not isinstance(raw, str) or not raw.strip():
-        return False
-    try:
-        until = datetime.fromisoformat(raw.strip())
-    except ValueError:
-        return False
-    if until.tzinfo is None:
-        until = until.replace(tzinfo=timezone.utc)
-    current = now if now.tzinfo else now.replace(tzinfo=timezone.utc)
-    return until > current
 
 
 def _day_count(user: dict, field: str, day: str) -> int:

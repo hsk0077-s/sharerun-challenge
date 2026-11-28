@@ -3,7 +3,6 @@ import '../../core/config/app_env.dart';
 import '../../core/challenge/challenge_entry_fee.dart';
 import '../../core/strings/app_strings.dart';
 import '../../data/models/company_tournament_config.dart';
-import '../iap/models/coach_plus_product.dart';
 import '../shop/providers/shop_tab_provider.dart';
 
 /// Mini-bot intents. Typed, chip, and speech text share [MiniBotInterpreter].
@@ -20,7 +19,6 @@ enum MiniBotIntent {
   sponsorRunner,
   brandSponsor,
   subscription,
-  coachPlus,
   battlePass,
   unknown,
 }
@@ -36,7 +34,6 @@ enum MiniBotDestination {
   personalSponsor,
   brandSponsor,
   subscription,
-  coachPlus,
   battlePass,
 }
 
@@ -71,7 +68,6 @@ class MiniBotRead {
           RemainingSurface.trNow('mini_bot.mini_bot_intent.body.3', '참가하기'),
         MiniBotDestination.challengeLobby ||
         MiniBotDestination.subscription ||
-        MiniBotDestination.coachPlus ||
         MiniBotDestination.battlePass ||
         MiniBotDestination.none =>
           RemainingSurface.trNow('mini_bot.mini_bot_intent.body.4', '이동하기'),
@@ -87,7 +83,6 @@ class MiniBotRead {
         MiniBotDestination.personalSponsor => MiniBotCopy.sponsorAmount,
         MiniBotDestination.brandSponsor => MiniBotCopy.brandAmount,
         MiniBotDestination.subscription => MiniBotCopy.subscriptionAmount,
-        MiniBotDestination.coachPlus => MiniBotCopy.coachPlusAmount,
         MiniBotDestination.battlePass => MiniBotCopy.battlePassAmount,
         MiniBotDestination.challengeLobby || MiniBotDestination.none => null,
       };
@@ -121,7 +116,6 @@ abstract final class MiniBotPrompts {
   static const sponsor = '스폰서';
   static const runnerSponsor = '러너 후원';
   static const subscription = '구독';
-  static const coachPlus = 'Coach+';
   static const battlePass = '배틀패스';
 
   static const _keys = {
@@ -135,7 +129,6 @@ abstract final class MiniBotPrompts {
     sponsor: 'mini_bot.mini_bot_intent.body.11',
     runnerSponsor: 'mini_bot.mini_bot_intent.body.12',
     subscription: 'mini_bot.copy.chip_subscription',
-    coachPlus: 'mini_bot.mini_bot_intent.coach_plus',
     battlePass: 'mini_bot.mini_bot_intent.body.13',
   };
 
@@ -154,12 +147,11 @@ abstract final class MiniBotPrompts {
     _chip('cpr', cpr),
     _chip('safeguard', safeGuard),
     _chip('subscription', subscription),
-    _chip('coach-plus', coachPlus),
     _chip('battle-pass', battlePass),
   ];
 
-  /// 1.0은 현금 결제 칩(러너 후원 결제, 구독, Coach+)을 보여 주지 않는다.
-  static const purchaseChipIds = {'runner', 'subscription', 'coach-plus'};
+  /// 현금 결제 칩(러너 후원, 구독)은 결제 스위치가 꺼져 있으면 숨긴다.
+  static const purchaseChipIds = {'runner', 'subscription'};
 
   static List<MiniBotChip> get visibleChips {
     if (AppEnv.inAppPurchasesEnabled) return chips;
@@ -200,7 +192,7 @@ abstract final class MiniBotCopy {
   static String get brandAmount => AppStrings.brandSponsorEntryFee;
 
   static String get subscriptionAmount => RemainingSurface.trNow(
-      'mini_bot.copy.subscription_amount', '유료 구독은 Coach+ 하나예요');
+      'mini_bot.copy.subscription_amount', '유료 구독은 없어요. 코칭은 모두에게 무료예요.');
 
   static String get battlePassAmount =>
       '${AppStrings.battlePassTitle} · ${AppStrings.battlePassCurrentLevel}';
@@ -300,24 +292,6 @@ abstract final class MiniBotCopy {
         {'subscriptionAmount': subscriptionAmount},
       );
 
-  static String get coachPlusAmount {
-    final monthly = CoachPlusPlan.monthly;
-    final yearly = CoachPlusPlan.yearly;
-    final monthLabel =
-        RemainingSurface.trNow('shop.store_look.body.2', monthly.periodLabel);
-    final yearLabel =
-        RemainingSurface.trNow('shop.store_look.body.3', yearly.periodLabel);
-    return '$monthLabel ${monthly.fallbackPriceLabel} · '
-        '$yearLabel ${yearly.fallbackPriceLabel}';
-  }
-
-  static String get coachPlus => RemainingSurface.trNow(
-        'mini_bot.copy.coach_plus',
-        'Coach+ 안내를 열까요? 심박·상황에 맞춘 심층 코칭이에요. '
-            '\${coachPlusAmount}. 이동만 하고, 여기서는 결제하지 않아요.',
-        {'coachPlusAmount': coachPlusAmount},
-      );
-
   static String get battlePass => RemainingSurface.trNow(
         'mini_bot.copy.battle_pass',
         '배틀런 패스 화면으로 이동할까요? \${battlePassAmount}. '
@@ -332,7 +306,7 @@ abstract final class MiniBotCopy {
         'mini_bot.copy.unknown',
         '그 말은 아직 연결되지 않았어요. '
             '앱 소개, 챌린지 로비, 후원, 스폰서, 러너 후원, 챌린지 참가, '
-            '다이아 교환, 심폐소생권, 세이프가드, 구독, Coach+, 배틀패스 중에서 말해 주세요.',
+            '다이아 교환, 심폐소생권, 세이프가드, 구독, 배틀패스 중에서 말해 주세요.',
       );
 
   static String get micDenied => RemainingSurface.trNow(
@@ -398,11 +372,6 @@ abstract final class MiniBotCopy {
         'mini_bot.copy.run_subscription',
         '구독 관리 화면으로 이동할게요. 여기서는 구독을 바꾸지 않아요.',
       ),
-      MiniBotDestination.coachPlus => RemainingSurface.trNow(
-        'mini_bot.copy.run_coach_plus',
-        'Coach+ 안내를 열게요. '
-            '월간·연간은 그 화면에서 직접 골라 주세요. 여기서는 결제되지 않아요.',
-      ),
       MiniBotDestination.battlePass => RemainingSurface.trNow(
         'mini_bot.copy.run_battle_pass',
         '배틀런 패스 화면으로 이동할게요. 여기서는 패스를 구매하지 않아요.',
@@ -450,15 +419,6 @@ abstract final class MiniBotInterpreter {
         intent: MiniBotIntent.battlePass,
         destination: MiniBotDestination.battlePass,
         reply: MiniBotCopy.battlePass,
-        needsConfirm: true,
-      );
-    }
-
-    if (_hasCoachPlus(text)) {
-      return MiniBotRead(
-        intent: MiniBotIntent.coachPlus,
-        destination: MiniBotDestination.coachPlus,
-        reply: MiniBotCopy.coachPlus,
         needsConfirm: true,
       );
     }
@@ -578,10 +538,6 @@ abstract final class MiniBotInterpreter {
     'バトルラン', '通行證', '通行证', 'pase de batalla', 'passe de batalha', 'pass battle',
     'เบทเทิล', 'แบทเทิล', //
   ];
-  static const _wCoachPlus = [
-    'coach', '코칭', '코치', '심박', 'コーチ', '教練', '教练', 'entrenad', 'treinad',
-    'entraîneur', 'huấn luyện', 'โค้ช', 'pelatih', 'heart rate', '心拍', '心率', //
-  ];
   static const _wSubscription = [
     '구독', '멤버십', 'subscri', 'membership', 'サブスク', '購読', '訂閱', '订阅', 'suscrip',
     'assinatura', 'abonnement', 'đăng ký gói', 'สมาชิก', 'langganan', //
@@ -639,8 +595,6 @@ abstract final class MiniBotInterpreter {
   static bool _hasCpr(String text) => _any(text, _wCpr);
 
   static bool _hasBattlePass(String text) => _any(text, _wBattlePass);
-
-  static bool _hasCoachPlus(String text) => _any(text, _wCoachPlus);
 
   static bool _hasSubscription(String text) =>
       _any(text, _wSubscription) ||

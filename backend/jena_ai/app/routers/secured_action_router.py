@@ -23,7 +23,6 @@ from app.models.secured_actions import (
     SecuredActionResult,
     SignupFreeTicketResult,
     SettleTournamentFailureRequest,
-    CoachPlusActivateRequest,
     CreateChallengeRoomRequest,
     CreateChallengeRoomResult,
     CrewEmblemPurchaseRequest,
@@ -403,18 +402,6 @@ def redeem_referral_code(
     uid: str = Depends(require_uid),
 ) -> RedeemReferralResult:
     return service.redeem_referral_code(uid=uid, code=request.code)
-
-
-@router.post("/coach-plus/activate", response_model=SecuredActionResult)
-def activate_coach_plus(
-    request: CoachPlusActivateRequest,
-    uid: str = Depends(require_uid),
-) -> SecuredActionResult:
-    return service.activate_coach_plus(
-        uid=uid,
-        product_id=request.product_id,
-        purchase_token=request.purchase_token,
-    )
 
 
 @router.post("/shop/purchase", response_model=SecuredActionResult)

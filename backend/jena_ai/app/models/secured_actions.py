@@ -162,12 +162,6 @@ class CreateChallengeRoomRequest(BaseModel):
     distance_km: int = Field(ge=1, le=200)
 
 
-class CoachPlusActivateRequest(BaseModel):
-    product_id: str = Field(min_length=3)
-    # Google Play purchase token. The server checks it with Play before it grants anything.
-    purchase_token: str = Field(min_length=10, max_length=4096)
-
-
 class Web3TransferRequest(BaseModel):
     destination_address: str = Field(
         pattern=r"^0x[a-fA-F0-9]{40}$",

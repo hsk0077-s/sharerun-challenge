@@ -37,19 +37,6 @@ const shopCopyRows = <String, List<String>>{
     'การ์ดป้องกัน',
     'Pelindung aman',
   ],
-  'coach': [
-    '코치 원포인트권',
-    'Coach one-point ticket',
-    'コーチワンポイント券',
-    '教練重點券',
-    'Ticket de un consejo',
-    'Ticket de um ponto do técnico',
-    'Coach-Einpunkt-Ticket',
-    'Ticket un conseil coach',
-    'Vé một lời khuyên',
-    'ตั๋วคำแนะนำโค้ช',
-    'Tiket satu saran pelatih',
-  ],
   'extraEntry': [
     '추가 참가권',
     'Extra entry ticket',
@@ -340,7 +327,6 @@ const _cosmeticIds = <String, String>{
 const _shopKorean = <String, String>{
   'cpr': AppStrings.storeItemCpr,
   'safeGuard': AppStrings.storeItemSafeGuard,
-  'coach': AppStrings.storeItemCoachOnePoint,
   'extraEntry': AppStrings.storeItemExtraEntry,
   'extraEntryPack': AppStrings.storeItemExtraEntryPack,
   'friendGhost': AppStrings.storeItemFriendGhost,
@@ -393,7 +379,6 @@ class ShopCopy {
 
   String get cpr => _at('cpr');
   String get safeGuard => _at('safeGuard');
-  String get coach => _at('coach');
   String get extraEntry => _at('extraEntry');
   String get extraEntryPack => _at('extraEntryPack');
   String get friendGhost => _at('friendGhost');

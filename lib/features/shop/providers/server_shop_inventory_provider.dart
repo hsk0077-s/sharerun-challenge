@@ -17,7 +17,6 @@ class ServerShopInventory {
     this.safeGuardCount = 0,
     this.ghostPaceCount = 0,
     this.battlePassCount = 0,
-    this.coachOnePointCount = 0,
     this.extraEntryCount = 0,
     this.friendGhostCount = 0,
     this.crewCheerCount = 0,
@@ -35,7 +34,6 @@ class ServerShopInventory {
   static const ghostPaceId = 'ghost_pace_match';
   static const battlePassId = battlePassItemId;
   static const battlePassPlusId = battlePassPlusItemId;
-  static const coachOnePointId = 'coach_one_point_ticket';
   static const extraEntryId = 'extra_entry_ticket';
   static const friendGhostId = 'friend_ghost_pace';
   static const friendGhostPackId = 'friend_ghost_pace_10pack';
@@ -49,7 +47,6 @@ class ServerShopInventory {
   final int safeGuardCount;
   final int ghostPaceCount;
   final int battlePassCount;
-  final int coachOnePointCount;
   final int extraEntryCount;
   final int friendGhostCount;
   final int crewCheerCount;
@@ -71,7 +68,6 @@ class ServerShopInventory {
       safeGuardCount <= 0 &&
       ghostPaceCount <= 0 &&
       battlePassCount <= 0 &&
-      coachOnePointCount <= 0 &&
       extraEntryCount <= 0 &&
       friendGhostCount <= 0 &&
       crewCheerCount <= 0 &&
@@ -89,8 +85,6 @@ class ServerShopInventory {
         return ghostPaceCount;
       case battlePassId:
         return battlePassCount;
-      case coachOnePointId:
-        return coachOnePointCount;
       case extraEntryId:
         return extraEntryCount;
       case friendGhostId:
@@ -125,7 +119,6 @@ class ServerShopInventory {
       safeGuardCount: quantities[safeGuardId] ?? 0,
       ghostPaceCount: quantities[ghostPaceId] ?? 0,
       battlePassCount: quantities[battlePassId] ?? 0,
-      coachOnePointCount: quantities[coachOnePointId] ?? 0,
       extraEntryCount: quantities[extraEntryId] ?? 0,
       friendGhostCount: quantities[friendGhostId] ?? 0,
       crewCheerCount: quantities[crewCheerId] ?? 0,
@@ -177,7 +170,6 @@ class ServerShopInventory {
       safeGuardCount: safeGuardCount,
       ghostPaceCount: ghostPaceCount,
       battlePassCount: battlePassCount,
-      coachOnePointCount: coachOnePointCount,
       extraEntryCount: extraEntryCount,
       friendGhostCount: friendGhostCount,
       crewCheerCount: crewCheerCount,
@@ -200,7 +192,6 @@ class ServerShopInventory {
       safeGuardCount: safeGuardCount,
       ghostPaceCount: ghostPaceCount,
       battlePassCount: battlePassCount,
-      coachOnePointCount: coachOnePointCount,
       extraEntryCount: extraEntryCount,
       friendGhostCount: friendGhostCount,
       crewCheerCount: crewCheerCount,

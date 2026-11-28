@@ -794,17 +794,17 @@ const settingsSurfaceRows = <String, List<String>>{
         'Tetap hapus?',
   ],
   'deleteCoach': [
-    '• Coach+ 구독은 자동으로 해지되지 않습니다. Google Play 스토어의 구독 메뉴에서 직접 해지해 주세요.',
-    '• Coach+ does not cancel on its own. Cancel it in Google Play subscriptions.',
-    '• Coach+は自動では解約されません。Google Playの定期購入から解約してください。',
-    '• Coach+ 不會自動取消。請到 Google Play 的訂閱選單自行取消。',
-    '• Coach+ no se cancela solo. Cancélalo en las suscripciones de Google Play.',
-    '• O Coach+ não cancela sozinho. Cancele nas assinaturas do Google Play.',
-    '• Coach+ endet nicht von allein. Kündige es in den Google-Play-Abos.',
-    '• Coach+ ne s’arrête pas seul. Résiliez-le dans les abonnements Google Play.',
-    '• Coach+ không tự hủy. Hãy hủy trong mục đăng ký của Google Play.',
-    '• Coach+ ไม่ยกเลิกเอง โปรดยกเลิกในเมนูการสมัครของ Google Play',
-    '• Coach+ tidak berhenti sendiri. Batalkan di langganan Google Play.',
+    '• 유료 구독은 없어요. 음성 코칭은 무료입니다.',
+    '• There is no paid subscription. Voice coaching is free.',
+    '• 有料の定期購入はありません。音声コーチングは無料です。',
+    '• 沒有付費訂閱。語音教練是免費的。',
+    '• No hay suscripción de pago. El coaching de voz es gratis.',
+    '• Não há assinatura paga. O coaching de voz é grátis.',
+    '• Es gibt kein kostenpflichtiges Abo. Sprach-Coaching ist kostenlos.',
+    '• Il n’y a pas d’abonnement payant. Le coaching vocal est gratuit.',
+    '• Không có gói trả phí. Coaching giọng nói là miễn phí.',
+    '• ไม่มีการสมัครแบบเสียเงิน การโค้ชด้วยเสียงฟรี',
+    '• Tidak ada langganan berbayar. Coaching suara gratis.',
   ],
   'deleteConfirm': [
     '삭제하기',
@@ -1386,8 +1386,8 @@ class SettingsSurfaceCopy {
   String permNeed(String label) => restFill(_at('permNeed'), {'label': label});
 
   String deleteBody({required bool purchases}) {
-    final coach = purchases ? '${_at('deleteCoach')}\n' : '';
-    return restFill(_at('deleteBody'), {'coach': coach});
+    // Coach+ is not sold, so the delete warning never adds a subscription line.
+    return restFill(_at('deleteBody'), {'coach': purchases ? '' : ''});
   }
 }
 

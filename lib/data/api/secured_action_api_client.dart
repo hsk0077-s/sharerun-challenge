@@ -358,12 +358,17 @@ class SecuredActionApiClient {
     await _post('/actions/account/delete', const {});
   }
 
-  /// The server checks [purchaseToken] with Google Play before it grants Coach+.
-  Future<void> activateCoachPlus(String productId, String purchaseToken) async {
-    await _post(
-      '/actions/coach-plus/activate',
+  /// The server checks [purchaseToken] with Google Play before it grants DIA.
+  /// `granted` and `already_granted` are safe to consume on the device.
+  Future<PedometerHarvestResult> grantDiaPack(
+    String productId,
+    String purchaseToken,
+  ) async {
+    final json = await _post(
+      '/actions/wallet/dia-pack/grant',
       {'product_id': productId, 'purchase_token': purchaseToken},
     );
+    return PedometerHarvestResult.fromJson(json);
   }
 
   /// Records when the user ticked "I am 14 or older" (server keeps the first).
@@ -465,16 +470,6 @@ class SecuredActionApiClient {
   /// Decrements one account inventory doc. Rejects when quantity is already 0.
   Future<void> useShopItem(String itemId) async {
     await _postStreakAware('/actions/shop/use', itemId, 'use:$itemId');
-  }
-
-  /// Spends one 코치 원포인트권 for this run. The same [requestId] is one charge.
-  Future<String> useCoachOnePoint(String requestId) async {
-    final json = await _post('/actions/shop/use', {
-      'item_id': 'coach_one_point_ticket',
-      'request_id': requestId,
-    });
-    final status = json['status'];
-    return status is String ? status : '';
   }
 
   /// Once per KST day. Covers yesterday when a 세이프가드 is already held.

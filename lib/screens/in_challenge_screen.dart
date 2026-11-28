@@ -27,7 +27,6 @@ import '../features/run_tracking/services/gps_tracking_service.dart';
 import '../features/run_tracking/services/run_session_service.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/run_tracking/widgets/sponsor_live_buff_banner.dart';
-import '../features/shop/coach_one_point_run.dart';
 import '../features/shop/friend_ghost_run.dart';
 import '../features/shop/providers/server_shop_inventory_provider.dart';
 import '../features/shop/widgets/server_item_use_button.dart';
@@ -97,7 +96,6 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
       unawaited(coach.onSessionDismissed(epoch));
     }
     try {
-      ref.read(coachOnePointRunProvider.notifier).endRun();
       ref.read(friendGhostPaceProvider.notifier).endRun();
     } catch (_) {}
     unawaited(_telemetrySubscription?.cancel());
@@ -387,9 +385,6 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
         _startError = null;
         _permissionIssue = null;
       });
-      try {
-        await ref.read(coachOnePointRunProvider.notifier).claimIfNeeded();
-      } catch (_) {}
       if (!mounted) return;
       final coach = _voiceCoachOf();
       final started = coach.onRunStarted();
@@ -415,7 +410,6 @@ class _InChallengeScreenState extends ConsumerState<InChallengeScreen> {
   }
 
   Future<void> _finishAndValidate() async {
-    ref.read(coachOnePointRunProvider.notifier).endRun();
     ref.read(friendGhostPaceProvider.notifier).endRun();
     final coach = _voiceCoachOf();
     unawaited(coach.onRunFinished());

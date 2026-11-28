@@ -92,7 +92,7 @@ class _PaymentAuthTileState extends ConsumerState<PaymentAuthTile> {
         RemainingSurface.tr(
           context,
           'privacy.payment_auth_tile.body.3',
-          '다이아 구매와 Coach+ 결제창을 열기 전에 지문이나 화면 잠금으로 확인해요. '
+          '다이아 구매 창을 열기 전에 지문이나 화면 잠금으로 확인해요. '
           '결제 승인은 구글 플레이가 하고, 이 확인은 한 번 더 걸러 주는 단계예요.',
         ),
         style: AppTextStyles.caption,

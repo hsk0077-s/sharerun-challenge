@@ -1,24 +1,29 @@
 import '../features/iap/widgets/dia_notice.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
 import '../features/iap/widgets/purchases_closed_page.dart';
 import '../core/theme/app_colors.dart';
 import '../features/iap/models/dia_pack_product.dart';
+import '../features/iap/providers/iap_providers.dart';
 import '../l10n/remaining_surface.dart';
 
-/// DIA pack list. Buttons stay disabled until Play products exist.
-class DiaPackStoreScreen extends StatelessWidget {
+/// DIA pack list. Buttons buy only when both purchase switches are on.
+class DiaPackStoreScreen extends ConsumerWidget {
   const DiaPackStoreScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (!AppEnv.inAppPurchasesEnabled) {
       return PurchasesClosedPage(
         title: RemainingSurface.tr(context, 'dia_pack_store.title', 'DIA 팩'),
       );
     }
+    final canBuy = AppEnv.diaPacksEnabled;
+    final storePrices =
+        ref.watch(diaPackPriceLabelsProvider).asData?.value ?? const {};
     return Scaffold(
       backgroundColor: AppColors.bgGradientEnd,
       appBar: AppBar(
@@ -35,7 +40,16 @@ class DiaPackStoreScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
           for (final pack in DiaPackProduct.catalog) ...[
-            _DiaPackCard(pack: pack),
+            _DiaPackCard(
+              pack: pack,
+              storePrice: storePrices[pack.productId],
+              enabled: canBuy,
+              onBuy: canBuy
+                  ? () => ref
+                      .read(iapPurchaseControllerProvider)
+                      .buyDiaPack(pack)
+                  : null,
+            ),
             const SizedBox(height: 12),
           ],
           const DiaNoticeCard(),
@@ -46,9 +60,17 @@ class DiaPackStoreScreen extends StatelessWidget {
 }
 
 class _DiaPackCard extends StatelessWidget {
-  const _DiaPackCard({required this.pack});
+  const _DiaPackCard({
+    required this.pack,
+    required this.enabled,
+    this.storePrice,
+    this.onBuy,
+  });
 
   final DiaPackProduct pack;
+  final bool enabled;
+  final String? storePrice;
+  final VoidCallback? onBuy;
 
   @override
   Widget build(BuildContext context) {
@@ -71,12 +93,14 @@ class _DiaPackCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              RemainingSurface.tr(
-                context,
-                'dia_pack_store.body',
-                '$price원 · ${pack.bonusLabel}',
-                {'price': price, 'pack.bonusLabel': pack.bonusLabel},
-              ),
+              storePrice == null
+                  ? RemainingSurface.tr(
+                      context,
+                      'dia_pack_store.body',
+                      '$price원 · ${pack.bonusLabel}',
+                      {'price': price, 'pack.bonusLabel': pack.bonusLabel},
+                    )
+                  : '$storePrice · ${pack.bonusLabel}',
             ),
             const SizedBox(height: 2),
             Text(
@@ -90,9 +114,11 @@ class _DiaPackCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             FilledButton(
-              onPressed: null,
+              onPressed: enabled ? onBuy : null,
               child: Text(
-                RemainingSurface.tr(context, 'common.preparing', '준비 중'),
+                enabled
+                    ? RemainingSurface.tr(context, 'dia_pack_store.buy', '구매')
+                    : RemainingSurface.tr(context, 'common.preparing', '준비 중'),
               ),
             ),
           ],

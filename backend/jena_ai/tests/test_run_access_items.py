@@ -1,6 +1,6 @@
-"""코치 원포인트권 and 추가 참가권: config price, one charge, real effect."""
+"""추가 참가권: config price, one charge, real effect."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from types import SimpleNamespace
 
 from fastapi import HTTPException
@@ -8,7 +8,6 @@ import pytest
 
 from app.models.secured_actions import JoinTournamentRequest
 from app.services.item_price_config import resolve_item_prices
-from app.services.run_access_items import use_coach_one_point
 from app.services.secured_action_service import (
     SecuredActionService,
     _commit_join_tx,
@@ -17,7 +16,6 @@ from app.services.secured_action_service import (
 from test_redeem_referral import _MemoryDb, _MemoryTxn
 
 NOW = datetime(2026, 10, 4, 1, 0, tzinfo=timezone.utc)
-COACH = "coach_one_point_ticket"
 ENTRY = "extra_entry_ticket"
 PACK = "extra_entry_ticket_3pack"
 
@@ -49,14 +47,6 @@ def _buy(db: _MemoryDb, item_id: str, request_id: str):
         item_id,
         request_id,
         user_ref,
-    )
-
-
-def _use_coach(db: _MemoryDb, request_id: str, now: datetime = NOW):
-    service = _service(db)
-    user_ref = db.collection("users").document("u1")
-    return use_coach_one_point(
-        service, _MemoryTxn(), "u1", request_id, user_ref, now=now
     )
 
 
@@ -102,48 +92,22 @@ def _room(**extra: object) -> dict:
 
 
 def test_prices_default_and_a_bad_override_keeps_the_code_price() -> None:
-    assert resolve_item_prices(None)[COACH] == 5
     assert resolve_item_prices(None)[ENTRY] == 10
     assert resolve_item_prices(None)[PACK] == 25
-    overridden = resolve_item_prices({COACH: 7, ENTRY: 0, PACK: "25"})
-    assert overridden[COACH] == 7
+    overridden = resolve_item_prices({ENTRY: 0, PACK: "25"})
     assert overridden[ENTRY] == 10
     assert overridden[PACK] == 25
 
 
 def test_catalog_uses_the_config_price() -> None:
     db = _MemoryDb()
-    db.store["config/item_prices"] = {COACH: 7, PACK: 20}
+    db.store["config/item_prices"] = {PACK: 20}
     prices = {row["id"]: row["diamondCost"] for row in _service(db).shop_catalog()}
-    assert prices[COACH] == 7
     assert prices[ENTRY] == 10
     assert prices[PACK] == 20
     assert prices["battle_run_pass"] == 200
-
-
-def test_coach_purchase_spends_free_dia_first_and_replay_is_free() -> None:
-    db = _MemoryDb()
-    db.store["users/u1"] = _wallet(diamond=22, free=2, paid=20)
-
-    result = _buy(db, COACH, "req-coach-01")
-
-    assert result.status == "purchased"
-    assert result.diamond_balance == 17
-    wallet = db.store["users/u1"]["wallet"]
-    assert wallet["freeDiamondBalance"] == 0
-    assert wallet["paidDiamondBalance"] == 17
-    assert db.store[f"users/u1/shopInventory/{COACH}"]["quantity"] == 1
-    row = _ledger(db)[0]
-    assert row["type"] == "shop_purchase"
-    assert row["diamondAmount"] == -5
-    assert row["diamondFreeAmount"] == -2
-    assert row["diamondPaidAmount"] == -3
-    assert row["itemId"] == COACH
-
-    again = _buy(db, COACH, "req-coach-01")
-    assert again.status == "already_purchased"
-    assert db.store["users/u1"]["wallet"]["diamondBalance"] == 17
-    assert len(_ledger(db)) == 1
+    assert prices["world_tour_costume"] == 120
+    assert prices["world_tour_country_set"] == 270
 
 
 def test_pack_grants_three_tickets_for_25_and_replay_does_not_grant_again() -> None:
@@ -173,60 +137,15 @@ def test_short_dia_or_request_id_writes_nothing() -> None:
     db = _MemoryDb()
     db.store["users/u1"] = _wallet(diamond=4, free=4, paid=0)
     with pytest.raises(HTTPException) as short:
-        _buy(db, COACH, "req-coach-01")
+        _buy(db, ENTRY, "req-entry-0001")
     assert short.value.detail == "Insufficient Diamond balance."
     assert _ledger(db) == []
-    assert f"users/u1/shopInventory/{COACH}" not in db.store
+    assert f"users/u1/shopInventory/{ENTRY}" not in db.store
 
     db.store["users/u1"] = _wallet()
     with pytest.raises(HTTPException) as bad_id:
         _buy(db, ENTRY, "short")
     assert bad_id.value.detail == "request_id is required."
-    assert _ledger(db) == []
-
-
-def test_coach_use_unlocks_one_run_per_day_and_replay_does_not_spend_again() -> None:
-    db = _MemoryDb()
-    db.store["users/u1"] = _wallet()
-    db.store[f"users/u1/shopInventory/{COACH}"] = {"quantity": 2}
-
-    used = _use_coach(db, "run-00000001")
-    assert used.status == "used"
-    assert db.store[f"users/u1/shopInventory/{COACH}"]["quantity"] == 1
-    assert db.store["users/u1"]["coachOnePointRun"]["requestId"] == "run-00000001"
-    assert db.store["users/u1"]["coachOnePointUseDay"]["count"] == 1
-    assert _ledger(db)[0]["type"] == "shop_item_use"
-    assert _ledger(db)[0]["quantityAmount"] == -1
-
-    again = _use_coach(db, "run-00000001")
-    assert again.status == "already_used"
-    assert db.store[f"users/u1/shopInventory/{COACH}"]["quantity"] == 1
-    assert len(_ledger(db)) == 1
-
-    with pytest.raises(HTTPException) as capped:
-        _use_coach(db, "run-00000002")
-    assert capped.value.detail == "Coach one-point daily use cap is 1."
-    assert db.store[f"users/u1/shopInventory/{COACH}"]["quantity"] == 1
-
-    tomorrow = _use_coach(db, "run-00000003", now=NOW + timedelta(days=1))
-    assert tomorrow.status == "used"
-    assert db.store[f"users/u1/shopInventory/{COACH}"]["quantity"] == 0
-    assert db.store["users/u1"]["coachOnePointUseDay"]["count"] == 1
-
-
-def test_coach_plus_subscriber_does_not_spend_a_ticket() -> None:
-    db = _MemoryDb()
-    db.store["users/u1"] = _wallet()
-    db.store["users/u1"]["coachPlus"] = {
-        "productId": "coach_plus_monthly",
-        "activeUntil": "2026-12-01T00:00:00+00:00",
-    }
-    db.store[f"users/u1/shopInventory/{COACH}"] = {"quantity": 1}
-
-    result = _use_coach(db, "run-subscriber")
-
-    assert result.status == "subscriber"
-    assert db.store[f"users/u1/shopInventory/{COACH}"]["quantity"] == 1
     assert _ledger(db) == []
 
 

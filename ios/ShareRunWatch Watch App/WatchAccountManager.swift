@@ -11,11 +11,14 @@ final class WatchAccountManager: ObservableObject {
     @Published var errorMessage: String?
     @Published private(set) var glance: WatchGlanceData?
     @Published private(set) var glanceFailed: Bool = false
+    /// Tier animal code from the server (`turtle`, `cheetah_gold` …). Nil before grading.
+    @Published private(set) var tierCode: String?
 
     private let defaults = UserDefaults.standard
     private let refreshKey = "sharerun.watch.refresh_token"
     private let nicknameKey = "sharerun.watch.nickname"
     private let deviceKey = "sharerun.watch.device_id"
+    private let tierKey = "sharerun.watch.tier_code"
 
     private var refreshToken: String?
     private var idToken: String?
@@ -37,6 +40,23 @@ final class WatchAccountManager: ObservableObject {
         self.refreshToken = defaults.string(forKey: refreshKey)
         self.nickname = defaults.string(forKey: nicknameKey) ?? ""
         self.isPaired = !(self.refreshToken ?? "").isEmpty
+        self.tierCode = defaults.string(forKey: tierKey)
+    }
+
+    /// Keeps the `tier_code` from a pair, upload or tier reply. An empty or
+    /// missing value keeps the one we already have (same as Wear OS `rememberTier`).
+    func rememberTier(_ raw: Any?) {
+        guard let code = raw as? String, !code.isEmpty, code != tierCode else { return }
+        tierCode = code
+        defaults.set(code, forKey: tierKey)
+    }
+
+    /// `POST /actions/watch/tier` when the app opens. Failure keeps the last value.
+    func refreshTier() async {
+        guard isPaired else { return }
+        guard let (status, body) = await postSigned(path: "/actions/watch/tier", payload: [:]),
+              (200..<300).contains(status) else { return }
+        rememberTier(body["tier_code"])
     }
 
     /// Stable id for `POST /auth/watch-pair` and `ValidateRunRequest.device_id`.
@@ -65,8 +85,10 @@ final class WatchAccountManager: ObservableObject {
         idTokenExpiresAt = .distantPast
         nickname = ""
         isPaired = false
+        tierCode = nil
         defaults.removeObject(forKey: refreshKey)
         defaults.removeObject(forKey: nicknameKey)
+        defaults.removeObject(forKey: tierKey)
     }
 
     /// Exchanges 6-digit code from phone (`POST /actions/watch-pairing/code`) via `POST /auth/watch-pair`.
@@ -140,6 +162,7 @@ final class WatchAccountManager: ObservableObject {
 
             defaults.set(refresh, forKey: refreshKey)
             defaults.set(self.nickname, forKey: nicknameKey)
+            rememberTier(body["tier_code"])
             return nil
         } catch {
             let msg = "offline"

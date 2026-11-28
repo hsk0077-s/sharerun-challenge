@@ -1,12 +1,18 @@
 import CoreLocation
 import Foundation
 import HealthKit
+import WatchKit
 
 enum WatchRunPhase: Equatable {
     case start
     case pairing
+    /// 3·2·1 before the run starts (same as Wear OS `CountdownFace`).
+    case countdown(Int)
     case running
     case paused
+    /// Finish was pressed and the workout is being saved. Pause, resume and a
+    /// second finish all do nothing here.
+    case finishing
     case rankAlert(rank: Int, gapPeople: Int)
     case summary
 }
@@ -21,6 +27,19 @@ final class WorkoutManager: NSObject, ObservableObject {
     @Published private(set) var lastHeartRate: Int = 0
     @Published private(set) var totalSteps: Int = 0
     @Published private(set) var cadenceSpm: Int = 0
+    /// Which number is big on the running face: 0 distance, 1 time, 2 pace.
+    @Published var focus: Int = 0
+    /// The km just passed, shown for a few seconds. Nil the rest of the time.
+    @Published private(set) var bannerKm: Int?
+    /// Route for the line page and the summary. At most 400 points.
+    @Published private(set) var routePoints: [WatchRoutePoint] = []
+    /// Id of the run that is running or just finished (for its server reward).
+    @Published private(set) var lastActivityId: String?
+    /// The finished run went into the upload queue (false for a zero-distance run,
+    /// which hides the summary's reward line).
+    @Published private(set) var lastRunQueued = false
+
+    static let metricCount = 3
 
     private let healthStore = HKHealthStore()
     private var workoutSession: HKWorkoutSession?
@@ -31,14 +50,65 @@ final class WorkoutManager: NSObject, ObservableObject {
     private var startedAt: Date?
     private var lastLocation: CLLocation?
     private var heartRateSamples: [Int] = []
-    private var routePoints: [WatchRoutePoint] = []
     private var paceSamples: [WatchPaceSample] = []
+    private var countdownTimer: Timer?
+    private var wholeKm: Int = 0
+    private var bannerUntil: Date?
     private var lastPaceKm: Double = 0
     private var currentActivityId: String = ""
 
     var paceSecondsPerKm: Int {
         guard distanceKm >= 0.01, movingSeconds > 0 else { return 0 }
         return Int((Double(movingSeconds) / distanceKm).rounded())
+    }
+
+    /// Progress toward the next whole km (0...1), like Wear OS `kmProgress`.
+    var kmProgress: Double {
+        guard distanceKm > 0, distanceKm.isFinite else { return 0 }
+        return distanceKm - distanceKm.rounded(.down)
+    }
+
+    func cycleFocus() {
+        focus = (focus + 1) % Self.metricCount
+    }
+
+    /// Start pressed: 3·2·1, a short tap each second, then the run starts.
+    func beginCountdown() {
+        guard phase == .start else { return }
+        phase = .countdown(3)
+        Self.buzz(.click)
+        countdownTimer?.invalidate()
+        countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.countdownTick()
+            }
+        }
+    }
+
+    private func countdownTick() {
+        guard case let .countdown(count) = phase else {
+            countdownTimer?.invalidate()
+            countdownTimer = nil
+            return
+        }
+        if count <= 1 {
+            countdownTimer?.invalidate()
+            countdownTimer = nil
+            Task { await startRun() }
+        } else {
+            phase = .countdown(count - 1)
+            Self.buzz(.click)
+        }
+    }
+
+    func cancelCountdown() {
+        countdownTimer?.invalidate()
+        countdownTimer = nil
+        if case .countdown = phase { phase = .start }
+    }
+
+    static func buzz(_ type: WKHapticType) {
+        WKInterfaceDevice.current().play(type)
     }
 
     override init() {
@@ -80,8 +150,13 @@ final class WorkoutManager: NSObject, ObservableObject {
         paceSamples.removeAll()
         lastPaceKm = 0
         lastLocation = nil
+        wholeKm = 0
+        bannerKm = nil
+        bannerUntil = nil
+        focus = 0
         startedAt = Date()
         currentActivityId = "watchos-\(Int(Date().timeIntervalSince1970 * 1000))"
+        lastActivityId = currentActivityId
 
         let config = HKWorkoutConfiguration()
         config.activityType = .running
@@ -106,9 +181,13 @@ final class WorkoutManager: NSObject, ObservableObject {
             // Continues with GPS + timer fallback in simulator.
         }
 
+        // With the workout session running, keep GPS going when the wrist drops
+        // or the screen turns off. Needs UIBackgroundModes `location` (Info.plist).
+        locationManager.allowsBackgroundLocationUpdates = true
         locationManager.startUpdatingLocation()
         startTicker()
         phase = .running
+        Self.buzz(.start)
     }
 
     func pauseRun() {
@@ -117,6 +196,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         locationManager.stopUpdatingLocation()
         stopTicker()
         phase = .paused
+        Self.buzz(.click)
     }
 
     func resumeRun() {
@@ -125,6 +205,7 @@ final class WorkoutManager: NSObject, ObservableObject {
         locationManager.startUpdatingLocation()
         startTicker()
         phase = .running
+        Self.buzz(.click)
     }
 
     func showRankAlert(rank: Int, gapPeople: Int) {
@@ -139,8 +220,18 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     func finishRun(into queue: WatchSyncQueue, account: WatchAccountManager) async {
+        // Only once. Leave running/paused first, before any await, so a second
+        // hold returns here and a swipe off the controls cannot resume the
+        // timer or GPS while the workout is being saved.
+        guard phase == .running || phase == .paused else { return }
+        phase = .finishing
+        lastRunQueued = false
         stopTicker()
         locationManager.stopUpdatingLocation()
+        locationManager.allowsBackgroundLocationUpdates = false
+        bannerKm = nil
+        bannerUntil = nil
+        Self.buzz(.stop)
         let end = Date()
         let start = startedAt ?? end
 
@@ -166,17 +257,25 @@ final class WorkoutManager: NSObject, ObservableObject {
                 paceSamples: paceSamples
             )
             queue.enqueueRun(pending)
+            lastRunQueued = true
             if totalSteps > 0 {
                 let dayKey = Self.kstDayKey(for: end)
                 queue.enqueueSteps(dayKey: dayKey, steps: totalSteps)
             }
+            // Show the summary first; its reward line fills in when the server answers
+            // (and stays "confirmed after upload" while offline).
+            phase = .summary
             await queue.flush(using: account)
+        } else {
+            phase = .summary
         }
-        phase = .summary
     }
 
     func resetToStart() {
         phase = .start
+        lastActivityId = nil
+        lastRunQueued = false
+        routePoints.removeAll()
     }
 
     private func startTicker() {
@@ -185,6 +284,10 @@ final class WorkoutManager: NSObject, ObservableObject {
             Task { @MainActor [weak self] in
                 guard let self = self, self.phase == .running else { return }
                 self.movingSeconds += 1
+                if let until = self.bannerUntil, Date() >= until {
+                    self.bannerKm = nil
+                    self.bannerUntil = nil
+                }
                 if self.movingSeconds > 0 && self.totalSteps > 0 {
                     let minutes = Double(self.movingSeconds) / 60.0
                     self.cadenceSpm = min(250, Int((Double(self.totalSteps) / minutes).rounded()))
@@ -196,6 +299,16 @@ final class WorkoutManager: NSObject, ObservableObject {
     private func stopTicker() {
         timer?.invalidate()
         timer = nil
+    }
+
+    /// Each whole km: one strong tap and a short "{n} km passed" line (Wear OS `kmPassed`).
+    private func noteDistance() {
+        let whole = Int(distanceKm.rounded(.down))
+        guard whole > wholeKm else { return }
+        wholeKm = whole
+        bannerKm = whole
+        bannerUntil = Date().addingTimeInterval(5)
+        Self.buzz(.notification)
     }
 
     private func notePace() {
@@ -261,8 +374,9 @@ extension WorkoutManager: HKWorkoutSessionDelegate, HKLiveWorkoutBuilderDelegate
                 case HKQuantityType.quantityType(forIdentifier: .distanceWalkingRunning):
                     if let meters = statistics.sumQuantity()?.doubleValue(for: .meter()) {
                         let hkKm = meters / 1000.0
-                        if hkKm > self.distanceKm {
+                        if hkKm > self.distanceKm, self.phase == .running {
                             self.distanceKm = hkKm
+                            self.noteDistance()
                         }
                     }
                 default:
@@ -286,6 +400,7 @@ extension WorkoutManager: CLLocationManagerDelegate {
                     if delta > 0.5 && delta < 100 {
                         self.distanceKm += delta / 1000.0
                         self.notePace()
+                        self.noteDistance()
                     }
                 }
                 self.routePoints.append(

@@ -1,4 +1,5 @@
 import 'run_draft.dart';
+import 'run_reward.dart';
 import 'sync_queue.dart';
 import 'watch_account.dart';
 import 'watch_platform.dart';
@@ -33,11 +34,21 @@ class QueueStore {
 /// 성공하거나 서버가 "이 본문은 안 된다"(400·409·413·422)고 답한 기록은 뺀다.
 /// 네트워크 오류, 로그인 만료, 429, 5xx는 남겨 두었다가 다음에 다시 올린다.
 class SyncUploader {
-  SyncUploader({required this.account, required this.queue, this.onChanged});
+  SyncUploader({
+    required this.account,
+    required this.queue,
+    this.onChanged,
+    this.onResult,
+  });
 
   final WatchAccount account;
   final SyncQueue queue;
   final Future<void> Function()? onChanged;
+
+  /// The server's decision for one run (read-only, from the validate reply).
+  /// Called only when the server answered for good; offline, 429 and 5xx
+  /// leave the run pending.
+  final void Function(String activityId, RunReward reward)? onResult;
 
   /// 이번에 대기열에서 뺀 기록 수.
   ///
@@ -56,6 +67,8 @@ class SyncUploader {
         );
         if (reply == null) break;
         if (reply.ok) await account.rememberTier(reply.body['tier_code']);
+        final reward = RunReward.fromReply(reply.status, reply.body);
+        if (reward != null) onResult?.call(run.activityId, reward);
         if (reply.ok || _final(reply.status)) {
           queue.acknowledge(run.activityId);
           done++;

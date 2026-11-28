@@ -1,0 +1,13 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "ใช้เชื่อมต่อเซ็นเซอร์วัดหัวใจแบบบลูทูธหรือนาฬิกา เพื่อรับอัตราการเต้นของหัวใจขณะวิ่งและตรวจสอบการวิ่ง";
+"NSCameraUsageDescription" = "ใช้เมื่อคุณถ่ายรูปสถานที่วิ่งเพื่อทำพื้นหลังการ์ดเข้าเส้นชัย";
+"NSFaceIDUsageDescription" = "ใช้ยืนยันว่าเป็นคุณก่อนชำระเงิน";
+"NSHealthShareUsageDescription" = "ใช้อ่านจำนวนก้าวเพื่อแสดงก้าวของวันนี้ SHARE ที่ได้รับ และเป้าหมายการบริจาคจากก้าว ข้อมูลสุขภาพไม่ถูกใช้เพื่อสิ่งอื่น";
+"NSHealthUpdateUsageDescription" = "ใช้เชื่อมโยงจำนวนก้าวและการออกกำลังกายกับแอปสุขภาพ แอปบน iPhone จะไม่เขียนบันทึกลงในแอปสุขภาพ";
+"NSLocationWhenInUseUsageDescription" = "ใช้ขณะบันทึกการวิ่งเพื่อวัดเส้นทางและระยะทาง และป้องกันการบันทึกปลอม ระหว่างบันทึกจะบันทึกต่อแม้หน้าจอดับ";
+"NSMicrophoneUsageDescription" = "ใช้เฉพาะเมื่อคุณถาม บอทหอยทาก ด้วยเสียง คุณพิมพ์หรือกดปุ่มแทนได้";
+"NSMotionUsageDescription" = "ใช้นับก้าวของวันนี้ด้วยเซ็นเซอร์การเคลื่อนไหวของโทรศัพท์";
+"NSPhotoLibraryUsageDescription" = "ใช้เมื่อคุณเลือกรูปสำหรับอวาตาร์ พื้นหลังการ์ดเข้าเส้นชัย หรือหลักฐานยื่นอุทธรณ์การวิ่ง";
+"NSSpeechRecognitionUsageDescription" = "ใช้แปลงเสียงเป็นข้อความเมื่อคุณถาม บอทหอยทาก เสียงจะไม่ถูกใช้สมัครแข่งหรือชำระเงิน";

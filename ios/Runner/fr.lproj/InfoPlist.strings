@@ -1,0 +1,13 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Utilisé pour connecter un capteur de fréquence cardiaque Bluetooth ou une montre et recevoir votre pouls pendant la course, afin de vérifier votre course.";
+"NSCameraUsageDescription" = "Utilisé quand vous prenez une photo de votre lieu de course pour le fond d’une carte d’arrivée.";
+"NSFaceIDUsageDescription" = "Utilisé pour confirmer que c’est bien vous avant un paiement.";
+"NSHealthShareUsageDescription" = "Utilisé pour lire vos pas et afficher les pas du jour, les SHARE gagnés et les objectifs de don par pas. Les données de santé ne servent à rien d’autre.";
+"NSHealthUpdateUsageDescription" = "Utilisé pour relier vos pas et vos entraînements à l’app Santé. L’app iPhone n’écrit aucun enregistrement dans Santé.";
+"NSLocationWhenInUseUsageDescription" = "Utilisé pendant l’enregistrement d’une course pour mesurer votre parcours et votre distance et empêcher les faux enregistrements. L’enregistrement continue même écran éteint.";
+"NSMicrophoneUsageDescription" = "Utilisé uniquement quand vous posez une question au Bot Escargot à voix haute. Vous pouvez aussi écrire ou toucher un bouton.";
+"NSMotionUsageDescription" = "Utilisé pour compter les pas du jour avec les capteurs de mouvement du téléphone.";
+"NSPhotoLibraryUsageDescription" = "Utilisé quand vous choisissez une photo pour votre avatar, le fond d’une carte d’arrivée ou une preuve pour une contestation de course.";
+"NSSpeechRecognitionUsageDescription" = "Utilisé pour transformer votre voix en texte quand vous posez une question au Bot Escargot. La voix ne sert jamais à s’inscrire à une course ni à payer.";

@@ -1,1 +1,5 @@
+// The watch app is embedded in Runner, so Apple requires the same version and
+// build number. Generated.xcconfig (written by `flutter build ios`,
+// `--build-number`) gives both targets FLUTTER_BUILD_NAME/NUMBER.
+#include "Generated.xcconfig"
 #include? "Secrets.xcconfig"

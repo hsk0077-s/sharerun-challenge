@@ -1,0 +1,13 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Wird verwendet, um einen Bluetooth-Herzfrequenzsensor oder eine Uhr zu verbinden und beim Laufen deinen Puls zu empfangen, um deinen Lauf zu prüfen.";
+"NSCameraUsageDescription" = "Wird verwendet, wenn du ein Foto deiner Laufstrecke als Hintergrund für eine Zielkarte aufnimmst.";
+"NSFaceIDUsageDescription" = "Wird verwendet, um vor einer Zahlung zu bestätigen, dass du es bist.";
+"NSHealthShareUsageDescription" = "Wird verwendet, um deine Schritte zu lesen und die heutigen Schritte, verdiente SHARE und Schrittspenden-Ziele anzuzeigen. Gesundheitsdaten werden für nichts anderes verwendet.";
+"NSHealthUpdateUsageDescription" = "Wird verwendet, um deine Schritte und Trainings mit der Health-App zu verbinden. Die iPhone-App schreibt keine Einträge in Health.";
+"NSLocationWhenInUseUsageDescription" = "Wird beim Aufzeichnen eines Laufs verwendet, um Strecke und Distanz zu messen und gefälschte Einträge zu verhindern. Die Aufzeichnung läuft auch bei ausgeschaltetem Bildschirm weiter.";
+"NSMicrophoneUsageDescription" = "Wird nur verwendet, wenn du den Schnecken-Bot per Sprache etwas fragst. Du kannst auch schreiben oder auf eine Schaltfläche tippen.";
+"NSMotionUsageDescription" = "Wird verwendet, um die heutigen Schritte mit den Bewegungssensoren deines Handys zu zählen.";
+"NSPhotoLibraryUsageDescription" = "Wird verwendet, wenn du ein Foto für deinen Avatar, den Hintergrund einer Zielkarte oder einen Nachweis für einen Lauf-Einspruch auswählst.";
+"NSSpeechRecognitionUsageDescription" = "Wird verwendet, um deine Sprache in Text umzuwandeln, wenn du den Schnecken-Bot etwas fragst. Per Sprache meldest du dich nie an und zahlst nie.";

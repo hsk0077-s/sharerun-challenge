@@ -1,0 +1,13 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Dùng để kết nối cảm biến nhịp tim Bluetooth hoặc đồng hồ và nhận nhịp tim khi bạn chạy, để kiểm tra lần chạy.";
+"NSCameraUsageDescription" = "Dùng khi bạn chụp ảnh nơi chạy để làm nền cho thẻ hoàn thành.";
+"NSFaceIDUsageDescription" = "Dùng để xác nhận đúng là bạn trước khi thanh toán.";
+"NSHealthShareUsageDescription" = "Dùng để đọc số bước, hiển thị số bước hôm nay, SHARE nhận được và mục tiêu quyên góp theo bước. Dữ liệu sức khỏe không dùng cho việc gì khác.";
+"NSHealthUpdateUsageDescription" = "Dùng để liên kết số bước và buổi tập với ứng dụng Sức khỏe. Ứng dụng trên iPhone không ghi dữ liệu vào Sức khỏe.";
+"NSLocationWhenInUseUsageDescription" = "Dùng khi ghi lại lần chạy để đo lộ trình, quãng đường và ngăn bản ghi gian lận. Vẫn tiếp tục ghi khi màn hình tắt.";
+"NSMicrophoneUsageDescription" = "Chỉ dùng khi bạn hỏi Bot Ốc Sên bằng giọng nói. Bạn cũng có thể gõ chữ hoặc nhấn nút.";
+"NSMotionUsageDescription" = "Dùng để đếm số bước hôm nay bằng cảm biến chuyển động của điện thoại.";
+"NSPhotoLibraryUsageDescription" = "Dùng khi bạn chọn ảnh cho ảnh đại diện, nền thẻ hoàn thành hoặc bằng chứng khiếu nại lần chạy.";
+"NSSpeechRecognitionUsageDescription" = "Dùng để chuyển giọng nói thành chữ khi bạn hỏi Bot Ốc Sên. Giọng nói không bao giờ dùng để tham gia giải hay thanh toán.";

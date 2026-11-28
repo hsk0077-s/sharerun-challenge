@@ -683,45 +683,13 @@ JA: アプリを起動できませんでした
 KO: 인터넷 연결을 확인한 뒤 다시 시도해 주세요. 계속 안 되면 앱을 완전히 종료했다가 다시 열어 주세요.
 JA: インターネット接続をご確認の上、もう一度お試しください。解決しない場合はアプリを完全に終了してから再度開いてください。
 
-[app.brandSponsorBenevolentFailure]
-KO: 자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.
-JA: 慈悲深き失敗：ミッションに失敗しても、運営者の名前で寄付が行われます。
-
-[app.brandSponsorChallengeTitle]
-KO: Nike 주말 5km 특별 챌린지
-JA: Nike 週末5km特別チャレンジ
-
-[app.brandSponsorDisclaimer]
-KO: * 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.
-JA: * 処理手続き上、寄付金の税額控除の適用は後援企業に帰属します。
-
-[app.brandSponsorDonationPledge]
-KO: 기부 공약: 운영자 이름으로 500만 원 기부
-JA: 寄付公約：運営者の名前で500万ウォン寄付
-
 [app.brandSponsorEntryFee]
 KO: 참가비: 0 SHARE (스폰서 100% 대납)
 JA: 参加費：0 SHARE（スポンサーが100%全額負担）
 
-[app.brandSponsorJoinCta]
-KO: 스폰서 후원받고 무료 참가하기
-JA: スポンサー支援で無料参加
-
 [app.brandSponsorScreenTitle]
 KO: 브랜드 스폰서 챌린지
 JA: ブランドスポンサーチャレンジ
-
-[app.brandSponsorStatus]
-KO: 남은 시간 및 모집 인원(예: 8,500명 참여 중)
-JA: 残り時間および募集人数（例：8,500人参加中）
-
-[app.brandSponsorTicker]
-KO: ✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨
-JA: ✨ ナイキコリアが今大会のランナーたちを全面サポート！ ✨
-
-[app.brandSponsorWinReward]
-KO: 우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500
-JA: 優勝報酬：ナイキ公式オンラインストア30%割引クーポン + 500
 
 [app.lobbySponsorRoomSub]
 KO: 지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.

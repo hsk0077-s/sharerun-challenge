@@ -31,7 +31,7 @@ class VoiceCue {
   }
 }
 
-/// Nike Run Club / Runday-style light cues — keep each line short.
+/// Light running-app style cues — keep each line short.
 abstract final class VoiceCoachingCues {
   static const enabledConfirm = VoiceCue(
     id: 'pref.enabled',

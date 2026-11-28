@@ -20,8 +20,6 @@ class ProToolsScreen extends StatefulWidget {
 class _ProToolsScreenState extends State<ProToolsScreen> {
   static const _currentNavIndex = DashboardTabNavigation.myPage;
 
-  static const _mileageProgress = 0.84;
-
   void _onNavTap(int index) {
     if (index == _currentNavIndex) {
       Navigator.pop(context);
@@ -57,8 +55,6 @@ class _ProToolsScreenState extends State<ProToolsScreen> {
                     children: [
                       _ProToolsHeader(onBack: () => Navigator.pop(context)),
                       const SizedBox(height: 20),
-                      const _ShoeMileageCard(progress: _mileageProgress),
-                      const SizedBox(height: 14),
                       _ProToolMenuTile(
                         icon: Icons.access_time_rounded,
                         label: AppStrings.proToolsMenuPaceCalc,
@@ -137,116 +133,6 @@ class _ProToolsHeader extends StatelessWidget {
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ShoeMileageCard extends StatelessWidget {
-  const _ShoeMileageCard({required this.progress});
-
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceWhite,
-        borderRadius: BorderRadius.circular(AppShapes.cardRadius),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.textBlack.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.directions_run_rounded,
-                color: AppColors.primaryMint,
-                size: 22,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  AppStrings.proToolsRegisteredShoe,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final barWidth = constraints.maxWidth * progress;
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: SizedBox(
-                  height: 12,
-                  child: Stack(
-                    children: [
-                      Container(color: AppColors.borderLight),
-                      Container(
-                        width: barWidth,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.primaryMint,
-                              AppColors.warningOrange,
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              AppStrings.proToolsMileageStats,
-              style: AppTextStyles.caption.copyWith(
-                fontSize: 12,
-                fontWeight: FontWeight.w300,
-                color: AppColors.textGrey,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '⚠️',
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  AppStrings.proToolsCushionWarning,
-                  style: AppTextStyles.agreementLabel.copyWith(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.warningOrange,
-                    height: 1.45,
-                  ),
-                ),
-              ),
-            ],
           ),
         ],
       ),

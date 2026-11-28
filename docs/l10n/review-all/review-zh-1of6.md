@@ -683,45 +683,13 @@ ZH: 無法啟動應用程式
 KO: 인터넷 연결을 확인한 뒤 다시 시도해 주세요. 계속 안 되면 앱을 완전히 종료했다가 다시 열어 주세요.
 ZH: 請檢查網路連線後再試一次。若問題仍未解決，請將應用程式完全關閉後重新開啟。
 
-[app.brandSponsorBenevolentFailure]
-KO: 자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.
-ZH: 溫情失敗機制：即使挑戰任務失敗，仍會以營運者名義進行捐款。
-
-[app.brandSponsorChallengeTitle]
-KO: Nike 주말 5km 특별 챌린지
-ZH: Nike 週末 5 km 特別挑戰賽
-
-[app.brandSponsorDisclaimer]
-KO: * 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.
-ZH: * 依據具體作業流程，捐款稅額扣除優惠歸屬於贊助企業。
-
-[app.brandSponsorDonationPledge]
-KO: 기부 공약: 운영자 이름으로 500만 원 기부
-ZH: 捐款承諾：以營運者名義捐贈 500 萬韓元
-
 [app.brandSponsorEntryFee]
 KO: 참가비: 0 SHARE (스폰서 100% 대납)
 ZH: 報名費：0 SHARE (贊助商 100% 全額代付)
 
-[app.brandSponsorJoinCta]
-KO: 스폰서 후원받고 무료 참가하기
-ZH: 獲贊助商支持免費參加
-
 [app.brandSponsorScreenTitle]
 KO: 브랜드 스폰서 챌린지
 ZH: 品牌贊助挑戰賽
-
-[app.brandSponsorStatus]
-KO: 남은 시간 및 모집 인원(예: 8,500명 참여 중)
-ZH: 剩餘時間與招募人數 (例：8,500 人參與中)
-
-[app.brandSponsorTicker]
-KO: ✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨
-ZH: ✨ Nike Korea 全力贊助本次賽事的所有跑者！ ✨
-
-[app.brandSponsorWinReward]
-KO: 우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500
-ZH: 優勝獎勵：Nike 官網 30% 折扣券 + 500
 
 [app.lobbySponsorRoomSub]
 KO: 지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.

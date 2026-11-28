@@ -2305,6 +2305,13 @@ class RemainingSurface {
     'donation.footer',
     'home.donation.counted',
     'donation.won',
+    'run_tracking.stat.distance',
+    'run_tracking.stat.time',
+    'run_tracking.stat.pace_current',
+    'run_tracking.stat.pace_average',
+    'run_tracking.heart_rate',
+    'run_tracking.cadence',
+    'run_tracking.tour.arrived',
   ];
 
   static const _en = <String, String>{
@@ -4525,6 +4532,13 @@ class RemainingSurface {
     'donation.footer': 'Donations are not eligible for donation receipts or year-end tax deductions. The ShareRun operator pays for them from its own budget. We do not sell location data.',
     'home.donation.counted': 'Today\'s activity counted toward donations',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Distance',
+    'run_tracking.stat.time': 'Time',
+    'run_tracking.stat.pace_current': 'Current pace',
+    'run_tracking.stat.pace_average': 'Average pace',
+    'run_tracking.heart_rate': 'Heart rate \$hr BPM',
+    'run_tracking.cadence': 'Cadence \$spm SPM',
+    'run_tracking.tour.arrived': 'Arrived',
   };
 
   static const _ja = <String, String>{
@@ -6745,6 +6759,13 @@ class RemainingSurface {
     'donation.footer': '寄付金領収書や年末調整の控除の対象ではありません。寄付金はShareRunの運営会社が自己予算で負担します。位置情報は販売しません。',
     'home.donation.counted': '今日の活動が寄付に反映されました',
     'donation.won': '\$amountウォン',
+    'run_tracking.stat.distance': '距離',
+    'run_tracking.stat.time': '時間',
+    'run_tracking.stat.pace_current': '現在のペース',
+    'run_tracking.stat.pace_average': '平均ペース',
+    'run_tracking.heart_rate': '心拍 \$hr BPM',
+    'run_tracking.cadence': 'ケイデンス \$spm SPM',
+    'run_tracking.tour.arrived': '到着',
   };
 
   static const _zh = <String, String>{
@@ -8965,6 +8986,13 @@ class RemainingSurface {
     'donation.footer': '不適用捐款收據與年終扣除。捐款由 ShareRun 營運公司以自有預算負擔。我們不會販售位置資訊。',
     'home.donation.counted': '今天的活動已計入捐款',
     'donation.won': '\$amount 韓元',
+    'run_tracking.stat.distance': '距離',
+    'run_tracking.stat.time': '時間',
+    'run_tracking.stat.pace_current': '目前配速',
+    'run_tracking.stat.pace_average': '平均配速',
+    'run_tracking.heart_rate': '心率 \$hr BPM',
+    'run_tracking.cadence': '步頻 \$spm SPM',
+    'run_tracking.tour.arrived': '抵達',
   };
 
   static const _es = <String, String>{
@@ -11185,6 +11213,13 @@ class RemainingSurface {
     'donation.footer': 'No dan derecho a recibo de donación ni a deducción fiscal anual. La empresa operadora de ShareRun las paga con su propio presupuesto. No vendemos datos de ubicación.',
     'home.donation.counted': 'La actividad de hoy se sumó a las donaciones',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Distancia',
+    'run_tracking.stat.time': 'Tiempo',
+    'run_tracking.stat.pace_current': 'Ritmo actual',
+    'run_tracking.stat.pace_average': 'Ritmo medio',
+    'run_tracking.heart_rate': 'Pulso \$hr BPM',
+    'run_tracking.cadence': 'Cadencia \$spm SPM',
+    'run_tracking.tour.arrived': 'Llegada',
   };
 
   static const _pt = <String, String>{
@@ -13405,6 +13440,13 @@ class RemainingSurface {
     'donation.footer': 'Não geram recibo de doação nem dedução no imposto de renda. A empresa operadora da ShareRun paga com orçamento próprio. Não vendemos dados de localização.',
     'home.donation.counted': 'A atividade de hoje foi somada às doações',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Distância',
+    'run_tracking.stat.time': 'Tempo',
+    'run_tracking.stat.pace_current': 'Ritmo atual',
+    'run_tracking.stat.pace_average': 'Ritmo médio',
+    'run_tracking.heart_rate': 'Frequência cardíaca \$hr BPM',
+    'run_tracking.cadence': 'Cadência \$spm SPM',
+    'run_tracking.tour.arrived': 'Chegou',
   };
 
   static const _de = <String, String>{
@@ -15625,6 +15667,13 @@ class RemainingSurface {
     'donation.footer': 'Für Spenden gibt es keine Spendenquittung und keinen Steuerabzug zum Jahresende. Der Betreiber von ShareRun trägt sie aus dem eigenen Budget. Standortdaten verkaufen wir nicht.',
     'home.donation.counted': 'Die heutige Aktivität wurde den Spenden angerechnet',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Distanz',
+    'run_tracking.stat.time': 'Zeit',
+    'run_tracking.stat.pace_current': 'Aktuelle Pace',
+    'run_tracking.stat.pace_average': 'Schnittpace',
+    'run_tracking.heart_rate': 'Herzfrequenz \$hr BPM',
+    'run_tracking.cadence': 'Schrittfrequenz \$spm SPM',
+    'run_tracking.tour.arrived': 'Angekommen',
   };
 
   static const _fr = <String, String>{
@@ -17845,6 +17894,13 @@ class RemainingSurface {
     'donation.footer': 'Les dons ne donnent pas droit à un reçu fiscal ni à une déduction en fin d\'année. L\'opérateur de ShareRun les finance avec son propre budget. Nous ne vendons pas les données de localisation.',
     'home.donation.counted': 'L\'activité d\'aujourd\'hui a été prise en compte dans les dons',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Distance',
+    'run_tracking.stat.time': 'Temps',
+    'run_tracking.stat.pace_current': 'Allure actuelle',
+    'run_tracking.stat.pace_average': 'Allure moyenne',
+    'run_tracking.heart_rate': 'Fréquence cardiaque \$hr BPM',
+    'run_tracking.cadence': 'Cadence \$spm SPM',
+    'run_tracking.tour.arrived': 'Arrivée',
   };
 
   static const _vi = <String, String>{
@@ -20065,6 +20121,13 @@ class RemainingSurface {
     'donation.footer': 'Khoản quyên góp không được cấp biên lai và không được khấu trừ thuế cuối năm. Đơn vị vận hành ShareRun chi trả bằng ngân sách riêng. Chúng tôi không bán dữ liệu vị trí.',
     'home.donation.counted': 'Hoạt động hôm nay đã được tính vào quyên góp',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Quãng đường',
+    'run_tracking.stat.time': 'Thời gian',
+    'run_tracking.stat.pace_current': 'Pace hiện tại',
+    'run_tracking.stat.pace_average': 'Pace trung bình',
+    'run_tracking.heart_rate': 'Nhịp tim \$hr BPM',
+    'run_tracking.cadence': 'Nhịp bước \$spm SPM',
+    'run_tracking.tour.arrived': 'Đã tới',
   };
 
   static const _th = <String, String>{
@@ -22285,6 +22348,13 @@ class RemainingSurface {
     'donation.footer': 'การบริจาคนี้ไม่มีใบเสร็จรับเงินบริจาคและไม่สามารถนำไปลดหย่อนภาษีสิ้นปีได้ ผู้ให้บริการ ShareRun เป็นผู้ออกเงินจากงบประมาณของตนเอง เราไม่ขายข้อมูลตำแหน่ง',
     'home.donation.counted': 'กิจกรรมวันนี้ถูกนับรวมในการบริจาคแล้ว',
     'donation.won': '\$amount วอน',
+    'run_tracking.stat.distance': 'ระยะทาง',
+    'run_tracking.stat.time': 'เวลา',
+    'run_tracking.stat.pace_current': 'เพซปัจจุบัน',
+    'run_tracking.stat.pace_average': 'เพซเฉลี่ย',
+    'run_tracking.heart_rate': 'อัตราการเต้นหัวใจ \$hr BPM',
+    'run_tracking.cadence': 'จังหวะก้าว \$spm SPM',
+    'run_tracking.tour.arrived': 'ถึงแล้ว',
   };
 
   static const _id = <String, String>{
@@ -24505,6 +24575,13 @@ class RemainingSurface {
     'donation.footer': 'Donasi tidak memenuhi syarat untuk tanda terima donasi atau pengurangan pajak akhir tahun. Perusahaan operator ShareRun menanggungnya dari anggarannya sendiri. Kami tidak menjual data lokasi.',
     'home.donation.counted': 'Aktivitas hari ini sudah dihitung ke donasi',
     'donation.won': '\$amount KRW',
+    'run_tracking.stat.distance': 'Jarak',
+    'run_tracking.stat.time': 'Waktu',
+    'run_tracking.stat.pace_current': 'Pace saat ini',
+    'run_tracking.stat.pace_average': 'Pace rata-rata',
+    'run_tracking.heart_rate': 'Detak jantung \$hr BPM',
+    'run_tracking.cadence': 'Kadensi \$spm SPM',
+    'run_tracking.tour.arrived': 'Tiba',
   };
 
   static const _byLanguage = <String, Map<String, String>>{

@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from app.models.ops_result import (
     ActivateTournamentResult,
     BepRefundResult,
+    CheerPushResult,
     CreatePrizeRaceResult,
     CreateRankedTournamentResult,
     GradeBackfillResult,
@@ -173,3 +174,19 @@ def release_due_referral_reviews(
         reason="Due referral reviews released.",
         released=released,
     )
+
+
+@router.post("/friend-cheers/daily-push", response_model=CheerPushResult)
+def send_daily_cheer_push(_: None = Depends(require_ops_admin)) -> CheerPushResult:
+    """One bundled cheer push per person per KST day. Run once a day (19:30 KST).
+
+    Sends nothing between 21:00 and 08:00 KST. Safe to run again the same day.
+    """
+    from app.services import cheer_push, notification_service
+
+    summary = cheer_push.send_daily_cheer_pushes(
+        service.firebase_service.db,
+        send=notification_service.send_data_push,
+        is_invalid_token=notification_service.is_invalid_token_error,
+    )
+    return CheerPushResult(**summary)

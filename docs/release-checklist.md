@@ -41,6 +41,21 @@
 - [x] **카카오 로그인 버튼 글씨** — 자리 너비에 맞춰 비율을 지키며 높이가 공식 높이(46)에 가까운 이미지를 고르도록 고쳤다(넓은 폰에서 38까지 줄어 글자가 작아 보이던 문제).
 - [x] **달팽이봇 소개 문구** — "궁금한 걸 물어보세요"로 바꿨다. 추천 질문 칩도 짧은 이름으로 바꿨다.
 
+### 친구 응원 하루 1번 묶음 알림 (배포 때 할 일)
+
+아직 만들지 않았다. 아래 순서대로 한다.
+
+1. **Firestore 규칙 배포** — `cheerPushDays` 컬렉션을 앱에서 읽고 쓰지 못하게 막는 규칙. `firebase deploy --only firestore:rules`
+2. **서버(Cloud Run `src-jena-ai`) 배포** — 새 엔드포인트 `POST /ops/friend-cheers/daily-push`가 들어간다. 환경 변수는 새로 추가하지 않는다(기존 `OPS_ADMIN_SECRET`을 쓴다).
+3. **앱 출시** — 설정 스위치 뒤집힘 수정과 알림을 누르면 응원함이 열리는 처리가 들어간다. 서버를 먼저 배포해도 옛 앱은 알림을 받기만 하고 누르면 앱이 열린다.
+4. **Cloud Scheduler 작업 만들기** — 서버 배포를 확인한 뒤에 만든다.
+   - 이름(권장): `src-friend-cheers-daily-push`
+   - 시간: 매일 **19:30 KST** — cron `30 19 * * *`, 시간대 `Asia/Seoul`
+   - 대상: HTTP `POST https://<src-jena-ai 서비스 주소>/ops/friend-cheers/daily-push`
+   - 인증: 헤더 `x-ops-admin-secret: <OPS_ADMIN_SECRET 값>` — 추천 보류 자동 지급 작업(`src-release-referral-reviews-daily`)과 같은 방식. 값은 문서나 저장소에 적지 않는다.
+   - 본문 없음. 응답은 `{quiet_hours, candidates, sent, skipped, failed, tokens_removed}`.
+5. **처음 한 번 확인** — 스케줄러에서 "지금 실행"을 눌러 200과 응답 숫자를 본다. 같은 날 다시 눌러도 같은 사람에게 두 번 가지 않는다(`sent`가 0). 21:00~08:00 KST에 누르면 `quiet_hours: true`이고 아무것도 보내지 않는다.
+
 ## 3. 정해 둔 것 (바꾸지 않는 약속)
 
 - 로그인은 **구글·카카오·네이버**를 쓴다. 애플은 iOS 출시 때 연다.

@@ -19,8 +19,10 @@ Future<void> showCheerSettingsSheet(BuildContext context) {
   );
 }
 
-/// Turn cheer alerts off for everyone or for one friend. A switch saves at
-/// once and goes back if the server refuses. Nobody is told about a switch.
+/// Cheer alerts for everyone and for each friend. A switch that is ON means
+/// "I get these alerts" (the server stores the opposite: muteAll /
+/// mutedFriends). A switch saves at once and goes back if the server refuses.
+/// Nobody is told about a switch.
 class CheerSettingsSheet extends ConsumerStatefulWidget {
   const CheerSettingsSheet({super.key});
 
@@ -116,20 +118,21 @@ class _CheerSettingsSheetState extends ConsumerState<CheerSettingsSheet> {
                 key: CheerSettingsSheet.muteAllKey,
                 contentPadding: EdgeInsets.zero,
                 title: Text(RemainingSurface.tr(
-                    context, 'cheers.settings.mute_all', '응원 알림 모두 끄기')),
-                value: settings.muteAll,
+                    context, 'cheers.settings.receive_all', '응원 알림 받기')),
+                // 켜짐 = 받음. 서버에는 반대로 muteAll로 저장한다.
+                value: !settings.muteAll,
                 onChanged: _busy
                     ? null
-                    : (value) => unawaited(_save(
-                          settings.copyWith(muteAll: value),
-                          muteAll: value,
+                    : (receive) => unawaited(_save(
+                          settings.copyWith(muteAll: !receive),
+                          muteAll: !receive,
                         )),
               ),
               if (friends.isNotEmpty) ...[
                 const Divider(),
                 Text(
-                  RemainingSurface.tr(
-                      context, 'cheers.settings.friends', '친구별로 끄기'),
+                  RemainingSurface.tr(context, 'cheers.settings.friends_receive',
+                      '친구별 응원 알림'),
                   style: textTheme.titleSmall,
                 ),
                 for (final friend in friends)
@@ -144,19 +147,20 @@ class _CheerSettingsSheetState extends ConsumerState<CheerSettingsSheet> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    value: settings.mutedFriends.contains(friend.uid),
+                    // 켜짐 = 이 친구의 응원 알림을 받음.
+                    value: !settings.mutedFriends.contains(friend.uid),
                     onChanged: _busy
                         ? null
-                        : (value) => unawaited(_save(
+                        : (receive) => unawaited(_save(
                               settings.copyWith(
                                 mutedFriends: [
                                   for (final uid in settings.mutedFriends)
                                     if (uid != friend.uid) uid,
-                                  if (value) friend.uid,
+                                  if (!receive) friend.uid,
                                 ],
                               ),
                               friendUid: friend.uid,
-                              muted: value,
+                              muted: !receive,
                             )),
                   ),
               ],

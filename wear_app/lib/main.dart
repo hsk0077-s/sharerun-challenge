@@ -11,6 +11,7 @@ import 'core/watch_account.dart';
 import 'core/run_draft.dart';
 import 'core/watch_events.dart';
 import 'core/watch_haptics.dart';
+import 'core/run_reward.dart';
 import 'core/watch_platform.dart';
 import 'l10n/watch_copy.dart';
 import 'screens/watch_screens.dart';
@@ -142,6 +143,9 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
   var _polling = false;
   WatchGlance? _glance;
   var _glanceFailed = false;
+
+  /// What the server decided for each uploaded run, by activity id.
+  final _rewards = <String, RunReward>{};
 
   /// 이 시간보다 오래 전에 저장된 임시 기록은 이어 달리지 않는다.
   static const _staleDraftAge = Duration(hours: 6);
@@ -503,6 +507,10 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
       account: account,
       queue: _queue,
       onChanged: () async => widget.queueStore?.save(_queue),
+      onResult: (id, reward) {
+        _rewards[id] = reward;
+        if (mounted && id == _runId) setState(() {});
+      },
     );
     final sent = await uploader.flush(deviceId: await account.deviceId());
     if (mounted && (sent > 0 || account.reconnectNeeded)) setState(() {});
@@ -600,6 +608,7 @@ class _RunFlowState extends State<RunFlow> with WidgetsBindingObserver {
         return SummaryFace(
           session: _session,
           shareEarned: widget.shareEarned,
+          reward: _rewards[_runId] ?? RunReward.pending,
           activityId: _runId,
           phoneOpener: widget.phoneOpener,
           onDone: () => setState(() {

@@ -5,13 +5,13 @@ private let watchLime = Color(red: 0.831, green: 1.0, blue: 0.290)
 private let watchInk = Color(red: 0.957, green: 0.969, blue: 0.941)
 private let watchMuted = Color(red: 0.663, green: 0.698, blue: 0.651)
 
-/// Root router mirroring all 5+1 screens of `wear_app/lib/screens/watch_screens.dart`:
+/// Root router. Same flow as `wear_app/lib/main.dart` `RunFlow`:
 /// ⓪ PairingFace (6-digit keypad `/auth/watch-pair`)
-/// ① StartFace (target km, tap to start, long-press to pair)
-/// ② RunningFace (live pace, heart rate BPM, distance km, cadence)
-/// ③ PausedFace (tap to resume, long-press to finish)
+/// ① StartFace (target km and tier, tap to start, long-press to pair)
+/// ①' CountdownFace (3·2·1, tap to cancel)
+/// ② Run pager: route line ← running numbers → controls (pause; hold to stop)
 /// ④ RankAlertFace (live tournament rank banner)
-/// ⑤ SummaryFace (finish summary + offline sync queue count)
+/// ⑤ SummaryFace (finish summary, server reward line, upload queue)
 struct WatchRootView: View {
     @EnvironmentObject var workout: WorkoutManager
     @EnvironmentObject var account: WatchAccountManager
@@ -39,27 +39,17 @@ struct WatchRootView: View {
                     WatchStartView(
                         targetKm: workout.targetKm,
                         linkedName: account.isPaired ? (account.nickname.isEmpty ? WatchCopy.current.linked : account.nickname) : nil,
-                        onStart: {
-                            Task { await workout.startRun() }
-                        },
+                        tierLabel: Self.tierLine(account.tierCode),
+                        onStart: { workout.beginCountdown() },
                         onLongPress: {
                             workout.phase = .pairing
                         }
                     )
                 }
-            case .running:
-                WatchGlanceTabs {
-                    WatchRunningView(
-                        paceText: Self.formatPace(workout.paceSecondsPerKm),
-                        heartRate: workout.lastHeartRate,
-                        distanceText: Self.formatKm(workout.distanceKm),
-                        cadenceSpm: workout.cadenceSpm,
-                        onTap: { workout.pauseRun() }
-                    )
-                }
-            case .paused:
-                WatchPausedView(
-                    onResume: { workout.resumeRun() },
+            case let .countdown(count):
+                WatchCountdownView(count: count, onCancel: { workout.cancelCountdown() })
+            case .running, .paused:
+                WatchRunPager(
                     onFinish: {
                         Task { await workout.finishRun(into: queue, account: account) }
                     }
@@ -75,6 +65,8 @@ struct WatchRootView: View {
                     distanceText: Self.formatKm(workout.distanceKm),
                     paceText: Self.formatPace(workout.paceSecondsPerKm),
                     minutesText: Self.formatMinutes(workout.movingSeconds),
+                    rewardLine: queue.reward(for: workout.lastActivityId).line,
+                    rewardConfirmed: Self.isConfirmed(queue.reward(for: workout.lastActivityId)),
                     pendingCount: queue.pendingCount,
                     onDone: { workout.resetToStart() }
                 )
@@ -87,7 +79,21 @@ struct WatchRootView: View {
         }
         .task {
             await account.refreshGlance()
+            await account.refreshTier()
         }
+    }
+
+    /// Tier on the start face, the same rule as Wear OS `StartFace`:
+    /// a graded code becomes its name, `snail` says "not rated yet", none hides the line.
+    static func tierLine(_ code: String?) -> String? {
+        if let label = WatchCopy.tierLabel(code) { return label }
+        let animal = code?.lowercased().split(separator: "_").first.map(String.init)
+        return animal == "snail" ? WatchCopy.ui("unrated") : nil
+    }
+
+    static func isConfirmed(_ reward: WatchRunReward) -> Bool {
+        if case .confirmed = reward { return true }
+        return false
     }
 
     static func formatPace(_ secPerKm: Int) -> String {
@@ -104,12 +110,23 @@ struct WatchRootView: View {
     static func formatMinutes(_ seconds: Int) -> String {
         WatchCopy.minutes(max(0, seconds) / 60)
     }
+
+    /// `12:05` under an hour, `1:02:03` after (Wear OS `formatElapsed`).
+    static func formatElapsed(_ seconds: Int) -> String {
+        let total = max(0, seconds)
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        let s = total % 60
+        if h > 0 { return String(format: "%d:%02d:%02d", h, m, s) }
+        return String(format: "%d:%02d", m, s)
+    }
 }
 
 /// ① 시작 화면
 struct WatchStartView: View {
     let targetKm: Double
     let linkedName: String?
+    let tierLabel: String?
     let onStart: () -> Void
     let onLongPress: () -> Void
 
@@ -118,6 +135,13 @@ struct WatchStartView: View {
             Text(linkedName ?? WatchCopy.current.start)
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
+            if let tierLabel, !tierLabel.isEmpty {
+                Text(tierLabel)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(watchLime)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+            }
             Image(systemName: "play.fill")
                 .font(.system(size: 20))
                 .foregroundColor(watchLime)
@@ -133,6 +157,26 @@ struct WatchStartView: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onStart)
         .onLongPressGesture(perform: onLongPress)
+    }
+}
+
+/// ①' 3·2·1. Tap cancels and goes back to the start face.
+struct WatchCountdownView: View {
+    let count: Int
+    let onCancel: () -> Void
+
+    var body: some View {
+        VStack(spacing: 6) {
+            Text("\(count)")
+                .font(.system(size: 72, weight: .heavy))
+                .foregroundColor(watchInk)
+            Text(WatchCopy.ui("cancelHint"))
+                .font(.system(size: 11))
+                .foregroundColor(watchMuted)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onCancel)
     }
 }
 
@@ -218,65 +262,242 @@ struct WatchPairingView: View {
     }
 }
 
-/// ② 달리는 중 HUD (페이스·심박·거리·케이던스)
-struct WatchRunningView: View {
-    let paceText: String
-    let heartRate: Int
-    let distanceText: String
-    let cadenceSpm: Int
-    let onTap: () -> Void
+/// ② While running or paused, like Wear OS `RunPager`: the read-only glance
+/// pages, then the route line, the running numbers (opens here) and the
+/// controls. Moving to the controls pauses; moving away resumes.
+struct WatchRunPager: View {
+    @EnvironmentObject var workout: WorkoutManager
+    let onFinish: () -> Void
+
+    private enum Page: Hashable { case world, challenge, crew, diamond, route, run, controls }
+
+    @State private var page: Page = .run
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text(WatchCopy.current.running)
-                .font(.system(size: 12))
-                .foregroundColor(watchMuted)
-            Image(systemName: "figure.run")
-                .font(.system(size: 20))
-                .foregroundColor(watchLime)
-            Text(paceText)
-                .font(.system(size: 32, weight: .heavy))
-                .foregroundColor(watchInk)
-            Text("\(heartRate > 0 ? "♥ \(heartRate)" : "♥ --") · \(distanceText)km")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(watchMuted)
-            if cadenceSpm > 0 {
-                Text("\(cadenceSpm) spm")
-                    .font(.system(size: 10))
-                    .foregroundColor(watchMuted.opacity(0.8))
+        TabView(selection: $page) {
+            WatchGlancePage(kind: .diamond).tag(Page.diamond)
+            WatchGlancePage(kind: .crew).tag(Page.crew)
+            WatchGlancePage(kind: .challenge).tag(Page.challenge)
+            WatchGlancePage(kind: .world).tag(Page.world)
+            WatchRouteView(points: workout.routePoints).tag(Page.route)
+            WatchRunningView(
+                focus: workout.focus,
+                distanceText: WatchRootView.formatKm(workout.distanceKm),
+                elapsedText: WatchRootView.formatElapsed(workout.movingSeconds),
+                paceText: WatchRootView.formatPace(workout.paceSecondsPerKm),
+                heartRate: workout.lastHeartRate,
+                bannerKm: workout.bannerKm,
+                kmProgress: workout.kmProgress,
+                onTap: { workout.cycleFocus() }
+            )
+            .tag(Page.run)
+            WatchControlsView(
+                onResume: {
+                    workout.resumeRun()
+                    page = .run
+                },
+                onFinish: onFinish
+            )
+            .tag(Page.controls)
+        }
+        .tabViewStyle(.page)
+        .onAppear {
+            page = workout.phase == .paused ? .controls : .run
+        }
+        .onChange(of: page) { next in
+            if next == .controls, workout.phase == .running {
+                workout.pauseRun()
+            } else if next != .controls, workout.phase == .paused {
+                workout.resumeRun()
             }
         }
-        .padding(12)
+    }
+}
+
+/// ② Running numbers. Tap the big number for distance → time → pace.
+/// The bar under it fills toward the next whole km; each km shows a short line.
+struct WatchRunningView: View {
+    let focus: Int
+    let distanceText: String
+    let elapsedText: String
+    let paceText: String
+    let heartRate: Int
+    let bannerKm: Int?
+    let kmProgress: Double
+    let onTap: () -> Void
+
+    private func value(_ metric: Int) -> String {
+        switch metric {
+        case 0: return "\(distanceText) km"
+        case 1: return elapsedText
+        default: return "\(paceText)/km"
+        }
+    }
+
+    var body: some View {
+        let main = ((focus % WorkoutManager.metricCount) + WorkoutManager.metricCount) % WorkoutManager.metricCount
+        let others = (0..<WorkoutManager.metricCount).filter { $0 != main }
+        VStack(spacing: 4) {
+            Text(bannerKm.map { WatchCopy.ui("kmPassed", n: $0) } ?? WatchCopy.current.running)
+                .font(.system(size: 12, weight: bannerKm == nil ? .regular : .bold))
+                .foregroundColor(bannerKm == nil ? watchMuted : watchLime)
+            Text(value(main))
+                .font(.system(size: 30, weight: .heavy))
+                .foregroundColor(watchInk)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+            HStack(spacing: 8) {
+                ForEach(others, id: \.self) { metric in
+                    Text(value(metric))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(watchMuted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
+            Text(heartRate > 0 ? "♥ \(heartRate)" : "♥ --")
+                .font(.system(size: 11))
+                .foregroundColor(watchMuted)
+            ProgressView(value: min(1, max(0, kmProgress)))
+                .tint(watchLime)
+                .padding(.horizontal, 16)
+        }
+        .padding(10)
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
     }
 }
 
-/// ③ 일시정지/재개/종료 화면
-struct WatchPausedView: View {
+/// ③ Controls: hold the red button to stop (a ring fills; letting go early
+/// does nothing), tap the green one to resume. The run is paused here.
+struct WatchControlsView: View {
     let onResume: () -> Void
     let onFinish: () -> Void
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text(WatchCopy.current.paused)
+        VStack(spacing: 6) {
+            Text(WatchCopy.ui("pausedTitle"))
                 .font(.system(size: 12))
                 .foregroundColor(watchMuted)
-            Image(systemName: "pause.fill")
-                .font(.system(size: 20))
-                .foregroundColor(watchLime)
-            Text(WatchCopy.current.paused)
-                .font(.system(size: 28, weight: .heavy))
-                .foregroundColor(watchInk)
-            Text(WatchCopy.current.pauseHint)
-                .font(.system(size: 12))
-                .multilineTextAlignment(.center)
-                .foregroundColor(watchMuted)
+            HStack(spacing: 14) {
+                VStack(spacing: 3) {
+                    WatchHoldButton(onComplete: onFinish)
+                    Text(WatchCopy.ui("holdToStop"))
+                        .font(.system(size: 10))
+                        .foregroundColor(watchInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+                VStack(spacing: 3) {
+                    Button(action: onResume) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(watchBg)
+                            .frame(width: 52, height: 52)
+                            .background(watchLime)
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    Text(WatchCopy.ui("resume"))
+                        .font(.system(size: 10))
+                        .foregroundColor(watchInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
         }
-        .padding(12)
-        .contentShape(Rectangle())
-        .onTapGesture(perform: onResume)
-        .onLongPressGesture(perform: onFinish)
+        .padding(8)
+    }
+}
+
+/// Hold for `holdSeconds` to fire once. The ring shows the hold; a tap or an
+/// early release does nothing (same as Wear OS `HoldRingButton`, 0.8 s).
+struct WatchHoldButton: View {
+    let onComplete: () -> Void
+    var holdSeconds: Double = 0.8
+
+    @State private var holding = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(Color(white: 0.18), lineWidth: 4)
+                .frame(width: 60, height: 60)
+            Circle()
+                .trim(from: 0, to: holding ? 1 : 0)
+                .stroke(watchInk, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+                .frame(width: 60, height: 60)
+                .animation(holding ? .linear(duration: holdSeconds) : .linear(duration: 0.1), value: holding)
+            Image(systemName: "stop.fill")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(watchInk)
+                .frame(width: 52, height: 52)
+                .background(Color(red: 0.86, green: 0.2, blue: 0.2))
+                .clipShape(Circle())
+        }
+        .contentShape(Circle())
+        .onLongPressGesture(
+            minimumDuration: holdSeconds,
+            maximumDistance: 20,
+            perform: onComplete,
+            onPressingChanged: { pressing in holding = pressing }
+        )
+    }
+}
+
+/// Route line only, no map tiles (Wear OS `RouteFace`). Waits for two GPS points.
+struct WatchRouteView: View {
+    let points: [WatchRoutePoint]
+
+    var body: some View {
+        Group {
+            if points.count >= 2 {
+                WatchRouteShape(points: points)
+                    .stroke(watchInk, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .padding(16)
+            } else {
+                Text(WatchCopy.ui("waitingGps"))
+                    .font(.system(size: 12))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(watchMuted)
+                    .padding(12)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// Fits the latitude/longitude points into the frame. Longitude is scaled by
+/// cos(latitude) so the shape is not stretched (Wear OS `RoutePainter.project`).
+struct WatchRouteShape: Shape {
+    let points: [WatchRoutePoint]
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        guard points.count >= 2 else { return path }
+        let lat0 = points.map(\.latitude).reduce(0, +) / Double(points.count)
+        let k = cos(lat0 * .pi / 180)
+        let xs = points.map { $0.longitude * k }
+        let ys = points.map { -$0.latitude }
+        guard let minX = xs.min(), let maxX = xs.max(), let minY = ys.min(), let maxY = ys.max() else {
+            return path
+        }
+        let w = max(maxX - minX, 1e-9)
+        let h = max(maxY - minY, 1e-9)
+        let side = Double(min(rect.width, rect.height))
+        let scale = side / max(w, h)
+        let dx = Double(rect.minX) + (Double(rect.width) - w * scale) / 2
+        let dy = Double(rect.minY) + (Double(rect.height) - h * scale) / 2
+        for index in points.indices {
+            let point = CGPoint(x: dx + (xs[index] - minX) * scale, y: dy + (ys[index] - minY) * scale)
+            if index == points.startIndex {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+        return path
     }
 }
 
@@ -307,11 +528,14 @@ struct WatchRankAlertView: View {
     }
 }
 
-/// ⑤ 완주 요약 + 오프라인 동기화 대기열 상태
+/// ⑤ 완주 요약 + 서버가 정한 적립 한 줄 + 오프라인 동기화 대기열 상태
 struct WatchSummaryView: View {
     let distanceText: String
     let paceText: String
     let minutesText: String
+    /// From `WatchRunReward.line`: only what the server answered, or "confirmed after upload".
+    let rewardLine: String
+    let rewardConfirmed: Bool
     let pendingCount: Int
     let onDone: () -> Void
 
@@ -326,8 +550,17 @@ struct WatchSummaryView: View {
             Text("\(distanceText)km")
                 .font(.system(size: 30, weight: .heavy))
                 .foregroundColor(watchInk)
-            Text("\(paceText)/km · \(minutesText)\n\(pendingCount > 0 ? WatchCopy.current.uploadPending(pendingCount) : WatchCopy.current.nothingToUpload)")
+            Text("\(paceText)/km · \(minutesText)")
                 .font(.system(size: 11))
+                .foregroundColor(watchMuted)
+            Text(rewardLine)
+                .font(.system(size: 12, weight: .bold))
+                .multilineTextAlignment(.center)
+                .foregroundColor(rewardConfirmed ? watchLime : watchMuted)
+                .lineLimit(2)
+                .minimumScaleFactor(0.7)
+            Text(pendingCount > 0 ? WatchCopy.current.uploadPending(pendingCount) : WatchCopy.current.nothingToUpload)
+                .font(.system(size: 10))
                 .multilineTextAlignment(.center)
                 .foregroundColor(watchMuted)
         }

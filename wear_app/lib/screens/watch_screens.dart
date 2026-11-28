@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../core/run_reward.dart';
 import '../core/run_session.dart';
 import '../core/watch_glance.dart';
 import '../core/watch_platform.dart';
@@ -1110,6 +1111,7 @@ class SummaryFace extends StatefulWidget {
     required this.session,
     required this.onDone,
     this.shareEarned,
+    this.reward,
     this.activityId,
     this.phoneOpener,
     super.key,
@@ -1117,6 +1119,10 @@ class SummaryFace extends StatefulWidget {
 
   final RunSession session;
   final VoidCallback onDone;
+
+  /// The server's decision for this run (from the validate reply). Null hides
+  /// the line. The watch never estimates a reward.
+  final RunReward? reward;
 
   /// 이번 달리기로 쌓인 SHARE. 값이 없으면(null) 줄을 숨긴다. 공식을 워치에서 만들지 않는다.
   final int? shareEarned;
@@ -1128,6 +1134,7 @@ class SummaryFace extends StatefulWidget {
   final WatchPhoneOpener? phoneOpener;
 
   static const shareKey = Key('watch-summary-share');
+  static const rewardKey = Key('watch-summary-reward');
   static const distanceKey = Key('watch-summary-distance');
   static const timeKey = Key('watch-summary-time');
   static const paceKey = Key('watch-summary-pace');
@@ -1229,6 +1236,25 @@ class _SummaryFaceState extends State<SummaryFace> {
                   Text('+$shareEarned',
                       style: _text(s, 0.06, weight: FontWeight.w700)),
                 ],
+              ),
+            )
+          else if (widget.reward != null)
+            zone(
+              s,
+              0.475,
+              0.545,
+              Text(
+                watchUi(locale, widget.reward!.copyKey, n: widget.reward!.value),
+                key: SummaryFace.rewardKey,
+                textAlign: TextAlign.center,
+                style: _text(
+                  s,
+                  0.05,
+                  color: widget.reward!.kind == RunRewardKind.confirmed
+                      ? watchGreen
+                      : watchMuted,
+                  weight: FontWeight.w700,
+                ),
               ),
             ),
           if (points.length >= 2)

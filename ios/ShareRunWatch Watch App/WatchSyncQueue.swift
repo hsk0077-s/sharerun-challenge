@@ -114,11 +114,48 @@ struct WatchPendingSteps: Codable, Equatable {
     }
 }
 
+/// What the server decided for one uploaded run (the summary's one line).
+/// Same rules as Wear OS `RunReward.fromReply`: the watch only shows what
+/// `POST /actions/runs/validate` answered (`verified`, `value_token_reward`,
+/// `daily_cap_applied`) and never estimates a reward.
+enum WatchRunReward: Equatable {
+    case pending
+    case confirmed(Int)
+    case capReached
+    case noReward
+    case notCounted
+
+    /// Nil while the run is still waiting (offline, 429, 5xx).
+    static func fromReply(status: Int, body: [String: Any]) -> WatchRunReward? {
+        if (200..<300).contains(status) {
+            guard body["verified"] as? Bool == true else { return .notCounted }
+            let value = (body["value_token_reward"] as? NSNumber)?.intValue ?? 0
+            if value > 0 { return .confirmed(value) }
+            if body["daily_cap_applied"] as? Bool == true { return .capReached }
+            return .noReward
+        }
+        if [400, 409, 413, 422].contains(status) { return .notCounted }
+        return nil
+    }
+
+    var line: String {
+        switch self {
+        case .pending: return WatchCopy.ui("rewardPending")
+        case let .confirmed(value): return WatchCopy.ui("rewardConfirmed", n: value)
+        case .capReached: return WatchCopy.ui("rewardCapReached")
+        case .noReward: return WatchCopy.ui("rewardNone")
+        case .notCounted: return WatchCopy.ui("rewardNotCounted")
+        }
+    }
+}
+
 /// Persistent offline sync queue (up to 50 runs + latest daily steps) for Apple Watch.
 @MainActor
 final class WatchSyncQueue: ObservableObject {
     @Published private(set) var runs: [WatchPendingRun] = []
     @Published private(set) var pendingSteps: WatchPendingSteps?
+    /// Server decisions for runs uploaded while the app is open, by activity id.
+    @Published private(set) var rewards: [String: WatchRunReward] = [:]
 
     private let maxRuns = 50
     private let storageKey = "sharerun.watchos.sync_queue.v1"
@@ -159,6 +196,11 @@ final class WatchSyncQueue: ObservableObject {
         }
     }
 
+    func reward(for activityId: String?) -> WatchRunReward {
+        guard let activityId, let reward = rewards[activityId] else { return .pending }
+        return reward
+    }
+
     func acknowledge(activityId: String) {
         runs.removeAll { $0.activityId == activityId }
         save()
@@ -171,11 +213,17 @@ final class WatchSyncQueue: ObservableObject {
         defer { endFlush() }
 
         for run in runs {
-            guard let (status, _) = await account.postSigned(
+            guard let (status, body) = await account.postSigned(
                 path: "/actions/runs/validate",
                 payload: run.toValidateRunBody(deviceId: account.deviceId())
             ) else {
                 break
+            }
+            if (200..<300).contains(status) {
+                account.rememberTier(body["tier_code"])
+            }
+            if let reward = WatchRunReward.fromReply(status: status, body: body) {
+                rewards[run.activityId] = reward
             }
             if (200..<300).contains(status) || [400, 409, 413, 422].contains(status) {
                 acknowledge(activityId: run.activityId)

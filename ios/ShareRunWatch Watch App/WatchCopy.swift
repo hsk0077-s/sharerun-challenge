@@ -220,6 +220,12 @@ enum WatchCopy {
                 missing.append("glance.\(key).\(code)")
             }
         }
+        for (name, table) in [("ui", uiRows), ("animal", animalRows), ("medal", medalRows)] {
+            for (key, values) in table where values.count != languages.count
+                || values.contains(where: { $0.trimmingCharacters(in: .whitespaces).isEmpty }) {
+                missing.append("\(name).\(key)")
+            }
+        }
         return missing
     }
 
@@ -241,6 +247,72 @@ enum WatchCopy {
         "glanceUnranked": ["ko": "이번 달은 순위 밖이에요", "en": "No rank this month", "ja": "今月は順位外です", "zh": "本月未進排名", "es": "Sin puesto este mes", "pt": "Sem lugar este mês", "de": "Diesen Monat ohne Platz", "fr": "Pas de place ce mois-ci", "vi": "Tháng này chưa có hạng", "th": "เดือนนี้ยังไม่มีอันดับ", "id": "Bulan ini belum berperingkat"],
         "glanceAllDone": ["ko": "월드투어를 다 달렸어요", "en": "World tour complete", "ja": "ワールドツアー完走", "zh": "世界巡迴跑完了", "es": "Gira mundial completa", "pt": "Volta ao mundo completa", "de": "Welttour geschafft", "fr": "Tour du monde terminé", "vi": "Đã chạy hết vòng thế giới", "th": "ทัวร์โลกครบแล้ว", "id": "Tur dunia selesai"],
     ]
+
+    // Run and summary faces. Rows are copied from wear_app/lib/l10n/watch_copy.dart
+    // (`watchUiRows`, `watchAnimalRows`, `watchMedalRows`) in the same order as
+    // `languages`, so both watches say the same thing. 원어민 검수 전.
+    private static let uiRows: [String: [String]] = [
+        "kmPassed": ["{n}km 통과", "{n} km passed", "{n}km 通過", "通過 {n} 公里", "{n} km completados", "{n} km concluídos", "{n} km geschafft", "{n} km parcourus", "Qua {n} km", "ผ่าน {n} กม.", "Lewat {n} km"],
+        "holdToStop": ["길게 눌러 종료", "Hold to stop", "長押しで終了", "長按結束", "Mantén para detener", "Segure para parar", "Halten zum Beenden", "Maintenir pour arrêter", "Giữ để dừng", "กดค้างเพื่อจบ", "Tahan untuk berhenti"],
+        "resume": ["재개", "Resume", "再開", "繼續", "Reanudar", "Retomar", "Weiter", "Reprendre", "Tiếp tục", "ต่อ", "Lanjut"],
+        "pausedTitle": ["일시정지됨", "Paused", "一時停止中", "已暫停", "En pausa", "Pausado", "Pausiert", "En pause", "Đã tạm dừng", "หยุดชั่วคราว", "Dijeda"],
+        "cancelHint": ["눌러서 취소", "Tap to cancel", "タップで取消", "點一下取消", "Toca para cancelar", "Toque para cancelar", "Tippen zum Abbrechen", "Touchez pour annuler", "Chạm để hủy", "แตะเพื่อยกเลิก", "Ketuk untuk batal"],
+        "waitingGps": ["GPS 신호 기다리는 중", "Waiting for GPS", "GPS信号を待っています", "等待 GPS 訊號", "Esperando GPS", "Aguardando GPS", "Warte auf GPS", "En attente du GPS", "Đang chờ GPS", "รอสัญญาณ GPS", "Menunggu GPS"],
+        "unrated": ["평가 전", "Not rated yet", "評価前", "尚未評級", "Sin evaluar", "Sem avaliação", "Noch nicht bewertet", "Pas encore évalué", "Chưa xếp hạng", "ยังไม่ประเมิน", "Belum dinilai"],
+        "rewardConfirmed": ["적립 확정 VALUE {n}", "VALUE {n} confirmed", "VALUE {n} 獲得確定", "已確認 VALUE {n}", "VALUE {n} confirmado", "VALUE {n} confirmado", "VALUE {n} bestätigt", "VALUE {n} confirmé", "Đã xác nhận VALUE {n}", "ยืนยัน VALUE {n} แล้ว", "VALUE {n} dikonfirmasi"],
+        "rewardPending": ["올리면 적립이 확인돼요", "Reward is confirmed after upload", "送信後に獲得が確定します", "上傳後會確認獎勵", "La recompensa se confirma al subir", "A recompensa é confirmada ao enviar", "Belohnung wird nach dem Hochladen bestätigt", "Récompense confirmée après l’envoi", "Phần thưởng được xác nhận sau khi tải lên", "ยืนยันรางวัลหลังอัปโหลด", "Hadiah dikonfirmasi setelah diunggah"],
+        "rewardCapReached": ["오늘 적립 한도에 도달했어요", "Today’s reward limit reached", "今日の獲得上限に達しました", "已達今日獎勵上限", "Llegaste al límite de hoy", "Limite de hoje atingido", "Tageslimit erreicht", "Limite du jour atteinte", "Đã đạt giới hạn thưởng hôm nay", "ครบขีดจำกัดรางวัลวันนี้แล้ว", "Batas hadiah hari ini tercapai"],
+        "rewardNone": ["인정됐어요 · 이번엔 적립 없음", "Counted · no reward this time", "認定されました · 今回は獲得なし", "已認定 · 這次沒有獎勵", "Contó · sin recompensa esta vez", "Contou · sem recompensa desta vez", "Gezählt · diesmal keine Belohnung", "Compté · pas de récompense cette fois", "Đã ghi nhận · lần này không có thưởng", "นับแล้ว · ครั้งนี้ไม่มีรางวัล", "Tercatat · kali ini tanpa hadiah"],
+        "rewardNotCounted": ["인정되지 않은 기록이에요", "This run was not counted", "認定されなかった記録です", "這筆紀錄未被認定", "Esta carrera no contó", "Esta corrida não contou", "Dieser Lauf zählt nicht", "Cette course n’a pas compté", "Lần chạy này không được ghi nhận", "การวิ่งนี้ไม่ถูกนับ", "Lari ini tidak dihitung"],
+    ]
+
+    private static let animalRows: [String: [String]] = [
+        "snail": ["달팽이", "Snail", "カタツムリ", "蝸牛", "Caracol", "Caracol", "Schnecke", "Escargot", "Ốc sên", "หอยทาก", "Siput"],
+        "turtle": ["거북이", "Turtle", "カメ", "烏龜", "Tortuga", "Tartaruga", "Schildkröte", "Tortue", "Rùa", "เต่า", "Kura-kura"],
+        "beagle": ["비글", "Beagle", "ビーグル", "米格魯", "Beagle", "Beagle", "Beagle", "Beagle", "Beagle", "บีเกิล", "Beagle"],
+        "wolf": ["늑대", "Wolf", "オオカミ", "狼", "Lobo", "Lobo", "Wolf", "Loup", "Sói", "หมาป่า", "Serigala"],
+        "zebra": ["얼룩말", "Zebra", "シマウマ", "斑馬", "Cebra", "Zebra", "Zebra", "Zèbre", "Ngựa vằn", "ม้าลาย", "Zebra"],
+        "cheetah": ["치타", "Cheetah", "チーター", "獵豹", "Guepardo", "Guepardo", "Gepard", "Guépard", "Báo săn", "ชีตาห์", "Cheetah"],
+    ]
+
+    private static let medalRows: [String: [String]] = [
+        "bronze": ["브론즈", "Bronze", "ブロンズ", "銅牌", "Bronce", "Bronze", "Bronze", "Bronze", "Đồng", "บรอนซ์", "Perunggu"],
+        "silver": ["실버", "Silver", "シルバー", "銀牌", "Plata", "Prata", "Silber", "Argent", "Bạc", "ซิลเวอร์", "Perak"],
+        "gold": ["골드", "Gold", "ゴールド", "金牌", "Oro", "Ouro", "Gold", "Or", "Vàng", "โกลด์", "Emas"],
+        "diamond": ["다이아", "Diamond", "ダイヤ", "鑽石", "Diamante", "Diamante", "Diamant", "Diamant", "Kim cương", "ไดมอนด์", "Berlian"],
+        "master": ["마스터", "Master", "マスター", "大師", "Maestro", "Mestre", "Meister", "Maître", "Bậc thầy", "มาสเตอร์", "Master"],
+    ]
+
+    private static func row(_ values: [String]) -> String {
+        let code = Locale.current.languageCode ?? "en"
+        let index = languages.firstIndex(of: code) ?? 1
+        let text = values.indices.contains(index) ? values[index] : ""
+        return text.isEmpty ? (values.count > 1 ? values[1] : "") : text
+    }
+
+    /// A run/summary sentence. `{n}` becomes [n].
+    static func ui(_ key: String, n: Int? = nil) -> String {
+        guard let values = uiRows[key] else { return key }
+        let text = row(values)
+        guard let n else { return text }
+        return text.replacingOccurrences(of: "{n}", with: "\(n)")
+    }
+
+    /// Localized grade title for a server tier code, the same rule as Wear OS
+    /// `watchTierLabel`: `cheetah` is the animal, `cheetah_gold` is animal then
+    /// medal. `snail` (unrated) and unknown codes give nil.
+    static func tierLabel(_ code: String?) -> String? {
+        guard let raw = code?.trimmingCharacters(in: .whitespaces).lowercased(), !raw.isEmpty else {
+            return nil
+        }
+        let parts = raw.split(separator: "_").map(String.init)
+        guard let first = parts.first, first != "snail", let animal = animalRows[first] else {
+            return nil
+        }
+        let animalName = row(animal)
+        guard parts.count > 1, let medal = medalRows[parts[1]] else { return animalName }
+        return "\(animalName) \(row(medal))"
+    }
 
     private static func fill(_ patterns: [String: String], _ count: Int) -> String {
         let code = Locale.current.languageCode ?? "en"

@@ -30,6 +30,20 @@ void main() {
     }
   });
 
+  test('the short-distance line fits a free run, with no event wording', () {
+    final result = JenaValidationResult.fromJson({
+      'verified': false,
+      'decision': 'rejected_unknown',
+      'reason': '서버 내부 문장',
+      'reason_code': 'distance_too_short',
+      'value_token_reward': 0,
+    });
+    final message = verificationUserMessage(result);
+    expect(message, contains('최소 거리'));
+    expect(message, contains('1km'));
+    expect(message, isNot(contains('대회')));
+  });
+
   test('a missing code falls back to the server sentence', () {
     final result = JenaValidationResult.fromJson({
       'verified': false,

@@ -5052,29 +5052,6 @@
       "id": "Hasil Lari"
     },
     {
-      "key": "run_result.body",
-      "ko": "판정: ${result.decision.name}",
-      "file": "lib/screens/run_result_screen.dart",
-      "screen": "run_result",
-      "context": "run_result 화면의 body. 화면 본문. 줄바꿈이 있으면 유지합니다.",
-      "placeholders": [
-        {
-          "name": "result.decision.name",
-          "format": "${result.decision.name}"
-        }
-      ],
-      "en": "Decision: ${result.decision.name}",
-      "ja": "判定: ${result.decision.name}",
-      "zh-TW": "判定：${result.decision.name}",
-      "es": "Veredicto: ${result.decision.name}",
-      "pt-BR": "Decisão: ${result.decision.name}",
-      "de": "Urteil: ${result.decision.name}",
-      "fr": "Décision : ${result.decision.name}",
-      "vi": "Phán quyết: ${result.decision.name}",
-      "th": "ผลการตัดสิน: ${result.decision.name}",
-      "id": "Keputusan: ${result.decision.name}"
-    },
-    {
       "key": "run_result.body.2",
       "ko": "VALUE 보상: ${result.valueTokenReward}",
       "file": "lib/screens/run_result_screen.dart",
@@ -36377,21 +36354,21 @@
     },
     {
       "key": "verification.distance_too_short",
-      "ko": "거리가 이번 대회의 최소 거리보다 짧아요. 대회 거리만큼, 적어도 1km는 달려야 해요. 기록은 남고 보상은 지급되지 않아요.",
+      "ko": "거리가 최소 거리보다 짧아요. 보상을 받으려면 적어도 1km는 달려야 해요. 기록은 남고 보상은 지급되지 않아요.",
       "file": "lib/features/jena_validation/verification_reason.dart",
       "screen": "verification",
       "context": "화면에 보이는 문구.",
       "placeholders": [],
-      "en": "Your distance was shorter than this event’s minimum. Run the event distance, at least 1 km. Your record is kept, but no reward is given.",
-      "ja": "今回の大会の最小距離より短いです。大会の距離まで、最低でも1kmは走ってください。記録は残りますが、報酬は付与されません。",
-      "zh-TW": "距離短於本次賽事的最低距離。請跑滿賽事距離，至少 1 公里。紀錄會保留，但不會發放獎勵。",
-      "es": "La distancia fue menor que el mínimo de este evento. Corre la distancia del evento, al menos 1 km. Tu registro se conserva, pero no se da recompensa.",
-      "pt-BR": "A distância ficou abaixo do mínimo deste evento. Corra a distância do evento, no mínimo 1 km. O registro é mantido, mas não há recompensa.",
-      "de": "Die Strecke war kürzer als das Minimum dieses Events. Lauf die Eventdistanz, mindestens 1 km. Dein Eintrag bleibt, es gibt aber keine Belohnung.",
-      "fr": "La distance est inférieure au minimum de cet événement. Courez la distance de l’événement, au moins 1 km. Votre enregistrement est conservé, mais aucune récompense n’est accordée.",
-      "vi": "Quãng đường ngắn hơn mức tối thiểu của giải này. Hãy chạy đủ quãng đường của giải, tối thiểu 1 km. Bản ghi vẫn được giữ nhưng không có thưởng.",
-      "th": "ระยะทางสั้นกว่าขั้นต่ำของรายการนี้ ต้องวิ่งให้ครบระยะของรายการ อย่างน้อย 1 กม. ระบบเก็บบันทึกไว้ แต่ไม่ได้รับรางวัล",
-      "id": "Jaraknya lebih pendek dari batas minimum event ini. Lari sesuai jarak event, minimal 1 km. Catatan tetap tersimpan, tetapi hadiah tidak diberikan.",
+      "en": "Your distance was shorter than the minimum. To earn a reward, run at least 1 km. Your record is kept, but no reward is given.",
+      "ja": "距離が最小距離より短いです。報酬を受け取るには、最低でも1kmは走ってください。記録は残りますが、報酬は付与されません。",
+      "zh-TW": "距離短於最低距離。要獲得獎勵，至少要跑 1 公里。紀錄會保留，但不會發放獎勵。",
+      "es": "La distancia fue menor que el mínimo. Para ganar una recompensa, corre al menos 1 km. Tu registro se conserva, pero no se da recompensa.",
+      "pt-BR": "A distância ficou abaixo do mínimo. Para ganhar recompensa, corra pelo menos 1 km. O registro é mantido, mas não há recompensa.",
+      "de": "Die Strecke war kürzer als das Minimum. Für eine Belohnung musst du mindestens 1 km laufen. Dein Eintrag bleibt, es gibt aber keine Belohnung.",
+      "fr": "La distance est inférieure au minimum. Pour obtenir une récompense, courez au moins 1 km. Votre enregistrement est conservé, mais aucune récompense n’est accordée.",
+      "vi": "Quãng đường ngắn hơn mức tối thiểu. Để nhận thưởng, hãy chạy tối thiểu 1 km. Bản ghi vẫn được giữ nhưng không có thưởng.",
+      "th": "ระยะทางสั้นกว่าขั้นต่ำ หากต้องการรับรางวัล ต้องวิ่งอย่างน้อย 1 กม. ระบบเก็บบันทึกไว้ แต่จะไม่ได้รับรางวัล",
+      "id": "Jaraknya lebih pendek dari batas minimum. Untuk mendapat hadiah, lari minimal 1 km. Catatan tetap tersimpan, tetapi hadiah tidak diberikan.",
       "native_review": "pending"
     },
     {

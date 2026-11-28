@@ -180,7 +180,9 @@ def release_due_referral_reviews(
 def send_daily_cheer_push(_: None = Depends(require_ops_admin)) -> CheerPushResult:
     """One bundled cheer push per person per KST day. Run once a day (19:30 KST).
 
-    Sends nothing between 21:00 and 08:00 KST. Safe to run again the same day.
+    Sends nothing between 21:00 and 08:00 KST. Only users whose
+    ``pushNotificationsEnabled`` is exactly true are included. Safe to run
+    again the same day.
     """
     from app.services import cheer_push, notification_service
 

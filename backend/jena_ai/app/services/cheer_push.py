@@ -12,6 +12,10 @@ cheers, this sends at most one push: "N friends cheered for you". Rules:
     announced twice.
   * ``muteAll`` sends nothing. Friends in ``mutedFriends``, blocked people
     (either way) and deleted accounts are not counted.
+  * Activity notifications only. ``users/{uid}.pushNotificationsEnabled`` must
+    be exactly true. Missing or false is skipped (``push_disabled``) and no
+    ``cheerPushDays`` record is written, so turning notifications on later
+    the same day still allows that day's push.
   * The push holds only a count. No nickname, run or place is put in it.
   * The text follows the language saved on ``users/{uid}.language``; Korean when
     there is none.
@@ -159,25 +163,45 @@ def _language(db, uid: str) -> object:
     return (snap.to_dict() or {}).get("language") if snap.exists else None
 
 
+def _push_opted_in(db, uid: str) -> bool:
+    """True only when the activity-notification toggle is exactly on.
+
+    Missing, false, or any other value means the person did not opt in.
+    """
+    snap = db.collection(USERS).document(uid).get()
+    if not snap.exists:
+        return False
+    return (snap.to_dict() or {}).get("pushNotificationsEnabled") is True
+
+
+def _note_skip(result: dict, reason: str | None = None) -> None:
+    result["skipped"] += 1
+    if not reason:
+        return
+    reasons = result["skip_reasons"]
+    reasons[reason] = reasons.get(reason, 0) + 1
+
+
 def send_daily_cheer_pushes(
     db,
     send: Callable[[str, str, str, dict], None],
     is_invalid_token: Callable[[Exception], bool],
     now: datetime | None = None,
-) -> dict[str, int | bool]:
+) -> dict[str, int | bool | dict[str, int]]:
     """Send today's bundled cheer pushes. Safe to call more than once a day.
 
     ``send(token, title, body, data)`` raises on failure; ``is_invalid_token``
     tells whether that failure means the token should be removed.
     """
     current = _now(now)
-    result: dict[str, int | bool] = {
+    result: dict[str, int | bool | dict[str, int]] = {
         "quiet_hours": False,
         "candidates": 0,
         "sent": 0,
         "skipped": 0,
         "failed": 0,
         "tokens_removed": 0,
+        "skip_reasons": {},
     }
     if is_quiet_hour(current):
         result["quiet_hours"] = True
@@ -188,10 +212,14 @@ def send_daily_cheer_pushes(
     result["candidates"] = len(receivers)
     for uid in sorted(receivers):
         try:
+            # Before the day record, so opting in later today can still send.
+            if not _push_opted_in(db, uid):
+                _note_skip(result, "push_disabled")
+                continue
             count = unseen_friend_count(db, uid, current)
             tokens = _tokens(db, uid) if count else []
             if not count or not tokens:
-                result["skipped"] += 1
+                _note_skip(result)
                 continue
             if not claim_day(
                 db,
@@ -204,7 +232,7 @@ def send_daily_cheer_pushes(
                     "sentAt": current,
                 },
             ):
-                result["skipped"] += 1
+                _note_skip(result)
                 continue
             title, body = copy_for(_language(db, uid), count)
             data = {"type": PUSH_TYPE, "route": CHEER_INBOX_ROUTE}

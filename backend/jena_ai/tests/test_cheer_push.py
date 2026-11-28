@@ -57,7 +57,11 @@ def _fake_firestore(monkeypatch) -> None:
 def _db(*uids: str) -> _MemoryDb:
     db = _MemoryDb()
     for uid in uids:
-        db.store[f"users/{uid}"] = {"nickname": f"nick-{uid}"}
+        # Happy-path people have opted in. Missing or false is covered below.
+        db.store[f"users/{uid}"] = {
+            "nickname": f"nick-{uid}",
+            "pushNotificationsEnabled": True,
+        }
         db.store[f"users/{uid}/loginDevices/dev-{uid}"] = {"fcmToken": f"tok-{uid}"}
     return db
 
@@ -196,6 +200,71 @@ def test_quiet_hours_send_nothing(kst_hour: int, quiet: bool) -> None:
     if quiet:
         assert result["sent"] == 0
         assert not any(k.startswith("cheerPushDays/") for k in db.store)
+
+
+# --- activity-notification opt-in ------------------------------------------
+
+
+def test_opted_in_user_receives_the_cheer_push() -> None:
+    db = _setup()
+    db.store["users/me"]["pushNotificationsEnabled"] = True
+    result, sent = _run(db)
+
+    assert result["sent"] == 1
+    assert [item[0] for item in sent] == ["tok-me"]
+    assert db.store["cheerPushDays/me_20261120"]["friendCount"] == 3
+
+
+def test_push_disabled_is_skipped_without_a_day_record() -> None:
+    db = _setup()
+    db.store["users/me"]["pushNotificationsEnabled"] = False
+    result, sent = _run(db)
+
+    assert sent == []
+    assert result["sent"] == 0
+    assert result["skipped"] == 1
+    assert result["skip_reasons"] == {"push_disabled": 1}
+    assert "cheerPushDays/me_20261120" not in db.store
+
+
+def test_missing_push_opt_in_is_skipped_without_a_day_record() -> None:
+    db = _setup()
+    del db.store["users/me"]["pushNotificationsEnabled"]
+    result, sent = _run(db)
+
+    assert sent == []
+    assert result["sent"] == 0
+    assert result["skipped"] == 1
+    assert result["skip_reasons"] == {"push_disabled": 1}
+    assert "cheerPushDays/me_20261120" not in db.store
+
+
+def test_one_opt_out_does_not_stop_people_who_opted_in() -> None:
+    db = _setup()
+    db.store["users/me"]["pushNotificationsEnabled"] = False
+    _cheer(db, "me", "f1", "rz", EVENING - timedelta(hours=1))
+    result, sent = _run(db)
+
+    assert [item[0] for item in sent] == ["tok-f1"]
+    assert result["sent"] == 1
+    assert result["skip_reasons"] == {"push_disabled": 1}
+    assert "cheerPushDays/me_20261120" not in db.store
+    assert "cheerPushDays/f1_20261120" in db.store
+
+
+def test_turning_push_on_later_the_same_day_still_sends() -> None:
+    db = _setup()
+    db.store["users/me"]["pushNotificationsEnabled"] = False
+    first, sent = _run(db)
+    assert sent == []
+    assert first["skip_reasons"] == {"push_disabled": 1}
+    assert "cheerPushDays/me_20261120" not in db.store
+
+    db.store["users/me"]["pushNotificationsEnabled"] = True
+    second, sent = _run(db, now=EVENING + timedelta(minutes=30))
+    assert second["sent"] == 1
+    assert [item[0] for item in sent] == ["tok-me"]
+    assert "cheerPushDays/me_20261120" in db.store
 
 
 # --- mute and blocks -------------------------------------------------------

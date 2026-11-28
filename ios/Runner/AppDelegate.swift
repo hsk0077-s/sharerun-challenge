@@ -26,6 +26,9 @@ import GoogleMaps
     if let watchRegistrar = self.registrar(forPlugin: "WatchBridgePlugin") {
       WatchBridgePlugin.register(with: watchRegistrar)
     }
+    if let linksRegistrar = self.registrar(forPlugin: "ShareRunLinks") {
+      ShareRunLinks.shared.attach(messenger: linksRegistrar.messenger())
+    }
     if let registrar = self.registrar(forPlugin: "RunFinishImageShare") {
       let channel = FlutterMethodChannel(
         name: "share_run/finish_image_share",
@@ -91,6 +94,47 @@ import GoogleMaps
       options: [.expirationDate: Date().addingTimeInterval(60 * 5)]
     )
     UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    return true
+  }
+}
+
+/// `sharerun://shop`, `sharerun://run/<id>` from the watch, passed to Dart on
+/// `share_run/links` (same as Android `MainActivity`): `getInitialLink` hands
+/// over a link that came before Dart listened (cold start, before sign-in),
+/// `onLink` sends one that arrives while the app is open.
+final class ShareRunLinks {
+  static let shared = ShareRunLinks()
+  static let scheme = "sharerun"
+
+  private var channel: FlutterMethodChannel?
+  private var pendingLink: String?
+
+  func attach(messenger: FlutterBinaryMessenger) {
+    let links = FlutterMethodChannel(name: "share_run/links", binaryMessenger: messenger)
+    links.setMethodCallHandler { [weak self] call, result in
+      guard call.method == "getInitialLink" else {
+        result(FlutterMethodNotImplemented)
+        return
+      }
+      let link = self?.pendingLink
+      self?.pendingLink = nil
+      result(link)
+    }
+    channel = links
+  }
+
+  /// True when [url] is a `sharerun://` link (it is then handled here).
+  @discardableResult
+  func receive(_ url: URL) -> Bool {
+    guard url.scheme?.lowercased() == Self.scheme else { return false }
+    let link = url.absoluteString
+    // Kept until Dart takes it, in case Dart is not listening yet.
+    pendingLink = link
+    channel?.invokeMethod("onLink", arguments: link) { [weak self] reply in
+      if reply is FlutterError { return }
+      if let object = reply as? NSObject, object === FlutterMethodNotImplemented { return }
+      if self?.pendingLink == link { self?.pendingLink = nil }
+    }
     return true
   }
 }

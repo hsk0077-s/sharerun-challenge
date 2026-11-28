@@ -60,6 +60,14 @@
 				<string>sharerunchallenge</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sharerun</string>
+			</array>
+		</dict>
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>

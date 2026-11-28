@@ -93,8 +93,8 @@ void main() {
       'sign_in_failed',
       'offline',
     ];
+    // The Apple Watch target's copy (the old watchos_app/ copy was removed).
     for (final path in [
-      'watchos_app/ShareRunWatch/WatchCopy.swift',
       'ios/ShareRunWatch Watch App/WatchCopy.swift',
     ]) {
       final text = File(path).readAsStringSync();

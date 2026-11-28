@@ -429,7 +429,7 @@
 
 Wear OS(`wear_app`)는 이 환경에서 코드와 테스트로 확인했다. 올리지 못한 기록은 큐에 남고, 다시 보낼 때도 같은 `activity_id`를 쓴다. 같은 id를 두 번 넣으면 두 번째는 거절된다. 큐를 저장했다가 앱을 다시 열어도 id가 같다. 두 flush가 겹치면 나중 것은 0건을 보내고, POST는 한 번이다. 오프라인과 429·5xx는 기록을 남긴다. 400·409·413·422는 큐에서 뺀다. 테스트는 `wear_app/test/sync_idempotency_test.dart`와 `sync_queue_test.dart`다. 서버는 이미 `validationFinalized`인 활동을 다시 정산하지 않는다. `test_verified_run_appends_company_won_and_leaves_the_wallet`가 같은 `act-1`을 두 번 넣고 기부 원장이 하나이며 지갑 SHARE가 그대로인 것을 본다.
 
-Apple Watch는 이 환경에 Xcode가 없어 빌드하지 않았다. `swiftc`도 없다. `watchos_app/ShareRunWatch/WatchSyncQueue.swift`와 `ios/ShareRunWatch Watch App/WatchSyncQueue.swift`는 같은 `activityId`의 중복 enqueue를 거절하고, 응답이 없으면 flush를 멈추며, 200대와 400·409·413·422는 큐에서 빼고, 그 밖(429·5xx)은 남겨 다음 flush가 같은 id로 다시 보낸다. 겹친 flush는 `WatchFlushGate`가 막는다. `tryBeginFlush`가 거짓이면 `flush`는 바로 돌아간다. Wear OS `SyncQueue.tryBeginFlush`와 같은 잠금이다. 잠금 자체는 `watchos_app/ShareRunWatchTests/WatchFlushGateTests.swift`(맥의 XCTest)와 `flush_gate_linux_check.swift`(`swiftc`로 두 파일을 같이 컴파일)에 있다. 이 리눅스에서는 그 컴파일을 실행하지 못했다.
+Apple Watch는 이 환경에 Xcode가 없어 빌드하지 않았다. `swiftc`도 없다. `ios/ShareRunWatch Watch App/WatchSyncQueue.swift`는 같은 `activityId`의 중복 enqueue를 거절하고, 응답이 없으면 flush를 멈추며, 200대와 400·409·413·422는 큐에서 빼고, 그 밖(429·5xx)은 남겨 다음 flush가 같은 id로 다시 보낸다. 겹친 flush는 `WatchFlushGate`가 막는다. `tryBeginFlush`가 거짓이면 `flush`는 바로 돌아간다. Wear OS `SyncQueue.tryBeginFlush`와 같은 잠금이다. 잠금 자체는 `ios/ShareRunWatch Watch App/WatchFlushGate.swift`에 있고, 그 확인은 `backend/jena_ai/tests/test_watch_payload_shape.py`(소스 검사)에 있다. 이 리눅스에서는 그 컴파일을 실행하지 못했다.
 
 ### Apple Watch 빌드·시뮬레이터 체크리스트 (최종본)
 
@@ -439,7 +439,7 @@ Xcode Cloud가 할 수 있는 것: 워크플로에서 `ios/Runner.xcworkspace`�
 
 Xcode Cloud가 대신하지 못하는 것: 비행기 모드, 앱을 죽인 뒤의 큐, 실기기 HealthKit, 페어링 화면을 손으로 누르는 일. 그 칸은 맥에 연결된 시뮬레이터 또는 실기기다.
 
-1. `watchos_app/README-XCODE-SETUP.md`대로 `ios/Runner.xcworkspace`에 watchOS 타깃을 붙인다. HealthKit, 백그라운드 모드(운동, 위치)를 켠다. 로컬에서 시뮬레이터 빌드가 끝나고, Xcode Cloud 워크플로도 그 스킴을 한 번 통과한다.
+1. `ios/ShareRunWatch Watch App/`을 `ios/Runner.xcworkspace`에 watchOS 타깃을 붙인다. HealthKit, 백그라운드 모드(운동, 위치)를 켠다. 로컬에서 시뮬레이터 빌드가 끝나고, Xcode Cloud 워크플로도 그 스킴을 한 번 통과한다.
 2. 워치 시뮬레이터에서 6자리 코드로 `POST /auth/watch-pair`가 된다. 페어링 전에는 업로드 POST가 나가지 않는다.
 3. 페어링된 업로드 본문에 서버 필드 `device_id`가 있다. 값은 `^[A-Za-z0-9_-]{8,64}$`다. 연결을 해제한 뒤에도 그 값이 본문에서 사라지지 않는다.
 4. 비행기 모드에서 런을 끝내고 앱을 죽인 뒤 다시 열어도 큐의 `activityId`가 같다. 이 칸은 시뮬레이터의 네트워크 링크 조절 또는 실기기다. Xcode Cloud 빌드 로그로는 확인하지 못한다.

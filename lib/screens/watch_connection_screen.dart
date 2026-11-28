@@ -366,66 +366,7 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        builder: (sheetContext) {
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  OnboardingSoftPromptCopy.title,
-                  style: AppTextStyles.header1.copyWith(fontSize: 20),
-                ),
-                const SizedBox(height: 16),
-                for (final benefit in OnboardingSoftPromptCopy.benefits)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(
-                          Icons.check_rounded,
-                          size: 18,
-                          color: AppColors.tealAccent,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            benefit,
-                            style: AppTextStyles.termsSubtitle.copyWith(
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(true),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.tealAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    RemainingSurface.tr(
-                      sheetContext,
-                      'watch_connection.button',
-                      '알림 허용하고 계속',
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(sheetContext).pop(false),
-                  child: Text(RemainingSurface.trNow('solo_pedometer.button', '나중에')),
-                ),
-              ],
-            ),
-          );
-        },
+        builder: (_) => const PushSoftPromptSheet(),
       );
       if (!mounted) return;
       final notifier = ref.read(srcOnboardingControllerProvider.notifier);
@@ -524,6 +465,77 @@ class _GlowingWatchHero extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 알림 허용 안내 시트. 화면 맨 아래에 붙으므로 시스템 내비 바 위로 띄운다.
+/// 허용하면 true, 나중에면 false로 닫힌다.
+class PushSoftPromptSheet extends StatelessWidget {
+  const PushSoftPromptSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            OnboardingSoftPromptCopy.title,
+            style: AppTextStyles.header1.copyWith(fontSize: 20),
+          ),
+          const SizedBox(height: 16),
+          for (final benefit in OnboardingSoftPromptCopy.benefits)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.check_rounded,
+                    size: 18,
+                    color: AppColors.tealAccent,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      benefit,
+                      style: AppTextStyles.termsSubtitle.copyWith(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.tealAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              RemainingSurface.tr(
+                context,
+                'watch_connection.button',
+                '알림 허용하고 계속',
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(RemainingSurface.trNow('solo_pedometer.button', '나중에')),
+          ),
+        ],
+      ),
       ),
     );
   }

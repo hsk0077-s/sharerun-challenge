@@ -91,7 +91,7 @@ class _ShareDiaExchangeScreenState extends ConsumerState<ShareDiaExchangeScreen>
       if (!mounted) return;
       setState(() => _exchanging = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.detail)),
+        SnackBar(content: Text(error.userMessage)),
       );
     } catch (error) {
       if (!mounted) return;

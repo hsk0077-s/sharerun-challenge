@@ -1,0 +1,12 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "用於連接藍牙心率感測器或手錶，在跑步時接收心率以確認紀錄。";
+"NSCameraUsageDescription" = "用於拍攝跑步地點的照片，作為完賽卡的背景。";
+"NSFaceIDUsageDescription" = "用於付款前確認是你本人。";
+"NSHealthShareUsageDescription" = "用於讀取步數，以顯示今日步數、SHARE 累積與步數捐款的達成。健康資料不會用於其他用途。";
+"NSLocationWhenInUseUsageDescription" = "用於在記錄跑步時測量路線與距離並防止不實紀錄。記錄中即使螢幕關閉也會繼續記錄。";
+"NSMicrophoneUsageDescription" = "只在你用語音詢問蝸牛機器人時使用。你也可以打字或按按鈕取得說明。";
+"NSMotionUsageDescription" = "用於透過手機的動作感測器計算今日步數。";
+"NSPhotoLibraryUsageDescription" = "用於選擇頭像、完賽卡背景或紀錄申訴證明的照片。";
+"NSSpeechRecognitionUsageDescription" = "用於在你用語音詢問蝸牛機器人時把語音轉成文字。語音不會用來參加比賽或付款。";

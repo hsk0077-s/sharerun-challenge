@@ -1,0 +1,12 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Usado para conectar um sensor de frequência cardíaca Bluetooth ou um relógio e receber seus batimentos enquanto você corre, para conferir sua corrida.";
+"NSCameraUsageDescription" = "Usado quando você tira uma foto do local da corrida para o fundo de um cartão de chegada.";
+"NSFaceIDUsageDescription" = "Usado para confirmar que é você antes de um pagamento.";
+"NSHealthShareUsageDescription" = "Usado para ler seus passos e mostrar os passos de hoje, os SHARE ganhos e as metas de doação por passos. Os dados de saúde não são usados para mais nada.";
+"NSLocationWhenInUseUsageDescription" = "Usado durante a gravação de uma corrida para medir seu trajeto e distância e evitar registros falsos. A gravação continua mesmo com a tela desligada.";
+"NSMicrophoneUsageDescription" = "Usado só quando você pergunta algo ao Bot Caracol por voz. Você também pode digitar ou tocar em um botão.";
+"NSMotionUsageDescription" = "Usado para contar os passos de hoje com os sensores de movimento do celular.";
+"NSPhotoLibraryUsageDescription" = "Usado quando você escolhe uma foto para o avatar, o fundo de um cartão de chegada ou a prova de um recurso de corrida.";
+"NSSpeechRecognitionUsageDescription" = "Usado para transformar sua voz em texto quando você pergunta algo ao Bot Caracol. A voz nunca faz inscrição em corrida nem pagamento.";

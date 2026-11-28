@@ -1,0 +1,12 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Dipakai untuk menghubungkan sensor detak jantung Bluetooth atau jam dan menerima detak jantungmu saat berlari, untuk memeriksa larimu.";
+"NSCameraUsageDescription" = "Dipakai saat kamu memotret tempat berlari untuk latar kartu finis.";
+"NSFaceIDUsageDescription" = "Dipakai untuk memastikan itu kamu sebelum pembayaran.";
+"NSHealthShareUsageDescription" = "Dipakai untuk membaca jumlah langkah dan menampilkan langkah hari ini, SHARE yang didapat, dan target donasi langkah. Data kesehatan tidak dipakai untuk hal lain.";
+"NSLocationWhenInUseUsageDescription" = "Dipakai saat merekam lari untuk mengukur rute dan jarak serta mencegah catatan palsu. Perekaman tetap berjalan walau layar mati.";
+"NSMicrophoneUsageDescription" = "Hanya dipakai saat kamu bertanya ke Bot Siput dengan suara. Kamu juga bisa mengetik atau menekan tombol.";
+"NSMotionUsageDescription" = "Dipakai untuk menghitung langkah hari ini dengan sensor gerak ponsel.";
+"NSPhotoLibraryUsageDescription" = "Dipakai saat kamu memilih foto untuk avatar, latar kartu finis, atau bukti banding lari.";
+"NSSpeechRecognitionUsageDescription" = "Dipakai untuk mengubah suaramu menjadi teks saat kamu bertanya ke Bot Siput. Suara tidak pernah dipakai untuk ikut lomba atau membayar.";

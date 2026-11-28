@@ -1,0 +1,12 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Used to connect a Bluetooth heart rate sensor or watch and receive your heart rate while you run, to check your run.";
+"NSCameraUsageDescription" = "Used when you take a photo of your running spot for a finish card background.";
+"NSFaceIDUsageDescription" = "Used to confirm it is you before a payment.";
+"NSHealthShareUsageDescription" = "Used to read your step count to show today's steps, SHARE earned and step donation goals. Health data is not used for anything else.";
+"NSLocationWhenInUseUsageDescription" = "Used while recording a run to measure your route and distance and to stop fake records. Recording continues even when the screen is off.";
+"NSMicrophoneUsageDescription" = "Used only when you ask Snail Bot something by voice. You can also type or tap a button.";
+"NSMotionUsageDescription" = "Used to count today's steps with your phone's motion sensors.";
+"NSPhotoLibraryUsageDescription" = "Used when you choose a photo for your avatar, a finish card background or proof for a run appeal.";
+"NSSpeechRecognitionUsageDescription" = "Used to turn your voice into text when you ask Snail Bot something. Voice never joins a race or makes a payment.";

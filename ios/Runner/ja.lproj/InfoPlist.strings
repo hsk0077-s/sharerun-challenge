@@ -1,0 +1,12 @@
+/* iOS permission prompts. Keep in sync with Info.plist (Korean base)
+   and docs/ios-app-review-checklist.md. native_review: pending */
+
+"NSBluetoothAlwaysUsageDescription" = "Bluetoothの心拍センサーやウォッチをつなぎ、走っている間の心拍を受け取って記録を確認するために使います。";
+"NSCameraUsageDescription" = "完走カードの背景に使うランニング場所の写真を撮るときに使います。";
+"NSFaceIDUsageDescription" = "お支払いの前にご本人かどうかを確認するために使います。";
+"NSHealthShareUsageDescription" = "歩数を読み取り、今日の歩数、SHAREの獲得、歩数寄付の達成を表示するために使います。健康データはほかの目的には使いません。";
+"NSLocationWhenInUseUsageDescription" = "ランニングの記録中にルートと距離を測り、不正な記録を防ぐために使います。記録中は画面が消えても記録を続けます。";
+"NSMicrophoneUsageDescription" = "カタツムリボットに声で質問するときだけ使います。文字で入力したりボタンを押したりしても案内を受けられます。";
+"NSMotionUsageDescription" = "スマートフォンのモーションセンサーで今日の歩数を数えるために使います。";
+"NSPhotoLibraryUsageDescription" = "アバター、完走カードの背景、記録の異議申し立ての証拠に使う写真を選ぶときに使います。";
+"NSSpeechRecognitionUsageDescription" = "カタツムリボットに声で質問するとき、声を文字に変えるために使います。声で参加やお支払いをすることはありません。";

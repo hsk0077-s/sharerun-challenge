@@ -1,7 +1,7 @@
 {
  "s001": "Chính sách quyền riêng tư - ShareRun",
  "s002": "Chính sách quyền riêng tư của ShareRun",
- "s003": "Có hiệu lực: 2026-10-25 · Sửa đổi lần cuối: 2026-11-26",
+ "s003": "Có hiệu lực: 2026-10-25 · Sửa đổi lần cuối: 2026-11-28",
  "s004": "하상기 (gọi là \"Bên vận hành\") xử lý cẩn trọng thông tin cá nhân của người dùng khi cung cấp ShareRun (gọi là \"Ứng dụng\") và tuân thủ Luật Bảo vệ thông tin cá nhân cùng các luật liên quan. Bên vận hành chỉ xử lý thông tin cá nhân tối thiểu cần thiết để cung cấp dịch vụ. Chính sách này giải thích Bên vận hành thu thập thông tin gì và vì sao, sử dụng và lưu giữ ra sao, và bạn có những quyền nào.",
  "s005": "1. Thông tin cá nhân thu thập và mục đích sử dụng",
  "s006": "Phân loại",
@@ -23,8 +23,8 @@
  "s022": "Danh sách thiết bị đã đăng nhập (mẫu thiết bị, hệ điều hành, phiên bản ứng dụng, thời điểm truy cập gần nhất), kết quả kiểm tra tính toàn vẹn của Google Play, và mã định danh thiết bị do ứng dụng tạo (để phân biệt thiết bị đăng nhập và giới hạn thưởng dùng thử chỉ một lần)",
  "s023": "Bảo vệ tài khoản, đăng xuất khỏi nhiều thiết bị, ngăn chặn lạm dụng. Địa chỉ IP và vị trí không được lưu trong danh sách này.",
  "s024": "Thanh toán và tiền ảo",
- "s025": "Mã đơn hàng Google Play và giá trị xác nhận mua (mã thông báo mua được lưu dưới dạng băm), số dư và lịch sử biến động DIA, SHARE, VALUE, nội dung yêu cầu hoàn tiền",
- "s026": "Xác nhận thanh toán, cấp tiền ảo, xử lý hoàn tiền, ứng phó tranh chấp",
+ "s025": "Mã đơn hàng Google Play (order ID), mã thông báo mua hàng (không lưu bản gốc; chỉ lưu giá trị băm SHA-256), mã sản phẩm (product ID), thời điểm máy chủ ghi nhận lần mua, trạng thái hoàn tiền (đã yêu cầu, đã hoàn, hoặc được đánh dấu vô hiệu sau hoàn tiền hoặc chargeback của Google Play), số tiền đã trả, DIA trả phí và DIA thưởng đã cấp, số dư và lịch sử biến động của DIA, SHARE và VALUE, cùng nội dung yêu cầu hoàn tiền (số tiền hoàn, DIA đã thu hồi, số thưởng đã dùng). Không thu thập chi tiết phương tiện thanh toán như số thẻ, hạn dùng và mật khẩu.",
+ "s026": "Xác nhận giao dịch đã hoàn tất trên Google Play, cấp DIA trả phí và DIA thưởng một lần, ngăn cùng một biên lai bị cấp hai lần, và xử lý rút lại giao kết, hoàn tiền và thanh toán gian lận. Thông tin phương tiện thanh toán như thẻ do Google Play xử lý, và do Apple xử lý nếu mở mua hàng trong ứng dụng của Apple. ShareRun không lưu thông tin đó.",
  "s027": "Crew và tài trợ",
  "s028": "Tên crew, trạng thái tham gia và vai trò, biệt danh (hiển thị với thành viên cùng crew), bản ghi tài trợ",
  "s029": "Tính năng crew, hiển thị tình hình tài trợ. Chỉ người tài trợ mới thấy được số tiền tài trợ của chính mình.",
@@ -54,7 +54,7 @@
  "s053": "Thông tin tài khoản và bản ghi hoạt động: cho đến khi bạn xóa tài khoản. Khi xóa, được xử lý như phần \"Xóa tài khoản\" bên dưới.",
  "s054": "Ảnh bằng chứng khiếu nại: xóa ngay khi có quyết định, hoặc 14 ngày nếu chưa có quyết định.",
  "s055": "Bạn bè và cổ vũ: khi bạn hủy kết bạn hoặc chặn, quan hệ bạn bè được xóa ngay. Bản tóm tắt buổi chạy và bản ghi cổ vũ được lưu đến khi bạn xóa tài khoản (bạn bè thấy bản tóm tắt buổi chạy trong 7 ngày và lời cổ vũ đã nhận trong 30 ngày). Mã kết bạn hết hạn sau 24 giờ kể từ khi tạo; bản ghi các mã bạn đã tạo hoặc đã dùng được xóa khi bạn xóa tài khoản.",
- "s056": "Bản ghi thanh toán và giao dịch tiền ảo (bản ghi về hợp đồng hoặc rút lại đăng ký): lưu giữ 5 năm theo Điều 6 khoản 1 mục 2 của Nghị định thi hành Luật Bảo vệ người tiêu dùng trong thương mại điện tử.",
+ "s056": "Hồ sơ giao dịch thanh toán và tiền ảo (hồ sơ về hợp đồng hoặc rút lại giao kết, và hồ sơ về thanh toán tiền cùng việc cung cấp hàng hóa): mỗi loại được lưu 5 năm theo Điều 6 khoản 1 điểm 2 và điểm 3 của nghị định thi hành luật bảo vệ người tiêu dùng trong thương mại điện tử.",
  "s057": "<strong>Quy trình và phương pháp hủy.</strong> Thông tin cá nhân được hủy không chậm trễ khi hết thời hạn lưu giữ hoặc đã đạt mục đích xử lý. Khi bạn xóa tài khoản, tài khoản đăng nhập và giá trị thông báo đẩy bị xóa ngay, số dư tiền ảo được đặt về 0 và trạng thái tài khoản đổi thành \"đã xóa\". Các bản ghi hoạt động như bản ghi chạy được xóa khỏi cơ sở dữ liệu bằng tác vụ dọn dẹp xử lý gộp các tài khoản đã xóa, hoàn tất trong vòng 30 ngày sau khi xóa tài khoản. Bản ghi thanh toán và giao dịch phải lưu theo pháp luật được lưu riêng với thông tin khác (căn cứ và thời hạn lưu ghi ở \"2. Thời hạn lưu giữ\" ở trên) và bị xóa khi hết thời hạn. Tệp điện tử được hủy bằng cách xóa khỏi cơ sở dữ liệu.",
  "s058": "<strong>Bạn bè và cổ vũ.</strong> Khi bạn xóa tài khoản, quan hệ bạn bè (kể cả tên bạn trong danh sách của bạn bè), danh sách chặn, bản tóm tắt buổi chạy hiển thị cho bạn bè, lời cổ vũ đã gửi và đã nhận, cài đặt cổ vũ, mã kết bạn bạn đã tạo và bộ đếm giới hạn theo ngày sẽ bị xóa. Nếu chưa xong ngay, tác vụ dọn dẹp sẽ hoàn tất trong vòng 30 ngày. Nếu người khác đã chặn bạn, danh sách chặn của họ chỉ còn số tài khoản của bạn và một mốc thời gian, không có biệt danh.",
  "s059": "3. Bên được ủy thác và nhận thông tin cá nhân",
@@ -103,5 +103,7 @@
  "s102": "Khi nội dung thay đổi, sẽ thông báo trước ngày có hiệu lực 7 ngày, chẳng hạn bằng thông báo trong ứng dụng. Thay đổi ảnh hưởng lớn đến quyền của bạn như mục thu thập hoặc mục đích xử lý sẽ được giải thích riêng bằng cách so sánh trước và sau, và thay đổi bất lợi cho bạn được thông báo trước 30 ngày.",
  "s103": "Các chính sách trước được liên kết bên dưới cùng thời gian áp dụng và bạn có thể xem bất cứ lúc nào.",
  "s104": "Chính sách trước đây: không có (có hiệu lực lần đầu vào 2026-10-25)",
- "s105": "Thay đổi ngày 2026-11-26 (thêm bạn bè và cổ vũ): áp dụng từ phiên bản ứng dụng có tính năng bạn bè. Đã thêm: dòng \"Bạn bè và cổ vũ\" ở mục 1, mục lưu giữ bạn bè và cổ vũ ở mục 2 và đoạn về bạn bè và cổ vũ trong quy trình hủy dữ liệu. Các mục thu thập khác không thay đổi."
+ "s105": "Thay đổi ngày 2026-11-26 (thêm bạn bè và cổ vũ): áp dụng từ phiên bản ứng dụng có tính năng bạn bè. Đã thêm: dòng \"Bạn bè và cổ vũ\" ở mục 1, mục lưu giữ bạn bè và cổ vũ ở mục 2 và đoạn về bạn bè và cổ vũ trong quy trình hủy dữ liệu. Các mục thu thập khác không thay đổi.",
+ "s106": "ShareRun không thu thập và không lưu thông tin phương tiện thanh toán của các lần mua DIA trả phí, như số thẻ, tài khoản ngân hàng hoặc mật khẩu thanh toán. Thông tin đó do Google Play xử lý, và do Apple xử lý khi có mua hàng trong ứng dụng của Apple.",
+ "s107": "Thay đổi 2026-11-28 (thanh toán DIA trả phí): dòng \"Thanh toán và tiền ảo\" ở mục 1 nêu rõ mã đơn hàng, mã thông báo mua hàng (băm), mã sản phẩm, thời điểm ghi nhận lần mua và trạng thái hoàn tiền. Đã thêm câu rằng thông tin phương tiện thanh toán như thẻ do Google và Apple xử lý và ShareRun không lưu. Thời hạn lưu ở mục 2 cũng nêu hồ sơ về thanh toán tiền và việc cung cấp hàng hóa (5 năm)."
 }

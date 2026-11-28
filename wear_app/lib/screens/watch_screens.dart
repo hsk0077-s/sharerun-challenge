@@ -112,7 +112,7 @@ class StartFace extends StatelessWidget {
   final VoidCallback onStart;
   final VoidCallback? onLongPress;
 
-  /// 이미 사용자 언어로 된 티어 이름(예: 치타 골드). 없으면 숨긴다.
+  /// 이미 사용자 언어로 된 티어 이름. 없으면 [tierCode]를 화면 언어로 바꾼다.
   final String? tierName;
 
   /// 티어 동물 코드(`turtle` …). 아이콘 자리표시를 고른다.
@@ -138,10 +138,12 @@ class StartFace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final named = tierName?.trim();
-    // 등급이 아직 없으면(달팽이) 휴대폰과 같이 "평가 전"이라고 쓴다.
+    final animal = tierCode?.trim().toLowerCase().split('_').first;
+    // 이름이 없으면 티어 코드를 화면 언어로 바꾼다. 달팽이는 휴대폰과 같이 "평가 전".
     final tier = (named != null && named.isNotEmpty)
         ? named
-        : (tierCode == 'snail' ? watchUi(_locale(), 'unrated') : null);
+        : watchTierLabel(_locale(), tierCode) ??
+            (animal == 'snail' ? watchUi(_locale(), 'unrated') : null);
     return RoundFace(
       builder: (context, s) {
         final d = buttonFraction * s;

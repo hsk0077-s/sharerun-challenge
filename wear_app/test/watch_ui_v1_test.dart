@@ -268,9 +268,43 @@ void main() {
       expect(find.text('비글 실버'), findsOneWidget);
     });
 
-    testWidgets('티어 이름이 없어도 아는 동물 코드면 동물 그림만 보여 준다', (tester) async {
+    testWidgets('티어 코드만 있으면 화면 언어의 등급 이름을 보여 준다', (tester) async {
+      await _pumpFace(
+        tester,
+        StartFace(onStart: () {}, tierCode: 'cheetah_gold'),
+        const Size(396, 396),
+      );
+      expect(find.text('치타 골드'), findsOneWidget);
+      expect(find.text('Cheetah Gold'), findsNothing);
+      expect(find.byKey(StartFace.tierKey), findsOneWidget);
+
+      tester.platformDispatcher.localeTestValue = const Locale('en');
+      await _pumpFace(
+        tester,
+        StartFace(onStart: () {}, tierCode: 'cheetah_gold'),
+        const Size(396, 396),
+      );
+      expect(find.text('Cheetah Gold'), findsOneWidget);
+      expect(find.text('치타 골드'), findsNothing);
+
+      tester.platformDispatcher.localeTestValue = const Locale('ja');
+      await _pumpFace(
+        tester,
+        StartFace(onStart: () {}, tierCode: 'turtle_silver'),
+        const Size(396, 396),
+      );
+      expect(find.text('カメ シルバー'), findsOneWidget);
+
+      tester.platformDispatcher.localeTestValue = const Locale('ko');
+      await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'cheetah'), const Size(396, 396));
+      expect(find.text('치타'), findsOneWidget);
+      expect(find.text('Cheetah'), findsNothing);
+    });
+
+    testWidgets('아는 동물 코드는 그림과 그 언어의 이름을 보여 주고, 모르는 코드는 숨긴다', (tester) async {
       await _pumpFace(tester, StartFace(onStart: () {}, tierCode: 'zebra'), const Size(396, 396));
       expect(find.byKey(StartFace.tierKey), findsOneWidget);
+      expect(find.text('얼룩말'), findsOneWidget);
       expect(
         find.descendant(of: find.byKey(StartFace.tierKey), matching: find.byType(WatchIcon)),
         findsOneWidget,

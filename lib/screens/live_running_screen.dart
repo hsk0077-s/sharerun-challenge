@@ -26,6 +26,7 @@ import '../features/jena_validation/verification_reason.dart';
 import '../features/run_tracking/utils/home_start_gate.dart';
 import '../features/shop/friend_ghost_run.dart';
 import '../features/voice_coaching/widgets/voice_coaching_header_toggle.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../l10n/remaining_surface.dart';
 import 'onboarding_run_result_screen.dart';
 
@@ -402,11 +403,11 @@ class _LiveRunningScreenState extends ConsumerState<LiveRunningScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'live_running.toast',
-              '센서 시작 실패: $error',
-              {'error': error},
+              error,
+              key: 'live_running.toast',
+              ko: '센서 시작에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

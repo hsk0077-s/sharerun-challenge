@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../app/providers/app_providers.dart';
-import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../app/router/route_names.dart';
 import '../app/theme/app_colors.dart';
 import '../core/theme/src_theme.dart';
@@ -280,11 +280,11 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
       setState(() {
         starting = false;
         sessionStarted = false;
-        startError = RemainingSurface.tr(
+        startError = userVisibleFailure(
           context,
-          'run_tracking.body.8',
-          '센서를 시작하지 못했어요: $error',
-          {'error': error},
+          error,
+          key: 'run_tracking.body.8',
+          ko: '센서를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
         );
       });
     }
@@ -373,11 +373,11 @@ class _RunTrackingScreenState extends ConsumerState<RunTrackingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'run_tracking.toast',
-              '러닝 검증에 실패했어요: ${ApiErrorMessage.from(error)}',
-              {'ApiErrorMessage.from(error)': ApiErrorMessage.from(error)},
+              error,
+              key: 'run_tracking.toast',
+              ko: '러닝 검증에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

@@ -1,17 +1,24 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../data/firebase/auth_service.dart';
 import '../../l10n/remaining_surface.dart';
+import '../api/api_exception.dart';
 
 abstract final class FirebaseAuthMessages {
   static String from(Object error) {
     if (error is AuthCancelledException) {
       return RemainingSurface.trNow('firebase_auth_messages.body', '로그인이 취소되었습니다.');
     }
-    if (error is FirebaseAuthException) {
-      return fromCode(error.code, fallback: error.message);
+    if (error is ApiException) {
+      return error.userMessage;
     }
-    return error.toString();
+    if (error is FirebaseAuthException) {
+      debugPrint('FirebaseAuth ${error.code}: ${error.message}');
+      return fromCode(error.code);
+    }
+    debugPrint('FirebaseAuthMessages.from: $error');
+    return fromCode('unknown');
   }
 
   static String fromCode(String code, {String? fallback}) {
@@ -33,7 +40,7 @@ abstract final class FirebaseAuthMessages {
         RemainingSurface.trNow('firebase_auth_messages.body.10', '다른 로그인 방식으로 가입된 이메일입니다.'),
       'requires-recent-login' =>
         RemainingSurface.trNow('firebase_auth_messages.body.11', '보안을 위해 다시 로그인한 뒤 계정 삭제를 시도해 주세요.'),
-      _ => fallback ?? RemainingSurface.trNow('firebase_auth_messages.body.12', '로그인에 실패했습니다.'),
+      _ => fallback ?? RemainingSurface.trNow('firebase_auth_messages.body.12', '로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.'),
     };
   }
 }

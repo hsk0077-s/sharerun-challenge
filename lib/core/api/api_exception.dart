@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import '../../l10n/remaining_surface.dart';
 import '../strings/app_strings.dart';
 
@@ -64,7 +66,8 @@ abstract final class ApiErrorMessage {
     if (error is ApiException) {
       return error.userMessage;
     }
-    return error.toString();
+    debugPrint('ApiErrorMessage.from: $error');
+    return _genericFailure;
   }
 
   static String forDetail(String detail) {

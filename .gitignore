@@ -11,3 +11,10 @@ __pycache__/
 
 # Golden failure artifacts
 test/screens/failures/
+
+# iOS 서명·설정 파일은 GitHub Secrets에만 둔다 (docs/ios-testflight-setup.md)
+*.p12
+*.p8
+*.mobileprovision
+dart-defines.json
+**/GoogleService-Info.plist

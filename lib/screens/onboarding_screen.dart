@@ -5,6 +5,7 @@ import '../app/providers/app_providers.dart';
 import '../app/theme/app_colors.dart';
 import '../core/constants/legal_constants.dart';
 import '../features/legal/widgets/health_data_consent_card.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../l10n/remaining_surface.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -135,11 +136,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'onboarding.toast',
-              '온보딩 저장 실패: $error',
-              {'error': error},
+              error,
+              key: 'onboarding.toast',
+              ko: '온보딩 저장에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

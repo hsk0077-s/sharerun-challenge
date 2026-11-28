@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../app/providers/app_providers.dart';
-import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../app/router/route_names.dart';
 import '../core/strings/app_strings.dart';
 import '../app/theme/app_colors.dart';
@@ -248,11 +248,11 @@ class _RunResultScreenState extends ConsumerState<RunResultScreen> {
         return;
       }
       _showSnack(
-        RemainingSurface.tr(
+        userVisibleFailure(
           context,
-          'run_result.body.5',
-          '우승 보상 처리 실패: ${ApiErrorMessage.from(error)}',
-          {'ApiErrorMessage.from(error)': ApiErrorMessage.from(error)},
+          error,
+          key: 'run_result.body.5',
+          ko: '우승 보상 처리에 실패했어요. 잠시 후 다시 시도해 주세요.',
         ),
       );
     } finally {

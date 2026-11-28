@@ -10,6 +10,7 @@ import '../core/constants/payment_constants.dart';
 import '../core/auth/email_verification_guard.dart';
 import '../data/models/sponsor_model.dart';
 import '../features/payment/widgets/sponsor_payment_option_selector.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../l10n/remaining_surface.dart';
 import 'payment_webview_screen.dart';
 
@@ -166,11 +167,11 @@ class _SponsorPaymentScreenState extends ConsumerState<SponsorPaymentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'sponsor_payment.toast.2',
-              '후원 결제에 실패했어요: $error',
-              {'error': error},
+              error,
+              key: 'sponsor_payment.toast.2',
+              ko: '후원 결제에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

@@ -29,7 +29,6 @@
 - **워치 개별 식별**: 워치는 처음 한 번 만든 고유 번호를 코드와 함께 보내고, 서버는 계정당 한 대만 연결을 허용합니다(같은 번호로 다시 연결하면 그대로, 다른 워치를 연결하면 이전 워치는 해제되어 다음 올리기 때 스스로 연결을 지웁니다). 휴대폰 화면에서 연결된 워치를 보고 해제할 수 있습니다.
 - **이미 있는 서버 보호**: 워치 토큰은 기록 올리기·걸음 수 올리기 두 경로에서만 통하고, 올릴 때 `started_at`·`ended_at`이 꼭 있어야 하며(미래·7일보다 오래됨·앞뒤가 뒤집힘·달린 시간이 구간보다 김 → 400), 휴대폰에서 "연결된 워치 모두 해제"(또는 그 워치만 "해제")를 누르면 이 워치는 `watch_revoked`(401)를 받고 스스로 연결을 지웁니다.
 - 연결 해제는 화면에 없습니다(저장소 삭제 또는 앱 데이터 삭제). 서버 쪽에서 코드가 한 번만 쓰이고 5분 뒤 만료됩니다.
-- 앱 아이콘은 휴대폰 앱의 `ic_launcher.png`를 그대로 복사했습니다(적응형 아이콘 없음).
 - 실제 시계에서의 정확도(GPS 거리, 심박 권한 동작)는 기기에서 확인하지 못했습니다.
 
 ## 매니페스트 요약 (`android/app/src/main/AndroidManifest.xml`)
@@ -38,6 +37,7 @@
 - 권한: `BODY_SENSORS`, `ACTIVITY_RECOGNITION`, `ACCESS_FINE_LOCATION`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_HEALTH`, `FOREGROUND_SERVICE_LOCATION`, `WAKE_LOCK`, `POST_NOTIFICATIONS`, `INTERNET`
 - 서비스: `TrackingService` (`health|location` 포그라운드)
 - 패키지 이름: 휴대폰 앱과 같은 `com.sharerun.share_run_challenge`, 최소 API 30(Wear OS 3.0)
+- 아이콘: 휴대폰 앱과 같은 그림. 적응형 아이콘(전경·배경)과 `android:roundIcon`. 중요한 그림은 둥근 안전 영역 안에 둔다. Play 문구·스크린샷 초안은 `docs/store/`.
 
 ## 버전 코드 체계
 - 휴대폰 앱은 `versionCode 1`부터 올라갑니다. 워치 앱은 **10001부터** 따로 올립니다(`pubspec.yaml`의 `version: 1.0.0+10001`). 휴대폰 앱이 1만 번대에 닿기 전까지 겹치지 않습니다.

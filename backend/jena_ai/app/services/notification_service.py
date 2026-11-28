@@ -1,6 +1,24 @@
 from firebase_admin import messaging
 
 
+def send_data_push(token: str, title: str, body: str, data: dict) -> None:
+    """One push to one device, with a small data payload. Raises on failure."""
+    messaging.send(
+        messaging.Message(
+            notification=messaging.Notification(title=title, body=body),
+            data={str(k): str(v) for k, v in data.items()},
+            token=token,
+        )
+    )
+
+
+def is_invalid_token_error(error: Exception) -> bool:
+    """True when Firebase says this token will never work again."""
+    return isinstance(
+        error, (messaging.UnregisteredError, messaging.SenderIdMismatchError)
+    )
+
+
 def tournament_topic(tournament_id: str) -> str:
     return f"tournament_{tournament_id}"
 

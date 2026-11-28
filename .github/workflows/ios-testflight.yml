@@ -1,0 +1,246 @@
+name: iOS TestFlight
+
+# 손으로만 실행한다(Actions 탭 > iOS TestFlight > Run workflow). push 때는 돌지 않는다.
+# 할 일과 Secrets 등록 방법: docs/ios-testflight-setup.md
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "빌드가 끝나면 TestFlight에 올린다 (끄면 빌드·서명만 확인)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    runs-on: macos-latest
+    timeout-minutes: 75
+    env:
+      APPLE_TEAM_ID: 7C429Q46CL
+      BUNDLE_ID: com.sharerun.shareRunChallenge
+      BUILD_NUMBER: ${{ github.run_number }}
+
+    steps:
+      - name: 1. 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: 임시 경로 정하기 (저장소 밖 RUNNER_TEMP)
+        run: |
+          {
+            echo "DEFINES_FILE=$RUNNER_TEMP/dart-defines.json"
+            echo "KEY_DIR=$RUNNER_TEMP/asc"
+            echo "KEYCHAIN_PATH=$RUNNER_TEMP/signing.keychain-db"
+            echo "ARCHIVE_PATH=$RUNNER_TEMP/Runner.xcarchive"
+            echo "EXPORT_PATH=$RUNNER_TEMP/export"
+          } >> "$GITHUB_ENV"
+
+      - name: 2. 필요한 Secrets가 있는지 확인 (값은 출력하지 않음)
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+          DART_DEFINES_JSON: ${{ secrets.DART_DEFINES_JSON }}
+        run: |
+          missing=0
+          for name in APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID \
+                      APP_STORE_CONNECT_KEY_P8 GOOGLE_SERVICE_INFO_PLIST DART_DEFINES_JSON; do
+            if [ -z "${!name}" ]; then
+              echo "::error::GitHub Secret '$name' 이(가) 비어 있습니다. docs/ios-testflight-setup.md 를 보고 등록하세요."
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: 3. Flutter 세팅 (Android CI와 같은 버전)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.3'
+          cache: true
+
+      - name: 4. GoogleService-Info.plist 만들기 (빌드 때만, 저장소에 넣지 않음)
+        env:
+          GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+        run: |
+          target=ios/Runner/GoogleService-Info.plist
+          # Secret은 파일 내용 그대로이거나 base64 둘 다 받는다.
+          if printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | head -c 64 | grep -q '<?xml\|<plist'; then
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > "$target"
+          else
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > "$target"
+          fi
+          plutil -lint "$target"
+          bundle=$(/usr/libexec/PlistBuddy -c 'Print :BUNDLE_ID' "$target")
+          if [ "$bundle" != "$BUNDLE_ID" ]; then
+            echo "::error::GoogleService-Info.plist 의 BUNDLE_ID($bundle)가 앱($BUNDLE_ID)과 다릅니다."
+            exit 1
+          fi
+
+      - name: 5. dart-defines.json 만들기 (결제 스위치는 강제로 끔)
+        env:
+          DART_DEFINES_JSON: ${{ secrets.DART_DEFINES_JSON }}
+        run: |
+          printf '%s' "$DART_DEFINES_JSON" > "$DEFINES_FILE.in"
+          if ! jq -e 'type == "object"' "$DEFINES_FILE.in" > /dev/null; then
+            echo "::error::DART_DEFINES_JSON 은 {\"이름\": \"값\"} 모양의 JSON이어야 합니다."
+            exit 1
+          fi
+          # iOS는 이전 전까지 무료 앱이다. Secret에 무엇이 들어 있어도 결제와 개발용 스위치는 끈다.
+          jq '. + {
+                "IN_APP_PURCHASES_ENABLED": "false",
+                "DIA_PACKS_ENABLED": "false",
+                "SPONSORSHIP_ENABLED": "false",
+                "LOCAL_DEV_MODE": "false",
+                "USE_FIREBASE_EMULATOR": "false"
+              } | with_entries(.value |= tostring)' "$DEFINES_FILE.in" > "$DEFINES_FILE"
+          rm -f "$DEFINES_FILE.in"
+          echo "dart-define 이름 (값은 숨김):"
+          jq -r 'keys[]' "$DEFINES_FILE"
+          for key in IN_APP_PURCHASES_ENABLED DIA_PACKS_ENABLED SPONSORSHIP_ENABLED; do
+            test "$(jq -r --arg k "$key" '.[$k]' "$DEFINES_FILE")" = "false"
+          done
+
+      - name: 6. App Store Connect API 키 파일 만들기
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_KEY_P8: ${{ secrets.APP_STORE_CONNECT_KEY_P8 }}
+        run: |
+          mkdir -p "$KEY_DIR" ~/.appstoreconnect/private_keys
+          key_file="$KEY_DIR/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8"
+          if printf '%s' "$APP_STORE_CONNECT_KEY_P8" | grep -q 'BEGIN PRIVATE KEY'; then
+            printf '%s\n' "$APP_STORE_CONNECT_KEY_P8" > "$key_file"
+          else
+            printf '%s' "$APP_STORE_CONNECT_KEY_P8" | base64 --decode > "$key_file"
+          fi
+          chmod 600 "$key_file"
+          # altool은 이 폴더에서 키를 찾는다.
+          cp "$key_file" ~/.appstoreconnect/private_keys/
+          echo "ASC_KEY_PATH=$key_file" >> "$GITHUB_ENV"
+
+      - name: 7. (선택) 배포 인증서·프로파일 설치
+        env:
+          IOS_DIST_CERT_P12: ${{ secrets.IOS_DIST_CERT_P12 }}
+          IOS_DIST_CERT_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+          IOS_PROVISIONING_PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE }}
+        run: |
+          # 둘 다 없으면 API 키(관리자 권한)로 Apple이 관리하는 인증서·프로파일을 쓴다.
+          if [ -n "$IOS_DIST_CERT_P12" ]; then
+            keychain_password=$(uuidgen)
+            security create-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
+            security set-keychain-settings -lut 3600 "$KEYCHAIN_PATH"
+            security unlock-keychain -p "$keychain_password" "$KEYCHAIN_PATH"
+            printf '%s' "$IOS_DIST_CERT_P12" | base64 --decode > "$RUNNER_TEMP/dist.p12"
+            security import "$RUNNER_TEMP/dist.p12" -k "$KEYCHAIN_PATH" \
+              -P "$IOS_DIST_CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+            rm -f "$RUNNER_TEMP/dist.p12"
+            security set-key-partition-list -S apple-tool:,apple: -k "$keychain_password" "$KEYCHAIN_PATH" > /dev/null
+            security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+            echo "배포 인증서를 임시 키체인에 넣었습니다."
+          else
+            echo "IOS_DIST_CERT_P12 없음: Apple이 관리하는 배포 인증서를 씁니다(API 키가 관리자 권한이어야 함)."
+          fi
+          if [ -n "$IOS_PROVISIONING_PROFILE" ]; then
+            dir="$HOME/Library/MobileDevice/Provisioning Profiles"
+            mkdir -p "$dir"
+            printf '%s' "$IOS_PROVISIONING_PROFILE" | base64 --decode > "$RUNNER_TEMP/app.mobileprovision"
+            uuid=$(security cms -D -i "$RUNNER_TEMP/app.mobileprovision" | plutil -extract UUID raw -)
+            mv "$RUNNER_TEMP/app.mobileprovision" "$dir/$uuid.mobileprovision"
+            echo "프로파일을 설치했습니다. 워치 앱 프로파일은 자동 서명이 만듭니다."
+          fi
+
+      - name: 8. 패키지 받기와 iOS 설정 만들기
+        run: |
+          flutter pub get
+          # Generated.xcconfig에 빌드 번호와 dart-define을 적는다. 서명은 다음 단계 xcodebuild가 한다.
+          flutter build ios --config-only --release \
+            --build-number="$BUILD_NUMBER" \
+            --dart-define-from-file="$DEFINES_FILE"
+          cd ios && pod install
+
+      - name: 9. 아카이브 (자동 서명, 팀 7C429Q46CL)
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            > "$RUNNER_TEMP/archive.log" 2>&1 || {
+              echo "::error::아카이브 실패. 아래 마지막 로그를 보세요."
+              grep -E 'error:' "$RUNNER_TEMP/archive.log" | head -n 40 || true
+              tail -n 80 "$RUNNER_TEMP/archive.log"
+              exit 1
+            }
+          tail -n 20 "$RUNNER_TEMP/archive.log"
+
+      - name: 10. IPA 만들기 (App Store Connect용)
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+          plutil -lint "$RUNNER_TEMP/ExportOptions.plist"
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_ID" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID"
+          ls -la "$EXPORT_PATH"
+          ipa=$(ls "$EXPORT_PATH"/*.ipa | head -n 1)
+          echo "IPA_PATH=$ipa" >> "$GITHUB_ENV"
+
+      - name: 11. TestFlight에 올리기
+        if: ${{ inputs.upload }}
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          xcrun altool --upload-app --type ios --file "$IPA_PATH" \
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          version=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+          {
+            echo "### TestFlight 업로드 완료"
+            echo "- 버전: $version"
+            echo "- 빌드 번호: $BUILD_NUMBER"
+            echo "- App Store Connect에서 처리(보통 10~30분)가 끝나면 TestFlight 탭에 보입니다."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 12. 임시 파일 지우기
+        if: ${{ always() }}
+        run: |
+          rm -f ios/Runner/GoogleService-Info.plist "$DEFINES_FILE"
+          rm -rf "$KEY_DIR" ~/.appstoreconnect/private_keys
+          if [ -f "$KEYCHAIN_PATH" ]; then security delete-keychain "$KEYCHAIN_PATH"; fi

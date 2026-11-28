@@ -134,8 +134,6 @@ abstract final class AppColors {
   /// 러닝화 마일리지 경고 / 프로그레스 그라데이션 끝색
   static const warningOrange = Color(0xFFFF5722);
 
-  /// Nike B2B 스폰서 브랜드 컬러
-  static const nikeBlack = Color(0xFF111111);
   static const voltYellow = Color(0xFFCEFF00);
 
   /// 개인 스폰서십(천사) 모달 배경 — 피치 → 화이트

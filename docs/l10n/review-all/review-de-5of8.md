@@ -521,12 +521,6 @@ DE: Bestätigen Sie per Fingerabdruck oder Bildschirmsperre, bevor der Bildschir
 KO: 결제 전 본인 확인
 DE: Identitätsprüfung vor der Zahlung
 
-[app.proToolsCushionWarning]
-KO: 쿠션 수명이 80km 남았습니다.
-부상 방지를 위해 교체 시기가 다가옵니다.
-DE: 80 km Dämpfungslebensdauer verbleibend.
-Zeit für einen Austausch nähert sich, um Verletzungen vorzubeugen.
-
 [app.proToolsMenuAiReport]
 KO: AI 심층 러닝 리포트 (구간별 페이스 분석)
 DE: Detaillierter KI-Laufbericht (Pace-Analyse nach Abschnitten)
@@ -538,10 +532,6 @@ DE: Anwesenheits-Rangliste der Crew
 [app.proToolsMenuPaceCalc]
 KO: 목표 거리에 따른 페이스 계산기 (VDOT)
 DE: Pace-Rechner nach Zieldistanz (VDOT)
-
-[app.proToolsRegisteredShoe]
-KO: 등록된 러닝화: 나이키 베이퍼플라이 3
-DE: Registrierter Laufschuh: Nike Vaporfly 3
 
 [app.proToolsSubtitle]
 KO: 장비의 수명을 관리하고 AI 리포트로 성장하세요.

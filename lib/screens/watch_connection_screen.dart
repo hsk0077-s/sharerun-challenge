@@ -16,6 +16,7 @@ import '../core/widgets/src_sync_button.dart';
 import '../data/models/user_model.dart';
 import '../features/onboarding/src_onboarding_controller.dart';
 import '../features/run_tracking/services/health_data_service.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../l10n/remaining_surface.dart';
 import 'external_oauth_webview.dart';
 
@@ -341,11 +342,11 @@ class _WatchConnectionScreenState extends ConsumerState<WatchConnectionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'watch_connection.toast.6',
-              '온보딩 상태 갱신에 실패했습니다. $error',
-              {'error': error},
+              error,
+              key: 'watch_connection.toast.6',
+              ko: '온보딩 상태 갱신에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

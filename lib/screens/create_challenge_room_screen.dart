@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/providers/app_providers.dart';
 import '../core/api/api_exception.dart';
+import '../core/ui/user_visible_failure.dart';
 import '../core/challenge/challenge_entry_fee.dart';
 import '../core/config/app_env.dart';
 import '../core/navigation/app_route_nav.dart';
@@ -153,11 +154,11 @@ class _CreateChallengeRoomScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            RemainingSurface.tr(
+            userVisibleFailure(
               context,
-              'create_challenge_room.toast.2',
-              '대회 열기에 실패했어요: $error',
-              {'error': error},
+              error,
+              key: 'create_challenge_room.toast.2',
+              ko: '대회 열기에 실패했어요. 잠시 후 다시 시도해 주세요.',
             ),
           ),
         ),

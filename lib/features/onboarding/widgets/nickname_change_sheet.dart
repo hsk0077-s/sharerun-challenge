@@ -10,6 +10,7 @@ import '../../../core/navigation/app_route_nav.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_shapes.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/ui/user_visible_failure.dart';
 import '../../../l10n/remaining_surface.dart';
 import '../../../screens/in_app_billing_screen.dart';
 import '../../profile/user_profile_notifier.dart';
@@ -125,9 +126,17 @@ class _NicknameChangeSheetState extends ConsumerState<NicknameChangeSheet> {
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
+      final shown = e is NicknameValidationException
+          ? e.message
+          : userVisibleFailure(
+              context,
+              e,
+              key: 'onboarding.nickname_save_failed',
+              ko: '닉네임을 저장하지 못했어요. 잠시 후 다시 시도해 주세요.',
+            );
       setState(() {
         _submitting = false;
-        _liveError = e.toString();
+        _liveError = shown;
       });
     }
   }

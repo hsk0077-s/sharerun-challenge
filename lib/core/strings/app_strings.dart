@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../../l10n/remaining_surface.dart';
 import '../../l10n/shop_catalog_copy.dart';
@@ -42,7 +44,13 @@ static String get loginApple => RemainingSurface.trNow('widget.apple_login_butto
   static String get loginGuestNote => RemainingSurface.trNow('app.loginGuestNote', '게스트 모드는 워치 연동·Health Connect 테스트용 임시 계정입니다.');
 
   static String loginComingSoon(String provider) => RemainingSurface.trNow('app.loginComingSoon', '\$provider 로그인은 준비 중입니다.', {'provider': provider});
-  static String loginSaveFailed(Object error) => RemainingSurface.trNow('app.loginSaveFailed', '로그인 저장 실패: \$error', {'error': error});
+  static String loginSaveFailed(Object error) {
+    debugPrint('login save failed: $error');
+    return RemainingSurface.trNow(
+      'app.loginSaveFailed',
+      '로그인 저장에 실패했어요. 잠시 후 다시 시도해 주세요.',
+    );
+  }
 
   /// 확인된 이메일로 기존 계정을 찾지 못했을 때, 계정을 만들기 전에 묻는다.
   static String get existingAccountTitle => RemainingSurface.trNow('app.existingAccountTitle', '처음 가입할 때 어떤 방법을 쓰셨나요?');
@@ -427,27 +435,15 @@ static String get createRoomScreenTitle => RemainingSurface.trNow('wallet_transa
   // ── Pro Tools (Screen 15) ─────────────────────────────────────────
   static String get proToolsTitle => RemainingSurface.trNow('app.proToolsTitle', '러닝 기어 & 프로 툴');
   static String get proToolsSubtitle => RemainingSurface.trNow('app.proToolsSubtitle', '장비의 수명을 관리하고 AI 리포트로 성장하세요.');
-  static String get proToolsRegisteredShoe => RemainingSurface.trNow('app.proToolsRegisteredShoe', '등록된 러닝화: 나이키 베이퍼플라이 3');
-  static const proToolsMileageStats = '420km / 500km (84%)';
-  static String get proToolsCushionWarning => RemainingSurface.trNow('app.proToolsCushionWarning', '쿠션 수명이 80km 남았습니다.\n부상 방지를 위해 교체 시기가 다가옵니다.');
   static String get proToolsMenuPaceCalc => RemainingSurface.trNow('app.proToolsMenuPaceCalc', '목표 거리에 따른 페이스 계산기 (VDOT)');
   static String get proToolsMenuAiReport => RemainingSurface.trNow('app.proToolsMenuAiReport', 'AI 심층 러닝 리포트 (구간별 페이스 분석)');
   static String get proToolsMenuCrewRanking => RemainingSurface.trNow('app.proToolsMenuCrewRanking', '소속 크루(Crew) 출석률 랭킹 보드');
 
   // ── Brand Sponsor (Screen 16) ─────────────────────────────────────
-  static String get brandSponsorScreenTitle => RemainingSurface.trNow('app.brandSponsorScreenTitle', '브랜드 스폰서 챌린지');
   static String get lobbySponsorRoomTitle => RemainingSurface.trNow('app.brandSponsorScreenTitle', '브랜드 스폰서 챌린지');
   static String get lobbySponsorRoomSub => RemainingSurface.trNow('app.lobbySponsorRoomSub', '지금 진행 중인 스폰서 챌린지가 없어요. 열리면 여기서 알려 드릴게요.');
   static String get lobbySponsorPreparing => RemainingSurface.trNow('common.preparing', '준비 중');
-  static String get brandSponsorTicker => RemainingSurface.trNow('app.brandSponsorTicker', '✨ 나이키 코리아가 이번 대회의 러너들을 전면 후원합니다! ✨');
-  static String get brandSponsorChallengeTitle => RemainingSurface.trNow('app.brandSponsorChallengeTitle', 'Nike 주말 5km 특별 챌린지');
   static String get brandSponsorEntryFee => RemainingSurface.trNow('app.brandSponsorEntryFee', '참가비: 0 SHARE (스폰서 100% 대납)');
-  static String get brandSponsorWinReward => RemainingSurface.trNow('app.brandSponsorWinReward', '우승 보상: 나이키 자사몰 30% 할인 쿠폰 + 500');
-  static String get brandSponsorDonationPledge => RemainingSurface.trNow('app.brandSponsorDonationPledge', '기부 공약: 운영자 이름으로 500만 원 기부');
-  static String get brandSponsorBenevolentFailure => RemainingSurface.trNow('app.brandSponsorBenevolentFailure', '자비로운 실패: 미션에 실패하더라도 운영자 이름으로 기부가 진행됩니다.');
-  static String get brandSponsorDisclaimer => RemainingSurface.trNow('app.brandSponsorDisclaimer', '* 세부 처리상 기부금 세액공제 혜택은 후원 기업에게 귀속됩니다.');
-  static String get brandSponsorStatus => RemainingSurface.trNow('app.brandSponsorStatus', '남은 시간 및 모집 인원(예: 8,500명 참여 중)');
-  static String get brandSponsorJoinCta => RemainingSurface.trNow('app.brandSponsorJoinCta', '스폰서 후원받고 무료 참가하기');
 
   // ── Personal Sponsor (Screen 17) ──────────────────────────────────
   static String get personalSponsorTitle => RemainingSurface.trNow('app.personalSponsorTitle', '러너 후원하기 (스폰서십)');

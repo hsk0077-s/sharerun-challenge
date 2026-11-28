@@ -98,3 +98,14 @@ class ReleaseCopyReviewsResult(BaseModel):
     status: str
     reason: str
     released: int
+
+
+class CheerPushResult(BaseModel):
+    """Once-a-day bundled friend cheer push. ``sent`` counts people, not tokens."""
+
+    quiet_hours: bool
+    candidates: int
+    sent: int
+    skipped: int
+    failed: int
+    tokens_removed: int

@@ -34,8 +34,6 @@ void main() {
       AppStrings.storeDonateHistoryTitle,
       AppStrings.personalSponsorDonationTitle,
       AppStrings.personalSponsorDonationDesc,
-      AppStrings.brandSponsorDonationPledge,
-      AppStrings.brandSponsorBenevolentFailure,
       MiniBotCopy.donate,
     ];
     for (final text in texts) {
@@ -80,8 +78,6 @@ void main() {
     for (final text in [
       AppStrings.personalSponsorDonationTitle,
       AppStrings.personalSponsorDonationDesc,
-      AppStrings.brandSponsorDonationPledge,
-      AppStrings.brandSponsorBenevolentFailure,
     ]) {
       expect(text, isNot(contains('우승자')), reason: text);
       expect(text, isNot(contains('1등 러너의 이름')), reason: text);

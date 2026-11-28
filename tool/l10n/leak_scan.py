@@ -5,9 +5,11 @@ H=re.compile(r'[가-힣]')
 LIT=re.compile(r"""(r?)('''|\"\"\"|'|")((?:\\.|(?!\2).)*?)\2""",re.S)
 SKIP_FILES=('lib/l10n/',)
 # statement-level: find literal; look back to statement start for translation wrappers
-WRAP=re.compile(r'(RemainingSurface\.(tr|trNow)|\.tr\(|trNow\(|_tr\(|\btr\()')
+WRAP=re.compile(r'(RemainingSurface\.(tr|trNow)|userVisibleFailure\(|\.tr\(|trNow\(|_tr\(|\btr\()')
 res=collections.defaultdict(list)
-CALLEE=re.compile(r'(RemainingSurface\s*\.\s*(?:tr|trNow)|\btrNow|\.tr|\b_tr|\btr)\s*$')
+CALLEE=re.compile(
+    r'(RemainingSurface\s*\.\s*(?:tr|trNow)|userVisibleFailure|\btrNow|\.tr|\b_tr|\btr)\s*$'
+)
 def enclosed_in_tr(txt,pos):
     """True when the literal at pos sits inside the argument list of a tr()/trNow() call."""
     depth=0;i=pos-1

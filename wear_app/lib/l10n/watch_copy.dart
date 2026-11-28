@@ -637,6 +637,175 @@ const pairingErrorRows = <String, List<String>>{
   ],
 };
 
+/// Phone app animal names (`animalRows`), same language order as [watchLanguageOrder].
+const watchAnimalRows = <String, List<String>>{
+  'snail': [
+    '달팽이',
+    'Snail',
+    'カタツムリ',
+    '蝸牛',
+    'Caracol',
+    'Caracol',
+    'Schnecke',
+    'Escargot',
+    'Ốc sên',
+    'หอยทาก',
+    'Siput',
+  ],
+  'turtle': [
+    '거북이',
+    'Turtle',
+    'カメ',
+    '烏龜',
+    'Tortuga',
+    'Tartaruga',
+    'Schildkröte',
+    'Tortue',
+    'Rùa',
+    'เต่า',
+    'Kura-kura',
+  ],
+  'beagle': [
+    '비글',
+    'Beagle',
+    'ビーグル',
+    '米格魯',
+    'Beagle',
+    'Beagle',
+    'Beagle',
+    'Beagle',
+    'Beagle',
+    'บีเกิล',
+    'Beagle',
+  ],
+  'wolf': [
+    '늑대',
+    'Wolf',
+    'オオカミ',
+    '狼',
+    'Lobo',
+    'Lobo',
+    'Wolf',
+    'Loup',
+    'Sói',
+    'หมาป่า',
+    'Serigala',
+  ],
+  'zebra': [
+    '얼룩말',
+    'Zebra',
+    'シマウマ',
+    '斑馬',
+    'Cebra',
+    'Zebra',
+    'Zebra',
+    'Zèbre',
+    'Ngựa vằn',
+    'ม้าลาย',
+    'Zebra',
+  ],
+  'cheetah': [
+    '치타',
+    'Cheetah',
+    'チーター',
+    '獵豹',
+    'Guepardo',
+    'Guepardo',
+    'Gepard',
+    'Guépard',
+    'Báo săn',
+    'ชีตาห์',
+    'Cheetah',
+  ],
+};
+
+/// Phone app medal names (`medalRows`). Same order as [watchLanguageOrder].
+const watchMedalRows = <String, List<String>>{
+  'bronze': [
+    '브론즈',
+    'Bronze',
+    'ブロンズ',
+    '銅牌',
+    'Bronce',
+    'Bronze',
+    'Bronze',
+    'Bronze',
+    'Đồng',
+    'บรอนซ์',
+    'Perunggu',
+  ],
+  'silver': [
+    '실버',
+    'Silver',
+    'シルバー',
+    '銀牌',
+    'Plata',
+    'Prata',
+    'Silber',
+    'Argent',
+    'Bạc',
+    'ซิลเวอร์',
+    'Perak',
+  ],
+  'gold': [
+    '골드',
+    'Gold',
+    'ゴールド',
+    '金牌',
+    'Oro',
+    'Ouro',
+    'Gold',
+    'Or',
+    'Vàng',
+    'โกลด์',
+    'Emas',
+  ],
+  'diamond': [
+    '다이아',
+    'Diamond',
+    'ダイヤ',
+    '鑽石',
+    'Diamante',
+    'Diamante',
+    'Diamant',
+    'Diamant',
+    'Kim cương',
+    'ไดมอนด์',
+    'Berlian',
+  ],
+  'master': [
+    '마스터',
+    'Master',
+    'マスター',
+    '大師',
+    'Maestro',
+    'Mestre',
+    'Meister',
+    'Maître',
+    'Bậc thầy',
+    'มาสเตอร์',
+    'Master',
+  ],
+};
+
+/// Localized grade title for a server tier code.
+///
+/// `cheetah` is the animal only. `cheetah_gold` is animal then medal, the same
+/// order as the phone's grade title. `snail` has no medal line here; the start
+/// screen uses the unrated sentence instead. Unknown codes return null.
+String? watchTierLabel(Locale locale, String? code) {
+  final raw = code?.trim().toLowerCase();
+  if (raw == null || raw.isEmpty) return null;
+  final parts = raw.split('_');
+  final animal = watchAnimalRows[parts.first];
+  if (animal == null || parts.first == 'snail') return null;
+  final animalName = _watchRow(animal, locale.languageCode);
+  if (parts.length < 2) return animalName;
+  final medal = watchMedalRows[parts[1]];
+  if (medal == null) return animalName;
+  return '$animalName ${_watchRow(medal, locale.languageCode)}';
+}
+
 String _watchRow(List<String> row, String languageCode) {
   final index = watchLanguageOrder.indexOf(languageCode);
   if (index < 0 || index >= row.length || row[index].trim().isEmpty) {
@@ -704,6 +873,24 @@ List<String> missingWatchCopyKeys() {
           entry.value[i] == entry.value.first &&
           entry.key != 'confirm') {
         missing.add('watch.ui.${entry.key}.${watchLanguageOrder[i]}=ko');
+      }
+    }
+  }
+  for (final table in <String, Map<String, List<String>>>{
+    'animal': watchAnimalRows,
+    'medal': watchMedalRows,
+  }.entries) {
+    for (final entry in table.value.entries) {
+      if (entry.value.length != watchLanguageOrder.length) {
+        missing.add('watch.${table.key}.${entry.key}.length');
+        continue;
+      }
+      for (var i = 0; i < entry.value.length; i++) {
+        if (entry.value[i].trim().isEmpty) {
+          missing.add('watch.${table.key}.${entry.key}.${watchLanguageOrder[i]}');
+        } else if (i != 0 && entry.value[i] == entry.value.first) {
+          missing.add('watch.${table.key}.${entry.key}.${watchLanguageOrder[i]}=ko');
+        }
       }
     }
   }
